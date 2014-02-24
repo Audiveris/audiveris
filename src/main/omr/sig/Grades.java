@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sig;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Class {@code Grades} gathers utility methods dealing with grade values.
  *
@@ -18,8 +21,11 @@ package omr.sig;
  */
 public class Grades
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(Grades.class);
+
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // clamp //
     //-------//

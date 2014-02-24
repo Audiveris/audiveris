@@ -62,6 +62,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -255,12 +256,14 @@ public class BeamsBuilder
         int minBeamWidth = params.minBeamWidth;
         double minBeamHeight = params.minBeamHeight;
         int typicalHeight = sheet.getScale().getMainBeam();
+        int maxItemXGap = params.maxItemXGap;
 
         if (isCue) {
             double ratio = Template.smallRatio;
             minBeamWidth = (int) Math.rint(ratio * minBeamWidth);
             minBeamHeight *= ratio;
             typicalHeight = (int) Math.rint(ratio * typicalHeight);
+            maxItemXGap = (int) Math.rint(ratio * maxItemXGap);
         }
 
         final Rectangle box = glyph.getBounds();
@@ -291,42 +294,42 @@ public class BeamsBuilder
             return "vertical";
         }
 
-        // Check straight lines of north and south borders
-        final BeamItems items;
-        items = new BeamItems(glyph, minBeamWidth, typicalHeight);
+        // Check straight lines of all north and south borders
+        final BeamStructure structure;
+        structure = new BeamStructure(glyph, minBeamWidth, typicalHeight, maxItemXGap);
 
-        final Double meanDist = items.computeLines();
+        final Double meanDist = structure.computeLines();
 
         if ((meanDist == null) || (meanDist > params.maxDistanceToBorder)) {
             return "wavy or inconsistent borders";
         }
 
         // Check structure width
-        final double structWidth = items.getWidth();
+        final double structWidth = structure.getWidth();
 
         if (structWidth < minBeamWidth) {
             return "too narrow borders";
         }
 
-        // Check that all items of the glyph are rather parallel
-        double itemSlopeGap = items.compareSlopes();
+        // Check that all lines of the glyph are rather parallel
+        double lineSlopeGap = structure.compareSlopes();
 
-        if (itemSlopeGap > params.maxBeamSlopeGap) {
+        if (lineSlopeGap > params.maxBeamSlopeGap) {
             return "diverging beams";
         }
 
         // Adjust horizontal sides
-        items.adjustSides();
+        structure.adjustSides();
 
         // Adjust middle lines if necessary
-        items.extendMiddleLines();
+        structure.extendMiddleLines();
 
         // Check stuck beams and split them if necessary
-        items.splitItems();
+        structure.splitLines();
 
         // Compute items grade and create Inter instances when acceptable
         if (isCue) {
-            List<Inter> cues = createSmallBeamInters(items, meanDist);
+            List<Inter> cues = createSmallBeamInters(structure, meanDist);
 
             if (!cues.isEmpty()) {
                 beams.addAll(cues);
@@ -336,7 +339,7 @@ public class BeamsBuilder
                 return "no good item";
             }
         } else {
-            if (createBeamInters(items, meanDist)) {
+            if (createBeamInters(structure, meanDist)) {
                 assignedSpots.add(glyph);
 
                 return null; // This means no failure
@@ -529,64 +532,66 @@ public class BeamsBuilder
     // createBeamInters //
     //------------------//
     /**
-     * Create the resulting FullBeamInter instances, one for
-     * each good item.
+     * Create the resulting Inter instances (full beam or beam hook), for each good item.
      * <p>
-     * Nota: for beams whose width lies between minBeamWidth and maxHookWidth,
-     * we should create both interpretations.
+     * For beams with width between minBeamWidth and maxHookWidth, we create both interpretations.
      *
-     * @param beamItems the items retrieved (from a glyph)
+     * @param structure the beam structure retrieved (from a glyph)
      * @param meanDist  average distance to border
      * @return true if at least one good item was found
      */
-    private boolean createBeamInters (BeamItems beamItems,
+    private boolean createBeamInters (BeamStructure structure,
                                       double meanDist)
     {
         boolean success = false;
-        List<BeamItem> items = beamItems.getItems();
+        List<BeamLine> lines = structure.getLines();
 
-        for (BeamItem item : items) {
-            final int idx = items.indexOf(item);
-            double itemWidth = item.median.getX2() - item.median.getX1();
-            BeamHookInter hook = null;
+        for (BeamLine line : lines) {
+            final int idx = lines.indexOf(line);
 
-            if (itemWidth <= params.maxHookWidth) {
-                logger.debug("Create hook with {}", item);
+            for (BeamItem item : line.getItems()) {
+                double itemWidth = item.median.getX2() - item.median.getX1();
+                BeamHookInter hook = null;
 
-                Impacts impacts = computeHookImpacts(item, meanDist);
+                if (itemWidth <= params.maxHookWidth) {
+                    logger.debug("Create hook with {}", line);
+
+                    Impacts impacts = computeHookImpacts(item, meanDist);
+
+                    if (impacts != null) {
+                        success = true;
+                        hook = new BeamHookInter(null, impacts, item.median, item.height);
+
+                        if (line.isVip()) {
+                            hook.setVip();
+                        }
+
+                        sig.addVertex(hook);
+                    }
+                }
+
+                //TODO: test for detecting top/bottom items is not correct
+                Impacts impacts = computeBeamImpacts(
+                        item,
+                        idx == 0, // Check above only for first item
+                        idx == (lines.size() - 1), // Check below only for last item
+                        meanDist);
 
                 if (impacts != null) {
                     success = true;
-                    hook = new BeamHookInter(null, impacts, item.median, item.height);
 
-                    if (item.isVip()) {
-                        hook.setVip();
+                    FullBeamInter beam = new FullBeamInter(null, impacts, item.median, item.height);
+
+                    if (line.isVip()) {
+                        beam.setVip();
                     }
 
-                    sig.addVertex(hook);
-                }
-            }
+                    sig.addVertex(beam);
 
-            Impacts impacts = computeBeamImpacts(
-                    item,
-                    idx == 0, // Check above only for first item
-                    idx == (items.size() - 1), // Check below only for last item
-                    meanDist);
-
-            if (impacts != null) {
-                success = true;
-
-                FullBeamInter beam = new FullBeamInter(null, impacts, item.median, item.height);
-
-                if (item.isVip()) {
-                    beam.setVip();
-                }
-
-                sig.addVertex(beam);
-
-                // Exclusion between beam and hook, if any
-                if (hook != null) {
-                    sig.insertExclusion(hook, beam, Exclusion.Cause.OVERLAP);
+                    // Exclusion between beam and hook, if any
+                    if (hook != null) {
+                        sig.insertExclusion(hook, beam, Exclusion.Cause.OVERLAP);
+                    }
                 }
             }
         }
@@ -615,36 +620,44 @@ public class BeamsBuilder
     // createSmallBeamInters //
     //-----------------------//
     /**
-     * Create the resulting SmallBeamInter instances, one for
-     * each good item.
+     * Create the resulting SmallBeamInter instances, one for each good item.
+     * TODO: Should we handle small beam hooks as well?
      *
-     * @param beamItems the items retrieved (from a glyph)
+     * @param structure the items retrieved (from a glyph)
      * @param meanDist  average distance to border
      * @return the list of inter instances created
      */
-    private List<Inter> createSmallBeamInters (BeamItems beamItems,
+    private List<Inter> createSmallBeamInters (BeamStructure structure,
                                                double meanDist)
     {
-        List<Inter> beams = new ArrayList<Inter>();
-        List<BeamItem> items = beamItems.getItems();
+        final List<Inter> beams = new ArrayList<Inter>();
+        final List<BeamLine> lines = structure.getLines();
 
-        for (BeamItem item : items) {
-            final int idx = items.indexOf(item);
-            Impacts impacts = computeBeamImpacts(
-                    item,
-                    idx == 0, // Check above only for first item
-                    idx == (items.size() - 1), // Check below only for last item
-                    meanDist);
+        for (BeamLine line : lines) {
+            final int idx = lines.indexOf(line);
 
-            if (impacts != null) {
-                SmallBeamInter beam = new SmallBeamInter(null, impacts, item.median, item.height);
+            for (BeamItem item : line.getItems()) {
+                //TODO: test for detecting top/bottom items is not correct
+                Impacts impacts = computeBeamImpacts(
+                        item,
+                        idx == 0, // Check above only for top items
+                        idx == (lines.size() - 1), // Check below only for bottom items
+                        meanDist);
 
-                if (item.isVip()) {
-                    beam.setVip();
+                if (impacts != null) {
+                    SmallBeamInter beam = new SmallBeamInter(
+                            null,
+                            impacts,
+                            item.median,
+                            item.height);
+
+                    if (item.isVip()) {
+                        beam.setVip();
+                    }
+
+                    sig.addVertex(beam);
+                    beams.add(beam);
                 }
-
-                sig.addVertex(beam);
-                beams.add(beam);
             }
         }
 
@@ -657,9 +670,8 @@ public class BeamsBuilder
     /**
      * Now that individual beams candidates have been extracted, try to
      * improve beam geometry (merge, extension).
-     * Try to extend each beam to either another beam (merge) or a stem seed
-     * (extension) or in parallel with a sibling beam (extension) or to another
-     * spot (extension).
+     * Try to extend each beam to either another beam (merge) or a stem seed (extension) or in
+     * parallel with a sibling beam (extension) or to another spot (extension).
      */
     private void extendBeams ()
     {
@@ -688,10 +700,31 @@ public class BeamsBuilder
             for (HorizontalSide side : HorizontalSide.values()) {
                 // If successful, this appends a new beam instance to the list.
                 // The new beam will later be tested for further extension.
-                if (extendToBeam(beam, side)
-                    || extendToStem(beam, side)
-                    || extendInParallel(beam, side)
-                    || extendToSpot(beam, side)) {
+
+                // Is there a compatible beam near by?
+                AbstractBeamInter sideBeam = getSideBeam(beam, side);
+                Integer maxDx = null;
+
+                if (sideBeam != null) {
+                    // Try to merge the 2 beams (avoid double testing, so check on one side only)
+                    if ((side == LEFT) && extendToBeam(beam, side, sideBeam)) {
+                        break;
+                    }
+
+                    Line2D median = beam.getMedian();
+                    Line2D sideMedian = sideBeam.getMedian();
+                    double dx = (side == LEFT) ? (median.getX1() - sideMedian.getX2())
+                            : (sideMedian.getX1() - median.getX2());
+                    maxDx = (int) Math.rint(Math.max(0, dx - params.beamsXMargin));
+                }
+
+                // Try the other extension modes (limited by side beam if any)
+                if (extendToStem(beam, side, maxDx) || extendToSpot(beam, side, maxDx)) {
+                    break;
+                }
+
+                // Try parallel extension (only when there is no side beam)
+                if ((sideBeam == null) && extendInParallel(beam, side)) {
                     break;
                 }
             }
@@ -702,8 +735,8 @@ public class BeamsBuilder
     // extendInParallel //
     //------------------//
     /**
-     * Try to extend the provided beam in parallel with a sibling
-     * beam (in the same group of beams).
+     * Try to extend the provided beam in parallel with a another beam (in the same
+     * group of beams).
      *
      * @param beam the beam to extend
      * @param side the horizontal side
@@ -765,6 +798,8 @@ public class BeamsBuilder
                     continue;
                 }
 
+                //        final int extDx = (maxDx == null) ? params.maxExtensionToSpot
+                //                : Math.min(maxDx, params.maxExtensionToSpot);
                 Point2D extPt = LineUtil.intersectionAtX(median, otherEndPt.getX());
 
                 return extendToPoint(beam, side, extPt);
@@ -778,61 +813,47 @@ public class BeamsBuilder
     // extendToBeam //
     //--------------//
     /**
-     * Try to extend the provided beam on the desired side to another
-     * beam within reach.
+     * Try to extend the provided beam on the desired side to another beam within reach.
+     * The other beam must be compatible in terms of gap (abscissa and ordinate) and beam slope.
+     * <p>
+     * If such a compatible beam is found, but the middle area between them is not correctly filled,
+     * we must remember this information to avoid any other extension attempt on this side.
      *
-     * @param beam the beam to extend
-     * @param side the horizontal side
+     * @param beam  the beam to extend
+     * @param side  the horizontal side
+     * @param other the side beam found
      * @return true if extension was done, false otherwise
      */
     private boolean extendToBeam (AbstractBeamInter beam,
-                                  HorizontalSide side)
+                                  HorizontalSide side,
+                                  AbstractBeamInter other)
     {
-        Area luArea = sideAreaOf("-", beam, side, 0, params.maxBeamsGapX, 0);
-        List<Inter> others = sig.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
-        others.remove(beam); // Safer
+        // Check black ratio in the middle area
+        Area middleArea = middleArea(beam, other);
+        AreaMask coreMask = new AreaMask(middleArea);
+        WrappedInteger core = new WrappedInteger(0);
+        int coreCount = coreMask.fore(core, pixelFilter);
+        double coreRatio = (double) core.value / coreCount;
 
-        if (!others.isEmpty()) {
-            // Use a closer look, using colinearity
-            final Line2D median = beam.getMedian();
-            final Point2D endPt = (side == LEFT) ? median.getP1() : median.getP2();
+        if (coreRatio >= params.minExtBlackRatio) {
+            FullBeamInter newBeam = mergeOf(beam, other);
 
-            for (Inter ib : others) {
-                AbstractBeamInter other = (AbstractBeamInter) ib;
-                double dt = other.getMedian().ptLineDist(endPt);
+            if (newBeam != null) {
+                sig.addVertex(newBeam);
+                rawSystemBeams.add(newBeam);
 
-                if (dt <= params.maxBeamsGapY) {
-                    // Check black ratio in the middle area
-                    Area middleArea = middleArea(beam, other);
-                    AreaMask coreMask = new AreaMask(middleArea);
-                    WrappedInteger core = new WrappedInteger(0);
-                    int coreCount = coreMask.fore(core, pixelFilter);
-                    double coreRatio = (double) core.value / coreCount;
-
-                    if (coreRatio < params.minExtBlackRatio) {
-                        continue;
-                    }
-
-                    FullBeamInter newBeam = mergeOf(beam, other);
-
-                    if (newBeam != null) {
-                        sig.addVertex(newBeam);
-                        rawSystemBeams.add(newBeam);
-
-                        if (beam.isVip() || other.isVip()) {
-                            newBeam.setVip();
-                        }
-
-                        beam.delete();
-                        other.delete();
-
-                        if (newBeam.isVip() || logger.isDebugEnabled()) {
-                            logger.info("VIP Merged {} & {} into {}", beam, other, newBeam);
-                        }
-
-                        return true;
-                    }
+                if (beam.isVip() || other.isVip()) {
+                    newBeam.setVip();
                 }
+
+                beam.delete();
+                other.delete();
+
+                if (newBeam.isVip() || logger.isDebugEnabled()) {
+                    logger.info("VIP Merged {} & {} into {}", beam, other, newBeam);
+                }
+
+                return true;
             }
         }
 
@@ -843,8 +864,7 @@ public class BeamsBuilder
     // extendToPoint //
     //---------------//
     /**
-     * Try to extend the beam on provided side until the target
-     * extension point.
+     * Try to extend the beam on provided side until the target extension point.
      *
      * @param beam  the beam to extend
      * @param side  the horizontal side
@@ -937,28 +957,22 @@ public class BeamsBuilder
     // extendToSpot //
     //--------------//
     /**
-     * Try to extend the provided beam on the desired side to a spot
-     * within reach.
+     * Try to extend the provided beam on the desired side to a spot within reach.
      *
-     * @param beam the beam to extend
-     * @param side the horizontal side
+     * @param beam  the beam to extend
+     * @param side  the horizontal side
+     * @param maxDx limit on x extension (due to side beam if any)
      * @return true if extension was done, false otherwise
      */
     private boolean extendToSpot (AbstractBeamInter beam,
-                                  HorizontalSide side)
+                                  HorizontalSide side,
+                                  Integer maxDx)
     {
         final boolean logging = beam.isVip() || logger.isDebugEnabled();
-
-        // Lookup area for spots
-        Area luArea = sideAreaOf(
-                "O",
-                beam,
-                side,
-                0, // dy
-                params.maxExtensionToSpot, // extDx
-                0); // intDx
-
-        List<Glyph> spots = sig.intersectedGlyphs(sortedBeamSpots, true, luArea);
+        final int dx = (maxDx == null) ? params.maxExtensionToSpot
+                : Math.min(params.maxExtensionToSpot, maxDx);
+        final Area luArea = sideAreaOf("O", beam, side, 0, dx, 0);
+        final List<Glyph> spots = sig.intersectedGlyphs(sortedBeamSpots, true, luArea);
 
         if (beam.getGlyph() != null) {
             spots.remove(beam.getGlyph()); // Safer
@@ -988,27 +1002,22 @@ public class BeamsBuilder
     // extendToStem //
     //--------------//
     /**
-     * Try to extend the provided beam on the desired side to a stem
-     * seed within reach.
+     * Try to extend the provided beam on the desired side to a stem seed within reach.
      *
-     * @param beam the beam to extend
-     * @param side the horizontal side
+     * @param beam  the beam to extend
+     * @param side  the horizontal side
+     * @param maxDx limit on x extension (due to side beam if any)
      * @return true if extension was done, false otherwise
      */
     private boolean extendToStem (AbstractBeamInter beam,
-                                  HorizontalSide side)
+                                  HorizontalSide side,
+                                  Integer maxDx)
     {
         final boolean logging = beam.isVip() || logger.isDebugEnabled();
-
-        // Lookup area for stem seed
-        Area luArea = sideAreaOf(
-                "|",
-                beam,
-                side,
-                params.maxStemBeamGapY, // dy
-                params.maxExtensionToStem, // extDx
-                0); // intDx
-
+        final int dx = (maxDx == null) ? params.maxExtensionToStem
+                : Math.min(params.maxExtensionToStem, maxDx);
+        final int dy = params.maxStemBeamGapY;
+        final Area luArea = sideAreaOf("|", beam, side, dy, dx, 0);
         List<Glyph> seeds = sig.intersectedGlyphs(sortedSystemSeeds, true, luArea);
 
         // We should remove seeds already 'embraced' by the beam
@@ -1022,11 +1031,10 @@ public class BeamsBuilder
             }
 
             // Try to extend the beam to this stem seed
-            Line2D median = beam.getMedian();
             Line2D seedLine = new Line2D.Double(
                     seed.getStartPoint(Orientation.VERTICAL),
                     seed.getStopPoint(Orientation.VERTICAL));
-            Point2D extPt = LineUtil.intersection(median, seedLine);
+            Point2D extPt = LineUtil.intersection(beam.getMedian(), seedLine);
 
             return extendToPoint(beam, side, extPt);
         }
@@ -1135,6 +1143,77 @@ public class BeamsBuilder
         }
 
         return aggregates;
+    }
+
+    //-------------//
+    // getSideBeam //
+    //-------------//
+    /**
+     * Look for a compatible beam inter next to the provided one (in a same beam line).
+     * They either can be merged or give a limit to other extension modes.
+     *
+     * @param beam the provided beam
+     * @param side which side to look on
+     * @return the sibling beam found if any
+     */
+    private AbstractBeamInter getSideBeam (AbstractBeamInter beam,
+                                           final HorizontalSide side)
+    {
+        Area luArea = sideAreaOf("-", beam, side, 0, params.maxSideBeamDx, 0);
+        List<Inter> others = sig.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
+        others.remove(beam); // Safer
+
+        if (!others.isEmpty()) {
+            // Use a closer look, using colinearity
+            final Line2D median = beam.getMedian();
+            final Point2D endPt = (side == LEFT) ? median.getP1() : median.getP2();
+            final double slope = LineUtil.getSlope(median);
+
+            for (Iterator<Inter> it = others.iterator(); it.hasNext();) {
+                AbstractBeamInter other = (AbstractBeamInter) it.next();
+
+                // Check connection point & beam slopes are OK
+                Line2D otherMedian = other.getMedian();
+
+                if ((Math.abs(LineUtil.getSlope(otherMedian) - slope) > params.maxBeamSlopeGap)
+                    || (otherMedian.ptLineDist(endPt) > params.maxBeamsGapY)) {
+                    it.remove();
+                }
+            }
+
+            // Keep just the closest one to current beam (abscissa-wise)
+            if (others.size() > 1) {
+                final double endX = endPt.getX();
+                Collections.sort(
+                        others,
+                        new Comparator<Inter>()
+                {
+                    @Override
+                    public int compare (Inter o1,
+                                        Inter o2)
+                    {
+                        AbstractBeamInter b1 = (AbstractBeamInter) o1;
+                        AbstractBeamInter b2 = (AbstractBeamInter) o2;
+
+                        if (side == LEFT) {
+                            return Double.compare(
+                                    endX - b1.getMedian().getX2(),
+                                    endX - b2.getMedian().getX2());
+                        } else {
+                            return Double.compare(
+                                    b1.getMedian().getX1() - endX,
+                                    b2.getMedian().getX1() - endX);
+                        }
+                    }
+                        });
+            }
+
+            if (!others.isEmpty()) {
+                return (AbstractBeamInter) others.get(0);
+            }
+        }
+
+        return null;
     }
 
     //----------------//
@@ -1347,6 +1426,10 @@ public class BeamsBuilder
 
         final Scale.Fraction minBeamWidth = new Scale.Fraction(1.5, "Minimum width for a beam");
 
+        final Scale.Fraction maxItemXGap = new Scale.Fraction(
+                0.5,
+                "Acceptable abscissa gap within a beam item");
+
         final Scale.Fraction largeBeamWidth = new Scale.Fraction(4.0, "Width for a large beam");
 
         final Scale.Fraction minHookWidth = new Scale.Fraction(
@@ -1365,6 +1448,10 @@ public class BeamsBuilder
                 1.25,
                 "Maximum height for a hook, specified as ratio of typical beam");
 
+        final Scale.Fraction maxSideBeamDx = new Scale.Fraction(
+                4.0,
+                "Maximum abscissa gap to detect side beams");
+
         final Scale.Fraction maxBeamsGapX = new Scale.Fraction(
                 1.0,
                 "Maximum abscissa gap to merge aligned beams");
@@ -1372,6 +1459,10 @@ public class BeamsBuilder
         final Scale.Fraction maxBeamsGapY = new Scale.Fraction(
                 0.25,
                 "Maximum ordinate mismatch to merge aligned beams");
+
+        final Scale.Fraction beamsXMargin = new Scale.Fraction(
+                0.25,
+                "Abscissa margin around beams to exclude beam stems");
 
         final Scale.Fraction maxStemBeamGapX = new Scale.Fraction(
                 0.2,
@@ -1690,6 +1781,8 @@ public class BeamsBuilder
 
         final int minBeamWidth;
 
+        final int maxItemXGap;
+
         final int largeBeamWidth;
 
         final int minHookWidth;
@@ -1700,9 +1793,13 @@ public class BeamsBuilder
 
         final double maxHookHeight;
 
+        final int maxSideBeamDx;
+
         final int maxBeamsGapX;
 
         final int maxBeamsGapY;
+
+        final int beamsXMargin;
 
         final int maxStemBeamGapX;
 
@@ -1749,11 +1846,14 @@ public class BeamsBuilder
         public Parameters (Scale scale)
         {
             minBeamWidth = scale.toPixels(constants.minBeamWidth);
+            maxItemXGap = scale.toPixels(constants.maxItemXGap);
             minHookWidth = scale.toPixels(constants.minHookWidth);
             minBeamHeight = scale.getMainBeam() * constants.minBeamHeightRatio.getValue();
             maxHookHeight = scale.getMainBeam() * constants.maxHookHeightRatio.getValue();
+            maxSideBeamDx = scale.toPixels(constants.maxSideBeamDx);
             maxBeamsGapX = scale.toPixels(constants.maxBeamsGapX);
             maxBeamsGapY = scale.toPixels(constants.maxBeamsGapY);
+            beamsXMargin = scale.toPixels(constants.beamsXMargin);
             maxStemBeamGapX = scale.toPixels(constants.maxStemBeamGapX);
             maxStemBeamGapY = scale.toPixels(constants.maxStemBeamGapY);
             maxExtensionToStem = scale.toPixels(constants.maxExtensionToStem);

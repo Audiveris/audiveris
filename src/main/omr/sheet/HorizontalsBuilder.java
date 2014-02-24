@@ -110,6 +110,8 @@ public class HorizontalsBuilder
 
     private static final Failure TOO_SLOPED = new Failure("Hori-TooSloped");
 
+    private static final Failure TOO_BENDED = new Failure("Hori-TooBended");
+
     private static final Failure TOO_SHIFTED = new Failure("Hori-TooShifted");
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -790,6 +792,10 @@ public class HorizontalsBuilder
         Scale.Fraction maxInterLedgerDy = new Scale.Fraction(
                 0.2,
                 "Maximum inter-ledger ordinate gap");
+
+        Scale.Fraction maxDistanceHigh = new Scale.Fraction(
+                0.3,
+                "Maximum average distance to straight line");
     }
 
     //--------------//
@@ -991,6 +997,7 @@ public class HorizontalsBuilder
             ///add(0.5, new SlopeCheck());
             add(4, new MinLengthCheck(constants.minLedgerLengthLow, constants.minLedgerLengthHigh));
             add(2, new ConvexityCheck());
+            add(1, new StraightCheck());
 
             add(0.5, new LeftPitchCheck());
             add(0.5, new RightPitchCheck());
@@ -1171,6 +1178,35 @@ public class HorizontalsBuilder
             Glyph stick = context.stick;
 
             return Math.abs(stick.getSlope() - sheet.getSkew().getSlope());
+        }
+    }
+
+    //---------------//
+    // StraightCheck //
+    //---------------//
+    private class StraightCheck
+            extends Check<GlyphContext>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        protected StraightCheck ()
+        {
+            super(
+                    "Straight",
+                    "Check that stick is rather straight",
+                    Constant.Double.ZERO,
+                    constants.maxDistanceHigh,
+                    false,
+                    TOO_BENDED);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            Glyph stick = context.stick;
+
+            return sheet.getScale().pixelsToFrac(stick.getMeanDistance());
         }
     }
 }

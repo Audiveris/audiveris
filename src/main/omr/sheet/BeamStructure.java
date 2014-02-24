@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        B e a m I t e m s                                       //
+//                                    B e a m S t r u c t u r e                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -25,6 +25,7 @@ import omr.run.Run;
 
 import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
+import omr.util.Vip;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,21 +42,24 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code BeamItems} handles one or several beam items, all retrieved from a
- * single glyph.
+ * Class {@code BeamStructure} handles one or several {@link BeamLine} instances,
+ * all retrieved from a single glyph.
  * This is a private working companion of {@link BeamsBuilder}.
  */
-public class BeamItems
+public class BeamStructure
+        implements Vip
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(BeamItems.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            BeamStructure.class);
 
-    public static final Comparator<BeamItems> byAbscissa = new Comparator<BeamItems>()
+    /** Comparator on abscissae. */
+    public static final Comparator<BeamStructure> byAbscissa = new Comparator<BeamStructure>()
     {
         @Override
-        public int compare (BeamItems b1,
-                            BeamItems b2)
+        public int compare (BeamStructure b1,
+                            BeamStructure b2)
         {
             return Integer.compare(b1.getGlyph().getBounds().x, b2.getGlyph().getBounds().x);
         }
@@ -71,27 +75,36 @@ public class BeamItems
     /** The typical beam height. */
     private final int typicalBeamHeight;
 
-    /** Sequence of items retrieved for the same glyph. */
-    private final List<BeamItem> items = new ArrayList<BeamItem>();
+    /** maximum internal abscissa gap within a beam item. */
+    private final int maxItemXGap;
+
+    /** Sequence of lines retrieved for the same glyph, from top to bottom. */
+    private final List<BeamLine> lines = new ArrayList<BeamLine>();
+
+    /** VIP flag. */
+    private boolean vip;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // BeamItems //
-    //-----------//
+    //---------------//
+    // BeamStructure //
+    //---------------//
     /**
      * Creates a new BeamItems object.
      *
      * @param glyph             the candidate glyph
      * @param minBeamWidth      minimum width for a beam (in pixels)
      * @param typicalBeamHeight typical height for a beam (in pixels)
+     * @param maxItemXGap       maximum internal abscissa gap within a beam item
      */
-    public BeamItems (Glyph glyph,
-                      int minBeamWidth,
-                      int typicalBeamHeight)
+    public BeamStructure (Glyph glyph,
+                          int minBeamWidth,
+                          int typicalBeamHeight,
+                          int maxItemXGap)
     {
         this.glyph = glyph;
         this.minBeamWidth = minBeamWidth;
         this.typicalBeamHeight = typicalBeamHeight;
+        this.maxItemXGap = maxItemXGap;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -101,9 +114,8 @@ public class BeamItems
     /**
      * Adjust abscissa of horizontal sides.
      * Do this only for limits touching left or right side of the glyph.
-     * In practice, if a limit is close to glyph side,
-     * it's a full beam, we extend it to glyph side.
-     * Otherwise, it's not a full beam so leave this side as it is.
+     * In practice, if a limit is close to glyph side, it's a full beam, we extend it to glyph side.
+     * Otherwise, it's not a full beam so we leave this side as it is.
      */
     public void adjustSides ()
     {
@@ -113,8 +125,8 @@ public class BeamItems
         double gLeft = glyphBox.x;
         double gRight = (glyphBox.x + glyphBox.width) - 1;
 
-        for (BeamItem item : items) {
-            final Line2D median = item.median;
+        for (BeamLine line : lines) {
+            final Line2D median = line.median;
 
             // Check left
             if ((median.getX1() - gLeft) < minBeamWidth) {
@@ -134,7 +146,7 @@ public class BeamItems
     // compareSlopes //
     //---------------//
     /**
-     * Compare the slopes of beams (when there are several beams)
+     * Compare the slopes of beams (when there are several lines)
      *
      * @return max slope gap between consecutive beams
      */
@@ -143,8 +155,8 @@ public class BeamItems
         double maxItemGap = 0;
         Double prevItemSlope = null;
 
-        for (BeamItem item : items) {
-            Line2D median = item.median;
+        for (BeamLine line : lines) {
+            Line2D median = line.median;
             double itemSlope = LineUtil.getSlope(median);
 
             if (prevItemSlope != null) {
@@ -162,11 +174,11 @@ public class BeamItems
     // computeLines //
     //--------------//
     /**
-     * Populate the items from the retrieved border lines, and measure
-     * how straight they are.
+     * Populate the lines from the retrieved border lines, and measure how straight they
+     * are.
      *
-     * @return mean distance from border points to their lines, or null if
-     *         border pairs are not consistent
+     * @return mean distance from border points to their lines, or null if border pairs are not
+     *         consistent
      */
     public Double computeLines ()
     {
@@ -194,9 +206,9 @@ public class BeamItems
             return null;
         }
 
-        // Loop on beam items
+        // Loop on beam lines
         for (int i = 0; i < topLines.size(); i++) {
-            // Impose one median line per item and a fixed height
+            // Impose one median line per line and a fixed height
             BasicLine top = topLines.get(i);
             BasicLine bot = bottomLines.get(i);
             double xMin = min(top.getMinAbscissa(), bot.getMinAbscissa());
@@ -207,13 +219,14 @@ public class BeamItems
             double ybr = bot.yAtX(xMax);
             double height = ((ybl - ytl) + (ybr - ytr)) / 2;
             Line2D median = new Line2D.Double(xMin, (ytl + ybl) / 2, xMax, (ytr + ybr) / 2);
-            BeamItem item = new BeamItem(median, height);
+            BeamLine line = new BeamLine(median, height);
+            retrieveItems(line);
 
             if (glyph.isVip()) {
-                item.setVip();
+                line.setVip();
             }
 
-            items.add(item);
+            lines.add(line);
         }
 
         if (glyph.isVip()) {
@@ -228,25 +241,25 @@ public class BeamItems
     //-------------------//
     /**
      * Extend middle lines if necessary.
-     * This may happen for aggregates of 3 beams or more, where the middle
-     * beam(s) have very poor borders, generally too small.
+     * This may happen for aggregates of 3 beams or more, where the middle line(s) have very poor
+     * borders, generally too small.
      */
     public void extendMiddleLines ()
     {
-        if (items.size() < 3) {
+        if (lines.size() < 3) {
             return;
         }
 
         double xLeft = Double.MAX_VALUE;
         double xRight = Double.MIN_VALUE;
 
-        for (BeamItem item : items) {
-            xLeft = Math.min(xLeft, item.median.getX1());
-            xRight = Math.max(xRight, item.median.getX2());
+        for (BeamLine line : lines) {
+            xLeft = Math.min(xLeft, line.median.getX1());
+            xRight = Math.max(xRight, line.median.getX2());
         }
 
-        for (BeamItem item : items) {
-            Line2D median = item.median;
+        for (BeamLine line : lines) {
+            Line2D median = line.median;
 
             // Extend to left & to right
             Point2D leftPt = LineUtil.intersectionAtX(median, xLeft);
@@ -267,14 +280,14 @@ public class BeamItems
     }
 
     //----------//
-    // getItems //
+    // getLines //
     //----------//
     /**
-     * @return the items
+     * @return the lines
      */
-    public List<BeamItem> getItems ()
+    public List<BeamLine> getLines ()
     {
-        return items;
+        return lines;
     }
 
     //----------//
@@ -290,22 +303,39 @@ public class BeamItems
         double xLeft = Double.MAX_VALUE;
         double xRight = Double.MIN_VALUE;
 
-        for (BeamItem item : items) {
-            xLeft = Math.min(xLeft, item.median.getX1());
-            xRight = Math.max(xRight, item.median.getX2());
+        for (BeamLine line : lines) {
+            xLeft = Math.min(xLeft, line.median.getX1());
+            xRight = Math.max(xRight, line.median.getX2());
         }
 
         return xRight - xLeft + 1;
     }
 
+    //-------//
+    // isVip //
+    //-------//
+    @Override
+    public boolean isVip ()
+    {
+        return vip;
+    }
+
+    //--------//
+    // setVip //
+    //--------//
+    @Override
+    public void setVip ()
+    {
+        vip = true;
+    }
+
     //------------//
-    // splitItems //
+    // splitLines //
     //------------//
     /**
-     * Look for several beams stuck in a single item and split them
-     * if necessary.
+     * Look for several beams stuck in a single line and split them if necessary.
      */
-    public void splitItems ()
+    public void splitLines ()
     {
         final double meanHeight = glyph.getMeanThickness(Orientation.HORIZONTAL);
         final double ratio = meanHeight / typicalBeamHeight;
@@ -314,13 +344,13 @@ public class BeamItems
         // Typical case: 2 beams are stuck (beamCount = 1, targetCount = 2)
         // TODO: what if beamCount = 1 and targetCount = 3 or more?
         // TODO: what if beamCount = 2 and targetCount = 3 or more?
-        if ((items.size() > 1) || (targetCount <= items.size())) {
+        if ((lines.size() > 1) || (targetCount <= lines.size())) {
             return;
         }
 
         // Create the middle lines with proper vertical gap
-        BeamItem item = items.get(0);
-        double gutter = item.height - (2 * typicalBeamHeight);
+        BeamLine line = lines.get(0);
+        double gutter = line.height - (2 * typicalBeamHeight);
 
         if (gutter < 0) {
             if (glyph.isVip()) {
@@ -330,20 +360,20 @@ public class BeamItems
             return;
         }
 
-        double newHeight = (item.height - gutter) / 2;
-        final Line2D median = item.median;
+        double newHeight = (line.height - gutter) / 2;
+        final Line2D median = line.median;
 
         if (logger.isDebugEnabled()) {
             logger.debug(
                     String.format(
                             "Stuck beams #%d %d vs %.2f, gutter:%.1f",
                             glyph.getId(),
-                            items.size(),
+                            lines.size(),
                             ratio,
                             gutter));
         }
 
-        // Insert new items
+        // Insert new lines
         double dy = (newHeight + gutter) / 2;
         Line2D topMedian = new Line2D.Double(
                 median.getX1(),
@@ -355,9 +385,9 @@ public class BeamItems
                 median.getY1() + dy,
                 median.getX2(),
                 median.getY2() + dy);
-        items.clear();
-        items.add(new BeamItem(topMedian, newHeight));
-        items.add(new BeamItem(botMedian, newHeight));
+        lines.clear();
+        lines.add(new BeamLine(topMedian, newHeight));
+        lines.add(new BeamLine(botMedian, newHeight));
         logger.debug("Adjusted {}", this);
     }
 
@@ -370,8 +400,8 @@ public class BeamItems
         final StringBuilder sb = new StringBuilder();
         sb.append("beamGlyph#").append(glyph.getId());
 
-        for (BeamItem item : items) {
-            sb.append(" ").append(item);
+        for (BeamLine line : lines) {
+            sb.append(" [").append(line).append("]");
         }
 
         return sb.toString();
@@ -382,8 +412,8 @@ public class BeamItems
     //----------------//
     /**
      * Compute the lines that approximates borders on desired side.
-     * There can be several lines on a given side if the glyph represents a
-     * double beam or larger. So, we group lines by beam ordinates.
+     * There can be several lines on a given side if the glyph represents a double beam or larger.
+     * So, we group lines by beam ordinates.
      *
      * @param glyph spot to analyze
      * @param side  TOP or BOTTOM
@@ -415,7 +445,7 @@ public class BeamItems
             }
         }
 
-        // Compute general slope
+        // Compute general slope of section borders
         double sumSlope = 0;
         int sumPoints = 0;
 
@@ -435,45 +465,95 @@ public class BeamItems
 
         // Compute each section vertical offset WRT the refLine
         for (SectionBorder border : sectionBorders) {
-            final Rectangle sectionBox = border.section.getBounds();
-            BasicLine line = border.line;
-            int x = GeoUtil.centerOf(sectionBox).x;
-            int y = line.yAtX(x);
+            int x = GeoUtil.centerOf(border.section.getBounds()).x;
+            int y = border.line.yAtX(x);
             int dy = y - refLine.yAtX(x);
             border.setOffset(dy);
         }
 
         Collections.sort(sectionBorders); // By distance to ref line
-        // Retrieve groups of dy values, roughly separated by beam height
-        // Each group will correspond to a separate beam
 
+        // Retrieve groups of dy values, roughly separated by beam height
+        // Each group will correspond to a separate beam line
         final double delta = typicalBeamHeight * 0.75; //TODO: use a constant?
-        final List<BasicLine> lines = new ArrayList<BasicLine>();
+        final List<BasicLine> borderLines = new ArrayList<BasicLine>();
         Barycenter dys = new Barycenter();
         BasicLine line = null;
 
         for (SectionBorder border : sectionBorders) {
-            if ((line != null) && ((border.dy - dys.getY()) <= delta)) {
-                dys.include(border.line.getNumberOfPoints(), 0, border.dy);
-            } else {
-                lines.add(line = new BasicLine());
+            if ((line == null) || ((border.dy - dys.getY()) > delta)) {
+                borderLines.add(line = new BasicLine());
                 dys = new Barycenter();
-                dys.include(border.line.getNumberOfPoints(), 0, border.dy);
             }
 
+            dys.include(border.line.getNumberOfPoints(), 0, border.dy);
             line.includeLine(border.line);
         }
 
         // Purge too small lines
-        for (Iterator<BasicLine> it = lines.iterator(); it.hasNext();) {
-            BasicLine l = it.next();
-
-            if (l.getNumberOfPoints() < minBeamWidth) {
+        for (Iterator<BasicLine> it = borderLines.iterator(); it.hasNext();) {
+            if (it.next().getNumberOfPoints() < minBeamWidth) {
                 it.remove();
             }
         }
 
-        return lines;
+        return borderLines;
+    }
+
+    //---------------//
+    // retrieveItems //
+    //---------------//
+    /**
+     * Populate this beam line with the items found along the median
+     *
+     * @param beamLine the BeamLine to populate
+     */
+    private void retrieveItems (BeamLine beamLine)
+    {
+        List<BeamItem> items = beamLine.getItems();
+        Line2D median = beamLine.median;
+        BasicLine line = new BasicLine(median);
+        Integer start = null; // Starting abscissa of item being built
+        Integer stop = null; // Current abscissa end of item being built
+
+        // Sections are ordered by starting abscissa
+        for (Section section : glyph.getMembers()) {
+            Rectangle sctBox = section.getBounds();
+            Point sctCenter = GeoUtil.centerOf(sctBox);
+            int y = line.yAtX(sctCenter.x);
+
+            if (section.contains(sctCenter.x, y)) {
+                // Extend current item or start a new one?
+                if (stop != null) {
+                    int dx = sctBox.x - stop;
+
+                    if (dx > maxItemXGap) {
+                        // End current item, start a new one
+                        items.add(
+                                new BeamItem(
+                                        new Line2D.Double(
+                                                LineUtil.intersectionAtX(median, start),
+                                                LineUtil.intersectionAtX(median, stop)),
+                                        beamLine.height));
+                        start = sctBox.x;
+                    }
+
+                    stop = Math.max(stop, (sctBox.x + sctBox.width) - 1);
+                } else {
+                    start = sctBox.x;
+                    stop = (sctBox.x + sctBox.width) - 1;
+                }
+            }
+        }
+
+        if (stop != null) {
+            items.add(
+                    new BeamItem(
+                            new Line2D.Double(
+                                    LineUtil.intersectionAtX(median, start),
+                                    LineUtil.intersectionAtX(median, stop)),
+                            beamLine.height));
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -492,7 +572,7 @@ public class BeamItems
 
         final BasicLine line; // Border line (top or bottom)
 
-        int dy; // Ordinate offset WRT glyph mean line
+        int dy; // Ordinate offset WRT glyph reference line
 
         //~ Constructors ---------------------------------------------------------------------------
         public SectionBorder (Section section,

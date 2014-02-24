@@ -89,8 +89,12 @@ public class SigSolver
      */
     public void contextualize ()
     {
-        for (Inter inter : sig.vertexSet()) {
-            sig.computeContextualGrade(inter, false);
+        try {
+            for (Inter inter : sig.vertexSet()) {
+                sig.computeContextualGrade(inter, false);
+            }
+        } catch (Throwable ex) {
+            ex.printStackTrace();
         }
     }
 

@@ -19,6 +19,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import static java.lang.Math.*;
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -169,7 +170,7 @@ public class BasicLine
      *
      * @param points collection of points
      */
-    public BasicLine (Collection<Point> points)
+    public BasicLine (Collection<? extends Point2D> points)
     {
         this();
 
@@ -179,11 +180,24 @@ public class BasicLine
         }
 
         // Include all defining points
-        for (Point point : points) {
-            includePoint(point.x, point.y);
+        for (Point2D point : points) {
+            includePoint(point.getX(), point.getY());
         }
 
         checkLineParameters();
+    }
+
+    //-----------//
+    // BasicLine //
+    //-----------//
+    /**
+     * Creates a new BasicLine object from a Line2D segment.
+     *
+     * @param segment the Line2D segment
+     */
+    public BasicLine (Line2D segment)
+    {
+        this(Arrays.asList(segment.getP1(), segment.getP2()));
     }
 
     //~ Methods ------------------------------------------------------------------------------------

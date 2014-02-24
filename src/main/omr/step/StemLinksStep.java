@@ -13,6 +13,9 @@ package omr.step;
 
 import omr.sheet.SystemInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Class {@code StemLinksStep} implements <b>STEM_LINKS</b> step, which establishes all
  * possible relations between stems and note heads or beams.
@@ -22,8 +25,11 @@ import omr.sheet.SystemInfo;
 public class StemLinksStep
         extends AbstractSystemStep
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(StemLinksStep.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // StemLinksStep //
     //---------------//
