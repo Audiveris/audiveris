@@ -12,7 +12,7 @@
 package omr.step;
 
 import omr.sheet.Sheet;
-import omr.sheet.SlursBuilder;
+import omr.skeleton.SlursBuilder;
 import omr.sheet.SystemInfo;
 
 import java.util.Collection;

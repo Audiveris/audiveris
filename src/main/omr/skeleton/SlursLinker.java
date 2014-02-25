@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet;
+package omr.skeleton;
 
 import omr.Main;
 
@@ -55,6 +55,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import omr.sheet.Scale;
+import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
+import omr.sheet.SystemManager;
 
 /**
  * Class {@code SlursLinker} works at sheet level, to handle the connections between
