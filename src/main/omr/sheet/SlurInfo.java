@@ -35,7 +35,6 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
@@ -45,12 +44,8 @@ import java.util.Map;
  * Class {@code SlursInfo} gathers physical description of a slur.
  * <p>
  * Short and medium slurs generally fit a global circle rather well.
- * A long slur may not, it may be closer to an ellipsis, hence the idea to use
- * local osculatory circles, one at start and one at end of slur.
- * The purpose is to be able to accurately evaluate slur extensions.
- * <p>
- * With one global circle or with two osculatory circles, we should be able to
- * compute a global bezier curve.
+ * But a long slur may be closer to an ellipsis, hence the use of local osculatory circles, one at
+ * the start and one at the end of slur, in order to more accurately evaluate slur extensions.
  *
  * @author Hervé Bitteur
  */
@@ -222,8 +217,7 @@ public class SlurInfo
     // computeSideCircle //
     //-------------------//
     /**
-     * Compute a side circle (on side designated by reverse) from the
-     * provided sequence of arcs
+     * Compute a side circle (on side designated by reverse) out of the arcs sequence.
      *
      * @param points  the full sequence of points
      * @param reverse desired side
@@ -263,8 +257,7 @@ public class SlurInfo
     // getAllArcs //
     //------------//
     /**
-     * Report the sequence of slur arcs, augmented by the provided
-     * arc.
+     * Report the sequence of slur arcs, augmented by the provided arc.
      *
      * @param arc     additional arc
      * @param reverse desired side
@@ -411,21 +404,17 @@ public class SlurInfo
     // getCurve //
     //----------//
     /**
-     * Report the left-to-right Bézier curve which best approximates
-     * the slur.
+     * Report the left-to-right Bézier curve which best approximates the slur.
      * <p>
-     * It is built by combining the left half (point & ctrl point) of left
-     * circle curve and the right half (ctrl point & point) of right circle
-     * curve.
-     * Vectors from point to related control point are applied a ratio extension
-     * so that curve middle point (M) fits on slur middle point (M').
-     * We apply the same ratio on both vectors, which may not be the best choice
-     * but that's enough for a first version.
-     * On a bezier curve, naming P the middle point of segment (P1,P2) and C the
-     * middle point of segment (CP1,CP2), we always have vector PC = 4/3 of
-     * vector PM.
-     * Hence, (PC' - PC) = 4/3 (PM' - PM)
-     * or (ratio - 1) * PC = 4/3 * deltaM, which gives ratio value.
+     * It is built by combining the left half (point & control point) of left circle curve and the
+     * right half (control point & point) of right circle curve.
+     * Vectors from point to related control point are applied a ratio extension so that curve
+     * middle point (M) fits on slur middle point (M').
+     * We apply the same ratio on both vectors, which may not be the best choice but that's enough
+     * for a first version.
+     * On a bezier curve, naming P the middle point of segment (P1,P2) and C the middle point of
+     * segment (CP1,CP2), we always have vector PC = 4/3 of vector PM.
+     * So, (PC' - PC) = 4/3 (PM' - PM) or (ratio - 1) * PC = 4/3 * deltaM, which gives ratio value.
      *
      * @return the bezier curve
      */
@@ -478,6 +467,31 @@ public class SlurInfo
         }
 
         return curve;
+
+        //        if (curve == null) {
+        //            // Pickup the 4 points at t = 0, 1/3, 2/3 & 1
+        //            double r = 0.28;
+        //            List<Point> points = pointsOf(arcs);
+        //            int         n = points.size();
+        //            int ir = (int) Math.rint(r*n);
+        //            Point       s0 = points.get(0);
+        //            //Point       s1 = points.get(n / 3); // Wrong!
+        //            Point       s1 = points.get(ir); // bof!
+        //            //Point       s2 = points.get((2 * n) / 3); // Wrong!
+        //            Point       s2 = points.get(n-1-ir); // bof!
+        //            Point       s3 = points.get(n - 1);
+        //            curve = new CubicCurve2D.Double(
+        //                s0.x,
+        //                s0.y,
+        //                (-5 * s0.x + 18 * s1.x - 9 * s2.x + 2 * s3.x) / 6,
+        //                (-5 * s0.y + 18 * s1.y - 9 * s2.y + 2 * s3.y) / 6,
+        //                (2 * s0.x - 9 * s1.x + 18 * s2.x - 5 * s3.x) / 6,
+        //                (2 * s0.y - 9 * s1.y + 18 * s2.y - 5 * s3.y) / 6,
+        //                s3.x,
+        //                s3.y);
+        //        }
+        //
+        //        return curve;
     }
 
     //--------//
@@ -600,8 +614,8 @@ public class SlurInfo
     //---------------//
     /**
      * Report the osculatory circle on the desired side.
-     * Note that a small slur (a slur with not more than sidelength points)
-     * has just one circle which is returned.
+     * Note that a small slur (a slur with not more than sideLength points) has just one circle
+     * which is returned.
      *
      * @param reverse the desired side
      * @return the side circle on desired side
@@ -644,7 +658,7 @@ public class SlurInfo
     public List<Point> getSidePoints (List<Arc> arcs,
                                       boolean reverse)
     {
-        Point[] seq = new Point[sideLength];
+        List<Point> seq = new ArrayList<Point>();
 
         //TODO: include inner junction points!
         if (reverse) {
@@ -654,7 +668,7 @@ public class SlurInfo
             for (Arc arc : arcs) {
                 for (Point point : arc.points) {
                     if (++n < sideLength) {
-                        seq[n] = point;
+                        seq.add(point);
                     } else {
                         break Loop;
                     }
@@ -672,7 +686,7 @@ public class SlurInfo
                     Point point = itp.previous();
 
                     if (--n >= 0) {
-                        seq[n] = point;
+                        seq.add(0, point);
                     } else {
                         break Loop;
                     }
@@ -680,19 +694,17 @@ public class SlurInfo
             }
         }
 
-        return Arrays.asList(seq);
+        return seq;
     }
 
     //---------------//
     // hasSideCircle //
     //---------------//
     /**
-     * Report whether the slur has an osculatory circle on the desired
-     * side.
+     * Report whether the slur has an osculatory circle on the desired side.
      *
      * @param reverse desired side
-     * @return true if there is indeed a side circle, which is not the global
-     *         circle
+     * @return true if there is indeed a side circle, which is not the global circle
      */
     public boolean hasSideCircle (boolean reverse)
     {
@@ -733,8 +745,8 @@ public class SlurInfo
     // pointsOf //
     //----------//
     /**
-     * Report the sequence of points defined by the slur arcs,
-     * prepended or appended by the provided additional arc.
+     * Report the sequence of points defined by the slur arcs, prepended or appended by
+     * the provided additional arc.
      *
      * @param additionalArc the arc to add to slur
      * @param reverse       desired side
@@ -750,12 +762,12 @@ public class SlurInfo
     // pointsOf //
     //----------//
     /**
-     * Report the sequence of arc points, including intermediate
-     * junction points, from the provided list of arcs.
+     * Report the sequence of arc points, including intermediate junction points, from
+     * the provided list of arcs.
      *
      * @param arcs source arcs
-     * @return the sequence of all defining points, including inner junctions
-     *         but excluding outer junctions
+     * @return the sequence of all defining points, including inner junctions but excluding outer
+     *         junctions
      */
     public List<Point> pointsOf (List<Arc> arcs)
     {
@@ -1035,12 +1047,10 @@ public class SlurInfo
     /**
      * Represents an arc of points between two junction points.
      * <p>
-     * An arc has no "intrinsic" orientation, it is simply set according to the
-     * orientation of the initial scanning of the arc points, and can be
-     * reversed via the reverse() method.
+     * An arc has no "intrinsic" orientation, it is simply set according to the orientation of the
+     * initial scanning of the arc points, and can be reversed via the reverse() method.
      * <p>
-     * Two touching junction points can be joined by a "void" arc with no
-     * internal points.
+     * Two touching junction points can be joined by a "void" arc with no internal points.
      */
     public static class Arc
     {
@@ -1141,8 +1151,7 @@ public class SlurInfo
         }
 
         /**
-         * Void arc meant to link two touching junction points, with
-         * no points in between.
+         * Void arc meant to link two touching junction points, with no points in between
          *
          * @param startJunction first junction point, not null
          * @param stopJunction  second junction point, not null
@@ -1216,8 +1225,7 @@ public class SlurInfo
          *
          * @param count   the number of points to retrieve
          * @param reverse desired arc side
-         * @return the sequence of desired points, perhaps limited by the arc
-         *         length itself.
+         * @return the sequence of desired points, perhaps limited by the arc length itself.
          */
         public List<Point> getSidePoints (int count,
                                           boolean reverse)

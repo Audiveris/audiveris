@@ -208,8 +208,7 @@ public class Circle
     // computeDistance //
     //-----------------//
     /**
-     * Compute the mean quadratic distance of all provided points to
-     * the circle.
+     * Compute the mean quadratic distance of all provided points to the circle.
      *
      * @param points the provided points
      * @return the mean quadratic distance

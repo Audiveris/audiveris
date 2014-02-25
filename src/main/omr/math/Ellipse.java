@@ -40,7 +40,7 @@ public class Ellipse
 
     private static final Logger logger = LoggerFactory.getLogger(Ellipse.class);
 
-    /** Contraint such that 4*A*C - B**2 = 1 */
+    /** Constraint such that 4*A*C - B**2 = 1 */
     private static final Matrix C1 = new Matrix(
             new double[][]{
                 {0, 0, 2},
@@ -443,12 +443,12 @@ public class Ellipse
         ///print(S1, "S1");
         ///print(S3, "S3");
         /**
-         * Initial equation S.A = lambda.C.A can be rewritten :
-         *
-         * (S1 | S2) (A1) (C1 | 0 ) (A1)
+         * Initial equation S.A = lambda.C.A can be rewritten. :
+         * <pre>
+         * (S1 | S2)   (A1)            (C1 | 0 )   (A1)
          * (---+---) . (--) = lambda . (---+---) . (--)
-         * (S2'| S3) (A2) ( 0 | 0 ) (A2)
-         *
+         * (S2'| S3)   (A2)            ( 0 | 0 )   (A2)
+         * </pre>
          * which is equivalent to :
          * S1.A1 + S2.A2 = lambda.C1.A1
          * S2'.A1 + S3.A2 = 0
@@ -458,7 +458,7 @@ public class Ellipse
          * (S1 - S2.S3inv.S2').A1 = lambda.C1.A1 or
          * C1inv.(S1 - S2.S3inv.S2').A1 = lambda.A1
          *
-         * Contraint is now
+         * Constraint is now
          * A1'.C1.A1 = 1
          *
          * w/ Reduced scatter matrix M = C1inv.S1 - S2.S3inv.S2'

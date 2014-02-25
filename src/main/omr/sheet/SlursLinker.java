@@ -57,11 +57,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * Class {@code SlursLinker} works at sheet level, to handle the
- * connections between slurs and embraced notes.
+ * Class {@code SlursLinker} works at sheet level, to handle the connections between
+ * slurs and embraced notes.
  * <p>
- * Its first feature is to help select the best slur in a clump of slurs, by
- * evaluating the connections to embraced notes.
+ * Its primary feature is to help select the best slur in a clump of slurs, by evaluating the
+ * connections to embraced notes.
  *
  * @author Hervé Bitteur
  */
