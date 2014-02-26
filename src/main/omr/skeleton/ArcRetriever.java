@@ -258,10 +258,10 @@ public class ArcRetriever
         }
 
         // Circle?
-        Circle fittedCircle = slursBuilder.getCircle(points);
+        Model fittedModel = slursBuilder.computeModel(points);
 
-        if (fittedCircle != null) {
-            arc.circle = fittedCircle;
+        if (fittedModel instanceof CircleModel) {
+            arc.model = fittedModel;
 
             return ArcShape.SLUR;
         }

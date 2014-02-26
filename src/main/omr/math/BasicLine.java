@@ -14,7 +14,6 @@ package omr.math;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -36,37 +35,37 @@ public class BasicLine
     private static final Logger logger = LoggerFactory.getLogger(BasicLine.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Flag to indicate that data needs to be recomputed */
+    /** Flag to indicate that data needs to be recomputed. */
     private boolean dirty;
 
-    /** Orientation indication */
+    /** Orientation indication. */
     private boolean isRatherVertical = false;
 
-    /** x coeff in Line equation */
+    /** x coeff in Line equation. */
     private double a;
 
-    /** y coeff in Line equation */
+    /** y coeff in Line equation. */
     private double b;
 
-    /** 1 coeff in Line equation */
+    /** 1 coeff in Line equation. */
     private double c;
 
-    /** Sigma (x) */
+    /** Sigma (x). */
     private double sx;
 
-    /** Sigma (x**2) */
+    /** Sigma (x**2). */
     private double sx2;
 
-    /** Sigma (x*y) */
+    /** Sigma (x*y). */
     private double sxy;
 
-    /** Sigma (y) */
+    /** Sigma (y). */
     private double sy;
 
-    /** Sigma (y**2) */
+    /** Sigma (y**2). */
     private double sy2;
 
-    /** For regression : Number of points */
+    /** For regression : Number of points. */
     private int n;
 
     /** Minimum abscissa among all defining points. */
@@ -86,8 +85,8 @@ public class BasicLine
     // BasicLine //
     //-----------//
     /**
-     * Creates a line, with no data. The line is no yet usable, except for
-     * including further defining points.
+     * Creates a line, with no data.
+     * The line is no yet usable, except for including further defining points.
      */
     public BasicLine ()
     {
@@ -98,10 +97,10 @@ public class BasicLine
     // BasicLine //
     //-----------//
     /**
-     * Creates a line, for which we already know the coefficients. The
-     * coefficients don't have to be normalized, the constructor takes care of
-     * this. This line is not meant to be modified by including additional
-     * points (although this is doable), since it contains no defining points.
+     * Creates a line, for which we already know the coefficients.
+     * The coefficients don't have to be normalized, the constructor takes care of this.
+     * This line is not meant to be modified by including additional points (although this is
+     * doable), since it contains no defining points.
      *
      * @param a xCoeff
      * @param b yCoeff
@@ -127,8 +126,8 @@ public class BasicLine
     // BasicLine //
     //-----------//
     /**
-     * Create a line (and immediately compute its coefficients),
-     * as the least square fitted line on the provided points.
+     * Create a line (and immediately compute its coefficients), as the least square
+     * fitted line on the provided points.
      *
      * @param xVals abscissas of the points
      * @param yVals ordinates of the points
@@ -165,8 +164,8 @@ public class BasicLine
     // BasicLine //
     //-----------//
     /**
-     * Create a line (and immediately compute its coefficients),
-     * as the least square fitted line on the provided points.
+     * Create a line (and immediately compute its coefficients), as the least square
+     * fitted line on the provided points.
      *
      * @param points collection of points
      */
@@ -276,11 +275,14 @@ public class BasicLine
 
         checkLineParameters();
 
-        // abs is used in case of rounding errors
-        return sqrt(
-                abs(
-                        (a * a * sx2) + (b * b * sy2) + (c * c * n) + (2 * a * b * sxy) + (2 * a * c * sx)
-                        + (2 * b * c * sy)) / n);
+        double distSq = ((a * a * sx2) + (b * b * sy2) + (c * c * n) + (2 * a * b * sxy)
+                         + (2 * a * c * sx) + (2 * b * c * sy)) / n;
+
+        if (distSq < 0) {
+            distSq = 0;
+        }
+
+        return sqrt(distSq);
     }
 
     //----------------//
@@ -427,8 +429,7 @@ public class BasicLine
     // swappedCoordinates //
     //--------------------//
     /**
-     * Return a new line whose coordinates are swapped with respect to
-     * this one.
+     * Return a new line whose coordinates are swapped with respect to this one.
      *
      * @return a new X/Y swapped line
      */

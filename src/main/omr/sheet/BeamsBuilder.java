@@ -434,20 +434,24 @@ public class BeamsBuilder
      * @param above    true to check above beam item
      * @param below    true to check below beam item
      * @param meanDist average distance to border
+     * @param isCue    true for small beams
      * @return the impacts if successful, null otherwise
      */
     private Impacts computeBeamImpacts (BeamItem item,
                                         boolean above,
                                         boolean below,
-                                        double meanDist)
+                                        double meanDist,
+                                        boolean isCue)
     {
-        return computeImpacts(
-                item,
-                above,
-                below,
-                params.minBeamWidth,
-                params.largeBeamWidth,
-                meanDist);
+        int minWidth = params.minBeamWidth;
+        int minLargeWidth = params.largeBeamWidth;
+
+        if (isCue) {
+            minWidth = (int) Math.rint(Template.smallRatio * minWidth);
+            minLargeWidth = (int) Math.rint(Template.smallRatio * minLargeWidth);
+        }
+
+        return computeImpacts(item, above, below, minWidth, minLargeWidth, meanDist);
     }
 
     //--------------------//
@@ -575,7 +579,8 @@ public class BeamsBuilder
                         item,
                         idx == 0, // Check above only for first item
                         idx == (lines.size() - 1), // Check below only for last item
-                        meanDist);
+                        meanDist,
+                        false);
 
                 if (impacts != null) {
                     success = true;
@@ -642,7 +647,8 @@ public class BeamsBuilder
                         item,
                         idx == 0, // Check above only for top items
                         idx == (lines.size() - 1), // Check below only for bottom items
-                        meanDist);
+                        meanDist,
+                        true);
 
                 if (impacts != null) {
                     SmallBeamInter beam = new SmallBeamInter(
@@ -926,7 +932,7 @@ public class BeamsBuilder
             newItem.setVip();
         }
 
-        Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact);
+        Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact, false);
 
         if (impacts != null) {
             FullBeamInter newBeam = new FullBeamInter(null, impacts, newMedian, height);
@@ -1280,7 +1286,7 @@ public class BeamsBuilder
             newItem.setVip();
         }
 
-        Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact);
+        Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact, false);
 
         if (impacts != null) {
             return new FullBeamInter(null, impacts, median, height);

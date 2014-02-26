@@ -154,7 +154,7 @@ public class SlursLinker
         SlurInfo info = slur.getInfo();
         Point first = info.getEnd(true);
         Point last = info.getEnd(false);
-        int vDir = info.isAbove() ? 1 : (-1);
+        int vDir = info.above();
         int hDir = Integer.signum(last.x - first.x);
         Point2D mid = new Point2D.Double((first.x + last.x) / 2d, (first.y + last.y) / 2d);
         Line2D bisector = (vDir == hDir) ? bisector(first, last) : bisector(last, first);
@@ -708,7 +708,7 @@ public class SlursLinker
         //~ Instance fields ------------------------------------------------------------------------
 
         final Scale.Fraction coverageHExt = new Scale.Fraction(
-                1.5,
+                2.0,
                 "Length of extension for horizontal slur coverage");
 
         final Scale.Fraction coverageHIn = new Scale.Fraction(

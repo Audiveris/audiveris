@@ -91,8 +91,9 @@ public class SlursBuilder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Point[] breakPoints = new Point[]{ /* new
-     * Point(1495, 619) */}; // BINGO
+    private static final Point[] breakPoints = new Point[]{//new Point(382, 1938) // BINGO
+    //
+    };
 
     private static final Constants constants = new Constants();
 
@@ -182,17 +183,16 @@ public class SlursBuilder
         watch.print();
     }
 
-    //-----------//
-    // getCircle //
-    //-----------//
+    //--------------//
+    // computeModel //
+    //--------------//
     /**
-     * Check whether the provided collection of points can represent
-     * a slur (or a portion of a slur).
+     * Check whether the provided points can represent a slur (or a portion of a slur).
      *
      * @param points the provided points
-     * @return the circle arc if OK, null if not
+     * @return the model if OK, null if not
      */
-    Circle getCircle (List<Point> points)
+    Model computeModel (List<Point> points)
     {
         Point p0 = points.get(0);
         Point p1 = points.get(points.size() / 2);
@@ -211,7 +211,7 @@ public class SlursBuilder
         }
 
         // Max arc angle value
-        double arcAngle = rough.getLastAngle() - rough.getFirstAngle();
+        double arcAngle = rough.getArcAngle();
 
         if (arcAngle > params.maxArcAngleHigh) {
             logger.debug("Arc angle too large {} at {}", arcAngle, p0);
@@ -243,7 +243,7 @@ public class SlursBuilder
             } else {
                 logger.debug("{} to {} Circle {}", p0, p2, circle);
 
-                return circle;
+                return new CircleModel(circle);
             }
         } catch (Exception ex) {
             logger.debug("Could not compute circle {} at {}", p0);
@@ -323,7 +323,7 @@ public class SlursBuilder
                 "Vertical distance to closest staff line to detect tangency");
 
         final Scale.Fraction maxSlurDistance = new Scale.Fraction(
-                0.1,
+                0.12,
                 "Maximum circle distance for final slur");
 
         final Scale.Fraction maxExtDistance = new Scale.Fraction(
@@ -377,7 +377,7 @@ public class SlursBuilder
                 "Delta for gap box on extension side");
 
         final Scale.Fraction lineBoxLength = new Scale.Fraction(
-                1.75,
+                1.8,
                 "Length for box across staff line");
 
         final Scale.Fraction lineBoxIn = new Scale.Fraction(
@@ -562,7 +562,7 @@ public class SlursBuilder
             for (SlurInfo info : pageInfos) {
                 info.renderAttachments(g);
 
-                //                Circle circle = info.getCircle();
+                //                Circle circle = info.getGlobalModel();
                 //
                 //                if (circle != null) {
                 //                    double r = circle.getRadius();
@@ -608,15 +608,15 @@ public class SlursBuilder
                 }
 
                 // Draw osculatory portions, if any
-                if (info.getSideCircle(true) != info.getSideCircle(false)) {
+                if (info.getSideModel(true) != info.getSideModel(false)) {
                     Color oldColor = g.getColor();
                     g.setColor(new Color(255, 255, 0, 100));
 
                     for (boolean rev : new boolean[]{true, false}) {
-                        Circle sideCircle = info.getSideCircle(rev);
+                        Model sideModel = info.getSideModel(rev);
 
-                        if (sideCircle != null) {
-                            g.draw(sideCircle.getCurve());
+                        if (sideModel != null) {
+                            g.draw(sideModel.getCurve());
                         }
                     }
 
@@ -718,8 +718,7 @@ public class SlursBuilder
         }
 
         /**
-         * Try to append one arc to an existing slur and thus create
-         * a new slur instance.
+         * Try to append one arc to an existing slur and thus create a new slur instance.
          *
          * @param arc
          * @param slur
@@ -743,30 +742,30 @@ public class SlursBuilder
             // Check extension is compatible with slur (side) circle
             // Use slur side circle to check position of arc WRT circle
             // If OK, allocate a new slur
-            Circle sideCircle = slur.getSideCircle(reverse);
+            Model sideModel = slur.getSideModel(reverse);
 
-            if (sideCircle == null) {
+            if (sideModel == null) {
                 return null;
             }
 
-            double dist = arcDistance(sideCircle, arc);
+            double dist = arcDistance(sideModel, arc);
 
             if (dist <= params.maxExtDistance) {
                 // Check new side circle
-                Circle newSideCircle = null;
+                Model newSideModel = null;
                 List<Arc> arcs = slur.getAllArcs(arc, reverse);
                 List<Point> pts = slur.pointsOf(arcs);
 
                 if (pts.size() >= params.sideLength) {
                     // Side CCW cannot change with respect to slur CCW
-                    newSideCircle = slur.computeSideCircle(pts, reverse);
+                    newSideModel = slur.computeSideModel(pts, reverse);
 
-                    if (newSideCircle == null) {
+                    if (newSideModel == null) {
                         return null;
                     }
 
-                    if (slur.getCircle() != null) {
-                        if (newSideCircle.ccw() != slur.getCircle().ccw()) {
+                    if (slur.getGlobalModel() != null) {
+                        if ((newSideModel.ccw() * slur.getGlobalModel().ccw()) < 0) {
                             return null;
                         }
                     }
@@ -782,16 +781,16 @@ public class SlursBuilder
                 //                    s,
                 //                    String.format("%.3f", dist));
                 //
-                if (newSideCircle != null) {
-                    s.setSideCircle(newSideCircle, reverse);
+                if (newSideModel != null) {
+                    s.setSideModel(newSideModel, reverse);
                 }
 
-                if (slur.hasSideCircle(!reverse)) {
-                    s.setSideCircle(slur.getSideCircle(!reverse), !reverse);
+                if (slur.hasSideModel(!reverse)) {
+                    s.setSideModel(slur.getSideModel(!reverse), !reverse);
                 }
 
-                Circle sc = getCircle(pts);
-                s.setCircle(sc);
+                Model sModel = computeModel(pts);
+                s.setModel(sModel);
 
                 return s;
             } else {
@@ -811,39 +810,25 @@ public class SlursBuilder
          * <p>
          * Not all arc points are checked, only the ones close to slur end.
          *
-         * @param circle the reference circle
-         * @param arc    the additional arc to be checked for compatibility
+         * @param model the reference model
+         * @param arc   the additional arc to be checked for compatibility
          * @return the average distance of arc points to circle
          */
-        private double arcDistance (Circle circle,
+        private double arcDistance (Model model,
                                     Arc arc)
         {
-            double radius = circle.getRadius();
-            Point2D.Double center = circle.getCenter();
-            int np = 0;
-            double sum = 0;
-
-            // Include junction between slur & arc, if any
+            // First, determine the collection of points to measure
+            List<Point> points = new ArrayList<Point>();
             Point junction = arc.getJunction(!reverse);
 
             if (junction != null) {
-                double dx = junction.x - center.x;
-                double dy = junction.y - center.y;
-                sum += ((dx * dx) + (dy * dy));
-                np++;
+                points.add(junction);
             }
 
-            // Check initial arc points
-            for (Point p : arc.getSidePoints(params.arcCheckLength, !reverse)) {
-                double dx = p.x - center.x;
-                double dy = p.y - center.y;
-                sum += ((dx * dx) + (dy * dy));
-                np++;
-            }
+            points.addAll(arc.getSidePoints(params.arcCheckLength, !reverse));
 
-            double meanRadius = sqrt(sum / np);
-
-            return Math.abs(meanRadius - radius);
+            // Second, compute their distance to the model
+            return model.computeDistance(points);
         }
 
         private List<Arc> arcsOf (SlurInfo left,
@@ -867,11 +852,11 @@ public class SlursBuilder
             checkBreak(arc); // Debug
 
             int tid = ++globalSlurId;
-            SlurInfo trunk = new SlurInfo(tid, Arrays.asList(arc), arc.circle, params.sideLength);
+            SlurInfo trunk = new SlurInfo(tid, Arrays.asList(arc), arc.model, params.sideLength);
             pageInfos.add(trunk);
 
-            if (arc.circle == null) {
-                trunk.setCircle(getCircle(trunk.pointsOf(Arrays.asList(arc))));
+            if (arc.model == null) {
+                trunk.setModel(computeModel(trunk.pointsOf(Arrays.asList(arc))));
             }
 
             //            logger.info("----------------------------\nbuildSlur {}", trunk);
@@ -916,6 +901,7 @@ public class SlursBuilder
             }
 
             // Delegate final selection to SlursLinker
+            ///register(inters); // For DEBUG only
             SlurInter selected = slursLinker.prune(inters);
 
             if (selected != null) {
@@ -934,39 +920,44 @@ public class SlursBuilder
         private Impacts computeImpacts (SlurInfo slur,
                                         boolean both)
         {
-            Circle global = needCircle(slur);
+            Model global = needModel(slur);
+
+            if (!(global instanceof CircleModel)) {
+                return null;
+            }
+
             List<Arc> arcs = slur.getArcs();
 
-            // Distance to circle (both side circles or just a single side circle)
+            // Distance to model (both side models or just a single side model)
             double dist;
 
             if (both) {
                 double sum = 0;
 
                 for (boolean bool : new boolean[]{true, false}) {
-                    Circle sideCircle = slur.getSideCircle(bool);
+                    Model sideModel = slur.getSideModel(bool);
 
-                    if (sideCircle == null) {
+                    if (sideModel == null) {
                         return null;
                     }
 
-                    double d = sideCircle.computeDistance(slur.getSidePoints(arcs, bool));
-                    sideCircle.setDistance(d);
+                    double d = sideModel.computeDistance(slur.getSidePoints(arcs, bool));
+                    sideModel.setDistance(d);
                     sum += d;
                 }
 
                 dist = sum / 2;
             } else {
-                Circle sideCircle = slur.getSideCircle(reverse);
+                Model sideModel = slur.getSideModel(reverse);
 
-                if (sideCircle == null) {
+                if (sideModel == null) {
                     return null;
                 }
 
-                dist = sideCircle.computeDistance(slur.getSidePoints(arcs, reverse));
+                dist = sideModel.computeDistance(slur.getSidePoints(arcs, reverse));
             }
 
-            // Distance to circle
+            // Distance to model
             if (dist > params.maxSlurDistance) {
                 return null;
             }
@@ -974,11 +965,9 @@ public class SlursBuilder
             double distImpact = 1 - (dist / params.maxSlurDistance);
 
             // Max arc angle value
-            if (global == null) {
-                return null;
-            }
+            Circle circle = ((CircleModel) global).getCircle();
 
-            double arcAngle = global.getArcAngle();
+            double arcAngle = circle.getArcAngle();
 
             if (arcAngle > params.maxArcAngleHigh) {
                 logger.debug("Slur too curved {} {}", arcAngle, this);
@@ -990,7 +979,7 @@ public class SlursBuilder
                                                                         - params.maxArcAngleLow);
 
             // No vertical slur (mid angle close to 0 or PI)
-            double midAngle = global.getMidAngle();
+            double midAngle = circle.getMidAngle();
 
             if (midAngle < 0) {
                 midAngle += (2 * PI);
@@ -1001,7 +990,7 @@ public class SlursBuilder
             double fromVertical = min(abs(midAngle), abs(PI - midAngle));
 
             if (fromVertical < params.minAngleFromVerticalLow) {
-                logger.debug("Slur too vertical {} {}", midAngle, global);
+                logger.debug("Slur too vertical {} {}", midAngle, circle);
 
                 return null;
             }
@@ -1192,14 +1181,14 @@ public class SlursBuilder
          */
         private Point2D getEndVector (SlurInfo info)
         {
-            Circle circle = needCircle(info);
+            Model model = needModel(info);
 
-            if (circle == null) {
+            if (model == null) {
                 return null;
             }
 
-            int dir = reverse ? circle.ccw() : (-circle.ccw());
-            double angle = circle.getAngle(reverse);
+            int dir = reverse ? model.ccw() : (-model.ccw());
+            double angle = model.getAngle(reverse);
 
             // Unit vector that extends slur end
             return new Point2D.Double(-dir * sin(angle), dir * cos(angle));
@@ -1277,7 +1266,7 @@ public class SlursBuilder
                 Point2D midPoint = slur.getMidPoint();
                 double backDy = line.yAt(midPoint.getX()) - midPoint.getY();
                 boolean crossing = (uv.getY() * backDy) > 0;
-                Circle gc = slur.getCircle();
+                Model gc = slur.getGlobalModel();
                 double incidence = gc.getAngle(reverse) - ((gc.ccw() * PI) / 2);
 
                 if (crossing && (abs(incidence) <= params.maxIncidence)) {
@@ -1289,19 +1278,19 @@ public class SlursBuilder
             return null;
         }
 
-        //------------//
-        // needCircle //
-        //------------//
-        private Circle needCircle (SlurInfo slur)
+        //-----------//
+        // needModel //
+        //-----------//
+        private Model needModel (SlurInfo slur)
         {
-            Circle circle = slur.getCircle();
+            Model model = slur.getGlobalModel();
 
-            if (circle == null) {
-                circle = getCircle(slur.pointsOf(slur.getArcs()));
-                slur.setCircle(circle);
+            if (model == null) {
+                model = computeModel(slur.pointsOf(slur.getArcs()));
+                slur.setModel(model);
             }
 
-            return circle;
+            return model;
         }
 
         /**

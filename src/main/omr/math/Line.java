@@ -24,8 +24,7 @@ public interface Line
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Compute the orthogonal distance between the line and the
-     * provided point.
+     * Compute the orthogonal distance between the line and the provided point.
      * Note that the distance may be negative.
      *
      * @param x the point abscissa
@@ -50,8 +49,8 @@ public interface Line
     double getInvertedSlope ();
 
     /**
-     * Return the mean quadratic distance of the defining population
-     * of points to the resulting line.
+     * Return the mean quadratic distance of the defining population of points to the
+     * resulting line.
      * This can be used to measure how well the line fits the points.
      *
      * @return the absolute value of the mean distance
@@ -73,8 +72,8 @@ public interface Line
     double getSlope ();
 
     /**
-     * Add the whole population of another line, which results in
-     * merging this other line with the line at hand.
+     * Add the whole population of another line, which results in merging this other
+     * line with the line at hand.
      *
      * @param other the other line
      * @return this augmented line, which permits to chain the additions.
@@ -106,14 +105,12 @@ public interface Line
 
     /**
      * Remove the whole population of points.
-     * The line is not immediately usable, it needs now to include defining
-     * points.
+     * The line is not immediately usable, it needs now to include defining points.
      */
     void reset ();
 
     /**
-     * Return a new line whose coordinates are swapped with respect
-     * to this one.
+     * Return a new line whose coordinates are swapped with respect to this one.
      *
      * @return a new X/Y swapped line
      */
@@ -146,9 +143,8 @@ public interface Line
     int xAtY (int y);
 
     /**
-     * Similar functionality as xAtY, but also accepts ordinates
-     * outside the line ordinate range but extrapolating the line
-     * based on start and stop points.
+     * Similar functionality as xAtY, but also accepts ordinates outside the line
+     * ordinate range by extrapolating the line based on start and stop points.
      *
      * @param y the provided ordinate
      * @return the abscissa value at this ordinate
@@ -175,9 +171,8 @@ public interface Line
     int yAtX (int x);
 
     /**
-     * Similar functionality as yAtX, but also accepts abscissae
-     * outside the line abscissa range but extrapolating the line
-     * based on start and stop points.
+     * Similar functionality as yAtX, but also accepts abscissae outside the line
+     * abscissa range by extrapolating the line based on start and stop points.
      *
      * @param x the provided abscissa
      * @return the ordinate value at this abscissa
@@ -186,8 +181,7 @@ public interface Line
 
     //~ Inner Classes ------------------------------------------------------------------------------
     /**
-     * Specific exception raised when trying to invert a
-     * non-invertible line.
+     * Specific exception raised when trying to invert a non-invertible line.
      */
     static class NonInvertibleLineException
             extends RuntimeException
@@ -201,8 +195,7 @@ public interface Line
     }
 
     /**
-     * Specific exception raised when trying to use a line with
-     * undefined parameters.
+     * Specific exception raised when trying to use a line with undefined parameters.
      */
     static class UndefinedLineException
             extends RuntimeException

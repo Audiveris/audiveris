@@ -105,8 +105,8 @@ public class Arc
     /** Shape found for this arc. */
     ArcShape shape;
 
-    /** Related circle, if any. */
-    Circle circle;
+    /** Related model, if any. */
+    Model model;
 
     /** Assigned to a slur?. */
     boolean assigned;
@@ -250,9 +250,9 @@ public class Arc
         points.clear();
         points.addAll(rev);
 
-        // Reverse circle
-        if (circle != null) {
-            circle.reverse();
+        // Reverse model
+        if (model != null) {
+            model.reverse();
         }
     }
 

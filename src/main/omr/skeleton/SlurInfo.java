@@ -55,26 +55,26 @@ public class SlurInfo
     private static final Logger logger = LoggerFactory.getLogger(SlurInfo.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Unique slur id (in page). */
+    /** Unique slur id. (within containing page) */
     private final int id;
 
     /** Sequence of arcs that compose this slur. */
     private final List<Arc> arcs = new ArrayList<Arc>();
 
-    /** Approximating global circle. */
-    private Circle circle;
+    /** Approximating global model. */
+    private Model globalModel;
 
-    /** Approximating first side circle. */
-    private Circle firstCircle;
+    /** Approximating first side model. */
+    private Model firstModel;
 
-    /** Approximating last side circle. */
-    private Circle lastCircle;
+    /** Approximating last side model. */
+    private Model lastModel;
 
     /** Number of points for side circles. */
     private final int sideLength;
 
-    /** True for slur above heads, false for below. */
-    private boolean above;
+    /** Above heads, below heads or flat. */
+    private int above;
 
     /** Unity vector from segment middle to center. */
     private Point2D bisUnit;
@@ -100,7 +100,7 @@ public class SlurInfo
     /** Area for last notes. */
     private Area lastArea;
 
-    /** Bézier curve for slur. */
+    /** Global Bézier curve for slur. */
     private CubicCurve2D curve;
 
     /** Potential attachments, lazily allocated. */
@@ -115,21 +115,34 @@ public class SlurInfo
      *
      * @param id         slur id
      * @param arcs       The sequence of arcs for this slur
-     * @param circle     The approximating circle, perhaps null
+     * @param model      The approximating model, perhaps null
      * @param sideLength length of side circles
      */
     public SlurInfo (int id,
                      List<Arc> arcs,
-                     Circle circle,
+                     Model model,
                      int sideLength)
     {
         this.id = id;
         this.arcs.addAll(arcs);
-        setCircle(circle);
+        setModel(model);
         this.sideLength = sideLength;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // isAbove //
+    //---------//
+    /**
+     * Report whether the slur shape is /--\ rather than \--/.
+     *
+     * @return the above flag
+     */
+    public int above ()
+    {
+        return above;
+    }
+
     //---------------//
     // addAttachment //
     //---------------//
@@ -211,18 +224,18 @@ public class SlurInfo
         }
     }
 
-    //-------------------//
-    // computeSideCircle //
-    //-------------------//
+    //------------------//
+    // computeSideModel //
+    //------------------//
     /**
-     * Compute a side circle (on side designated by reverse) out of the arcs sequence.
+     * Compute a side model (on side designated by reverse) out of the arcs sequence.
      *
      * @param points  the full sequence of points
      * @param reverse desired side
-     * @return the side circle, or null if unsuccessful
+     * @return the side model, or null if unsuccessful
      */
-    public Circle computeSideCircle (List<Point> points,
-                                     boolean reverse)
+    public Model computeSideModel (List<Point> points,
+                                   boolean reverse)
     {
         int np = points.size();
 
@@ -242,12 +255,13 @@ public class SlurInfo
         Point p1 = points.get(np / 2);
         Point p2 = points.get(np - 1);
 
-        Circle rough = new Circle(p0, p1, p2);
+        // Choose a circle-model, otherwise a line-model
+        CircleModel rough = CircleModel.create(p0, p1, p2);
 
-        if (rough.getRadius().isInfinite()) {
-            return null;
-        } else {
+        if (rough != null) {
             return rough;
+        } else {
+            return new LineModel(points);
         }
     }
 
@@ -379,15 +393,7 @@ public class SlurInfo
     //-----------//
     public Rectangle getBounds ()
     {
-        return circle.getCurve().getBounds();
-    }
-
-    /**
-     * @return the circle
-     */
-    public Circle getCircle ()
-    {
-        return circle;
+        return globalModel.getCurve().getBounds();
     }
 
     /**
@@ -419,16 +425,21 @@ public class SlurInfo
     public CubicCurve2D getCurve ()
     {
         if (curve == null) {
-            Circle leftCircle = getSideCircle(true);
-            Circle rightCircle = getSideCircle(false);
+            Model leftModel = getSideModel(true);
+            Model rightModel = getSideModel(false);
 
-            if ((leftCircle == null) || (rightCircle == null)) {
+            if ((leftModel == null) || (rightModel == null)) {
                 ///logger.warn("No side circle");
                 return null;
             }
 
-            CubicCurve2D left = leftCircle.getCurve();
-            CubicCurve2D right = rightCircle.getCurve();
+            // Assume we have circle models on both ends
+            if (!(leftModel instanceof CircleModel) || !(leftModel instanceof CircleModel)) {
+                return null;
+            }
+
+            CubicCurve2D left = (CubicCurve2D) leftModel.getCurve();
+            CubicCurve2D right = (CubicCurve2D) rightModel.getCurve();
 
             if (left == right) {
                 curve = left;
@@ -534,6 +545,14 @@ public class SlurInfo
         }
     }
 
+    /**
+     * @return the global model
+     */
+    public Model getGlobalModel ()
+    {
+        return globalModel;
+    }
+
     //-------//
     // getId //
     //-------//
@@ -583,7 +602,7 @@ public class SlurInfo
     //-------------//
     public Point2D getMidPoint ()
     {
-        return circle.getMiddlePoint();
+        return globalModel.getMidPoint();
     }
 
     //----------//
@@ -607,39 +626,39 @@ public class SlurInfo
         }
     }
 
-    //---------------//
-    // getSideCircle //
-    //---------------//
+    //--------------//
+    // getSideModel //
+    //--------------//
     /**
-     * Report the osculatory circle on the desired side.
-     * Note that a small slur (a slur with not more than sideLength points) has just one circle
-     * which is returned.
+     * Report the osculatory model on the desired side.
+     * Note that a small slur (a slur with not more than sideLength points) has just one global
+     * model which is returned.
      *
      * @param reverse the desired side
-     * @return the side circle on desired side
+     * @return the side model on desired side
      */
-    public Circle getSideCircle (boolean reverse)
+    public Model getSideModel (boolean reverse)
     {
         if (reverse) {
-            if (firstCircle == null) {
+            if (firstModel == null) {
                 if (getLength() <= sideLength) {
-                    firstCircle = circle;
+                    firstModel = globalModel;
                 } else {
-                    firstCircle = computeSideCircle(pointsOf(arcs), reverse);
+                    firstModel = computeSideModel(pointsOf(arcs), reverse);
                 }
             }
 
-            return firstCircle;
+            return firstModel;
         } else {
-            if (lastCircle == null) {
+            if (lastModel == null) {
                 if (getLength() <= sideLength) {
-                    lastCircle = circle;
+                    lastModel = globalModel;
                 } else {
-                    lastCircle = computeSideCircle(pointsOf(arcs), reverse);
+                    lastModel = computeSideModel(pointsOf(arcs), reverse);
                 }
             }
 
-            return lastCircle;
+            return lastModel;
         }
     }
 
@@ -695,35 +714,22 @@ public class SlurInfo
         return seq;
     }
 
-    //---------------//
-    // hasSideCircle //
-    //---------------//
+    //--------------//
+    // hasSideModel //
+    //--------------//
     /**
-     * Report whether the slur has an osculatory circle on the desired side.
+     * Report whether the slur has a specific model on the desired side.
      *
      * @param reverse desired side
-     * @return true if there is indeed a side circle, which is not the global circle
+     * @return true if there is indeed a side model, which is not the global one
      */
-    public boolean hasSideCircle (boolean reverse)
+    public boolean hasSideModel (boolean reverse)
     {
         if (reverse) {
-            return (firstCircle != null) && (firstCircle != circle);
+            return (firstModel != null) && (firstModel != globalModel);
         } else {
-            return (lastCircle != null) && (lastCircle != circle);
+            return (lastModel != null) && (lastModel != globalModel);
         }
-    }
-
-    //---------//
-    // isAbove //
-    //---------//
-    /**
-     * Report whether the slur shape is /--\ rather than \--/.
-     *
-     * @return the above flag
-     */
-    public boolean isAbove ()
-    {
-        return above;
     }
 
     //--------------//
@@ -832,32 +838,32 @@ public class SlurInfo
         lastJunction = arcs.get(arcs.size() - 1).getJunction(false);
     }
 
-    //---------//
-    // reverse //
-    //---------//
-    public void reverse ()
-    {
-        // Reverse junctions
-        Point temp = firstJunction;
-        firstJunction = lastJunction;
-        lastJunction = temp;
-
-        // Reverse arc list
-        List<Arc> rev = new ArrayList<Arc>(arcs.size());
-
-        for (ListIterator<Arc> it = arcs.listIterator(arcs.size()); it.hasPrevious();) {
-            rev.add(it.previous());
-        }
-
-        arcs.clear();
-        arcs.addAll(rev);
-
-        // Reverse circle
-        if (circle != null) {
-            circle.reverse();
-        }
-    }
-
+    //    //---------//
+    //    // reverse //
+    //    //---------//
+    //    public void reverse ()
+    //    {
+    //        // Reverse junctions
+    //        Point temp = firstJunction;
+    //        firstJunction = lastJunction;
+    //        lastJunction = temp;
+    //
+    //        // Reverse arc list
+    //        List<Arc> rev = new ArrayList<Arc>(arcs.size());
+    //
+    //        for (ListIterator<Arc> it = arcs.listIterator(arcs.size()); it.hasPrevious();) {
+    //            rev.add(it.previous());
+    //        }
+    //
+    //        arcs.clear();
+    //        arcs.addAll(rev);
+    //
+    //        // Reverse circle
+    //        if (globalModel != null) {
+    //            globalModel.reverse();
+    //        }
+    //    }
+    //
     //---------//
     // setArea //
     //---------//
@@ -872,18 +878,6 @@ public class SlurInfo
             firstArea = area;
         } else {
             lastArea = area;
-        }
-    }
-
-    //-----------//
-    // setCircle //
-    //-----------//
-    public void setCircle (Circle circle)
-    {
-        if (circle != null) {
-            this.circle = new Circle(circle);
-            above = circle.isAbove();
-            bisUnit = computeBisector();
         }
     }
 
@@ -925,16 +919,28 @@ public class SlurInfo
         this.horizontal = horizontal;
     }
 
+    //----------//
+    // setModel //
+    //----------//
+    public void setModel (Model model)
+    {
+        if (model != null) {
+            globalModel = model; // TODO: Should we replicate the model?
+            above = model.above();
+            bisUnit = computeBisector();
+        }
+    }
+
     //---------------//
-    // setSideCircle //
+    // setSideModel //
     //---------------//
-    public void setSideCircle (Circle circle,
-                               boolean reverse)
+    public void setSideModel (Model model,
+                              boolean reverse)
     {
         if (reverse) {
-            firstCircle = circle;
+            firstModel = model;
         } else {
-            lastCircle = circle;
+            lastModel = model;
         }
     }
 
@@ -947,8 +953,8 @@ public class SlurInfo
         StringBuilder sb = new StringBuilder();
         sb.append("{Slur#").append(id);
 
-        if (circle != null) {
-            sb.append(String.format(" dist:%.3f", circle.getDistance()));
+        if (globalModel != null) {
+            sb.append(String.format(" dist:%.3f", globalModel.getDistance()));
         }
 
         boolean first = true;
@@ -980,7 +986,7 @@ public class SlurInfo
      */
     private Point2D.Double computeBisector ()
     {
-        boolean ccw = circle.ccw() == 1;
+        boolean ccw = globalModel.ccw() == 1;
         Line2D bisector = LineUtil.bisector(getEnd(!ccw), getEnd(ccw));
         double length = bisector.getP1().distance(bisector.getP2());
 
