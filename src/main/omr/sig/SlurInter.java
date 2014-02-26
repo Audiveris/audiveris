@@ -13,7 +13,7 @@ package omr.sig;
 
 import omr.glyph.Shape;
 
-import omr.skeleton.SlurInfo;
+import omr.sheet.skeleton.SlurInfo;
 
 import java.util.Map.Entry;
 

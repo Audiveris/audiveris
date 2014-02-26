@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.skeleton;
+package omr.sheet.skeleton;
 
 import omr.Main;
 
@@ -37,9 +37,9 @@ import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;
 import omr.sig.SlurInter;
 import omr.sig.SlurInter.Impacts;
-import static omr.skeleton.Arc.ArcShape;
-import static omr.skeleton.Skeleton.*;
 
+import static omr.sheet.skeleton.Arc.ArcShape;
+import static omr.sheet.skeleton.Skeleton.*;
 import omr.ui.BoardsPane;
 import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
@@ -81,9 +81,6 @@ import java.util.Set;
  * <p>
  * We have to visit each pixel of the buffer, detect junction points and arcs departing or arriving
  * at junction points.
- * A point if a junction point if it has more than 2 immediate neighbors in the 8 peripheral cells
- * of the 3x3 square centered on the point.
- * We may need a way to detect if a given point has already been visited.
  *
  * @author Hervé Bitteur
  */
@@ -91,13 +88,25 @@ public class SlursBuilder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Point[] breakPoints = new Point[]{//new Point(1653, 2467) // BINGO
+    private static final Point[] breakPoints = new Point[]{ //new Point(1653, 2467) // BINGO
     //
     };
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SlursBuilder.class);
+
+    private static final Color ARC_SLUR = Color.RED;
+
+    private static final Color ARC_LINE = Color.BLUE;
+
+    private static final Color ARC_LAMBDA = Color.LIGHT_GRAY;
+
+    private static final Color SLUR_POINTS = new Color(255, 0, 0, 50);
+
+    private static final Color SLUR_CURVES = new Color(0, 255, 0, 100);
+
+    private static final Color SLUR_MODELS = new Color(255, 255, 0, 100);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
@@ -164,11 +173,8 @@ public class SlursBuilder
      */
     public void buildSlurs ()
     {
-        logger.debug("{}buildSlurs", sheet.getLogPrefix());
-
-        StopWatch watch = new StopWatch("Slurs");
-
         // Retrieve junctions.
+        StopWatch watch = new StopWatch("Slurs");
         watch.start("retrieveJunctions");
         new JunctionRetriever(skeleton).scanImage();
 
@@ -179,7 +185,6 @@ public class SlursBuilder
         // Retrieve slurs from arcs
         watch.start("retrieveSlurs");
         new SlurRetriever().retrieveSlurs();
-
         watch.print();
     }
 
@@ -224,10 +229,13 @@ public class SlursBuilder
             Circle fitted = new Circle(points);
 
             // Check circle radius is rather similar to rough radius. If not, keep the rough one.
+            // (because algebraic circle are sometimes fancy on short slurs).
             final Circle circle;
             final double dist;
+            final double r1 = rough.getRadius();
+            final double r2 = fitted.getRadius();
 
-            if (areSimilar(fitted, rough)) {
+            if ((abs(r1 - r2) / (max(r1, r2))) <= params.similarRadiusRatio) {
                 circle = fitted;
                 dist = circle.getDistance();
             } else {
@@ -250,26 +258,6 @@ public class SlursBuilder
 
             return null;
         }
-    }
-
-    //------------//
-    // areSimilar //
-    //------------//
-    /**
-     * Check whether the provided circles have similar radius
-     *
-     * @param c1 a circle
-     * @param c2 another circle
-     * @return true if similar
-     */
-    private boolean areSimilar (Circle c1,
-                                Circle c2)
-    {
-        double r1 = c1.getRadius();
-        double r2 = c2.getRadius();
-        double difRatio = abs(r1 - r2) / (max(r1, r2));
-
-        return difRatio <= params.similarRadiusRatio;
     }
 
     //------------//
@@ -338,9 +326,9 @@ public class SlursBuilder
                 3,
                 "Length checked for extension arc");
 
-        final Scale.Fraction sideCircleLength = new Scale.Fraction(
+        final Scale.Fraction sideModelLength = new Scale.Fraction(
                 6,
-                "Length for side osculatory circle");
+                "Length for side osculatory model");
 
         final Scale.Fraction minCircleRadius = new Scale.Fraction(
                 0.5,
@@ -488,7 +476,7 @@ public class SlursBuilder
         public Parameters (Scale scale)
         {
             similarRadiusRatio = constants.similarRadiusRatio.getValue();
-            sideLength = scale.toPixels(constants.sideCircleLength);
+            sideLength = scale.toPixels(constants.sideModelLength);
             arcCheckLength = scale.toPixels(constants.arcCheckLength);
             arcMinSeedLength = scale.toPixels(constants.arcMinSeedLength);
             maxStaffLineDy = scale.toPixelsDouble(constants.maxStaffLineDy);
@@ -561,24 +549,12 @@ public class SlursBuilder
 
             for (SlurInfo info : pageInfos) {
                 info.renderAttachments(g);
-
-                //                Circle circle = info.getGlobalModel();
-                //
-                //                if (circle != null) {
-                //                    double r = circle.getRadius();
-                //                    Point2D c = circle.getCenter();
-                //                    g.drawOval(
-                //                            (int) rint(c.getX() - r),
-                //                            (int) rint(c.getY() - r),
-                //                            (int) rint(2 * r),
-                //                            (int) rint(2 * r));
-                //                }
             }
 
             g.setStroke(oldStroke);
 
             // Render slurs points
-            g.setColor(new Color(255, 0, 0, 50));
+            g.setColor(SLUR_POINTS);
 
             for (SlurInter slur : pageSlurs) {
                 for (Arc arc : slur.getInfo().getArcs()) {
@@ -589,7 +565,7 @@ public class SlursBuilder
             }
 
             // Render slurs curves
-            g.setColor(new Color(0, 255, 0, 100));
+            g.setColor(SLUR_CURVES);
 
             Stroke lineStroke = new BasicStroke(
                     (float) sheet.getScale().getMainFore(),
@@ -610,7 +586,7 @@ public class SlursBuilder
                 // Draw osculatory portions, if any
                 if (info.getSideModel(true) != info.getSideModel(false)) {
                     Color oldColor = g.getColor();
-                    g.setColor(new Color(255, 255, 0, 100));
+                    g.setColor(SLUR_MODELS);
 
                     for (boolean rev : new boolean[]{true, false}) {
                         Model sideModel = info.getSideModel(rev);
@@ -629,11 +605,11 @@ public class SlursBuilder
                                Graphics2D g)
         {
             if (arc.shape == ArcShape.SLUR) {
-                g.setColor(Color.RED);
+                g.setColor(ARC_SLUR);
             } else if (arc.shape == ArcShape.LINE) {
-                g.setColor(Color.BLUE);
+                g.setColor(ARC_LINE);
             } else {
-                g.setColor(Color.LIGHT_GRAY);
+                g.setColor(ARC_LAMBDA);
             }
         }
     }
@@ -661,35 +637,12 @@ public class SlursBuilder
         private Integer maxLength = null;
 
         /** For unique slur IDs. (page wise) */
-        private int globalSlurId = 0;
+        private int globalId = 0;
 
         //~ Methods --------------------------------------------------------------------------------
-        //------------------//
-        // discardShortests //
-        //------------------//
-        /**
-         * Discard slurs candidates for which length is shorter than
-         * clump quorum.
-         *
-         * @param clump the clump to purge
-         */
-        public void discardShortests (Set<SlurInter> clump)
-        {
-            int maxLength = 0;
-
-            for (SlurInter inter : clump) {
-                maxLength = Math.max(maxLength, inter.getInfo().getLength());
-            }
-
-            int quorum = (int) Math.ceil(params.quorumRatio * maxLength);
-
-            for (Iterator<SlurInter> it = clump.iterator(); it.hasNext();) {
-                if (quorum > it.next().getInfo().getLength()) {
-                    it.remove();
-                }
-            }
-        }
-
+        //---------------//
+        // retrieveSlurs //
+        //---------------//
         public void retrieveSlurs ()
         {
             // Extend slur seeds as much as possible through junction points
@@ -720,9 +673,9 @@ public class SlursBuilder
         /**
          * Try to append one arc to an existing slur and thus create a new slur instance.
          *
-         * @param arc
-         * @param slur
-         * @param browsed
+         * @param arc     the candidate for extension
+         * @param slur    the slur to be extended by arc
+         * @param browsed collections of arcs already visited
          * @return the newly created slur, if successful
          */
         private SlurInfo addArc (Arc arc,
@@ -771,16 +724,11 @@ public class SlursBuilder
                     }
                 }
 
-                int id = ++globalSlurId;
+                int id = ++globalId;
                 SlurInfo s = new SlurInfo(id, arcs, null, params.sideLength);
                 pageInfos.add(s);
+                logger.debug("Slur#{} extended as {} dist:{}", slur.getId(), s, dist);
 
-                //                logger.info(
-                //                    "Slur#{} extended as {} dist:{}",
-                //                    slur.getId(),
-                //                    s,
-                //                    String.format("%.3f", dist));
-                //
                 if (newSideModel != null) {
                     s.setSideModel(newSideModel, reverse);
                 }
@@ -794,19 +742,14 @@ public class SlursBuilder
 
                 return s;
             } else {
-                //                logger.info(
-                //                    "Slur#{} could not add {} dist:{}",
-                //                    slur.getId(),
-                //                    arc,
-                //                    String.format("%.3f", dist));
-                //
+                logger.debug("Slur#{} could not add {} dist:{}", slur.getId(), arc, dist);
+
                 return null;
             }
         }
 
         /**
-         * Measure the mean distance from additional arc to provided
-         * circle (a slur side circle).
+         * Measure the mean distance from additional arc to provided (side) model .
          * <p>
          * Not all arc points are checked, only the ones close to slur end.
          *
@@ -831,6 +774,13 @@ public class SlursBuilder
             return model.computeDistance(points);
         }
 
+        /**
+         * Build the sequence of arcs that pertain to concatenation of 2 slurs
+         *
+         * @param left  left slur
+         * @param right right slur
+         * @return the sequence of arcs, with no duplication
+         */
         private List<Arc> arcsOf (SlurInfo left,
                                   SlurInfo right)
         {
@@ -842,7 +792,7 @@ public class SlursBuilder
         }
 
         /**
-         * Build possible slurs, starting from the provided arc.
+         * Build all possible slurs, starting from the provided arc.
          * Successful slurs are inserted in global collection pageSlurs.
          *
          * @param arc the starting arc
@@ -851,8 +801,8 @@ public class SlursBuilder
         {
             checkBreak(arc); // Debug
 
-            int tid = ++globalSlurId;
-            SlurInfo trunk = new SlurInfo(tid, Arrays.asList(arc), arc.model, params.sideLength);
+            int sLength = params.sideLength;
+            SlurInfo trunk = new SlurInfo(++globalId, Arrays.asList(arc), arc.model, sLength);
             pageInfos.add(trunk);
 
             if (arc.model == null) {
@@ -860,7 +810,7 @@ public class SlursBuilder
             }
 
             //            logger.info("----------------------------\nbuildSlur {}", trunk);
-            // Extensions in "normal" & "reverse" parts of the trunk
+            // Extensions on "normal" & "reverse" sides of the trunk
             for (boolean rev : new boolean[]{false, true}) {
                 Set<SlurInfo> clump = rev ? leftClump : rightClump;
                 reverse = rev;
@@ -876,22 +826,23 @@ public class SlursBuilder
             // Combine candidates from both sides
             Set<SlurInter> inters = new HashSet<SlurInter>();
 
-            for (SlurInfo sl : leftClump) {
-                for (SlurInfo sr : rightClump) {
-                    SlurInfo slur;
-
-                    if (sl == sr) {
-                        slur = sl;
-                    } else {
-                        int id = ++globalSlurId;
-                        slur = new SlurInfo(id, arcsOf(sl, sr), null, params.sideLength);
-                    }
-
-                    GradeImpacts impacts = computeImpacts(slur, true);
-
-                    if (impacts != null) {
-                        SlurInter inter = new SlurInter(slur, impacts);
-                        inters.add(inter);
+            if (leftClump.isEmpty()) {
+                // Use rights
+                for (SlurInfo slur : rightClump) {
+                    createInter(slur, inters);
+                }
+            } else if (rightClump.isEmpty()) {
+                // Use lefts
+                for (SlurInfo slur : leftClump) {
+                    createInter(slur, inters);
+                }
+            } else {
+                // Connect lefts & rights
+                for (SlurInfo sl : leftClump) {
+                    for (SlurInfo sr : rightClump) {
+                        SlurInfo slur = (sl == sr) ? sl
+                                : new SlurInfo(++globalId, arcsOf(sl, sr), null, sLength);
+                        createInter(slur, inters);
                     }
                 }
             }
@@ -914,13 +865,13 @@ public class SlursBuilder
          * Compute impacts for slur candidate.
          *
          * @param slur slur information
-         * @param both true for both sides, false for single side (the one designated by reverse)
+         * @param both true for both sides, false for current side
          * @return grade impacts
          */
         private Impacts computeImpacts (SlurInfo slur,
                                         boolean both)
         {
-            Model global = needModel(slur);
+            Model global = needGlobalModel(slur);
 
             if (!(global instanceof CircleModel)) {
                 return null;
@@ -1036,12 +987,26 @@ public class SlursBuilder
         }
 
         /**
-         * Define extension area on desired side of the slur, in order
-         * to catch candidate slur extensions.
+         * (Try to) create an Inter instance from a slur candidate
+         *
+         * @param slur   the candidate
+         * @param inters (output) to be appended with created Inter instances
+         */
+        private void createInter (SlurInfo slur,
+                                  Set<SlurInter> inters)
+        {
+            GradeImpacts impacts = computeImpacts(slur, true);
+
+            if (impacts != null) {
+                inters.add(new SlurInter(slur, impacts));
+            }
+        }
+
+        /**
+         * Define extension area on current side of the slur.
          * (side is defined by 'reverse' current value)
          * <p>
-         * Shape and size of lookup area depend highly on the potential
-         * crossing of a staff line.
+         * Shape and size of lookup area depend highly on the potential crossing of a staff line.
          *
          * @param inter  the slur to extend
          * @param tgLine slur tangent staff line, if any
@@ -1106,8 +1071,7 @@ public class SlursBuilder
         }
 
         /**
-         * Try to recursively extend a slur in the desired orientation
-         * (normal or reverse).
+         * Try to recursively extend a slur in the current orientation.
          *
          * @param slur     the slur to extend
          * @param pastArcs collection of arcs already browsed
@@ -1155,6 +1119,12 @@ public class SlursBuilder
             }
         }
 
+        /**
+         * Report the bounding box of a collection of slurs
+         *
+         * @param slurs the collection
+         * @return the bounding box
+         */
         private Rectangle getBounds (Set<SlurInter> slurs)
         {
             Rectangle box = null;
@@ -1173,25 +1143,23 @@ public class SlursBuilder
         }
 
         /**
-         * Report the unit vector at slur end, based on global slur
-         * circle.
+         * Report the unit vector at slur end, based on global slur model.
          *
          * @param info slur
          * @return the vector which extends the slur end
          */
         private Point2D getEndVector (SlurInfo info)
         {
-            Model model = needModel(info);
+            Model model = needGlobalModel(info);
 
             if (model == null) {
                 return null;
+            } else {
+                int dir = reverse ? model.ccw() : (-model.ccw());
+                double angle = model.getAngle(reverse);
+
+                return new Point2D.Double(-dir * sin(angle), dir * cos(angle));
             }
-
-            int dir = reverse ? model.ccw() : (-model.ccw());
-            double angle = model.getAngle(reverse);
-
-            // Unit vector that extends slur end
-            return new Point2D.Double(-dir * sin(angle), dir * cos(angle));
         }
 
         /**
@@ -1278,10 +1246,13 @@ public class SlursBuilder
             return null;
         }
 
-        //-----------//
-        // needModel //
-        //-----------//
-        private Model needModel (SlurInfo slur)
+        /**
+         * Make sure the slur has a global model and report it.
+         *
+         * @param slur the slur at hand
+         * @return the slur global model
+         */
+        private Model needGlobalModel (SlurInfo slur)
         {
             Model model = slur.getGlobalModel();
 
@@ -1293,6 +1264,9 @@ public class SlursBuilder
             return model;
         }
 
+        //----------//
+        // register //
+        //----------//
         /**
          * Register the slurs of clump into their containing systems.
          *
@@ -1333,9 +1307,6 @@ public class SlursBuilder
             }
         }
 
-        //---------//
-        // scanGap //
-        //---------//
         /**
          * Build all possible slur extensions, just one arc past the
          * ending gap.
@@ -1449,9 +1420,11 @@ public class SlursBuilder
             }
         }
 
-        //------//
-        // weed //
-        //------//
+        /**
+         * Weed out the provided clump to keep most interesting candidates.
+         *
+         * @param clump the slurs to purge
+         */
         private void weed (Set<SlurInfo> clump)
         {
             // Compute grades
@@ -1466,7 +1439,6 @@ public class SlursBuilder
                 }
             }
 
-            // Purge clump
             clump.clear();
 
             // Discard too short ones
@@ -1494,7 +1466,7 @@ public class SlursBuilder
                 }
             }
 
-            // Discard those with grade lower than grade of longest
+            // Discard those with grade lower than grade of longest candidate
             double longestGrade = longest.getGrade();
 
             for (Iterator<SlurInter> it = inters.iterator(); it.hasNext();) {

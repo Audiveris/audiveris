@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.skeleton;
+package omr.sheet.skeleton;
 
 import omr.Main;
 
@@ -23,19 +23,19 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
 
-import omr.skeleton.Arc.ArcShape;
-import static omr.skeleton.Skeleton.ARC;
-import static omr.skeleton.Skeleton.HIDDEN;
-import static omr.skeleton.Skeleton.JUNCTION_PROCESSED;
-import static omr.skeleton.Skeleton.PROCESSED;
-import static omr.skeleton.Skeleton.allDirs;
-import static omr.skeleton.Skeleton.dxs;
-import static omr.skeleton.Skeleton.dys;
-import static omr.skeleton.Skeleton.getDir;
-import static omr.skeleton.Skeleton.isJunction;
-import static omr.skeleton.Skeleton.isJunctionProcessed;
-import static omr.skeleton.Skeleton.scans;
+import omr.sheet.skeleton.Arc.ArcShape;
 
+import static omr.sheet.skeleton.Skeleton.ARC;
+import static omr.sheet.skeleton.Skeleton.HIDDEN;
+import static omr.sheet.skeleton.Skeleton.JUNCTION_PROCESSED;
+import static omr.sheet.skeleton.Skeleton.PROCESSED;
+import static omr.sheet.skeleton.Skeleton.allDirs;
+import static omr.sheet.skeleton.Skeleton.dxs;
+import static omr.sheet.skeleton.Skeleton.dys;
+import static omr.sheet.skeleton.Skeleton.getDir;
+import static omr.sheet.skeleton.Skeleton.isJunction;
+import static omr.sheet.skeleton.Skeleton.isJunctionProcessed;
+import static omr.sheet.skeleton.Skeleton.scans;
 import omr.util.Navigable;
 
 import ij.process.ByteProcessor;

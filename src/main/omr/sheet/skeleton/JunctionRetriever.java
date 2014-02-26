@@ -9,19 +9,11 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.skeleton;
+package omr.sheet.skeleton;
 
 import static omr.image.PixelSource.BACKGROUND;
 import static omr.image.PixelSource.FOREGROUND;
-import static omr.skeleton.Skeleton.ARC;
-import static omr.skeleton.Skeleton.JUNCTION;
-import static omr.skeleton.Skeleton.diagDirs;
-import static omr.skeleton.Skeleton.dxs;
-import static omr.skeleton.Skeleton.dys;
-import static omr.skeleton.Skeleton.horiDirs;
-import static omr.skeleton.Skeleton.isJunction;
-import static omr.skeleton.Skeleton.sideDirs;
-import static omr.skeleton.Skeleton.vertDirs;
+import static omr.sheet.skeleton.Skeleton.*;
 
 import ij.process.ByteProcessor;
 import static java.lang.Math.max;
@@ -29,6 +21,9 @@ import static java.lang.Math.max;
 /**
  * Class {@code JunctionRetriever} scans all image pixels to retrieve junction pixels
  * and flag them as such with a specific color.
+ * A point is a junction point if it has more than 2 immediate neighbors in the 8 peripheral cells
+ * of the 3x3 square centered on the point.
+ * We use pixel color to detect if a given point has already been visited.
  *
  * @author Hervé Bitteur
  */
@@ -36,8 +31,7 @@ public class JunctionRetriever
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    private final Skeleton skeleton;
-
+    /** Skeleton buffer. */
     private final ByteProcessor buf;
 
     /** Vicinity of current pixel. */
@@ -51,7 +45,6 @@ public class JunctionRetriever
      */
     public JunctionRetriever (Skeleton skeleton)
     {
-        this.skeleton = skeleton;
         buf = skeleton.buf;
     }
 
@@ -75,8 +68,8 @@ public class JunctionRetriever
 
     /**
      * Check whether the point at (x, y) is a junction.
-     * The point needs to have more than 2 neighbors, and no other junction
-     * point side-connected with higher grade.
+     * The point needs to have more than 2 neighbors, and no other junction point side-connected
+     * with higher grade.
      *
      * @param x point abscissa
      * @param y point ordinate
@@ -127,8 +120,7 @@ public class JunctionRetriever
     }
 
     /**
-     * Look for side-connected junction pixels and return their
-     * highest junction grade.
+     * Look for side-connected junction pixels and return their highest junction grade.
      *
      * @param x center abscissa
      * @param y center ordinate
@@ -188,8 +180,7 @@ public class JunctionRetriever
     // Vicinity //
     //----------//
     /**
-     * Gathers the number of immediate neighbors of a pixel and
-     * characterizes the links.
+     * Gathers the number of immediate neighbors of a pixel and characterizes the links.
      */
     private static class Vicinity
     {

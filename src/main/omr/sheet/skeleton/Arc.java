@@ -9,9 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.skeleton;
-
-import omr.math.Circle;
+package omr.sheet.skeleton;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -108,7 +106,7 @@ public class Arc
     /** Related model, if any. */
     Model model;
 
-    /** Assigned to a slur?. */
+    /** Already assigned to a slur?. */
     boolean assigned;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -125,7 +123,7 @@ public class Arc
     }
 
     /**
-     * Void arc meant to link two touching junction points, with no points in between
+     * Void arc meant to link two touching junction points, with no points in between.
      *
      * @param startJunction first junction point, not null
      * @param stopJunction  second junction point, not null

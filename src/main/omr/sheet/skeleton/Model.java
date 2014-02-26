@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.skeleton;
+package omr.sheet.skeleton;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
