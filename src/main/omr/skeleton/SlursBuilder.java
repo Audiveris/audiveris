@@ -91,7 +91,7 @@ public class SlursBuilder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Point[] breakPoints = new Point[]{//new Point(382, 1938) // BINGO
+    private static final Point[] breakPoints = new Point[]{//new Point(1653, 2467) // BINGO
     //
     };
 
@@ -323,7 +323,7 @@ public class SlursBuilder
                 "Vertical distance to closest staff line to detect tangency");
 
         final Scale.Fraction maxSlurDistance = new Scale.Fraction(
-                0.12,
+                0.15,
                 "Maximum circle distance for final slur");
 
         final Scale.Fraction maxExtDistance = new Scale.Fraction(
@@ -336,11 +336,11 @@ public class SlursBuilder
 
         final Scale.Fraction arcCheckLength = new Scale.Fraction(
                 3,
-                "Number of points checked for extension arc");
+                "Length checked for extension arc");
 
         final Scale.Fraction sideCircleLength = new Scale.Fraction(
-                7,
-                "Number of points for side osculatory circle");
+                6,
+                "Length for side osculatory circle");
 
         final Scale.Fraction minCircleRadius = new Scale.Fraction(
                 0.5,
@@ -366,7 +366,7 @@ public class SlursBuilder
                 1.0,
                 "High minimum height for a slur");
 
-        final Scale.Fraction gapBoxLength = new Scale.Fraction(0.5, "Length for gap box");
+        final Scale.Fraction gapBoxLength = new Scale.Fraction(1.0, "Length for gap box");
 
         final Scale.Fraction gapBoxDeltaIn = new Scale.Fraction(
                 0.15,

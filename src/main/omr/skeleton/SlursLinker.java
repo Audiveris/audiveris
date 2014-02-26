@@ -26,6 +26,11 @@ import omr.math.LineUtil;
 import static omr.math.LineUtil.*;
 import static omr.math.PointUtil.*;
 
+import omr.sheet.Scale;
+import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
+import omr.sheet.SystemManager;
+
 import omr.sig.AbstractNoteInter;
 import omr.sig.HeadStemRelation;
 import omr.sig.Inter;
@@ -55,10 +60,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import omr.sheet.Scale;
-import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
-import omr.sheet.SystemManager;
 
 /**
  * Class {@code SlursLinker} works at sheet level, to handle the connections between
@@ -263,6 +264,26 @@ public class SlursLinker
         ///info.addAttachment("L", lastArea); // Useful?
     }
 
+    //----------------//
+    // distanceToNote //
+    //----------------//
+    /**
+     * Report a distance from slur end to note center.
+     * The value is used only for comparison between candidate slurs.
+     * Euclidian distance appears to be suboptimal, we now use only horizontal distance whatever
+     * the distance in ordinate.
+     *
+     * @param end    slur end point
+     * @param center note center point
+     * @return a usable distance
+     */
+    private double distanceToNote (Point2D end,
+                                   Point2D center)
+    {
+        ///return end.distanceSq(center);
+        return Math.abs(end.getX() - center.getX());
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -307,7 +328,7 @@ public class SlursLinker
 
         public final Inter note; // Note linked to slur end
 
-        public final Double distance; // Distance between note & slur end
+        public final Double distance; // A distance between note & slur end
 
         public final boolean direct; // False if via stem
 
@@ -556,8 +577,7 @@ public class SlursLinker
 
                 if (area.contains(GeoUtil.centerOf(noteBox))) {
                     Point center = GeoUtil.centerOf(in.getBounds());
-                    double distSq = slurEnd.distanceSq(center);
-                    found.put(in, new NoteLink(in, distSq, true));
+                    found.put(in, new NoteLink(in, distanceToNote(slurEnd, center), true));
                 }
             }
 
@@ -604,7 +624,7 @@ public class SlursLinker
         {
             Set<Relation> hsRels = sig.getRelations(stem, HeadStemRelation.class);
             Inter bestNote = null;
-            double bestDistSq = Double.MAX_VALUE;
+            double bestDist = Double.MAX_VALUE;
 
             for (Relation rel : hsRels) {
                 Inter note = (AbstractNoteInter) sig.getEdgeSource(rel);
@@ -612,17 +632,17 @@ public class SlursLinker
 
                 // Check relative position WRT slur end
                 if (dotProduct(subtraction(center, slurEnd), bisUnit) > 0) {
-                    double distSq = slurEnd.distanceSq(center);
+                    double dist = distanceToNote(slurEnd, center);
 
-                    if (distSq < bestDistSq) {
-                        bestDistSq = distSq;
+                    if (dist < bestDist) {
+                        bestDist = dist;
                         bestNote = note;
                     }
                 }
             }
 
             if (bestNote != null) {
-                return new NoteLink(bestNote, bestDistSq, false);
+                return new NoteLink(bestNote, bestDist, false);
             } else {
                 return null;
             }
@@ -742,7 +762,7 @@ public class SlursLinker
                 "Maximum slope for an orphan slur");
 
         final Scale.Fraction maxOrphanDx = new Scale.Fraction(
-                5.0,
+                6.0,
                 "Maximum dx to staff end for an orphan slur");
 
         final Scale.Fraction wideSlurWidth = new Scale.Fraction(
