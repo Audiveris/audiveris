@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        S l u r I n t e r                                       //
+//                                     S e g m e n t I n t e r                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -13,70 +13,41 @@ package omr.sig;
 
 import omr.glyph.Shape;
 
-import omr.sheet.curve.SlurInfo;
-
-import java.util.Map.Entry;
+import omr.sheet.curve.SegmentInfo;
 
 /**
- * Class {@code SlurInter} represents a slur interpretation.
+ * Class {@code SegmentInter} represents a line segment (used in wedge or ending).
  *
  * @author Hervé Bitteur
  */
-public class SlurInter
+public class SegmentInter
         extends AbstractInter
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Physical characteristics. */
-    private final SlurInfo info;
+    private final SegmentInfo info;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new SlurInter object.
+     * Creates a new SegmentInter object.
      *
-     * @param info    the underlying slur information
-     * @param impacts the assignment details
+     * @param info    segment information
+     * @param impacts assignment details
      */
-    public SlurInter (SlurInfo info,
-                      GradeImpacts impacts)
+    public SegmentInter (SegmentInfo info,
+                         GradeImpacts impacts)
     {
-        super(info.getBounds(), Shape.SLUR, impacts.getGrade());
+        super(info.getBounds(), Shape.SEGMENT, impacts.getGrade());
         setImpacts(impacts);
-        this.info = info;
 
-        // To debug attachments
-        for (Entry<String, java.awt.Shape> entry : info.getAttachments().entrySet()) {
-            addAttachment(entry.getKey(), entry.getValue());
-        }
+        this.info = info;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
-    //------------//
-    // getDetails //
-    //------------//
-    @Override
-    public String getDetails ()
-    {
-        StringBuilder sb = new StringBuilder(super.getDetails());
-
-        sb.append(" ").append(info);
-
-        return sb.toString();
-    }
-
     //---------//
     // getInfo //
     //---------//
-    public SlurInfo getInfo ()
+    public SegmentInfo getInfo ()
     {
         return info;
     }
@@ -90,25 +61,15 @@ public class SlurInter
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
-        private static final String[] NAMES = new String[]{
-            "dist", "width", "height", "angle", "vert"
-        };
+        private static final String[] NAMES = new String[]{"dist"};
 
-        private static final double[] WEIGHTS = new double[]{3, 1, 1, 1, 1};
+        private static final double[] WEIGHTS = new double[]{1};
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Impacts (double dist,
-                        double width,
-                        double height,
-                        double angle,
-                        double vert)
+        public Impacts (double dist)
         {
             super(NAMES, WEIGHTS);
             setImpact(0, dist);
-            setImpact(1, width);
-            setImpact(2, height);
-            setImpact(3, angle);
-            setImpact(4, vert);
         }
     }
 }

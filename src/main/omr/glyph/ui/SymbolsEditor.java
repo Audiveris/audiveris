@@ -26,7 +26,7 @@ import omr.lag.ui.SectionBoard;
 import omr.run.RunBoard;
 
 import omr.score.entity.Slot;
-import omr.score.ui.PageMenu;
+import omr.score.ui.EditorMenu;
 import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
 
@@ -99,7 +99,7 @@ public class SymbolsEditor
     private final MyView view;
 
     /** Popup menu related to page selection. */
-    private final PageMenu pageMenu;
+    private final EditorMenu pageMenu;
 
     /** The entity used for display focus. */
     private final ShapeFocusBoard focus;
@@ -139,9 +139,7 @@ public class SymbolsEditor
                 },
                 false);
 
-        pageMenu = new PageMenu(
-                sheet.getPage(),
-                new SymbolMenu(symbolsController, evaluator, focus));
+        pageMenu = new EditorMenu(sheet, new SymbolMenu(symbolsController, evaluator, focus));
 
         Lag hLag = sheet.getLag(Lags.HLAG);
         Lag vLag = sheet.getLag(Lags.VLAG);
@@ -296,7 +294,7 @@ public class SymbolsEditor
 
             if (movement == MouseMovement.RELEASING) {
                 if ((glyphs != null) && !glyphs.isEmpty()) {
-                    showPagePopup(pt);
+                    showPagePopup(pt, null);
                 }
             }
         }
@@ -319,7 +317,7 @@ public class SymbolsEditor
             }
 
             if (movement == MouseMovement.RELEASING) {
-                showPagePopup(pt);
+                showPagePopup(pt, getRubberRectangle());
             }
         }
 
@@ -594,13 +592,13 @@ public class SymbolsEditor
         //---------------//
         // showPagePopup //
         //---------------//
-        private void showPagePopup (Point pt)
+        private void showPagePopup (Point pt,
+                                    Rectangle rect)
         {
-            pageMenu.updateMenu(new Point(pt.x, pt.y));
-
-            JPopupMenu popup = pageMenu.getPopup();
-
-            popup.show(this, getZoom().scaled(pt.x) + 20, getZoom().scaled(pt.y) + 30);
+            if (pageMenu.updateMenu(new Rectangle(rect))) {
+                JPopupMenu popup = pageMenu.getPopup();
+                popup.show(this, getZoom().scaled(pt.x) + 20, getZoom().scaled(pt.y) + 30);
+            }
         }
     }
 }

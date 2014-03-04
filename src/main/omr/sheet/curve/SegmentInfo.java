@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        S l u r s S t e p                                       //
+//                                      S e g m e n t I n f o                                     //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -9,49 +9,39 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.step;
+package omr.sheet.curve;
 
-import omr.sheet.Sheet;
-import omr.sheet.skeleton.SlursBuilder;
-import omr.sheet.SystemInfo;
-
+import java.awt.Point;
 import java.util.Collection;
+import java.util.List;
 
 /**
- * Class {@code SlursStep} retrieves all slurs of a sheet.
+ * Class {@code SegmentInfo}
  *
  * @author Hervé Bitteur
  */
-public class SlursStep
-        extends AbstractStep
+public class SegmentInfo
+        extends Curve
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //-----------//
-    // SlursStep //
-    //-----------//
     /**
-     * Creates a new SlursStep object.
+     * Creates a new SegmentInfo object.
+     *
+     * @param id            curve id
+     * @param firstJunction first junction point, if any
+     * @param lastJunction  second junction point, if any
+     * @param points        sequence of defining points
+     * @param model         underlying model, if any
+     * @param parts         set of arcs used for this curve
      */
-    public SlursStep ()
+    public SegmentInfo (int id,
+                        Point firstJunction,
+                        Point lastJunction,
+                        List<Point> points,
+                        Model model,
+                        Collection<Arc> parts)
     {
-        super(
-                Steps.SLURS,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                SKELETON_TAB,
-                "Retrieve slurs & ties");
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //------//
-    // doit //
-    //------//
-    @Override
-    protected void doit (Collection<SystemInfo> systems,
-                         Sheet sheet)
-            throws StepException
-    {
-        new SlursBuilder(sheet).buildSlurs(); // -> slurs
+        super(id, firstJunction, lastJunction, points, model, parts);
     }
 }

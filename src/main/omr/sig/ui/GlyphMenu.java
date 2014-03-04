@@ -13,14 +13,18 @@ package omr.sig.ui;
 
 import omr.glyph.facets.Glyph;
 
+import omr.sheet.Sheet;
+
 import omr.sig.Inter;
 
 import omr.ui.util.AbstractMouseListener;
 import omr.ui.util.UIUtil;
+import omr.ui.view.LocationDependentMenu;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
 
@@ -33,48 +37,43 @@ import javax.swing.JMenuItem;
  * @author Hervé Bitteur
  */
 public class GlyphMenu
+        extends LocationDependentMenu
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    private final JMenu menu;
+    private final GlyphListener glyphListener = new GlyphListener();
 
-    private GlyphListener glyphListener = new GlyphListener();
+    private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
+    //-----------//
     // GlyphMenu //
-    //----------//
+    //-----------//
     /**
      * Creates a new GlyphMenu object.
+     *
+     * @param sheet the related sheet
      */
-    public GlyphMenu ()
+    public GlyphMenu (Sheet sheet)
     {
-        menu = new JMenu("Pile ...");
+        super("Pile ...");
+        this.sheet = sheet;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // getMenu //
-    //---------//
-    public JMenu getMenu ()
+    @Override
+    public void updateUserLocation (Rectangle rect)
     {
-        return menu;
-    }
+        // We rebuild the menu items on each update, since the set of glyphs is brand new.
+        removeAll();
 
-    //------------//
-    // updateMenu //
-    //------------//
-    public int updateMenu (Collection<Glyph> glyphs)
-    {
-        // We rebuild the menu items on each update, since the set of glyphs
-        // is brand new.
-        menu.removeAll();
+        Collection<Glyph> glyphs = sheet.getNest().getSelectedGlyphPile();
 
         if (!glyphs.isEmpty()) {
-            UIUtil.insertTitle(menu, "Glyphs:");
+            UIUtil.insertTitle(this, "Glyphs:");
 
             for (Glyph glyph : glyphs) {
                 final Collection<Inter> inters = glyph.getInterpretations();
@@ -83,17 +82,19 @@ public class GlyphMenu
                     // Just a glyph item
                     JMenuItem item = new JMenuItem(new GlyphAction(glyph));
                     item.addMouseListener(glyphListener);
-                    menu.add(item);
+                    add(item);
                 } else {
                     // A whole menu of inters for this glyph
-                    JMenu interMenu = new InterMenu(glyph, inters).getMenu();
+                    JMenu interMenu = new InterMenu(sheet, glyph, inters);
                     interMenu.addMouseListener(glyphListener);
-                    menu.add(interMenu);
+                    add(interMenu);
                 }
             }
         }
 
-        return glyphs.size();
+        setVisible(!glyphs.isEmpty());
+
+        super.updateUserLocation(rect);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

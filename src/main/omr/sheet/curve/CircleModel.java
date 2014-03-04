@@ -9,13 +9,15 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.skeleton;
+package omr.sheet.curve;
 
 import omr.math.Circle;
 
 import java.awt.Rectangle;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
 import java.util.Collection;
 import java.util.List;
 
@@ -25,21 +27,20 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class CircleModel
-    implements Model
+        implements Model
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Underlying circle. */
-    private Circle circle;
+    private final Circle circle;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     /**
      * Creates a new CircleModel object.
      *
      * @param points the sequence of defining points
      */
-    public CircleModel (List<?extends Point2D> points)
+    public CircleModel (List<? extends Point2D> points)
     {
         circle = new Circle(points);
     }
@@ -69,6 +70,23 @@ public class CircleModel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    @Override
+    public int above ()
+    {
+        return circle.isAbove() ? 1 : (-1);
+    }
+
+    @Override
+    public int ccw ()
+    {
+        return circle.ccw();
+    }
+
+    @Override
+    public double computeDistance (Collection<? extends Point2D> points)
+    {
+        return circle.computeDistance(points);
+    }
 
     /**
      * Factory method to try to create a valuable circle model.
@@ -89,24 +107,6 @@ public class CircleModel
         } else {
             return model;
         }
-    }
-
-    @Override
-    public int above ()
-    {
-        return circle.isAbove() ? 1 : (-1);
-    }
-
-    @Override
-    public int ccw ()
-    {
-        return circle.ccw();
-    }
-
-    @Override
-    public double computeDistance (Collection<?extends Point2D> points)
-    {
-        return circle.computeDistance(points);
     }
 
     @Override
@@ -141,6 +141,15 @@ public class CircleModel
     public double getDistance ()
     {
         return circle.getDistance();
+    }
+
+    @Override
+    public Point2D getEndVector (boolean reverse)
+    {
+        int dir = reverse ? ccw() : (-ccw());
+        double angle = getAngle(reverse);
+
+        return new Point2D.Double(-dir * sin(angle), dir * cos(angle));
     }
 
     @Override

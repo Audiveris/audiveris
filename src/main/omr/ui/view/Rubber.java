@@ -92,10 +92,8 @@ public class Rubber
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    
     private static final Constants constants = new Constants();
 
-    
     private static final Logger logger = LoggerFactory.getLogger(Rubber.class);
 
     private static AtomicInteger globalId = new AtomicInteger(0);
@@ -134,8 +132,8 @@ public class Rubber
     // Rubber //
     //--------//
     /**
-     * Create a rubber, with no predefined parameter (zoom, component)
-     * which are meant to be provided later.
+     * Create a rubber, with no predefined parameter (zoom, component) which are meant
+     * to be provided later.
      *
      * @see #setZoom
      */
@@ -148,8 +146,7 @@ public class Rubber
     // Rubber //
     //--------//
     /**
-     * Create a rubber, with a linked zoom, the related component being
-     * linked later
+     * Create a rubber, with a linked zoom, the related component being linked later
      *
      * @param zoom the related zoom
      */
@@ -181,8 +178,7 @@ public class Rubber
     // connectComponent //
     //------------------//
     /**
-     * Actually register the rubber as the mouse listener for the provided
-     * component.
+     * Actually register the rubber as the mouse listener for the provided component.
      *
      * @param component the related component
      */
@@ -228,29 +224,26 @@ public class Rubber
     // getCenter //
     //-----------//
     /**
-     * Return the center of the model rectangle as defined by the
-     * rubber. This is a dezoomed point, should the component have a
-     * related zoom.
+     * Return the center of the model rectangle as defined by the rubber.
+     * This is a de-zoomed point, should the component have a related zoom.
      *
      * @return the model center point
      */
     public Point getCenter ()
     {
-        Point pt = null;
-
         if (rect != null) {
-            pt = new Point(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
+            return new Point(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
+        } else {
+            return null;
         }
-
-        return pt;
     }
 
     //--------------//
     // getRectangle //
     //--------------//
     /**
-     * Return the model rectangle defined by the rubber. This is a
-     * dezoomed rectangle, should the component have a related zoom.
+     * Return the model rectangle defined by the rubber.
+     * This is a de-zoomed rectangle, should the component have a related zoom.
      *
      * @return the model rectangle
      */

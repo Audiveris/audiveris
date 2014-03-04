@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                      I n t e r V i s i t o r                                   //
+//                                L o c a t i o n D e p e n d e n t                               //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -9,31 +9,23 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sig;
+package omr.ui.view;
+
+import java.awt.Rectangle;
 
 /**
- * Interface {@code InterVisitor} is meant to visit any instance of
- * shape interpretation.
+ * Interface {@code LocationDependent} indicates an entity whose behavior may depend
+ * on location currently defined (such as via user interface).
  *
  * @author Hervé Bitteur
  */
-public interface InterVisitor
+public interface LocationDependent
 {
     //~ Methods ------------------------------------------------------------------------------------
 
-    void visit (Inter inter);
-
-    void visit (AbstractBeamInter inter);
-
-    void visit (StemInter inter);
-
-    void visit (LedgerInter inter);
-
-    void visit (SlurInter inter);
-
-    void visit (WedgeInter inter);
-
-    void visit (BarlineInter inter);
-
-    void visit (BarConnectionInter inter);
+    /** Update the entity with user current location.
+     *
+     * @param rect the user selected location
+     */
+    void updateUserLocation (Rectangle rect);
 }

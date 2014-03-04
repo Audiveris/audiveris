@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.skeleton;
+package omr.sheet.curve;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -22,6 +22,8 @@ import omr.score.ui.PageEraser;
 
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
+
+import omr.ui.util.ItemRenderer;
 
 import omr.util.Navigable;
 
@@ -44,6 +46,7 @@ import java.util.Map;
  * @author Hervé Bitteur
  */
 public class Skeleton
+        implements ItemRenderer
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -123,6 +126,12 @@ public class Skeleton
     /** All directions. */
     static final int[] allDirs = new int[]{2, 4, 6, 8, 1, 3, 5, 7};
 
+    private static final Color ARC_SLUR = Color.RED;
+
+    private static final Color ARC_LINE = Color.BLUE;
+
+    private static final Color ARC_LAMBDA = Color.LIGHT_GRAY;
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
@@ -141,7 +150,7 @@ public class Skeleton
     /**
      * Creates a new Skeleton object.
      *
-     * @param sheet DOCUMENT ME!
+     * @param sheet related sheet
      */
     public Skeleton (Sheet sheet)
     {
@@ -149,64 +158,36 @@ public class Skeleton
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------------//
-    // buildSkeleton //
-    //---------------//
-    /**
-     * Generate the skeleton from page binary image.
-     *
-     * @return the skeleton buffer
-     */
-    BufferedImage buildSkeleton ()
+    //----------//
+    // getPixel //
+    //----------//
+    public int getPixel (int x,
+                         int y)
     {
-        // First, get a skeleton of binary image
-        Picture picture = sheet.getPicture();
+        return buf.get(x, y);
+    }
 
-        ///ByteProcessor buffer = picture.getSource(Picture.SourceKey.BINARY);
-        ByteProcessor buffer = picture.getSource(Picture.SourceKey.STAFF_LINE_FREE);
-        buffer = (ByteProcessor) buffer.duplicate();
-        buffer.skeletonize();
+    @Override
+    public void renderItems (Graphics2D g)
+    {
+        // Render seeds
+        for (Arc arc : arcsMap.values()) {
+            setColor(arc, g);
 
-        BufferedImage img = buffer.getBufferedImage();
-
-        // Erase good shapes of each system
-        Graphics2D g = img.createGraphics();
-        PageEraser eraser = new PageEraser(g, sheet);
-        eraser.erase(
-                Arrays.asList(
-                        Shape.THICK_BARLINE,
-                        Shape.THIN_BARLINE,
-                        Shape.THIN_CONNECTION,
-                        Shape.THICK_CONNECTION,
-                        Shape.STEM,
-                        Shape.WHOLE_NOTE,
-                        Shape.WHOLE_NOTE_SMALL,
-                        Shape.NOTEHEAD_BLACK,
-                        Shape.NOTEHEAD_BLACK_SMALL,
-                        Shape.NOTEHEAD_VOID,
-                        Shape.NOTEHEAD_VOID_SMALL,
-                        Shape.BEAM,
-                        Shape.BEAM_HOOK,
-                        Shape.BEAM_SMALL,
-                        Shape.BEAM_HOOK_SMALL));
-
-        // Draw a background rectangle around the image
-        g.setColor(Color.WHITE);
-        g.drawRect(0, 0, img.getWidth() - 1, img.getHeight() - 1);
-        g.dispose();
-
-        // Build buffer
-        buffer = new ByteProcessor(img);
-        buffer.threshold(127);
-
-        // Keep a copy on disk?
-        if (constants.keepSkeleton.isSet()) {
-            ImageUtil.saveOnDisk(img, sheet.getPage().getId() + ".skl");
+            for (Point p : arc.getPoints()) {
+                g.fillRect(p.x, p.y, 1, 1);
+            }
         }
+    }
 
-        buf = buffer;
-
-        return img;
+    //----------//
+    // setPixel //
+    //----------//
+    public void setPixel (int x,
+                          int y,
+                          int val)
+    {
+        buf.set(x, y, val);
     }
 
     //--------//
@@ -284,6 +265,79 @@ public class Skeleton
     static boolean isSide (int dir)
     {
         return (dir % 2) == 0;
+    }
+
+    //---------------//
+    // buildSkeleton //
+    //---------------//
+    /**
+     * Generate the skeleton from page binary image.
+     *
+     * @return the skeleton buffer
+     */
+    BufferedImage buildSkeleton ()
+    {
+        // First, get a skeleton of binary image
+        Picture picture = sheet.getPicture();
+
+        ///ByteProcessor buffer = picture.getSource(Picture.SourceKey.BINARY);
+        ByteProcessor buffer = picture.getSource(Picture.SourceKey.STAFF_LINE_FREE);
+        buffer = (ByteProcessor) buffer.duplicate();
+        buffer.skeletonize();
+
+        BufferedImage img = buffer.getBufferedImage();
+
+        // Erase good shapes of each system
+        Graphics2D g = img.createGraphics();
+        PageEraser eraser = new PageEraser(g, sheet);
+        eraser.erase(
+                Arrays.asList(
+                        Shape.THICK_BARLINE,
+                        Shape.THIN_BARLINE,
+                        Shape.THIN_CONNECTION,
+                        Shape.THICK_CONNECTION,
+                        Shape.STEM,
+                        Shape.WHOLE_NOTE,
+                        Shape.WHOLE_NOTE_SMALL,
+                        Shape.NOTEHEAD_BLACK,
+                        Shape.NOTEHEAD_BLACK_SMALL,
+                        Shape.NOTEHEAD_VOID,
+                        Shape.NOTEHEAD_VOID_SMALL,
+                        Shape.BEAM,
+                        Shape.BEAM_HOOK,
+                        Shape.BEAM_SMALL,
+                        Shape.BEAM_HOOK_SMALL
+                ));
+
+        // Draw a background rectangle around the image
+        g.setColor(Color.WHITE);
+        g.drawRect(0, 0, img.getWidth() - 1, img.getHeight() - 1);
+        g.dispose();
+
+        // Build buffer
+        buffer = new ByteProcessor(img);
+        buffer.threshold(127);
+
+        // Keep a copy on disk?
+        if (constants.keepSkeleton.isSet()) {
+            ImageUtil.saveOnDisk(img, sheet.getPage().getId() + ".skl");
+        }
+
+        buf = buffer;
+
+        return img;
+    }
+
+    private void setColor (Arc arc,
+                           Graphics2D g)
+    {
+        if (arc.getShape() == ArcShape.SLUR) {
+            g.setColor(ARC_SLUR);
+        } else if (arc.getShape() == ArcShape.LINE) {
+            g.setColor(ARC_LINE);
+        } else {
+            g.setColor(ARC_LAMBDA);
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

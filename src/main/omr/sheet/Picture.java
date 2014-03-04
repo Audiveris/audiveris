@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.WellKnowns;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -281,6 +283,14 @@ public class Picture
         }
     }
 
+    //-------------------------------//
+    // getDefaultExtractionDirectory //
+    //-------------------------------//
+    public static String getDefaultExtractionDirectory ()
+    {
+        return constants.defaultExtractionDirectory.getValue();
+    }
+
     //--------------//
     // getDimension //
     //--------------//
@@ -317,6 +327,24 @@ public class Picture
     public BufferedImage getInitialImage ()
     {
         return initialImage;
+    }
+
+    //-----------------//
+    // getInitialImage //
+    //-----------------//
+    /**
+     * Report the initial image, or a subimage of it if rectangle area is specified.
+     *
+     * @param rect rectangular area desired, null for whole image
+     * @return the (sub) image
+     */
+    public BufferedImage getInitialImage (Rectangle rect)
+    {
+        if (rect == null) {
+            return initialImage;
+        } else {
+            return initialImage.getSubimage(rect.x, rect.y, rect.width, rect.height);
+        }
     }
 
     //------------------//
@@ -473,6 +501,14 @@ public class Picture
         }
     }
 
+    //-------------------------------//
+    // setDefaultExtractionDirectory //
+    //-------------------------------//
+    public static void setDefaultExtractionDirectory (String dir)
+    {
+        constants.defaultExtractionDirectory.setValue(dir);
+    }
+
     //----------//
     // toString //
     //----------//
@@ -620,5 +656,9 @@ public class Picture
                 "pixels",
                 1,
                 "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
+
+        Constant.String defaultExtractionDirectory = new Constant.String(
+                WellKnowns.DEFAULT_SCRIPTS_FOLDER.toString(),
+                "Default directory for image extractions");
     }
 }

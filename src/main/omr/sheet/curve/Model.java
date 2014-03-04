@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.skeleton;
+package omr.sheet.curve;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -80,6 +80,14 @@ public interface Model
      * @return the mean distance between candidate slur points and the model
      */
     double getDistance ();
+
+    /**
+     * Report the unit tangent vector at item end, designated by 'reverse'.
+     *
+     * @param reverse true for first end, false for last
+     * @return the tangent unit vector
+     */
+    Point2D getEndVector (boolean reverse);
 
     /**
      * Report the middle point of the curve.

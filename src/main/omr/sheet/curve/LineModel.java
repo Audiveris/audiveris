@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.skeleton;
+package omr.sheet.curve;
 
 import omr.math.BasicLine;
 
@@ -98,6 +98,18 @@ public class LineModel
     public double getDistance ()
     {
         return line.getMeanDistance();
+    }
+
+    @Override
+    public Point2D getEndVector (boolean reverse)
+    {
+        int dir = reverse ? (-1) : 1;
+        Line2D l = line.toDouble();
+        double length = l.getP1().distance(l.getP2());
+
+        return new Point2D.Double(
+                (dir * (l.getX2() - l.getX1())) / length,
+                (dir * (l.getY2() - l.getY1())) / length);
     }
 
     @Override

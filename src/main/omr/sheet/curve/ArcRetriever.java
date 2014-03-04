@@ -9,58 +9,41 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.skeleton;
+package omr.sheet.curve;
 
 import omr.Main;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.grid.FilamentLine;
+import omr.grid.StaffInfo;
+
 import omr.math.BasicLine;
-import omr.math.Circle;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-import omr.sheet.Skew;
+import static omr.sheet.curve.Skeleton.*;
 
-import omr.sheet.skeleton.Arc.ArcShape;
-
-import static omr.sheet.skeleton.Skeleton.ARC;
-import static omr.sheet.skeleton.Skeleton.HIDDEN;
-import static omr.sheet.skeleton.Skeleton.JUNCTION_PROCESSED;
-import static omr.sheet.skeleton.Skeleton.PROCESSED;
-import static omr.sheet.skeleton.Skeleton.allDirs;
-import static omr.sheet.skeleton.Skeleton.dxs;
-import static omr.sheet.skeleton.Skeleton.dys;
-import static omr.sheet.skeleton.Skeleton.getDir;
-import static omr.sheet.skeleton.Skeleton.isJunction;
-import static omr.sheet.skeleton.Skeleton.isJunctionProcessed;
-import static omr.sheet.skeleton.Skeleton.scans;
 import omr.util.Navigable;
-
-import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import omr.grid.FilamentLine;
-import omr.grid.StaffInfo;
-
-import static java.lang.Math.abs;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 
 /**
- * Class {@code ArcRetriever} retrieve all arcs and remember the interesting ones in
+ * Class {@code ArcRetriever} retrieve all arcs and store the interesting ones in
  * arcsMap.
- * Each arc has its two ending points flagged with a specific gray value to
- * remember the arc shape.
+ * Each arc has its two ending points flagged with a specific gray value to remember the arc shape.
  * <pre>
  * - scanImage()              // Scan the whole image for arc starts
  *   + scanJunction()         // Scan arcs leaving a junction point
@@ -103,14 +86,15 @@ public class ArcRetriever
     @Navigable(false)
     private final Sheet sheet;
 
-    /** Global sheet skew. */
-    private final Skew skew;
+    /** Curves environment. */
+    @Navigable(false)
+    private final Curves curves;
 
-    private final SlursBuilder slursBuilder;
-
+    /** Underlying skeleton. */
     private final Skeleton skeleton;
 
-    private final ByteProcessor buf;
+    /** Scale-dependent parameters. */
+    private final Parameters params;
 
     /** Current point abscissa. */
     int cx;
@@ -121,38 +105,39 @@ public class ArcRetriever
     /** Last direction. */
     int lastDir;
 
-    /** Scale-dependent parameters. */
-    private final Parameters params;
-
     //~ Constructors -------------------------------------------------------------------------------
-    public ArcRetriever (Sheet sheet,
-                         SlursBuilder slursBuilder,
-                         Skeleton skeleton)
+    /**
+     * Creates an ArcRetriever object
+     *
+     * @param curves curves environment
+     */
+    public ArcRetriever (Curves curves)
     {
-        this.sheet = sheet;
-        skew = sheet.getSkew();
-        this.slursBuilder = slursBuilder;
-        this.skeleton = skeleton;
-        buf = skeleton.buf;
+        this.curves = curves;
+        sheet = curves.getSheet();
+        skeleton = curves.getSkeleton();
 
         params = new Parameters(sheet.getScale());
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------//
+    // scanImage //
+    //-----------//
     /**
      * Scan the whole image.
      */
     public void scanImage ()
     {
-        for (int x = 1, w = buf.getWidth(); x < w; x++) {
-            for (int y = 1, h = buf.getHeight(); y < h; y++) {
-                int pix = buf.get(x, y);
+        for (int x = 1, w = sheet.getWidth(); x < w; x++) {
+            for (int y = 1, h = sheet.getHeight(); y < h; y++) {
+                int pix = skeleton.getPixel(x, y);
 
                 if (pix == ARC) {
-                    // Basic arc pixel, not yet processed, scan full arc
+                    // Basic arc pixel, not yet processed, so scan full arc
                     scanArc(x, y, null, 0);
                 } else if (isJunction(pix)) {
-                    // Junction pixel, scan arcs linked to this junction point
+                    // Junction pixel, so scan all arcs linked to this junction point
                     if (!isJunctionProcessed(pix)) {
                         scanJunction(x, y);
                     }
@@ -174,6 +159,32 @@ public class ArcRetriever
                 });
     }
 
+    //-------//
+    // sinSq //
+    //-------//
+    /** Sin**2 of angle between (p0,p1) & (p0,p2). */
+    private static double sinSq (int x0,
+                                 int y0,
+                                 int x1,
+                                 int y1,
+                                 int x2,
+                                 int y2)
+    {
+        x1 -= x0;
+        y1 -= y0;
+        x2 -= x0;
+        y2 -= y0;
+
+        double vect = (x1 * y2) - (x2 * y1);
+        double l1Sq = (x1 * x1) + (y1 * y1);
+        double l2Sq = (x2 * x2) + (y2 * y2);
+
+        return (vect * vect) / (l1Sq * l2Sq);
+    }
+
+    //----------//
+    // addPoint //
+    //----------//
     /**
      * Record one more point into arc sequence
      *
@@ -184,7 +195,7 @@ public class ArcRetriever
                            int cy,
                            boolean reverse)
     {
-        List<Point> points = arc.points;
+        List<Point> points = arc.getPoints();
 
         if (reverse) {
             points.add(0, new Point(cx, cy));
@@ -192,9 +203,12 @@ public class ArcRetriever
             points.add(new Point(cx, cy));
         }
 
-        buf.set(cx, cy, PROCESSED);
+        skeleton.setPixel(cx, cy, PROCESSED);
     }
 
+    //----------------//
+    // determineShape //
+    //----------------//
     /**
      * Determine shape for this arc.
      *
@@ -204,7 +218,7 @@ public class ArcRetriever
     private ArcShape determineShape (Arc arc)
     {
         ///checkBreak(arc);
-        List<Point> points = arc.points;
+        List<Point> points = arc.getPoints();
 
         // Too short?
         if (points.size() < params.arcMinQuorum) {
@@ -241,14 +255,14 @@ public class ArcRetriever
                 // Check this is not a portion of staff line or bar line
                 double invSlope = line.getInvertedSlope();
 
-                if (abs(invSlope + skew.getSlope()) <= params.minSlope) {
+                if (abs(invSlope + sheet.getSkew().getSlope()) <= params.minSlope) {
                     //logger.info("Vertical line");
                     return ArcShape.IRRELEVANT;
                 }
 
                 double slope = line.getSlope();
 
-                if (abs(slope - skew.getSlope()) <= params.minSlope) {
+                if (abs(slope - sheet.getSkew().getSlope()) <= params.minSlope) {
                     //logger.info("Horizontal  line");
                 }
 
@@ -258,16 +272,33 @@ public class ArcRetriever
         }
 
         // Circle?
-        Model fittedModel = slursBuilder.computeModel(points);
+        Model fittedModel = curves.getSlursBuilder().computeModel(points);
 
         if (fittedModel instanceof CircleModel) {
-            arc.model = fittedModel;
+            arc.setModel(fittedModel);
 
             return ArcShape.SLUR;
         }
 
         // Nothing interesting
         return ArcShape.IRRELEVANT;
+    }
+
+    //------//
+    // hide //
+    //------//
+    /**
+     * Update display to show the arc points as "discarded".
+     */
+    private void hide (Arc arc)
+    {
+        List<Point> points = arc.getPoints();
+
+        for (int i = 1; i < (points.size() - 1); i++) {
+            Point p = points.get(i);
+
+            skeleton.setPixel(p.x, p.y, HIDDEN);
+        }
     }
 
     //------------//
@@ -280,7 +311,7 @@ public class ArcRetriever
      */
     private boolean isStaffArc (Arc arc)
     {
-        List<Point> points = arc.points;
+        List<Point> points = arc.getPoints();
 
         if (points.size() < params.minStaffArcLength) {
             return false;
@@ -305,28 +336,16 @@ public class ArcRetriever
                && ((maxDy - minDy) < params.minStaffLineDistance);
     }
 
-    /**
-     * Update display to show the arc points as "discarded".
-     */
-    private void hide (Arc arc)
-    {
-        List<Point> points = arc.points;
-
-        for (int i = 1; i < (points.size() - 1); i++) {
-            Point p = points.get(i);
-
-            buf.set(p.x, p.y, HIDDEN);
-        }
-    }
-
+    //------//
+    // move //
+    //------//
     /**
      * Try to move to the next point of the arc.
      *
      * @param x       abscissa of current point
      * @param y       ordinate of current point
      * @param reverse current orientation
-     * @return code describing the move performed if any.
-     *         The new position is stored in (cx, cy).
+     * @return code describing the move performed if any. The new position is stored in (cx, cy).
      */
     private Status move (Arc arc,
                          int x,
@@ -338,7 +357,7 @@ public class ArcRetriever
             cx = x + dxs[dir];
             cy = y + dys[dir];
 
-            int pix = buf.get(cx, cy);
+            int pix = skeleton.getPixel(cx, cy);
 
             if (isJunction(pix)) {
                 // End of scan for this orientation
@@ -355,7 +374,7 @@ public class ArcRetriever
             cx = x + dxs[dir];
             cy = y + dys[dir];
 
-            int pix = buf.get(cx, cy);
+            int pix = skeleton.getPixel(cx, cy);
 
             if (pix == ARC) {
                 lastDir = dir;
@@ -368,13 +387,16 @@ public class ArcRetriever
         return Status.END;
     }
 
+    //---------//
+    // scanArc //
+    //---------//
     /**
-     * Scan an arc both ways, starting from a point of the arc,
-     * not necessarily an end point.
+     * Scan an arc both ways, starting from a point of the arc, not necessarily an end
+     * point.
      *
      * @param x             starting abscissa
      * @param y             starting ordinate
-     * @param startJunction start junction point if any
+     * @param startJunction start junction point if any, null if none
      * @param lastDir       last direction (0 if none)
      * @return the arc fully scanned
      */
@@ -394,25 +416,28 @@ public class ArcRetriever
         // If we scanned from a junction, startJunction is already set
         if (startJunction == null) {
             // Set lastDir as the opposite of initial starting dir
-            if (arc.points.size() > 1) {
-                lastDir = getDir(arc.points.get(1), arc.points.get(0));
+            if (arc.getPoints().size() > 1) {
+                lastDir = getDir(arc.getPoints().get(1), arc.getPoints().get(0));
             } else if (arc.getJunction(false) != null) {
-                lastDir = getDir(arc.getJunction(false), arc.points.get(0));
+                lastDir = getDir(arc.getJunction(false), arc.getPoints().get(0));
             }
 
             walkAlong(arc, x, y, true, lastDir);
         }
+
+        // Whenever possible, orient an arc from left to right
+        arc.checkOrientation();
 
         // Check arc shape
         ArcShape shape = determineShape(arc);
         storeShape(arc, shape);
 
         if (shape.isSlurRelevant()) {
-            Point first = arc.points.get(0);
+            Point first = arc.getPoints().get(0);
             skeleton.arcsMap.put(first, arc);
             skeleton.arcsEnds.add(first);
 
-            Point last = arc.points.get(arc.points.size() - 1);
+            Point last = arc.getPoints().get(arc.getPoints().size() - 1);
             skeleton.arcsMap.put(last, arc);
             skeleton.arcsEnds.add(last);
 
@@ -424,6 +449,9 @@ public class ArcRetriever
         }
     }
 
+    //--------------//
+    // scanJunction //
+    //--------------//
     /**
      * Scan all arcs connected to this junction point
      *
@@ -434,22 +462,22 @@ public class ArcRetriever
                                int y)
     {
         Point startJunction = new Point(x, y);
-        buf.set(x, y, JUNCTION_PROCESSED);
+        skeleton.setPixel(x, y, JUNCTION_PROCESSED);
 
         // Scan all arcs that depart from this junction point
         for (int dir : allDirs) {
             int nx = x + dxs[dir];
             int ny = y + dys[dir];
-            int pix = buf.get(nx, ny);
+            int pix = skeleton.getPixel(nx, ny);
 
             if (pix == ARC) {
                 scanArc(nx, ny, startJunction, dir);
             } else if (isJunction(pix)) {
                 if (!isJunctionProcessed(pix)) {
-                    // We have a junction point, touching this one
-                    // Use a no-point arg
+                    // We have a junction point, touching this one, hence use a no-point arc
                     Point stopJunction = new Point(nx, ny);
                     Arc arc = new Arc(startJunction, stopJunction);
+                    arc.checkOrientation();
                     skeleton.arcsMap.put(startJunction, arc);
                     skeleton.arcsMap.put(stopJunction, arc);
                 }
@@ -457,54 +485,37 @@ public class ArcRetriever
         }
     }
 
-    //-------//
-    // sinSq //
-    //-------//
-    /** Sin**2 of angle between (p0,p1) & (p0,p2). */
-    private static double sinSq (int x0,
-                                 int y0,
-                                 int x1,
-                                 int y1,
-                                 int x2,
-                                 int y2)
-    {
-        x1 -= x0;
-        y1 -= y0;
-        x2 -= x0;
-        y2 -= y0;
-
-        double vect = (x1 * y2) - (x2 * y1);
-        double l1Sq = (x1 * x1) + (y1 * y1);
-        double l2Sq = (x2 * x2) + (y2 * y2);
-
-        return (vect * vect) / (l1Sq * l2Sq);
-    }
-
+    //------------//
+    // storeShape //
+    //------------//
     /**
-     * "Store" the arc shape in its ending points, so that scanning
-     * from a junction point can immediately know whether the arc
-     * is relevant without having to rescan the full arc.
+     * "Store" the arc shape in its ending points, so that scanning from a junction
+     * point can immediately tell whether the arc is relevant without having to rescan
+     * the full arc.
      *
      * @param shape the arc shape
      */
     private void storeShape (Arc arc,
                              ArcShape shape)
     {
-        arc.shape = shape;
+        arc.setShape(shape);
 
-        List<Point> points = arc.points;
+        List<Point> points = arc.getPoints();
 
         Point first = points.get(0);
         Point last = points.get(points.size() - 1);
-        buf.set(first.x, first.y, PROCESSED + shape.ordinal());
-        buf.set(last.x, last.y, PROCESSED + shape.ordinal());
+        skeleton.setPixel(first.x, first.y, PROCESSED + shape.ordinal());
+        skeleton.setPixel(last.x, last.y, PROCESSED + shape.ordinal());
     }
 
+    //-----------//
+    // walkAlong //
+    //-----------//
     /**
-     * Walk along the arc in the desired orientation, starting at
-     * (x,y) point, until no more incremental move is possible.
-     * Detect the end of a straight line (either horizontal or vertical)
-     * and insert an artificial junction point.
+     * Walk along the arc in the desired orientation, starting at (x,y) point, until no
+     * more incremental move is possible.
+     * Detect the end of a straight line (either horizontal or vertical) and insert an artificial
+     * junction point.
      *
      * @param xStart  starting abscissa
      * @param yStart  starting ordinate

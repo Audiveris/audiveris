@@ -375,7 +375,7 @@ public class SheetsController
     // unsubscribe //
     //-------------//
     /**
-     * Unsubscribe to the sheet event service (for the SheetEvent class).
+     * Un-subscribe to the sheet event service (for the SheetEvent class).
      *
      * @param subscriber the entity to unsubscribe
      */

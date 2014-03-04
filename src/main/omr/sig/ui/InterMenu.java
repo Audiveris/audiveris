@@ -13,16 +13,20 @@ package omr.sig.ui;
 
 import omr.glyph.facets.Glyph;
 
+import omr.sheet.Sheet;
+
 import omr.sig.Inter;
 import omr.sig.Relation;
 import omr.sig.SIGraph;
 
 import omr.ui.util.AbstractMouseListener;
 import omr.ui.util.UIUtil;
+import omr.ui.view.LocationDependentMenu;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.Set;
@@ -36,15 +40,16 @@ import javax.swing.JMenuItem;
  * @author Hervé Bitteur
  */
 public class InterMenu
+        extends LocationDependentMenu
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    private final JMenu menu;
+    private final Sheet sheet;
 
-    private InterListener interListener = new InterListener();
+    private final InterListener interListener = new InterListener();
 
     //~ Constructors -------------------------------------------------------------------------------
     //-----------//
@@ -52,10 +57,13 @@ public class InterMenu
     //-----------//
     /**
      * Creates a new InterMenu object.
+     *
+     * @param sheet the related sheet
      */
-    public InterMenu ()
+    public InterMenu (Sheet sheet)
     {
-        menu = new JMenu("Inters ...");
+        super("Inters ...");
+        this.sheet = sheet;
     }
 
     //-----------//
@@ -63,26 +71,40 @@ public class InterMenu
     //-----------//
     /**
      * Creates a new InterMenu object.
+     *
+     * @param sheet  the related sheet
+     * @param glyph  the glyph at hand
+     * @param inters the glyph interpretations
      */
-    public InterMenu (Glyph glyph,
+    public InterMenu (Sheet sheet,
+                      Glyph glyph,
                       Collection<Inter> inters)
     {
-        menu = new JMenu(new GlyphAction(glyph, null));
+        super(new GlyphAction(glyph, null));
+        this.sheet = sheet;
         updateMenu(inters);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    @Override
+    public void updateUserLocation (Rectangle rect)
+    {
+        Collection<Inter> inters = sheet.getSelectedInterList();
+        updateMenu(inters);
+
+        super.updateUserLocation(rect);
+    }
+
     //------------//
     // updateMenu //
     //------------//
-    public final int updateMenu (Collection<Inter> inters)
+    private void updateMenu (Collection<Inter> inters)
     {
-        // We rebuild the menu items on each update, since the set of inters
-        // is brand new.
-        menu.removeAll();
+        // We rebuild the menu items on each update, since the set of inters is brand new.
+        removeAll();
 
         if ((inters != null) && !inters.isEmpty()) {
-            UIUtil.insertTitle(menu, "Interpretations:");
+            UIUtil.insertTitle(this, "Interpretations:");
 
             for (Inter inter : inters) {
                 final SIGraph sig = inter.getSig();
@@ -92,27 +114,21 @@ public class InterMenu
                     // Just a interpretation item
                     JMenuItem item = new JMenuItem(new InterAction(inter));
                     item.addMouseListener(interListener);
-                    menu.add(item);
+                    add(item);
                 } else {
                     // A whole menu of relations for this interpretation
                     JMenu relMenu = new RelationMenu(inter, rels).getMenu();
                     relMenu.addMouseListener(interListener);
-                    menu.add(relMenu);
+                    add(relMenu);
                 }
             }
 
-            return inters.size();
+            setVisible(true);
+
+            return;
         }
 
-        return 0;
-    }
-
-    //---------//
-    // getMenu //
-    //---------//
-    public JMenu getMenu ()
-    {
-        return menu;
+        setVisible(false);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -48,6 +48,7 @@ import omr.sig.LedgerInter;
 import omr.sig.SIGraph;
 import omr.sig.SlurInter;
 import omr.sig.StemInter;
+import omr.sig.WedgeInter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
@@ -655,6 +656,19 @@ public class PagePhysicalPainter
     {
         setColor(connection);
         g.fill(connection.getArea());
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (WedgeInter wedge)
+    {
+        setColor(wedge);
+        g.setStroke(lineStroke);
+        g.draw(wedge.getLine1());
+        g.draw(wedge.getLine2());
+        g.setStroke(defaultStroke);
     }
 
     //--------------------//

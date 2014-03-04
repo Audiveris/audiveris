@@ -213,6 +213,24 @@ public class RubberPanel
         return pt;
     }
 
+    //--------------------//
+    // getRubberRectangle //
+    //--------------------//
+    /**
+     * Return the model rectangle defined by the rubber.
+     * This is a de-zoomed rectangle, should the component have a related zoom.
+     *
+     * @return the model rectangle
+     */
+    public Rectangle getRubberRectangle ()
+    {
+        if (rubber != null) {
+            return rubber.getRectangle();
+        } else {
+            return null;
+        }
+    }
+
     //----------------------//
     // getSelectedRectangle //
     //----------------------//

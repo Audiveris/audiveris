@@ -11,8 +11,11 @@
 // </editor-fold>
 package omr.sheet.ui;
 
+import omr.score.ui.PageMenu;
 import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
+
+import omr.selection.MouseMovement;
 
 import omr.sheet.Sheet;
 
@@ -27,14 +30,17 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.JPopupMenu;
+
 /**
- * Class {@code PictureView} defines the view dedicated to the
- * display of the picture image of a music sheet.
+ * Class {@code PictureView} defines the view dedicated to the display of the picture
+ * image of a music sheet.
  *
  * @author Hervé Bitteur
  */
@@ -47,8 +53,11 @@ public class PictureView
     private static final Logger logger = LoggerFactory.getLogger(PictureView.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Link with sheet */
+    /** Link with sheet. */
     private final Sheet sheet;
+
+    /** Pop-up page menu. */
+    private final PageMenu pageMenu;
 
     //~ Constructors -------------------------------------------------------------------------------
     //-------------//
@@ -76,6 +85,9 @@ public class PictureView
 
         // Insert view
         setView(view);
+
+        pageMenu = new PageMenu(sheet);
+        pageMenu.addMenu(new ExtractionMenu(sheet));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -96,6 +108,21 @@ public class PictureView
             extends RubberPanel
     {
         //~ Methods --------------------------------------------------------------------------------
+
+        //-----------------//
+        // contextSelected //
+        //-----------------//
+        @Override
+        public void contextSelected (Point pt,
+                                     MouseMovement movement)
+        {
+            if (movement == MouseMovement.RELEASING) {
+                if (pageMenu.updateMenu(getRubberRectangle())) {
+                    JPopupMenu popup = pageMenu.getPopup();
+                    popup.show(this, getZoom().scaled(pt.x) + 20, getZoom().scaled(pt.y) + 30);
+                }
+            }
+        }
 
         //--------//
         // render //

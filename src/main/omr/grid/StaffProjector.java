@@ -241,20 +241,20 @@ public class StaffProjector
         final double valueRange = totalHeight - minValue;
 
         // Compute precise start & stop abscissae
-        Integer newStart = refinePeakSide(rawStart, rawStop, -1);
+        PeakSide newStart = refinePeakSide(rawStart, rawStop, -1);
 
         if (newStart == null) {
             return null;
         }
 
-        final int start = newStart;
-        Integer newStop = refinePeakSide(rawStart, rawStop, +1);
+        final int start = newStart.abscissa;
+        PeakSide newStop = refinePeakSide(rawStart, rawStop, +1);
 
         if (newStop == null) {
             return null;
         }
 
-        final int stop = newStop;
+        final int stop = newStop.abscissa;
 
         //        // Check ratio of black pixels in this area (relevant for thick peak)
         //        int black = 0;
@@ -293,7 +293,12 @@ public class StaffProjector
         double coreImpact = (value - minValue) / valueRange;
         double beltImpact = (params.chunkThreshold - chunk) / chunkRange;
         double gapImpact = 1 - ((double) data.gap / params.gapThreshold);
-        GradeImpacts impacts = new BarlineInter.Impacts(coreImpact, beltImpact, gapImpact);
+        GradeImpacts impacts = new BarlineInter.Impacts(
+                coreImpact,
+                beltImpact,
+                gapImpact,
+                newStart.grade,
+                newStop.grade);
         double grade = impacts.getGrade();
 
         if (grade >= Inter.minGrade) {
@@ -477,15 +482,17 @@ public class StaffProjector
     /**
      * Use extrema of first derivative to refine peak side abscissa.
      * Maximum for left side, minimum for right side.
+     * Absolute derivative value indicates if the peak side is really steep: this should exclude
+     * the cases of braces, arpeggiates, stems with heads on left or right side.
      *
      * @param xStart raw abscissa that starts peak
      * @param xStop  raw abscissa that stops peak
      * @param dir    -1 for going left, +1 for going right
-     * @return the best side abscissa, or null if none
+     * @return the best peak side, or null if none
      */
-    private Integer refinePeakSide (int xStart,
-                                    int xStop,
-                                    int dir)
+    private PeakSide refinePeakSide (int xStart,
+                                     int xStop,
+                                     int dir)
     {
         // Additional check range
         final int dx = params.barRefineDx;
@@ -516,8 +523,13 @@ public class StaffProjector
             }
         }
 
-        if (Math.abs(bestDer) >= params.minDerivative) {
-            return (dir > 0) ? (bestX - 1) : bestX;
+        bestDer = Math.abs(bestDer);
+
+        if (bestDer >= params.minDerivative) {
+            int x = (dir > 0) ? (bestX - 1) : bestX;
+            double derImpact = (double) bestDer / (params.barThreshold - params.minDerivative);
+
+            return new PeakSide(x, derImpact);
         } else {
             return null; // Invalid
         }
@@ -527,14 +539,13 @@ public class StaffProjector
     // refineStaffSide //
     //-----------------//
     /**
-     * Try to use the extreme peak on a given staff side, to refine the
-     * precise abscissa where the staff ends.
+     * Try to use the extreme peak on a given staff side, to refine the precise abscissa
+     * where the staff ends.
      * <p>
-     * This extreme peak (first or last peak according to side) can be used as
-     * abscissa reference only if it is either beyond current staff end or
-     * sufficiently close to the end.
-     * If no such peak is found, we stop right before the blank region
-     * assuming that this is a measure with no outside bar.
+     * This extreme peak (first or last peak according to side) can be used as abscissa reference
+     * only if it is either beyond current staff end or sufficiently close to the end.
+     * If no such peak is found, we stop right before the blank region assuming that this is a
+     * measure with no outside bar.
      *
      * @param side which horizontal side to refine
      */
@@ -547,8 +558,7 @@ public class StaffProjector
             final BarPeak peak = peaks.get((side == LEFT) ? 0 : (peaks.size() - 1));
             final int peakMid = (peak.getStart() + peak.getStop()) / 2;
 
-            // Check side position of peak wrt staff
-            // Must be external or close internal
+            // Check side position of peak wrt staff, it must be external or close internal
             final int toPeak = peakMid - staffEnd;
 
             if (((dir * toPeak) >= 0) || (Math.abs(toPeak) <= params.maxBarToEnd)) {
@@ -653,6 +663,31 @@ public class StaffProjector
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //----------//
+    // PeakSide //
+    //----------//
+    /**
+     * Describes the (left or right) side of a peak.
+     */
+    static class PeakSide
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Precise side abscissa. */
+        final int abscissa;
+
+        /** Quality based on derivative absolute value. */
+        final double grade;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public PeakSide (int abscissa,
+                         double grade)
+        {
+            this.abscissa = abscissa;
+            this.grade = grade;
+        }
+    }
+
     //-------//
     // Blank //
     //-------//
@@ -719,7 +754,7 @@ public class StaffProjector
                 "Abscissa margin for refining peak sides");
 
         final Scale.Fraction minDerivative = new Scale.Fraction(
-                0.5,
+                1.0,
                 "Minimum absolute derivative for peak side");
 
         final Scale.Fraction barThreshold = new Scale.Fraction(
@@ -861,6 +896,24 @@ public class StaffProjector
                 }
 
                 add(derivativeSeries, Color.BLUE, false);
+            }
+
+            {
+                // Derivatives positive threshold
+                XYSeries derSeries = new XYSeries("Der+");
+
+                derSeries.add(xMin, params.minDerivative);
+                derSeries.add(xMax, params.minDerivative);
+                add(derSeries, Color.BLUE, false);
+            }
+
+            {
+                // Derivatives negative threshold
+                XYSeries derSeries = new XYSeries("Der-");
+
+                derSeries.add(xMin, -params.minDerivative);
+                derSeries.add(xMax, -params.minDerivative);
+                add(derSeries, Color.BLUE, false);
             }
 
             {

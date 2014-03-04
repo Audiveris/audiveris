@@ -68,7 +68,7 @@ public interface Inter
     };
 
     /**
-     * For comparing interpretations by abscissa.
+     * For comparing interpretations by left abscissa.
      */
     public static final Comparator<Inter> byAbscissa = new Comparator<Inter>()
     {
@@ -77,6 +77,22 @@ public interface Inter
                             Inter i2)
         {
             return Integer.compare(i1.getBounds().x, i2.getBounds().x);
+        }
+    };
+
+    /**
+     * For comparing interpretations by right abscissa.
+     */
+    public static final Comparator<Inter> byRightAbscissa = new Comparator<Inter>()
+    {
+        @Override
+        public int compare (Inter i1,
+                            Inter i2)
+        {
+            Rectangle b1 = i1.getBounds();
+            Rectangle b2 = i2.getBounds();
+
+            return Integer.compare(b1.x + b1.width, b2.x + b2.width);
         }
     };
 

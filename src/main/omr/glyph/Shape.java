@@ -304,6 +304,7 @@ public enum Shape
     LEDGER("Ledger", new Color(0xaaaaaa)),
     ENDING_HORIZONTAL("Horizontal part of ending"),
     ENDING_VERTICAL("Vertical part of ending"),
+    SEGMENT("Wedge or ending segment"),
 
     //
     // Stems

@@ -144,19 +144,23 @@ public class BarlineInter
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
-        private static final String[] NAMES = new String[]{"core", "belt", "gap"};
+        private static final String[] NAMES = new String[]{"core", "belt", "gap", "start", "stop"};
 
-        private static final double[] WEIGHTS = new double[]{1, 1, 1};
+        private static final double[] WEIGHTS = new double[]{1, 1, 1, 1, 1};
 
         //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double core,
                         double belt,
-                        double gap)
+                        double gap,
+                        double start,
+                        double stop)
         {
             super(NAMES, WEIGHTS);
             setImpact(0, core);
             setImpact(1, belt);
             setImpact(2, gap);
+            setImpact(3, start);
+            setImpact(4, stop);
         }
     }
 }

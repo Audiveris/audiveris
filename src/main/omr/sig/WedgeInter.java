@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        S l u r I n t e r                                       //
+//                                       W e d g e I n t e r                                      //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -13,41 +13,53 @@ package omr.sig;
 
 import omr.glyph.Shape;
 
-import omr.sheet.curve.SlurInfo;
-
-import java.util.Map.Entry;
+import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 
 /**
- * Class {@code SlurInter} represents a slur interpretation.
+ * Class {@code WedgeInter} represents a wedge (crescendo or diminuendo).
  *
  * @author Hervé Bitteur
  */
-public class SlurInter
+public class WedgeInter
         extends AbstractInter
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Physical characteristics. */
-    private final SlurInfo info;
+    private final SegmentInter s1;
+
+    private final SegmentInter s2;
+
+    private final Line2D l1;
+
+    private final Line2D l2;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new SlurInter object.
+     * Creates a new WedgeInter object.
      *
-     * @param info    the underlying slur information
-     * @param impacts the assignment details
+     * @param s1      first segment
+     * @param s2      second segment
+     * @param l1      precise first line
+     * @param l2      precise second line
+     * @param bounds  bounding box
+     * @param shape   CRESCENDO or DECRESCENDO
+     * @param impacts assignments details
      */
-    public SlurInter (SlurInfo info,
-                      GradeImpacts impacts)
+    public WedgeInter (SegmentInter s1,
+                       SegmentInter s2,
+                       Line2D l1,
+                       Line2D l2,
+                       Rectangle bounds,
+                       Shape shape,
+                       GradeImpacts impacts)
     {
-        super(info.getBounds(), Shape.SLUR, impacts.getGrade());
+        super(bounds, shape, impacts.getGrade());
         setImpacts(impacts);
-        this.info = info;
-
-        // To debug attachments
-        for (Entry<String, java.awt.Shape> entry : info.getAttachments().entrySet()) {
-            addAttachment(entry.getKey(), entry.getValue());
-        }
+        this.s1 = s1;
+        this.s2 = s2;
+        this.l1 = l1;
+        this.l2 = l2;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -60,25 +72,20 @@ public class SlurInter
         visitor.visit(this);
     }
 
-    //------------//
-    // getDetails //
-    //------------//
-    @Override
-    public String getDetails ()
+    //----------//
+    // getLine1 //
+    //----------//
+    public Line2D getLine1 ()
     {
-        StringBuilder sb = new StringBuilder(super.getDetails());
-
-        sb.append(" ").append(info);
-
-        return sb.toString();
+        return l1;
     }
 
-    //---------//
-    // getInfo //
-    //---------//
-    public SlurInfo getInfo ()
+    //----------//
+    // getLine2 //
+    //----------//
+    public Line2D getLine2 ()
     {
-        return info;
+        return l2;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -91,24 +98,24 @@ public class SlurInter
         //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{
-            "dist", "width", "height", "angle", "vert"
+            "s1", "s2", "closedDy", "openDy", "openBias"
         };
 
-        private static final double[] WEIGHTS = new double[]{3, 1, 1, 1, 1};
+        private static final double[] WEIGHTS = new double[]{1, 1, 1, 1, 1};
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Impacts (double dist,
-                        double width,
-                        double height,
-                        double angle,
-                        double vert)
+        public Impacts (double s1,
+                        double s2,
+                        double closedDy,
+                        double openDy,
+                        double openBias)
         {
             super(NAMES, WEIGHTS);
-            setImpact(0, dist);
-            setImpact(1, width);
-            setImpact(2, height);
-            setImpact(3, angle);
-            setImpact(4, vert);
+            setImpact(0, s1);
+            setImpact(1, s2);
+            setImpact(2, closedDy);
+            setImpact(3, openDy);
+            setImpact(4, openBias);
         }
     }
 }
