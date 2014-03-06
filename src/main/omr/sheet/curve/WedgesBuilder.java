@@ -106,7 +106,6 @@ public class WedgesBuilder
             for (int index = 0; index < segments.size(); index++) {
                 SegmentInter s1 = segments.get(index);
                 Point p = s1.getInfo().getEnd(rev);
-                curves.selectPoint(p);
 
                 // Define the lookup area
                 Rectangle area = getArea(s1.getInfo(), rev);

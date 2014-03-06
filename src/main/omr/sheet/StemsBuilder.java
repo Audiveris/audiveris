@@ -625,9 +625,8 @@ public class StemsBuilder
         // getNeighboringInters //
         //----------------------//
         /**
-         * From the provided collection of interpretations, retrieve
-         * all those located in the vicinity of the provided central
-         * interpretation.
+         * From the provided collection of interpretations, retrieve all those located
+         * in the vicinity of the provided central interpretation.
          *
          * @param inter  the central interpretation
          * @param inters the collection of interpretations to search
@@ -636,8 +635,8 @@ public class StemsBuilder
         private List<Inter> getNeighboringInters (Inter inter,
                                                   List<Inter> inters)
         {
-            // Retrieve neighboring inters, using a box of system height and
-            // sufficiently wide, just to play with a limited number of inters.
+            // Retrieve neighboring inters, using a box of system height and sufficiently wide,
+            // just to play with a limited number of inters.
             Rectangle interBox = inter.getBounds();
             Rectangle systemBox = system.getBounds();
             Rectangle fatBox = new Rectangle(
@@ -750,13 +749,13 @@ public class StemsBuilder
                 targetPt = getTargetPt(new Line2D.Double(0, sysY, 100, sysY));
 
                 // Look for beams and beam hooks in the corner
-                List<Inter> candidates = sig.intersectedInters(
+                List<Inter> beamCandidates = sig.intersectedInters(
                         neighborBeams,
                         GeoOrder.BY_ABSCISSA,
                         area);
 
                 List<AbstractBeamInter> beams = new ArrayList<AbstractBeamInter>();
-                int groupStart = lookupBeams(beams, candidates);
+                int groupStart = lookupBeams(beams, beamCandidates);
 
                 // If we have a good beam, stop at the end of beam group
                 // using the good beam for the target point
@@ -1443,64 +1442,61 @@ public class StemsBuilder
              * Look for beam interpretations in the lookup area.
              * We stop at (group of) first good beam interpretation, if any.
              *
-             * @param beams      (output) list to be populated, ordered by
-             *                   distance
-             *                   from head
+             * @param beams      (output) list to be populated, ordered by distance from head
              * @param candidates (input) collection of candidate beams
              * @return index of first good beam in the beams list
              */
             private int lookupBeams (List<AbstractBeamInter> beams,
                                      List<Inter> candidates)
             {
+                // Reject beam candidates which are not in corner direction
+                // (this can happen because of beam bounding rectangle)
+                for (Iterator<Inter> it = candidates.iterator(); it.hasNext();) {
+                    AbstractBeamInter b = (AbstractBeamInter) it.next();
+
+                    if ((yDir * (getTargetPt(getLimit(b)).getY() - refPt.getY())) <= 0) {
+                        it.remove();
+                    }
+                }
+
                 // Sort candidates by distance from head
                 Collections.sort(
                         candidates,
                         new Comparator<Inter>()
                 {
                     @Override
-                    public int compare (Inter b1,
-                                        Inter b2)
+                    public int compare (Inter i1,
+                                        Inter i2)
                     {
-                        double d1 = Math.abs(
-                                refPt.getY()
-                                - getTargetPt(getLimit((AbstractBeamInter) b1)).getY());
-                        double d2 = Math.abs(
-                                refPt.getY()
-                                - getTargetPt(getLimit((AbstractBeamInter) b2)).getY());
+                        AbstractBeamInter b1 = (AbstractBeamInter) i1;
+                        AbstractBeamInter b2 = (AbstractBeamInter) i2;
 
-                        return Double.compare(d1, d2);
+                        return Double.compare(
+                                yDir * (getTargetPt(getLimit(b1)).getY() - refPt.getY()),
+                                yDir * (getTargetPt(getLimit(b2)).getY() - refPt.getY()));
                     }
                         });
 
                 // Build the list of beams
                 AbstractBeamInter goodBeam = null;
 
-                BeamLoop:
                 for (Inter inter : candidates) {
                     AbstractBeamInter beam = (AbstractBeamInter) inter;
 
                     if (goodBeam == null) {
                         // Check if beam is far enough from head
-                        final Point2D pt = getTargetPt(getLimit(beam));
-                        final double distToBeam = yDir * (pt.getY() - refPt.getY());
+                        final Point2D beamPt = getTargetPt(getLimit(beam));
+                        final double distToBeam = yDir * (beamPt.getY() - refPt.getY());
 
                         if (distToBeam < params.minHeadBeamDistance) {
-                            if (beam.isVip() || logger.isDebugEnabled()) {
-                                logger.info("VIP {} too close to {} on {}", beam, head, corner);
-                            }
-
-                            sig.insertExclusion(beam, head, Cause.TOO_CLOSE);
-
-                            continue BeamLoop;
+                            continue;
                         }
 
                         beams.add(beam);
 
-                        // Truncate at first good encountered beam, if any,
-                        // taken with its group.
-                        // Nota: We could shrink the lu area accordingly, however we
-                        // impose area containment for stem sections, so let's
-                        // stay with the system limit for area definition.
+                        // Truncate at first good encountered beam, if any, taken with its group.
+                        // Nota: We could shrink the lu area accordingly, however we impose area
+                        // containment for stem sections, so let's stay with the system limit.
                         if (beam.isGood()) {
                             goodBeam = beam;
                         }
@@ -1511,7 +1507,7 @@ public class StemsBuilder
                         if (areGroupCompatible(lastBeam, beam)) {
                             beams.add(beam);
                         } else {
-                            break BeamLoop;
+                            break;
                         }
                     }
                 }
@@ -1523,11 +1519,10 @@ public class StemsBuilder
             // lookupChunks //
             //--------------//
             /**
-             * Retrieve chunks of stems out of additional compatible
-             * sections (not part of stem seeds) found in the corner.
+             * Retrieve chunks of stems out of additional compatible sections (not part
+             * of stem seeds) found in the corner.
              *
-             * @param fatHeadSection (output) a very specific section which is
-             *                       part of head rather than stem
+             * @param fatHeadSection (output) specific section, part of head rather than stem
              * @return the collection of chunks found
              */
             private List<Glyph> lookupChunks (Wrapper<Section> fatHeadSection)

@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
@@ -51,6 +54,8 @@ public class BeamStructure
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(
             BeamStructure.class);
 
@@ -69,14 +74,8 @@ public class BeamStructure
     /** Underlying glyph. */
     private final Glyph glyph;
 
-    /** Minimum acceptable width for a beam. */
-    private final int minBeamWidth;
-
-    /** The typical beam height. */
-    private final int typicalBeamHeight;
-
-    /** maximum internal abscissa gap within a beam item. */
-    private final int maxItemXGap;
+    /** Parameters. */
+    private final Parameters params;
 
     /** Sequence of lines retrieved for the same glyph, from top to bottom. */
     private final List<BeamLine> lines = new ArrayList<BeamLine>();
@@ -91,20 +90,14 @@ public class BeamStructure
     /**
      * Creates a new BeamItems object.
      *
-     * @param glyph             the candidate glyph
-     * @param minBeamWidth      minimum width for a beam (in pixels)
-     * @param typicalBeamHeight typical height for a beam (in pixels)
-     * @param maxItemXGap       maximum internal abscissa gap within a beam item
+     * @param glyph  the candidate glyph
+     * @param params context-dependent parameters
      */
     public BeamStructure (Glyph glyph,
-                          int minBeamWidth,
-                          int typicalBeamHeight,
-                          int maxItemXGap)
+                          Parameters params)
     {
         this.glyph = glyph;
-        this.minBeamWidth = minBeamWidth;
-        this.typicalBeamHeight = typicalBeamHeight;
-        this.maxItemXGap = maxItemXGap;
+        this.params = params;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -119,8 +112,8 @@ public class BeamStructure
      */
     public void adjustSides ()
     {
-        // TODO: skip really too small sections on left or right
-        // say total of sections height < typical height /4
+        // TODO: skip really too small sections on left or right?
+        // Say total of sections height < typical height /2
         Rectangle glyphBox = glyph.getBounds();
         double gLeft = glyphBox.x;
         double gRight = (glyphBox.x + glyphBox.width) - 1;
@@ -129,13 +122,13 @@ public class BeamStructure
             final Line2D median = line.median;
 
             // Check left
-            if ((median.getX1() - gLeft) < minBeamWidth) {
+            if ((median.getX1() - gLeft) < params.minBeamWidth) {
                 final Point2D newPt = LineUtil.intersectionAtX(median, gLeft);
                 median.setLine(newPt, median.getP2());
             }
 
             // Check right
-            if ((gRight - median.getX2()) < minBeamWidth) {
+            if ((gRight - median.getX2()) < params.minBeamWidth) {
                 final Point2D newPt = LineUtil.intersectionAtX(median, gRight);
                 median.setLine(median.getP1(), newPt);
             }
@@ -338,7 +331,7 @@ public class BeamStructure
     public void splitLines ()
     {
         final double meanHeight = glyph.getMeanThickness(Orientation.HORIZONTAL);
-        final double ratio = meanHeight / typicalBeamHeight;
+        final double ratio = meanHeight / params.typicalBeamHeight;
         final int targetCount = (int) Math.rint(ratio);
 
         // Typical case: 2 beams are stuck (beamCount = 1, targetCount = 2)
@@ -350,7 +343,7 @@ public class BeamStructure
 
         // Create the middle lines with proper vertical gap
         BeamLine line = lines.get(0);
-        double gutter = line.height - (2 * typicalBeamHeight);
+        double gutter = line.height - (2 * params.typicalBeamHeight);
 
         if (gutter < 0) {
             if (glyph.isVip()) {
@@ -407,6 +400,45 @@ public class BeamStructure
         return sb.toString();
     }
 
+    //--------------------//
+    // computeGlobalSlope //
+    //--------------------//
+    /**
+     * Compute the leading slope among all borders found.
+     * We consider the section by decreasing width, and compute the mean slope on first sections.
+     * We stop as soon as a section border diverges strongly from the mean slope.
+     *
+     * @param sectionBorders the various sections borders (on one side)
+     * @return the most probable global slope
+     */
+    private double computeGlobalSlope (List<SectionBorder> sectionBorders)
+    {
+        // Use mean slope of longest sections
+        Collections.sort(sectionBorders, SectionBorder.byReverseLength);
+
+        double sumSlope = 0;
+        int sumPoints = 0;
+
+        for (SectionBorder border : sectionBorders) {
+            BasicLine line = border.line;
+            double lineSlope = line.getSlope();
+
+            if (sumPoints > 0) {
+                // Check if this line diverges from current mean slope value
+                double meanSlope = sumSlope / sumPoints;
+
+                if (Math.abs(lineSlope - meanSlope) > constants.maxSectionSlopeGap.getValue()) {
+                    break;
+                }
+            }
+
+            sumPoints += line.getNumberOfPoints();
+            sumSlope += (line.getNumberOfPoints() * line.getSlope());
+        }
+
+        return sumSlope / sumPoints;
+    }
+
     //----------------//
     // getBorderLines //
     //----------------//
@@ -429,8 +461,7 @@ public class BeamStructure
             final Rectangle sectionBox = section.getBounds();
 
             // Discard too narrow sections
-            if (sectionBox.width >= 3) {
-                //TODO: use constant
+            if (sectionBox.width >= params.coreSectionWidth) {
                 final BasicLine sectionLine = new BasicLine();
                 int x = section.getFirstPos();
 
@@ -445,19 +476,8 @@ public class BeamStructure
             }
         }
 
-        // Compute general slope of section borders
-        double sumSlope = 0;
-        int sumPoints = 0;
-
-        for (SectionBorder border : sectionBorders) {
-            BasicLine line = border.line;
-            sumPoints += line.getNumberOfPoints();
-            sumSlope += (line.getNumberOfPoints() * line.getSlope());
-        }
-
-        double globalSlope = sumSlope / sumPoints;
-
         // Define reference line
+        double globalSlope = computeGlobalSlope(sectionBorders);
         BasicLine refLine = new BasicLine();
         Point center = glyph.getCentroid();
         refLine.includePoint(center.x, center.y);
@@ -475,7 +495,7 @@ public class BeamStructure
 
         // Retrieve groups of dy values, roughly separated by beam height
         // Each group will correspond to a separate beam line
-        final double delta = typicalBeamHeight * 0.75; //TODO: use a constant?
+        final double delta = params.typicalBeamHeight * constants.maxBorderJitter.getValue();
         final List<BasicLine> borderLines = new ArrayList<BasicLine>();
         Barycenter dys = new Barycenter();
         BasicLine line = null;
@@ -490,9 +510,11 @@ public class BeamStructure
             line.includeLine(border.line);
         }
 
-        // Purge too small lines
+        // Purge too short lines
         for (Iterator<BasicLine> it = borderLines.iterator(); it.hasNext();) {
-            if (it.next().getNumberOfPoints() < minBeamWidth) {
+            Line2D l = it.next().toDouble();
+
+            if ((l.getX2() - l.getX1()) < params.minBeamWidth) {
                 it.remove();
             }
         }
@@ -527,7 +549,7 @@ public class BeamStructure
                 if (stop != null) {
                     int dx = sctBox.x - stop;
 
-                    if (dx > maxItemXGap) {
+                    if (dx > params.maxItemXGap) {
                         // End current item, start a new one
                         items.add(
                                 new BeamItem(
@@ -557,6 +579,59 @@ public class BeamStructure
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * These parameters depend on sheet global scale and on cue vs standard beams.
+     */
+    public static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Minimum acceptable width for a beam. */
+        final int minBeamWidth;
+
+        /** The typical beam height. */
+        final int typicalBeamHeight;
+
+        /** Maximum internal abscissa gap within a beam item. */
+        final int maxItemXGap;
+
+        /** Minimum section width to participate in border computation. */
+        final int coreSectionWidth;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Parameters (int minBeamWidth,
+                           int typicalBeamHeight,
+                           int maxItemXGap,
+                           int coreSectionWidth)
+        {
+            this.minBeamWidth = minBeamWidth;
+            this.typicalBeamHeight = typicalBeamHeight;
+            this.maxItemXGap = maxItemXGap;
+            this.coreSectionWidth = coreSectionWidth;
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Double maxSectionSlopeGap = new Constant.Double(
+                "tangent",
+                0.2,
+                "Maximum delta slope between sections of same border");
+
+        final Constant.Ratio maxBorderJitter = new Constant.Ratio(
+                0.85,
+                "Maximum border vertical jitter, specified as ratio of typical beam height");
+    }
+
     //---------------//
     // SectionBorder //
     //---------------//
@@ -566,8 +641,19 @@ public class BeamStructure
     private static class SectionBorder
             implements Comparable<SectionBorder>
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
+        static Comparator<SectionBorder> byReverseLength = new Comparator<SectionBorder>()
+        {
+            @Override
+            public int compare (SectionBorder o1,
+                                SectionBorder o2)
+            {
+                return Integer.compare(o2.section.getRunCount(), o1.section.getRunCount());
+            }
+        };
+
+        //~ Instance fields ------------------------------------------------------------------------
         final Section section; // Underlying section
 
         final BasicLine line; // Border line (top or bottom)

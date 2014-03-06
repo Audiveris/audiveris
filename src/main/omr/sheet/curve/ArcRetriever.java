@@ -217,7 +217,7 @@ public class ArcRetriever
      */
     private ArcShape determineShape (Arc arc)
     {
-        ///checkBreak(arc);
+        ///curves.checkBreak(arc);
         List<Point> points = arc.getPoints();
 
         // Too short?
@@ -550,7 +550,7 @@ public class ArcRetriever
 
         final Constant.Double maxAlpha = new Constant.Double(
                 "degree",
-                2.5,
+                3.0,
                 "Maximum angle (in degrees) for 3 points colinearity");
 
         final Scale.Fraction arcMinQuorum = new Scale.Fraction(

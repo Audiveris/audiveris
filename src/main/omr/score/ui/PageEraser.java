@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.score.ui;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
@@ -146,10 +147,12 @@ public class PageEraser
                 inter.accept(this);
             }
 
-//            // Erase each staff DMZ
-//            for (StaffInfo staff : system.getStaves()) {
-//                eraseDmz(staff);
-//            }
+            // Erase each staff DMZ?
+            if (constants.useDmz.isSet()) {
+                for (StaffInfo staff : system.getStaves()) {
+                    eraseDmz(staff);
+                }
+            }
         }
     }
 
@@ -231,10 +234,16 @@ public class PageEraser
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction symbolSize = new Scale.Fraction(1.1, "Symbols size to use for eraser");
+        final Scale.Fraction symbolSize = new Scale.Fraction(
+                1.1,
+                "Symbols size to use for eraser");
 
         final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 2.0,
                 "Margin erased above & below staff DMZ area");
+
+        final Constant.Boolean useDmz = new Constant.Boolean(
+                true,
+                "Should we erase the DMZ at staff start");
     }
 }

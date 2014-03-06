@@ -638,7 +638,7 @@ public class VerticalsBuilder
 
         Scale.Fraction cleanHigh = new Scale.Fraction(2.0, "High clean length for a stem");
 
-        Scale.Fraction cleanLow = new Scale.Fraction(0.75, "Low clean length for a stem");
+        Scale.Fraction cleanLow = new Scale.Fraction(0.5, "Low clean length for a stem");
 
         Scale.Fraction gapHigh = new Scale.Fraction(
                 0.5,

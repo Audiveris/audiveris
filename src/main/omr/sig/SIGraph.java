@@ -173,10 +173,6 @@ public class SIGraph
     public double computeContextualGrade (Inter   inter,
                                           boolean logging)
     {
-        if (inter.isVip()) {
-            logger.info("VIP computeContextualGrade for {}", inter);
-        }
-
         final List<Support> supports = getSupports(inter);
         double              cp;
 

@@ -164,10 +164,10 @@ public class SigSolver
         boolean hasLeft = false;
         boolean hasRight = false;
 
-        if (beam.isVip()) {
-            logger.info("VIP beamHasBothStems for {}", beam);
-        }
-
+//        if (beam.isVip()) {
+//            logger.info("VIP beamHasBothStems for {}", beam);
+//        }
+//
         for (Relation rel : sig.edgesOf(beam)) {
             if (rel instanceof BeamStemRelation) {
                 BeamStemRelation bsRel = (BeamStemRelation) rel;

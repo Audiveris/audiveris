@@ -649,7 +649,7 @@ public class Picture
 
         Constant.Integer gaussianRadius = new Constant.Integer(
                 "pixels",
-                2,
+                1,
                 "Radius of Gaussian filtering kernel (1 for 3x3, 2 for 5x5, etc)");
 
         Constant.Integer medianRadius = new Constant.Integer(

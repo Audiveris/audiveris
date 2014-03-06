@@ -103,10 +103,6 @@ public class SegmentsBuilder
         // Purge duplicates
         purgeDuplicates();
 
-        for (SegmentInter segment : segments) {
-            logger.info("{} {}", segment, segment.getInfo());
-        }
-
         logger.info("Segments: {}", segments.size());
     }
 

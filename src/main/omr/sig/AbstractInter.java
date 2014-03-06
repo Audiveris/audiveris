@@ -203,9 +203,10 @@ public abstract class AbstractInter
 
         sb.append(
                 String.format(
-                        "Inter: %s@%s%n",
+                        "%s@%s%s%n",
                         getClass().getSimpleName(),
-                        Integer.toHexString(this.hashCode())));
+                        Integer.toHexString(this.hashCode()),
+                        (sig != null) ? (" S#" + sig.getSystem().getId()) : ""));
         sb.append(String.format("   %s%n", this));
 
         if (!getDetails().isEmpty()) {

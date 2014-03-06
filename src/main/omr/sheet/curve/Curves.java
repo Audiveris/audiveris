@@ -50,7 +50,7 @@ public class Curves
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Point[] breakPoints = new Point[]{new Point(2082, 199) // BINGO
+    private static final Point[] breakPoints = new Point[]{///new Point(304, 226) // BINGO
     //
     };
 
@@ -204,6 +204,14 @@ public class Curves
         return slursBuilder;
     }
 
+    //-------------//
+    // selectPoint //
+    //-------------//
+    /**
+     * Debugging feature which forces view focus on provided point
+     *
+     * @param point the new focus point
+     */
     public void selectPoint (Point point)
     {
         view.selectPoint(point);

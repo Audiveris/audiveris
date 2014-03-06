@@ -54,25 +54,24 @@ import java.util.List;
  * Class {@code FilamentsFactory} builds filaments (long series of sections) out of a
  * collection of sections.
  * <p>
- * These filaments are meant to represent good candidates for (horizontal)
- * staff lines or (vertical) bar lines.
- * The factory aims at a given orientation, though the collection of input
- * sections may exhibit mixed orientations.
+ * These filaments are meant to represent good candidates for (horizontal) staff lines or (vertical)
+ * bar lines.
+ * The factory aims at a given orientation, though the collection of input sections may exhibit
+ * mixed orientations.
  * <p>
  * The factory works in two phases:<ol>
- * <li>The first phase, by default, discovers skeletons lines using the long
- * input sections and merges them as much as possible.
- * This strategy fits well the case of a population of sections with no
- * organization known a priori.
- * Another strategy is to explicitly provide the set of skeletons lines, and
- * thus make the factory focus on them only.
+ * <li>The first phase, by default, discovers skeletons lines using the long input sections and
+ * merges them as much as possible.
+ * This strategy fits well the case of a population of sections with no organization known a priori.
+ * Another strategy is to explicitly provide the set of skeletons lines, and thus make the factory
+ * focus on them only.
  * </li>
- * <li>The second phase completes these skeletons whenever possible by short
- * sections left over, and merges them again.</li></ol>
+ * <li>The second phase completes these skeletons whenever possible by short sections left over, and
+ * merges them again.</li></ol>
  * <p>
  * Customization: Default parameters values are defined via a ConstantSet.
- * Before launching filaments retrieval by {@link #retrieveFilaments},
- * parameters can be modified individually by calling proper setXXX() methods.
+ * Before launching filaments retrieval by {@link #retrieveFilaments}, parameters can be modified
+ * individually by calling proper setXXX() methods.
  *
  * @author Hervé Bitteur
  */

@@ -204,12 +204,6 @@ public class BeamsBuilder
                 height);
         List<Glyph> glyphs = sig.intersectedGlyphs(sortedBeamSpots, true, luArea);
 
-        if (!glyphs.isEmpty()) {
-            if (beam.isVip() || logger.isDebugEnabled()) {
-                logger.info("VIP {} {} hooks:", beam, side);
-            }
-        }
-
         for (Glyph glyph : glyphs) {
             String failure = checkHookGlyph(beam, side, glyph);
 
@@ -257,6 +251,7 @@ public class BeamsBuilder
         double minBeamHeight = params.minBeamHeight;
         int typicalHeight = sheet.getScale().getMainBeam();
         int maxItemXGap = params.maxItemXGap;
+        int coreSectionWidth = params.coreSectionWidth;
 
         if (isCue) {
             double ratio = Template.smallRatio;
@@ -264,6 +259,7 @@ public class BeamsBuilder
             minBeamHeight *= ratio;
             typicalHeight = (int) Math.rint(ratio * typicalHeight);
             maxItemXGap = (int) Math.rint(ratio * maxItemXGap);
+            coreSectionWidth = (int) Math.rint(ratio * coreSectionWidth);
         }
 
         final Rectangle box = glyph.getBounds();
@@ -295,8 +291,13 @@ public class BeamsBuilder
         }
 
         // Check straight lines of all north and south borders
-        final BeamStructure structure;
-        structure = new BeamStructure(glyph, minBeamWidth, typicalHeight, maxItemXGap);
+        final BeamStructure structure = new BeamStructure(
+                glyph,
+                new BeamStructure.Parameters(
+                minBeamWidth,
+                typicalHeight,
+                maxItemXGap,
+                coreSectionWidth));
 
         final Double meanDist = structure.computeLines();
 
@@ -376,7 +377,7 @@ public class BeamsBuilder
         final double distImpact = ((Impacts) beam.getImpacts()).getDistImpact();
 
         // Minimum width
-        if (box.width < params.minHookWidth) {
+        if (box.width < params.minHookWidthLow) {
             return "too narrow";
         }
 
@@ -468,7 +469,13 @@ public class BeamsBuilder
     private Impacts computeHookImpacts (BeamItem item,
                                         double meanDist)
     {
-        return computeImpacts(item, true, true, params.minHookWidth, params.maxHookWidth, meanDist);
+        return computeImpacts(
+                item,
+                true,
+                true,
+                params.minHookWidthLow,
+                params.minHookWidthHigh,
+                meanDist);
     }
 
     //----------------//
@@ -1432,15 +1439,23 @@ public class BeamsBuilder
 
         final Scale.Fraction minBeamWidth = new Scale.Fraction(1.5, "Minimum width for a beam");
 
+        final Scale.Fraction coreSectionWidth = new Scale.Fraction(
+                0.15,
+                "Minimum width for a core section to define borders");
+
         final Scale.Fraction maxItemXGap = new Scale.Fraction(
                 0.5,
                 "Acceptable abscissa gap within a beam item");
 
         final Scale.Fraction largeBeamWidth = new Scale.Fraction(4.0, "Width for a large beam");
 
-        final Scale.Fraction minHookWidth = new Scale.Fraction(
-                0.8,
-                "Minimum width for a beam hook");
+        final Scale.Fraction minHookWidthLow = new Scale.Fraction(
+                0.7,
+                "Low minimum width for a beam hook");
+
+        final Scale.Fraction minHookWidthHigh = new Scale.Fraction(
+                1.0,
+                "High minimum width for a beam hook");
 
         final Scale.Fraction maxHookWidth = new Scale.Fraction(
                 2.0,
@@ -1510,7 +1525,7 @@ public class BeamsBuilder
                 "Maximum delta slope between beams of a group");
 
         final Scale.Fraction maxDistanceToBorder = new Scale.Fraction(
-                0.1,
+                0.15,
                 "Maximum mean distance to average beam border");
 
         final Constant.Ratio maxBeltBlackRatio = new Constant.Ratio(
@@ -1518,7 +1533,7 @@ public class BeamsBuilder
                 "Maximum ratio of black pixels around beam");
 
         final Constant.Ratio minCoreBlackRatio = new Constant.Ratio(
-                0.75,
+                0.7,
                 "Minimum ratio of black pixels inside beam");
 
         final Constant.Ratio minExtBlackRatio = new Constant.Ratio(
@@ -1787,11 +1802,15 @@ public class BeamsBuilder
 
         final int minBeamWidth;
 
+        final int coreSectionWidth;
+
         final int maxItemXGap;
 
         final int largeBeamWidth;
 
-        final int minHookWidth;
+        final int minHookWidthLow;
+
+        final int minHookWidthHigh;
 
         final int maxHookWidth;
 
@@ -1852,8 +1871,10 @@ public class BeamsBuilder
         public Parameters (Scale scale)
         {
             minBeamWidth = scale.toPixels(constants.minBeamWidth);
+            coreSectionWidth = scale.toPixels(constants.coreSectionWidth);
             maxItemXGap = scale.toPixels(constants.maxItemXGap);
-            minHookWidth = scale.toPixels(constants.minHookWidth);
+            minHookWidthLow = scale.toPixels(constants.minHookWidthLow);
+            minHookWidthHigh = scale.toPixels(constants.minHookWidthHigh);
             minBeamHeight = scale.getMainBeam() * constants.minBeamHeightRatio.getValue();
             maxHookHeight = scale.getMainBeam() * constants.maxHookHeightRatio.getValue();
             maxSideBeamDx = scale.toPixels(constants.maxSideBeamDx);

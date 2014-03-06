@@ -125,6 +125,15 @@ public abstract class AbstractBeamInter
         return median;
     }
 
+    //--------//
+    // isGood //
+    //--------//
+    @Override
+    public boolean isGood ()
+    {
+        return grade >= 0.35; // TODO: revise this!
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
