@@ -60,15 +60,15 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public class SIGraph
-    extends Multigraph<Inter, Relation>
+        extends Multigraph<Inter, Relation>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
-    private static final Logger    logger = LoggerFactory.getLogger(SIGraph.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(SIGraph.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     /** Dedicated sheet */
     private final Sheet sheet;
 
@@ -76,7 +76,6 @@ public class SIGraph
     private final SystemInfo system;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     //---------//
     // SIGraph //
     //---------//
@@ -109,7 +108,7 @@ public class SIGraph
     /**
      * Creates a new SIGraph object.
      */
-    private SIGraph (Sheet      sheet,
+    private SIGraph (Sheet sheet,
                      SystemInfo system)
     {
         super(Relation.class);
@@ -118,7 +117,6 @@ public class SIGraph
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //----------//
     // getInter //
     //----------//
@@ -170,11 +168,11 @@ public class SIGraph
     //------------------------//
     // computeContextualGrade //
     //------------------------//
-    public double computeContextualGrade (Inter   inter,
+    public double computeContextualGrade (Inter inter,
                                           boolean logging)
     {
         final List<Support> supports = getSupports(inter);
-        double              cp;
+        double cp;
 
         if (!supports.isEmpty()) {
             cp = computeContextualGrade(inter, supports, logging);
@@ -266,16 +264,37 @@ public class SIGraph
         return removed;
     }
 
+    //--------------//
+    // getExclusion //
+    //--------------//
+    /**
+     * Report the (first found) exclusion if any between the two provided inters.
+     *
+     * @param i1 an inter
+     * @param i2 another inter
+     * @return the (first) exclusion if any
+     */
+    public Exclusion getExclusion (Inter i1,
+                                   Inter i2)
+    {
+        Set<Relation> exclusions = getExclusions(i1);
+        exclusions.retainAll(getExclusions(i2));
+
+        if (exclusions.isEmpty()) {
+            return null;
+        } else {
+            return (Exclusion) exclusions.iterator().next();
+        }
+    }
+
     //---------------//
     // getExclusions //
     //---------------//
     /**
-     * Report the set of conflicting relations the provided inter is
-     * involved in.
+     * Report the set of conflicting relations the provided inter is involved in.
      *
      * @param inter the provided interpretation
-     * @return the set of exclusions that involve inter, perhaps empty but not
-     *         null
+     * @return the set of exclusions that involve inter, perhaps empty but not null
      */
     public Set<Relation> getExclusions (Inter inter)
     {
@@ -295,18 +314,18 @@ public class SIGraph
      * @return all the possible consistent partner collections, with no pair
      *         of concurrent interpretations in the same collection
      */
-    public List<List<Inter>> getPartners (Inter       focus,
+    public List<List<Inter>> getPartners (Inter focus,
                                           List<Inter> inters)
     {
         int n = inters.size();
         Collections.sort(inters, Inter.byId);
 
-        final List<Inter>       stems = stemsOf(inters);
+        final List<Inter> stems = stemsOf(inters);
         final List<List<Inter>> result = new ArrayList<List<Inter>>();
 
         // Map inter -> concurrents of inter (within the provided collection)
-        Map<Inter, Set<Inter>>  map = new HashMap<Inter, Set<Inter>>();
-        boolean                 conflict = false;
+        Map<Inter, Set<Inter>> map = new HashMap<Inter, Set<Inter>>();
+        boolean conflict = false;
 
         for (Inter inter : inters) {
             Set<Inter> concurrents = new HashSet<Inter>();
@@ -314,7 +333,7 @@ public class SIGraph
 
             for (Relation rel : getExclusions(inter)) {
                 Inter concurrent = (getEdgeTarget(rel) == inter) ? getEdgeSource(rel)
-                                   : getEdgeTarget(rel);
+                        : getEdgeTarget(rel);
 
                 if ((inter.getId() < concurrent.getId()) && inters.contains(concurrent)) {
                     concurrents.add(concurrent);
@@ -346,7 +365,7 @@ public class SIGraph
         seqs.add(new Sequence(n));
 
         for (int i = 0; i < n; i++) {
-            Inter      inter = inters.get(i);
+            Inter inter = inters.get(i);
             Set<Inter> concurrents = map.get(inter);
 
             for (int is = 0, isBreak = seqs.size(); is < isBreak; is++) {
@@ -490,8 +509,8 @@ public class SIGraph
                                       Cause cause)
     {
         boolean direct = inter1.getId() < inter2.getId();
-        Inter   source = direct ? inter1 : inter2;
-        Inter   target = direct ? inter2 : inter1;
+        Inter source = direct ? inter1 : inter2;
+        Inter target = direct ? inter2 : inter1;
 
         for (Relation rel : getAllEdges(source, target)) {
             if (rel instanceof Exclusion) {
@@ -544,7 +563,8 @@ public class SIGraph
     public List<Inter> inters (final Shape shape)
     {
         return inters(
-            new Predicate<Inter>() {
+                new Predicate<Inter>()
+                {
                     @Override
                     public boolean check (Inter inter)
                     {
@@ -565,7 +585,8 @@ public class SIGraph
     public List<Inter> inters (final Class classe)
     {
         return inters(
-            new Predicate<Inter>() {
+                new Predicate<Inter>()
+                {
                     @Override
                     public boolean check (Inter inter)
                     {
@@ -586,7 +607,8 @@ public class SIGraph
     public List<Inter> inters (final Collection<Shape> shapes)
     {
         return inters(
-            new Predicate<Inter>() {
+                new Predicate<Inter>()
+                {
                     @Override
                     public boolean check (Inter inter)
                     {
@@ -609,7 +631,7 @@ public class SIGraph
      * @return the intersected glyph instances found
      */
     public List<Glyph> intersectedGlyphs (List<Glyph> glyphs,
-                                          boolean     sortedByAbscissa,
+                                          boolean sortedByAbscissa,
                                           Rectangle2D box)
     {
         List<Glyph> found = new ArrayList<Glyph>();
@@ -641,10 +663,10 @@ public class SIGraph
      * @return the intersected glyph instances found
      */
     public List<Glyph> intersectedGlyphs (List<Glyph> glyphs,
-                                          boolean     sortedByAbscissa,
-                                          Area        area)
+                                          boolean sortedByAbscissa,
+                                          Area area)
     {
-        double      xMax = area.getBounds().getMaxX();
+        double xMax = area.getBounds().getMaxX();
         List<Glyph> found = new ArrayList<Glyph>();
 
         for (Glyph glyph : glyphs) {
@@ -674,12 +696,12 @@ public class SIGraph
      * @return the intersected interpretations found
      */
     public List<Inter> intersectedInters (List<Inter> inters,
-                                          GeoOrder    order,
-                                          Rectangle   box)
+                                          GeoOrder order,
+                                          Rectangle box)
     {
         List<Inter> found = new ArrayList<Inter>();
-        int         xMax = (box.x + box.width) - 1;
-        int         yMax = (box.y + box.height) - 1;
+        int xMax = (box.x + box.width) - 1;
+        int yMax = (box.y + box.height) - 1;
 
         for (Inter inter : inters) {
             if (inter.isDeleted()) {
@@ -714,13 +736,13 @@ public class SIGraph
      * @return the intersected interpretations found
      */
     public List<Inter> intersectedInters (List<Inter> inters,
-                                          GeoOrder    order,
-                                          Area        area)
+                                          GeoOrder order,
+                                          Area area)
     {
         List<Inter> found = new ArrayList<Inter>();
-        Rectangle   bounds = area.getBounds();
-        double      xMax = bounds.getMaxX();
-        double      yMax = bounds.getMaxY();
+        Rectangle bounds = area.getBounds();
+        double xMax = bounds.getMaxX();
+        double yMax = bounds.getMaxY();
 
         for (Inter inter : inters) {
             if (inter.isDeleted()) {
@@ -733,7 +755,7 @@ public class SIGraph
                 found.add(inter);
             } else {
                 switch (order) {
-                case BY_ABSCISSA :
+                case BY_ABSCISSA:
 
                     if (iBox.x > xMax) {
                         return found;
@@ -741,7 +763,7 @@ public class SIGraph
 
                     break;
 
-                case BY_ORDINATE :
+                case BY_ORDINATE:
 
                     if (iBox.y > yMax) {
                         return found;
@@ -749,7 +771,7 @@ public class SIGraph
 
                     break;
 
-                case NONE :
+                case NONE:
                 }
             }
         }
@@ -782,10 +804,10 @@ public class SIGraph
      * @param relations the collection to process
      * @return the set of vertices removed
      */
-    public Set<Inter> reduceExclusions (Collection<?extends Relation> relations)
+    public Set<Inter> reduceExclusions (Collection<? extends Relation> relations)
     {
         Set<Inter> removed = new HashSet<Inter>();
-        Relation   bestRel;
+        Relation bestRel;
 
         do {
             // Chose best exclusion
@@ -823,14 +845,14 @@ public class SIGraph
             // Kill the weaker branch of the selected exclusion
             if (bestRel != null) {
                 final Inter source = getEdgeSource(bestRel);
-                Double      scp = source.getContextualGrade();
+                Double scp = source.getContextualGrade();
 
                 if (scp == null) {
                     scp = source.getGrade();
                 }
 
                 final Inter target = getEdgeTarget(bestRel);
-                Double      tcp = target.getContextualGrade();
+                Double tcp = target.getContextualGrade();
 
                 if (tcp == null) {
                     tcp = target.getGrade();
@@ -840,13 +862,13 @@ public class SIGraph
 
                 if (weaker.isVip()) {
                     logger.info(
-                        "VIP conflict {} deleting weaker {}",
-                        bestRel.toLongString(this),
-                        weaker);
+                            "VIP conflict {} deleting weaker {}",
+                            bestRel.toLongString(this),
+                            weaker);
                 }
 
                 Set<Relation> edges = edgesOf(weaker);
-                Set<Inter>    involved = involvedInters(edges);
+                Set<Inter> involved = involvedInters(edges);
 
                 relations.removeAll(edges);
                 removed.add(weaker);
@@ -910,12 +932,12 @@ public class SIGraph
      * @param logging  true for getting a printout of contributions
      * @return the best resulting contextual probability for the inter
      */
-    private Double computeContextualGrade (Inter                  inter,
-                                           List<?extends Support> supports,
-                                           boolean                logging)
+    private Double computeContextualGrade (Inter inter,
+                                           List<? extends Support> supports,
+                                           boolean logging)
     {
-        final int                 maxSupportCount = constants.maxSupportCount.getValue();
-        final List<Inter>         others = new ArrayList<Inter>();
+        final int maxSupportCount = constants.maxSupportCount.getValue();
+        final List<Inter> others = new ArrayList<Inter>();
         final Map<Inter, Support> map = new HashMap<Inter, Support>();
 
         // Check inter involvement
@@ -936,8 +958,8 @@ public class SIGraph
 
         // Check for mutual exclusion between 'others'
         List<List<Inter>> seqs = getPartners(inter, others);
-        double            bestCg = 0;
-        List<Inter>       bestSeq = null;
+        double bestCg = 0;
+        List<Inter> bestSeq = null;
 
         for (List<Inter> seq : seqs) {
             int n = seq.size();
@@ -948,7 +970,7 @@ public class SIGraph
                 List<SupportingInter> sups = new ArrayList<SupportingInter>();
 
                 for (int i = 0; i < n; i++) {
-                    Inter   other = seq.get(i);
+                    Inter other = seq.get(i);
                     Support support = map.get(other);
                     sups.add(new SupportingInter(other, support));
                 }
@@ -966,7 +988,7 @@ public class SIGraph
             double[] partners = new double[n];
 
             for (int i = 0; i < n; i++) {
-                Inter   other = seq.get(i);
+                Inter other = seq.get(i);
                 Support support = map.get(other);
                 // We assume support ratio does not depend on relation direction
                 ratios[i] = support.getSupportRatio();
@@ -983,10 +1005,10 @@ public class SIGraph
 
         if (logging) {
             logger.info(
-                "VIP {} cg:{} {}",
-                inter,
-                String.format("%.3f", bestCg),
-                supportsSeenFrom(inter, map, bestSeq));
+                    "VIP {} cg:{} {}",
+                    inter,
+                    String.format("%.3f", bestCg),
+                    supportsSeenFrom(inter, map, bestSeq));
         }
 
         return bestCg;
@@ -995,9 +1017,9 @@ public class SIGraph
     //------------//
     // contextual //
     //------------//
-    private double contextual (Inter   target,
+    private double contextual (Inter target,
                                Support support,
-                               Inter   source)
+                               Inter source)
     {
         return Grades.contextual(target.getGrade(), source.getGrade(), support.getSupportRatio());
     }
@@ -1005,7 +1027,7 @@ public class SIGraph
     //----------------//
     // involvedInters //
     //----------------//
-    private Set<Inter> involvedInters (Collection<?extends Relation> relations)
+    private Set<Inter> involvedInters (Collection<? extends Relation> relations)
     {
         Set<Inter> inters = new HashSet<Inter>();
 
@@ -1036,9 +1058,9 @@ public class SIGraph
     //------------------//
     // supportsSeenFrom //
     //------------------//
-    private String supportsSeenFrom (Inter               inter,
+    private String supportsSeenFrom (Inter inter,
                                      Map<Inter, Support> map,
-                                     List<Inter>         others)
+                                     List<Inter> others)
     {
         StringBuilder sb = new StringBuilder();
 
@@ -1059,7 +1081,6 @@ public class SIGraph
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //-----------------//
     // SupportingInter //
     //-----------------//
@@ -1068,7 +1089,8 @@ public class SIGraph
         //~ Static fields/initializers -------------------------------------------------------------
 
         /** For comparing instances according to their reverse value. */
-        public static final Comparator<SupportingInter> byReverseValue = new Comparator<SupportingInter>() {
+        public static final Comparator<SupportingInter> byReverseValue = new Comparator<SupportingInter>()
+        {
             @Override
             public int compare (SupportingInter o1,
                                 SupportingInter o2)
@@ -1077,16 +1099,15 @@ public class SIGraph
             }
         };
 
-
         //~ Instance fields ------------------------------------------------------------------------
+        final Inter partner;
 
-        final Inter   partner;
         final Support support;
-        final double  value;
+
+        final double value;
 
         //~ Constructors ---------------------------------------------------------------------------
-
-        public SupportingInter (Inter   partner,
+        public SupportingInter (Inter partner,
                                 Support support)
         {
             this.partner = partner;
@@ -1099,14 +1120,14 @@ public class SIGraph
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Integer maxSupportCount = new Constant.Integer(
-            "count",
-            6,
-            "Upper limit on number of supports used for contextual grade");
+                "count",
+                6,
+                "Upper limit on number of supports used for contextual grade");
     }
 
     //----------//
@@ -1129,7 +1150,6 @@ public class SIGraph
         int[] line;
 
         //~ Constructors ---------------------------------------------------------------------------
-
         public Sequence (int n)
         {
             line = new int[n];
@@ -1137,7 +1157,6 @@ public class SIGraph
         }
 
         //~ Methods --------------------------------------------------------------------------------
-
         public Sequence copy ()
         {
             Sequence newSeq = new Sequence(line.length);

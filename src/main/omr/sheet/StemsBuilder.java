@@ -256,7 +256,7 @@ public class StemsBuilder
         // The sorted stem seeds for this system
         systemSeeds = getSystemSeeds();
 
-        // The beam and beam hook interpretations for this system
+        // The sorted beam and beam hook interpretations for this system
         systemBeams = sig.inters(AbstractBeamInter.class);
         Collections.sort(systemBeams, Inter.byAbscissa);
 
@@ -281,12 +281,21 @@ public class StemsBuilder
         }
 
         // Handle stems mutual exclusions
-        watch.start("exclusions");
+        watch.start("stem exclusions");
         performMutualExclusions();
 
+        // Check stems horizontal gap on each beam
+        watch.start("checkBeamStems");
+
+        for (Inter beam : sig.inters(FullBeamInter.class)) {
+            checkBeamStems(beam);
+        }
+
         // Check carefully multiple stem links on same head
+        watch.start("checkHeadStems");
+
         for (Inter head : systemHeads) {
-            checkMultipleStems(head);
+            checkHeadStems(head);
         }
 
         if (constants.printWatch.isSet()) {
@@ -294,25 +303,90 @@ public class StemsBuilder
         }
     }
 
-    //--------------------//
-    // checkMultipleStems //
-    //--------------------//
+    //----------------//
+    // checkBeamStems //
+    //----------------//
     /**
-     * A head can have links to two stems (non mutually exclusive)
-     * only when these stems are compatible (head is on stem ends with
-     * one stem on bottom left and one stem on top right).
+     * Check whether the beam does not have a stem relation too close to another.
+     * If one of the stems is a side stem, we discard the other connection.
+     * If none of the stems is a side stem, we discard the worst connection.
+     *
+     * @param beam the beam to check
+     */
+    private void checkBeamStems (Inter beam)
+    {
+        List<BeamStemRelation> rels = new ArrayList<BeamStemRelation>();
+
+        for (Relation rel : sig.edgesOf(beam)) {
+            if (rel instanceof BeamStemRelation) {
+                rels.add((BeamStemRelation) rel);
+            }
+        }
+
+        // Sort by abscissae
+        Collections.sort(
+                rels,
+                new Comparator<BeamStemRelation>()
+        {
+            @Override
+            public int compare (BeamStemRelation o1,
+                                BeamStemRelation o2)
+            {
+                return Double.compare(o1.getCrossPoint().getX(), o2.getCrossPoint().getX());
+            }
+                });
+
+        BeamStemRelation prevRel = null;
+
+        for (BeamStemRelation rel : rels) {
+            if (prevRel != null) {
+                double dx = rel.getCrossPoint().getX() - prevRel.getCrossPoint().getX();
+
+                if (dx < params.minBeamStemsGap) {
+                    // Check if there is already an exclusion between the two stems
+                    if (sig.getExclusion(sig.getEdgeTarget(prevRel), sig.getEdgeTarget(rel)) != null) {
+                        prevRel = rel;
+                    } else if (prevRel.getBeamPortion() == BeamPortion.LEFT) {
+                        // Keep side connection
+                        sig.removeEdge(rel);
+                    } else if (rel.getBeamPortion() == BeamPortion.RIGHT) {
+                        // Keep side connection
+                        sig.removeEdge(prevRel);
+                        prevRel = rel;
+                    } else {
+                        // Discard the weaker of these two CENTER connections
+                        if (rel.getGrade() <= prevRel.getGrade()) {
+                            sig.removeEdge(rel);
+                        } else {
+                            sig.removeEdge(prevRel);
+                            prevRel = rel;
+                        }
+                    }
+                }
+            } else {
+                prevRel = rel;
+            }
+        }
+    }
+
+    //----------------//
+    // checkHeadStems //
+    //----------------//
+    /**
+     * A head can have links to two stems (non mutually exclusive) only when these stems
+     * are compatible (head is on stem ends with one stem on bottom left and one stem on
+     * top right).
      * <p>
      * Otherwise, we must clean up the configuration.
-     * If there is a link with zero yGap, it has priority over non-zero yGap
-     * that are generally due to stem extension. So cut the non-zero links.
-     * If there are two zero yGaps, if they are opposed on normal sides, it's
-     * ok.
+     * If there is a link with zero yGap, it has priority over non-zero yGap that are generally due
+     * to stem extension. So cut the non-zero links.
+     * If there are two zero yGaps, if they are opposed on normal sides, it's OK.
      * If not, cut the link to the one not on normal side.
      * If there are two non-zero yGaps, cut the one with larger yGap.
      *
      * @param head the note head to check
      */
-    private void checkMultipleStems (Inter head)
+    private void checkHeadStems (Inter head)
     {
         // Retrieve all nearby stems
         List<Inter> allStems = new ArrayList<Inter>();
@@ -469,6 +543,10 @@ public class StemsBuilder
                 1.0,
                 "Maximum vertical gap between two consecutive beams of the same group");
 
+        final Scale.Fraction minBeamStemsGap = new Scale.Fraction(
+                1.0,
+                "Minimum x gap between two stems on the same beam");
+
         final Constant.Ratio maxSeedJitter = new Constant.Ratio(
                 2.0,
                 "Maximum distance from stem seed to theoretical line,"
@@ -518,6 +596,8 @@ public class StemsBuilder
 
         final int maxInterBeamGap;
 
+        final int minBeamStemsGap;
+
         final double maxSeedJitter;
 
         final double maxSectionJitter;
@@ -543,6 +623,7 @@ public class StemsBuilder
             minStemExtension = scale.toPixels(constants.minStemExtension);
             minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
             maxInterBeamGap = scale.toPixels(constants.maxInterBeamGap);
+            minBeamStemsGap = scale.toPixels(constants.minBeamStemsGap);
             maxSeedJitter = constants.maxSeedJitter.getValue() * scale.getMainStem();
             maxSectionJitter = constants.maxSectionJitter.getValue() * scale.getMainStem();
 
@@ -730,10 +811,10 @@ public class StemsBuilder
             // link //
             //------//
             /**
-             * Look for all acceptable stems interpretations that can
-             * be connected to the head in the desired corner.
-             * Stop the search at the first good beam found or at the first non
-             * acceptable yGap, whichever comes first.
+             * Look for all acceptable stems interpretations that can be connected to
+             * the head in the desired corner.
+             * Stop the search at the first good beam found or at the first non acceptable yGap,
+             * whichever comes first.
              */
             public void link ()
             {
@@ -903,11 +984,7 @@ public class StemsBuilder
                     // Precise cross point
                     Point2D start = stemGlyph.getStartPoint(Orientation.VERTICAL);
                     Point2D stop = stemGlyph.getStopPoint(Orientation.VERTICAL);
-                    Point2D crossPt = LineUtil.intersection(
-                            start,
-                            stop,
-                            beamLimit.getP1(),
-                            beamLimit.getP2());
+                    Point2D crossPt = crossing(stemGlyph, beam);
                     bRel.setCrossPoint(crossPt);
 
                     // Abscissa -> beamPortion
@@ -1080,6 +1157,26 @@ public class StemsBuilder
                 }
 
                 return stemInter;
+            }
+
+            //----------//
+            // crossing //
+            //----------//
+            /**
+             * Compute the crossing point between a stem and a beam.
+             *
+             * @param stemGlyph the stem (glyph)
+             * @param beam      the beam
+             * @return the precise crossing point
+             */
+            private Point2D crossing (Glyph stemGlyph,
+                                      AbstractBeamInter beam)
+            {
+                Point2D start = stemGlyph.getStartPoint(Orientation.VERTICAL);
+                Point2D stop = stemGlyph.getStopPoint(Orientation.VERTICAL);
+                Line2D beamLimit = getLimit(beam);
+
+                return LineUtil.intersection(start, stop, beamLimit.getP1(), beamLimit.getP2());
             }
 
             //------------//
@@ -1422,6 +1519,7 @@ public class StemsBuilder
                                     r = new BeamStemRelation();
                                     r.setStemPortion(rel.getStemPortion());
                                     r.setBeamPortion(rel.getBeamPortion());
+                                    r.setCrossPoint(crossing(stem.getGlyph(), beam));
                                     r.setGrade(rel.getGrade());
                                     sig.addEdge(next, stem, r);
                                 }
