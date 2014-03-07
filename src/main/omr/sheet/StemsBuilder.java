@@ -82,46 +82,42 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code StemsBuilder} processes a system to build stems that
- * connect to note heads and perhaps beams.
+ * Class {@code StemsBuilder} processes a system to build stems that connect to note
+ * heads and perhaps beams.
  * <p>
  * At this point, beams have been identified as well as void and black heads.
  * We don't have flags yet at this time.
  * <p>
- * A stem is expected to be horizontally connected on the left or right
- * side of a head and vertically connected as well.
+ * A stem is expected to be horizontally connected on the left or right side of a head and
+ * vertically connected as well.
  * Such connections are looked up in the 4 corners of every head.
- * In poor-quality scores, stems can lack many pixels, resulting in vertical
- * gaps between stem parts and between head and nearest stem part, so we
- * must accept such potential gaps (even if we lower the resulting
- * interpretation grade).
+ * In poor-quality scores, stems can lack many pixels, resulting in vertical gaps between stem parts
+ * and between head and nearest stem part, so we must accept such potential gaps (even if we lower
+ * the resulting interpretation grade).
  * However we can be much more strict for the horizontal gap of the connection.
  * <p>
- * A stem can be the aggregation of several items: stem seeds (built from
- * long vertical sticks) and chunks (built from suitable sections found
- * in the corner), all being separated by vertical gaps.
- * Up to which point should we try to accept vertical gaps and increase a stem
- * length starting from a head?<ol>
- * <li>If there is a beam in the corner, try a stem that at least reaches the
- * beam.</li>
- * <li>Use a similar approach for the case of flag (if the flag is in the right
- * direction), except that we don't have identified flags yet!</li>
- * <li>If no obvious limit exists, accept all gaps in sequence while no too
- * large gap is encountered.</li>
+ * A stem can be the aggregation of several items: stem seeds (built from long vertical sticks) and
+ * chunks (built from suitable sections found in the corner), all being separated by vertical gaps.
+ * Up to which point should we try to accept vertical gaps and increase a stem length starting from
+ * a head?<ol>
+ * <li>If there is a beam in the corner, try a stem that at least reaches the beam.</li>
+ * <li>Use a similar approach for the case of flag (if the flag is in the right direction), except
+ * that we don't have identified flags yet!</li>
+ * <li>If no obvious limit exists, accept all gaps in sequence while no too large gap is
+ * encountered.</li>
  * </ol>
  * <p>
- * Every sequence of stem items built from the head is evaluated and
- * potentially recorded as a separate stem interpretation in the SIG.
+ * Every sequence of stem items built from the head is evaluated and potentially recorded as a
+ * separate stem interpretation in the SIG.
  * <p>
- * TODO: We could analyze in the whole page the population of "good" stems to
- * come up with most common stem lengths according to stem configurations,
- * and boost stem interpretations that match these most common lengths.
- * More precisely, the length that goes from last head to end of stem (if this
- * end is free from beam or flag) should be rather constant between stems.
+ * TODO: We could analyze in the whole page the population of "good" stems to come up with most
+ * common stem lengths according to stem configurations, and boost stem interpretations that match
+ * these most common lengths.
+ * More precisely, the length that goes from last head to end of stem (if this end is free from beam
+ * or flag) should be rather constant between stems.
  * <p>
  * Stem-head connection uses criteria based on xGap and yGap at reference point.
- * Stem-beam connection uses yGap (and xGap in the case of beam side
- * connection).
+ * Stem-beam connection uses yGap (and xGap in the case of beam side connection).
  *
  * @author Hervé Bitteur
  */
@@ -199,8 +195,8 @@ public class StemsBuilder
     //--------------//
     /**
      * We reuse this class to connect a stem to potential cue beams.
-     * Logic is rather simple for cue configurations. To be refined with a
-     * stem reuse to support multiple cue heads on one stem.
+     * Logic is rather simple for cue configurations. To be refined with a stem reuse to support
+     * multiple cue heads on one stem.
      *
      * @param head   cue head
      * @param corner head corner for connection
@@ -439,8 +435,7 @@ public class StemsBuilder
     // performMutualExclusions //
     //-------------------------//
     /**
-     * Browse the system interpretations to insert mutual exclusions
-     * wherever possible.
+     * Browse the system interpretations to insert mutual exclusions wherever possible.
      * This is done for stems.
      */
     private void performMutualExclusions ()
@@ -553,7 +548,7 @@ public class StemsBuilder
                 + " as ratio of typical stem width");
 
         final Constant.Ratio maxSectionJitter = new Constant.Ratio(
-                0.5,
+                1.0,
                 "Maximum distance from section center to target line,"
                 + " as ratio of typical stem width");
 
@@ -637,8 +632,8 @@ public class StemsBuilder
     // HeadLinker //
     //------------//
     /**
-     * A HeadLinker tries to establish links from a head to nearby
-     * stem interpretations, processing all 4 corners.
+     * A HeadLinker tries to establish links from a head to nearby stem interpretations,
+     * processing all 4 corners.
      */
     private class HeadLinker
     {
@@ -734,16 +729,15 @@ public class StemsBuilder
         // getNeighboringSeeds //
         //---------------------//
         /**
-         * Retrieve all vertical seeds in the vicinity of the provided
-         * (head) interpretation.
+         * Retrieve all vertical seeds in the vicinity of the provided (head) inter.
          *
          * @param inter the head interpretation
          * @return the set of neighboring seeds
          */
         private List<Glyph> getNeighboringSeeds (Inter inter)
         {
-            // Retrieve neighboring stem seeds, using a box of system height and
-            // sufficiently wide, just to play with a limited number of seeds.
+            // Retrieve neighboring stem seeds, using a box of system height and sufficiently wide,
+            // just to play with a limited number of seeds.
             Rectangle interBox = inter.getBounds();
             Rectangle systemBox = system.getBounds();
             Rectangle fatBox = new Rectangle(
@@ -762,8 +756,7 @@ public class StemsBuilder
         // CornerLinker //
         //--------------//
         /**
-         * A CornerLinker searches for all acceptable head -> stem
-         * links in a given corner.
+         * A CornerLinker searches for all acceptable head -> stem links in a given corner.
          */
         protected class CornerLinker
         {
@@ -902,8 +895,8 @@ public class StemsBuilder
             // reuse //
             //-------//
             /**
-             * Check the stems interpretations in the vicinity and try
-             * to connect the head to them, if not already done.
+             * Check the stems interpretations in the vicinity and try to connect the
+             * head to them, if not already done.
              */
             public void reuse ()
             {
@@ -926,8 +919,8 @@ public class StemsBuilder
             // areGroupCompatible //
             //--------------------//
             /**
-             * Check whether the two beams can be consecutive beams
-             * in the same beam group, using ordinate gap.
+             * Check whether the two beams can be consecutive beams in the same beam
+             * group, using ordinate gap.
              *
              * @param one current beam
              * @param two following beam, in 'dir' direction
@@ -1129,8 +1122,7 @@ public class StemsBuilder
             /**
              * (Try to) create stem interpretation with proper grade.
              *
-             * @param items the sequence of items (seeds / chunks) that
-             *              compose the stem
+             * @param items the sequence of items (seeds / chunks) that compose the stem
              * @return the proper stem interpretation or null if too weak
              */
             private StemInter createStemInter (List<Glyph> items)
@@ -1183,8 +1175,8 @@ public class StemsBuilder
             // getContrib //
             //------------//
             /**
-             * Report the (vertical) contribution of a rectangle to the
-             * filling of white space above or below the head.
+             * Report the (vertical) contribution of a rectangle to the filling of white
+             * space above or below the head.
              *
              * @param box the rectangle to check
              * @return the corresponding height within white space
@@ -1198,8 +1190,8 @@ public class StemsBuilder
             // getInPoint //
             //------------//
             /**
-             * Report the reference point slightly translated to the
-             * interior of the head, to catch stem candidates.
+             * Report the reference point slightly translated to the interior of the head,
+             * to catch stem candidates.
              *
              * @return the inner refPt
              */
@@ -1226,8 +1218,8 @@ public class StemsBuilder
             // getLuArea //
             //-----------//
             /**
-             * Define the lookup area on given corner, knowing the
-             * reference point of the entity (head).
+             * Define the lookup area on given corner, knowing the reference point of the
+             * entity (head).
              * Global slope is used (plus and minus slopeMargin).
              *
              * @return the lookup area
@@ -1266,8 +1258,8 @@ public class StemsBuilder
             // getOutPoint //
             //-------------//
             /**
-             * Report the reference point slightly translated to the
-             * exterior of the head, to catch stem candidates.
+             * Report the reference point slightly translated to the exterior of the head,
+             * to catch stem candidates.
              *
              * @return the outer refPt
              */
@@ -1282,8 +1274,8 @@ public class StemsBuilder
             // getReferencePoint //
             //-------------------//
             /**
-             * Compute head reference point for this corner (the point
-             * where a stem could be connected).
+             * Compute head reference point for this corner (the point where a stem could
+             * be connected).
              * For best precision, we use the related shape descriptor.
              *
              * @return the refPt
@@ -1305,8 +1297,8 @@ public class StemsBuilder
             // getRunBox //
             //-----------//
             /**
-             * Report the run box of the first or last run of the
-             * provided section according to the desired side.
+             * Report the run box of the first or last run of the provided section
+             * according to the desired side.
              *
              * @param section the section for which the side run is retrieved
              * @param side    the desired side
@@ -1326,8 +1318,7 @@ public class StemsBuilder
             //---------------//
             /**
              * Build the best possible target line.
-             * First, we use (head) refPt and (distant) targetPt to define a
-             * theoretical line.
+             * First, we use (head) refPt and (distant) targetPt to define a theoretical line.
              * Then, we look for suitable seeds if any to refine the line.
              * The non-suitable seeds are removed from the collection.
              *
@@ -1391,8 +1382,8 @@ public class StemsBuilder
             // getTargetPt //
             //-------------//
             /**
-             * Compute the point where the (skewed) vertical from head
-             * reference point crosses the provided limit.
+             * Compute the point where the (skewed) vertical from head reference point
+             * crosses the provided limit.
              *
              * @param limit the end of the white space
              * @return the crossing point
@@ -1429,8 +1420,8 @@ public class StemsBuilder
             //--------------//
             /**
              * Include the stem items, one after the other.
-             * We may have insufficient clean value for first items (resulting
-             * in no intermediate StemInter created) but we must go on.
+             * We may have insufficient clean value for first items (resulting in no intermediate
+             * StemInter created) but we must go on.
              *
              * @param items          the sequence of stem items
              * @param refY           the ordinate of head ref point
@@ -1678,11 +1669,11 @@ public class StemsBuilder
             // lookupSections //
             //----------------//
             /**
-             * To complement stem seeds, look up for relevant sections
-             * in the lookup area that could be part of a global stem.
+             * To complement stem seeds, look up for relevant sections in the lookup area
+             * that could be part of a global stem.
              *
-             * @param fatHeadSection (potential output) a thick section, part of
-             *                       head, that accounts for stem range
+             * @param fatHeadSection (potential output) a thick section, part of head, that accounts
+             *                       for stem range
              * @return the collection of additional sections found
              */
             private List<Section> lookupSections (Wrapper<Section> fatHeadSection)
@@ -1815,8 +1806,7 @@ public class StemsBuilder
                     }
                 }
 
-                // Handle the case of several head sections that might result
-                // in a too thick glyph
+                // Handle the case of several head sections that might result in a too thick glyph
                 headSections.retainAll(sections);
 
                 if (headSections.size() > 1) {
@@ -1871,8 +1861,7 @@ public class StemsBuilder
             // sortByDistance //
             //----------------//
             /**
-             * Sort stem items by their increasing vertical distance
-             * from head.
+             * Sort stem items by their increasing vertical distance from head.
              */
             private void sortByDistance (List<Glyph> glyphs)
             {

@@ -478,6 +478,7 @@ public class BeamStructure
 
         // Define reference line
         double globalSlope = computeGlobalSlope(sectionBorders);
+        purgeSectionSlopes(globalSlope, sectionBorders);
         BasicLine refLine = new BasicLine();
         Point center = glyph.getCentroid();
         refLine.includePoint(center.x, center.y);
@@ -485,9 +486,9 @@ public class BeamStructure
 
         // Compute each section vertical offset WRT the refLine
         for (SectionBorder border : sectionBorders) {
-            int x = GeoUtil.centerOf(border.section.getBounds()).x;
-            int y = border.line.yAtX(x);
-            int dy = y - refLine.yAtX(x);
+            double x = GeoUtil.centerOf(border.section.getBounds()).x;
+            double y = border.line.yAtX(x);
+            double dy = y - refLine.yAtX(x);
             border.setOffset(dy);
         }
 
@@ -510,16 +511,38 @@ public class BeamStructure
             line.includeLine(border.line);
         }
 
-        // Purge too short lines
+        // Purge too short lines (shorter than a hook)
         for (Iterator<BasicLine> it = borderLines.iterator(); it.hasNext();) {
             Line2D l = it.next().toDouble();
 
-            if ((l.getX2() - l.getX1()) < params.minBeamWidth) {
+            if ((l.getX2() - l.getX1()) < params.minHookWidthLow) {
                 it.remove();
             }
         }
 
         return borderLines;
+    }
+
+    //--------------------//
+    // purgeSectionSlopes //
+    //--------------------//
+    /**
+     * Discard sections whose slope value is too far from globalSlope.
+     *
+     * @param globalSlope    global slope
+     * @param sectionBorders collection to be purged
+     */
+    private void purgeSectionSlopes (double globalSlope,
+                                     List<SectionBorder> sectionBorders)
+    {
+        for (Iterator<SectionBorder> it = sectionBorders.iterator(); it.hasNext();) {
+            SectionBorder border = it.next();
+            double slope = border.line.getSlope();
+
+            if (Math.abs(slope - globalSlope) > constants.maxSectionSlopeGap.getValue()) {
+                it.remove();
+            }
+        }
     }
 
     //---------------//
@@ -592,6 +615,9 @@ public class BeamStructure
         /** Minimum acceptable width for a beam. */
         final int minBeamWidth;
 
+        /** Minimum acceptable width for a hook. */
+        final int minHookWidthLow;
+
         /** The typical beam height. */
         final int typicalBeamHeight;
 
@@ -603,11 +629,13 @@ public class BeamStructure
 
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (int minBeamWidth,
+                           int minHookWidthLow,
                            int typicalBeamHeight,
                            int maxItemXGap,
                            int coreSectionWidth)
         {
             this.minBeamWidth = minBeamWidth;
+            this.minHookWidthLow = minHookWidthLow;
             this.typicalBeamHeight = typicalBeamHeight;
             this.maxItemXGap = maxItemXGap;
             this.coreSectionWidth = coreSectionWidth;
@@ -628,7 +656,7 @@ public class BeamStructure
                 "Maximum delta slope between sections of same border");
 
         final Constant.Ratio maxBorderJitter = new Constant.Ratio(
-                0.85,
+                0.8,
                 "Maximum border vertical jitter, specified as ratio of typical beam height");
     }
 
@@ -658,7 +686,7 @@ public class BeamStructure
 
         final BasicLine line; // Border line (top or bottom)
 
-        int dy; // Ordinate offset WRT glyph reference line
+        double dy; // Ordinate offset WRT glyph reference line
 
         //~ Constructors ---------------------------------------------------------------------------
         public SectionBorder (Section section,
@@ -673,10 +701,10 @@ public class BeamStructure
         public int compareTo (SectionBorder that)
         {
             // Sort by increasing ordinate
-            return Integer.compare(this.dy, that.dy);
+            return Double.compare(this.dy, that.dy);
         }
 
-        public void setOffset (int dy)
+        public void setOffset (double dy)
         {
             this.dy = dy;
         }

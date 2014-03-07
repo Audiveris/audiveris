@@ -248,6 +248,7 @@ public class BeamsBuilder
     {
         // Specific params
         int minBeamWidth = params.minBeamWidth;
+        int minHookWidthLow = params.minHookWidthLow;
         double minBeamHeight = params.minBeamHeight;
         int typicalHeight = sheet.getScale().getMainBeam();
         int maxItemXGap = params.maxItemXGap;
@@ -256,6 +257,7 @@ public class BeamsBuilder
         if (isCue) {
             double ratio = Template.smallRatio;
             minBeamWidth = (int) Math.rint(ratio * minBeamWidth);
+            minHookWidthLow = (int) Math.rint(ratio * minHookWidthLow);
             minBeamHeight *= ratio;
             typicalHeight = (int) Math.rint(ratio * typicalHeight);
             maxItemXGap = (int) Math.rint(ratio * maxItemXGap);
@@ -295,6 +297,7 @@ public class BeamsBuilder
                 glyph,
                 new BeamStructure.Parameters(
                 minBeamWidth,
+                minHookWidthLow,
                 typicalHeight,
                 maxItemXGap,
                 coreSectionWidth));

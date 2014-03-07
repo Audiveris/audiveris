@@ -634,7 +634,7 @@ public class VerticalsBuilder
 
         Scale.Fraction blackHigh = new Scale.Fraction(2.5, "High length for a stem");
 
-        Scale.Fraction blackLow = new Scale.Fraction(1.5, "Low length for a stem");
+        Scale.Fraction blackLow = new Scale.Fraction(1.25, "Low length for a stem");
 
         Scale.Fraction cleanHigh = new Scale.Fraction(2.0, "High clean length for a stem");
 
