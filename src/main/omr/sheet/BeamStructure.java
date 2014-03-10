@@ -26,6 +26,8 @@ import omr.math.LineUtil;
 import omr.run.Orientation;
 import omr.run.Run;
 
+import omr.sheet.BeamsBuilder.ItemParameters;
+
 import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
 import omr.util.Vip;
@@ -43,6 +45,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Class {@code BeamStructure} handles one or several {@link BeamLine} instances,
@@ -74,8 +79,11 @@ public class BeamStructure
     /** Underlying glyph. */
     private final Glyph glyph;
 
+    /** Glyph centroid. */
+    private final Point center;
+
     /** Parameters. */
-    private final Parameters params;
+    private final ItemParameters params;
 
     /** Sequence of lines retrieved for the same glyph, from top to bottom. */
     private final List<BeamLine> lines = new ArrayList<BeamLine>();
@@ -94,10 +102,11 @@ public class BeamStructure
      * @param params context-dependent parameters
      */
     public BeamStructure (Glyph glyph,
-                          Parameters params)
+                          ItemParameters params)
     {
         this.glyph = glyph;
         this.params = params;
+        center = glyph.getCentroid();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -122,13 +131,13 @@ public class BeamStructure
             final Line2D median = line.median;
 
             // Check left
-            if ((median.getX1() - gLeft) < params.minBeamWidth) {
+            if ((median.getX1() - gLeft) < params.minBeamWidthLow) {
                 final Point2D newPt = LineUtil.intersectionAtX(median, gLeft);
                 median.setLine(newPt, median.getP2());
             }
 
             // Check right
-            if ((gRight - median.getX2()) < params.minBeamWidth) {
+            if ((gRight - median.getX2()) < params.minBeamWidthLow) {
                 final Point2D newPt = LineUtil.intersectionAtX(median, gRight);
                 median.setLine(median.getP1(), newPt);
             }
@@ -178,40 +187,45 @@ public class BeamStructure
         List<BasicLine> topLines = getBorderLines(glyph, TOP);
         List<BasicLine> bottomLines = getBorderLines(glyph, BOTTOM);
 
-        // Check straightness
-        int sumPoints = 0; // Number of points measured
-        double sumDist = 0; // Cumulated distance
-
-        for (BasicLine line : topLines) {
-            sumPoints += line.getNumberOfPoints();
-            sumDist += (line.getMeanDistance() * line.getNumberOfPoints());
-        }
-
-        for (BasicLine line : bottomLines) {
-            sumPoints += line.getNumberOfPoints();
-            sumDist += (line.getMeanDistance() * line.getNumberOfPoints());
-        }
-
-        final double meanDist = sumDist / sumPoints;
-
-        // Check same size
-        if (topLines.size() != bottomLines.size()) {
+        if (topLines.isEmpty() || bottomLines.isEmpty()) {
             return null;
         }
 
+        // Check straightness
+        List<BasicLine> allLines = new ArrayList<BasicLine>();
+        allLines.addAll(topLines);
+        allLines.addAll(bottomLines);
+
+        double globalDistance = computeGlobalDistance(allLines);
+
+        // Complete border lines
+        double globalSlope = slopeOfLongest(allLines);
+        SortedMap<Double, Line2D> topMap = getLinesMap(globalSlope, topLines);
+        SortedMap<Double, Line2D> bottomMap = getLinesMap(globalSlope, bottomLines);
+        completeBorderLines(+1, globalSlope, topMap, bottomMap);
+        completeBorderLines(-1, globalSlope, bottomMap, topMap);
+
+        if (topMap.size() != bottomMap.size()) {
+            return null; // This should never happen!
+        }
+
         // Loop on beam lines
-        for (int i = 0; i < topLines.size(); i++) {
+        Iterator<Entry<Double, Line2D>> topIt = topMap.entrySet().iterator();
+        Iterator<Entry<Double, Line2D>> botIt = bottomMap.entrySet().iterator();
+
+        while (topIt.hasNext()) {
             // Impose one median line per line and a fixed height
-            BasicLine top = topLines.get(i);
-            BasicLine bot = bottomLines.get(i);
-            double xMin = min(top.getMinAbscissa(), bot.getMinAbscissa());
-            double xMax = max(top.getMaxAbscissa(), bot.getMaxAbscissa());
-            double ytl = top.yAtX(xMin);
-            double ybl = bot.yAtX(xMin);
-            double ytr = top.yAtX(xMax);
-            double ybr = bot.yAtX(xMax);
-            double height = ((ybl - ytl) + (ybr - ytr)) / 2;
-            Line2D median = new Line2D.Double(xMin, (ytl + ybl) / 2, xMax, (ytr + ybr) / 2);
+            Line2D top = topIt.next().getValue();
+            Line2D bot = botIt.next().getValue();
+            double x1 = min(top.getX1(), bot.getX1());
+            double x2 = max(top.getX2(), bot.getX2());
+            double yt1 = LineUtil.intersectionAtX(top, x1).y;
+            double yb1 = LineUtil.intersectionAtX(bot, x1).y;
+            double yt2 = LineUtil.intersectionAtX(top, x2).y;
+            double yb2 = LineUtil.intersectionAtX(bot, x2).y;
+
+            double height = ((yb1 - yt1) + (yb2 - yt2)) / 2;
+            Line2D median = new Line2D.Double(x1, (yt1 + yb1) / 2, x2, (yt2 + yb2) / 2);
             BeamLine line = new BeamLine(median, height);
             retrieveItems(line);
 
@@ -223,10 +237,10 @@ public class BeamStructure
         }
 
         if (glyph.isVip()) {
-            logger.info(String.format("VIP %s globalDist:%.2f", this, meanDist));
+            logger.info(String.format("VIP %s globalDist:%.2f", this, globalDistance));
         }
 
-        return meanDist;
+        return globalDistance;
     }
 
     //-------------------//
@@ -331,7 +345,7 @@ public class BeamStructure
     public void splitLines ()
     {
         final double meanHeight = glyph.getMeanThickness(Orientation.HORIZONTAL);
-        final double ratio = meanHeight / params.typicalBeamHeight;
+        final double ratio = meanHeight / params.typicalHeight;
         final int targetCount = (int) Math.rint(ratio);
 
         // Typical case: 2 beams are stuck (beamCount = 1, targetCount = 2)
@@ -343,7 +357,7 @@ public class BeamStructure
 
         // Create the middle lines with proper vertical gap
         BeamLine line = lines.get(0);
-        double gutter = line.height - (2 * params.typicalBeamHeight);
+        double gutter = line.height - (2 * params.typicalHeight);
 
         if (gutter < 0) {
             if (glyph.isVip()) {
@@ -400,6 +414,84 @@ public class BeamStructure
         return sb.toString();
     }
 
+    //---------------------//
+    // completeBorderLines //
+    //---------------------//
+    /**
+     * Add or extend observed border lines.
+     * Beam items may be merged due to stuck pixels, resulting in missing (portions of) borders.
+     * In theory, we should have pairs of top & bottom borders with identical length, each pair
+     * corresponding to a beam item.
+     *
+     * @param yDir        -1 for going upward, +1 downward
+     * @param globalSlope global structure slope
+     * @param baseMap     (input/output) configuration of base lines
+     * @param otherMap    (input/output) configuration of other lines
+     */
+    private void completeBorderLines (double yDir,
+                                      double globalSlope,
+                                      SortedMap<Double, Line2D> baseMap,
+                                      SortedMap<Double, Line2D> otherMap)
+    {
+        double dy = yDir * params.typicalHeight;
+
+        // For each base border line, look for corresponding other border line
+        for (Entry<Double, Line2D> baseEntry : baseMap.entrySet()) {
+            Line2D base = baseEntry.getValue();
+            double targetY = baseEntry.getKey() + dy;
+            Entry<Double, Line2D> otherEntry = lookupLine(targetY, otherMap);
+
+            if (otherEntry == null) {
+                // Create a brand new map entry
+                otherMap.put(
+                        targetY,
+                        new Line2D.Double(
+                        base.getX1(),
+                        base.getY1() + dy,
+                        base.getX2(),
+                        base.getY2() + dy));
+            } else {
+                // Extend the map entry if needed
+                Line2D other = otherEntry.getValue();
+                double xMid = (other.getX1() + other.getX2()) / 2;
+                double yMid = (other.getY1() + other.getY2()) / 2;
+                double height = yMid - LineUtil.intersectionAtX(base, xMid).y;
+                Point2D p1 = (base.getX1() < other.getX1())
+                        ? new Point2D.Double(base.getX1(), base.getY1() + height) : other.getP1();
+                Point2D p2 = (base.getX2() > other.getX2())
+                        ? new Point2D.Double(base.getX2(), base.getY2() + height) : other.getP2();
+                double x = (p1.getX() + p2.getX()) / 2;
+                double y = LineUtil.intersectionAtX(p1, p2, x).y;
+                double offset = y - LineUtil.intersectionAtX(center, globalSlope, x).getY();
+
+                otherMap.remove(otherEntry.getKey());
+                otherMap.put(offset, new Line2D.Double(p1, p2));
+            }
+        }
+    }
+
+    //-----------------------//
+    // computeGlobalDistance //
+    //-----------------------//
+    /**
+     * Compute the observed average distance to border line
+     *
+     * @param lines all border lines (top & bottom)
+     * @return the average distance to straight line
+     */
+    private double computeGlobalDistance (List<BasicLine> lines)
+    {
+        int sumPoints = 0; // Number of points measured
+        double sumDist = 0; // Cumulated distance
+
+        for (BasicLine line : lines) {
+            sumPoints += line.getNumberOfPoints();
+            sumDist += (line.getMeanDistance() * line.getNumberOfPoints());
+        }
+
+        return sumDist / sumPoints;
+    }
+
     //--------------------//
     // computeGlobalSlope //
     //--------------------//
@@ -454,6 +546,10 @@ public class BeamStructure
     private List<BasicLine> getBorderLines (Glyph glyph,
                                             VerticalSide side)
     {
+        if (glyph.isVip()) {
+            logger.info("VIP getBorderLines glyph#{} side:{}", glyph.getId(), side);
+        }
+
         // All sections are vertical, retrieve their border (top or bottom)
         List<SectionBorder> sectionBorders = new ArrayList<SectionBorder>();
 
@@ -476,39 +572,38 @@ public class BeamStructure
             }
         }
 
-        // Define reference line
+        // Retrieve global slope
         double globalSlope = computeGlobalSlope(sectionBorders);
         purgeSectionSlopes(globalSlope, sectionBorders);
-        BasicLine refLine = new BasicLine();
-        Point center = glyph.getCentroid();
-        refLine.includePoint(center.x, center.y);
-        refLine.includePoint(center.x + 100, center.y + (100 * globalSlope));
 
         // Compute each section vertical offset WRT the refLine
         for (SectionBorder border : sectionBorders) {
             double x = GeoUtil.centerOf(border.section.getBounds()).x;
             double y = border.line.yAtX(x);
-            double dy = y - refLine.yAtX(x);
+            double dy = y - LineUtil.intersectionAtX(center, globalSlope, x).getY();
             border.setOffset(dy);
         }
 
-        Collections.sort(sectionBorders); // By distance to ref line
+        Collections.sort(sectionBorders); // By vertical offset WRT ref line
 
-        // Retrieve groups of dy values, roughly separated by beam height
+        // Retrieve groups of offset values, roughly separated by beam height
         // Each group will correspond to a separate beam line
-        final double delta = params.typicalBeamHeight * constants.maxBorderJitter.getValue();
+        final double delta = params.typicalHeight * constants.maxBorderJitter.getValue();
         final List<BasicLine> borderLines = new ArrayList<BasicLine>();
         Barycenter dys = new Barycenter();
-        BasicLine line = null;
+        BasicLine currentLine = null;
 
         for (SectionBorder border : sectionBorders) {
-            if ((line == null) || ((border.dy - dys.getY()) > delta)) {
-                borderLines.add(line = new BasicLine());
+            if (currentLine == null) {
+                borderLines.add(currentLine = new BasicLine());
+                dys = new Barycenter();
+            } else if ((border.dy - dys.getY()) > delta) {
+                borderLines.add(currentLine = new BasicLine());
                 dys = new Barycenter();
             }
 
             dys.include(border.line.getNumberOfPoints(), 0, border.dy);
-            line.includeLine(border.line);
+            currentLine.includeLine(border.line);
         }
 
         // Purge too short lines (shorter than a hook)
@@ -521,6 +616,51 @@ public class BeamStructure
         }
 
         return borderLines;
+    }
+
+    //-------------//
+    // getLinesMap //
+    //-------------//
+    private SortedMap<Double, Line2D> getLinesMap (double globalSlope,
+                                                   List<BasicLine> topLines)
+    {
+        SortedMap<Double, Line2D> map = new TreeMap<Double, Line2D>();
+
+        // Use refined value of global slope and flag each line WRT reference line
+        for (BasicLine l : topLines) {
+            Line2D line = l.toDouble();
+            double x = (line.getX1() + line.getX2()) / 2;
+            double y = l.yAtX(x);
+            double dy = y - LineUtil.intersectionAtX(center, globalSlope, x).getY();
+            map.put(dy, line);
+        }
+
+        return map;
+    }
+
+    //------------//
+    // lookupLine //
+    //------------//
+    /**
+     * Search among the provided lines a line compatible with the provided target.
+     * Compatibility uses ordinate gap WRT reference line
+     *
+     * @param offset target offset WRT reference line
+     * @param lines  map of available lines
+     * @return the entry found or null
+     */
+    private Entry<Double, Line2D> lookupLine (double offset,
+                                              SortedMap<Double, Line2D> lines)
+    {
+        final double delta = params.typicalHeight * constants.maxBorderJitter.getValue();
+
+        for (Entry<Double, Line2D> entry : lines.entrySet()) {
+            if (Math.abs(entry.getKey() - offset) <= delta) {
+                return entry;
+            }
+        }
+
+        return null;
     }
 
     //--------------------//
@@ -601,47 +741,27 @@ public class BeamStructure
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * These parameters depend on sheet global scale and on cue vs standard beams.
-     */
-    public static class Parameters
+    //----------------//
+    // slopeOfLongest //
+    //----------------//
+    private double slopeOfLongest (List<BasicLine> lines)
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        BasicLine bestLine = null;
+        double bestLength = 0;
 
-        /** Minimum acceptable width for a beam. */
-        final int minBeamWidth;
+        for (BasicLine line : lines) {
+            double length = line.getMaxAbscissa() - line.getMinAbscissa() + 1;
 
-        /** Minimum acceptable width for a hook. */
-        final int minHookWidthLow;
-
-        /** The typical beam height. */
-        final int typicalBeamHeight;
-
-        /** Maximum internal abscissa gap within a beam item. */
-        final int maxItemXGap;
-
-        /** Minimum section width to participate in border computation. */
-        final int coreSectionWidth;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (int minBeamWidth,
-                           int minHookWidthLow,
-                           int typicalBeamHeight,
-                           int maxItemXGap,
-                           int coreSectionWidth)
-        {
-            this.minBeamWidth = minBeamWidth;
-            this.minHookWidthLow = minHookWidthLow;
-            this.typicalBeamHeight = typicalBeamHeight;
-            this.maxItemXGap = maxItemXGap;
-            this.coreSectionWidth = coreSectionWidth;
+            if ((bestLine == null) || (bestLength < length)) {
+                bestLength = length;
+                bestLine = line;
+            }
         }
+
+        return bestLine.getSlope();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

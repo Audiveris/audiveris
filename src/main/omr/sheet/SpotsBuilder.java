@@ -289,7 +289,7 @@ public class SpotsBuilder
 
         final Constant.Integer binarizationThreshold = new Constant.Integer(
                 "pixel",
-                128, //140,
+                140,
                 "Global threshold used for binarization of gray spots");
     }
 }

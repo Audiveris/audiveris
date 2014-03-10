@@ -20,7 +20,6 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.image.AreaMask;
-import omr.image.Template;
 
 import omr.math.AreaUtil;
 import omr.math.GeoOrder;
@@ -92,8 +91,11 @@ public class BeamsBuilder
     @Navigable(false)
     private final SystemInfo system;
 
-    /** Scale-dependent constants. */
+    /** Scale-dependent global constants. */
     private final Parameters params;
+
+    /** Parameters to build items (cue or standard). */
+    private ItemParameters itemParams;
 
     /**
      * Beams (and hooks) for this system.
@@ -147,6 +149,9 @@ public class BeamsBuilder
      */
     public void buildBeams ()
     {
+        // Select parameters for standard items
+        itemParams = new ItemParameters(sheet.getScale(), 1);
+
         // Cache input image
         pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.STAFF_LINE_FREE);
 
@@ -174,6 +179,9 @@ public class BeamsBuilder
      */
     public void buildCueBeams ()
     {
+        // Select parameters for cue items
+        itemParams = new ItemParameters(sheet.getScale(), constants.cueBeamRatio.getValue());
+
         List<CueAggregate> aggregates = getCueAggregates();
 
         for (CueAggregate aggregate : aggregates) {
@@ -246,24 +254,6 @@ public class BeamsBuilder
                                    boolean isCue,
                                    List<Inter> beams)
     {
-        // Specific params
-        int minBeamWidth = params.minBeamWidth;
-        int minHookWidthLow = params.minHookWidthLow;
-        double minBeamHeight = params.minBeamHeight;
-        int typicalHeight = sheet.getScale().getMainBeam();
-        int maxItemXGap = params.maxItemXGap;
-        int coreSectionWidth = params.coreSectionWidth;
-
-        if (isCue) {
-            double ratio = Template.smallRatio;
-            minBeamWidth = (int) Math.rint(ratio * minBeamWidth);
-            minHookWidthLow = (int) Math.rint(ratio * minHookWidthLow);
-            minBeamHeight *= ratio;
-            typicalHeight = (int) Math.rint(ratio * typicalHeight);
-            maxItemXGap = (int) Math.rint(ratio * maxItemXGap);
-            coreSectionWidth = (int) Math.rint(ratio * coreSectionWidth);
-        }
-
         final Rectangle box = glyph.getBounds();
         final Line glyphLine = glyph.getLine();
 
@@ -272,14 +262,14 @@ public class BeamsBuilder
         }
 
         // Minimum width
-        if (box.width < minBeamWidth) {
+        if (box.width < itemParams.minBeamWidthLow) {
             return "too narrow";
         }
 
         // Minimum mean height
         final double meanHeight = glyph.getMeanThickness(Orientation.HORIZONTAL);
 
-        if (meanHeight < minBeamHeight) {
+        if (meanHeight < itemParams.minHeightLow) {
             return "too slim";
         }
 
@@ -293,15 +283,7 @@ public class BeamsBuilder
         }
 
         // Check straight lines of all north and south borders
-        final BeamStructure structure = new BeamStructure(
-                glyph,
-                new BeamStructure.Parameters(
-                minBeamWidth,
-                minHookWidthLow,
-                typicalHeight,
-                maxItemXGap,
-                coreSectionWidth));
-
+        final BeamStructure structure = new BeamStructure(glyph, itemParams);
         final Double meanDist = structure.computeLines();
 
         if ((meanDist == null) || (meanDist > params.maxDistanceToBorder)) {
@@ -311,7 +293,7 @@ public class BeamsBuilder
         // Check structure width
         final double structWidth = structure.getWidth();
 
-        if (structWidth < minBeamWidth) {
+        if (structWidth < itemParams.minBeamWidthLow) {
             return "too narrow borders";
         }
 
@@ -359,9 +341,8 @@ public class BeamsBuilder
     /**
      * Check the provided glyph as a hook near base beam.
      * We first check that the hook candidate does not overlap a beam.
-     * We then use the usual core & belt mask test for the hook candidate,
-     * using slope and height values from base beam, and adjusted abscissa
-     * limits.
+     * We then use the usual core & belt mask test for the hook candidate, using slope and height
+     * values from base beam, and adjusted abscissa limits.
      *
      * @param beam  the base beam
      * @param side  which vertical side of beam
@@ -380,16 +361,16 @@ public class BeamsBuilder
         final double distImpact = ((Impacts) beam.getImpacts()).getDistImpact();
 
         // Minimum width
-        if (box.width < params.minHookWidthLow) {
+        if (box.width < itemParams.minHookWidthLow) {
             return "too narrow";
         }
 
         // Minimum & maximum mean hook height
         final double meanHeight = glyph.getMeanThickness(Orientation.HORIZONTAL);
 
-        if (meanHeight < params.minBeamHeight) {
+        if (meanHeight < itemParams.minHeightLow) {
             return "too slim";
-        } else if (meanHeight > params.maxHookHeight) {
+        } else if (meanHeight > itemParams.maxHeightHigh) {
             return "too thick";
         }
 
@@ -410,7 +391,7 @@ public class BeamsBuilder
         // Compute core & belt impacts
         Impacts impacts = computeHookImpacts(item, distImpact);
 
-        if (impacts != null) {
+        if ((impacts != null) && (impacts.getGrade() >= BeamHookInter.getMinGrade())) {
             BeamHookInter hook = new BeamHookInter(glyph, impacts, median, height);
 
             if (glyph.isVip()) {
@@ -432,30 +413,26 @@ public class BeamsBuilder
     //--------------------//
     /**
      * Compute the grade details for the provided BeamItem, targeting
-     * a FullAbstractBeamInter.
+     * a FullBeamInter.
      *
      * @param item     the isolated beam item
      * @param above    true to check above beam item
      * @param below    true to check below beam item
      * @param meanDist average distance to border
-     * @param isCue    true for small beams
      * @return the impacts if successful, null otherwise
      */
     private Impacts computeBeamImpacts (BeamItem item,
                                         boolean above,
                                         boolean below,
-                                        double meanDist,
-                                        boolean isCue)
+                                        double meanDist)
     {
-        int minWidth = params.minBeamWidth;
-        int minLargeWidth = params.largeBeamWidth;
-
-        if (isCue) {
-            minWidth = (int) Math.rint(Template.smallRatio * minWidth);
-            minLargeWidth = (int) Math.rint(Template.smallRatio * minLargeWidth);
-        }
-
-        return computeImpacts(item, above, below, minWidth, minLargeWidth, meanDist);
+        return computeImpacts(
+                item,
+                above,
+                below,
+                itemParams.minBeamWidthLow,
+                itemParams.minBeamWidthHigh,
+                meanDist);
     }
 
     //--------------------//
@@ -476,8 +453,8 @@ public class BeamsBuilder
                 item,
                 true,
                 true,
-                params.minHookWidthLow,
-                params.minHookWidthHigh,
+                itemParams.minHookWidthLow,
+                itemParams.minHookWidthHigh,
                 meanDist);
     }
 
@@ -487,19 +464,19 @@ public class BeamsBuilder
     /**
      * Compute the grade details for the provided BeamItem.
      *
-     * @param item          the isolated beam item
-     * @param above         true to check above beam item
-     * @param below         true to check below beam item
-     * @param minWidth      minimum acceptable width
-     * @param minLargeWidth minimum large width
-     * @param meanDist      average distance to border
+     * @param item         the isolated beam item
+     * @param above        true to check above beam item
+     * @param below        true to check below beam item
+     * @param minWidthLow  low minimum width
+     * @param minWidthHigh high minimum width
+     * @param meanDist     average distance to border
      * @return the impacts if successful, null otherwise
      */
     private Impacts computeImpacts (BeamItem item,
                                     boolean above,
                                     boolean below,
-                                    int minWidth,
-                                    int minLargeWidth,
+                                    double minWidthLow,
+                                    double minWidthHigh,
                                     double meanDist)
     {
         Area coreArea = item.getCoreArea();
@@ -519,14 +496,17 @@ public class BeamsBuilder
         double beltRatio = (double) belt.value / beltCount;
         int width = (int) Math.rint(item.median.getX2() - item.median.getX1() + 1);
 
-        if ((width < minWidth)
+        if ((width < minWidthLow)
+            || (item.height < itemParams.minHeightLow)
+            || (item.height > itemParams.maxHeightHigh)
             || (coreRatio < params.minCoreBlackRatio)
             || (beltRatio > params.maxBeltBlackRatio)) {
             if (item.isVip() || logger.isDebugEnabled()) {
                 logger.info(
-                        "Rejected {} width:{} %core:{} %belt:{}",
+                        "Rejected {} width:{} height:{} %core:{} %belt:{}",
                         item,
                         width,
+                        item.height,
                         String.format("%.2f", coreRatio),
                         String.format("%.2f", beltRatio));
             }
@@ -534,12 +514,22 @@ public class BeamsBuilder
             return null;
         }
 
-        double widthImpact = (width - minWidth) / (double) minLargeWidth;
+        double widthImpact = (width - minWidthLow) / (minWidthHigh - minWidthLow);
+        double minHeightImpact = (item.height - itemParams.minHeightLow) / (itemParams.typicalHeight
+                                                                            - itemParams.minHeightLow);
+        double maxHeightImpact = (itemParams.maxHeightHigh - item.height) / (itemParams.maxHeightHigh
+                                                                             - itemParams.typicalHeight);
         double coreImpact = (coreRatio - params.minCoreBlackRatio) / (1 - params.minCoreBlackRatio);
         double beltImpact = 1 - (beltRatio / params.maxBeltBlackRatio);
         double distImpact = 1 - (meanDist / params.maxDistanceToBorder);
 
-        return new Impacts(widthImpact, coreImpact, beltImpact, distImpact);
+        return new Impacts(
+                widthImpact,
+                minHeightImpact,
+                maxHeightImpact,
+                coreImpact,
+                beltImpact,
+                distImpact);
     }
 
     //------------------//
@@ -548,7 +538,8 @@ public class BeamsBuilder
     /**
      * Create the resulting Inter instances (full beam or beam hook), for each good item.
      * <p>
-     * For beams with width between minBeamWidth and maxHookWidth, we create both interpretations.
+     * For beams with width between minBeamWidthLow and maxHookWidth, we create both
+     * interpretations.
      *
      * @param structure the beam structure retrieved (from a glyph)
      * @param meanDist  average distance to border
@@ -567,12 +558,12 @@ public class BeamsBuilder
                 double itemWidth = item.median.getX2() - item.median.getX1();
                 BeamHookInter hook = null;
 
-                if (itemWidth <= params.maxHookWidth) {
+                if (itemWidth <= itemParams.maxHookWidth) {
                     logger.debug("Create hook with {}", line);
 
                     Impacts impacts = computeHookImpacts(item, meanDist);
 
-                    if (impacts != null) {
+                    if ((impacts != null) && (impacts.getGrade() >= BeamHookInter.getMinGrade())) {
                         success = true;
                         hook = new BeamHookInter(null, impacts, item.median, item.height);
 
@@ -589,10 +580,9 @@ public class BeamsBuilder
                         item,
                         idx == 0, // Check above only for first item
                         idx == (lines.size() - 1), // Check below only for last item
-                        meanDist,
-                        false);
+                        meanDist);
 
-                if (impacts != null) {
+                if ((impacts != null) && (impacts.getGrade() >= FullBeamInter.getMinGrade())) {
                     success = true;
 
                     FullBeamInter beam = new FullBeamInter(null, impacts, item.median, item.height);
@@ -657,10 +647,9 @@ public class BeamsBuilder
                         item,
                         idx == 0, // Check above only for top items
                         idx == (lines.size() - 1), // Check below only for bottom items
-                        meanDist,
-                        true);
+                        meanDist);
 
-                if (impacts != null) {
+                if ((impacts != null) && (impacts.getGrade() >= SmallBeamInter.getMinGrade())) {
                     SmallBeamInter beam = new SmallBeamInter(
                             null,
                             impacts,
@@ -942,9 +931,9 @@ public class BeamsBuilder
             newItem.setVip();
         }
 
-        Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact, false);
+        Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact);
 
-        if (impacts != null) {
+        if ((impacts != null) && (impacts.getGrade() >= FullBeamInter.getMinGrade())) {
             FullBeamInter newBeam = new FullBeamInter(null, impacts, newMedian, height);
 
             if (beam.isVip()) {
@@ -1296,9 +1285,9 @@ public class BeamsBuilder
             newItem.setVip();
         }
 
-        Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact, false);
+        Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact);
 
-        if (impacts != null) {
+        if ((impacts != null) && (impacts.getGrade() >= FullBeamInter.getMinGrade())) {
             return new FullBeamInter(null, impacts, median, height);
         } else {
             return null;
@@ -1427,6 +1416,53 @@ public class BeamsBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //----------------//
+    // ItemParameters //
+    //----------------//
+    /** Parameters that govern beam/hook items, sometime dependent on cue/standard. */
+    public static class ItemParameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final double minBeamWidthLow;
+
+        final double minBeamWidthHigh;
+
+        final double minHookWidthLow;
+
+        final double minHookWidthHigh;
+
+        final double maxHookWidth;
+
+        final double minHeightLow;
+
+        final double typicalHeight;
+
+        final double maxHeightHigh;
+
+        final double maxItemXGap;
+
+        final int coreSectionWidth;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ItemParameters (Scale scale,
+                               double ratio)
+        {
+            minBeamWidthLow = scale.toPixelsDouble(constants.minBeamWidthLow) * ratio; // ?
+            minBeamWidthHigh = scale.toPixelsDouble(constants.minBeamWidthHigh);
+            minHookWidthLow = scale.toPixelsDouble(constants.minHookWidthLow) * ratio; // ?
+            minHookWidthHigh = scale.toPixelsDouble(constants.minHookWidthHigh);
+            maxHookWidth = scale.toPixelsDouble(constants.maxHookWidth);
+
+            typicalHeight = scale.getMainBeam() * ratio;
+            minHeightLow = typicalHeight * constants.minHeightRatioLow.getValue();
+            maxHeightHigh = typicalHeight * constants.maxHeightRatioHigh.getValue();
+
+            maxItemXGap = scale.toPixelsDouble(constants.maxItemXGap);
+            coreSectionWidth = scale.toPixels(constants.coreSectionWidth);
+        }
+    }
+
     //
     //-----------//
     // Constants //
@@ -1436,42 +1472,44 @@ public class BeamsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        // Item parameters
+        //----------------
+        final Scale.Fraction minBeamWidthLow = new Scale.Fraction(
+                1.5,
+                "Low minimum width for a beam");
 
-        final Scale.Fraction minBeamWidth = new Scale.Fraction(1.5, "Minimum width for a beam");
+        final Scale.Fraction minBeamWidthHigh = new Scale.Fraction(
+                4.0,
+                "High minimum width for a beam");
 
-        final Scale.Fraction coreSectionWidth = new Scale.Fraction(
-                0.15,
-                "Minimum width for a core section to define borders");
+        final Scale.Fraction minHookWidthLow = new Scale.Fraction(
+                0.7,
+                "Low minimum width for a hook");
+
+        final Scale.Fraction minHookWidthHigh = new Scale.Fraction(
+                1.0,
+                "High minimum width for a hook");
+
+        final Scale.Fraction maxHookWidth = new Scale.Fraction(2.0, "Maximum width for a hook");
+
+        final Constant.Ratio minHeightRatioLow = new Constant.Ratio(
+                0.75,
+                "Low minimum height for a beam or hook, specified as ratio of typical beam");
+
+        final Constant.Ratio maxHeightRatioHigh = new Constant.Ratio(
+                1.25,
+                "High maximum height for a beam or hook, specified as ratio of typical beam");
 
         final Scale.Fraction maxItemXGap = new Scale.Fraction(
                 0.5,
                 "Acceptable abscissa gap within a beam item");
 
-        final Scale.Fraction largeBeamWidth = new Scale.Fraction(4.0, "Width for a large beam");
+        final Scale.Fraction coreSectionWidth = new Scale.Fraction(
+                0.15,
+                "Minimum width for a core section to define borders");
 
-        final Scale.Fraction minHookWidthLow = new Scale.Fraction(
-                0.7,
-                "Low minimum width for a beam hook");
-
-        final Scale.Fraction minHookWidthHigh = new Scale.Fraction(
-                1.0,
-                "High minimum width for a beam hook");
-
-        final Scale.Fraction maxHookWidth = new Scale.Fraction(
-                2.0,
-                "Maximum width for a beam hook");
-
-        final Constant.Ratio minBeamHeightRatio = new Constant.Ratio(
-                0.75,
-                "Minimum height for a beam, specified as ratio of typical beam");
-
-        final Constant.Ratio maxHookHeightRatio = new Constant.Ratio(
-                1.25,
-                "Maximum height for a hook, specified as ratio of typical beam");
-
+        // Global parameters
+        //------------------
         final Scale.Fraction maxSideBeamDx = new Scale.Fraction(
                 4.0,
                 "Maximum abscissa gap to detect side beams");
@@ -1562,6 +1600,101 @@ public class BeamsBuilder
         final Constant.Ratio cueBeamRatio = new Constant.Ratio(
                 0.6,
                 "Ratio applied for cue beams height");
+
+        final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final int maxSideBeamDx;
+
+        final int maxBeamsGapX;
+
+        final int maxBeamsGapY;
+
+        final int beamsXMargin;
+
+        final int maxStemBeamGapX;
+
+        final int maxStemBeamGapY;
+
+        final int maxExtensionToStem;
+
+        final int maxExtensionToSpot;
+
+        final int beltMarginDx;
+
+        final int beltMarginDy;
+
+        final double maxBeamSlope;
+
+        final double maxBorderSlopeGap;
+
+        final double maxBeamSlopeGap;
+
+        final double maxDistanceToBorder;
+
+        final double maxBeltBlackRatio;
+
+        final double minCoreBlackRatio;
+
+        final double minExtBlackRatio;
+
+        final int cueXMargin;
+
+        final int cueYMargin;
+
+        final int cueBoxDx;
+
+        final int cueBoxDy;
+
+        final double cueBeamRatio;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            maxSideBeamDx = scale.toPixels(constants.maxSideBeamDx);
+            maxBeamsGapX = scale.toPixels(constants.maxBeamsGapX);
+            maxBeamsGapY = scale.toPixels(constants.maxBeamsGapY);
+            beamsXMargin = scale.toPixels(constants.beamsXMargin);
+            maxStemBeamGapX = scale.toPixels(constants.maxStemBeamGapX);
+            maxStemBeamGapY = scale.toPixels(constants.maxStemBeamGapY);
+            maxExtensionToStem = scale.toPixels(constants.maxExtensionToStem);
+            maxExtensionToSpot = scale.toPixels(constants.maxExtensionToSpot);
+            beltMarginDx = scale.toPixels(constants.beltMarginDx);
+            beltMarginDy = scale.toPixels(constants.beltMarginDy);
+            maxBeamSlope = constants.maxBeamSlope.getValue();
+            maxBorderSlopeGap = constants.maxBorderSlopeGap.getValue();
+            maxBeamSlopeGap = constants.maxBeamSlopeGap.getValue();
+            maxDistanceToBorder = scale.toPixelsDouble(constants.maxDistanceToBorder);
+            maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
+            minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
+            minExtBlackRatio = constants.minExtBlackRatio.getValue();
+            cueXMargin = scale.toPixels(constants.cueXMargin);
+            cueYMargin = scale.toPixels(constants.cueYMargin);
+            cueBoxDx = scale.toPixels(constants.cueBoxDx);
+            cueBoxDy = scale.toPixels(constants.cueBoxDy);
+            cueBeamRatio = constants.cueBeamRatio.getValue();
+
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
+            }
+        }
     }
 
     //--------------//
@@ -1789,124 +1922,6 @@ public class BeamsBuilder
                     final Inter stem = stems.get(i);
                     connectStemToBeams(stem, beams, head);
                 }
-            }
-        }
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final int minBeamWidth;
-
-        final int coreSectionWidth;
-
-        final int maxItemXGap;
-
-        final int largeBeamWidth;
-
-        final int minHookWidthLow;
-
-        final int minHookWidthHigh;
-
-        final int maxHookWidth;
-
-        final double minBeamHeight;
-
-        final double maxHookHeight;
-
-        final int maxSideBeamDx;
-
-        final int maxBeamsGapX;
-
-        final int maxBeamsGapY;
-
-        final int beamsXMargin;
-
-        final int maxStemBeamGapX;
-
-        final int maxStemBeamGapY;
-
-        final int maxExtensionToStem;
-
-        final int maxExtensionToSpot;
-
-        final int beltMarginDx;
-
-        final int beltMarginDy;
-
-        final double maxBeamSlope;
-
-        final double maxBorderSlopeGap;
-
-        final double maxBeamSlopeGap;
-
-        final double maxDistanceToBorder;
-
-        final double maxBeltBlackRatio;
-
-        final double minCoreBlackRatio;
-
-        final double minExtBlackRatio;
-
-        final int cueXMargin;
-
-        final int cueYMargin;
-
-        final int cueBoxDx;
-
-        final int cueBoxDy;
-
-        final double cueBeamRatio;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
-        {
-            minBeamWidth = scale.toPixels(constants.minBeamWidth);
-            coreSectionWidth = scale.toPixels(constants.coreSectionWidth);
-            maxItemXGap = scale.toPixels(constants.maxItemXGap);
-            minHookWidthLow = scale.toPixels(constants.minHookWidthLow);
-            minHookWidthHigh = scale.toPixels(constants.minHookWidthHigh);
-            minBeamHeight = scale.getMainBeam() * constants.minBeamHeightRatio.getValue();
-            maxHookHeight = scale.getMainBeam() * constants.maxHookHeightRatio.getValue();
-            maxSideBeamDx = scale.toPixels(constants.maxSideBeamDx);
-            maxBeamsGapX = scale.toPixels(constants.maxBeamsGapX);
-            maxBeamsGapY = scale.toPixels(constants.maxBeamsGapY);
-            beamsXMargin = scale.toPixels(constants.beamsXMargin);
-            maxStemBeamGapX = scale.toPixels(constants.maxStemBeamGapX);
-            maxStemBeamGapY = scale.toPixels(constants.maxStemBeamGapY);
-            maxExtensionToStem = scale.toPixels(constants.maxExtensionToStem);
-            maxExtensionToSpot = scale.toPixels(constants.maxExtensionToSpot);
-            beltMarginDx = scale.toPixels(constants.beltMarginDx);
-            beltMarginDy = scale.toPixels(constants.beltMarginDy);
-            largeBeamWidth = scale.toPixels(constants.largeBeamWidth);
-            maxHookWidth = scale.toPixels(constants.maxHookWidth);
-            maxBeamSlope = constants.maxBeamSlope.getValue();
-            maxBorderSlopeGap = constants.maxBorderSlopeGap.getValue();
-            maxBeamSlopeGap = constants.maxBeamSlopeGap.getValue();
-            maxDistanceToBorder = scale.toPixelsDouble(constants.maxDistanceToBorder);
-            maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
-            minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
-            minExtBlackRatio = constants.minExtBlackRatio.getValue();
-            cueXMargin = scale.toPixels(constants.cueXMargin);
-            cueYMargin = scale.toPixels(constants.cueYMargin);
-            cueBoxDx = scale.toPixels(constants.cueBoxDx);
-            cueBoxDy = scale.toPixels(constants.cueBoxDy);
-            cueBeamRatio = constants.cueBeamRatio.getValue();
-
-            if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
             }
         }
     }

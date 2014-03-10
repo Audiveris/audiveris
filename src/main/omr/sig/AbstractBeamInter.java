@@ -143,21 +143,28 @@ public abstract class AbstractBeamInter
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
-        private static final String[] NAMES = new String[]{"width", "core", "belt", "dist"};
+        private static final String[] NAMES = new String[]{
+            "width", "minHgt", "maxHgt", "core", "belt",
+            "dist"
+        };
 
-        private static final double[] WEIGHTS = new double[]{0.5, 2, 2, 2};
+        private static final double[] WEIGHTS = new double[]{0.5, 1, 1, 2, 2, 2};
 
         //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double width,
+                        double minHeight,
+                        double maxHeight,
                         double core,
                         double belt,
                         double dist)
         {
             super(NAMES, WEIGHTS);
             setImpact(0, width);
-            setImpact(1, core);
-            setImpact(2, belt);
-            setImpact(3, dist);
+            setImpact(1, minHeight);
+            setImpact(2, maxHeight);
+            setImpact(3, core);
+            setImpact(4, belt);
+            setImpact(5, dist);
         }
 
         //~ Methods --------------------------------------------------------------------------------
