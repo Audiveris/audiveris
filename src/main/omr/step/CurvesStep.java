@@ -39,7 +39,7 @@ public class CurvesStep
                 Steps.CURVES,
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
-                SKELETON_TAB,
+                DATA_TAB,
                 "Retrieve all curves");
     }
 

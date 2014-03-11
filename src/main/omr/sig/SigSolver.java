@@ -226,6 +226,10 @@ public class SigSolver
      */
     private int checkHeadSide (Inter head)
     {
+        if (head.isVip()) {
+            logger.info("VIP checkHeadSide for {}", head);
+        }
+
         int modifs = 0;
 
         // Check all connected stems
@@ -256,11 +260,9 @@ public class SigSolver
 
             // Target side and target pitches of other head
             // Look for presence of head on other side with target pitch
-            HorizontalSide targetSide = (headSide == LEFT) ? RIGHT : LEFT;
+            HorizontalSide targetSide = headSide.opposite();
 
-            for (int s : new int[]{1, 2}) {
-                int targetPitch = pitch + ((headSide == LEFT) ? s : (-s));
-
+            for (int targetPitch = pitch - 1; targetPitch <= (pitch + 1); targetPitch++) {
                 if (stem.lookupHead(targetSide, targetPitch) != null) {
                     continue RelsLoop; // OK
                 }

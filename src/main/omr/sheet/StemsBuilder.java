@@ -1474,8 +1474,9 @@ public class StemsBuilder
                     StemInter stemInter = createStemInter(stemItems);
 
                     if (stemInter != null) {
-                        allStemInters.add(stemInter);
-                        connectHeadStem(fatHeadSection, stemInter);
+                        if (null != connectHeadStem(fatHeadSection, stemInter)) {
+                            allStemInters.add(stemInter);
+                        }
                     }
                 }
 

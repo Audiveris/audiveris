@@ -23,4 +23,13 @@ public enum HorizontalSide
     LEFT,
     RIGHT;
 
+    /**
+     * Report the opposite of this side
+     *
+     * @return the opposite side
+     */
+    public HorizontalSide opposite ()
+    {
+        return (this == LEFT) ? RIGHT : LEFT;
+    }
 }
