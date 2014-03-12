@@ -360,7 +360,7 @@ public class HorizontalsBuilder
                 Filament.class);
 
         // Adjust factory parameters
-        factory.setMaxThickness(constants.maxFilamentThickness);
+        factory.setMaxThickness(constants.maxThicknessHigh);
         factory.setMinCoreSectionLength(constants.minCoreSectionLength);
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
         factory.setMaxCoordGap(constants.maxCoordGap);
@@ -717,10 +717,6 @@ public class HorizontalsBuilder
 
         // Constants specified WRT mean line thickness
         // -------------------------------------------
-        Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
-                2.0,
-                "Maximum filament thickness WRT mean line height");
-
         Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
                 1.0,
                 "Maximum delta position between two overlapping filaments");

@@ -1333,9 +1333,18 @@ public class StemsBuilder
                 seeds = sig.intersectedGlyphs(neighborSeeds, true, area);
 
                 if (!seeds.isEmpty()) {
-                    // Purge seeds that are too distant from theoretical line
+                    // Purge seeds that do not contribute to ordinate range
+                    // or that are too abscissa-distant from theoretical line
                     for (Iterator<Glyph> it = seeds.iterator(); it.hasNext();) {
                         Glyph seed = it.next();
+                        int contrib = getContrib(seed.getBounds());
+
+                        if (contrib == 0) {
+                            it.remove();
+
+                            continue;
+                        }
+
                         Point2D seedCenter = seed.getCentroid();
                         double dist = theory.ptLineDist(seedCenter);
 

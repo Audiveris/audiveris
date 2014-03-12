@@ -215,9 +215,8 @@ public class VerticalsBuilder
     // checkVerticals //
     //----------------//
     /**
-     * This method checks for compliant vertical entities (stems)
-     * within a collection of vertical sticks, and in the context of a
-     * system.
+     * This method checks for compliant vertical entities (stems) within a collection of
+     * vertical sticks, and in the context of a system.
      *
      * @param sticks the provided collection of vertical sticks
      */
