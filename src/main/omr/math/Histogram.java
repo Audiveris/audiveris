@@ -646,7 +646,7 @@ public class Histogram<K extends Number>
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Key at local maximum */
-        private final K key;
+        private K key;
 
         /** Related count (normalized by total histogram count) */
         private final double value;
@@ -672,6 +672,11 @@ public class Histogram<K extends Number>
         public K getKey ()
         {
             return key;
+        }
+
+        public void setKey (K key)
+        {
+            this.key = key;
         }
 
         /**

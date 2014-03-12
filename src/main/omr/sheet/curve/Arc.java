@@ -46,6 +46,19 @@ public class Arc
         }
     };
 
+    /** Comparison by decreasing x length. */
+    public static final Comparator<Arc> byReverseXLength = new Comparator<Arc>()
+    {
+        @Override
+        public int compare (Arc a1,
+                            Arc a2)
+        {
+            double l1 = Math.abs(a1.getEnd(false).getX() - a1.getEnd(true).getX());
+            double l2 = Math.abs(a2.getEnd(false).getX() - a2.getEnd(true).getX());
+            return Double.compare(l2, l1);
+        }
+    };
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sequence of arc points so far. */
     protected final List<Point> points = new ArrayList<Point>();

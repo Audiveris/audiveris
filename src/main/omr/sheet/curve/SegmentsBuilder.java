@@ -19,10 +19,13 @@ import omr.constant.ConstantSet;
 import omr.grid.FilamentLine;
 
 import omr.math.LineUtil;
+import omr.math.PointUtil;
 
 import omr.sheet.Scale;
 
+import omr.sig.GradeImpacts;
 import omr.sig.Inter;
+import omr.sig.SegmentInter;
 
 import omr.ui.util.UIUtil;
 
@@ -43,8 +46,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import omr.sig.GradeImpacts;
-import omr.sig.SegmentInter;
 
 /**
  * Class {@code SegmentsBuilder} retrieves straight segments that can be used to build
@@ -136,25 +137,33 @@ public class SegmentsBuilder
 
     @Override
     protected Curve addArc (Arc arc,
-                            Curve curve,
-                            Set<Arc> browsed)
+                            Curve curve)
     {
         SegmentInfo segment = (SegmentInfo) curve;
         ArcView arcView = segment.getArcView(arc, reverse);
+        Model model = needGlobalModel(segment);
+
+        // Check arc roughly goes in curve end direction
+        double projection = projection(arcView, model);
+
+        if (projection < params.minProjection) {
+            logger.debug("{} not extended by {} projection:{}", segment, arc, projection);
+
+            return null;
+        }
 
         // Check extension is compatible with line model
-        Model model = needGlobalModel(segment);
         double dist = arcDistance(model, arcView);
 
         if (dist <= params.maxExtDistance) {
             List<Point> pts = curve.getAllPoints(arcView, reverse);
             SegmentInfo s = (SegmentInfo) createCurve(curve, arcView, pts, null);
             s.setModel(computeModel(pts));
-            logger.debug("Slur#{} extended as {} dist:{}", segment.getId(), s, dist);
+            logger.debug("{} extended as {} dist:{}", segment, s, dist);
 
             return s;
         } else {
-            logger.debug("Line#{} could not add {} dist:{}", segment.getId(), arc, dist);
+            logger.debug("{} could not add {} dist:{}", segment, arc, dist);
 
             return null;
         }
@@ -185,6 +194,7 @@ public class SegmentsBuilder
     {
         SegmentInfo segment = (SegmentInfo) curve;
         needGlobalModel(segment);
+
         GradeImpacts impacts = computeImpacts(segment, true);
 
         if (impacts != null) {
@@ -220,9 +230,9 @@ public class SegmentsBuilder
     @Override
     protected void weed (Set<Curve> clump)
     {
-        // simply keep the longest one
+        // Simply keep the one with longest X range.
         List<Curve> list = new ArrayList<Curve>(clump);
-        Collections.sort(list, Curve.byReverseLength);
+        Collections.sort(list, Curve.byReverseXLength);
         clump.clear();
         clump.add(list.get(0));
     }
@@ -235,6 +245,7 @@ public class SegmentsBuilder
     {
         double dist = segment.getModel().getDistance();
         double distImpact = 1 - (dist / params.maxSegmentDistance);
+
         return new SegmentInter.Impacts(distImpact);
     }
 
@@ -281,6 +292,27 @@ public class SegmentsBuilder
         Collections.sort(list, Arc.byReverseLength);
 
         return list;
+    }
+
+    //------------//
+    // projection //
+    //------------//
+    /**
+     * Report the projection of extension arc on curve end direction
+     *
+     * @param arcView proper view of extension arc
+     * @param model   curve model
+     * @return projection of arc on curve end unit vector
+     */
+    private double projection (ArcView arcView,
+                               Model model)
+    {
+        Point a1 = arcView.getEnd(!reverse);
+        Point a2 = arcView.getEnd(reverse);
+        Point arcVector = new Point(a2.x - a1.x, a2.y - a1.y);
+        Point2D unit = model.getEndVector(reverse);
+
+        return PointUtil.dotProduct(arcVector, unit);
     }
 
     private void purgeDuplicates ()
@@ -333,6 +365,9 @@ public class SegmentsBuilder
                 0.3,
                 "Maximum line distance for final segment");
 
+        final Scale.Fraction minProjection = new Scale.Fraction(
+                -1.0,
+                "Minimum projection on curve for arc extension");
     }
 
     //------------//
@@ -353,6 +388,8 @@ public class SegmentsBuilder
 
         final double maxSegmentDistance;
 
+        final double minProjection;
+
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
@@ -360,6 +397,7 @@ public class SegmentsBuilder
             maxWedgeSlope = Math.tan(Math.toRadians(constants.maxWedgeAngle.getValue()));
             maxExtDistance = scale.toPixelsDouble(constants.maxExtDistance);
             maxSegmentDistance = scale.toPixelsDouble(constants.maxSegmentDistance);
+            minProjection = scale.toPixelsDouble(constants.minProjection);
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);

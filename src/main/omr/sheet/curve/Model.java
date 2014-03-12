@@ -82,7 +82,7 @@ public interface Model
     double getDistance ();
 
     /**
-     * Report the unit tangent vector at item end, designated by 'reverse'.
+     * Report the unit tangent vector at the item end designated by 'reverse' value.
      *
      * @param reverse true for first end, false for last
      * @return the tangent unit vector

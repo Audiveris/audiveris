@@ -32,7 +32,9 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -53,6 +55,14 @@ public class SigSolver
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SigSolver.class);
+
+    /** Shapes that can overlap with a beam. */
+    private static final EnumSet beamCompShapes = EnumSet.copyOf(
+            Arrays.asList(
+                    Shape.THICK_BARLINE,
+                    Shape.THICK_CONNECTION,
+                    Shape.THIN_BARLINE,
+                    Shape.THIN_CONNECTION));
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system */
@@ -441,6 +451,34 @@ public class SigSolver
         return modifs;
     }
 
+    //------------//
+    // compatible //
+    //------------//
+    /**
+     * Check whether the two provided Inter instance can overlap.
+     *
+     * @param inters array of exactly 2 instances
+     * @return true if overlap is accepted, false otherwise
+     */
+    private boolean compatible (Inter[] inters)
+    {
+        for (int i = 0; i <= 1; i++) {
+            if (inters[i] instanceof AbstractBeamInter) {
+                Inter other = inters[1 - i];
+
+                if (other instanceof AbstractBeamInter) {
+                    return true;
+                }
+
+                if (beamCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     //---------//
     // exclude //
     //---------//
@@ -458,7 +496,7 @@ public class SigSolver
     // flagHeadInconsistency //
     //-----------------------//
     /**
-     * Flag inconsistency of note heads attached to a (good) stem
+     * Flag inconsistency of note heads attached to a (good) stem.
      */
     private void flagHeadInconsistency ()
     {
@@ -538,7 +576,7 @@ public class SigSolver
 
             for (Inter right : inters.subList(i + 1, inters.size())) {
                 // Overlap test beam/beam doesn't work (and is useless in fact)
-                if (left instanceof AbstractBeamInter && right instanceof AbstractBeamInter) {
+                if (compatible(new Inter[]{left, right})) {
                     continue;
                 }
 
@@ -547,8 +585,7 @@ public class SigSolver
                 if (leftBox.intersects(rightBox)) {
                     // Have a more precise look
                     if (left.overlaps(right)) {
-                        // If there is no relation between left & right
-                        // insert an exclusion
+                        // If there is no relation between left & right insert an exclusion
                         Set<Relation> rels1 = sig.getAllEdges(left, right);
                         Set<Relation> rels2 = sig.getAllEdges(right, left);
 

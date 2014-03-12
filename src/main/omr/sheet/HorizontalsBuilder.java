@@ -69,19 +69,17 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code HorizontalsBuilder} is in charge of retrieving
- * ledgers and endings for a system.
+ * Class {@code HorizontalsBuilder} retrieves ledgers and endings for a system.
  * <p>
- * Each virtual line of ledgers is processed, one after the other, going away
- * from the reference staff, above and below:
+ * Each virtual line of ledgers is processed, one after the other, going away from the reference
+ * staff, above and below:
  * <ol>
- * <li>All acceptable candidate glyph instances for the current virtual line are
- * translated into LedgerInter instances with proper intrinsic grade.</li>
+ * <li>All acceptable candidate glyph instances for the current virtual line are translated into
+ * LedgerInter instances with proper intrinsic grade.</li>
  * <li>Exclusions can be inserted because of abscissa overlap.</li>
- * <li>Finally, using grades, the collection of ledgers interpretations is
- * reduced and only the remaining ones are recorded as such in staff map.
- * They will be used as ordinate references when processing the next virtual
- * line.</li>
+ * <li>Finally, using grades, the collection of ledgers interpretations is reduced and only the
+ * remaining ones are recorded as such in staff map.
+ * They will be used as ordinate references when processing the next virtual line.</li>
  * </ol>
  * <p>
  * Nota: Endings are currently disabled.
@@ -206,8 +204,8 @@ public class HorizontalsBuilder
     // getLedgerTarget //
     //-----------------//
     /**
-     * Report the line index and ordinate target for a candidate ledger,
-     * based on the reference found (other ledger or staff line).
+     * Report the line index and ordinate target for a candidate ledger, based on the
+     * reference found (other ledger or staff line).
      *
      * @param stick the ledger candidate
      * @return the index value and target ordinate, or null if not found.
@@ -315,8 +313,7 @@ public class HorizontalsBuilder
     //---------------//
     /**
      * Use smart tests on ledger candidates.
-     * Starting from each staff, check one interline higher (and lower) for
-     * candidates, etc.
+     * Starting from each staff, check one interline higher (and lower) for candidates, etc.
      */
     private void filterLedgers ()
     {
@@ -347,8 +344,7 @@ public class HorizontalsBuilder
     // getCandidateGlyphs //
     //--------------------//
     /**
-     * Retrieve possible candidate glyph instances built from provided
-     * sections.
+     * Retrieve possible candidate glyph instances built from provided sections.
      *
      * @param sections the section population to build sticks from
      * @return a collection of candidate glyph instances
@@ -402,8 +398,7 @@ public class HorizontalsBuilder
     //----------------------//
     /**
      * Retrieve good candidate sections.
-     * These are sections from a (complete) horizontal lag that do not stand
-     * within staves.
+     * These are sections from a (complete) horizontal lag that do not stand within staves.
      *
      * @return list of sections kept
      */
@@ -430,8 +425,8 @@ public class HorizontalsBuilder
     // getGoodBeams //
     //--------------//
     /**
-     * Retrieve the list of beam / hook interpretations in the system,
-     * ordered by abscissa.
+     * Retrieve the list of beam / hook interpretations in the system, ordered by
+     * abscissa.
      *
      * @return the sequence of system beams (full beams and hooks)
      */
@@ -530,12 +525,11 @@ public class HorizontalsBuilder
      * This is the heart of ledger retrieval, which looks for ledgers
      * on a specific "virtual line".
      * <p>
-     * We use a very rough height for the region of interest, relying on pitch
-     * check WRT yTarget to discard the too distant candidates.
-     * However there is a risk that a ledger be found "acceptable" on two
-     * line indices which is weird.
-     * Plus, a conflict on line #2 could remove the ledger from SIG while it is
-     * still accepted on line #1.
+     * We use a very rough height for the region of interest, relying on pitch check WRT yTarget to
+     * discard the too distant candidates.
+     * However there is a risk that a ledger be found "acceptable" on two line indices.
+     * Moreover, a conflict on line #2 could remove the ledger from SIG while it is still accepted
+     * on line #1.
      *
      * @param staff the staff being processed
      * @param index index of line relative to staff
@@ -643,8 +637,8 @@ public class HorizontalsBuilder
     // reduceLedgers //
     //---------------//
     /**
-     * Check for collision or support relations within line
-     * population of ledgers and reduce the population accordingly.
+     * Check for collision or support relations within line population of ledgers and
+     * reduce the population accordingly.
      *
      * @param staff   staff being processed
      * @param index   index of virtual line around staff
@@ -732,7 +726,7 @@ public class HorizontalsBuilder
                 "Maximum delta position between two overlapping filaments");
 
         Scale.LineFraction maxThicknessHigh = new Scale.LineFraction(
-                2.0,
+                2.5,
                 "High Maximum thickness of an interesting stick");
 
         Scale.LineFraction maxThicknessLow = new Scale.LineFraction(

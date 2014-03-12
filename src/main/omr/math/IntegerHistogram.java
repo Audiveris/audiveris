@@ -12,9 +12,9 @@
 package omr.math;
 
 import java.io.PrintStream;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
  * Class {@code IntegerHistogram} is an histogram where buckets are integers.
@@ -24,68 +24,51 @@ import java.util.TreeMap;
 public class IntegerHistogram
         extends Histogram<Integer>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
-
-    /** The derivatives values */
-    private SortedMap<Integer, Double> derivatives;
-
     //~ Methods ------------------------------------------------------------------------------------
-    //-------//
-    // clear //
-    //-------//
-    @Override
-    public void clear ()
+
+    //---------------//
+    // getDerivative //
+    //---------------//
+    public int getDerivative (int key)
     {
-        super.clear();
-        derivatives = null;
+        return getCount(key) - getCount(key - 1);
     }
 
-    //----------------//
-    // getDerivatives //
-    //----------------//
-    public SortedMap<Integer, Double> getDerivatives ()
+    //------------------//
+    // getPreciseMaxima //
+    //------------------//
+    /**
+     * Report the local maximum points, refined by the lowest derivative points, and
+     * sorted by decreasing count
+     *
+     * @return the (count-based) sorted sequence of local maxima
+     */
+    public List<MaxEntry<Integer>> getPreciseMaxima ()
     {
-        if (derivatives == null) {
-            derivatives = new TreeMap<Integer, Double>();
+        // Get all local maxima
+        final List<MaxEntry<Integer>> maxima = getLocalMaxima();
 
-            Integer prevKey = null;
-            Integer prevValue = null;
-            Integer key = null;
-            Integer value = null;
+        // Refine their key, using derivative information
+        for (MaxEntry<Integer> entry : maxima) {
+            int bestDer = 0;
+            int bestK = -1;
+            int key = entry.getKey();
 
-            for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-                Integer nextKey = entry.getKey();
-                Integer nextValue = entry.getValue();
+            for (int k = key, kMax = lastBucket(); k <= kMax; k++) {
+                int der = getDerivative(k);
 
-                if (key != null) {
-                    if (prevKey != null) {
-                        // We can compute a derivative
-                        derivatives.put(
-                                key,
-                                (double) (nextValue - prevValue) / (nextKey - prevKey));
-                    }
-
-                    prevKey = key;
-                    prevValue = value;
+                if (bestDer > der) {
+                    bestDer = der;
+                    bestK = k;
                 }
+            }
 
-                key = nextKey;
-                value = nextValue;
+            if (bestK != -1) {
+                entry.setKey(bestK - 1);
             }
         }
 
-        return derivatives;
-    }
-
-    //---------------//
-    // increaseCount //
-    //---------------//
-    @Override
-    public void increaseCount (Integer bucket,
-                               int delta)
-    {
-        super.increaseCount(bucket, delta);
-        derivatives = null;
+        return maxima;
     }
 
     //-------//
@@ -96,16 +79,10 @@ public class IntegerHistogram
     {
         stream.print("[\n");
 
-        getDerivatives();
-
         for (Map.Entry<Integer, Integer> entry : entrySet()) {
             Integer key = entry.getKey();
-            Double der = derivatives.get(key);
-            stream.format(
-                    " %s: v:%d d:%s\n",
-                    key.toString(),
-                    entry.getValue(),
-                    (der != null) ? der.toString() : "");
+            int der = getDerivative(key);
+            stream.format(" %s: v:%d d:%d\n", key.toString(), entry.getValue(), der);
         }
 
         stream.println("]");

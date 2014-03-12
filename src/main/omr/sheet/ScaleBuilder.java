@@ -54,6 +54,7 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
+import omr.math.IntegerHistogram;
 
 /**
  * Class {@code ScaleBuilder} encapsulates the computation of a sheet scale, by adding
@@ -108,13 +109,13 @@ public class ScaleBuilder
     private HoriHistoKeeper horiHistoKeeper;
 
     /** Histogram on vertical foreground runs. */
-    private Histogram<Integer> foreHisto;
+    private IntegerHistogram foreHisto;
 
     /** Histogram on vertical background runs. */
-    private Histogram<Integer> backHisto;
+    private IntegerHistogram backHisto;
 
     /** Histogram on horizontal foreground runs. */
-    private Histogram<Integer> horiHisto;
+    private IntegerHistogram horiHisto;
 
     /** Absolute population percentage for validating an extremum. */
     private final double quorumRatio = constants.quorumRatio.getValue();
@@ -480,7 +481,7 @@ public class ScaleBuilder
     private void retrieveHoriPeak ()
             throws StepException
     {
-        List<MaxEntry<Integer>> horiMaxima = horiHisto.getLocalMaxima();
+        List<MaxEntry<Integer>> horiMaxima = horiHisto.getPreciseMaxima();
 
         if (!horiMaxima.isEmpty()) {
             MaxEntry<Integer> max = horiMaxima.get(0);
@@ -557,7 +558,7 @@ public class ScaleBuilder
             // Take most frequent local max for which key (beam thickness) is
             // larger than about twice the mean line thickness and smaller than
             // mean white gap between staff lines.
-            List<MaxEntry<Integer>> foreMaxima = foreHisto.getLocalMaxima();
+            List<MaxEntry<Integer>> foreMaxima = foreHisto.getPreciseMaxima();
             double minBeamLineRatio = constants.minBeamLineRatio.getValue();
             double minHeight = minBeamLineRatio * forePeak.getKey().best;
             double maxHeight = backPeak.getKey().best;
@@ -701,9 +702,9 @@ public class ScaleBuilder
         //-----------------//
         // createHistogram //
         //-----------------//
-        private Histogram<Integer> createHistogram (int... vals)
+        private IntegerHistogram createHistogram (int... vals)
         {
-            Histogram<Integer> histo = new Histogram<Integer>();
+            IntegerHistogram histo = new IntegerHistogram();
 
             for (int i = 0; i < vals.length; i++) {
                 histo.increaseCount(i, vals[i]);
@@ -842,7 +843,7 @@ public class ScaleBuilder
 
             dataset.addSeries(series);
 
-            // Derivative (just a try)
+            // Derivative
             XYSeries derivative = new XYSeries("Derivative");
             derivative.add(0, 0);
 
@@ -972,9 +973,9 @@ public class ScaleBuilder
         //-----------------//
         // createHistogram //
         //-----------------//
-        private Histogram<Integer> createHistogram (int... vals)
+        private IntegerHistogram createHistogram (int... vals)
         {
-            Histogram<Integer> histo = new Histogram<Integer>();
+            IntegerHistogram histo = new IntegerHistogram();
 
             for (int i = 0; i < vals.length; i++) {
                 histo.increaseCount(i, vals[i]);

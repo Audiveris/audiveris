@@ -613,7 +613,7 @@ public class StemsBuilder
             vicinityMargin = scale.toPixels(constants.vicinityMargin);
             maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum());
             maxYGap = system.verticalsBuilder.getMaxYGap();
-            maxStemThickness = scale.getMainStem();
+            maxStemThickness = scale.getMainStem() + 1;
             minHeadSectionContribution = scale.toPixels(constants.minHeadSectionContribution);
             minStemExtension = scale.toPixels(constants.minStemExtension);
             minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
@@ -1483,6 +1483,9 @@ public class StemsBuilder
                 return allStemInters;
             }
 
+            //-------------------//
+            // linkBeamsAndStems //
+            //-------------------//
             private void linkBeamsAndStems (List<AbstractBeamInter> beams,
                                             int groupStart,
                                             List<StemInter> stems)

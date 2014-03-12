@@ -211,8 +211,7 @@ public class SlursBuilder
     //--------//
     @Override
     protected Curve addArc (Arc arc,
-                            Curve curve,
-                            Set<Arc> browsed)
+                            Curve curve)
     {
         if (arc.isAssigned()) {
             return null;

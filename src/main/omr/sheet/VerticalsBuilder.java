@@ -393,7 +393,7 @@ public class VerticalsBuilder
                 BasicGlyph.class);
 
         // Adjust factory parameters
-        factory.setMaxThickness(scale.getMainStem() + 1); // A bit more
+        factory.setMaxThickness(scale.getMainStem());
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
         factory.setMaxOverlapSpace(constants.maxOverlapSpace);
         factory.setMaxCoordGap(constants.maxCoordGap);
@@ -610,50 +610,60 @@ public class VerticalsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
+        final Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
                 1.0,
                 "Maximum delta position between two overlapping filaments");
 
-        Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(
+        final Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(
                 0.3,
                 "Maximum space between overlapping filaments");
 
-        Scale.Fraction maxCoordGap = new Scale.Fraction(
+        final Scale.Fraction maxCoordGap = new Scale.Fraction(
                 0,
                 "Maximum delta coordinate for a gap between filaments");
 
-        Scale.Fraction beltMarginDx = new Scale.Fraction(
+        final Scale.Fraction beltMarginDx = new Scale.Fraction(
                 0.15,
                 "Horizontal belt margin checked around stem");
 
-        Check.Grade minCheckResult = new Check.Grade(
+        final Check.Grade minCheckResult = new Check.Grade(
                 0.2,
                 "Minimum result for suite of check");
 
-        Check.Grade goodCheckResult = new Check.Grade(0.5, "Good result for suite of check");
-
-        Scale.Fraction blackHigh = new Scale.Fraction(2.5, "High length for a stem");
-
-        Scale.Fraction blackLow = new Scale.Fraction(1.25, "Low length for a stem");
-
-        Scale.Fraction cleanHigh = new Scale.Fraction(2.0, "High clean length for a stem");
-
-        Scale.Fraction cleanLow = new Scale.Fraction(0.5, "Low clean length for a stem");
-
-        Scale.Fraction gapHigh = new Scale.Fraction(
+        final Check.Grade goodCheckResult = new Check.Grade(
                 0.5,
-                "High vertical gap between stem segments");
+                "Good result for suite of check");
 
-        Constant.Double slopeHigh = new Constant.Double(
+        final Scale.Fraction blackHigh = new Scale.Fraction(
+                2.5,
+                "High minimum length for a stem");
+
+        final Scale.Fraction blackLow = new Scale.Fraction(
+                1.25,
+                "Low minimum length for a stem");
+
+        final Scale.Fraction cleanHigh = new Scale.Fraction(
+                2.0,
+                "High minimum clean length for a stem");
+
+        final Scale.Fraction cleanLow = new Scale.Fraction(
+                0.5,
+                "Low minimum clean length for a stem");
+
+        final Scale.Fraction gapHigh = new Scale.Fraction(
+                0.5,
+                "Maximum vertical gap between stem segments");
+
+        final Constant.Double slopeHigh = new Constant.Double(
                 "tangent",
-                0.05,
-                "High difference with global slope");
+                0.06,
+                "Maximum difference with global slope");
 
-        Scale.Fraction straightHigh = new Scale.Fraction(
+        final Scale.Fraction straightHigh = new Scale.Fraction(
                 0.2,
-                "High mean distance to average stem line");
+                "High maximum distance to average stem line");
 
-        Constant.Double maxCoTangentForCheck = new Constant.Double(
+        final Constant.Double maxCoTangentForCheck = new Constant.Double(
                 "cotangent",
                 0.1,
                 "Maximum cotangent for interactive check of a stem candidate");

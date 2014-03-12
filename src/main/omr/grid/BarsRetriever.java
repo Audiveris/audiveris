@@ -437,11 +437,11 @@ public class BarsRetriever
     // checkConnection //
     //-----------------//
     /**
-     * Check whether the provided alignment is a true connection, that
-     * is with concrete foreground pixels on the alignment line.
+     * Check whether the provided alignment is a true connection, that is with concrete
+     * foreground pixels on the alignment line.
      * <p>
-     * For this, we define a spline which goes through top & bottom points of
-     * each of the aligned peaks and look for pixels in the area.
+     * For this, we define a spline which goes through top & bottom points of each of the aligned
+     * peaks and look for pixels in the area.
      *
      * @param alignment the alignment to check.
      * @return the connection if OK, null otherwise
@@ -605,8 +605,7 @@ public class BarsRetriever
     // createSystemsAndParts //
     //-----------------------//
     /**
-     * Gather staves per systems and parts and create the related
-     * info instances.
+     * Gather staves per systems and parts and create the related info instances.
      */
     private void createSystemsAndParts ()
     {
@@ -626,6 +625,9 @@ public class BarsRetriever
     //----------------//
     // findAlignments //
     //----------------//
+    /**
+     * Find all bar alignments (and actual connections if any) across staves.
+     */
     private void findAlignments ()
     {
         // Check for bar peaks aligned across staves

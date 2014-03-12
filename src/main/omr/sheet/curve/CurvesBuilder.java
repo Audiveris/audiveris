@@ -114,12 +114,9 @@ public abstract class CurvesBuilder
      *
      * @param arc     the candidate for extension
      * @param curve   the curve to be extended by arc
-     * @param browsed collections of arcs already visited
      * @return the newly created curve, if successful
      */
-    protected abstract Curve addArc (Arc arc,
-                                     Curve curve,
-                                     Set<Arc> browsed);
+    protected abstract Curve addArc (Arc arc, Curve curve);
 
     /**
      * Measure the mean distance from additional arc to provided (side) model .
@@ -475,7 +472,6 @@ public abstract class CurvesBuilder
         if (!newCurves.isEmpty()) {
             for (Curve s : newCurves) {
                 ////browsed.addAll(s.getParts());
-
                 if ((s.getCrossedLine() == null) && (curve.getCrossedLine() != null)) {
                     s.setCrossedLine(curve.getCrossedLine());
                 }
@@ -515,7 +511,7 @@ public abstract class CurvesBuilder
                         curves.checkBreak(arc);
                         browsed.add(arc);
 
-                        Curve sl = addArc(arc, curve, browsed);
+                        Curve sl = addArc(arc, curve);
 
                         if (sl != null) {
                             newSeqs.add(sl);
@@ -585,7 +581,8 @@ public abstract class CurvesBuilder
 
             if ((arc != null) && !browsed.contains(arc)) {
                 browsed.add(arc);
-                Curve sl = addArc(arc, curve, browsed);
+
+                Curve sl = addArc(arc, curve);
 
                 if (sl != null) {
                     newCurves.add(sl);
