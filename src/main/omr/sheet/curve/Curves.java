@@ -50,7 +50,7 @@ public class Curves
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Point[] breakPoints = new Point[]{///new Point(304, 226) // BINGO
+    private static final Point[] breakPoints = new Point[]{///new Point(1673, 808) // BINGO
     //
     };
 
@@ -159,7 +159,7 @@ public class Curves
         for (Point pt : breakPoints) {
             if (pt.equals(arc.getEnd(false)) || pt.equals(arc.getEnd(true))) {
                 view.selectPoint(arc.getEnd(true));
-                logger.warn("BINGO break on {}", arc);
+                logger.info("BINGO break on {}", arc);
 
                 break;
             }

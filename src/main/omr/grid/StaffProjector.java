@@ -345,9 +345,8 @@ public class StaffProjector
     /**
      * Look for all "blank" regions without staff lines.
      * <p>
-     * We then select the (wide) region right before the staff and the (wide)
-     * region right after the staff, and populate the blanks map with these two
-     * ones.
+     * We then select the (wide) region right before the staff and the (wide) region right after the
+     * staff, and populate the blanks map with these two ones.
      */
     private void findBlanks ()
     {
@@ -595,8 +594,8 @@ public class StaffProjector
      * We try to pick up a wide enough region if any.
      * If not, we simply select the first one encountered among the widest ones.
      * <p>
-     * TODO: The selection could be revised in a second phase performed at sheet
-     * level, since poor-quality staves may exhibit abnormal blank regions.
+     * TODO: The selection could be revised in a second phase performed at sheet level, since
+     * poor-quality staves may exhibit abnormal blank regions.
      *
      * @param side   desired side
      * @param blanks the list of blanks known
@@ -754,7 +753,7 @@ public class StaffProjector
                 "Abscissa margin for refining peak sides");
 
         final Scale.Fraction minDerivative = new Scale.Fraction(
-                1.0,
+                1.2,
                 "Minimum absolute derivative for peak side");
 
         final Scale.Fraction barThreshold = new Scale.Fraction(

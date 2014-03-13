@@ -53,9 +53,7 @@ public class Arc
         public int compare (Arc a1,
                             Arc a2)
         {
-            double l1 = Math.abs(a1.getEnd(false).getX() - a1.getEnd(true).getX());
-            double l2 = Math.abs(a2.getEnd(false).getX() - a2.getEnd(true).getX());
-            return Double.compare(l2, l1);
+            return Double.compare(a2.getXLength(), a1.getXLength());
         }
     };
 
@@ -203,6 +201,16 @@ public class Arc
     public ArcShape getShape ()
     {
         return shape;
+    }
+
+    /**
+     * Report the arc X length, as the abscissa delta between end points
+     *
+     * @return the arc X length
+     */
+    public int getXLength ()
+    {
+        return Math.abs(points.get(points.size() - 1).x - points.get(0).x);
     }
 
     /**

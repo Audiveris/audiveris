@@ -51,8 +51,10 @@ import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import static java.lang.Math.abs;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,17 +77,16 @@ public class SlursLinker
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
-    private static final Logger    logger = LoggerFactory.getLogger(SlursLinker.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(SlursLinker.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
-    private final Sheet      sheet;
+    private final Sheet sheet;
 
     /** Scale-dependent parameters. */
     private final Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     /**
      * Creates a new SlursLinker object.
      *
@@ -99,13 +100,12 @@ public class SlursLinker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //-------//
     // prune //
     //-------//
     /**
-     * Prune a clump of slurs and select the candidate with best
-     * average distance to embraced notes.
+     * Prune a clump of slurs and select the candidate with best average distance to
+     * embraced notes.
      *
      * @param clump a bunch of aggregated slurs
      * @return the best slur, if any
@@ -120,12 +120,12 @@ public class SlursLinker
 
         // Define global clump bounds
         Map<HorizontalSide, Rectangle> bounds = getBounds(clump);
-        Rectangle                      clumpBox = new Rectangle(bounds.get(LEFT));
+        Rectangle clumpBox = new Rectangle(bounds.get(LEFT));
         clumpBox.add(bounds.get(RIGHT));
 
         // Determine the impacted system(s)
         //TODO: should we keep both system results?
-        SystemManager    mgr = sheet.getSystemManager();
+        SystemManager mgr = sheet.getSystemManager();
         List<SystemInfo> systems = mgr.getSystemsOf(clumpBox, null);
 
         for (SystemInfo system : systems) {
@@ -148,31 +148,30 @@ public class SlursLinker
     // defineAreaPair //
     //----------------//
     /**
-     * Define the pair of look-up areas for a slur candidate,
-     * one on first end and another on last end.
-     * The strategy to define look-up areas differs between "horizontal"
-     * and "vertical" slurs.
+     * Define the pair of look-up areas for a slur candidate, one on first end and
+     * another on last end.
+     * The strategy to define look-up areas differs between "horizontal" and "vertical" slurs.
      */
     private void defineAreaPair (SlurInter slur)
     {
         SlurInfo info = slur.getInfo();
-        Point    first = info.getEnd(true);
-        Point    last = info.getEnd(false);
-        int      vDir = info.above();
-        int      hDir = Integer.signum(last.x - first.x);
-        Point2D  mid = new Point2D.Double((first.x + last.x) / 2d, (first.y + last.y) / 2d);
-        Line2D   bisector = (vDir == hDir) ? bisector(first, last) : bisector(last, first);
-        Point2D  firstExt;
-        Point2D  lastExt;
-        GeoPath  firstPath;
-        GeoPath  lastPath;
-        Line2D   baseLine;
-        Point2D  firstBase;
-        Point2D  lastBase;
+        Point first = info.getEnd(true);
+        Point last = info.getEnd(false);
+        int vDir = info.above();
+        int hDir = Integer.signum(last.x - first.x);
+        Point2D mid = new Point2D.Double((first.x + last.x) / 2d, (first.y + last.y) / 2d);
+        Line2D bisector = (vDir == hDir) ? bisector(first, last) : bisector(last, first);
+        Point2D firstExt;
+        Point2D lastExt;
+        GeoPath firstPath;
+        GeoPath lastPath;
+        Line2D baseLine;
+        Point2D firstBase;
+        Point2D lastBase;
 
         // Qualify the slur as horizontal or vertical
-        if ((abs(LineUtil.getSlope(first, last)) <= params.slopeSeparator) ||
-            (abs(first.getX() - last.getX()) >= params.wideSlurWidth)) {
+        if ((abs(LineUtil.getSlope(first, last)) <= params.slopeSeparator)
+            || (abs(first.getX() - last.getX()) >= params.wideSlurWidth)) {
             // Horizontal: Use base parallel to slur
             info.setHorizontal(true);
             firstExt = extension(mid, first, params.coverageHExt);
@@ -180,28 +179,28 @@ public class SlursLinker
             firstPath = new GeoPath(new Line2D.Double(mid, firstExt));
             lastPath = new GeoPath(new Line2D.Double(mid, lastExt));
             firstBase = new Point2D.Double(
-                firstExt.getX(),
-                firstExt.getY() + (vDir * params.coverageHDepth));
+                    firstExt.getX(),
+                    firstExt.getY() + (vDir * params.coverageHDepth));
             lastBase = new Point2D.Double(
-                lastExt.getX(),
-                lastExt.getY() + (vDir * params.coverageHDepth));
+                    lastExt.getX(),
+                    lastExt.getY() + (vDir * params.coverageHDepth));
             baseLine = new Line2D.Double(firstBase, lastBase);
 
             if (abs(last.x - first.x) > (2 * params.coverageHIn)) {
                 // Wide slur: separate first & last areas
-                double  firstInX = first.x + (hDir * params.coverageHIn);
+                double firstInX = first.x + (hDir * params.coverageHIn);
                 Point2D firstIn = intersectionAtX(first, last, firstInX);
                 firstPath = new GeoPath(new Line2D.Double(firstIn, firstExt));
                 firstPath.append(
-                    new Line2D.Double(firstBase, intersectionAtX(baseLine, firstInX)),
-                    true);
+                        new Line2D.Double(firstBase, intersectionAtX(baseLine, firstInX)),
+                        true);
 
-                double  lastInX = last.x - (hDir * params.coverageHIn);
+                double lastInX = last.x - (hDir * params.coverageHIn);
                 Point2D lastIn = intersectionAtX(first, last, lastInX);
                 lastPath = new GeoPath(new Line2D.Double(lastIn, lastExt));
                 lastPath.append(
-                    new Line2D.Double(lastBase, intersectionAtX(baseLine, lastInX)),
-                    true);
+                        new Line2D.Double(lastBase, intersectionAtX(baseLine, lastInX)),
+                        true);
             } else {
                 // Narrow slur: just one vertical separation
                 Point2D midInter = intersectionAtX(baseLine, mid.getX());
@@ -216,29 +215,29 @@ public class SlursLinker
 
             Point2D bisUnit = info.getBisUnit();
             Point2D depth = new Point2D.Double(
-                params.coverageVDepth * bisUnit.getX(),
-                params.coverageVDepth * bisUnit.getY());
+                    params.coverageVDepth * bisUnit.getX(),
+                    params.coverageVDepth * bisUnit.getY());
             firstBase = new Point2D.Double(
-                firstExt.getX() + depth.getX(),
-                firstExt.getY() + depth.getY());
+                    firstExt.getX() + depth.getX(),
+                    firstExt.getY() + depth.getY());
             lastBase = new Point2D.Double(
-                lastExt.getX() + depth.getX(),
-                lastExt.getY() + depth.getY());
+                    lastExt.getX() + depth.getX(),
+                    lastExt.getY() + depth.getY());
             baseLine = new Line2D.Double(firstBase, lastBase);
 
             if (first.distance(last) > (2 * params.coverageVIn)) {
                 // Tall slur, separate first & last areas
                 Point2D firstIn = extension(firstExt, first, params.coverageVIn);
                 Point2D firstBaseIn = new Point2D.Double(
-                    firstIn.getX() + depth.getX(),
-                    firstIn.getY() + depth.getY());
+                        firstIn.getX() + depth.getX(),
+                        firstIn.getY() + depth.getY());
                 firstPath = new GeoPath(new Line2D.Double(firstIn, firstExt));
                 firstPath.append(new Line2D.Double(firstBase, firstBaseIn), true);
 
                 Point2D lastIn = extension(lastExt, last, params.coverageVIn);
                 Point2D lastBaseIn = new Point2D.Double(
-                    lastIn.getX() + depth.getX(),
-                    lastIn.getY() + depth.getY());
+                        lastIn.getX() + depth.getX(),
+                        lastIn.getY() + depth.getY());
                 lastPath = new GeoPath(new Line2D.Double(lastIn, lastExt));
                 lastPath.append(new Line2D.Double(lastBase, lastBaseIn), true);
             } else {
@@ -283,8 +282,23 @@ public class SlursLinker
     private double distanceToNote (Point2D end,
                                    Point2D center)
     {
-        ///return end.distanceSq(center);
         return Math.abs(end.getX() - center.getX());
+    }
+
+    //-----------------//
+    // euclidianToNote //
+    //-----------------//
+    /**
+     * Report Euclidean distance from slur end to note center.
+     *
+     * @param end    slur end point
+     * @param center note center point
+     * @return the euclidian distance
+     */
+    private double euclidianToNote (Point2D end,
+                                    Point2D center)
+    {
+        return end.distanceSq(center);
     }
 
     //-----------//
@@ -299,7 +313,7 @@ public class SlursLinker
     private Map<HorizontalSide, Rectangle> getBounds (Set<Inter> clump)
     {
         Map<HorizontalSide, Rectangle> bounds = new EnumMap<HorizontalSide, Rectangle>(
-            HorizontalSide.class);
+                HorizontalSide.class);
 
         for (HorizontalSide side : HorizontalSide.values()) {
             // Take union of areas for this side
@@ -323,7 +337,6 @@ public class SlursLinker
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //----------//
     // NoteLink //
     //----------//
@@ -331,18 +344,23 @@ public class SlursLinker
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        public final Inter   note; // Note linked to slur end
-        public final Double  distance; // A distance between note & slur end
+        public final Inter note; // Note linked to slur end
+
+        public final Double distance; // A distance between note & slur end
+
+        public final Double euclidean; // Euclidean distance between note & slur end
+
         public final boolean direct; // False if via stem
 
         //~ Constructors ---------------------------------------------------------------------------
-
-        public NoteLink (Inter   note,
-                         Double  distance,
+        public NoteLink (Inter note,
+                         Double distance,
+                         Double euclidean,
                          boolean direct)
         {
             this.note = note;
             this.distance = distance;
+            this.euclidean = euclidean;
             this.direct = direct;
         }
     }
@@ -351,45 +369,53 @@ public class SlursLinker
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction  coverageHExt = new Scale.Fraction(
-            2.0,
-            "Length of extension for horizontal slur coverage");
-        final Scale.Fraction  coverageHIn = new Scale.Fraction(
-            1.5,
-            "Internal abscissa of horizontal slur coverage");
-        final Scale.Fraction  coverageHDepth = new Scale.Fraction(
-            4.0,
-            "Vertical extension of horizontal slur coverage");
-        final Scale.Fraction  coverageVExt = new Scale.Fraction(
-            2.0,
-            "Length of extension for vertical slur coverage");
-        final Scale.Fraction  coverageVIn = new Scale.Fraction(
-            1.5,
-            "Internal abscissa of vertical slur coverage");
-        final Scale.Fraction  coverageVDepth = new Scale.Fraction(
-            2.0,
-            "Vertical extension of vertical slur coverage");
+        final Scale.Fraction coverageHExt = new Scale.Fraction(
+                2.0,
+                "Length of extension for horizontal slur coverage");
+
+        final Scale.Fraction coverageHIn = new Scale.Fraction(
+                1.5,
+                "Internal abscissa of horizontal slur coverage");
+
+        final Scale.Fraction coverageHDepth = new Scale.Fraction(
+                4.0,
+                "Vertical extension of horizontal slur coverage");
+
+        final Scale.Fraction coverageVExt = new Scale.Fraction(
+                2.0,
+                "Length of extension for vertical slur coverage");
+
+        final Scale.Fraction coverageVIn = new Scale.Fraction(
+                1.5,
+                "Internal abscissa of vertical slur coverage");
+
+        final Scale.Fraction coverageVDepth = new Scale.Fraction(
+                2.0,
+                "Vertical extension of vertical slur coverage");
+
         final Constant.Double slopeSeparator = new Constant.Double(
-            "tangent",
-            0.5,
-            "Slope that separates vertical slurs from horizontal slurs");
+                "tangent",
+                0.5,
+                "Slope that separates vertical slurs from horizontal slurs");
+
         final Constant.Double maxOrphanSlope = new Constant.Double(
-            "tangent",
-            0.5,
-            "Maximum slope for an orphan slur");
-        final Scale.Fraction  maxOrphanDx = new Scale.Fraction(
-            6.0,
-            "Maximum dx to staff end for an orphan slur");
-        final Scale.Fraction  wideSlurWidth = new Scale.Fraction(
-            6.0,
-            "Minimum width to be a wide slur");
+                "tangent",
+                0.5,
+                "Maximum slope for an orphan slur");
+
+        final Scale.Fraction maxOrphanDx = new Scale.Fraction(
+                6.0,
+                "Maximum dx to staff end for an orphan slur");
+
+        final Scale.Fraction wideSlurWidth = new Scale.Fraction(
+                6.0,
+                "Minimum width to be a wide slur");
     }
 
-    ///Map<SlurInfo, Map<HorizontalSide, NoteLink>> connections;
     //------------//
     // Parameters //
     //------------//
@@ -400,19 +426,27 @@ public class SlursLinker
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final int    coverageHExt;
-        final int    coverageVExt;
-        final int    coverageHIn;
-        final int    coverageVIn;
-        final int    coverageHDepth;
-        final int    coverageVDepth;
+        final int coverageHExt;
+
+        final int coverageVExt;
+
+        final int coverageHIn;
+
+        final int coverageVIn;
+
+        final int coverageHDepth;
+
+        final int coverageVDepth;
+
         final double slopeSeparator;
+
         final double maxOrphanSlope;
-        final int    maxOrphanDx;
-        final int    wideSlurWidth;
+
+        final int maxOrphanDx;
+
+        final int wideSlurWidth;
 
         //~ Constructors ---------------------------------------------------------------------------
-
         /**
          * Creates a new Parameters object.
          *
@@ -447,18 +481,21 @@ public class SlursLinker
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final SystemInfo                       system;
-        private final SIGraph                          sig;
-        private final Set<Inter>                       clump;
+        private final SystemInfo system;
+
+        private final SIGraph sig;
+
+        private final Set<Inter> clump;
+
         private final Map<HorizontalSide, List<Inter>> notes = new EnumMap<HorizontalSide, List<Inter>>(
-            HorizontalSide.class);
+                HorizontalSide.class);
+
         private final Map<HorizontalSide, List<Inter>> stems = new EnumMap<HorizontalSide, List<Inter>>(
-            HorizontalSide.class);
+                HorizontalSide.class);
 
         //~ Constructors ---------------------------------------------------------------------------
-
-        public ClumpLinker (SystemInfo                     system,
-                            Set<Inter>                     clump,
+        public ClumpLinker (SystemInfo system,
+                            Set<Inter> clump,
                             Map<HorizontalSide, Rectangle> bounds)
         {
             this.system = system;
@@ -470,7 +507,6 @@ public class SlursLinker
         }
 
         //~ Methods --------------------------------------------------------------------------------
-
         /**
          * Select the best slur in clump (within current system)
          *
@@ -481,7 +517,7 @@ public class SlursLinker
             Map<SlurInter, Map<HorizontalSide, NoteLink>> map = new HashMap<SlurInter, Map<HorizontalSide, NoteLink>>();
 
             for (Inter inter : clump) {
-                SlurInter            slur = (SlurInter) inter;
+                SlurInter slur = (SlurInter) inter;
                 Map<Inter, NoteLink> lefts = lookup(slur, LEFT);
                 Map<Inter, NoteLink> rights = lookup(slur, RIGHT);
 
@@ -489,11 +525,11 @@ public class SlursLinker
                 if (checkNotes(slur, lefts, rights)) {
                     // Record best link on left & best link on right
                     Map<HorizontalSide, NoteLink> links = new EnumMap<HorizontalSide, NoteLink>(
-                        HorizontalSide.class);
+                            HorizontalSide.class);
                     map.put(slur, links);
 
                     for (HorizontalSide side : HorizontalSide.values()) {
-                        Map<Inter, NoteLink>   m = (side == LEFT) ? lefts : rights;
+                        Map<Inter, NoteLink> m = (side == LEFT) ? lefts : rights;
                         Entry<Inter, NoteLink> best = null;
 
                         for (Entry<Inter, NoteLink> entry : m.entrySet()) {
@@ -516,7 +552,7 @@ public class SlursLinker
             // Accept orphan only if quorum slurs agree
             // Retrieve non-orphans
             Set<SlurInter> nonOrphans = getNonOrphans(map);
-            SlurInter      bestSlur = selectAmong(nonOrphans, map);
+            SlurInter bestSlur = selectAmong(nonOrphans, map);
 
             if (bestSlur != null) {
                 return bestSlur;
@@ -541,7 +577,7 @@ public class SlursLinker
          * @param rights items in right area
          * @return true if slur is acceptable, false if not
          */
-        private boolean checkNotes (SlurInter            slur,
+        private boolean checkNotes (SlurInter slur,
                                     Map<Inter, NoteLink> lefts,
                                     Map<Inter, NoteLink> rights)
         {
@@ -550,7 +586,7 @@ public class SlursLinker
             commons.retainAll(rights.keySet());
 
             for (Inter common : commons) {
-                // Note may be direct on a side and via stem for the other
+                // Note may be direct on a side and via stem for the other.
                 // In that case, keep the direct & discard the stem-based
                 boolean leftDirect = lefts.get(common).direct;
 
@@ -603,10 +639,10 @@ public class SlursLinker
                     }
 
                     // Check horizontal gap to end of staff
-                    Point     slurEnd = info.getEnd(side == LEFT);
+                    Point slurEnd = info.getEnd(side == LEFT);
                     StaffInfo staff = system.getStaffAt(slurEnd);
-                    int       staffEnd = (side == LEFT) ? staff.getDmzEnd() : staff.getAbscissa(
-                        side);
+                    int staffEnd = (side == LEFT) ? staff.getDmzEnd() : staff.getAbscissa(
+                            side);
 
                     if (abs(slurEnd.x - staffEnd) > params.maxOrphanDx) {
                         logger.debug("{} too far orphan", slur);
@@ -653,14 +689,14 @@ public class SlursLinker
          * @param side desired side
          * @return the map of notes found, perhaps empty, with their data
          */
-        private Map<Inter, NoteLink> lookup (SlurInter      slur,
+        private Map<Inter, NoteLink> lookup (SlurInter slur,
                                              HorizontalSide side)
         {
             Map<Inter, NoteLink> found = new HashMap<Inter, NoteLink>();
-            SlurInfo             info = slur.getInfo();
-            Point2D              bisUnit = info.getBisUnit();
-            Area                 area = info.getNoteArea(side == LEFT);
-            Point                slurEnd = info.getEnd(side == LEFT);
+            SlurInfo info = slur.getInfo();
+            Point2D bisUnit = info.getBisUnit();
+            Area area = info.getNoteArea(side == LEFT);
+            Point slurEnd = info.getEnd(side == LEFT);
 
             // Look for notes center contained directly
             for (Inter in : notes.get(side)) {
@@ -668,7 +704,13 @@ public class SlursLinker
 
                 if (area.contains(GeoUtil.centerOf(noteBox))) {
                     Point center = GeoUtil.centerOf(in.getBounds());
-                    found.put(in, new NoteLink(in, distanceToNote(slurEnd, center), true));
+                    found.put(
+                            in,
+                            new NoteLink(
+                            in,
+                            distanceToNote(slurEnd, center),
+                            euclidianToNote(slurEnd, center),
+                            true));
                 }
             }
 
@@ -701,6 +743,52 @@ public class SlursLinker
         }
 
         /**
+         * Compute the mean abscissa-distance on the NoteLinks
+         *
+         * @param map the note links of a slur
+         * @return means x distance
+         */
+        private double meanAbscissaDist (Map<HorizontalSide, NoteLink> map)
+        {
+            double dist = 0;
+            int n = 0;
+
+            for (HorizontalSide side : HorizontalSide.values()) {
+                NoteLink link = map.get(side);
+
+                if (link != null) {
+                    dist += link.distance;
+                    n++;
+                }
+            }
+
+            return dist / n;
+        }
+
+        /**
+         * Compute the mean euclidian-distance on the NoteLinks
+         *
+         * @param map the note links of a slur
+         * @return means euclidian distance
+         */
+        private double meanEuclidianDist (Map<HorizontalSide, NoteLink> map)
+        {
+            double dist = 0;
+            int n = 0;
+
+            for (HorizontalSide side : HorizontalSide.values()) {
+                NoteLink link = map.get(side);
+
+                if (link != null) {
+                    dist += link.euclidean;
+                    n++;
+                }
+            }
+
+            return dist / n;
+        }
+
+        /**
          * Select the best note designated by the intersected stem.
          * We select the note which is closest to slur end.
          *
@@ -709,13 +797,14 @@ public class SlursLinker
          * @param bisUnit unity vector pointing to slur center
          * @return the best note or null
          */
-        private NoteLink pickupStemNote (Inter   stem,
-                                         Point   slurEnd,
+        private NoteLink pickupStemNote (Inter stem,
+                                         Point slurEnd,
                                          Point2D bisUnit)
         {
             Set<Relation> hsRels = sig.getRelations(stem, HeadStemRelation.class);
-            Inter         bestNote = null;
-            double        bestDist = Double.MAX_VALUE;
+            Inter bestNote = null;
+            Point bestCenter = null;
+            double bestDist = Double.MAX_VALUE;
 
             for (Relation rel : hsRels) {
                 Inter note = (AbstractNoteInter) sig.getEdgeSource(rel);
@@ -728,12 +817,15 @@ public class SlursLinker
                     if (dist < bestDist) {
                         bestDist = dist;
                         bestNote = note;
+                        bestCenter = center;
                     }
                 }
             }
 
             if (bestNote != null) {
-                return new NoteLink(bestNote, bestDist, false);
+                double euclidian = euclidianToNote(slurEnd, bestCenter);
+
+                return new NoteLink(bestNote, bestDist, euclidian, false);
             } else {
                 return null;
             }
@@ -759,28 +851,73 @@ public class SlursLinker
         //-------------//
         // selectAmong //
         //-------------//
-        private SlurInter selectAmong (Set<SlurInter>                                inters,
-                                       Map<SlurInter, Map<HorizontalSide, NoteLink>> map)
+        /**
+         * Make a selection among the competing slurs.
+         * None or all of those slurs are orphans (and on the same side).
+         * <p>
+         * First, sort the slurs by increasing mean X-distance to their heads.
+         * Second, among the first ones that share the same heads, select the one with shortest
+         * mean Euclidean-distance.
+         *
+         * @param inters the competitors
+         * @param map    their links to notes
+         * @return the best selected
+         */
+        private SlurInter selectAmong (Set<SlurInter> inters,
+                                       final Map<SlurInter, Map<HorizontalSide, NoteLink>> map)
         {
-            // None or all are orphans (and on the same side)
-            SlurInter bestSlur = null;
-            double    bestDist = Double.MAX_VALUE;
+            List<SlurInter> list = new ArrayList<SlurInter>(inters);
 
-            for (SlurInter inter : inters) {
-                Map<HorizontalSide, NoteLink> m = map.get(inter);
-                double                        slurDist = 0;
-
-                for (HorizontalSide side : HorizontalSide.values()) {
-                    NoteLink link = m.get(side);
-
-                    if (link != null) {
-                        slurDist += link.distance;
-                    }
+            // Sort by mean x-distance
+            Collections.sort(
+                    list,
+                    new Comparator<SlurInter>()
+            {
+                @Override
+                public int compare (SlurInter s1,
+                                    SlurInter s2)
+                {
+                    return Double.compare(
+                            meanAbscissaDist(map.get(s1)),
+                            meanAbscissaDist(map.get(s2)));
                 }
+                    });
 
-                if (bestDist > slurDist) {
-                    bestDist = slurDist;
-                    bestSlur = inter;
+            // Now, select between slurs with same embraced heads, if any
+            SlurInter bestSlur = null;
+            double bestDist = Double.MAX_VALUE;
+            NoteLink bestLeft = null;
+            NoteLink bestRight = null;
+
+            for (SlurInter slur : list) {
+                Map<HorizontalSide, NoteLink> m = map.get(slur);
+
+                if (bestSlur == null) {
+                    bestSlur = slur;
+                    bestLeft = m.get(LEFT);
+                    bestRight = m.get(RIGHT);
+                    bestDist = meanEuclidianDist(m);
+                } else {
+                    // Check whether embraced notes are still the same
+                    NoteLink left = m.get(LEFT);
+
+                    if ((bestLeft != null) && (left != null) && (left.note != bestLeft.note)) {
+                        break;
+                    }
+
+                    NoteLink right = m.get(RIGHT);
+
+                    if ((bestRight != null) && (right != null) && (right.note != bestRight.note)) {
+                        break;
+                    }
+
+                    // We do have the same embraced notes as slurs above, so use Euclidian distance
+                    double dist = meanEuclidianDist(m);
+
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestSlur = slur;
+                    }
                 }
             }
 

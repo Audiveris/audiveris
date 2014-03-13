@@ -19,7 +19,6 @@ import omr.constant.ConstantSet;
 import omr.grid.FilamentLine;
 
 import omr.math.LineUtil;
-import omr.math.PointUtil;
 
 import omr.sheet.Scale;
 
@@ -93,18 +92,20 @@ public class SegmentsBuilder
      */
     public void buildSegments ()
     {
-        List<Arc> relevants = getSeedArcs();
+        try {
+            List<Arc> relevants = getSeedArcs();
 
-        for (Arc arc : relevants) {
-            if (!arc.isAssigned()) {
+            for (Arc arc : relevants) {
                 buildCurve(arc);
             }
+
+            // Purge duplicates
+            purgeDuplicates();
+
+            logger.info("Segments: {}", segments.size());
+        } catch (Throwable ex) {
+            logger.warn("Error in SegmentsBuilder: " + ex, ex);
         }
-
-        // Purge duplicates
-        purgeDuplicates();
-
-        logger.info("Segments: {}", segments.size());
     }
 
     @Override
@@ -135,6 +136,9 @@ public class SegmentsBuilder
         g.setStroke(oldStroke);
     }
 
+    //--------//
+    // addArc //
+    //--------//
     @Override
     protected Curve addArc (Arc arc,
                             Curve curve)
@@ -263,10 +267,8 @@ public class SegmentsBuilder
         Set<Arc> set = new HashSet<Arc>();
 
         for (Arc arc : skeleton.arcsMap.values()) {
-            // Member of a slur
-            if (arc.isAssigned()) {
-                continue;
-            }
+            // Reset the assigned flag that was perhaps set by SlursBuilder
+            arc.setAssigned(false);
 
             // Check min seed length
             if (arc.getLength() < params.arcMinSeedLength) {
@@ -292,27 +294,6 @@ public class SegmentsBuilder
         Collections.sort(list, Arc.byReverseLength);
 
         return list;
-    }
-
-    //------------//
-    // projection //
-    //------------//
-    /**
-     * Report the projection of extension arc on curve end direction
-     *
-     * @param arcView proper view of extension arc
-     * @param model   curve model
-     * @return projection of arc on curve end unit vector
-     */
-    private double projection (ArcView arcView,
-                               Model model)
-    {
-        Point a1 = arcView.getEnd(!reverse);
-        Point a2 = arcView.getEnd(reverse);
-        Point arcVector = new Point(a2.x - a1.x, a2.y - a1.y);
-        Point2D unit = model.getEndVector(reverse);
-
-        return PointUtil.dotProduct(arcVector, unit);
     }
 
     private void purgeDuplicates ()

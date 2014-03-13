@@ -79,7 +79,7 @@ public class StemInter
 
                 // Check side
                 if (hsRel.getHeadSide() == side) {
-                    // Check itch
+                    // Check pitch
                     AbstractNoteInter head = (AbstractNoteInter) sig.getEdgeSource(rel);
 
                     if (head.getPitch() == pitch) {

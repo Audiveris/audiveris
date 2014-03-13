@@ -748,7 +748,7 @@ public class HorizontalsBuilder
                 "Maximum space between overlapping filaments");
 
         Scale.Fraction ledgerMarginY = new Scale.Fraction(
-                0.40,
+                0.35,
                 "Margin on ledger ordinate WRT theoretical ordinate");
 
         Scale.Fraction minEndingLengthHigh = new Scale.Fraction(

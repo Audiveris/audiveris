@@ -550,7 +550,7 @@ public class ArcRetriever
 
         final Constant.Double maxAlpha = new Constant.Double(
                 "degree",
-                3.0,
+                4.0,
                 "Maximum angle (in degrees) for 3 points colinearity");
 
         final Scale.Fraction arcMinQuorum = new Scale.Fraction(

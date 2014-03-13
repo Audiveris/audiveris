@@ -112,11 +112,12 @@ public abstract class CurvesBuilder
     /**
      * Try to append one arc to an existing curve and thus create a new curve.
      *
-     * @param arc     the candidate for extension
-     * @param curve   the curve to be extended by arc
+     * @param arc   the candidate for extension
+     * @param curve the curve to be extended by arc
      * @return the newly created curve, if successful
      */
-    protected abstract Curve addArc (Arc arc, Curve curve);
+    protected abstract Curve addArc (Arc arc,
+                                     Curve curve);
 
     /**
      * Measure the mean distance from additional arc to provided (side) model .
@@ -223,19 +224,16 @@ public abstract class CurvesBuilder
     protected Curve createCurve (Curve left,
                                  Curve right)
     {
+        if (left.getEnd(false).equals(right.getEnd(false))) {
+            return left;
+        }
+
+        if (right.getEnd(true).equals(left.getEnd(true))) {
+            return right;
+        }
+
         // Build the list of points with no duplicates
         List<Point> points = new ArrayList<Point>(left.getPoints());
-        Point leftJunction = left.getJunction(false);
-
-        if ((leftJunction != null) && !points.contains(leftJunction)) {
-            points.add(leftJunction);
-        }
-
-        Point rightJunction = right.getJunction(true);
-
-        if ((rightJunction != null) && !points.contains(rightJunction)) {
-            points.add(rightJunction);
-        }
 
         for (Point p : right.getPoints()) {
             if (!points.contains(p)) {
@@ -372,6 +370,37 @@ public abstract class CurvesBuilder
      * @return the tangent staff line or null
      */
     protected abstract FilamentLine getTangentLine (Curve curve);
+
+    //------------//
+    // projection //
+    //------------//
+    /**
+     * Report the projection of extension arc on curve end direction
+     *
+     * @param arcView proper view of extension arc
+     * @param model   curve model
+     * @return projection of arc on curve end unit vector
+     */
+    protected double projection (ArcView arcView,
+                                 Model model)
+    {
+        Point a1 = arcView.getEnd(!reverse);
+
+        if (a1 == null) {
+            a1 = arcView.getJunction(!reverse);
+        }
+
+        Point a2 = arcView.getEnd(reverse);
+
+        if (a2 == null) {
+            a2 = arcView.getJunction(reverse);
+        }
+
+        Point arcVector = new Point(a2.x - a1.x, a2.y - a1.y);
+        Point2D unit = model.getEndVector(reverse);
+
+        return PointUtil.dotProduct(arcVector, unit);
+    }
 
     protected abstract void weed (Set<Curve> clump);
 
@@ -579,7 +608,7 @@ public abstract class CurvesBuilder
                 }
             }
 
-            if ((arc != null) && !browsed.contains(arc)) {
+            if ((arc != null) && !arc.isAssigned() && !browsed.contains(arc)) {
                 browsed.add(arc);
 
                 Curve sl = addArc(arc, curve);

@@ -269,7 +269,7 @@ public class BarsRetriever
         // Purge alignments incompatible with connections
         purgeAlignments();
 
-        // Purge long peaks that do not connect staves
+        // Purge long peaks that do not connect staves (and delete their alignments/connections)
         purgeLongPeaks();
 
         // Refine all staff side abscissae
@@ -498,7 +498,10 @@ public class BarsRetriever
             // Also, connected bars support each other
             Relation bcRel = new BarConnectionRelation(connection.getImpacts());
             BarPeak bottomPeak = connection.bottomPeak;
-            sig.addEdge(interMap.get(topPeak), interMap.get(bottomPeak), bcRel);
+
+            BarlineInter topInter = interMap.get(topPeak);
+            BarlineInter bottomInter = interMap.get(bottomPeak);
+            sig.addEdge(topInter, bottomInter, bcRel);
         }
     }
 
@@ -946,15 +949,13 @@ public class BarsRetriever
      * Purge the alignments collection.
      * <ul>
      * <li>Remove any alignment that conflicts with a connection.
-     * Any connection is given priority against conflicting alignment (simply
-     * because connection was validated by presence of enough black pixels in
-     * the inter-staff region)</li>
-     * <li>Remove duplicates: in the collection of alignments a peak should
-     * appear at most once as top and at most once as bottom.
-     * In case of conflict, use alignment quality to disambiguate.
-     * TODO: A more complex approach to disambiguate could use detection of pair
-     * of bars aligned with another pair of bars, and align left with left and
-     * right with right. But is it worth the complexity?</li>
+     * Any connection is given priority against conflicting alignment (simply because connection was
+     * validated by presence of enough black pixels in the inter-staff region)</li>
+     * <li>Remove duplicates: in the collection of alignments a peak should appear at most once as
+     * top and at most once as bottom. In case of conflict, use alignment quality to disambiguate.
+     * TODO: A more complex approach to disambiguate could use detection of pair of bars aligned
+     * with another pair of bars, and align left with left and right with right. But is it worth the
+     * complexity?</li>
      * </ul>
      */
     private void purgeAlignments ()
@@ -1029,14 +1030,14 @@ public class BarsRetriever
     // purgeLongPeaks //
     //----------------//
     /**
-     * Purge long thin bars (those getting above or below the related
-     * staff) that do not connect staves.
+     * Purge long thin bars (those getting above or below the related staff) that do not
+     * connect staves.
      * <p>
-     * Thick bars are not concerned by this test, because they cannot be
-     * mistaken for stems and can appear to be extended because of brackets.
+     * Thick bars are not concerned by this test, because they cannot be mistaken for stems and can
+     * appear to be extended because of brackets.
      * <p>
-     * The check is relaxed for a bar which is aligned with another bar
-     * that exhibits no such length problem.
+     * The check is relaxed for a bar which is aligned with another bar that exhibits no such length
+     * problem.
      */
     private void purgeLongPeaks ()
     {
@@ -1073,6 +1074,38 @@ public class BarsRetriever
             if (!toRemove.isEmpty()) {
                 logger.debug("T{} deleting longs {}", staff.getId(), toRemove);
                 staff.removeBarPeaks(toRemove);
+
+                // Delete the alignments or connections that involved those peaks
+                purgeRelations(toRemove, alignments);
+                purgeRelations(toRemove, connections);
+            }
+        }
+    }
+
+    //----------------//
+    // purgeRelations //
+    //----------------//
+    /**
+     * Due to peaks being removed, delete the relations (alignments, connections) where
+     * those peaks were involved.
+     *
+     * @param removedPeaks the peaks removed
+     * @param rels         the collection to purge
+     */
+    private void purgeRelations (Set<BarPeak> removedPeaks,
+                                 Set<? extends BarAlignment> rels)
+    {
+        for (Iterator<? extends BarAlignment> it = rels.iterator(); it.hasNext();) {
+            BarAlignment alignment = it.next();
+
+            for (VerticalSide side : VerticalSide.values()) {
+                BarPeak peak = alignment.getPeak(side);
+
+                if (removedPeaks.contains(peak)) {
+                    it.remove();
+
+                    break;
+                }
             }
         }
     }

@@ -652,7 +652,7 @@ public class NotesBuilder
                     String p = "" + c++;
                     Glyph glyph = ledger.getGlyph();
                     LineAdapter adapter = new LedgerAdapter(staff, p, glyph);
-                    // Look right on ledger, then just further from staff
+                    // Look right on ledger
                     scanner = new Scanner(adapter, null, 0, pitch, seeds);
                     ch.addAll(scanner.lookup());
 
