@@ -236,6 +236,11 @@ public class VerticalsBuilder
             Point center = stick.getAreaCenter();
             StaffInfo staff = system.getStaffAt(center);
 
+            if (staff == null) {
+                // Stick must be on system boundary
+                continue;
+            }
+
             if (center.x < staff.getDmzEnd()) {
                 stick.addFailure(IN_DMZ);
 
