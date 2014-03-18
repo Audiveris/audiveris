@@ -79,43 +79,51 @@ public abstract class AbstractInter
     private AttachmentHolder attachments;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // AbstractInter //
-    //---------------//
     /**
      * Creates a new AbstractInter object.
      *
-     * @param glyph the glyph to interpret
-     * @param shape the possible shape
-     * @param grade the interpretation quality
+     * @param glyph   the glyph to interpret
+     * @param shape   the possible shape
+     * @param impacts assignment details
      */
     public AbstractInter (Glyph glyph,
                           Shape shape,
-                          double grade)
+                          GradeImpacts impacts)
     {
-        this(glyph, null, shape, grade);
+        this(glyph, null, shape, impacts);
     }
 
-    //---------------//
-    // AbstractInter //
-    //---------------//
     /**
      * Creates a new AbstractInter object.
      *
-     * @param box   the object bounds
-     * @param shape the possible shape
-     * @param grade the interpretation quality
+     * @param box     the object bounds
+     * @param shape   the possible shape
+     * @param impacts assignment details
      */
     public AbstractInter (Rectangle box,
                           Shape shape,
-                          double grade)
+                          GradeImpacts impacts)
     {
-        this(null, box, shape, grade);
+        this(null, box, shape, impacts);
     }
 
-    //---------------//
-    // AbstractInter //
-    //---------------//
+    /**
+     * Creates a new AbstractInter object.
+     *
+     * @param glyph   the glyph to interpret
+     * @param box     the precise object bounds (if different from glyph bounds)
+     * @param shape   the possible shape
+     * @param impacts assignment details
+     */
+    public AbstractInter (Glyph glyph,
+                          Rectangle box,
+                          Shape shape,
+                          GradeImpacts impacts)
+    {
+        this(glyph, box, shape, impacts.getGrade());
+        this.impacts = impacts;
+    }
+
     /**
      * Creates a new AbstractInter object.
      *
@@ -168,6 +176,17 @@ public abstract class AbstractInter
         }
 
         attachments.addAttachment(id, attachment);
+    }
+
+    //-------//
+    // boost //
+    //-------//
+    @Override
+    public void boost (double ratio)
+    {
+        if (grade < intrinsicRatio) {
+            grade += (ratio * (intrinsicRatio - grade));
+        }
     }
 
     //--------//
@@ -483,16 +502,6 @@ public abstract class AbstractInter
         assert id != 0 : "Assigning zero inter id";
 
         this.id = id;
-    }
-
-    //------------//
-    // setImpacts //
-    //------------//
-    @Override
-    public void setImpacts (GradeImpacts impacts)
-    {
-        this.impacts = impacts;
-        grade = impacts.getGrade();
     }
 
     //--------//

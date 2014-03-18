@@ -260,7 +260,7 @@ public class BasicLag
     @Override
     public Set<Section> intersectedSections (Rectangle rect)
     {
-        return Sections.lookupIntersectedSections(rect, getSections());
+        return Sections.intersectedSections(rect, getSections());
     }
 
     //------------//

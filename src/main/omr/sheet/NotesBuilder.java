@@ -85,14 +85,14 @@ import java.util.SortedSet;
  * It uses a distance matching approach which works well for such symbols that exhibit a fixed
  * shape, with a combination of foreground and background information.
  * <p>
- * We don't need to check each and every location in the system, but only the
- * locations where such note kind is possible:<ul>
+ * We don't need to check each and every location in the system, but only the locations where such
+ * note kind is possible:<ul>
  * <li>We can stick to staff lines and ledgers locations.</li>
- * <li>We cannot fully use stems, since at this time we just have vertical seeds
- * and not all stems will contain seeds. However, if a vertical seed exists
- * nearby we can use it to evaluate a note candidate at proper location.</li>
- * <li>We can reasonably skip the locations where a (good) beam or a (good) bar
- * line has been detected.</li>
+ * <li>We cannot fully use stems, since at this time we just have vertical seeds and not all stems
+ * will contain seeds. However, if a vertical seed exists nearby we can use it to evaluate a note
+ * candidate at proper location.</li>
+ * <li>We can reasonably skip the locations where a (good) beam or a (good) bar line has been
+ * detected.</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -188,7 +188,9 @@ public class NotesBuilder
     {
         StopWatch watch = new StopWatch("buildNotes S#" + system.getId());
         systemCompetitors = getSystemCompetitors(); // Competitors
-        systemSeeds = getSystemSeeds(); // Vertical seeds
+        systemSeeds = system.lookupShapedGlyphs(Shape.VERTICAL_SEED); // Vertical seeds
+        Collections.sort(systemSeeds, Glyph.byOrdinate);
+
         distances = sheet.getDistanceImage();
 
         for (StaffInfo staff : system.getStaves()) {
@@ -470,8 +472,8 @@ public class NotesBuilder
     // getSystemCompetitors //
     //----------------------//
     /**
-     * Retrieve the collection of (good) other interpretations that
-     * might compete with void heads and whole note candidates.
+     * Retrieve the collection of (good) other interpretations that might compete with
+     * heads and note candidates.
      *
      * @return the good competitors
      */
@@ -490,29 +492,6 @@ public class NotesBuilder
         Collections.sort(comps, Inter.byOrdinate);
 
         return comps;
-    }
-
-    //----------------//
-    // getSystemSeeds //
-    //----------------//
-    /**
-     * Retrieves the vertical stem seeds for the system
-     *
-     * @return the collection of system stem seeds, sorted by ordinate
-     */
-    private List<Glyph> getSystemSeeds ()
-    {
-        List<Glyph> seeds = new ArrayList<Glyph>();
-
-        for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.getShape() == Shape.VERTICAL_SEED) {
-                seeds.add(glyph);
-            }
-        }
-
-        Collections.sort(seeds, Glyph.byOrdinate);
-
-        return seeds;
     }
 
     //---------//

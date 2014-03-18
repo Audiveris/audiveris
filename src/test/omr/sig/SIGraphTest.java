@@ -32,6 +32,7 @@ import org.jgrapht.ext.JGraphModelAdapter;
 import org.jgrapht.graph.DefaultListenableGraph;
 import org.jgrapht.graph.Multigraph;
 
+import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.Map;
 
@@ -181,7 +182,7 @@ public class SIGraphTest
         public BasicInter (Shape shape,
                            double grade)
         {
-            super((Glyph) null, shape, grade);
+            super((Glyph) null, (Rectangle) null, shape, grade);
         }
     }
 

@@ -87,10 +87,6 @@ public class EndingSymbol
         Point loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
 
         g.drawLine(loc.x, loc.y, (loc.x + p.rect.width) - 1, loc.y);
-        g.drawLine(
-                (loc.x + p.rect.width) - 1,
-                loc.y,
-                (loc.x + p.rect.width) - 1,
-                loc.y + p.rect.height);
+        g.drawLine(loc.x, loc.y, loc.x, loc.y + p.rect.height);
     }
 }

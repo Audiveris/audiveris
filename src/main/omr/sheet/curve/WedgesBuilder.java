@@ -30,14 +30,11 @@ import omr.sig.Inter;
 import omr.sig.SegmentInter;
 import omr.sig.WedgeInter;
 
-import omr.ui.util.ItemRenderer;
-
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
@@ -51,7 +48,6 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class WedgesBuilder
-        implements ItemRenderer
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -71,8 +67,6 @@ public class WedgesBuilder
     private final Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //    /** All wedges retrieved. */
-    // private final List<WedgeInter> pageWedges = new ArrayList<WedgeInter>();
     /**
      * Creates a new WedgesBuilder object.
      *
@@ -118,7 +112,7 @@ public class WedgesBuilder
                         // Check compatibility
                         GradeImpacts impacts = computeImpacts(s1, s2, rev);
 
-                        if (impacts != null) {
+                        if (impacts != null && impacts.getGrade() >= WedgeInter.getMinGrade()) {
                             createWedgeInter(s1, s2, rev, impacts);
                             segments.remove(s1);
                             segments.remove(s2);
@@ -132,11 +126,6 @@ public class WedgesBuilder
                 }
             }
         }
-    }
-
-    @Override
-    public void renderItems (Graphics2D graphics)
-    {
     }
 
     //----------------//

@@ -294,7 +294,7 @@ public enum Shape
     LEFT_REPEAT_SIGN("Thick / Thin bar line + Repeat dots"),
     RIGHT_REPEAT_SIGN("Repeat dots + Thin / Thick bar line"),
     BACK_TO_BACK_REPEAT_SIGN("Repeat dots + Thin / Thick / Thin + REPEAT_DOTS"),
-    ENDING("Alternate ending"),
+    ENDING("Alternate ending", new Color(0x993300)),
     //
     // Miscellaneous
     //

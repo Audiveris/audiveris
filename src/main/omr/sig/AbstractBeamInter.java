@@ -59,11 +59,9 @@ public abstract class AbstractBeamInter
                                  Line2D median,
                                  double height)
     {
-        super(glyph, shape, impacts.getGrade());
+        super(glyph, shape, impacts);
         this.median = median;
         this.height = height;
-
-        setImpacts(impacts);
 
         setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
 

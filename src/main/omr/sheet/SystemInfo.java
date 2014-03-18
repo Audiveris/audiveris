@@ -17,6 +17,7 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphNest;
 import omr.glyph.Glyphs;
+import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.pattern.PatternsChecker;
 import omr.glyph.pattern.SlurInspector;
@@ -1003,6 +1004,28 @@ public class SystemInfo
 
         for (Glyph glyph : getGlyphs()) {
             if (!exc.contains(glyph) && glyph.intersects(rect)) {
+                found.add(glyph);
+            }
+        }
+
+        return found;
+    }
+
+    //--------------------//
+    // lookupShapedGlyphs //
+    //--------------------//
+    /**
+     * Look up in system glyphs for those whose shape is the desired one.
+     *
+     * @param shape the desired shape
+     * @return the glyphs found
+     */
+    public List<Glyph> lookupShapedGlyphs (Shape shape)
+    {
+        List<Glyph> found = new ArrayList<Glyph>();
+
+        for (Glyph glyph : getGlyphs()) {
+            if (glyph.getShape() == shape) {
                 found.add(glyph);
             }
         }

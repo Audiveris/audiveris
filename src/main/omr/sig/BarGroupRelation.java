@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                               B a r C o n n e c t i o n I n t e r                              //
+//                                 B a r G r o u p R e l a t i o n                                //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -11,54 +11,50 @@
 // </editor-fold>
 package omr.sig;
 
-import omr.glyph.Shape;
-
-import omr.grid.BarConnection;
-
-import java.awt.geom.Area;
 
 /**
- * Class {@code BarConnectionInter} represents a vertical connection between two bar
- * lines across staves.
+ * Class {@code BarGroupRelation} groups 2 bar lines.
  *
  * @author Hervé Bitteur
  */
-public class BarConnectionInter
-        extends AbstractInter
+public class BarGroupRelation
+    extends BasicRelation
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    private final BarConnection connection;
+    /** Horizontal white gap (in interline) between the two bar lines. */
+    private final double xGap;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new BarConnectionInter object.
+     * Creates a new BarGroupRelation object.
      *
-     * @param connection the underlying connection
-     * @param shape      the assigned shape
-     * @param impacts    the assignment details
+     * @param xGap white gap between the two grouped bar lines
      */
-    public BarConnectionInter (BarConnection connection,
-                               Shape shape,
-                               GradeImpacts impacts)
+    public BarGroupRelation (double xGap)
     {
-        super(connection.getArea().getBounds(), shape, impacts);
-        this.connection = connection;
+        this.xGap = xGap;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
 
     @Override
-    public Area getArea ()
+    public String getName ()
     {
-        return connection.getArea();
+        return "BarGroup";
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        sb.append("@(").append(String.format("%.2f", xGap)).append(")");
+
+        return sb.toString();
     }
 }

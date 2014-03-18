@@ -17,7 +17,7 @@ package omr.sig;
  *
  * @author Hervé Bitteur
  */
-public class BasicImpacts
+public abstract class BasicImpacts
         extends AbstractImpacts
 {
     //~ Instance fields ----------------------------------------------------------------------------

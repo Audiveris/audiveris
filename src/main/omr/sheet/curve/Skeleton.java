@@ -22,6 +22,7 @@ import omr.score.ui.PageEraser;
 
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 
 import omr.ui.util.ItemRenderer;
 
@@ -290,7 +291,7 @@ public class Skeleton
         // Erase good shapes of each system
         Graphics2D g = img.createGraphics();
         PageEraser eraser = new PageEraser(g, sheet);
-        eraser.erase(
+        eraser.eraseShapes(
                 Arrays.asList(
                         Shape.THICK_BARLINE,
                         Shape.THIN_BARLINE,
@@ -306,13 +307,12 @@ public class Skeleton
                         Shape.BEAM,
                         Shape.BEAM_HOOK,
                         Shape.BEAM_SMALL,
-                        Shape.BEAM_HOOK_SMALL
-                ));
+                        Shape.BEAM_HOOK_SMALL));
 
-        // Draw a background rectangle around the image
-        g.setColor(Color.WHITE);
-        g.drawRect(0, 0, img.getWidth() - 1, img.getHeight() - 1);
-        g.dispose();
+        // Erase vertical seeds
+        for (SystemInfo system : sheet.getSystems()) {
+            eraser.eraseGlyphs(system.lookupShapedGlyphs(Shape.VERTICAL_SEED));
+        }
 
         // Build buffer
         buffer = new ByteProcessor(img);

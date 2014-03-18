@@ -74,6 +74,7 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ConcurrentModificationException;
+import omr.sig.EndingInter;
 
 /**
  * Class {@code PagePhysicalPainter} paints the recognized page entities at the location
@@ -656,6 +657,27 @@ public class PagePhysicalPainter
     {
         setColor(connection);
         g.fill(connection.getArea());
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (EndingInter ending)
+    {
+        setColor(ending);
+        g.setStroke(lineStroke);
+        g.draw(ending.getLine());
+
+        if (ending.getLeftLeg() != null) {
+            g.draw(ending.getLeftLeg());
+        }
+
+        if (ending.getRightLeg() != null) {
+            g.draw(ending.getRightLeg());
+        }
+
+        g.setStroke(defaultStroke);
     }
 
     //-------//

@@ -33,6 +33,8 @@ public interface InterVisitor
 
     void visit (WedgeInter inter);
 
+    void visit (EndingInter inter);
+
     void visit (BarlineInter inter);
 
     void visit (BarConnectionInter inter);

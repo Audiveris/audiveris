@@ -112,19 +112,18 @@ public class Sections
         return box;
     }
 
-    //---------------------------//
-    // lookupIntersectedSections //
-    //---------------------------//
+    //---------------------//
+    // intersectedSections //
+    //---------------------//
     /**
-     * Convenient method to look for sections that intersect the
-     * provided rectangle
+     * Convenient method to look for sections that intersect the provided rectangle
      *
      * @param rect     provided rectangle
      * @param sections the collection of sections to browse
      * @return the set of intersecting sections
      */
-    public static Set<Section> lookupIntersectedSections (Rectangle rect,
-                                                          Collection<? extends Section> sections)
+    public static Set<Section> intersectedSections (Rectangle rect,
+                                                    Collection<? extends Section> sections)
     {
         Set<Section> found = new LinkedHashSet<Section>();
 

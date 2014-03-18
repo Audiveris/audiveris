@@ -32,6 +32,7 @@ import omr.sheet.SystemInfo;
 import omr.sig.AbstractBeamInter;
 import omr.sig.BarConnectionInter;
 import omr.sig.BarlineInter;
+import omr.sig.EndingInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
 import omr.sig.LedgerInter;
@@ -373,6 +374,27 @@ public class SheetPainter
             g.draw(curve);
             g.setStroke(oldStroke);
         }
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (EndingInter ending)
+    {
+        setColor(ending);
+        g.setStroke(lineStroke);
+        g.draw(ending.getLine());
+
+        if (ending.getLeftLeg() != null) {
+            g.draw(ending.getLeftLeg());
+        }
+
+        if (ending.getRightLeg() != null) {
+            g.draw(ending.getRightLeg());
+        }
+
+        g.setStroke(oldStroke);
     }
 
     //-------//

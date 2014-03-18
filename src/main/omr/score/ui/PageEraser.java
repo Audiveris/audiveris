@@ -19,6 +19,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
+import omr.lag.Section;
+
 import omr.math.GeoUtil;
 
 import omr.score.visitor.AbstractScoreVisitor;
@@ -53,6 +55,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.util.Collection;
 import java.util.List;
+import omr.sig.EndingInter;
 
 /**
  * Class {@code PageEraser} erases selected shapes on the provided graphics environment.
@@ -119,15 +122,27 @@ public class PageEraser
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------//
-    // erase //
-    //-------//
+    //-------------//
+    // eraseGlyphs //
+    //-------------//
+    public void eraseGlyphs (Collection<Glyph> glyphs)
+    {
+        for (Glyph glyph : glyphs) {
+            for (Section section : glyph.getMembers()) {
+                section.render(g, false, Color.WHITE);
+            }
+        }
+    }
+
+    //-------------//
+    // eraseShapes //
+    //-------------//
     /**
      * Erase from image graphics all good instances of provided shapes.
      *
      * @param shapes the shapes to process
      */
-    public void erase (final Collection<Shape> shapes)
+    public void eraseShapes (final Collection<Shape> shapes)
     {
         for (SystemInfo system : sheet.getSystems()) {
             SIGraph sig = system.getSig();
@@ -206,6 +221,11 @@ public class PageEraser
 
     @Override
     public void visit (WedgeInter inter)
+    {
+    }
+
+    @Override
+    public void visit (EndingInter inter)
     {
     }
 

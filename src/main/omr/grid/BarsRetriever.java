@@ -45,6 +45,7 @@ import omr.sheet.SystemInfo;
 
 import omr.sig.BarConnectionInter;
 import omr.sig.BarConnectionRelation;
+import omr.sig.BarGroupRelation;
 import omr.sig.BarlineInter;
 import omr.sig.GradeImpacts;
 import omr.sig.Relation;
@@ -249,8 +250,8 @@ public class BarsRetriever
     // retrieveBarlines //
     //------------------//
     /**
-     * Retrieve all bar lines in the sheet and create systems and
-     * parts indicated by bar lines that connect across staves.
+     * Retrieve all bar lines in the sheet and create systems and parts indicated by bar
+     * lines that connect across staves.
      *
      * @throws StepException raised if processing must stop
      */
@@ -286,14 +287,20 @@ public class BarsRetriever
 
         // Create bar connection across staves
         createBarConnectionInters(interMap);
+
+        // Boost the aligned bars
+        boostAlignedBars(interMap);
+
+        // Detect grouped bar lines
+        groupBarlines(interMap);
     }
 
     //--------------//
     // alignedPeaks //
     //--------------//
     /**
-     * Report the BarPeak instance(s) that are aligned with the
-     * provided peak, looking in the provided vertical side.
+     * Report the BarPeak instance(s) that are aligned with the provided peak, looking
+     * in the provided vertical side.
      *
      * @param peak the peak to check from
      * @param side which side to look (from provided peak)
@@ -315,8 +322,8 @@ public class BarsRetriever
     // alignmentsOf //
     //--------------//
     /**
-     * Report the collection of alignments for which the provided peak
-     * is involved on desired vertical side.
+     * Report the collection of alignments for which the provided peak is involved on
+     * desired vertical side.
      *
      * @param peak the peak to check for
      * @param side the desired vertical side
@@ -336,12 +343,36 @@ public class BarsRetriever
         return found;
     }
 
+    //------------------//
+    // boostAlignedBars //
+    //------------------//
+    /**
+     * Give a bonus to every bar aligned (or connected) with a bar in a staff nearby.
+     * This is or course limited to systems with several staves.
+     *
+     * @param interMap map Peak -> Inter
+     */
+    private void boostAlignedBars (Map<BarPeak, BarlineInter> interMap)
+    {
+        final double ratio = constants.alignedBoostRatio.getValue();
+
+        for (SystemInfo system : sheet.getSystems()) {
+            for (StaffInfo staff : system.getStaves()) {
+                for (BarPeak peak : staff.getBarPeaks()) {
+                    if (isAligned(peak, TOP) || isAligned(peak, BOTTOM)) {
+                        interMap.get(peak).boost(ratio);
+                    }
+                }
+            }
+        }
+    }
+
     //----------------//
     // buildBarSticks //
     //----------------//
     /**
-     * Bar line sticks are needed to detect those which go past staff
-     * height above, below, or both.
+     * Bar line sticks are needed to detect those which go past staff height above,
+     * below, or both.
      */
     private void buildBarSticks ()
     {
@@ -362,16 +393,15 @@ public class BarsRetriever
     // buildSticks //
     //-------------//
     /**
-     * Build sticks corresponding to retrieved bar peaks of a given
-     * kind (all thin peaks or all thick peaks).
+     * Build sticks corresponding to retrieved bar peaks of a given kind (all thin peaks
+     * or all thick peaks).
      * <p>
      * For each peak, we take a vertical "slice" of the relevant sections.
-     * We run the filament factory (with proper thickness value) on the sections
-     * and make it focus on bar target line.
+     * We run the filament factory (with proper thickness value) on the sections and make it focus
+     * on bar target line.
      *
      * @param maxWidth value to use as maximum width
-     * @param isThin   true to process only thin bars, false to process only
-     *                 thick ones
+     * @param isThin   true to process only thin bars, false to process only thick ones
      */
     private void buildSticks (int maxWidth,
                               boolean isThin)
@@ -638,8 +668,8 @@ public class BarsRetriever
             for (VerticalSide side : VerticalSide.values()) {
                 List<StaffInfo> otherStaves = staffManager.vertNeighbors(staff, side);
 
-                // Make sure there are other staves on this side
-                // and they are "short-wise compatible" with current staff
+                // Make sure there are other staves on this side and they are "short-wise compatible"
+                // with current staff
                 if (otherStaves.isEmpty() || (otherStaves.get(0).isShort() != staff.isShort())) {
                     continue;
                 }
@@ -647,8 +677,6 @@ public class BarsRetriever
                 // Look for all alignment/connection relations
                 for (BarPeak peak : staff.getBarPeaks()) {
                     // Look for a suitable partnering peak in stave(s) nearby
-                    // Same peak kind: thin or thick
-                    // Vertically aligned, taking sheet slope into account
                     for (StaffInfo otherStaff : otherStaves) {
                         lookupPeaks(peak, side, otherStaff);
                     }
@@ -691,13 +719,11 @@ public class BarsRetriever
     // gatherStaves //
     //--------------//
     /**
-     * Use connections across staves to gather staves into systems
-     * and parts.
+     * Use connections across staves to gather staves into systems and parts.
      * <p>
      * A first connection between two staves make them system partners.
-     * A second connection between two staves makes them part partners, provided
-     * that the second connection is sufficiently abscissa-shifted from the
-     * first one.
+     * A second connection between two staves makes them part partners, provided that the second
+     * connection is sufficiently abscissa-shifted from the first one.
      *
      * @param systemTops (output) systems starting staves
      * @param partTops   (output) parts starting staves
@@ -759,8 +785,7 @@ public class BarsRetriever
     // getMaxWidths //
     //--------------//
     /**
-     * Retrieve the maximum width of thick peaks and the maximum width
-     * of thin peaks.
+     * Retrieve the maximum width of thick peaks and the maximum width of thin peaks.
      *
      * @param maxThick (output) maximum width of thick peaks
      * @param maxThin  (output) maximum width of thin peaks
@@ -842,8 +867,7 @@ public class BarsRetriever
     /**
      * Select relevant sections for specific kind of bar sticks.
      * <p>
-     * Both vertical and horizontal sections are OK if they are not wider than
-     * the maximum allowed.
+     * Both vertical and horizontal sections are OK if they are not wider than the maximum allowed.
      * The global collection is sorted on abscissa.
      * <p>
      * TODO: add some margin to maxWidth?
@@ -869,12 +893,72 @@ public class BarsRetriever
         return sections;
     }
 
+    //---------------//
+    // groupBarlines //
+    //---------------//
+    /**
+     * Detect bar lines organized in groups.
+     */
+    private void groupBarlines (Map<BarPeak, BarlineInter> interMap)
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            SIGraph sig = system.getSig();
+
+            for (StaffInfo staff : system.getStaves()) {
+                BarPeak prevPeak = null;
+
+                for (BarPeak peak : staff.getBarPeaks()) {
+                    if (prevPeak != null) {
+                        int gap = peak.getStart() - prevPeak.getStop() - 1;
+
+                        if (gap <= params.maxDoubleBarGap) {
+                            BarlineInter prevInter = interMap.get(prevPeak);
+                            BarlineInter inter = interMap.get(peak);
+                            BarGroupRelation rel = new BarGroupRelation(scale.pixelsToFrac(gap));
+                            sig.addEdge(prevInter, inter, rel);
+                        }
+                    }
+
+                    prevPeak = peak;
+                }
+            }
+        }
+    }
+
+    //-----------//
+    // isAligned //
+    //-----------//
+    /**
+     * Report whether the provided peak is involved in an alignment or a connection on
+     * the desired side.
+     *
+     * @param peak the peak to check
+     * @param side which side to look
+     * @return true if aligned or connected
+     */
+    private boolean isAligned (BarPeak peak,
+                               VerticalSide side)
+    {
+        for (BarAlignment alignment : alignments) {
+            if (alignment.getPeak(side) == peak) {
+                return true;
+            }
+        }
+
+        for (BarAlignment alignment : connections) {
+            if (alignment.getPeak(side) == peak) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //-------------//
     // isConnected //
     //-------------//
     /**
-     * Check whether the provided peak is connected on the provided
-     * vertical side.
+     * Check whether the provided peak is connected on the provided vertical side.
      *
      * @param peak the peak to check
      * @param side which vertical side to look for from peak
@@ -898,8 +982,8 @@ public class BarsRetriever
     // lookupPeaks //
     //-------------//
     /**
-     * Lookup in the provided staff for one or several peaks compliant
-     * with (de-skewed) peak abscissa and peak kind.
+     * Lookup in the provided staff for one or several peaks compliant with (de-skewed)
+     * peak abscissa and peak kind.
      * This populates the 'alignments' set.
      *
      * @param peak       the reference peak
@@ -915,10 +999,12 @@ public class BarsRetriever
         final double dsk = skew.deskewed(new Point(mid, peak.getOrdinate(side))).getX();
 
         for (BarPeak otherPeak : otherStaff.getBarPeaks()) {
+            // Same peak kind: thin or thick
             if (otherPeak.isThin() != peak.isThin()) {
                 continue;
             }
 
+            // Vertically aligned, taking sheet slope into account
             int otherMid = (otherPeak.getStart() + otherPeak.getStop()) / 2;
             Point otherPt = (side == TOP) ? new Point(otherMid, otherPeak.getBottom())
                     : new Point(otherMid, otherPeak.getTop());
@@ -965,7 +1051,7 @@ public class BarsRetriever
             for (VerticalSide side : VerticalSide.values()) {
                 for (BarAlignment alignment : alignmentsOf(connection.getPeak(side), side)) {
                     alignments.remove(alignment);
-                    logger.info("Removed {}", alignment);
+                    logger.debug("Removed {}", alignment);
                 }
             }
         }
@@ -1006,6 +1092,7 @@ public class BarsRetriever
     //----------------------//
     /**
      * Only alignments within a system are meaningful.
+     * So, alignments across systems must be deleted.
      */
     private void purgeCrossAlignments ()
     {
@@ -1184,6 +1271,10 @@ public class BarsRetriever
         Scale.Fraction maxDoubleBarGap = new Scale.Fraction(
                 1.0,
                 "Max horizontal gap between two members of a double bar");
+
+        Constant.Ratio alignedBoostRatio = new Constant.Ratio(
+                0.30,
+                "Boost ratio for aligned bar lines");
 
         // Constants for display
         //

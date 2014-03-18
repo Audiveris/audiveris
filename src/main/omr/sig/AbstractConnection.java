@@ -63,8 +63,7 @@ public abstract class AbstractConnection
     /**
      * Set the gaps for this connection.
      *
-     * @param xDistance the horizontal distance (positive for gap and negative
-     *                  for overlap)
+     * @param xDistance the horizontal distance (positive for gap and negative for overlap)
      * @param yDistance the vertical distance (absolute)
      */
     public void setDistances (double xDistance,

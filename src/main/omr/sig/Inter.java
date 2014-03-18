@@ -175,6 +175,13 @@ public interface Inter
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
+     * Boost the inter grade.
+     *
+     * @param ratio ratio applied
+     */
+    void boost (double ratio);
+
+    /**
      * Delete this instance, and remove it from its containing SIG.
      */
     void delete ();
@@ -318,13 +325,6 @@ public interface Inter
      * @param id the inter id
      */
     void setId (int id);
-
-    /**
-     * Assign details about the final grade
-     *
-     * @param impacts the grade impacts
-     */
-    void setImpacts (GradeImpacts impacts);
 
     /**
      * Assign the containing SIG

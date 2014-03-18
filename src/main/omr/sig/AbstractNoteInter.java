@@ -77,8 +77,7 @@ public class AbstractNoteInter
                               GradeImpacts impacts,
                               int pitch)
     {
-        super(box, shape, impacts.getGrade());
-        setImpacts(impacts);
+        super(box, shape, impacts);
         this.descriptor = descriptor;
         this.pitch = pitch;
     }

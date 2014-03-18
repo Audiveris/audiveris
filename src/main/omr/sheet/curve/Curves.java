@@ -135,9 +135,13 @@ public class Curves
 
         // Build wedges out of segments
         WedgesBuilder wedgesBuilder = new WedgesBuilder(this);
-        itemRenderers.add(wedgesBuilder);
         watch.start("buildWedges");
         wedgesBuilder.buildWedges();
+
+        // Build endings out of segments
+        EndingsBuilder endingsBuilder = new EndingsBuilder(this);
+        watch.start("buildEndings");
+        endingsBuilder.buildEndings();
 
         watch.print();
     }

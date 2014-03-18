@@ -40,8 +40,7 @@ public class SlurInter
     public SlurInter (SlurInfo info,
                       GradeImpacts impacts)
     {
-        super(info.getBounds(), Shape.SLUR, impacts.getGrade());
-        setImpacts(impacts);
+        super(info.getBounds(), Shape.SLUR, impacts);
         this.info = info;
 
         // To debug attachments

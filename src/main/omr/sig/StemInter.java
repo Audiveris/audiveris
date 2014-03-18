@@ -35,9 +35,7 @@ public class StemInter
     public StemInter (Glyph glyph,
                       GradeImpacts impacts)
     {
-        super(glyph, Shape.STEM, impacts.getGrade());
-
-        setImpacts(impacts);
+        super(glyph, Shape.STEM, impacts);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

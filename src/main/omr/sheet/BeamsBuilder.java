@@ -681,7 +681,7 @@ public class BeamsBuilder
     private void extendBeams ()
     {
         // The stem seeds for this system, sorted by abscissa
-        sortedSystemSeeds = getSystemSeeds();
+        sortedSystemSeeds = system.lookupShapedGlyphs(Shape.VERTICAL_SEED);
 
         // The beam & hook inters for this system, NOT sorted by abscissa.
         // We may add to this list, but not remove elements (they are deleted).
@@ -1221,28 +1221,6 @@ public class BeamsBuilder
         return null;
     }
 
-    //----------------//
-    // getSystemSeeds //
-    //----------------//
-    /**
-     * Retrieves the vertical stem seeds for the system
-     *
-     * @return the abscissa-ordered sequence of stem seeds in the system
-     */
-    private List<Glyph> getSystemSeeds ()
-    {
-        List<Glyph> seeds = new ArrayList<Glyph>();
-
-        // Within a system, glyphs are sorted by abscissa
-        for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.getShape() == Shape.VERTICAL_SEED) {
-                seeds.add(glyph);
-            }
-        }
-
-        return seeds;
-    }
-
     //---------//
     // mergeOf //
     //---------//
@@ -1497,7 +1475,7 @@ public class BeamsBuilder
                 "Low minimum height for a beam or hook, specified as ratio of typical beam");
 
         final Constant.Ratio maxHeightRatioHigh = new Constant.Ratio(
-                1.25,
+                1.3,
                 "High maximum height for a beam or hook, specified as ratio of typical beam");
 
         final Scale.Fraction maxItemXGap = new Scale.Fraction(

@@ -250,7 +250,7 @@ public class StemsBuilder
         StopWatch watch = new StopWatch("StemsBuilder S#" + system.getId());
         watch.start("collections");
         // The sorted stem seeds for this system
-        systemSeeds = getSystemSeeds();
+        systemSeeds = system.lookupShapedGlyphs(Shape.VERTICAL_SEED);
 
         // The sorted beam and beam hook interpretations for this system
         systemBeams = sig.inters(AbstractBeamInter.class);
@@ -408,27 +408,6 @@ public class StemsBuilder
 
             checker.check(ensemble);
         }
-    }
-
-    //----------------//
-    // getSystemSeeds //
-    //----------------//
-    /**
-     * Retrieves the vertical stem seeds for the system
-     *
-     * @return the collection of system stem seeds
-     */
-    private List<Glyph> getSystemSeeds ()
-    {
-        List<Glyph> seeds = new ArrayList<Glyph>();
-
-        for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.getShape() == Shape.VERTICAL_SEED) {
-                seeds.add(glyph);
-            }
-        }
-
-        return seeds;
     }
 
     //-------------------------//

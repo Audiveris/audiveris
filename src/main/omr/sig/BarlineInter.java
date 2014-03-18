@@ -53,8 +53,7 @@ public class BarlineInter
                          Line median,
                          double width)
     {
-        super(glyph, shape, impacts.getGrade());
-        setImpacts(impacts);
+        super(glyph, shape, impacts);
         this.median = median;
         this.width = width;
 
@@ -111,6 +110,15 @@ public class BarlineInter
     public double getWidth ()
     {
         return width;
+    }
+
+    //--------//
+    // isGood //
+    //--------//
+    @Override
+    public boolean isGood ()
+    {
+        return getGrade() >= 0.6; // TODO, quick & dirty
     }
 
     //----------------//
