@@ -25,6 +25,10 @@ public interface InterVisitor
 
     void visit (AbstractBeamInter inter);
 
+    void visit (AbstractNoteInter inter);
+
+    void visit (BraceInter inter);
+
     void visit (StemInter inter);
 
     void visit (LedgerInter inter);

@@ -46,7 +46,7 @@ public class HorizontalsFilter
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(HorizontalsBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(HorizontalsFilter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     //

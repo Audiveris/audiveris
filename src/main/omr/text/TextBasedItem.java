@@ -36,7 +36,7 @@ public abstract class TextBasedItem
     private Line2D baseline;
 
     /** OCR confidence. */
-    private Integer confidence;
+    private Double confidence;
 
     /** (Debug) flag this object as VIP. */
     private boolean vip;
@@ -53,7 +53,7 @@ public abstract class TextBasedItem
     public TextBasedItem (Rectangle bounds,
                           String value,
                           Line2D baseline,
-                          Integer confidence)
+                          Double confidence)
     {
         super(bounds, value);
 
@@ -76,7 +76,7 @@ public abstract class TextBasedItem
     //--------------//
     // confidenceOf //
     //--------------//
-    public static int confidenceOf (Collection<? extends TextBasedItem> items)
+    public static double confidenceOf (Collection<? extends TextBasedItem> items)
     {
         // Use average confidence
         double total = 0;
@@ -85,7 +85,7 @@ public abstract class TextBasedItem
             total += item.getConfidence();
         }
 
-        return (int) Math.rint(total / items.size());
+        return total / items.size();
     }
 
     //-------------//
@@ -109,7 +109,7 @@ public abstract class TextBasedItem
      *
      * @return the confidence or null
      */
-    public Integer getConfidence ()
+    public Double getConfidence ()
     {
         return confidence;
     }
@@ -159,7 +159,7 @@ public abstract class TextBasedItem
      *
      * @param confidence the confidence or null
      */
-    public void setConfidence (Integer confidence)
+    public void setConfidence (Double confidence)
     {
         this.confidence = confidence;
     }

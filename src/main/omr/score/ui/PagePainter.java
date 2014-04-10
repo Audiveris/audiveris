@@ -99,6 +99,7 @@ import java.util.Set;
  * <li>{@link PagePhysicalPainter} for the presentation of page entities over
  * the sheet glyphs</li>
  * <li>We used to also have a PageLogicalPainter for the "ideal" score view</li>
+ * </ul>
  *
  * @author Hervé Bitteur
  */

@@ -21,6 +21,7 @@ import omr.moments.GeometricMoments;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import omr.glyph.Shape;
 
 /**
  * Interface {@code GlyphGeometry} defines the facet which handles all the geometrical
@@ -98,14 +99,23 @@ interface GlyphGeometry
     int getInterline ();
 
     /**
-     * Report the glyph (reference) location, which is the equivalent
-     * of the icon reference point if one such point exists, or the
-     * glyph area center otherwise.
+     * Report the glyph (reference) location, which is the equivalent of the icon
+     * reference point if one such point exists, or the glyph area center otherwise.
      * The point is lazily evaluated.
      *
      * @return the reference center point
      */
     Point getLocation ();
+
+    /**
+     * Report the glyph (reference) location, which is the equivalent of the icon
+     * reference point if one such point exists, or the glyph area center otherwise.
+     * The point is lazily evaluated.
+     *
+     * @param shape shape considered for the glyph
+     * @return the reference center point
+     */
+    Point getLocation (Shape shape);
 
     /**
      * Report the height of this glyph, after normalization to sheet

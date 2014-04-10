@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.JMenu;
@@ -89,7 +91,8 @@ public class InterMenu
     @Override
     public void updateUserLocation (Rectangle rect)
     {
-        Collection<Inter> inters = sheet.getSelectedInterList();
+        List<Inter> inters = sheet.getSelectedInterList();
+        Collections.sort(inters, Inter.byReverseContextualGrade);
         updateMenu(inters);
 
         super.updateUserLocation(rect);

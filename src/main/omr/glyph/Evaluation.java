@@ -25,10 +25,10 @@ public class Evaluation
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Absolute confidence in shape manually assigned by the user. */
-    public static final double MANUAL = 300;
+    public static final double MANUAL = 3;
 
     /** Confidence for in structurally assigned. */
-    public static final double ALGORITHM = 200;
+    public static final double ALGORITHM = 2;
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The evaluated shape. */
@@ -36,7 +36,7 @@ public class Evaluation
 
     /**
      * The evaluation grade (larger is better), generally provided by
-     * the neural network evaluator in the range 0 - 100.
+     * the neural network evaluator in the range 0 - 1.
      */
     public double grade;
 

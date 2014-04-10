@@ -396,7 +396,7 @@ public class CompoundBuilder
         public boolean isCompoundValid (Glyph compound)
         {
             // Check if a desired shape appears in the top raw evaluations
-            final Evaluation vote = GlyphNetwork.getInstance().rawVote(
+            final Evaluation vote = GlyphClassifier.getInstance().rawVote(
                     compound,
                     minGrade,
                     predicate);
@@ -442,7 +442,7 @@ public class CompoundBuilder
         public boolean isCompoundValid (Glyph compound)
         {
             // Check if a desired shape appears in the top evaluations
-            final Evaluation vote = GlyphNetwork.getInstance().vote(
+            final Evaluation vote = GlyphClassifier.getInstance().vote(
                     compound,
                     system,
                     minGrade,

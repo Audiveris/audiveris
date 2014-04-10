@@ -759,7 +759,7 @@ public class SystemTranslator
             final Shape shape = glyph.getShape();
 
             return (shape == Shape.TR) || (shape == Shape.TURN) || (shape == Shape.MORDENT)
-                   || (shape == Shape.INVERTED_MORDENT);
+                   || (shape == Shape.MORDENT_INVERTED);
         }
 
         @Override

@@ -221,7 +221,7 @@ public class SIGraph
     public List<Inter> containingInters (Point point)
     {
         List<Inter> found = new ArrayList<Inter>();
-
+        
         for (Inter inter : vertexSet()) {
             if (inter.getBounds().contains(point)) {
                 // More precise test if we know inter area
@@ -495,8 +495,8 @@ public class SIGraph
     // insertExclusion //
     //-----------------//
     /**
-     * Insert an exclusion relation between two inters, unless
-     * such an exclusion already exists.
+     * Insert an exclusion relation between two provided inters, unless there is a
+     * support relation between them or unless an exclusion already exists.
      * We always insert exclusion from lower id to higher id.
      *
      * @param inter1 provided inter #1
@@ -512,12 +512,27 @@ public class SIGraph
         Inter source = direct ? inter1 : inter2;
         Inter target = direct ? inter2 : inter1;
 
+        // Look for existing exclusion
         for (Relation rel : getAllEdges(source, target)) {
             if (rel instanceof Exclusion) {
                 return (Exclusion) rel;
             }
         }
 
+        // Check no support relation exists, in either direction
+        for (Relation rel : getAllEdges(source, target)) {
+            if (rel instanceof Support) {
+                return null;
+            }
+        }
+
+        for (Relation rel : getAllEdges(target, source)) {
+            if (rel instanceof Support) {
+                return null;
+            }
+        }
+
+        // Do insert an exclusion
         Exclusion exc = new BasicExclusion(cause);
         addEdge(source, target, exc);
 
@@ -526,6 +541,28 @@ public class SIGraph
         }
 
         return exc;
+    }
+
+    //------------------//
+    // insertExclusions //
+    //------------------//
+    /**
+     * Formalize mutual exclusion within a collection of inters
+     *
+     * @param inters the set of inters to mutually exclude
+     * @param cause  the exclusion cause
+     */
+    public void insertExclusions (List<Inter> inters,
+                                  Cause cause)
+    {
+        ///logger.warn("insertExclusions for size: {}", inters.size());
+        for (int i = 0; i < (inters.size() - 1); i++) {
+            Inter inter = inters.get(i);
+
+            for (Inter other : inters.subList(i + 1, inters.size())) {
+                insertExclusion(inter, other, cause);
+            }
+        }
     }
 
     //--------//

@@ -51,7 +51,7 @@ public class SymbolsModel
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Standard evaluator */
-    private final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
+    private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
 
     //~ Constructors -------------------------------------------------------------------------------
     //--------------//

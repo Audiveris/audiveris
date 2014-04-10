@@ -16,7 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphNest;
-import omr.glyph.GlyphNetwork;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeEvaluator;
@@ -57,6 +56,7 @@ import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import omr.glyph.GlyphClassifier;
 
 /**
  * Class {@code ScoreChecker} can visit the score hierarchy and perform global checking
@@ -97,7 +97,7 @@ public class ScoreChecker
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Glyph evaluator */
-    private final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
+    private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
 
     /** Output of the checks */
     private final WrappedBoolean modified;
@@ -836,7 +836,7 @@ public class ScoreChecker
             GlyphNest nest = system.getSheet().getNest();
 
             Glyph compound = nest.buildGlyph(glyphs, false, Glyph.Linking.NO_LINK);
-            Evaluation vote = GlyphNetwork.getInstance().vote(
+            Evaluation vote = evaluator.vote(
                     compound,
                     first.getSystem().getInfo(),
                     Grades.mergedNoteMinGrade);
@@ -866,7 +866,6 @@ public class ScoreChecker
         final int stemDir = chord.getStemDir();
         final Point chordCenter = chord.getCenter();
         final ScoreSystem system = chord.getSystem();
-        final GlyphNetwork network = GlyphNetwork.getInstance();
 
         for (Glyph glyph : glyphs) {
             if (glyph.getShape() != null) {
@@ -886,7 +885,7 @@ public class ScoreChecker
             }
 
             // Check if a beam appears in the top evaluations
-            Evaluation vote = network.vote(
+            Evaluation vote = evaluator.vote(
                     glyph,
                     system.getInfo(),
                     Grades.hookMinGrade,

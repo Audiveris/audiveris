@@ -88,7 +88,7 @@ public class SymbolGlyphBoard
     private final LComboBox<CreatorType> typeCombo;
 
     /** Output : textual confidence */
-    protected LIntegerField confField;
+    protected LDoubleField confField;
 
     /** Input/Output : textual content */
     protected LTextField textField;
@@ -165,7 +165,7 @@ public class SymbolGlyphBoard
         typeCombo.addActionListener(paramAction);
 
         // Confidence and Text fields
-        confField = new LIntegerField(false, "Conf", "Confidence in text value");
+        confField = new LDoubleField(false, "Conf", "Confidence in text value");
         textField = new LTextField(true, "Text", "Content of a textual glyph");
         textField.getField().setHorizontalAlignment(JTextField.LEFT);
 

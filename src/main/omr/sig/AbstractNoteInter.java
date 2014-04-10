@@ -83,6 +83,24 @@ public class AbstractNoteInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //---------------//
+    // getCoreBounds //
+    //---------------//
+    @Override
+    public Rectangle2D getCoreBounds ()
+    {
+        return shrink(getBounds());
+    }
+
     //---------------//
     // getDescriptor //
     //---------------//
@@ -137,15 +155,6 @@ public class AbstractNoteInter
                 box.getCenterY() - (newHeight / 2.0),
                 newWidth,
                 newHeight);
-    }
-
-    //---------------//
-    // getCoreBounds //
-    //---------------//
-    @Override
-    public Rectangle2D getCoreBounds ()
-    {
-        return shrink(getBounds());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

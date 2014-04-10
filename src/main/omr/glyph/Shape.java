@@ -64,26 +64,17 @@ public enum Shape
 {
 
     /**
-     * ================================================================
-     * Nota: Avoid changing the order of these physical shapes,
-     * otherwise the evaluators won't detect this and you'll have to
-     * retrain them on your own.
-     * =========================================================================
+     * =================================================================================
+     * Nota: Avoid changing the order of these physical shapes, otherwise the evaluators
+     * won't detect this and you'll have to retrain them on your own.
+     * =============================================================================================
      */
+
     //
     // Sets --------------------------------------------------------------------
     //
     DOT_set("Dot set", new Color(0x0cccc)),
-    FERMATA_set("Set of Fermata's"),
     HW_REST_set("Half & Whole Rest set"),
-    TIME_69_set("Time 6 & 9 set"),
-    FLAG_1_set("Single flag set"),
-    FLAG_2_set("Double flag set"),
-    FLAG_3_set("Triple flag set"),
-    FLAG_4_set("Quadruple flag set"),
-    FLAG_5_set("Quintuple flag set"),
-    WEDGE_set("Crescendo & Decrescendo set"),
-    TURN_set("Turn set"),
 
     //
     // Bars --------------------------------------------------------------------
@@ -96,6 +87,8 @@ public enum Shape
     CAESURA("Caesura"),
     BRACE("Brace"),
     BRACKET("Bracket"),
+    FERMATA("Fermata"),
+    FERMATA_BELOW("Fermata Below"),
 
     //
     // Clefs -------------------------------------------------------------------
@@ -110,19 +103,28 @@ public enum Shape
     F_CLEF_8VA("Bass Clef Ottava Alta"),
     F_CLEF_8VB("Bass Clef Ottava Bassa"),
     PERCUSSION_CLEF("Percussion Clef"),
+
+    //
+    // Accidentals -------------------------------------------------------------------
+    //
     FLAT("Minus one half step", new Color(0x00aaaa)),
     NATURAL("Natural value", new Color(0x0066ff)),
     SHARP("Plus one half step", new Color(0x3399ff)),
     DOUBLE_SHARP("Double Sharp"),
     DOUBLE_FLAT("Double Flat"),
+    //
+    // Time ----------------------------------------------------------
+    //
     TIME_ZERO("Digit 0"),
     TIME_ONE("Digit 1"),
     TIME_TWO("Digit 2"),
     TIME_THREE("Digit 3"),
     TIME_FOUR("Digit 4"),
     TIME_FIVE("Digit 5"),
+    TIME_SIX("Digit 6"),
     TIME_SEVEN("Digit 7"),
     TIME_EIGHT("Digit 8"),
+    TIME_NINE("Digit 9"),
     TIME_TWELVE("Number 12"),
     TIME_SIXTEEN("Number 16"),
     TIME_FOUR_FOUR("Rational 4/4"),
@@ -134,22 +136,6 @@ public enum Shape
     CUT_TIME("Semi-Alpha = 2/2"),
     OTTAVA_ALTA("8 va", new Color(0xcc66ff)),
     OTTAVA_BASSA("8 vb", new Color(0xcc66ff)),
-
-    //
-    // Key signatures ----------------------------------------------------------
-    //
-    KEY_FLAT_7("Seven Flats"),
-    KEY_FLAT_6("Six Flats"),
-    KEY_FLAT_5("Five Flats"),
-    KEY_FLAT_4("Four Flats"),
-    KEY_FLAT_3("Three Flats"),
-    KEY_FLAT_2("Two Flats"),
-    KEY_SHARP_2("Two Sharps"),
-    KEY_SHARP_3("Three Sharps"),
-    KEY_SHARP_4("Four Sharps"),
-    KEY_SHARP_5("Five Sharps"),
-    KEY_SHARP_6("Six Sharps"),
-    KEY_SHARP_7("Seven Sharps"),
 
     //
     // Rests -------------------------------------------------------------------
@@ -164,28 +150,23 @@ public enum Shape
     ONE_128TH_REST("Rest for a 1/128"),
 
     //
-    // Noteheads ---------------------------------------------------------------
+    // Flags ---------------------------------------------------------------
     //
-    NOTEHEAD_VOID("Hollow node head for halves", new Color(0xff9966)),
-    NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue", new Color(0xff4400)),
-    NOTEHEAD_BLACK("Filled node head for quarters and less", new Color(0xffcc00)),
-    NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue", new Color(0xff4400)),
+    FLAG_1("Single flag down"),
+    FLAG_1_UP("Single flag up"),
+    FLAG_2("Double flag down"),
+    FLAG_2_UP("Double flag up"),
+    FLAG_3("Triple flag down"),
+    FLAG_3_UP("Triple flag up"),
+    FLAG_4("Quadruple flag down"),
+    FLAG_4_UP("Quadruple flag up"),
+    FLAG_5("Quintuple flag down"),
+    FLAG_5_UP("Quintuple flag up"),
 
     //
     // Notes -------------------------------------------------------------------
     //
     BREVE("Double Whole"),
-    WHOLE_NOTE("Hollow node head for wholes"),
-    WHOLE_NOTE_SMALL("Small hollow node head for grace or cue wholes"),
-
-    //
-    // Beams and slurs ---------------------------------------------------------
-    //
-    BEAM("Beam between two stems"),
-    BEAM_SMALL("Small beam for cue notes"),
-    BEAM_HOOK("Hook of a beam attached on one stem"),
-    BEAM_HOOK_SMALL("Small hook of a beam for cue notes"),
-    SLUR("Slur tying notes", new Color(0xff4444)),
     //
     // Articulation ------------------------------------------------------------
     //
@@ -226,9 +207,12 @@ public enum Shape
     GRACE_NOTE_SLASH("Grace Note with a Slash"),
     GRACE_NOTE("Grace Note with no slash"),
     TR("Trill"),
+    TURN("Turn"),
+    TURN_INVERTED("Inverted Turn"),
+    TURN_UP("Turn Up"),
     TURN_SLASH("Turn with a Slash"),
     MORDENT("Mordent"),
-    INVERTED_MORDENT("Mordent with a Slash"),
+    MORDENT_INVERTED("Mordent with a Slash"),
 
     //
     // Tuplets -----------------------------------------------------------------
@@ -237,20 +221,32 @@ public enum Shape
     TUPLET_SIX("6", new Color(0xcc00cc)),
     PEDAL_MARK("Pedal down", new Color(0x009999)),
     PEDAL_UP_MARK("Pedal downup", new Color(0x009999)),
+    //
+    // Small digits ------------------------------------------------------------
+    //
+    DIGIT_0("Digit 0"),
+    DIGIT_1("Digit 1"),
+    DIGIT_2("Digit 2"),
+    DIGIT_3("Digit 3"),
+    DIGIT_4("Digit 4"),
+    DIGIT_5("Digit 5"),
+    DIGIT_6("Digit 6"),
+    DIGIT_7("Digit 7"),
+    DIGIT_8("Digit 8"),
+    DIGIT_9("Digit 9"),
 
     //
     // Miscellaneous -----------------------------------------------------------
     //
-    CLUTTER("Pure clutter", new Color(0x999900)),
-    CHARACTER("A letter"),
+    CHARACTER("Any letter"),
     TEXT("Sequence of letters & spaces", new Color(0x9999ff)),
+    CLUTTER("Pure clutter", new Color(0x999900)),
 
     //
-    // =========================================================================
+    // =============================================================================================
     // This is the end of physical shapes.
-    // Next shapes are pure logical shapes, that CANNOT be inferred only from
-    // their physical characteristics.
-    // =========================================================================
+    // Next shapes are logical shapes, that CANNOT be inferred only from their physical characteristics.
+    // =============================================================================================
     //
     //
     // Shapes from shape sets --------------------------------------------------
@@ -258,27 +254,49 @@ public enum Shape
     REPEAT_DOT("Repeat dot", DOT_set, new Color(0x0000ff)),
     AUGMENTATION_DOT("Augmentation Dot", DOT_set),
     STACCATO("Staccato dot", DOT_set),
-    FERMATA("Fermata", FERMATA_set),
-    FERMATA_BELOW("Fermata Below", FERMATA_set),
     WHOLE_REST("Rest for whole measure", HW_REST_set),
     HALF_REST("Rest for a 1/2", HW_REST_set),
-    TIME_SIX("Digit 6", TIME_69_set),
-    TIME_NINE("Digit 9", TIME_69_set),
-    FLAG_1("Single flag down", FLAG_1_set),
-    FLAG_1_UP("Single flag up", FLAG_1_set),
-    FLAG_2("Double flag down", FLAG_2_set),
-    FLAG_2_UP("Double flag up", FLAG_2_set),
-    FLAG_3("Triple flag down", FLAG_3_set),
-    FLAG_3_UP("Triple flag up", FLAG_3_set),
-    FLAG_4("Quadruple flag down", FLAG_4_set),
-    FLAG_4_UP("Quadruple flag up", FLAG_4_set),
-    FLAG_5("Quintuple flag down", FLAG_5_set),
-    FLAG_5_UP("Quintuple flag up", FLAG_5_set),
-    CRESCENDO("Crescendo", WEDGE_set),
-    DECRESCENDO("Decrescendo", WEDGE_set),
-    TURN("Turn", TURN_set),
-    INVERTED_TURN("Inverted Turn", TURN_set),
-    TURN_UP("Turn Up", TURN_set),
+    CRESCENDO("Crescendo"),
+    DECRESCENDO("Decrescendo"),
+
+    //
+    // Noteheads ---------------------------------------------------------------
+    //
+    NOTEHEAD_VOID("Hollow node head for halves", new Color(0xff9966)),
+    NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue", new Color(0xff4400)),
+    NOTEHEAD_BLACK("Filled node head for quarters and less", new Color(0xffcc00)),
+    NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue", new Color(0xff4400)),
+
+    //
+    // Notes -------------------------------------------------------------------
+    //
+    WHOLE_NOTE("Hollow node head for wholes"),
+    WHOLE_NOTE_SMALL("Small hollow node head for grace or cue wholes"),
+
+    //
+    // Beams and slurs ---------------------------------------------------------
+    //
+    BEAM("Beam between two stems"),
+    BEAM_SMALL("Small beam for cue notes"),
+    BEAM_HOOK("Hook of a beam attached on one stem"),
+    BEAM_HOOK_SMALL("Small hook of a beam for cue notes"),
+    SLUR("Slur tying notes", new Color(0xff4444)),
+
+    //
+    // Key signatures ----------------------------------------------------------
+    //
+    KEY_FLAT_7("Seven Flats"),
+    KEY_FLAT_6("Six Flats"),
+    KEY_FLAT_5("Five Flats"),
+    KEY_FLAT_4("Four Flats"),
+    KEY_FLAT_3("Three Flats"),
+    KEY_FLAT_2("Two Flats"),
+    KEY_SHARP_2("Two Sharps"),
+    KEY_SHARP_3("Three Sharps"),
+    KEY_SHARP_4("Four Sharps"),
+    KEY_SHARP_5("Five Sharps"),
+    KEY_SHARP_6("Six Sharps"),
+    KEY_SHARP_7("Seven Sharps"),
 
     //
     // Bars --------------------------------------------------------------------
@@ -305,7 +323,6 @@ public enum Shape
     ENDING_HORIZONTAL("Horizontal part of ending"),
     ENDING_VERTICAL("Vertical part of ending"),
     SEGMENT("Wedge or ending segment"),
-
     //
     // Stems
     //
@@ -328,14 +345,14 @@ public enum Shape
     BEAM_SPOT("Beam-oriented spot", new Color(0xaaaaaa));
 
     //
-    // =========================================================================
+    // =============================================================================================
     // This is the end of shape enumeration
-    // =========================================================================
+    // =============================================================================================
     //
     private static final Logger logger = LoggerFactory.getLogger(Shape.class);
 
     /** Last physical shape */
-    public static final Shape LAST_PHYSICAL_SHAPE = TEXT;
+    public static final Shape LAST_PHYSICAL_SHAPE = CLUTTER;
 
     /** A comparator based on shape name */
     public static Comparator<Shape> alphaComparator = new Comparator<Shape>()

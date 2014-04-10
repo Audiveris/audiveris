@@ -22,10 +22,14 @@ public abstract class ShapeDescription
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Descriptor INSTANCE = new ShapeDescriptorGeo();
+    /** This instances defines which descriptor is used by application. */
+    private static final Descriptor INSTANCE
+            // = new ShapeDescriptorGeo() //
+            // = new ShapeDescriptorART() //
+            = new ShapeDescriptorMix() //
+            ;
 
     //~ Constructors -------------------------------------------------------------------------------
-    ///private static final Descriptor INSTANCE = new ShapeDescriptorART();
     private ShapeDescription ()
     {
     }
@@ -93,6 +97,17 @@ public abstract class ShapeDescription
         return INSTANCE.length();
     }
 
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name of the descriptor used.
+     * @return the descriptor name
+     */
+    public static String getName()
+    {
+        return INSTANCE.getName();
+    }
     //~ Inner Interfaces ---------------------------------------------------------------------------
     //
     //------------//
@@ -103,8 +118,8 @@ public abstract class ShapeDescription
         //~ Methods --------------------------------------------------------------------------------
 
         /**
-         * Key method which gathers the various features meant to
-         * describe a glyph and recognize a shape.
+         * Key method which gathers the various features meant to describe a glyph and
+         * recognize a shape.
          *
          * @param glyph the glyph to describe
          * @return the glyph shape features, an array of size length()
@@ -125,6 +140,13 @@ public abstract class ShapeDescription
          * @return the array of feature labels
          */
         String[] getFeatureLabels ();
+
+        /**
+         * Report a descriptive name for this descriptor
+         *
+         * @return a typical name
+         */
+        String getName ();
 
         /**
          * Report the number of features handled.

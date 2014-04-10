@@ -12,7 +12,6 @@
 package omr.glyph.pattern;
 
 import omr.glyph.*;
-import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
@@ -105,7 +104,7 @@ public class DoubleBeamPattern
                         Arrays.asList(beam, candidate),
                         false,
                         Glyph.Linking.NO_LINK);
-                Evaluation eval = GlyphNetwork.getInstance()
+                Evaluation eval = GlyphClassifier.getInstance()
                         .vote(compound, system, Grades.noMinGrade);
 
                 if (eval != null) {

@@ -14,8 +14,8 @@ package omr.glyph.pattern;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
+import omr.glyph.GlyphClassifier;
 import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNetwork;
 import omr.glyph.GlyphSignature;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
@@ -227,7 +227,10 @@ public class SplitPattern
                 continue;
             }
 
-            Evaluation vote = GlyphNetwork.getInstance().vote(chunk, system, Grades.partMinGrade);
+            Evaluation vote = GlyphClassifier.getInstance().vote(
+                    chunk,
+                    system,
+                    Grades.partMinGrade);
 
             if ((vote == null) || invalidShapes.contains(vote.shape)) {
                 if (master.isVip() || logger.isDebugEnabled()) {

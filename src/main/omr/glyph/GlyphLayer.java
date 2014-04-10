@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.glyph;
 
-import java.util.Arrays;
-
 /**
  * Enum {@code GlyphLayer} defines populations of glyph instances.
  */
@@ -22,19 +20,19 @@ public enum GlyphLayer
     /** Glyph instances from initial binary image. */
     DEFAULT("B", "Glyphs from initial binary image"),
 
-    /** Horizontal
-     * glyph instances from ledgers and endings. */
+    /** Horizontal glyph instances from ledgers and endings. */
     LEDGER("L", "Horizontal glyphs from ledgers and endings"),
 
-    /** Glyph instances from
-     * foreground spots. */
+    /** Glyph instances from foreground spots. */
     SPOT("S", "Glyphs from foreground spots"),
-    /** Virtual glyph
-     * instances from Drag and Drop. */
+
+    /** Glyph instances from symbols. */
+    SYMBOL("Y", "Glyphs from symbols"),
+
+    /** Virtual glyph instances from Drag and Drop. */
     DROP("D", "Virtual glyphs from Drag n' Drop"),
 
-    /** Glyph instances
-     * unmarshalled from XML file. */
+    /** Glyph instances unmarshalled from XML file. */
     XML("X", "Sample glyphs unmarshalled from XML file");
 
     /** Simple key to refer to the layer. */

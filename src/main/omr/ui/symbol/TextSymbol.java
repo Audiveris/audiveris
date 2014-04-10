@@ -81,7 +81,8 @@ public class TextSymbol
     {
         Params p = new Params();
 
-        TextFont textFont = new TextFont((int) Math.rint(font.getSize2D() * 0.62));
+        ///TextFont textFont = new TextFont((int) Math.rint(font.getSize2D() * 0.62));
+        TextFont textFont = new TextFont((int) Math.rint(font.getSize2D() * 0.4));
         p.layout = textFont.layout(str);
 
         Rectangle2D r = p.layout.getBounds();

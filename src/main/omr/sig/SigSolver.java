@@ -56,6 +56,10 @@ public class SigSolver
 
     private static final Logger logger = LoggerFactory.getLogger(SigSolver.class);
 
+    /** Shapes for which overlap detection is (currently) disabled. */
+    private static final EnumSet disabledShapes = EnumSet.copyOf(
+            Arrays.asList(Shape.LEDGER, Shape.CRESCENDO, Shape.DECRESCENDO, Shape.SLUR));
+
     /** Shapes that can overlap with a beam. */
     private static final EnumSet beamCompShapes = EnumSet.copyOf(
             Arrays.asList(
@@ -63,6 +67,10 @@ public class SigSolver
                     Shape.THICK_CONNECTION,
                     Shape.THIN_BARLINE,
                     Shape.THIN_CONNECTION));
+
+    /** Shapes that can overlap with a stem. */
+    private static final EnumSet stemCompShapes = EnumSet.copyOf(
+            Arrays.asList(Shape.SLUR, Shape.CRESCENDO, Shape.DECRESCENDO));
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system */
@@ -123,8 +131,8 @@ public class SigSolver
         }
 
         // General overlap checks
-        flagOverlaps();
-        flagHeadInconsistency();
+        detectOverlaps();
+        detectHeadInconsistency();
 
         int modifs; // modifications done in current iteration
         int reductions; // Count of reductions performed
@@ -138,6 +146,9 @@ public class SigSolver
                 modifs = 0;
                 // Detect lack of mandatory support relation for certain inters
                 modifs += checkHeads();
+                deletions += purgeWeakInters();
+
+                modifs += checkFlags();
                 deletions += purgeWeakInters();
 
                 modifs += checkBeams();
@@ -326,6 +337,38 @@ public class SigSolver
     }
 
     //------------//
+    // checkFlags //
+    //------------//
+    /**
+     * Perform checks on flags.
+     *
+     * @return the count of modifications done
+     */
+    private int checkFlags ()
+    {
+        int modifs = 0;
+        final List<Inter> flags = sig.inters(ShapeSet.Flags.getShapes());
+
+        for (Iterator<Inter> it = flags.iterator(); it.hasNext();) {
+            final Inter flag = it.next();
+
+            if (!flagHasStem(flag)) {
+                if (flag.isVip() || logger.isDebugEnabled()) {
+                    logger.info("No stem for {}", flag);
+                }
+
+                sig.removeVertex(flag);
+                it.remove();
+                modifs++;
+
+                continue;
+            }
+        }
+
+        return modifs;
+    }
+
+    //------------//
     // checkHooks //
     //------------//
     /**
@@ -474,87 +517,75 @@ public class SigSolver
                     return true;
                 }
             }
+
+            if (inters[i] instanceof StemInter) {
+                Inter other = inters[1 - i];
+
+                if (stemCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            }
         }
 
         return false;
     }
 
-    //---------//
-    // exclude //
-    //---------//
-    private void exclude (Set<Inter> set1,
-                          Set<Inter> set2)
-    {
-        for (Inter i1 : set1) {
-            for (Inter i2 : set2) {
-                sig.insertExclusion(i1, i2, Exclusion.Cause.INCOMPATIBLE);
-            }
-        }
-    }
-
-    //-----------------------//
-    // flagHeadInconsistency //
-    //-----------------------//
+    //-------------------------//
+    // detectHeadInconsistency //
+    //-------------------------//
     /**
-     * Flag inconsistency of note heads attached to a (good) stem.
+     * Detect inconsistency of note heads attached to a (good) stem.
      */
-    private void flagHeadInconsistency ()
+    private void detectHeadInconsistency ()
     {
+        // All stems of the sig
         List<Inter> stems = sig.inters(Shape.STEM);
+
+        // Heads organized by class (black, void, and small versions)
+        Map<Class, Set<Inter>> heads = new HashMap<Class, Set<Inter>>();
 
         for (Inter si : stems) {
             if (!si.isGood()) {
                 continue;
             }
 
-            Set<Class> classes = new HashSet<Class>();
+            heads.clear();
 
             for (Relation rel : sig.edgesOf(si)) {
                 if (rel instanceof HeadStemRelation) {
-                    classes.add(sig.getEdgeSource(rel).getClass());
+                    Inter head = sig.getEdgeSource(rel);
+                    Class classe = head.getClass();
+                    Set<Inter> set = heads.get(classe);
+
+                    if (set == null) {
+                        heads.put(classe, set = new HashSet<Inter>());
+                    }
+
+                    set.add(head);
                 }
             }
 
-            if (classes.size() > 1) {
-                //logger.info("Several head classes around {} {}", si, classes);
-                Map<Class, Set<Inter>> heads = new HashMap<Class, Set<Inter>>();
+            List<Class> clist = new ArrayList<Class>(heads.keySet());
 
-                for (Relation rel : sig.edgesOf(si)) {
-                    if (rel instanceof HeadStemRelation) {
-                        Inter head = sig.getEdgeSource(rel);
-                        Class classe = head.getClass();
-                        Set<Inter> set = heads.get(classe);
+            for (int ic = 0; ic < (clist.size() - 1); ic++) {
+                Class c1 = clist.get(ic);
+                Set set1 = heads.get(c1);
 
-                        if (set == null) {
-                            heads.put(classe, set = new HashSet<Inter>());
-                        }
-
-                        set.add(head);
-                    }
-                }
-
-                List<Class> clist = new ArrayList<Class>(heads.keySet());
-
-                for (int ic = 0; ic < (clist.size() - 1); ic++) {
-                    Class c1 = clist.get(ic);
-                    Set set1 = heads.get(c1);
-
-                    for (Class c2 : clist.subList(ic + 1, clist.size())) {
-                        Set set2 = heads.get(c2);
-                        exclude(set1, set2);
-                    }
+                for (Class c2 : clist.subList(ic + 1, clist.size())) {
+                    Set set2 = heads.get(c2);
+                    exclude(set1, set2);
                 }
             }
         }
     }
 
-    //--------------//
-    // flagOverlaps //
-    //--------------//
+    //----------------//
+    // detectOverlaps //
+    //----------------//
     /**
      * (Prototype).
      */
-    private void flagOverlaps ()
+    private void detectOverlaps ()
     {
         // Take all inters except ledgers (and perhaps others, TODO)
         List<Inter> inters = sig.inters(
@@ -563,7 +594,7 @@ public class SigSolver
                     @Override
                     public boolean check (Inter inter)
                     {
-                        return !(inter instanceof LedgerInter);
+                        return !disabledShapes.contains(inter.getShape());
                     }
                 });
 
@@ -600,19 +631,52 @@ public class SigSolver
         }
     }
 
+    //---------//
+    // exclude //
+    //---------//
+    private void exclude (Set<Inter> set1,
+                          Set<Inter> set2)
+    {
+        for (Inter i1 : set1) {
+            for (Inter i2 : set2) {
+                sig.insertExclusion(i1, i2, Exclusion.Cause.INCOMPATIBLE);
+            }
+        }
+    }
+
     //-------------//
     // headHasStem //
     //-------------//
     /**
      * Check if the head has a stem relation.
      *
-     * @param inter the head inter (black of void)
+     * @param head the head inter (black of void)
      * @return true if OK
      */
-    private boolean headHasStem (Inter inter)
+    private boolean headHasStem (Inter head)
     {
-        for (Relation rel : sig.edgesOf(inter)) {
+        for (Relation rel : sig.edgesOf(head)) {
             if (rel instanceof HeadStemRelation) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //-------------//
+    // flagHasStem //
+    //-------------//
+    /**
+     * Check if the flag has a stem relation.
+     *
+     * @param flag the flag inter
+     * @return true if OK
+     */
+    private boolean flagHasStem (Inter flag)
+    {
+        for (Relation rel : sig.edgesOf(flag)) {
+            if (rel instanceof FlagStemRelation) {
                 return true;
             }
         }

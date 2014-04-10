@@ -18,6 +18,8 @@ import omr.glyph.Shape;
 
 import omr.math.TableUtil;
 
+import ij.process.ByteProcessor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +78,7 @@ public class Template
     /** Template height. (perhaps larger than the symbol height) */
     private final int height;
 
-    /** Symbols bounds within template. (perhaps smaller than tpl bounds) */
+    /** Symbols bounds within template. (perhaps smaller than template bounds) */
     private final Rectangle symbolBounds;
 
     /**
@@ -174,8 +176,7 @@ public class Template
     // evaluate //
     //----------//
     /**
-     * Evaluate this template at location (x,y) in provided
-     * distanceImage.
+     * Evaluate this template at location (x,y) in provided distanceImage.
      *
      * @param x         location abscissa
      * @param y         location ordinate
@@ -202,25 +203,27 @@ public class Template
 
         // Loop through template key positions and read related distance.
         // Compute the mean value on all distances read
-        double total = 0;
         final int imgWidth = distances.getWidth();
         final int imgHeight = distances.getHeight();
-        int outers = 0;
+        final double foreWeight = constants.foreWeight.getValue();
+        final double backWeight = constants.backWeight.getValue();
+        double weights = 0; // Sum of weights
+        double total = 0; // Sum of square weighted distances
 
         for (PixelDistance pix : keyPoints) {
             int nx = x + pix.x;
             int ny = y + pix.y;
 
-            if ((nx < 0) || (nx >= imgWidth) || (ny < 0) || (ny >= imgHeight)) {
-                // Tested point is out of image, ignore it
-                outers++;
-            } else {
-                double dist = distances.getValue(nx, ny) - pix.d;
+            // Ignore tested point if located out of image
+            if ((nx >= 0) && (nx < imgWidth) && (ny >= 0) && (ny < imgHeight)) {
+                double weight = (pix.d > 0) ? backWeight : foreWeight;
+                double dist = weight * (distances.getValue(nx, ny) - pix.d);
                 total += (dist * dist);
+                weights += weight;
             }
         }
 
-        double res = Math.sqrt(total) / ((keyPoints.size() - outers) * distances.getNormalizer());
+        double res = Math.sqrt(total) / (weights * distances.getNormalizer());
 
         return res;
     }
@@ -236,6 +239,44 @@ public class Template
         final Point offset = getOffset(anchor);
 
         return new Rectangle(x - offset.x, y - offset.y, width, height);
+    }
+
+    //---------------------//
+    // getForegroundPixels //
+    //---------------------//
+    /**
+     * Collect the image foreground pixels located under the template foreground areas.
+     *
+     * @param box   absolute positioning of template box in global image
+     * @param image global image to be read
+     * @return the collection of foreground pixels, relative to template box.
+     */
+    public List<Point> getForegroundPixels (Rectangle box,
+                                            ByteProcessor image)
+    {
+        final int imgWidth = image.getWidth();
+        final int imgHeight = image.getHeight();
+        final List<Point> fores = new ArrayList<Point>();
+
+        for (PixelDistance pix : keyPoints) {
+            if (pix.d > 0) {
+                continue;
+            }
+
+            int nx = box.x + pix.x;
+            int ny = box.y + pix.y;
+
+            if ((nx >= 0) && (nx < imgWidth) && (ny >= 0) && (ny < imgHeight)) {
+                // Check if we have some image foreground there
+                int val = image.get(nx, ny);
+
+                if (val == 0) {
+                    fores.add(new Point(pix.x, pix.y));
+                }
+            }
+        }
+
+        return fores;
     }
 
     //-----------//
@@ -426,5 +467,13 @@ public class Template
         final Constant.Ratio smallRatio = new Constant.Ratio(
                 0.67,
                 "Global ratio applied to small (cue/grace) templates");
+
+        final Constant.Ratio foreWeight = new Constant.Ratio(
+                1.0,
+                "Weight assigned to template foreground pixels");
+
+        final Constant.Ratio backWeight = new Constant.Ratio(
+                2.0,
+                "Weight assigned to template background pixels");
     }
 }

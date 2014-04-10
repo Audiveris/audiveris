@@ -119,6 +119,14 @@ interface GlyphEnvironment
     boolean isWithLedger ();
 
     /**
+     * Report whether this glyph overlaps that provided glyph
+     *
+     * @param that the other glyph
+     * @return true if overlap, false otherwise
+     */
+    boolean overlaps (Glyph that);
+
+    /**
      * Setter for the pitch position, with respect to containing staff
      *
      * @param pitchPosition the pitch position wrt the staff

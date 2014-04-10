@@ -259,7 +259,7 @@ public class TextLine
      * @return the line confidence
      */
     @Override
-    public Integer getConfidence ()
+    public Double getConfidence ()
     {
         if (super.getConfidence() == null) {
             setConfidence(confidenceOf(getWords()));

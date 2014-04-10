@@ -70,7 +70,7 @@ public class Clef
      * @param measure       the containing measure
      * @param staff         the assigned staff
      * @param shape         precise clef shape
-     * @param center        center wrt system (in units)
+     * @param center        center
      * @param pitchPosition pitch position
      * @param glyph         underlying glyph, if any
      */

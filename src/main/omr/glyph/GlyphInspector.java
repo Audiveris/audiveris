@@ -82,7 +82,7 @@ public class GlyphInspector
      */
     public void evaluateGlyphs (double minGrade)
     {
-        ShapeEvaluator evaluator = GlyphNetwork.getInstance();
+        ShapeEvaluator evaluator = GlyphClassifier.getInstance();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
@@ -262,7 +262,7 @@ public class GlyphInspector
         @Override
         public boolean isCompoundValid (Glyph compound)
         {
-            Evaluation eval = GlyphNetwork.getInstance().vote(compound, system, minGrade);
+            Evaluation eval = GlyphClassifier.getInstance().vote(compound, system, minGrade);
 
             if ((eval != null)
                 && eval.shape.isWellKnown()

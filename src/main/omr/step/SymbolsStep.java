@@ -11,30 +11,23 @@
 // </editor-fold>
 package omr.step;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.glyph.ui.SymbolsEditor;
-
-import omr.score.entity.ScoreSystem;
-import omr.score.entity.SystemPart;
 
 import omr.selection.GlyphEvent;
 import omr.selection.SelectionService;
 
 import omr.sheet.Sheet;
+import omr.sheet.SymbolsBuilder;
+import omr.sheet.SymbolsFilter;
 import omr.sheet.SystemInfo;
-
-import omr.util.TreeNode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
+import java.util.Collection;
 
 /**
- * Class {@code SymbolsStep} builds symbols glyphs and performs specific patterns at
- * symbol level (clefs, sharps, naturals, stems, slurs, etc).
+ * Class {@code SymbolsStep} retrieves fixed-shape symbols.
  *
  * @author Hervé Bitteur
  */
@@ -42,8 +35,6 @@ public class SymbolsStep
         extends AbstractSystemStep
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsStep.class);
 
@@ -61,7 +52,7 @@ public class SymbolsStep
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 DATA_TAB,
-                "Apply specific glyph patterns");
+                "Retrieve fixed-shape symbols");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -93,43 +84,21 @@ public class SymbolsStep
     public void doSystem (SystemInfo system)
             throws StepException
     {
-        //        // Cleanup system sentences
-        //        system.getSentences().clear();
-
-        // Cleanup system dummy parts
-        ScoreSystem scoreSystem = system.getScoreSystem();
-
-        for (Iterator<TreeNode> it = scoreSystem.getParts().iterator(); it.hasNext();) {
-            SystemPart part = (SystemPart) it.next();
-
-            if (part.isDummy()) {
-                it.remove();
-            }
-        }
-
-        // Iterate
-        for (int iter = 1; iter <= constants.MaxPatternsIterations.getValue(); iter++) {
-            logger.debug("System#{} patterns iter #{}", system.getId(), iter);
-            clearSystemErrors(system);
-
-            if (!system.runPatterns()) {
-                return; // No more progress made
-            }
-        }
+        new SymbolsBuilder(system).buildSymbols();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //----------//
+    // doProlog //
+    //----------//
+    /**
+     * {@inheritDoc}
+     * Prepare image without staff lines and with all (good) inters erased.
+     */
+    @Override
+    protected void doProlog (Collection<SystemInfo> systems,
+                             Sheet sheet)
+            throws StepException
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Integer MaxPatternsIterations = new Constant.Integer(
-                "count",
-                1,
-                "Maximum number of iterations for PATTERNS task");
+        new SymbolsFilter(sheet).process();
     }
 }

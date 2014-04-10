@@ -14,13 +14,16 @@ package omr.glyph.facets;
 import omr.lag.Lag;
 import omr.lag.Section;
 
+import omr.run.Orientation;
 import omr.run.Run;
 
 import omr.util.HorizontalSide;
 import omr.util.Predicate;
 
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -307,6 +310,57 @@ class BasicEnvironment
     public boolean isWithLedger ()
     {
         return withLedger;
+    }
+
+    //----------//
+    // overlaps //
+    //----------//
+    @Override
+    public boolean overlaps (Glyph that)
+    {
+        // Very rough test
+        final Rectangle thisBox = glyph.getBounds();
+        final Rectangle thatBox = that.getBounds();
+
+        if (!thisBox.intersects(thatBox)) {
+            return false;
+        }
+
+        // Use only the sections of that glyph that do intersect this glyph box
+        final List<Section> thatSections = new ArrayList<Section>();
+
+        for (Section section : that.getMembers()) {
+            if (section.intersects(thisBox)) {
+                thatSections.add(section);
+            }
+        }
+
+        // More precise tests
+        for (Section section : glyph.getMembers()) {
+            if (!section.intersects(thatBox)) {
+                continue;
+            }
+
+            Orientation orientation = section.getOrientation();
+            int pos = section.getFirstPos();
+
+            for (Run run : section.getRuns()) {
+                final int start = run.getStart();
+                final Rectangle runBox = (orientation == Orientation.HORIZONTAL)
+                        ? new Rectangle(start, pos, run.getLength(), 1)
+                        : new Rectangle(pos, start, 1, run.getLength());
+
+                for (Section s : thatSections) {
+                    if (s.intersects(runBox)) {
+                        return true;
+                    }
+                }
+
+                pos++;
+            }
+        }
+
+        return false;
     }
 
     //------------------//

@@ -92,7 +92,7 @@ public class BasicNest
     private final Sheet sheet;
 
     /** Sheet scale. */
-    private final Scale scale;
+    private Scale scale;
 
     /** Elaborated constants for this nest. */
     private final Parameters params;
@@ -139,7 +139,9 @@ public class BasicNest
         this.name = name;
         this.sheet = sheet;
 
-        scale = sheet.getScale();
+        if (sheet != null) {
+            scale = sheet.getScale();
+        }
 
         // Allocate the various layers
         for (GlyphLayer layer : GlyphLayer.values()) {

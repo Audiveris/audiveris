@@ -285,7 +285,7 @@ public class TesseractOrder
                             it.BoundingBox(Level.WORD),
                             it.GetUTF8Text(Level.WORD),
                             it.Baseline(Level.WORD),
-                            (int) Math.rint(it.Confidence(Level.WORD)),
+                            (double) it.Confidence(Level.WORD),
                             fontInfo,
                             line);
                     logger.debug("    {}", word);

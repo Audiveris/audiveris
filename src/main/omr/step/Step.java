@@ -46,6 +46,7 @@ public interface Step
     public static final String SKELETON_TAB = "Skeleton";
 
     //~ Enumerations -------------------------------------------------------------------------------
+    /** Defines whether a step is mandatory or optional. */
     public enum Mandatory
     {
         //~ Enumeration constant initializers ------------------------------------------------------

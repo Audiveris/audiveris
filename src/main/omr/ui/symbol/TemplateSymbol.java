@@ -93,8 +93,8 @@ public class TemplateSymbol
         p.line = interline * 0.2f;
 
         final Rectangle2D r = p.layout.getBounds();
-        final int symWidth = (int) Math.rint(r.getWidth());
-        final int symHeight = (int) Math.rint(r.getHeight());
+        final int symWidth = (int) Math.ceil(r.getWidth());
+        final int symHeight = (int) Math.ceil(r.getHeight());
         p.rect = new Rectangle(symWidth, isSmall ? interline : symHeight);
         p.symbolRect = new Rectangle(0, (interline - symHeight) / 2, symWidth, symHeight);
 
@@ -116,6 +116,7 @@ public class TemplateSymbol
         g.setColor(Color.RED);
 
         if ((key.shape == Shape.WHOLE_NOTE_SMALL) || (key.shape == Shape.WHOLE_NOTE)) {
+            // No room for stem, use the full symbol width
             g.fill(
                     new Rectangle2D.Float(
                             p.rect.x,
@@ -123,6 +124,7 @@ public class TemplateSymbol
                             p.rect.width,
                             p.rect.height - p.line));
         } else {
+            // Room for stem on left and right sides of symbol
             g.fill(
                     new Rectangle2D.Float(
                             p.rect.x + (p.stem / 2),

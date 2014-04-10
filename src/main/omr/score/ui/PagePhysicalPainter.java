@@ -40,8 +40,11 @@ import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
 
 import omr.sig.AbstractBeamInter;
+import omr.sig.AbstractNoteInter;
 import omr.sig.BarConnectionInter;
 import omr.sig.BarlineInter;
+import omr.sig.BraceInter;
+import omr.sig.EndingInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
 import omr.sig.LedgerInter;
@@ -54,8 +57,11 @@ import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
 import static omr.ui.symbol.Alignment.*;
 import omr.ui.symbol.MusicFont;
+import omr.ui.symbol.OmrFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
+import static omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
+import static omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
 import omr.ui.util.UIUtil;
 
 import omr.util.TreeNode;
@@ -65,6 +71,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -74,7 +81,6 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ConcurrentModificationException;
-import omr.sig.EndingInter;
 
 /**
  * Class {@code PagePhysicalPainter} paints the recognized page entities at the location
@@ -691,6 +697,31 @@ public class PagePhysicalPainter
         g.draw(wedge.getLine1());
         g.draw(wedge.getLine2());
         g.setStroke(defaultStroke);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (BraceInter brace)
+    {
+        setColor(brace);
+
+        final Rectangle box = brace.getBounds(); ///braceBox(part);
+        final Point center = GeoUtil.centerOf(box);
+        final Dimension halfDim = new Dimension(box.width, box.height / 2);
+        OmrFont.paint(g, musicFont.layout(SYMBOL_BRACE_UPPER_HALF, halfDim), center, BOTTOM_CENTER);
+        OmrFont.paint(g, musicFont.layout(SYMBOL_BRACE_LOWER_HALF, halfDim), center, TOP_CENTER);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (AbstractNoteInter note)
+    {
+        // Consider it as a plain inter
+        visit((Inter) note);
     }
 
     //--------------------//

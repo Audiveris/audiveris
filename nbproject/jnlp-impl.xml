@@ -449,17 +449,28 @@ made subject to such option by the copyright holder.
     <target name="-extend-manifest-permissions-override" depends="-check-manifest-permissions" if="manifest.permissions.override">
         <property name="manifest.permissions.attribute" value="${manifest.custom.permissions}"/>
     </target>
+    <target name="-extend-manifest-application-name">
+        <condition property="manifest.application.name.attribute" value="${manifest.custom.application.name}" else="${application.title}">
+            <and>
+                <isset property="manifest.custom.application.name"/>
+                <not><equals arg1="${manifest.custom.application.name}" arg2=""/></not>
+            </and>
+        </condition>
+    </target>
     <target name="-add-manifest-security" depends="-init-macrodef-extend-manifest,
                     -extend-manifest-codebase-copy,-extend-manifest-codebase-web,-extend-manifest-codebase-other,-extend-manifest-codebase-override,
-                    -extend-manifest-permissions-sandbox,-extend-manifest-permissions-all,-extend-manifest-permissions-override">
+                    -extend-manifest-permissions-sandbox,-extend-manifest-permissions-all,-extend-manifest-permissions-override,
+                    -extend-manifest-application-name">
         <jnlp:extend-manifest>
             <customize>
                 <attribute name="Codebase" value="${manifest.codebase.attribute}"/>
                 <attribute name="Permissions" value="${manifest.permissions.attribute}"/>
+                <attribute name="Application-Name" value="${manifest.application.name.attribute}"/>
             </customize>
         </jnlp:extend-manifest>
         <echo message="Added manifest attribute Codebase: ${manifest.codebase.attribute}" level="verbose"/>
         <echo message="Added manifest attribute Permissions: ${manifest.permissions.attribute}" level="verbose"/>
+        <echo message="Added manifest attribute Application-Name: ${manifest.application.name.attribute}" level="verbose"/>
     </target>
 
     <target name="-do-jar-applet" depends="-test-jnlp-type,-init-macrodef-copylibs" if="is.applet+mkdist.available">

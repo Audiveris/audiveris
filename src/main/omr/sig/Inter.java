@@ -159,6 +159,31 @@ public interface Inter
         }
     };
 
+    /**
+     * For comparing interpretations by decreasing contextual grade.
+     */
+    public static final Comparator<Inter> byReverseContextualGrade = new Comparator<Inter>()
+    {
+        @Override
+        public int compare (Inter i1,
+                            Inter i2)
+        {
+            Double g1 = i1.getContextualGrade();
+
+            if (g1 == null) {
+                g1 = i1.getGrade();
+            }
+
+            Double g2 = i2.getContextualGrade();
+
+            if (g2 == null) {
+                g2 = i2.getGrade();
+            }
+
+            return Double.compare(g2, g1); // Reverse order
+        }
+    };
+
     static final Constants constants = new Constants();
 
     /** Ratio applied on intrinsic value, to leave room for contextual. */
@@ -201,7 +226,7 @@ public interface Inter
     Area getArea ();
 
     /**
-     * Report the bounding box for this interpretation.
+     * Report a COPY of the bounding box for this interpretation.
      *
      * @return the bounding box
      */

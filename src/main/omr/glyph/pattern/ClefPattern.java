@@ -14,8 +14,8 @@ package omr.glyph.pattern;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
+import omr.glyph.GlyphClassifier;
 import omr.glyph.GlyphNest;
-import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
@@ -222,7 +222,7 @@ public class ClefPattern
         Glyph compound = nest.buildGlyph(glyphs, false, Glyph.Linking.NO_LINK);
 
         // Check if a clef appears in the top evaluations
-        Evaluation vote = GlyphNetwork.getInstance().vote(
+        Evaluation vote = GlyphClassifier.getInstance().vote(
                 compound,
                 system,
                 Grades.clefMinGrade,
@@ -258,7 +258,7 @@ public class ClefPattern
                         Arrays.asList(compound, g),
                         false,
                         Glyph.Linking.NO_LINK);
-                final Evaluation newVote = GlyphNetwork.getInstance().vote(
+                final Evaluation newVote = GlyphClassifier.getInstance().vote(
                         newCompound,
                         system,
                         Grades.clefMinGrade,

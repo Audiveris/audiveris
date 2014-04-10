@@ -81,8 +81,7 @@ public class SectionsBuilder
     // createSections //
     //----------------//
     /**
-     * Populate a lag by creating sections from the provided table of
-     * runs.
+     * Populate a lag by creating sections from the provided table of runs.
      *
      * @param runsTable the table of runs
      * @param include   if true, include the content of runsTable into the lag
@@ -108,8 +107,7 @@ public class SectionsBuilder
 
             // If we have runs in this column
             if (!runList.isEmpty()) {
-                // Copy the former next actives sections
-                // as the new previous active sections
+                // Copy the former next actives sections as the new previous active sections
                 prevActives = nextActives;
                 nextActives = new ArrayList<Section>();
 
@@ -158,8 +156,7 @@ public class SectionsBuilder
     // createSections //
     //----------------//
     /**
-     * Populate a lag by creating sections directly out of a pixel
-     * source.
+     * Populate a lag by creating sections directly out of a pixel source.
      *
      * @param name         a name assigned to the runs table
      * @param source       the source to read pixels from

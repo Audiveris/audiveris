@@ -14,7 +14,7 @@ package omr.glyph.pattern;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphNetwork;
+import omr.glyph.GlyphClassifier;
 import omr.glyph.Grades;
 import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
@@ -66,7 +66,7 @@ public class LeftOverPattern
     {
         int successNb = 0;
         final double minWeight = constants.minWeight.getValue();
-        final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
+        final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isKnown()
@@ -102,7 +102,7 @@ public class LeftOverPattern
         //~ Instance fields ------------------------------------------------------------------------
 
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
-                0.3,
+                0.04,
                 "Minimum normalized weight to be a left over glyph");
     }
 }

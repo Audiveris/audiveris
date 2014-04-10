@@ -8,8 +8,8 @@ package omr.image;
 import ij.process.ByteProcessor;
 
 /**
- * Class {@code ChamferDistance} implements a Distance Transform
- * operation using chamfer masks.
+ * Class {@code ChamferDistance} implements a Distance Transform operation using
+ * chamfer masks.
  *
  * @author Code by Xavier Philippeau <br> Kernels by Verwer, Borgefors and Thiel
  * @author Hervé Bitteur for interface and type-specific implementations
@@ -52,13 +52,12 @@ public interface ChamferDistance
     // compute //
     //---------//
     /**
-     * Apply the chamfer mask to the input image and return the
-     * distance transform.
+     * Apply the chamfer mask to the input image and return the distance transform.
      *
-     * @param input the input image, where a true value indicates a reference
-     *              pixel and a false value a non-reference pixel
-     * @return the distance transform image, where each pixel value is the
-     *         distance to the nearest reference pixel
+     * @param input the input image, where a true value indicates a reference pixel and a false
+     *              value a non-reference pixel
+     * @return the distance transform image, where each pixel value is the distance to the nearest
+     *         reference pixel
      */
     public DistanceTable compute (boolean[][] input);
 
@@ -66,13 +65,12 @@ public interface ChamferDistance
     // computeToBack //
     //---------------//
     /**
-     * Apply the chamfer mask to the input image and return the
-     * distance transform to background pixels.
+     * Apply the chamfer mask to the input image and return the distance transform to
+     * background pixels.
      *
-     * @param input the input image, where background pixels are taken as
-     *              reference pixels
-     * @return the distance transform image, where each pixel value is the
-     *         distance to the nearest reference pixel
+     * @param input the input image, where background pixels are taken as reference pixels
+     * @return the distance transform image, where each pixel value is the distance to the nearest
+     *         reference pixel
      */
     DistanceTable computeToBack (ByteProcessor input);
 
@@ -80,13 +78,12 @@ public interface ChamferDistance
     // computeToFore //
     //---------------//
     /**
-     * Apply the chamfer mask to the input image and return the
-     * distance transform to foreground pixels.
+     * Apply the chamfer mask to the input image and return the distance transform to
+     * foreground pixels.
      *
-     * @param input the input image, where foreground pixels are taken as
-     *              reference pixels
-     * @return the distance transform image, where each pixel value is the
-     *         distance to the nearest reference pixel
+     * @param input the input image, where foreground pixels are taken as reference pixels
+     * @return the distance transform image, where each pixel value is the distance to the nearest
+     *         reference pixel
      */
     DistanceTable computeToFore (ByteProcessor input);
 
@@ -175,50 +172,6 @@ public interface ChamferDistance
             return output;
         }
 
-        /** To get a Table instance of proper type and size.
-         *
-         * @param width  desired width
-         * @param height desired height
-         * @return the table of proper type and dimension
-         */
-        protected abstract DistanceTable allocateOutput (int width,
-                                                         int height,
-                                                         int normalizer);
-
-        //------------------//
-        // initializeToBack //
-        //------------------//
-        private void initializeToBack (ByteProcessor input,
-                                       DistanceTable output)
-        {
-            for (int y = 0, h = input.getHeight(); y < h; y++) {
-                for (int x = 0, w = input.getWidth(); x < w; x++) {
-                    if (input.get(x, y) == 0) {
-                        output.setValue(x, y, -1); // non-reference pixel -> to be computed
-                    } else {
-                        output.setValue(x, y, 0); // reference pixel -> distance=0
-                    }
-                }
-            }
-        }
-
-        //------------------//
-        // initializeToFore //
-        //------------------//
-        private void initializeToFore (ByteProcessor input,
-                                       DistanceTable output)
-        {
-            for (int y = 0, h = input.getHeight(); y < h; y++) {
-                for (int x = 0, w = input.getWidth(); x < w; x++) {
-                    if (input.get(x, y) == 0) {
-                        output.setValue(x, y, 0); // reference pixel -> distance=0
-                    } else {
-                        output.setValue(x, y, -1); // non-reference pixel -> to be computed
-                    }
-                }
-            }
-        }
-
         //---------//
         // process //
         //---------//
@@ -227,7 +180,7 @@ public interface ChamferDistance
          *
          * @param output the output data to process
          */
-        private void process (DistanceTable output)
+        public void process (DistanceTable output)
         {
             final int width = output.getWidth();
             final int height = output.getHeight();
@@ -300,6 +253,50 @@ public interface ChamferDistance
             //                    output[x][y] /= normalizer;
             //                }
             //            }
+        }
+
+        /** To get a Table instance of proper type and size.
+         *
+         * @param width  desired width
+         * @param height desired height
+         * @return the table of proper type and dimension
+         */
+        protected abstract DistanceTable allocateOutput (int width,
+                                                         int height,
+                                                         int normalizer);
+
+        //------------------//
+        // initializeToBack //
+        //------------------//
+        private void initializeToBack (ByteProcessor input,
+                                       DistanceTable output)
+        {
+            for (int y = 0, h = input.getHeight(); y < h; y++) {
+                for (int x = 0, w = input.getWidth(); x < w; x++) {
+                    if (input.get(x, y) == 0) {
+                        output.setValue(x, y, -1); // non-reference pixel -> to be computed
+                    } else {
+                        output.setValue(x, y, 0); // reference pixel -> distance=0
+                    }
+                }
+            }
+        }
+
+        //------------------//
+        // initializeToFore //
+        //------------------//
+        private void initializeToFore (ByteProcessor input,
+                                       DistanceTable output)
+        {
+            for (int y = 0, h = input.getHeight(); y < h; y++) {
+                for (int x = 0, w = input.getWidth(); x < w; x++) {
+                    if (input.get(x, y) == 0) {
+                        output.setValue(x, y, 0); // reference pixel -> distance=0
+                    } else {
+                        output.setValue(x, y, -1); // non-reference pixel -> to be computed
+                    }
+                }
+            }
         }
 
         //------------//

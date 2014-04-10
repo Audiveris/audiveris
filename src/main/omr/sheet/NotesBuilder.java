@@ -284,8 +284,6 @@ public class NotesBuilder
                                Shape shape,
                                int pitch)
     {
-        final ShapeDescriptor desc = catalog.getDescriptor(shape);
-        final Rectangle box = desc.getSymbolBoundsAt(loc.x, loc.y, anchor);
         final double distImpact = 1 - (loc.d / params.maxMatchingDistance);
         final GradeImpacts impacts = new AbstractNoteInter.Impacts(distImpact);
         final double grade = impacts.getGrade();
@@ -294,6 +292,9 @@ public class NotesBuilder
         if (grade < AbstractInter.getMinGrade()) {
             return null;
         }
+
+        final ShapeDescriptor desc = catalog.getDescriptor(shape);
+        final Rectangle box = desc.getSymbolBoundsAt(loc.x, loc.y, anchor);
 
         switch (desc.getShape()) {
         case NOTEHEAD_BLACK:
@@ -1110,9 +1111,6 @@ public class NotesBuilder
         //-------------//
         private List<Inter> lookupRange ()
         {
-            // Template anchor to use
-            final Anchor anchor = MIDDLE_LEFT;
-
             // Abscissa range for scan
             final int scanLeft = Math.max(
                     line.getLeftAbscissa(),
@@ -1125,7 +1123,7 @@ public class NotesBuilder
 
                 for (int y : ordinates(ord)) {
                     for (Shape shape : ShapeSet.TemplateNotes) {
-                        Inter inter = eval(shape, x, y, anchor);
+                        Inter inter = eval(shape, x, y, MIDDLE_LEFT);
 
                         if (inter != null) {
                             inters.add(inter);
@@ -1159,6 +1157,10 @@ public class NotesBuilder
             final Anchor[] anchors = new Anchor[]{LEFT_STEM, RIGHT_STEM};
 
             for (Glyph seed : seeds) {
+                if (seed.isVip()) {
+                    logger.info("lookupSeeds for seed#{}", seed.getId());
+                }
+
                 // Compute precise stem link point
                 // x value is imposed by seed alignment, y value by line
                 int x = GeoUtil.centerOf(seed.getBounds()).x; // Rough x value

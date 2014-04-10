@@ -56,6 +56,12 @@ public class StemInter
         return AbstractInter.getMinGrade();
     }
 
+    @Override
+    public boolean isGood ()
+    {
+        return getGrade() >= 0.45; // BINGO DIRTY HACK
+    }
+
     //------------//
     // lookupHead //
     //------------//

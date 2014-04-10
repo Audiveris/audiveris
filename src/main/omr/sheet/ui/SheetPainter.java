@@ -30,8 +30,10 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.sig.AbstractBeamInter;
+import omr.sig.AbstractNoteInter;
 import omr.sig.BarConnectionInter;
 import omr.sig.BarlineInter;
+import omr.sig.BraceInter;
 import omr.sig.EndingInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
@@ -43,9 +45,14 @@ import omr.sig.WedgeInter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
+import static omr.ui.symbol.Alignment.BOTTOM_CENTER;
+import static omr.ui.symbol.Alignment.TOP_CENTER;
 import omr.ui.symbol.MusicFont;
+import omr.ui.symbol.OmrFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
+import static omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
+import static omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
 import omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -54,6 +61,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -322,8 +330,9 @@ public class SheetPainter
 
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
         Glyph glyph = inter.getGlyph();
-        Point center = (glyph != null) ? glyph.getCentroid()
-                : GeoUtil.centerOf(inter.getBounds());
+
+        ///Point center = (glyph != null) ? glyph.getCentroid() : GeoUtil.centerOf(inter.getBounds());
+        Point center = GeoUtil.centerOf(inter.getBounds());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
     }
 
@@ -374,6 +383,21 @@ public class SheetPainter
             g.draw(curve);
             g.setStroke(oldStroke);
         }
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (BraceInter brace)
+    {
+        setColor(brace);
+
+        final Rectangle box = brace.getBounds(); ///braceBox(part);
+        final Point center = GeoUtil.centerOf(box);
+        final Dimension halfDim = new Dimension(box.width, box.height / 2);
+        OmrFont.paint(g, musicFont.layout(SYMBOL_BRACE_UPPER_HALF, halfDim), center, BOTTOM_CENTER);
+        OmrFont.paint(g, musicFont.layout(SYMBOL_BRACE_LOWER_HALF, halfDim), center, TOP_CENTER);
     }
 
     //-------//
@@ -438,6 +462,16 @@ public class SheetPainter
     {
         setColor(connection);
         g.fill(connection.getArea());
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (AbstractNoteInter note)
+    {
+        // Consider it as a plain inter
+        visit((Inter) note);
     }
 
     //--------------------//

@@ -1556,7 +1556,7 @@ public class BeamsBuilder
                 "Minimum ratio of black pixels inside beam");
 
         final Constant.Ratio minExtBlackRatio = new Constant.Ratio(
-                0.5,
+                0.6,
                 "Minimum ratio of black pixels inside beam extension");
 
         final Scale.Fraction cueXMargin = new Scale.Fraction(

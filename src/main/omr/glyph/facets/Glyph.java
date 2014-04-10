@@ -89,8 +89,7 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their abscissa,
-     * then ordinate, then id. */
+    /** For comparing glyphs according to their abscissa, then ordinate, then id. */
     public static final Comparator<Glyph> byAbscissa = new Comparator<Glyph>()
     {
         @Override

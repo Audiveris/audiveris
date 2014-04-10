@@ -101,7 +101,7 @@ public class TextWord
     public TextWord (Line2D baseline,
                      String value,
                      FontInfo fontInfo,
-                     Integer confidence,
+                     Double confidence,
                      List<TextChar> chars,
                      TextLine textLine)
     {
@@ -129,7 +129,7 @@ public class TextWord
     public TextWord (Rectangle bounds,
                      String value,
                      Line2D baseline,
-                     Integer confidence,
+                     Double confidence,
                      FontInfo fontInfo,
                      TextLine textLine)
     {
@@ -162,7 +162,7 @@ public class TextWord
                 box,
                 value,
                 new Line2D.Double(box.x, box.y + box.height, box.x + box.width, box.y + box.height),
-                100, // Confidence
+                1.0, // Confidence
                 FontInfo.createDefault(fontSize),
                 null);
 

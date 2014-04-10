@@ -290,7 +290,7 @@ public class Skeleton
 
         // Erase good shapes of each system
         Graphics2D g = img.createGraphics();
-        PageEraser eraser = new PageEraser(g, sheet);
+        PageEraser eraser = new PageEraser(buffer, g, sheet, false);
         eraser.eraseShapes(
                 Arrays.asList(
                         Shape.THICK_BARLINE,

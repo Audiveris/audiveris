@@ -17,6 +17,8 @@ import omr.glyph.ShapeDescription;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
+import omr.image.TemplateFactory;
+
 import omr.score.ui.ScoreDependent;
 
 import org.jdesktop.application.Action;
@@ -94,15 +96,45 @@ public class Debug
     //            return false;
     //        }
     //    }
+    //----------------//
+    // checkTemplates //
+    //----------------//
+    /**
+     * Generate the templates for all relevant shapes for a range of interline values.
+     *
+     * @param e unused
+     */
+    @Action
+    public void checkTemplates (ActionEvent e)
+    {
+        TemplateFactory factory = TemplateFactory.getInstance();
+
+        for (int i = 10; i < 40; i++) {
+            logger.info("Catalog for interline {}", i);
+            factory.getCatalog(i);
+        }
+
+        logger.info("Done.");
+    }
+
     //------------------//
     // saveTrainingData //
     //------------------//
+    /**
+     * Generate a file (format arff) to be used by Weka machine learning software,
+     * with the training data.
+     *
+     * @param e unused
+     */
     @Action
     public void saveTrainingData (ActionEvent e)
     {
-        final PrintWriter out = getPrintWriter(new File("glyphs.arff"));
+        File file = new File(
+                WellKnowns.EVAL_FOLDER,
+                "samples-" + ShapeDescription.getName() + ".arff");
+        final PrintWriter out = getPrintWriter(file);
 
-        out.println("@relation " + "glyphs");
+        out.println("@relation " + "glyphs-" + ShapeDescription.getName());
         out.println();
 
         for (String label : ShapeDescription.getParameterLabels()) {
@@ -141,14 +173,12 @@ public class Debug
                 }
 
                 out.println(glyph.getShape().getPhysicalShape());
-
-                //break; /////////////////////////////////////////////////////////
             }
         }
 
         out.flush();
         out.close();
-        logger.info("Done.");
+        logger.info("Classifier data saved in " + file.getAbsolutePath());
     }
 
     //----------------//

@@ -46,8 +46,8 @@ public interface ShapeEvaluator
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Report the sorted sequence of best evaluation(s) found by the
-     * evaluator on the provided glyph.
+     * Report the sorted sequence of best evaluation(s) found by the evaluator on the
+     * provided glyph.
      *
      * @param glyph      the glyph to evaluate
      * @param system     the system containing the glyph to evaluate
@@ -55,7 +55,7 @@ public interface ShapeEvaluator
      * @param minGrade   the minimum evaluation grade to be acceptable
      * @param conditions optional conditions, perhaps empty
      * @param predicate  filter for acceptable shapes, perhaps null
-     * @return the sequence of evaluations, perhaps empty
+     * @return the sequence of evaluations, perhaps empty but not null
      */
     Evaluation[] evaluate (Glyph glyph,
                            SystemInfo system,
@@ -82,8 +82,8 @@ public interface ShapeEvaluator
     String getName ();
 
     /**
-     * Use a threshold on glyph weight, to tell if the provided glyph
-     * is just {@link Shape#NOISE}, or a real glyph.
+     * Use a threshold on glyph weight, to tell if the provided glyph is just {@link
+     * Shape#NOISE}, or a real glyph.
      *
      * @param glyph the glyph to be checked
      * @return true if not noise, false otherwise
@@ -91,9 +91,8 @@ public interface ShapeEvaluator
     boolean isBigEnough (Glyph glyph);
 
     /**
-     * Report the best evaluation for the provided glyph, above a
-     * minimum grade value, among the shapes (non checked, but allowed)
-     * that match the provided predicate.
+     * Report the best evaluation for the provided glyph, above a minimum grade value,
+     * among the shapes (non checked, but allowed) that match the provided predicate.
      *
      * @param glyph     the glyph to evaluate
      * @param minGrade  the minimum evaluation grade to be acceptable
@@ -105,8 +104,8 @@ public interface ShapeEvaluator
                         Predicate<Shape> predicate);
 
     /**
-     * Report the best of all evaluations found by the evaluator on the
-     * provided glyph, under the ALLOWED and CHECKED conditions.
+     * Report the best of all evaluations found by the evaluator on the provided glyph,
+     * under the ALLOWED and CHECKED conditions.
      *
      * @param glyph    the glyph to evaluate
      * @param system   the system containing the glyph to evaluate
@@ -118,9 +117,8 @@ public interface ShapeEvaluator
                      double minGrade);
 
     /**
-     * Report the best of all evaluations found by the evaluator on the
-     * provided glyph, matching the optional conditions and the
-     * provided predicate.
+     * Report the best of all evaluations found by the evaluator on the provided glyph,
+     * matching the optional conditions and the provided predicate.
      *
      * @param glyph      the glyph to evaluate
      * @param system     the system containing the glyph to evaluate
@@ -136,9 +134,8 @@ public interface ShapeEvaluator
                      Predicate<Shape> predicate);
 
     /**
-     * Report the best of all evaluations found by the evaluator on the
-     * provided glyph, under the ALLOWED and CHECKED conditions and
-     * matching the provided predicate.
+     * Report the best of all evaluations found by the evaluator on the provided glyph,
+     * under the ALLOWED and CHECKED conditions and matching the provided predicate.
      *
      * @param glyph     the glyph to evaluate
      * @param system    the system containing the glyph to evaluate

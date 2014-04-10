@@ -205,11 +205,6 @@ public class Symbols
         map(CAESURA, 34);
         map(CODA, 222);
 
-        sym.put(FLAG_1_set, new FlagsDownSymbol(1, false, FLAG_1_set));
-        sym.put(FLAG_2_set, new FlagsDownSymbol(2, false, FLAG_2_set));
-        sym.put(FLAG_3_set, new FlagsDownSymbol(3, false, FLAG_3_set));
-        sym.put(FLAG_4_set, new FlagsDownSymbol(4, false, FLAG_4_set));
-        sym.put(FLAG_5_set, new FlagsDownSymbol(5, false, FLAG_5_set));
         flagsDown(1, FLAG_1);
         flagsUp(1, FLAG_1_UP);
         flagsDown(2, FLAG_2);
@@ -256,7 +251,6 @@ public class Symbols
 
         //        map(ENDING_HORIZONTAL);
         //        map(ENDING_VERTICAL);
-        map(FERMATA_set, 85);
         map(FERMATA, 85);
         map(FERMATA_BELOW, 117);
         map(FINAL_BARLINE, 211);
@@ -273,7 +267,7 @@ public class Symbols
         ottava(false, G_CLEF_8VB, 38);
         sym.put(HW_REST_set, new RestSymbol(HALF_REST, false, 238));
         sym.put(HALF_REST, new RestSymbol(HALF_REST, false, 238));
-        map(INVERTED_MORDENT, 77);
+        map(MORDENT_INVERTED, 77);
         flatKey(-1, KEY_FLAT_1);
         flatKey(-2, KEY_FLAT_2);
         flatKey(-3, KEY_FLAT_3);
@@ -328,7 +322,6 @@ public class Symbols
         map(TIME_NINE, 57);
         map(TIME_ONE, 49);
         map(TIME_SEVEN, 55);
-        map(TIME_69_set, 54);
         map(TIME_SIX, 54);
         map(TIME_SIXTEEN, 49, 54);
         numDen(TIME_SIX_EIGHT, 6, 8);
@@ -342,11 +335,10 @@ public class Symbols
         map(TUPLET_SIX, 164);
         map(TUPLET_THREE, 163);
 
-        map(TURN_set, 84);
         map(TURN, 84);
         sym.put(
-                INVERTED_TURN,
-                new TransformedSymbol(false, INVERTED_TURN, TURN, ShapeSymbol.verticalFlip));
+                TURN_INVERTED,
+                new TransformedSymbol(false, TURN_INVERTED, TURN, ShapeSymbol.verticalFlip));
         sym.put(TURN_SLASH, new TurnSlashSymbol(false));
         sym.put(
                 TURN_UP,
@@ -357,7 +349,18 @@ public class Symbols
         map(WHOLE_NOTE, 119);
         small(WHOLE_NOTE_SMALL, 119);
         sym.put(WHOLE_REST, new RestSymbol(WHOLE_REST, false, 183));
-        sym.put(WEDGE_set, new CrescendoSymbol(false, CRESCENDO));
+
+        // Digits
+        sym.put(DIGIT_0, new TextSymbol(DIGIT_0, "0"));
+        sym.put(DIGIT_1, new TextSymbol(DIGIT_1, "1"));
+        sym.put(DIGIT_2, new TextSymbol(DIGIT_2, "2"));
+        sym.put(DIGIT_3, new TextSymbol(DIGIT_3, "3"));
+        sym.put(DIGIT_4, new TextSymbol(DIGIT_4, "4"));
+        sym.put(DIGIT_5, new TextSymbol(DIGIT_5, "5"));
+        sym.put(DIGIT_6, new TextSymbol(DIGIT_6, "6"));
+        sym.put(DIGIT_7, new TextSymbol(DIGIT_7, "7"));
+        sym.put(DIGIT_8, new TextSymbol(DIGIT_8, "8"));
+        sym.put(DIGIT_9, new TextSymbol(DIGIT_9, "9"));
     }
 
     //- Convenient methods -----------------------------------------------------

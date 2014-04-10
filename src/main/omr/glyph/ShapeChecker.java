@@ -32,7 +32,6 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.util.HorizontalSide;
 import omr.util.Predicate;
 
 import org.slf4j.Logger;
@@ -105,7 +104,7 @@ public class ShapeChecker
     private final EnumMap<Shape, Collection<Checker>> checkerMap;
 
     /** Checker that can be used on its own. */
-    private Checker stemChecker;
+    ///private Checker stemChecker;
 
     //~ Constructors -------------------------------------------------------------------------------
     //--------------//
@@ -176,22 +175,22 @@ public class ShapeChecker
             }
         }
     }
-
-    //-----------//
-    // checkStem //
-    //-----------//
-    /**
-     * Basic check for a stem candidate, using gap to closest staff.
-     *
-     * @param system containing system
-     * @param glyph  stem candidate
-     * @return true if OK
-     */
-    public boolean checkStem (SystemInfo system,
-                              Glyph glyph)
-    {
-        return stemChecker.check(system, null, glyph, null);
-    }
+//
+//    //-----------//
+//    // checkStem //
+//    //-----------//
+//    /**
+//     * Basic check for a stem candidate, using gap to closest staff.
+//     *
+//     * @param system containing system
+//     * @param glyph  stem candidate
+//     * @return true if OK
+//     */
+//    public boolean checkStem (SystemInfo system,
+//                              Glyph glyph)
+//    {
+//        return stemChecker.check(system, null, glyph, null);
+//    }
 
     //-------//
     // relax //
@@ -568,32 +567,32 @@ public class ShapeChecker
                 }
             }
         };
+//
+//        // Shapes that require a stem on the left side
+//        new Checker("noLeftStem", shapesOf(FlagSets, shapesOf(Flags.getShapes())))
+//        {
+//            @Override
+//            public boolean check (SystemInfo system,
+//                                  Evaluation eval,
+//                                  Glyph glyph,
+//                                  double[] features)
+//            {
+//                return glyph.getStem(HorizontalSide.LEFT) != null;
+//            }
+//        };
 
-        // Shapes that require a stem on the left side
-        new Checker("noLeftStem", shapesOf(FlagSets, shapesOf(Flags.getShapes())))
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                return glyph.getStem(HorizontalSide.LEFT) != null;
-            }
-        };
-
-        // Shapes that require a stem nearby
-        new Checker("noStem", StemSymbols)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                return glyph.getStemNumber() >= 1;
-            }
-        };
+//        // Shapes that require a stem nearby
+//        new Checker("noStem", StemSymbols)
+//        {
+//            @Override
+//            public boolean check (SystemInfo system,
+//                                  Evaluation eval,
+//                                  Glyph glyph,
+//                                  double[] features)
+//            {
+//                return glyph.getStemNumber() >= 1;
+//            }
+//        };
 
         new Checker("Text", TEXT, CHARACTER)
         {
@@ -700,7 +699,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker("PartialTimeSig", TIME_69_set, PartialTimes)
+        new Checker("PartialTimeSig",  PartialTimes)
         {
             @Override
             public boolean check (SystemInfo system,
@@ -753,38 +752,38 @@ public class ShapeChecker
             }
         };
 
-        stemChecker = new Checker(
-                "StaffStemGap",
-                shapesOf(shapesOf(STEM), shapesOf(Beams.getShapes(), Flags.getShapes(), FlagSets)))
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                // A beam / flag / stem  cannot be too far from a staff
-                Point center = glyph.getAreaCenter();
-                StaffInfo staff = system.getStaffAt(center);
-
-                // Staff may be null for a very long glyph across systems
-                if (staff == null) {
-                    return false;
-                }
-
-                // Horizontal: not in DMZ
-                if (center.x < staff.getDmzEnd()) {
-                    return false;
-                }
-
-                // Vertical: A beam / flag / stem  cannot be too far from a staff
-                int yGap = staff.gapTo(glyph.getBounds());
-                int maxYGap = system.getScoreSystem().getScale()
-                        .toPixels(constants.maxStemGapToStaff);
-
-                return yGap <= maxYGap;
-            }
-        };
+//        stemChecker = new Checker(
+//                "StaffStemGap",
+//                shapesOf(shapesOf(STEM), shapesOf(Beams.getShapes(), Flags.getShapes(), FlagSets)))
+//        {
+//            @Override
+//            public boolean check (SystemInfo system,
+//                                  Evaluation eval,
+//                                  Glyph glyph,
+//                                  double[] features)
+//            {
+//                // A beam / flag / stem  cannot be too far from a staff
+//                Point center = glyph.getAreaCenter();
+//                StaffInfo staff = system.getStaffAt(center);
+//
+//                // Staff may be null for a very long glyph across systems
+//                if (staff == null) {
+//                    return false;
+//                }
+//
+//                // Horizontal: not in DMZ
+//                if (center.x < staff.getDmzEnd()) {
+//                    return false;
+//                }
+//
+//                // Vertical: A beam / flag / stem  cannot be too far from a staff
+//                int yGap = staff.gapTo(glyph.getBounds());
+//                int maxYGap = system.getScoreSystem().getScale()
+//                        .toPixels(constants.maxStemGapToStaff);
+//
+//                return yGap <= maxYGap;
+//            }
+//        };
 
         new Checker("SmallDynamics", SmallDynamics)
         {
@@ -1041,136 +1040,136 @@ public class ShapeChecker
             }
         };
 
-        new Checker("Fermata_set", FERMATA_set)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                // Use moment n21 to differentiate between V & ^
-                // TBD: We could use pitch position as well?
-                double n21 = glyph.getGeometricMoments().getN21();
-                Shape newShape = (n21 > 0) ? FERMATA : FERMATA_BELOW;
-
-                ///logLogical(system, glyph, eval, newShape);
-                eval.shape = newShape;
-
-                return true;
-            }
-        };
-
-        new Checker("FLAG_*_set", FlagSets)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                Shape newShape = null;
-                boolean covar = glyph.getGeometricMoments().getN11() > 0;
-
-                switch (eval.shape) {
-                case FLAG_1_set:
-                    newShape = covar ? FLAG_1 : FLAG_1_UP;
-
-                    break;
-
-                case FLAG_2_set:
-                    newShape = covar ? FLAG_2 : FLAG_2_UP;
-
-                    break;
-
-                case FLAG_3_set:
-                    newShape = covar ? FLAG_3 : FLAG_3_UP;
-
-                    break;
-
-                case FLAG_4_set:
-                    newShape = covar ? FLAG_4 : FLAG_4_UP;
-
-                    break;
-
-                case FLAG_5_set:
-                    newShape = covar ? FLAG_5 : FLAG_5_UP;
-
-                    break;
-                }
-
-                ///logLogical(system, glyph, eval, newShape);
-                eval.shape = newShape;
-
-                return true;
-            }
-        };
-
-        new Checker("TIME_69_set", TIME_69_set)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                // Use moment n12 to differentiate between <(6) & >(9)
-                double n12 = glyph.getGeometricMoments().getN12();
-                Shape newShape = (n12 > 0) ? TIME_NINE : TIME_SIX;
-                ///logLogical(system, glyph, eval, newShape);
-                eval.shape = newShape;
-
-                return true;
-            }
-        };
-
-        new Checker("TURN_set", TURN_set)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                Shape newShape;
-
-                // Use aspect to detect turn_up
-                double aspect = glyph.getAspect(Orientation.VERTICAL);
-
-                if (aspect > 1) {
-                    newShape = TURN_UP;
-                } else {
-                    // Use xy covariance
-                    boolean covar = glyph.getGeometricMoments().getN11() > 0;
-
-                    newShape = covar ? TURN : INVERTED_TURN;
-                }
-
-                ///logLogical(system, glyph, eval, newShape);
-                eval.shape = newShape;
-
-                return true;
-            }
-        };
-
-        new Checker("Wedge_set", WEDGE_set)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                // Use moment n12 to differentiate between < & >
-                double n12 = glyph.getGeometricMoments().getN12();
-                Shape newShape = (n12 > 0) ? CRESCENDO : DECRESCENDO;
-
-                ///logLogical(system, glyph, eval, newShape);
-                eval.shape = newShape;
-
-                return true;
-            }
-        };
+//        new Checker("Fermata_set", FERMATA_set)
+//        {
+//            @Override
+//            public boolean check (SystemInfo system,
+//                                  Evaluation eval,
+//                                  Glyph glyph,
+//                                  double[] features)
+//            {
+//                // Use moment n21 to differentiate between V & ^
+//                // TBD: We could use pitch position as well?
+//                double n21 = glyph.getGeometricMoments().getN21();
+//                Shape newShape = (n21 > 0) ? FERMATA : FERMATA_BELOW;
+//
+//                ///logLogical(system, glyph, eval, newShape);
+//                eval.shape = newShape;
+//
+//                return true;
+//            }
+//        };
+//
+//        new Checker("FLAG_*_set", FlagSets)
+//        {
+//            @Override
+//            public boolean check (SystemInfo system,
+//                                  Evaluation eval,
+//                                  Glyph glyph,
+//                                  double[] features)
+//            {
+//                Shape newShape = null;
+//                boolean covar = glyph.getGeometricMoments().getN11() > 0;
+//
+//                switch (eval.shape) {
+//                case FLAG_1_set:
+//                    newShape = covar ? FLAG_1 : FLAG_1_UP;
+//
+//                    break;
+//
+//                case FLAG_2_set:
+//                    newShape = covar ? FLAG_2 : FLAG_2_UP;
+//
+//                    break;
+//
+//                case FLAG_3_set:
+//                    newShape = covar ? FLAG_3 : FLAG_3_UP;
+//
+//                    break;
+//
+//                case FLAG_4_set:
+//                    newShape = covar ? FLAG_4 : FLAG_4_UP;
+//
+//                    break;
+//
+//                case FLAG_5_set:
+//                    newShape = covar ? FLAG_5 : FLAG_5_UP;
+//
+//                    break;
+//                }
+//
+//                ///logLogical(system, glyph, eval, newShape);
+//                eval.shape = newShape;
+//
+//                return true;
+//            }
+//        };
+//
+//        new Checker("TIME_69_set", TIME_69_set)
+//        {
+//            @Override
+//            public boolean check (SystemInfo system,
+//                                  Evaluation eval,
+//                                  Glyph glyph,
+//                                  double[] features)
+//            {
+//                // Use moment n12 to differentiate between <(6) & >(9)
+//                double n12 = glyph.getGeometricMoments().getN12();
+//                Shape newShape = (n12 > 0) ? TIME_NINE : TIME_SIX;
+//                ///logLogical(system, glyph, eval, newShape);
+//                eval.shape = newShape;
+//
+//                return true;
+//            }
+//        };
+//
+//        new Checker("TURN_set", TURN_set)
+//        {
+//            @Override
+//            public boolean check (SystemInfo system,
+//                                  Evaluation eval,
+//                                  Glyph glyph,
+//                                  double[] features)
+//            {
+//                Shape newShape;
+//
+//                // Use aspect to detect turn_up
+//                double aspect = glyph.getAspect(Orientation.VERTICAL);
+//
+//                if (aspect > 1) {
+//                    newShape = TURN_UP;
+//                } else {
+//                    // Use xy covariance
+//                    boolean covar = glyph.getGeometricMoments().getN11() > 0;
+//
+//                    newShape = covar ? TURN : TURN_INVERTED;
+//                }
+//
+//                ///logLogical(system, glyph, eval, newShape);
+//                eval.shape = newShape;
+//
+//                return true;
+//            }
+//        };
+//
+//        new Checker("Wedge_set", WEDGE_set)
+//        {
+//            @Override
+//            public boolean check (SystemInfo system,
+//                                  Evaluation eval,
+//                                  Glyph glyph,
+//                                  double[] features)
+//            {
+//                // Use moment n12 to differentiate between < & >
+//                double n12 = glyph.getGeometricMoments().getN12();
+//                Shape newShape = (n12 > 0) ? CRESCENDO : DECRESCENDO;
+//
+//                ///logLogical(system, glyph, eval, newShape);
+//                eval.shape = newShape;
+//
+//                return true;
+//            }
+//        };
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

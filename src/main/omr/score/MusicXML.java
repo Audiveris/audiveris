@@ -293,7 +293,7 @@ public class MusicXML
         ObjectFactory factory = new ObjectFactory();
 
         switch (shape) {
-        case INVERTED_MORDENT:
+        case MORDENT_INVERTED:
             return factory.createOrnamentsInvertedMordent(factory.createMordent());
 
         case MORDENT:

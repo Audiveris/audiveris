@@ -104,7 +104,7 @@ public class FermataDotPattern
                         Arrays.asList(fermata, candidate),
                         false,
                         Glyph.Linking.NO_LINK);
-                Evaluation eval = GlyphNetwork.getInstance()
+                Evaluation eval = GlyphClassifier.getInstance()
                         .vote(compound, system, Grades.noMinGrade);
 
                 if (eval != null) {

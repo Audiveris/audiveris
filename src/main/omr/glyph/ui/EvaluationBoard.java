@@ -15,7 +15,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphNetwork;
+import omr.glyph.GlyphClassifier;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.ShapeEvaluator;
@@ -83,7 +83,7 @@ class EvaluationBoard
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The evaluator this display is related to */
-    private final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
+    private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
 
     /** Related glyphs controller */
     private final GlyphsController glyphsController;
@@ -118,8 +118,8 @@ class EvaluationBoard
     // EvaluationBoard //
     //-----------------//
     /**
-     * Create an evaluation board with one neural network evaluator
-     * and the ability to force glyph shape.
+     * Create an evaluation board with one neural network evaluator and the ability to
+     * force glyph shape.
      *
      * @param glyphController the related glyph controller
      * @param sheet           the related sheet, or null
@@ -143,8 +143,7 @@ class EvaluationBoard
     // evaluate //
     //----------//
     /**
-     * Evaluate the glyph at hand, and display the result in the
-     * evaluator dedicated area.
+     * Evaluate the glyph at hand, and display the result in the evaluator dedicated area.
      *
      * @param glyph the glyph at hand
      */
@@ -236,8 +235,7 @@ class EvaluationBoard
         }
 
         ///SystemUtils.IS_OS_WINDOWS
-        // Uncomment following line to have fixed sized rows, whether
-        // they are filled or not
+        // Uncomment following line to have fixed sized rows, whether they are filled or not
         ///layout.setRowGroups(new int[][]{{1, 3, 4, 5 }});
         PanelBuilder builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
@@ -288,7 +286,7 @@ class EvaluationBoard
         //~ Constructors ---------------------------------------------------------------------------
         public EvalButton ()
         {
-            grade.setToolTipText("Grade of the evaluation");
+            grade.setToolTipText("(Logarithmic) Grade of the evaluation");
 
             if (sheet != null) {
                 button = new JButton();
@@ -374,7 +372,7 @@ class EvaluationBoard
                 }
 
                 grade.setVisible(true);
-                grade.setText(String.format("%.3f", eval.grade));
+                grade.setText(String.format("%.2f", Math.log(eval.grade)));
             } else {
                 grade.setVisible(false);
                 comp.setVisible(false);
@@ -440,7 +438,7 @@ class EvaluationBoard
 
             boolean enabled = !glyph.isVirtual();
             double minGrade = constants.minGrade.getValue();
-            int iBound = Math.min(evalCount(), evals.length);
+            int iBound = Math.min(evalCount(), positiveEvals(evals));
             int i;
 
             for (i = 0; i < iBound; i++) {
@@ -459,6 +457,23 @@ class EvaluationBoard
             for (; i < evalCount(); i++) {
                 buttons.get(i).setEval(null, false, false);
             }
+        }
+
+        /**
+         * Return the number of evaluations with grade strictly positive
+         *
+         * @param evals the evaluations sorted from best to worst
+         * @return the number of evaluations with grade > 0
+         */
+        private int positiveEvals (Evaluation[] evals)
+        {
+            for (int i = 0; i < evals.length; i++) {
+                if (evals[i].grade <= 0) {
+                    return i;
+                }
+            }
+
+            return evals.length;
         }
     }
 }

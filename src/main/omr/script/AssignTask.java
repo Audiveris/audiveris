@@ -118,11 +118,11 @@ public class AssignTask
     public void epilog (Sheet sheet)
     {
         // We rebuild from SYMBOLS
-        Stepping.reprocessSheet(
-                Steps.valueOf(Steps.SYMBOLS),
-                sheet,
-                getImpactedSystems(sheet),
-                false);
+//        Stepping.reprocessSheet(
+//                Steps.valueOf(Steps.SYMBOLS),
+//                sheet,
+//                getImpactedSystems(sheet),
+//                false);
     }
 
     //------------------//

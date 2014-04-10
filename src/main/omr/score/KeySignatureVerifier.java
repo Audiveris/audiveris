@@ -14,8 +14,8 @@ package omr.score;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
+import omr.glyph.GlyphClassifier;
 import omr.glyph.GlyphNest;
-import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
@@ -125,7 +125,7 @@ public class KeySignatureVerifier
         Glyph compound = nest.buildGlyph(glyphs, false, Glyph.Linking.NO_LINK);
 
         // Check if a proper key sig appears in the top evaluations
-        Evaluation vote = GlyphNetwork.getInstance().rawVote(
+        Evaluation vote = GlyphClassifier.getInstance().rawVote(
                 compound,
                 Grades.keySigMinGrade,
                 new Predicate<Shape>()

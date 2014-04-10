@@ -94,9 +94,8 @@ public class GeometricMoments
     // GeometricMoments //
     //------------------//
     /**
-     * Compute the moments for a set of points whose x and y
-     * coordinates are provided, all values being normalized by the
-     * provided unit value.
+     * Compute the moments for a set of points whose x and y coordinates are provided,
+     * all values being normalized by the provided unit value.
      *
      * @param xx   the array of abscissa values
      * @param yy   the array of ordinate values

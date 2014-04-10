@@ -14,6 +14,7 @@ package omr.glyph;
 import omr.glyph.facets.Glyph;
 
 import omr.moments.ARTMoments;
+import omr.moments.GeometricMoments;
 
 import omr.run.Orientation;
 
@@ -30,11 +31,11 @@ public class ShapeDescriptorART
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Number of orthogonal moments used */
-    private static final int momentCount = -1 + (ARTMoments.ANGULAR * ARTMoments.RADIAL);
+    /** Number of ART moments used. */
+    public static final int momentCount = -1 + (ARTMoments.ANGULAR * ARTMoments.RADIAL);
 
-    /** Use the orthogonal moments + weight + stems + aspect */
-    private static final int length = momentCount + 3;
+    /** Use the ART moments + 3 GEO + weight + aspect. */
+    private static final int length = momentCount + 5;
 
     //~ Methods ------------------------------------------------------------------------------------
     //----------//
@@ -56,9 +57,14 @@ public class ShapeDescriptorART
             }
         }
 
-        // We append weight, stem count, aspect
+        // We append 3 geometric moments
+        GeometricMoments geos = glyph.getGeometricMoments();
+        ins[i++] = geos.getN11();
+        ins[i++] = geos.getN21();
+        ins[i++] = geos.getN12();
+
+        // We append weight and aspect
         ins[i++] = glyph.getNormalizedWeight();
-        ins[i++] = glyph.getStemNumber();
         ins[i++] = glyph.getAspect(Orientation.VERTICAL);
 
         return ins;
@@ -80,6 +86,15 @@ public class ShapeDescriptorART
     public String[] getFeatureLabels ()
     {
         return LabelsHolder.labels;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    @Override
+    public String getName ()
+    {
+        return "ART";
     }
 
     //--------//
@@ -122,9 +137,13 @@ public class ShapeDescriptorART
                 }
             }
 
-            // We append weight, stem count and aspect
+            // We append the 3 geometric moments
+            labels[i++] = "N11";
+            labels[i++] = "N21";
+            labels[i++] = "N12";
+
+            // We append weight and aspect
             labels[i++] = "weight";
-            labels[i++] = "stemNb";
             labels[i++] = "aspect";
 
             for (int j = 0; j < labels.length; j++) {

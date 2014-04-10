@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <actions>
 <!--    <action domain="DEBUG" section="50" class="omr.Debug" method="injectChordNames"/>-->
-<!--    <action domain="DEBUG" section="50" class="omr.Debug" method="saveTrainingData"/>-->
+    <action domain="DEBUG" section="40" class="omr.Debug" method="checkTemplates"/>
+    <action domain="DEBUG" section="50" class="omr.Debug" method="saveTrainingData"/>
     <action domain="DEBUG" section="60" class="omr.ui.GuiActions"  method="launchSymbolRipper"/>
     <action domain="DEBUG" section="70" class="omr.ui.GuiActions"  method="dumpEventServices"/>
 </actions>

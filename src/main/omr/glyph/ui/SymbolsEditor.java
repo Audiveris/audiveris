@@ -13,8 +13,8 @@ package omr.glyph.ui;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.GlyphClassifier;
 import omr.glyph.GlyphNest;
-import omr.glyph.GlyphNetwork;
 import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
@@ -93,7 +93,7 @@ public class SymbolsEditor
     private final Sheet sheet;
 
     /** Evaluator to check for NOISE glyphs. */
-    private final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
+    private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
 
     /** Related nest view. */
     private final MyView view;

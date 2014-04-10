@@ -585,7 +585,7 @@ public class Stepping
             return;
         }
 
-        logger.info("{}Scheduling {}", score.getLogPrefix(), stepSet);
+         logger.info("{}Scheduling {}", score.getLogPrefix(), stepSet);
 
         long startTime = System.currentTimeMillis();
         notifyStart();

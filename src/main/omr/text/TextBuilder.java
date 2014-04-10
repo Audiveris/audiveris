@@ -180,8 +180,8 @@ public class TextBuilder
     public boolean isValid (TextLine textLine)
     {
         // Check confidence
-        Integer conf = textLine.getConfidence();
-        int minConf = constants.minConfidence.getValue();
+        Double conf = textLine.getConfidence();
+        double minConf = constants.minConfidence.getValue();
 
         if ((conf == null) || (conf < minConf)) {
             logger.debug("      Too low confidence {} vs {} for {}", conf, minConf, textLine);
@@ -1240,9 +1240,9 @@ public class TextBuilder
                 "^[\\.°>]$",
                 "Regular expression to detect abnormal words");
 
-        Constant.Integer minConfidence = new Constant.Integer(
-                "0..100",
-                70,
+        Constant.Double minConfidence = new Constant.Double(
+                "0..1",
+                0.70,
                 "Minimum confidence for OCR validity");
 
         Constant.Integer maxCharCountForAspectCheck = new Constant.Integer(

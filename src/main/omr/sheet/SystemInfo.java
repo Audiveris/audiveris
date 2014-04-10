@@ -181,6 +181,9 @@ public class SystemInfo
     /** Unmodifiable view of the glyphs collection */
     private final SortedSet<Glyph> glyphsView = Collections.unmodifiableSortedSet(glyphs);
 
+    /** Glyph flagged as optional. */
+    private List<Glyph> optionalGlyphs;
+
     /** Set of sentence made of text glyphs */
     private Set<TextLine> sentences = new LinkedHashSet<TextLine>();
 
@@ -757,6 +760,22 @@ public class SystemInfo
         }
 
         return pos;
+    }
+
+    /**
+     * @return the optionalGlyphs
+     */
+    public List<Glyph> getOptionalGlyphs ()
+    {
+        return optionalGlyphs;
+    }
+
+    /**
+     * @param optionalGlyphs the optionalGlyphs to set
+     */
+    public void setOptionalGlyphs (List<Glyph> optionalGlyphs)
+    {
+        this.optionalGlyphs = optionalGlyphs;
     }
 
     //----------//

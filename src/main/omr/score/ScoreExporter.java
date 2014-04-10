@@ -2534,7 +2534,7 @@ public class ScoreExporter
      * Class to handle the insertion of clefs in a measure.
      * If needed, this class could be reused for some attribute other than clef,
      * such as key signature or time signature (if these attributes can indeed
-     * occur in the middle of a mesure. To be checked).
+     * occur in the middle of a measure. To be checked).
      */
     private class ClefIterators
     {

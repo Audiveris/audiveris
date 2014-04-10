@@ -86,13 +86,21 @@ public class ShapeSet
             G_CLEF_8VA,
             G_CLEF_8VB);
 
-    /** All sorts of flag sets */
-    public static final EnumSet<Shape> FlagSets = EnumSet.of(
-            FLAG_1_set,
-            FLAG_2_set,
-            FLAG_3_set,
-            FLAG_4_set,
-            FLAG_5_set);
+    /** All flags down */
+    public static final EnumSet<Shape> FlagsDown = EnumSet.of(
+            FLAG_1,
+            FLAG_2,
+            FLAG_3,
+            FLAG_4,
+            FLAG_5);
+
+    /** All flags up */
+    public static final EnumSet<Shape> FlagsUp = EnumSet.of(
+            FLAG_1_UP,
+            FLAG_2_UP,
+            FLAG_3_UP,
+            FLAG_4_UP,
+            FLAG_5_UP);
 
     /** All SHARP-based keys */
     public static final EnumSet<Shape> SharpKeys = EnumSet.of(
@@ -172,17 +180,17 @@ public class ShapeSet
             LEFT_REPEAT_SIGN,
             new Color(0x0000ff),
             shapesOf(
-            PART_DEFINING_BARLINE,
-            THIN_BARLINE,
-            THICK_BARLINE,
-            DOUBLE_BARLINE,
-            FINAL_BARLINE,
-            REVERSE_FINAL_BARLINE,
-            LEFT_REPEAT_SIGN,
-            RIGHT_REPEAT_SIGN,
-            BACK_TO_BACK_REPEAT_SIGN,
-            THIN_CONNECTION,
-            THICK_CONNECTION));
+                    PART_DEFINING_BARLINE,
+                    THIN_BARLINE,
+                    THICK_BARLINE,
+                    DOUBLE_BARLINE,
+                    FINAL_BARLINE,
+                    REVERSE_FINAL_BARLINE,
+                    LEFT_REPEAT_SIGN,
+                    RIGHT_REPEAT_SIGN,
+                    BACK_TO_BACK_REPEAT_SIGN,
+                    THIN_CONNECTION,
+                    THICK_CONNECTION));
 
     public static final ShapeSet Beams = new ShapeSet(
             BEAM,
@@ -198,44 +206,34 @@ public class ShapeSet
             DYNAMICS_F,
             new Color(0x009999),
             shapesOf(
-            DYNAMICS_CHAR_M,
-            DYNAMICS_CHAR_R,
-            DYNAMICS_CHAR_S,
-            DYNAMICS_CHAR_Z,
-            DYNAMICS_F,
-            DYNAMICS_FF,
-            DYNAMICS_FFF,
-            DYNAMICS_FP,
-            DYNAMICS_FZ,
-            DYNAMICS_MF,
-            DYNAMICS_MP,
-            DYNAMICS_P,
-            DYNAMICS_PP,
-            DYNAMICS_PPP,
-            DYNAMICS_RF,
-            DYNAMICS_RFZ,
-            DYNAMICS_SF,
-            DYNAMICS_SFFZ,
-            DYNAMICS_SFP,
-            DYNAMICS_SFPP,
-            DYNAMICS_SFZ,
-            CRESCENDO,
-            DECRESCENDO));
+                    DYNAMICS_CHAR_M,
+                    DYNAMICS_CHAR_R,
+                    DYNAMICS_CHAR_S,
+                    DYNAMICS_CHAR_Z,
+                    DYNAMICS_F,
+                    DYNAMICS_FF,
+                    DYNAMICS_FFF,
+                    DYNAMICS_FP,
+                    DYNAMICS_FZ,
+                    DYNAMICS_MF,
+                    DYNAMICS_MP,
+                    DYNAMICS_P,
+                    DYNAMICS_PP,
+                    DYNAMICS_PPP,
+                    DYNAMICS_RF,
+                    DYNAMICS_RFZ,
+                    DYNAMICS_SF,
+                    DYNAMICS_SFFZ,
+                    DYNAMICS_SFP,
+                    DYNAMICS_SFPP,
+                    DYNAMICS_SFZ,
+                    CRESCENDO,
+                    DECRESCENDO));
 
     public static final ShapeSet Flags = new ShapeSet(
             FLAG_1,
             new Color(0x99cc00),
-            shapesOf(
-            FLAG_1,
-            FLAG_1_UP,
-            FLAG_2,
-            FLAG_2_UP,
-            FLAG_3,
-            FLAG_3_UP,
-            FLAG_4,
-            FLAG_4_UP,
-            FLAG_5,
-            FLAG_5_UP));
+            shapesOf(FlagsDown, FlagsUp));
 
     public static final ShapeSet Keys = new ShapeSet(
             KEY_SHARP_3,
@@ -261,50 +259,65 @@ public class ShapeSet
             MORDENT,
             new Color(0xcc3300),
             shapesOf(
-            GRACE_NOTE_SLASH,
-            GRACE_NOTE,
-            TR,
-            TURN,
-            INVERTED_TURN,
-            TURN_UP,
-            TURN_SLASH,
-            MORDENT,
-            INVERTED_MORDENT));
+                    GRACE_NOTE_SLASH,
+                    GRACE_NOTE,
+                    TR,
+                    TURN,
+                    TURN_INVERTED,
+                    TURN_UP,
+                    TURN_SLASH,
+                    MORDENT,
+                    MORDENT_INVERTED));
 
     public static final ShapeSet Rests = new ShapeSet(
             QUARTER_REST,
             new Color(0x99ff66),
             shapesOf(
-            LONG_REST,
-            BREVE_REST,
-            WHOLE_REST,
-            HALF_REST,
-            QUARTER_REST,
-            EIGHTH_REST,
-            ONE_16TH_REST,
-            ONE_32ND_REST,
-            ONE_64TH_REST,
-            ONE_128TH_REST));
+                    LONG_REST,
+                    BREVE_REST,
+                    WHOLE_REST,
+                    HALF_REST,
+                    QUARTER_REST,
+                    EIGHTH_REST,
+                    ONE_16TH_REST,
+                    ONE_32ND_REST,
+                    ONE_64TH_REST,
+                    ONE_128TH_REST));
 
     public static final ShapeSet Times = new ShapeSet(
             TIME_FOUR_FOUR,
             new Color(0xcc3300),
             shapesOf(PartialTimes, FullTimes));
 
+    public static final ShapeSet Digits = new ShapeSet(
+            DIGIT_1,
+            new Color(0xcc3388),
+            shapesOf(
+                    DIGIT_0,
+                    DIGIT_1,
+                    DIGIT_2,
+                    DIGIT_3,
+                    DIGIT_4,
+                    DIGIT_5,
+                    DIGIT_6,
+                    DIGIT_7,
+                    DIGIT_8,
+                    DIGIT_9));
+
     public static final ShapeSet Physicals = new ShapeSet(
             LEDGER,
             new Color(0x9999ff),
             shapesOf(
-            TEXT,
-            CHARACTER,
-            CLUTTER,
-            SLUR,
-            LEDGER,
-            STEM,
-            ENDING,
-            DOT_set,
-            REPEAT_DOT,
-            AUGMENTATION_DOT));
+                    TEXT,
+                    CHARACTER,
+                    CLUTTER,
+                    SLUR,
+                    LEDGER,
+                    STEM,
+                    ENDING,
+                    DOT_set,
+                    REPEAT_DOT,
+                    AUGMENTATION_DOT));
 
     // =========================================================================
     // Below are EnumSet instances, used programmatically.
@@ -349,22 +362,22 @@ public class ShapeSet
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
-    /** Name of the set */
+    /** Name of the set. */
     private String name;
 
-    /** Underlying shapes */
+    /** Underlying shapes. */
     private final EnumSet<Shape> shapes;
 
-    /** Specific sequence of shapes, if any */
+    /** Specific sequence of shapes, if any. */
     private final List<Shape> sortedShapes;
 
-    /** The representative shape for this set */
+    /** The representative shape for this set. */
     private final Shape rep;
 
-    /** Assigned color */
+    /** Assigned color. */
     private Color color;
 
-    /** Related color constant */
+    /** Related color constant. */
     private Constant.Color constantColor;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -484,81 +497,6 @@ public class ShapeSet
         }
     }
 
-    //
-    //-----------------------//
-    // getPhysicalShapeNames //
-    //-----------------------//
-    /**
-     * Report the names of all the physical shapes.
-     *
-     * @return the array of names for shapes up to LAST_PHYSICAL_SHAPE
-     */
-    public static String[] getPhysicalShapeNames ()
-    {
-        int shapeCount = 1 + LAST_PHYSICAL_SHAPE.ordinal();
-        String[] names = new String[shapeCount];
-
-        for (Shape shape : allPhysicalShapes) {
-            names[shape.ordinal()] = shape.name();
-        }
-
-        return names;
-    }
-
-    //----------//
-    // contains //
-    //----------//
-    /**
-     * Convenient method to check if encapsulated shapes set does
-     * contain the provided object.
-     *
-     * @param shape the Shape object to check for inclusion
-     * @return true if contained, false otherwise
-     */
-    public boolean contains (Shape shape)
-    {
-        return shapes.contains(shape);
-    }
-
-    //----------//
-    // getColor //
-    //----------//
-    /**
-     * Report the color currently assigned to the range, if any.
-     *
-     * @return the related color, or null
-     */
-    public Color getColor ()
-    {
-        return color;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name of the set.
-     *
-     * @return the set name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //--------//
-    // getRep //
-    //--------//
-    /**
-     * Report the representative shape of the set, if any.
-     *
-     * @return the rep shape, or null
-     */
-    public Shape getRep ()
-    {
-        return rep;
-    }
-
     //-------------//
     // getShapeSet //
     //-------------//
@@ -573,6 +511,50 @@ public class ShapeSet
     public static List<ShapeSet> getShapeSets ()
     {
         return Sets.setList;
+    }
+
+    //-----------//
+    // getShapes //
+    //-----------//
+    /**
+     * Exports the set of shapes.
+     *
+     * @return the proper enum set
+     */
+    public EnumSet<Shape> getShapes ()
+    {
+        return shapes;
+    }
+
+    //-----------------//
+    // getSortedShapes //
+    //-----------------//
+    /**
+     * Exports the sorted collection of shapes.
+     *
+     * @return the proper enum set
+     */
+    public List<Shape> getSortedShapes ()
+    {
+        if (sortedShapes != null) {
+            return sortedShapes;
+        } else {
+            return new ArrayList<Shape>(shapes);
+        }
+    }
+
+    //------------------//
+    // setConstantColor //
+    //------------------//
+    /**
+     * Define a specific color for the set.
+     *
+     * @param color the specified color
+     */
+    public void setConstantColor (Color color)
+    {
+        constantColor.setValue(color);
+        setColor(color);
     }
 
     //----------//
@@ -669,48 +651,79 @@ public class ShapeSet
         return Sets.map.get(str);
     }
 
-    //-----------//
-    // getShapes //
-    //-----------//
+    //----------//
+    // contains //
+    //----------//
     /**
-     * Exports the set of shapes.
+     * Convenient method to check if encapsulated shapes set does
+     * contain the provided object.
      *
-     * @return the proper enum set
+     * @param shape the Shape object to check for inclusion
+     * @return true if contained, false otherwise
      */
-    public EnumSet<Shape> getShapes ()
+    public boolean contains (Shape shape)
     {
-        return shapes;
+        return shapes.contains(shape);
     }
 
-    //-----------------//
-    // getSortedShapes //
-    //-----------------//
+    //----------//
+    // getColor //
+    //----------//
     /**
-     * Exports the sorted collection of shapes.
+     * Report the color currently assigned to the range, if any.
      *
-     * @return the proper enum set
+     * @return the related color, or null
      */
-    public List<Shape> getSortedShapes ()
+    public Color getColor ()
     {
-        if (sortedShapes != null) {
-            return sortedShapes;
-        } else {
-            return new ArrayList<Shape>(shapes);
+        return color;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name of the set.
+     *
+     * @return the set name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //
+    //-----------------------//
+    // getPhysicalShapeNames //
+    //-----------------------//
+    /**
+     * Report the names of all the physical shapes.
+     *
+     * @return the array of names for shapes up to LAST_PHYSICAL_SHAPE
+     */
+    public static String[] getPhysicalShapeNames ()
+    {
+        int shapeCount = 1 + LAST_PHYSICAL_SHAPE.ordinal();
+        String[] names = new String[shapeCount];
+
+        for (Shape shape : allPhysicalShapes) {
+            names[shape.ordinal()] = shape.name();
         }
+
+        return names;
     }
 
-    //------------------//
-    // setConstantColor //
-    //------------------//
+    //--------//
+    // getRep //
+    //--------//
     /**
-     * Define a specific color for the set.
+     * Report the representative shape of the set, if any.
      *
-     * @param color the specified color
+     * @return the rep shape, or null
      */
-    public void setConstantColor (Color color)
+    public Shape getRep ()
     {
-        constantColor.setValue(color);
-        setColor(color);
+        return rep;
     }
 
     //----------------------//

@@ -111,10 +111,11 @@ public class Steps
         addStep(new ResolutionStep());
         addStep(new CueBeamsStep());
         addStep(new CurvesStep());
+        addStep(new SymbolsStep());
+        addStep(new ResolutionStep());
 
         //        addStep(new TextsStep());
-        addNoStep(SYMBOLS);
-        //        addStep(new SymbolsStep());
+        ///addNoStep(SYMBOLS);
         //        addStep(new MeasuresStep());
         //        addStep(new PagesStep());
         addNoStep(SCORE);

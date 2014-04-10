@@ -170,8 +170,8 @@ public class ShapeDescriptor
     // getSymbolBoundsAt //
     //-------------------//
     /**
-     * Report the symbol bounds, which may be smaller than the template
-     * bounds, because of margins.
+     * Report the symbol bounds, which may be smaller than the template bounds, because
+     * of margins.
      *
      * @param x      abscissa for anchor
      * @param y      ordinate for anchor
@@ -201,8 +201,8 @@ public class ShapeDescriptor
     // getTemplateBoundsAt //
     //---------------------//
     /**
-     * Report the template bounds, which may be larger than the symbol
-     * bounds, because of margins.
+     * Report the template bounds, which may be larger than the symbol bounds, because
+     * of margins.
      *
      * @param x      abscissa for anchor
      * @param y      ordinate for anchor
@@ -257,8 +257,7 @@ public class ShapeDescriptor
     //------------//
     /**
      * Add specific anchors to the template.
-     * All templates get basic anchors at construction time, but some may need
-     * additional anchors.
+     * All templates get basic anchors at construction time, but some may need additional anchors.
      *
      * @param template the template to populate
      */
@@ -304,16 +303,17 @@ public class ShapeDescriptor
     // addHoles //
     //----------//
     /**
-     * Background pixels inside a given shape must be recognized as
-     * such.
+     * Background pixels inside a given shape must be recognized as such.
      * <p>
-     * Such pixels are marked with a specific color (green foreground) so that
-     * the template can measure their distance to (black) foreground.
+     * Such pixels are marked with a specific color (green foreground) so that the template can
+     * measure their distance to (black) foreground.
      *
-     * @param img   the source image
-     * @param lines the hasLines configuration
+     * @param img  the source image
+     * @param box  bounds of symbol relative to image
+     * @param line true if middle (ledger/staff) line is present
      */
     private void addHoles (BufferedImage img,
+                           Rectangle box,
                            boolean line)
     {
         if (shapesWithHoles.contains(shape)) {
@@ -325,25 +325,25 @@ public class ShapeDescriptor
                 if ((shape == WHOLE_NOTE) || (shape == WHOLE_NOTE_SMALL)) {
                     holeSeeds.add(
                             new Point(
-                                    (int) Math.rint(img.getWidth() * 0.5),
-                                    (int) Math.rint(img.getHeight() * 0.33)));
+                                    box.x + (int) Math.rint(box.width * 0.4),
+                                    box.y + (int) Math.rint(box.height * 0.15)));
                     holeSeeds.add(
                             new Point(
-                                    (int) Math.rint(img.getWidth() * 0.5),
-                                    (int) Math.rint(img.getHeight() * 0.67)));
+                                    box.x + (int) Math.rint(box.width * 0.55),
+                                    box.y + (int) Math.rint(box.height * 0.67)));
                 } else {
                     holeSeeds.add(
                             new Point(
-                                    (int) Math.rint(img.getWidth() * 0.7),
-                                    (int) Math.rint(img.getHeight() * 0.33)));
+                                    box.x + (int) Math.rint(box.width * 0.7),
+                                    box.y + (int) Math.rint(box.height * 0.2)));
                     holeSeeds.add(
                             new Point(
-                                    (int) Math.rint(img.getWidth() * 0.2),
-                                    (int) Math.rint(img.getHeight() * 0.6)));
+                                    box.x + (int) Math.rint(box.width * 0.2),
+                                    box.y + (int) Math.rint(box.height * 0.68)));
                 }
             } else {
-                // We have no ledger, just a big hole in the center
-                holeSeeds.add(new Point(img.getWidth() / 2, img.getHeight() / 2));
+                // We have no ledger, just a big hole in the symbol center
+                holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
             }
 
             // Fill the holes if any with green color
@@ -351,7 +351,17 @@ public class ShapeDescriptor
 
             for (Point seed : holeSeeds) {
                 // Background (red) -> background (green)
-                floodFiller.fill(seed.x, seed.y, RED, GREEN);
+                // Hole seeds are very coarse with low interline value, so try points nearby
+                Neiborhood:
+                for (int iy = 0; iy <= 1; iy++) {
+                    for (int ix = 0; ix <= 1; ix++) {
+                        if (isBackground(img, seed.x + ix, seed.y + iy)) {
+                            floodFiller.fill(seed.x + ix, seed.y + iy, RED, GREEN);
+
+                            break Neiborhood;
+                        }
+                    }
+                }
             }
         }
     }
@@ -406,8 +416,7 @@ public class ShapeDescriptor
     //------------------//
     /**
      * Compute all distances to nearest foreground pixel.
-     * For this we work as if there was a foreground rectangle right around
-     * the image.
+     * For this we work as if there was a foreground rectangle right around the image.
      * Similarly, the non-relevant pixels are assumed to be foreground.
      * This is to allow the detection of reliable background key points.
      *
@@ -460,11 +469,9 @@ public class ShapeDescriptor
     // createTemplate //
     //----------------//
     /**
-     * Build a template for desired shape and size, based on
-     * MusicFont.
-     * TODO: Implement a better way to select representative key points
-     * perhaps using a skeleton for foreground and another skeleton for
-     * holes?
+     * Build a template for desired shape and size, based on MusicFont.
+     * TODO: Implement a better way to select representative key points perhaps using a skeleton for
+     * foreground and another skeleton for holes?
      *
      * @param key  full identification of the template
      * @param font the underlying music font properly scaled
@@ -479,13 +486,13 @@ public class ShapeDescriptor
         width = img.getWidth();
         height = img.getHeight();
 
-        binarize(img, 127);
+        binarize(img, 175);
 
         // Distances to foreground
         final Table distances = computeDistances(img, key);
 
         // Add holes if any
-        addHoles(img, key.hasLine);
+        addHoles(img, symbol.getSymbolBounds(font), key.hasLine);
 
         // Flag non-relevant pixels
         flagIrrelevantPixels(img, distances);
@@ -521,30 +528,26 @@ public class ShapeDescriptor
     // flagIrrelevantPixels //
     //----------------------//
     /**
-     * Some pixels in (non-hole) background regions must be set as non
-     * relevant.
-     * They are roughly the "exterior" half of these regions, where the distance
-     * to foreground would be impacted by the presence of nearby stem or staff /
-     * ledger line.
-     * Only the "interior" half of such region is relevant, for its distance to
-     * foreground is not dependent upon the presence of stem or line.
+     * Some pixels in (non-hole) background regions must be set as non relevant.
+     * They are roughly the "exterior" half of these regions, where the distance to foreground would
+     * be impacted by the presence of nearby stem or staff / ledger line.
+     * Only the "interior" half of such region is relevant, for its distance to foreground is not
+     * dependent upon the presence of stem or line.
      *
      * @param img the image to modify
      */
     private void flagIrrelevantPixels (BufferedImage img,
                                        Table distances)
     {
-        // First browse from each foreground pixel in the 4 directions to first
-        // non-foreground pixel. If this pixel is relevant and non-hole, flag it
-        // as a border pixel.
+        // First browse from each foreground pixel in the 4 directions to first non-foreground pixel
+        // If this pixel is relevant and non-hole, flag it as a border pixel.
         Set<Point> borders = getBorders(img);
 
         // Then, extend each border pixel in the 4 directions as long as the
         // distance read for the pixel increases.
         Table extensions = getExtensions(borders, img, distances);
 
-        // The border pixels and extensions compose the relevant part of
-        // (non-hole background) regions.
+        // The border pixels and extensions compose the relevant part of (non-hole background) regions.
         // Flag the other (non-hole) background pixels as irrelevant
         for (int y = 0, h = img.getHeight(); y < h; y++) {
             for (int x = 0, w = img.getWidth(); x < w; x++) {
@@ -731,16 +734,14 @@ public class ShapeDescriptor
     // getKeyPoints //
     //--------------//
     /**
-     * Build the collection of key points to be used for matching
-     * tests.
-     * These are the locations where the image distance value will be checked
-     * against the recorded template distance value.
+     * Build the collection of key points to be used for matching tests.
+     * These are the locations where the image distance value will be checked against the recorded
+     * template distance value.
      * TODO: We could carefully select a subset of these locations?
      *
      * @param img       the template source image
      * @param distances the template distances (extended on each direction)
-     * @return the collection of key locations, with their corresponding
-     *         distance value
+     * @return the collection of key locations, with their corresponding distance value
      */
     private static List<PixelDistance> getKeyPoints (BufferedImage img,
                                                      Table distances)
@@ -771,6 +772,20 @@ public class ShapeDescriptor
         return keyPoints;
     }
 
+    //--------------//
+    // isBackground //
+    //--------------//
+    private boolean isBackground (BufferedImage img,
+                                  int x,
+                                  int y)
+    {
+        if ((x >= 0) && (x < img.getWidth()) && (y >= 0) && (y < img.getHeight())) {
+            return img.getRGB(x, y) == RED;
+        }
+
+        return false;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -781,7 +796,7 @@ public class ShapeDescriptor
         //~ Instance fields ------------------------------------------------------------------------
 
         final Constant.Boolean keepTemplates = new Constant.Boolean(
-                false,
+                true,
                 "Should we keep the templates images?");
 
         final Constant.Ratio stemDx = new Constant.Ratio(

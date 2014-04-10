@@ -95,26 +95,18 @@ public class GlyphNetwork
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //
-    //-------------//
-    // getInstance //
-    //-------------//
+    //---------//
+    // getName //
+    //---------//
     /**
-     * Report the single instance of GlyphNetwork in the application.
+     * Report a name for this network.
      *
-     * @return the instance
+     * @return a simple name
      */
-    public static GlyphNetwork getInstance ()
+    @Override
+    public final String getName ()
     {
-        if (INSTANCE == null) {
-            synchronized (GlyphNetwork.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new GlyphNetwork();
-                }
-            }
-        }
-
-        return INSTANCE;
+        return "Neural Network";
     }
 
     //------//
@@ -140,6 +132,29 @@ public class GlyphNetwork
     public double getAmplitude ()
     {
         return constants.amplitude.getValue();
+    }
+
+    //
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of GlyphNetwork in the application.
+     *
+     * @return the instance
+     */
+    public static GlyphNetwork getInstance ()
+    {
+        if (INSTANCE == null) {
+            synchronized (GlyphNetwork.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new GlyphNetwork();
+                    logger.info("Using {} as shape classifier", INSTANCE.getName());
+                }
+            }
+        }
+
+        return INSTANCE;
     }
 
     //-----------------//
@@ -193,20 +208,6 @@ public class GlyphNetwork
     public double getMomentum ()
     {
         return constants.momentum.getValue();
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report a name for this network.
-     *
-     * @return a simple name
-     */
-    @Override
-    public final String getName ()
-    {
-        return "Neural Network";
     }
 
     //------------//
@@ -399,6 +400,38 @@ public class GlyphNetwork
         engine.train(inputs, desiredOutputs, monitor);
     }
 
+    //-------------//
+    // getFileName //
+    //-------------//
+    @Override
+    protected String getFileName ()
+    {
+        return FILE_NAME;
+    }
+
+    //-----------------------//
+    // getNaturalEvaluations //
+    //-----------------------//
+    @Override
+    protected Evaluation[] getNaturalEvaluations (Glyph glyph)
+    {
+        double[] ins = ShapeDescription.features(glyph);
+        double[] outs = new double[shapeCount];
+        Evaluation[] evals = new Evaluation[shapeCount];
+        Shape[] values = Shape.values();
+
+        engine.run(ins, null, outs);
+        normalize(outs);
+
+        for (int s = 0; s < shapeCount; s++) {
+            Shape shape = values[s];
+            // Use a grade in 0 .. 1 range
+            evals[s] = new Evaluation(shape, outs[s]);
+        }
+
+        return evals;
+    }
+
     //--------------//
     // isCompatible //
     //--------------//
@@ -436,37 +469,6 @@ public class GlyphNetwork
         } else {
             return false;
         }
-    }
-
-    //-------------//
-    // getFileName //
-    //-------------//
-    @Override
-    protected String getFileName ()
-    {
-        return FILE_NAME;
-    }
-
-    //-----------------------//
-    // getNaturalEvaluations //
-    //-----------------------//
-    @Override
-    protected Evaluation[] getNaturalEvaluations (Glyph glyph)
-    {
-        double[] ins = ShapeDescription.features(glyph);
-        double[] outs = new double[shapeCount];
-        Evaluation[] evals = new Evaluation[shapeCount];
-        Shape[] values = Shape.values();
-
-        engine.run(ins, null, outs);
-
-        for (int s = 0; s < shapeCount; s++) {
-            Shape shape = values[s];
-            // Use a grade in 0 .. 100 range
-            evals[s] = new Evaluation(shape, 100 * outs[s]);
-        }
-
-        return evals;
     }
 
     //---------//
@@ -509,6 +511,27 @@ public class GlyphNetwork
                 getListEpochs());
 
         return nn;
+    }
+
+    //-----------//
+    // normalize //
+    //-----------//
+    /**
+     * Adjust all values, so that their sum equals 1
+     *
+     * @param vals the probability values
+     */
+    private void normalize (double[] vals)
+    {
+        double sum = 0;
+
+        for (double val : vals) {
+            sum += val;
+        }
+
+        for (int i = 0; i < vals.length; i++) {
+            vals[i] /= sum;
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -12,7 +12,7 @@
 package omr.glyph.pattern;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphNetwork;
+import omr.glyph.GlyphClassifier;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeEvaluator;
@@ -130,7 +130,7 @@ public class StemPattern
 
         // Try to recognize each glyph in turn
         List<Glyph> symbols = new ArrayList<Glyph>();
-        final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
+        final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {

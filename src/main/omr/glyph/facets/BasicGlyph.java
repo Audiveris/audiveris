@@ -469,6 +469,12 @@ public class BasicGlyph
     }
 
     @Override
+    public Point getLocation (Shape shape)
+    {
+        return geometry.getLocation(shape);
+    }
+
+    @Override
     public TextRoleInfo getManualRole ()
     {
         return getContent().getManualRole();
@@ -802,6 +808,12 @@ public class BasicGlyph
     public void linkAllSections ()
     {
         composition.linkAllSections();
+    }
+
+    @Override
+    public boolean overlaps (Glyph that)
+    {
+        return environment.overlaps(that);
     }
 
     @Override

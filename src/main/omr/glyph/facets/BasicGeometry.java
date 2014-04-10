@@ -233,8 +233,15 @@ class BasicGeometry
     @Override
     public Point getLocation ()
     {
-        Shape shape = glyph.getShape();
+        return getLocation(glyph.getShape());
+    }
 
+    //-------------//
+    // getLocation //
+    //-------------//
+    @Override
+    public Point getLocation (Shape shape)
+    {
         // No shape: use area center
         if (shape == null) {
             return getAreaCenter();
