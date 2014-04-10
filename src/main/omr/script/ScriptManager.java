@@ -127,7 +127,7 @@ public class ScriptManager
         } catch (FileNotFoundException ex) {
             logger.warn("Cannot find script file {}", file);
         } catch (Exception ex) {
-            logger.warn("Exception occurred", ex);
+            logger.warn(ex.toString(), ex);
         } finally {
             // Close when in batch mode
             if ((Main.getGui() == null) && (script != null)) {
