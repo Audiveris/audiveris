@@ -61,7 +61,7 @@ public class RunsTable
     /** Orientation, the same for this table and all contained runs. */
     private final Orientation orientation;
 
-    /** Absolute dimension of the table */
+    /** Absolute dimension of the table. */
     private final Dimension dimension;
 
     /** List of Runs found in each row. This is a list of lists of Runs */
@@ -148,6 +148,7 @@ public class RunsTable
     //--------//
     /**
      * Report the image of the runs table.
+     * @return a drawing of the table
      */
     public String dumpOf ()
     {
@@ -188,17 +189,16 @@ public class RunsTable
         return sb.toString();
     }
 
-    //----------//
+    //-----//
     // get //
-    //----------//
+    //-----//
     /**
      * {@inheritDoc}
      *
-     * <br><b>Beware</b>, this implementation is not efficient enough
-     * for bulk operations.
-     * For such needs, a much more efficient way is to first
-     * retrieve a full buffer, via {@link #getBuffer()} method, then use this
-     * temporary buffer as the {@link PixelSource} instead of this table.
+     * <br><b>Beware</b>, this implementation is not efficient enough for bulk operations.
+     * For such needs, a much more efficient way is to first retrieve a full buffer, via {@link
+     * #getBuffer()} method, then use this temporary buffer as the {@link PixelSource} instead of
+     * this table.
      *
      * @param x absolute abscissa
      * @param y absolute ordinate
@@ -210,7 +210,7 @@ public class RunsTable
     {
         Run run = getRunAt(x, y);
 
-        return (run != null) ? run.getLevel() : BACKGROUND;
+        return (run != null) ? 0 : BACKGROUND;
     }
 
     //-----------//
@@ -690,8 +690,7 @@ public class RunsTable
     // render //
     //--------//
     /**
-     * Render the table runs onto the clip area of the provided
-     * graphics environment.
+     * Render the table runs onto the clip area of the provided graphics environment.
      *
      * @param g target environment
      */
@@ -813,16 +812,15 @@ public class RunsTable
     // Filter //
     //--------//
     /**
-     * More powerful than a plain predicate, this filter is able to
-     * check a run together with its sequence index.
+     * More powerful than a plain predicate, this filter is able to check a run together
+     * with its sequence index.
      */
     public static interface Filter
     {
         //~ Methods --------------------------------------------------------------------------------
 
         /**
-         * Perform the filter on the provided run within the sequence
-         * index.
+         * Perform the filter on the provided run within the sequence index.
          *
          * @param run      the run to check
          * @param sequence the index of the containing run sequence

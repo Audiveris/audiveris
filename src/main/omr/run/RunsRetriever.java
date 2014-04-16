@@ -72,8 +72,7 @@ public class RunsRetriever
     // retrieveRuns //
     //--------------//
     /**
-     * The {@code retrieveRuns} method can be used to build the runs on
-     * the fly, by providing a given absolute rectangle.
+     * Build the runs on the fly, by providing a given absolute rectangle.
      *
      * @param area the ABSOLUTE rectangular area to explore
      */
@@ -93,8 +92,7 @@ public class RunsRetriever
     // processPosition //
     //-----------------//
     /**
-     * Process the pixels in position 'p' between coordinates 'cMin'
-     * and 'cMax'
+     * Process the pixels in position 'p' between coordinates 'cMin' and 'cMax'
      *
      * @param p    the position in the pixels array (x for vertical)
      * @param cMin the starting coordinate (y for vertical)

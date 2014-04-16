@@ -37,9 +37,6 @@ public class Lags
     /** Spot lag. (for beams) */
     public static final String SPOT_LAG = "spotLag";
 
-    /** Small Spot lag. (for small beams: cue/grace notes */
-    public static final String CUE_SPOT_LAG = "cueSpotLag";
-
     /** Symbol lag. (for symbols) */
     public static final String SYMBOL_LAG = "symLag";
 

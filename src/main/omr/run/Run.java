@@ -29,19 +29,15 @@ public class Run
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Number of pixels */
+    /** Number of pixels. */
     @XmlAttribute
-    private final int length;
+    private int length;
 
-    /** Average pixel level along the run */
-    @XmlAttribute
-    private final int level;
-
-    /** Abscissa (for horizontal) / ordinate (for vertical) of first pixel */
+    /** Abscissa (for horizontal) / ordinate (for vertical) of first pixel. */
     @XmlAttribute
     private int start;
 
-    /** Containing section, if any */
+    /** Containing section, if any. */
     private Section section;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -53,8 +49,6 @@ public class Run
      *
      * @param start  the coordinate of start for a run (y for vertical run)
      * @param length the length of the run in pixels
-     * @param level  the average level of gray in the run (0 for totally black,
-     *               255 for totally white)
      */
     public Run (int start,
                 int length,
@@ -62,7 +56,6 @@ public class Run
     {
         this.start = start;
         this.length = length;
-        this.level = level;
     }
 
     //-----//
@@ -86,19 +79,6 @@ public class Run
     public final int getLength ()
     {
         return length;
-    }
-
-    //----------//
-    // getLevel //
-    //----------//
-    /**
-     * Return the mean gray level of the run
-     *
-     * @return the average value of gray level along this run
-     */
-    public final int getLevel ()
-    {
-        return level;
     }
 
     //------------//
@@ -142,34 +122,6 @@ public class Run
         return (start + length) - 1;
     }
 
-    //-------------//
-    // isIdentical //
-    //-------------//
-    /**
-     * Field by field comparison
-     *
-     * @param that the other Run to compare with
-     * @return true if identical
-     */
-    public boolean isIdentical (Run that)
-    {
-        return (this.start == that.start) && (this.length == that.length)
-               && (this.level == that.level);
-    }
-
-    //------------//
-    // setSection //
-    //------------//
-    /**
-     * Records the containing section
-     *
-     * @param section the section to set
-     */
-    public void setSection (Section section)
-    {
-        this.section = section;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -185,7 +137,6 @@ public class Run
         StringBuilder sb = new StringBuilder(80);
         sb.append("{Run ");
         sb.append(start).append("/").append(length);
-        sb.append("@").append(level);
         sb.append("}");
 
         return sb.toString();
@@ -220,5 +171,52 @@ public class Run
         int stopCommon = Math.min(this.getStop(), other.getStop());
 
         return stopCommon - startCommon + 1;
+    }
+
+    //-------------//
+    // isIdentical //
+    //-------------//
+    /**
+     * Field by field comparison
+     *
+     * @param that the other Run to compare with
+     * @return true if identical
+     */
+    public boolean isIdentical (Run that)
+    {
+        return (this.start == that.start) && (this.length == that.length);
+    }
+
+    //------------//
+    // setSection //
+    //------------//
+    /**
+     * Records the containing section
+     *
+     * @param section the section to set
+     */
+    public void setSection (Section section)
+    {
+        this.section = section;
+    }
+
+    /**
+     * (package private) method to set length value.
+     *
+     * @param length the length to set
+     */
+    void setLength (int length)
+    {
+        this.length = length;
+    }
+
+    /**
+     * (package private) method to set start value.
+     *
+     * @param start the start to set
+     */
+    void setStart (int start)
+    {
+        this.start = start;
     }
 }

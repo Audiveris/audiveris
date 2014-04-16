@@ -91,13 +91,10 @@ public class BasicSection
     /** Absolute mass center */
     private Point centroid;
 
-    /** Contribution to the foreground */
-    private int foreWeight;
-
     /** Length of longest run */
     private int maxRunLength;
 
-    /** Number of pixels, whatever the gray level */
+    /** Number of foreground pixels. */
     private int weight;
 
     /** Absolute contour points */
@@ -229,9 +226,8 @@ public class BasicSection
     @Override
     public void computeParameters ()
     {
-        // weight & foreWeight & maxRunLength
+        // weight & maxRunLength
         weight = 0;
-        foreWeight = 0;
         maxRunLength = 0;
 
         // maxRunLength
@@ -243,12 +239,11 @@ public class BasicSection
         invalidateCache();
 
         logger.debug(
-                "Parameters of {} maxRunLength={} meanRunLength={}" + " weight={} foreWeight={}",
+                "Parameters of {} maxRunLength={} meanRunLength={}" + " weight={}",
                 this,
                 getMaxRunLength(),
                 getMeanRunLength(),
-                weight,
-                foreWeight);
+                weight);
     }
 
     //----------//
@@ -618,15 +613,6 @@ public class BasicSection
         return runs.get(0);
     }
 
-    //---------------//
-    // getForeWeight //
-    //---------------//
-    @Override
-    public int getForeWeight ()
-    {
-        return foreWeight;
-    }
-
     //----------//
     // getGlyph //
     //----------//
@@ -703,15 +689,6 @@ public class BasicSection
         } else {
             return getBounds().height;
         }
-    }
-
-    //----------//
-    // getLevel //
-    //----------//
-    @Override
-    public int getLevel ()
-    {
-        return (int) Math.rint((double) foreWeight / (double) weight);
     }
 
     //-----------------//
@@ -1436,7 +1413,6 @@ public class BasicSection
     {
         final int length = run.getLength();
         weight += length;
-        foreWeight += (length * run.getLevel());
         maxRunLength = Math.max(maxRunLength, length);
     }
 

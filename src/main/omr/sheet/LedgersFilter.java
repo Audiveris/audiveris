@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                H o r i z o n t a l s F i l t e r                               //
+//                                    L e d g e r s F i l t e r                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -35,18 +35,18 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 
 /**
- * Class {@code HorizontalsFilter} filters the full sheet image for runs suitable for
- * ledgers (and endings).
+ * Class {@code LedgersFilter} filters the full sheet image for runs suitable for
+ * ledgers.
  *
  * @author Hervé Bitteur
  */
-public class HorizontalsFilter
+public class LedgersFilter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(HorizontalsFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(LedgersFilter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
@@ -54,15 +54,15 @@ public class HorizontalsFilter
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------------//
-    // HorizontalsFilter //
-    //-------------------//
+    //---------------//
+    // LedgersFilter //
+    //---------------//
     /**
      * Creates a new HorizontalsFilter object.
      *
      * @param sheet the related sheet
      */
-    public HorizontalsFilter (Sheet sheet)
+    public LedgersFilter (Sheet sheet)
     {
         this.sheet = sheet;
     }
@@ -72,13 +72,12 @@ public class HorizontalsFilter
     // process //
     //---------//
     /**
-     * Start from the binarized image and build the runs and sections
-     * that could compose ledgers or endings.
+     * Start from binary image and build the runs and sections that could make ledgers.
      */
     public void process ()
     {
         final Scale scale = sheet.getScale();
-        final int minDistance = scale.toPixels(constants.minDistanceFromStaff);
+        final int minDistanceFromStaff = scale.toPixels(constants.minDistanceFromStaff);
         final int minRunLength = scale.toPixels(constants.minRunLength);
         final StaffManager staffManager = sheet.getStaffManager();
         final RunsTableFactory.Filter filter = new RunsTableFactory.Filter()
@@ -92,13 +91,13 @@ public class HorizontalsFilter
                 Point center = new Point(x + (length / 2), y);
                 StaffInfo staff = staffManager.getStaffAt(center);
 
-                return staff.distanceTo(center) >= minDistance;
+                return staff.distanceTo(center) >= minDistanceFromStaff;
             }
         };
 
         final RunsTable hugeHoriTable = new RunsTableFactory(
                 HORIZONTAL,
-                sheet.getPicture().getSource(Picture.SourceKey.BINARY),
+                sheet.getPicture().getSource(Picture.SourceKey.STAFF_LINE_FREE),
                 minRunLength).createTable("huge-hori", filter);
 
         final Lag lag = new BasicLag("hHugeLag", Orientation.HORIZONTAL);
@@ -136,6 +135,8 @@ public class HorizontalsFilter
                 0.05,
                 "Max shift between two runs of ledger sections");
 
-        Scale.Fraction minRunLength = new Scale.Fraction(1.0, "Minimum length for a ledger run");
+        Scale.Fraction minRunLength = new Scale.Fraction(
+                0.15,
+                "Minimum length for a ledger run (not section)");
     }
 }

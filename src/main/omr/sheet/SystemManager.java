@@ -147,7 +147,7 @@ public class SystemManager
             getSystemsOf(section.getCentroid(), relevants);
 
             for (SystemInfo system : relevants) {
-                // Link system <>-> section
+                // Link system O-> section
                 system.getMutableHorizontalFullSections().add(section);
             }
         }

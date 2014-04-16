@@ -174,8 +174,7 @@ public class BeamsBuilder
     // buildCueBeams //
     //---------------//
     /**
-     * Find possible cue beams interpretations around identified cue
-     * notes and stems.
+     * Find possible cue beams interpretations around identified cue notes and stems.
      */
     public void buildCueBeams ()
     {

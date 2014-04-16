@@ -21,7 +21,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.run.Orientation;
 
-import omr.sheet.HorizontalsBuilder;
+import omr.sheet.LedgersBuilder;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
@@ -60,7 +60,7 @@ public class LedgerPattern
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Companion in charge of building ledgers */
-    private final HorizontalsBuilder builder;
+    private final LedgersBuilder builder;
 
     /** Scale-dependent parameters */
     final int interChunkDx;

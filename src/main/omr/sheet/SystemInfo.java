@@ -124,7 +124,7 @@ public class SystemInfo
     public final StemsBuilder stemsBuilder;
 
     /** Dedicated horizontals builder */
-    public final HorizontalsBuilder horizontalsBuilder;
+    public final LedgersBuilder horizontalsBuilder;
 
     /** Dedicated SIG processor */
     public final SigSolver sigSolver;
@@ -163,10 +163,10 @@ public class SystemInfo
     private final List<Section> hFullSections = new ArrayList<Section>();
 
     /** Unmodifiable view of the horizontal section collection */
-    private final Collection<Section> hSectionsView = Collections.unmodifiableCollection(hSections);
+    private final List<Section> hSectionsView = Collections.unmodifiableList(hSections);
 
-    private final Collection<Section> hFullSectionsView = Collections.unmodifiableCollection(
-            hFullSections);
+    /** Unmodifiable view of the full horizontal section collection */
+    private final List<Section> hFullSectionsView = Collections.unmodifiableList(hFullSections);
 
     ///   VERTICALS   //////////////////////////////////////////////////////////
     /** Vertical sections, assigned once for all to this system */
@@ -248,7 +248,7 @@ public class SystemInfo
         notesBuilder = new NotesBuilder(this);
         verticalsBuilder = new VerticalsBuilder(this);
         stemsBuilder = new StemsBuilder(this);
-        horizontalsBuilder = new HorizontalsBuilder(this);
+        horizontalsBuilder = new LedgersBuilder(this);
         glyphInspector = new GlyphInspector(this);
         slurInspector = new SlurInspector(this);
         translator = new SystemTranslator(this);
@@ -577,7 +577,7 @@ public class SystemInfo
      *
      * @return the area horizontal full sections
      */
-    public Collection<Section> getHorizontalFullSections ()
+    public List<Section> getHorizontalFullSections ()
     {
         return hFullSectionsView;
     }
@@ -591,7 +591,7 @@ public class SystemInfo
      *
      * @return the area horizontal sections
      */
-    public Collection<Section> getHorizontalSections ()
+    public List<Section> getHorizontalSections ()
     {
         return hSectionsView;
     }
@@ -768,14 +768,6 @@ public class SystemInfo
     public List<Glyph> getOptionalGlyphs ()
     {
         return optionalGlyphs;
-    }
-
-    /**
-     * @param optionalGlyphs the optionalGlyphs to set
-     */
-    public void setOptionalGlyphs (List<Glyph> optionalGlyphs)
-    {
-        this.optionalGlyphs = optionalGlyphs;
     }
 
     //----------//
@@ -1249,6 +1241,14 @@ public class SystemInfo
     public void setBarAlignments (List<OldBarAlignment> barAlignments)
     {
         this.barAlignments = barAlignments;
+    }
+
+    /**
+     * @param optionalGlyphs the optionalGlyphs to set
+     */
+    public void setOptionalGlyphs (List<Glyph> optionalGlyphs)
+    {
+        this.optionalGlyphs = optionalGlyphs;
     }
 
     //-----------//

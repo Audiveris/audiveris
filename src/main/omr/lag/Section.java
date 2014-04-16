@@ -270,13 +270,6 @@ public interface Section
     public Run getFirstRun ();
 
     /**
-     * Return the contribution of the section to the foreground.
-     *
-     * @return the section foreground weight
-     */
-    public int getForeWeight ();
-
-    /**
      * Report the glyph the section belongs to, if any.
      *
      * @return the glyph, which may be null
@@ -313,13 +306,6 @@ public interface Section
      * @return the section length (along orientation)
      */
     public int getLength (Orientation orientation);
-
-    /**
-     * Return the mean gray level of the section.
-     *
-     * @return the section foreground level (0 -> 255)
-     */
-    public int getLevel ();
 
     /**
      * Return the size of the longest run in the section.

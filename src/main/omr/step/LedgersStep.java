@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.sheet.HorizontalsFilter;
+import omr.sheet.LedgersFilter;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -78,6 +78,6 @@ public class LedgersStep
             throws StepException
     {
         // Retrieve long horizontal runs outside staves for ledgers/endings
-        new HorizontalsFilter(sheet).process();
+        new LedgersFilter(sheet).process();
     }
 }

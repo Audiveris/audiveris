@@ -73,7 +73,7 @@ import javax.media.jai.JAI;
  * not yet premultiplied.
  *
  * <h4>Overview of transforms:<br/>
- * <img src="doc-files/transforms.jpg"/>
+ * <img src="../image/doc-files/transforms.jpg"/>
  * </h4>
  *
  * @author Hervé Bitteur

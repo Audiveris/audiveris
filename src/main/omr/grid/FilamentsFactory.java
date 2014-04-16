@@ -717,8 +717,7 @@ public class FilamentsFactory
     // expandFilaments //
     //-----------------//
     /**
-     * Expand as much as possible the existing filaments with the
-     * provided sections.
+     * Expand as much as possible the existing filaments with the provided sections.
      *
      * @param source the source of available sections
      * @return the collection of expanded filaments
@@ -741,7 +740,7 @@ public class FilamentsFactory
             Collections.sort(sections, Section.posComparator);
 
             // We allocate one glyph per candidate section
-            // (simply to be able to reuse the canMerge() method)
+            // (simply to be able to reuse the canMerge() method !!!!!!!)
             List<Glyph> sectionGlyphs = new ArrayList<Glyph>(sections.size());
 
             for (Section section : sections) {

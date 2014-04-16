@@ -50,12 +50,6 @@ public class RunBoard
             "Length",
             "Length of run in pixels");
 
-    /** Field for run level */
-    private final LIntegerField rLevel = new LIntegerField(
-            false,
-            "Level",
-            "Average pixel level on this run");
-
     /** Field for run start */
     private final LIntegerField rStart = new LIntegerField(
             false,
@@ -161,7 +155,6 @@ public class RunBoard
                 if (run != null) {
                     rStart.setValue(run.getStart());
                     rLength.setValue(run.getLength());
-                    rLevel.setValue(run.getLevel());
                 } else {
                     emptyFields(getBody());
                 }
@@ -188,8 +181,5 @@ public class RunBoard
 
         builder.add(rLength.getLabel(), cst.xy(5, r));
         builder.add(rLength.getField(), cst.xy(7, r));
-
-        builder.add(rLevel.getLabel(), cst.xy(9, r));
-        builder.add(rLevel.getField(), cst.xy(11, r));
     }
 }

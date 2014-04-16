@@ -67,19 +67,18 @@
             <include name="**/*.java"/>
         </replace>-->
 	
-        <replace encoding="utf8" dir="${basedir}/src">
+<!--        <replace encoding="utf8" dir="${basedir}/src">
             <replacetoken>/** Specific application parameters */</replacetoken>
             <replacevalue></replacevalue>
             <include name="**/*.java"/>
-        </replace>
+        </replace>-->
 	
-        <replace encoding="utf8" dir="${basedir}/src">
+<!--        <replace encoding="utf8" dir="${basedir}/src">
             <replacetoken>/** Usual logger utility */</replacetoken>
             <replacevalue></replacevalue>
             <include name="**/*.java"/>
-        </replace>
+        </replace>-->
 	     
-
         <!--        <replaceregexp
             encoding="utf8"
             match="; import"
@@ -91,6 +90,17 @@ import"
                 <include name="**/Check.java"/>
             </fileset>
         </replaceregexp>-->
+	
+        <replaceregexp
+            encoding="utf8"
+            match=' level="[0-9]*"'
+            replace=""
+            flags="g"
+            byline="true">
+            <fileset dir="${basedir}/data/train">
+                <include name="**/*.xml"/>
+            </fileset>
+        </replaceregexp>
 	
     </target>
     

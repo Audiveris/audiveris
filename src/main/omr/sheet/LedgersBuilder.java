@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                              H o r i z o n t a l s B u i l d e r                               //
+//                                   L e d g e r s B u i l d e r                                  //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -69,7 +69,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code HorizontalsBuilder} retrieves ledgers and endings for a system.
+ * Class {@code LedgersBuilder} retrieves ledgers for a system.
  * <p>
  * Each virtual line of ledgers is processed, one after the other, going away from the reference
  * staff, above and below:
@@ -81,18 +81,16 @@ import java.util.Set;
  * remaining ones are recorded as such in staff map.
  * They will be used as ordinate references when processing the next virtual line.</li>
  * </ol>
- * <p>
- * Nota: Endings are currently disabled.
  *
  * @author Hervé Bitteur
  */
-public class HorizontalsBuilder
+public class LedgersBuilder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(HorizontalsBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(LedgersBuilder.class);
 
     /** Events this entity is interested in. */
     private static final Class<?>[] eventClasses = new Class<?>[]{GlyphEvent.class};
@@ -105,8 +103,6 @@ public class HorizontalsBuilder
     private static final Failure TOO_THICK = new Failure("Hori-TooThick");
 
     private static final Failure TOO_CONCAVE = new Failure("Hori-TooConcave");
-
-    private static final Failure TOO_SLOPED = new Failure("Hori-TooSloped");
 
     private static final Failure TOO_BENDED = new Failure("Hori-TooBended");
 
@@ -140,12 +136,12 @@ public class HorizontalsBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     //--------------------//
-    // HorizontalsBuilder //
+    // LedgersBuilder //
     //--------------------//
     /**
      * @param system the related system to process
      */
-    public HorizontalsBuilder (SystemInfo system)
+    public LedgersBuilder (SystemInfo system)
     {
         this.system = system;
 
@@ -172,7 +168,7 @@ public class HorizontalsBuilder
     // buildLedgers //
     //--------------//
     /**
-     * Search horizontal sticks for ledgers (and endings).
+     * Search horizontal sticks for ledgers.
      */
     public void buildLedgers ()
     {
@@ -184,8 +180,8 @@ public class HorizontalsBuilder
             // Retrieve the (good) system beams
             systemBeams = getGoodBeams();
 
-            // Filter which system sections to provide to factory
-            List<Section> sections = getCandidateSections();
+            // System sections to provide to factory
+            List<Section> sections = system.getHorizontalFullSections(); //getCandidateSections();
 
             // Retrieve system candidate glyphs out of candidate sections
             ledgerCandidates = getCandidateGlyphs(sections);
@@ -254,25 +250,6 @@ public class HorizontalsBuilder
         } else {
             return null;
         }
-    }
-
-    //-----------//
-    // getMiddle //
-    //-----------//
-    /**
-     * Retrieve the middle point of a stick, assumed rather horizontal.
-     *
-     * @param stick the stick to process
-     * @return the middle point
-     */
-    private static Point2D getMiddle (Glyph stick)
-    {
-        final Point2D startPoint = stick.getStartPoint(HORIZONTAL);
-        final Point2D stopPoint = stick.getStopPoint(HORIZONTAL);
-
-        return new Point2D.Double(
-                (startPoint.getX() + stopPoint.getX()) / 2,
-                (startPoint.getY() + stopPoint.getY()) / 2);
     }
 
     //-------------//
@@ -360,7 +337,10 @@ public class HorizontalsBuilder
                 Filament.class);
 
         // Adjust factory parameters
-        factory.setMaxThickness(constants.maxThicknessHigh);
+        final int maxThickness = Math.min(
+                scale.toPixels(constants.maxThicknessHigh),
+                scale.toPixels(constants.maxThicknessHigh2));
+        factory.setMaxThickness(maxThickness);
         factory.setMinCoreSectionLength(constants.minCoreSectionLength);
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
         factory.setMaxCoordGap(constants.maxCoordGap);
@@ -372,7 +352,7 @@ public class HorizontalsBuilder
         }
 
         for (Section section : sections) {
-            section.setGlyph(null); // ???????
+            section.setGlyph(null); // Needed for sections shared by two systems!
         }
 
         List<Glyph> glyphs = factory.retrieveFilaments(sections);
@@ -445,6 +425,25 @@ public class HorizontalsBuilder
         Collections.sort(beams, Inter.byAbscissa);
 
         return beams;
+    }
+
+    //-----------//
+    // getMiddle //
+    //-----------//
+    /**
+     * Retrieve the middle point of a stick, assumed rather horizontal.
+     *
+     * @param stick the stick to process
+     * @return the middle point
+     */
+    private static Point2D getMiddle (Glyph stick)
+    {
+        final Point2D startPoint = stick.getStartPoint(HORIZONTAL);
+        final Point2D stopPoint = stick.getStopPoint(HORIZONTAL);
+
+        return new Point2D.Double(
+                (startPoint.getX() + stopPoint.getX()) / 2,
+                (startPoint.getY() + stopPoint.getY()) / 2);
     }
 
     //---------------//
@@ -522,8 +521,8 @@ public class HorizontalsBuilder
     // lookupLine //
     //------------//
     /**
-     * This is the heart of ledger retrieval, which looks for ledgers
-     * on a specific "virtual line".
+     * This is the heart of ledger retrieval, which looks for ledgers on a specific
+     * "virtual line".
      * <p>
      * We use a very rough height for the region of interest, relying on pitch check WRT yTarget to
      * discard the too distant candidates.
@@ -603,17 +602,9 @@ public class HorizontalsBuilder
         }
 
         if (!ledgers.isEmpty()) {
-            // Now, check for collision or support relations within line
-            // population and reduce the population accordingly.
+            // Now, check for collision within line population and reduce accordingly.
             reduceLedgers(staff, index, ledgers);
 
-            //            logger.info(
-            //                    "staff:{} index:{} kept:{} {}",
-            //                    staff.getId(),
-            //                    index,
-            //                    ledgers.size(),
-            //                    ledgers);
-            //
             // Populate staff with ledgers kept
             for (LedgerInter ledger : ledgers) {
                 ledger.getGlyph().setShape(Shape.LEDGER); // Useful???
@@ -637,8 +628,8 @@ public class HorizontalsBuilder
     // reduceLedgers //
     //---------------//
     /**
-     * Check for collision or support relations within line population of ledgers and
-     * reduce the population accordingly.
+     * Check for collision within line population of ledgers and reduce the population
+     * accordingly.
      *
      * @param staff   staff being processed
      * @param index   index of virtual line around staff
@@ -648,13 +639,6 @@ public class HorizontalsBuilder
                                 int index,
                                 List<LedgerInter> ledgers)
     {
-        //        logger.info(
-        //                "staff:{} index:{} comp:{} {}",
-        //                staff.getId(),
-        //                index,
-        //                ledgers.size(),
-        //                ledgers);
-        //
         int maxDx = scale.toPixels(constants.maxInterLedgerDx);
         Set<Exclusion> exclusions = new LinkedHashSet<Exclusion>();
         Collections.sort(ledgers, Inter.byAbscissa);
@@ -676,9 +660,6 @@ public class HorizontalsBuilder
             }
         }
 
-        //        for (Inter inter : ledgers) {
-        //            sig.computeContextualGrade(inter, false);
-        //        }
         if (!exclusions.isEmpty()) {
             Set<Inter> deletions = sig.reduceExclusions(exclusions);
             logger.debug(
@@ -700,11 +681,6 @@ public class HorizontalsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Double maxSlopeHigh = new Constant.Double(
-                "slope",
-                0.02,
-                "High Maximum slope for ending (WRT page slope)");
-
         Constant.Double maxSlopeForCheck = new Constant.Double(
                 "slope",
                 0.1,
@@ -722,26 +698,30 @@ public class HorizontalsBuilder
                 "Maximum delta position between two overlapping filaments");
 
         Scale.LineFraction maxThicknessHigh = new Scale.LineFraction(
-                2.5,
-                "High Maximum thickness of an interesting stick");
+                2.0,
+                "High Maximum thickness of an interesting stick (WRT staff line)");
 
         Scale.LineFraction maxThicknessLow = new Scale.LineFraction(
                 1.0,
-                "Low Maximum thickness of an interesting stick");
+                "Low Maximum thickness of an interesting stick (WRT staff line)");
 
         // Constants specified WRT mean interline
         // --------------------------------------
+        Scale.Fraction maxThicknessHigh2 = new Scale.Fraction(
+                0.3,
+                "High Maximum thickness of an interesting stick (WRT interline)");
+
         Scale.Fraction minCoreSectionLength = new Scale.Fraction(
-                1.0,
+                0.5,
                 "Minimum length for a section to be considered as core");
 
         Scale.Fraction maxCoordGap = new Scale.Fraction(
-                0,
-                "Maximum delta coordinate for a gap between filaments");
+                0.2,
+                "Maximum abscissa gap between ledger filaments");
 
         Scale.Fraction maxPosGap = new Scale.Fraction(
                 0.2,
-                "Maximum delta position for a gap between filaments");
+                "Maximum ordinate gap between ledger filaments");
 
         Scale.Fraction maxOverlapSpace = new Scale.Fraction(
                 0.0,
@@ -750,14 +730,6 @@ public class HorizontalsBuilder
         Scale.Fraction ledgerMarginY = new Scale.Fraction(
                 0.35,
                 "Margin on ledger ordinate WRT theoretical ordinate");
-
-        Scale.Fraction minEndingLengthHigh = new Scale.Fraction(
-                15,
-                "High Minimum length for an ending");
-
-        Scale.Fraction minEndingLengthLow = new Scale.Fraction(
-                10,
-                "Low Minimum length for an ending");
 
         Scale.Fraction minLedgerLengthHigh = new Scale.Fraction(
                 1.5,
@@ -770,10 +742,6 @@ public class HorizontalsBuilder
         Scale.Fraction minThicknessHigh = new Scale.Fraction(
                 0.25,
                 "High Minimum thickness of an interesting stick");
-
-        Scale.Fraction minThicknessLow = new Scale.Fraction(
-                0.06,
-                "Low Minimum thickness of an interesting stick");
 
         Scale.Fraction maxInterLedgerDx = new Scale.Fraction(
                 2.5,
@@ -788,51 +756,23 @@ public class HorizontalsBuilder
                 "Maximum average distance to straight line");
     }
 
-    //--------------//
-    // GlyphContext //
-    //--------------//
-    private static class GlyphContext
-            implements Checkable
+    //-------------//
+    // IndexTarget //
+    //-------------//
+    private static class IndexTarget
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** The stick being checked. */
-        final Glyph stick;
+        final int index;
 
-        /** Target ordinate. */
-        final double yTarget;
+        final double target;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public GlyphContext (Glyph stick,
-                             double yTarget)
+        public IndexTarget (int index,
+                            double target)
         {
-            this.stick = stick;
-            this.yTarget = yTarget;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void addFailure (Failure failure)
-        {
-            stick.addFailure(failure);
-        }
-
-        @Override
-        public boolean isVip ()
-        {
-            return stick.isVip();
-        }
-
-        @Override
-        public void setVip ()
-        {
-            stick.setVip();
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "stick#" + stick.getId();
+            this.index = index;
+            this.target = target;
         }
     }
 
@@ -890,23 +830,51 @@ public class HorizontalsBuilder
         }
     }
 
-    //-------------//
-    // IndexTarget //
-    //-------------//
-    private static class IndexTarget
+    //--------------//
+    // GlyphContext //
+    //--------------//
+    private static class GlyphContext
+            implements Checkable
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final int index;
+        /** The stick being checked. */
+        final Glyph stick;
 
-        final double target;
+        /** Target ordinate. */
+        final double yTarget;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public IndexTarget (int index,
-                            double target)
+        public GlyphContext (Glyph stick,
+                             double yTarget)
         {
-            this.index = index;
-            this.target = target;
+            this.stick = stick;
+            this.yTarget = yTarget;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void addFailure (Failure failure)
+        {
+            stick.addFailure(failure);
+        }
+
+        @Override
+        public boolean isVip ()
+        {
+            return stick.isVip();
+        }
+
+        @Override
+        public void setVip ()
+        {
+            stick.setVip();
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "stick#" + stick.getId();
         }
     }
 
@@ -984,8 +952,7 @@ public class HorizontalsBuilder
 
             add(0.5, new MinThicknessCheck());
             add(0, new MaxThicknessCheck());
-            ///add(0.5, new SlopeCheck());
-            add(4, new MinLengthCheck(constants.minLedgerLengthLow, constants.minLedgerLengthHigh));
+            add(4, new MinLengthCheck());
             add(2, new ConvexityCheck());
             add(1, new StraightCheck());
 
@@ -1063,10 +1030,15 @@ public class HorizontalsBuilder
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        protected MinLengthCheck (Constant.Double low,
-                                  Constant.Double high)
+        protected MinLengthCheck ()
         {
-            super("Length", "Check that stick is long enough", low, high, true, TOO_SHORT);
+            super(
+                    "Length",
+                    "Check that stick is long enough",
+                    constants.minLedgerLengthLow,
+                    constants.minLedgerLengthHigh,
+                    true,
+                    TOO_SHORT);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -1093,7 +1065,7 @@ public class HorizontalsBuilder
             super(
                     "MinTh.",
                     "Check that stick is thick enough",
-                    constants.minThicknessLow,
+                    Constant.Double.ZERO,
                     constants.minThicknessHigh,
                     true,
                     TOO_THIN);
@@ -1138,36 +1110,6 @@ public class HorizontalsBuilder
             double y = stick.getStopPoint(HORIZONTAL).getY();
 
             return sheet.getScale().pixelsToFrac(Math.abs(y - yTarget));
-        }
-    }
-
-    //------------//
-    // SlopeCheck //
-    //------------//
-    private class SlopeCheck
-            extends Check<GlyphContext>
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        protected SlopeCheck ()
-        {
-            super(
-                    "Slope",
-                    "Check that stick slope is close to global page slope",
-                    Constant.Double.ZERO,
-                    constants.maxSlopeHigh,
-                    false,
-                    TOO_SLOPED);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        // Retrieve the absolute slope
-        @Override
-        protected double getValue (GlyphContext context)
-        {
-            Glyph stick = context.stick;
-
-            return Math.abs(stick.getSlope() - sheet.getSkew().getSlope());
         }
     }
 

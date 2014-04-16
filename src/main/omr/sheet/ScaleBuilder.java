@@ -21,6 +21,7 @@ import omr.math.Histogram;
 import omr.math.Histogram.HistoEntry;
 import omr.math.Histogram.MaxEntry;
 import omr.math.Histogram.PeakEntry;
+import omr.math.IntegerHistogram;
 
 import omr.run.Orientation;
 import omr.run.Run;
@@ -54,12 +55,13 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
-import omr.math.IntegerHistogram;
 
 /**
- * Class {@code ScaleBuilder} encapsulates the computation of a sheet scale, by adding
- * the most frequent foreground run length to the most frequent background run length,
- * since this gives the average interline value.
+ * Class {@code ScaleBuilder} computes the global scale of a given sheet by processing
+ * the image vertical runs.
+ * Adding the most frequent foreground run length to the most frequent background run length,
+ * gives the average interline value.
+ * Instead of a posteriori addition, we can analyze the total length of two runs in sequence.
  * <p>
  * A second foreground peak usually gives the average beam thickness.
  * And similarly, a second background peak may indicate a series of staves
@@ -114,6 +116,9 @@ public class ScaleBuilder
     /** Histogram on vertical background runs. */
     private IntegerHistogram backHisto;
 
+    /** Histogram on vertical pairs of runs. */
+    private IntegerHistogram bothHisto;
+
     /** Histogram on horizontal foreground runs. */
     private IntegerHistogram horiHisto;
 
@@ -126,11 +131,17 @@ public class ScaleBuilder
     /** Relative population percentage for reading background spread. */
     private final double backSpreadRatio = constants.backSpreadRatio.getValue();
 
+    /** Relative population percentage for reading pair spread. */
+    private final double bothSpreadRatio = constants.bothSpreadRatio.getValue();
+
     /** Most frequent length of vertical foreground runs found. */
     private PeakEntry<Double> forePeak;
 
     /** Most frequent length of vertical background runs found. */
     private PeakEntry<Double> backPeak;
+
+    /** Most frequent length of vertical runs pair found. */
+    private PeakEntry<Double> bothPeak;
 
     /** Second frequent length of vertical foreground runs found, if any. */
     private MaxEntry<Integer> beamEntry;
@@ -198,13 +209,13 @@ public class ScaleBuilder
             Picture picture = sheet.getPicture();
 
             // Retrieve the whole table of foreground runs
-            ByteProcessor binaryFilter = picture.getSource(Picture.SourceKey.BINARY);
+            ByteProcessor binaryBuffer = picture.getSource(Picture.SourceKey.BINARY);
 
             watch.start("Global vertical lag");
 
             RunsTableFactory vertFactory = new RunsTableFactory(
                     Orientation.VERTICAL,
-                    binaryFilter,
+                    binaryBuffer,
                     0);
             RunsTable wholeVertTable = vertFactory.createTable("vertBinary");
             sheet.setWholeVerticalTable(wholeVertTable);
@@ -238,7 +249,7 @@ public class ScaleBuilder
             // Look at horizontal histo for stem thickness
             RunsTableFactory horiFactory = new RunsTableFactory(
                     Orientation.HORIZONTAL,
-                    binaryFilter,
+                    binaryBuffer,
                     0);
             RunsTable horiTable = horiFactory.createTable("horiBinary");
             horiFactory = null; // To allow garbage collection ASAP
@@ -510,6 +521,8 @@ public class ScaleBuilder
             throw new StepException(msg);
         }
 
+        // Pair peak
+        bothPeak = getPeak(bothHisto, bothSpreadRatio, 0);
         // Background peak
         backPeak = getPeak(backHisto, backSpreadRatio, 0);
 
@@ -605,6 +618,10 @@ public class ScaleBuilder
         final Constant.Ratio backSpreadRatio = new Constant.Ratio(
                 0.3,
                 "Relative ratio of best count for background spread reading");
+
+        final Constant.Ratio bothSpreadRatio = new Constant.Ratio(
+                0.15,
+                "Relative ratio of best count for both spread reading");
 
         final Constant.Ratio spreadFactor = new Constant.Ratio(
                 1.0,
@@ -859,9 +876,9 @@ public class ScaleBuilder
     // VertHistoKeeper //
     //-----------------//
     /**
-     * This class builds the precise vertical foreground and background
-     * run lengths, it retrieves the various peaks and is able to
-     * display a chart on the related populations.
+     * This class builds the precise vertical foreground and background run lengths,
+     * it retrieves the various peaks and is able to display a chart on the related
+     * populations.
      */
     private class VertHistoKeeper
     {
@@ -870,6 +887,8 @@ public class ScaleBuilder
         private final int[] fore; // (black) foreground runs
 
         private final int[] back; // (white) background runs
+
+        private final int[] both; // Pairs of runs (back+fore and fore+back)
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
@@ -882,10 +901,12 @@ public class ScaleBuilder
             // Allocate histogram counters
             fore = new int[hMax + 2];
             back = new int[hMax + 2];
+            both = new int[hMax + 2];
 
             // Useful?
             Arrays.fill(fore, 0);
             Arrays.fill(back, 0);
+            Arrays.fill(both, 0);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -899,6 +920,8 @@ public class ScaleBuilder
                     fore.length,
                     ((backPeak != null) ? ((backPeak.getKey().best * 3) / 2) : 20));
 
+            new Plotter("vertical both", both, bothHisto, bothSpreadRatio, bothPeak, null, upper).plot(
+                    new Point(0, 0));
             new Plotter("vertical black", fore, foreHisto, foreSpreadRatio, forePeak, null, upper).plot(
                     new Point(0, 0));
             new Plotter(
@@ -923,10 +946,10 @@ public class ScaleBuilder
             final int maxFore = height / 16;
 
             for (int x = 0; x < width; x++) {
-                List<Run> runSeq = wholeVertTable.getSequence(x);
-
-                // Ordinate of first pixel not yet processed
-                int yLast = 0;
+                List<Run> runSeq = wholeVertTable.getSequence(x); // All vertical foreground runs
+                int yLast = 0; // Ordinate of first pixel not yet processed
+                int lastBackLength = 0; // Length of last valid background run
+                int lastForeLength = 0; // Length of last valid foreground run
 
                 for (Run run : runSeq) {
                     int y = run.getStart();
@@ -937,6 +960,14 @@ public class ScaleBuilder
 
                         if (backLength <= maxBack) {
                             back[backLength]++;
+                            lastBackLength = backLength;
+
+                            if (lastForeLength != 0) {
+                                both[lastForeLength + lastBackLength]++;
+                            }
+                        } else {
+                            lastForeLength = 0;
+                            lastBackLength = 0;
                         }
                     }
 
@@ -945,6 +976,14 @@ public class ScaleBuilder
 
                     if (foreLength <= maxFore) {
                         fore[foreLength]++;
+                        lastForeLength = foreLength;
+
+                        if (lastBackLength != 0) {
+                            both[lastForeLength + lastBackLength]++;
+                        }
+                    } else {
+                        lastForeLength = 0;
+                        lastBackLength = 0;
                     }
 
                     yLast = y + foreLength;
@@ -956,6 +995,11 @@ public class ScaleBuilder
 
                     if (backLength <= maxBack) {
                         back[backLength]++;
+                        lastBackLength = backLength;
+
+                        if (lastForeLength != 0) {
+                            both[lastForeLength + lastBackLength]++;
+                        }
                     }
                 }
             }
@@ -968,12 +1012,13 @@ public class ScaleBuilder
             // Create foreground & background histograms
             foreHisto = createHistogram(fore);
             backHisto = createHistogram(back);
+            bothHisto = createHistogram(both);
         }
 
         //-----------------//
         // createHistogram //
         //-----------------//
-        private IntegerHistogram createHistogram (int... vals)
+        private IntegerHistogram createHistogram (int[] vals)
         {
             IntegerHistogram histo = new IntegerHistogram();
 
