@@ -60,6 +60,25 @@ public class AreaUtil
     }
 
     //--------------//
+    // intersection //
+    //--------------//
+    /**
+     * Check whether the two provided areas intersect one another.
+     *
+     * @param a1 some area
+     * @param a2 some other area
+     * @return true if there is a non-empty intersection
+     */
+    public static boolean intersection (Area a1,
+                                        Area a2)
+    {
+        Area copy = new Area(a1);
+        copy.intersect(a2);
+
+        return !copy.isEmpty();
+    }
+
+    //--------------//
     // verticalCore //
     //--------------//
     /**

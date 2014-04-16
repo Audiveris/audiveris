@@ -510,7 +510,7 @@ public class StemsBuilder
                 "Minimum vertical distance from head to end of stem");
 
         final Scale.Fraction minHeadBeamDistance = new Scale.Fraction(
-                0.5,
+                0.125,
                 "Minimum vertical distance between head and beam");
 
         final Scale.Fraction maxInterBeamGap = new Scale.Fraction(
