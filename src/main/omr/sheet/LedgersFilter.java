@@ -128,7 +128,7 @@ public class LedgersFilter
         //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction minDistanceFromStaff = new Scale.Fraction(
-                0.5,
+                0.25,
                 "Minimum vertical distance from nearest staff");
 
         Scale.Fraction maxRunShift = new Scale.Fraction(

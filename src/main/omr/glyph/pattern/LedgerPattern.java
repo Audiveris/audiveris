@@ -79,7 +79,7 @@ public class LedgerPattern
     public LedgerPattern (SystemInfo system)
     {
         super("Ledger", system);
-        builder = system.horizontalsBuilder;
+        builder = system.ledgersBuilder;
         interChunkDx = scale.toPixels(constants.interChunkDx);
         interChunkDy = scale.toPixels(constants.interChunkDy);
     }

@@ -35,6 +35,7 @@ import omr.lag.Section;
 import omr.math.GeoUtil;
 import omr.math.LineUtil;
 import static omr.run.Orientation.*;
+import omr.run.Run;
 
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
@@ -108,6 +109,8 @@ public class LedgersBuilder
 
     private static final Failure TOO_SHIFTED = new Failure("Hori-TooShifted");
 
+    private static final Failure TOO_BLACK = new Failure("Hori-TooBlack");
+
     //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related sheet. */
@@ -122,8 +125,11 @@ public class LedgersBuilder
     /** Global sheet scale. */
     private final Scale scale;
 
-    /** Rough check suite for ledgers. */
-    private final LedgerSuite ledgerSuite = new LedgerSuite();
+    /** Check suite for short candidates. */
+    private final LedgerSuite shortSuite = new LedgerSuite(false);
+
+    /** Check suite for long candidates. */
+    private final LedgerSuite longSuite = new LedgerSuite(true);
 
     /** The system-wide collection of ledger candidates. */
     private List<Glyph> ledgerCandidates;
@@ -135,9 +141,9 @@ public class LedgersBuilder
     private ByteProcessor pixelFilter;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------------//
+    //----------------//
     // LedgersBuilder //
-    //--------------------//
+    //----------------//
     /**
      * @param system the related system to process
      */
@@ -548,6 +554,7 @@ public class LedgersBuilder
         staffLineBox.grow(0, 2 * yMargin);
 
         final List<LedgerInter> ledgers = new ArrayList<LedgerInter>();
+        final int maxShortLength = scale.toPixels(constants.maxShortLength);
 
         // Filter enclosed candidates and populate acceptable ledgers
         for (Glyph stick : ledgerCandidates) {
@@ -577,14 +584,17 @@ public class LedgersBuilder
             // Check precise vertical distance WRT the target ordinate
             final double yTarget = yRef + (Integer.signum(index) * scale.getInterline());
 
-            SuiteImpacts impacts = ledgerSuite.getImpacts(new GlyphContext(stick, yTarget));
+            // Choose which suite to apply
+            LedgerSuite suite = selectSuite(stick);
+
+            SuiteImpacts impacts = suite.getImpacts(new GlyphContext(stick, yTarget));
             double grade = impacts.getGrade();
 
             if (stick.isVip()) {
                 logger.info("VIP staff#{} at {} {}", staff.getId(), index, impacts.getDump());
             }
 
-            if (grade >= ledgerSuite.getMinThreshold()) {
+            if (grade >= suite.getMinThreshold()) {
                 stick = system.registerGlyph(stick); // Useful???
 
                 // Sanity check
@@ -672,6 +682,21 @@ public class LedgersBuilder
         }
     }
 
+    //-------------//
+    // selectSuite //
+    //-------------//
+    /**
+     * Select proper check suite, according to (length of) provided ledger candidate
+     *
+     * @param stick the candidate
+     * @return the proper check suite to apply
+     */
+    private LedgerSuite selectSuite (Glyph stick)
+    {
+        return (stick.getLength(HORIZONTAL) <= scale.toPixels(constants.maxShortLength))
+                ? shortSuite : longSuite;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -754,26 +779,18 @@ public class LedgersBuilder
         Scale.Fraction maxDistanceHigh = new Scale.Fraction(
                 0.3,
                 "Maximum average distance to straight line");
-    }
 
-    //-------------//
-    // IndexTarget //
-    //-------------//
-    private static class IndexTarget
-    {
-        //~ Instance fields ------------------------------------------------------------------------
+        Scale.Fraction maxShortLength = new Scale.Fraction(
+                2.0,
+                "Maximum length for 'short' ledgers");
 
-        final int index;
+        Constant.Ratio minWhiteLow = new Constant.Ratio(
+                0.2,
+                "Low Minimum for ratio of white pixels above or below ledger");
 
-        final double target;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public IndexTarget (int index,
-                            double target)
-        {
-            this.index = index;
-            this.target = target;
-        }
+        Constant.Ratio minWhiteHigh = new Constant.Ratio(
+                0.5,
+                "High Minimum for ratio of white pixels above or below ledger");
     }
 
     //----------------//
@@ -878,6 +895,62 @@ public class LedgersBuilder
         }
     }
 
+    //-------------//
+    // IndexTarget //
+    //-------------//
+    private static class IndexTarget
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final int index;
+
+        final double target;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public IndexTarget (int index,
+                            double target)
+        {
+            this.index = index;
+            this.target = target;
+        }
+    }
+
+    //-------------//
+    // BottomCheck //
+    //-------------//
+    private class BottomCheck
+            extends Check<GlyphContext>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        protected BottomCheck ()
+        {
+            super(
+                    "Bottom",
+                    "Check that bottom of ledger touches some white pixels",
+                    constants.minWhiteLow,
+                    constants.minWhiteHigh,
+                    true,
+                    TOO_BLACK);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            Glyph stick = context.stick;
+            double sumFree = 0;
+
+            for (Section section : stick.getMembers()) {
+                Run run = section.getFirstRun();
+                double free = (1 - section.getLastAdjacency()) * run.getLength();
+                sumFree += free;
+            }
+
+            return sumFree / stick.getLength(HORIZONTAL);
+        }
+    }
+
     //------------------//
     // LedgerCheckBoard //
     //------------------//
@@ -916,11 +989,11 @@ public class LedgersBuilder
                         SystemManager systemManager = sheet.getSystemManager();
 
                         for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
-                            IndexTarget it = system.horizontalsBuilder.getLedgerTarget(glyph);
+                            IndexTarget it = system.ledgersBuilder.getLedgerTarget(glyph);
 
                             // Run the check suite?
                             if (it != null) {
-                                applySuite(ledgerSuite, new GlyphContext(glyph, it.target));
+                                applySuite(selectSuite(glyph), new GlyphContext(glyph, it.target));
 
                                 return;
                             }
@@ -946,18 +1019,22 @@ public class LedgersBuilder
         /**
          * Create a check suite.
          */
-        public LedgerSuite ()
+        public LedgerSuite (boolean isLong)
         {
-            super("Ledger");
+            super("Ledger " + (isLong ? "long" : "short"));
 
             add(0.5, new MinThicknessCheck());
             add(0, new MaxThicknessCheck());
             add(4, new MinLengthCheck());
             add(2, new ConvexityCheck());
             add(1, new StraightCheck());
-
             add(0.5, new LeftPitchCheck());
             add(0.5, new RightPitchCheck());
+
+            if (isLong) {
+                add(1, new TopCheck());
+                add(1, new BottomCheck());
+            }
         }
     }
 
@@ -1139,6 +1216,42 @@ public class LedgersBuilder
             Glyph stick = context.stick;
 
             return sheet.getScale().pixelsToFrac(stick.getMeanDistance());
+        }
+    }
+
+    //----------//
+    // TopCheck //
+    //----------//
+    private class TopCheck
+            extends Check<GlyphContext>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        protected TopCheck ()
+        {
+            super(
+                    "Top",
+                    "Check that top of ledger touches some white pixels",
+                    constants.minWhiteLow,
+                    constants.minWhiteHigh,
+                    true,
+                    TOO_BLACK);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            Glyph stick = context.stick;
+            double sumFree = 0;
+
+            for (Section section : stick.getMembers()) {
+                Run run = section.getFirstRun();
+                double free = (1 - section.getFirstAdjacency()) * run.getLength();
+                sumFree += free;
+            }
+
+            return sumFree / stick.getLength(HORIZONTAL);
         }
     }
 }

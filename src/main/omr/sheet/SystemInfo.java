@@ -123,8 +123,8 @@ public class SystemInfo
     /** Dedicated stems builder */
     public final StemsBuilder stemsBuilder;
 
-    /** Dedicated horizontals builder */
-    public final LedgersBuilder horizontalsBuilder;
+    /** Dedicated ledgers builder */
+    public final LedgersBuilder ledgersBuilder;
 
     /** Dedicated SIG processor */
     public final SigSolver sigSolver;
@@ -248,7 +248,7 @@ public class SystemInfo
         notesBuilder = new NotesBuilder(this);
         verticalsBuilder = new VerticalsBuilder(this);
         stemsBuilder = new StemsBuilder(this);
-        horizontalsBuilder = new LedgersBuilder(this);
+        ledgersBuilder = new LedgersBuilder(this);
         glyphInspector = new GlyphInspector(this);
         slurInspector = new SlurInspector(this);
         translator = new SystemTranslator(this);

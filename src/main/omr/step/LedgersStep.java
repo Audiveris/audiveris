@@ -52,7 +52,7 @@ public class LedgersStep
     public void displayUI (Sheet sheet)
     {
         // Add ledger checkboard
-        sheet.getSystems().get(0).horizontalsBuilder.addCheckBoard();
+        sheet.getSystems().get(0).ledgersBuilder.addCheckBoard();
     }
 
     //----------//
@@ -62,7 +62,7 @@ public class LedgersStep
     public void doSystem (SystemInfo system)
             throws StepException
     {
-        system.horizontalsBuilder.buildLedgers(); // -> Ledgers
+        system.ledgersBuilder.buildLedgers(); // -> Ledgers
     }
 
     //----------//
