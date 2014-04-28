@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.math;
 
+import java.awt.Point;
 import java.awt.geom.Point2D;
 
 /**
@@ -18,7 +19,7 @@ import java.awt.geom.Point2D;
  *
  * @author Hervé Bitteur
  */
-public class PointUtil
+public abstract class PointUtil
 {
     //~ Methods ------------------------------------------------------------------------------------
 
@@ -89,6 +90,20 @@ public class PointUtil
     public static double length (Point2D p)
     {
         return Math.hypot(p.getX(), p.getY());
+    }
+
+    //---------//
+    // rounded //
+    //---------//
+    /**
+     * Report a point with integer coordinates
+     *
+     * @param p provided Point2D instance
+     * @return Point instance
+     */
+    public static Point rounded (Point2D p)
+    {
+        return new Point((int) p.getX(), (int) p.getY());
     }
 
     //-------------//

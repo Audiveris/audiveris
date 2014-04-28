@@ -24,7 +24,7 @@ import java.awt.image.WritableRaster;
  *
  * @author Hervé Bitteur
  */
-public class TableUtil
+public abstract class TableUtil
 {
     //~ Methods ------------------------------------------------------------------------------------
 

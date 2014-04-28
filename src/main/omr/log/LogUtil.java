@@ -32,7 +32,7 @@ import java.util.Date;
  *
  * @author Hervé Bitteur
  */
-public class LogUtil
+public abstract class LogUtil
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

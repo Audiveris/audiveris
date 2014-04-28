@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- from audiveris/master-application.jnlp -->
-<jnlp codebase="${jnlp.codebase}" href="launch.jnlp" spec="7.0+" version="4.2">    
+<jnlp codebase="${jnlp.codebase}" href="launch.jnlp" spec="7.0+" version="5.0">    
     
     <information>
         <title>${APPLICATION.TITLE}</title>
@@ -28,7 +28,7 @@
     <resources>
         <!--        <java version="1.7+" java-vm-args="-Xms384m -Xmx384m" href="http://java.sun.com/products/autodl/j2se"/>      -->
         <!-- ???    <java version="1.7+" java-vm-args="-Xms384m -Xmx384m -verbose:class" href="http://javadl.sun.com/webapps/jawsautodl/AutoDL/j2se" />-->
-        <java version="1.7+" java-vm-args="-Xms384m -Xmx384m" href="http://java.sun.com/products/autodl/j2se"/>    
+        <java version="1.7+" java-vm-args="-Xms384m -Xmx384m -Djava.net.preferIPv4Stack=true" href="http://java.sun.com/products/autodl/j2se"/>    
         
         <!-- Logging -->
 <!--        <property name="logback.configurationFile" value="config/logback.xml" />-->
@@ -47,6 +47,9 @@
         <jar href="lib/jgoodies-looks-2.5.3.jar"/>
         <jar href="lib/slf4j-api-1.7.5.jar"/>
         
+        <jar href="lib/javacpp.jar"/>
+        <jar href="lib/tesseract-3.jar" />
+        
         <jar href="lib/jai_imageio.jar"/>
         <jar href="lib/clibwrapper_jiio.jar"/>
         <jar href="lib/jai_core.jar"/>
@@ -64,11 +67,6 @@
         <jar href="lib/jcommon-1.0.16.jar"    download="lazy" part="chart" />
         <package name="org.jfree.*"          recursive="true" part="chart" />
 
-        <!-- Used for OCR -->
-        <jar href="lib/javacpp.jar"           download="lazy" part="ocr"/>
-        <jar href="lib/tesseract-3.jar"       download="lazy" part="ocr"/>
-        <package name="omr.text.tesseract.*" recursive="true" part="ocr" />
-        
         <!-- Used for score marshalling -->
         <jar href="lib/proxymusic-3.0.jar"          download="lazy" part="marshalling"/>
         <package name="com.audiveris.proxymusic.*" recursive="true" part="marshalling" />
@@ -77,20 +75,24 @@
         <extension href="installer.jnlp" />
     </resources>
 
+    <!-- 
+        For Windows, native libs are no longer kept in Java cache but 
+        installed into proper Windows system folder by Installer.
     <resources os="Windows" arch="amd64">
-        <nativelib href="lib/tess-windows-64bit.jar" download="lazy" part="ocr"/>
+        <nativelib href="lib/tess-windows-64bit.jar"/>
     </resources>
 
     <resources os="Windows" arch="x86">
-        <nativelib href="lib/tess-windows-32bit.jar" download="lazy" part="ocr"/>
+        <nativelib href="lib/tess-windows-32bit.jar"/>
     </resources>
+    -->
 
     <resources os="Linux" arch="amd64">
-        <nativelib href="lib/tess-unix-64bit.jar" download="lazy" part="ocr"/>
+        <nativelib href="lib/tess-unix-64bit.jar"/>
     </resources>
 
     <resources os="Linux" arch="i386 x86">
-        <nativelib href="lib/tess-unix-32bit.jar" download="lazy" part="ocr"/>
+        <nativelib href="lib/tess-unix-32bit.jar"/>
     </resources>
     
 <!--    

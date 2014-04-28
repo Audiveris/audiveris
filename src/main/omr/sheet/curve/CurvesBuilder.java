@@ -18,12 +18,15 @@ import omr.constant.ConstantSet;
 import omr.grid.FilamentLine;
 import static omr.image.PixelSource.BACKGROUND;
 
+import omr.math.AreaUtil;
 import omr.math.GeoPath;
 import omr.math.PointUtil;
 
+import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
+import omr.sheet.SystemInfo;
 import static omr.sheet.curve.Skeleton.*;
 
 import omr.sig.Inter;
@@ -31,6 +34,8 @@ import omr.sig.Inter;
 import omr.ui.util.ItemRenderer;
 
 import omr.util.Navigable;
+
+import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,13 +49,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code CurvesBuilder} is an abstract basis to build curves for slurs, wedges
- * or endings on top of the underlying skeleton.
+ * Class {@code CurvesBuilder} is an abstract basis to build curves on top of the
+ * underlying skeleton for slurs (see {@link SlursBuilder}), as well as wedges and
+ * endings (see {@link SegmentsBuilder}).
  *
  * @author Hervé Bitteur
  */
@@ -74,22 +81,25 @@ public abstract class CurvesBuilder
     /** Curves environment. */
     protected final Curves curves;
 
-    /** image skeleton. */
+    /** Image skeleton. */
     protected final Skeleton skeleton;
+
+    /** Binary image (with staff lines). */
+    private final ByteProcessor binaryBuf;
 
     /** Scale-dependent parameters. */
     private final Parameters params;
 
-    /** For unique line IDs. (page wise) */
+    /** For unique curve IDs. (per page and per type of curve: slur or segment) */
     protected int globalId = 0;
 
-    /** Clump on left side of aggregated candidates. */
+    /** (Current) clump on left side of aggregated candidates. */
     protected final Set<Curve> leftClump = new LinkedHashSet<Curve>();
 
-    /** Clump on right side of aggregated lines candidates. */
+    /** (Current) clump on right side of aggregated lines candidates. */
     protected final Set<Curve> rightClump = new LinkedHashSet<Curve>();
 
-    /** Current orientation for walking along a curve. */
+    /** (Current) orientation for walking along a curve. */
     protected boolean reverse;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -105,6 +115,7 @@ public abstract class CurvesBuilder
         skeleton = curves.getSkeleton();
         skew = sheet.getSkew();
 
+        binaryBuf = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
         params = new Parameters(sheet.getScale());
     }
 
@@ -112,15 +123,18 @@ public abstract class CurvesBuilder
     /**
      * Try to append one arc to an existing curve and thus create a new curve.
      *
-     * @param arc   the candidate for extension
-     * @param curve the curve to be extended by arc
+     * @param arcView view on the candidate for extension
+     * @param curve   the curve to be extended by arc
      * @return the newly created curve, if successful
      */
-    protected abstract Curve addArc (Arc arc,
+    protected abstract Curve addArc (ArcView arcView,
                                      Curve curve);
 
+    //-------------//
+    // arcDistance //
+    //-------------//
     /**
-     * Measure the mean distance from additional arc to provided (side) model .
+     * Measure the mean distance from additional arc to provided (side) model.
      * <p>
      * Not all arc points are checked, only the ones close to curve end.
      *
@@ -145,6 +159,9 @@ public abstract class CurvesBuilder
         return model.computeDistance(points);
     }
 
+    //------------//
+    // buildCurve //
+    //------------//
     /**
      * Build one curve starting from a seed arc.
      *
@@ -214,6 +231,9 @@ public abstract class CurvesBuilder
      */
     protected abstract Model computeModel (List<Point> points);
 
+    //-------------//
+    // createCurve //
+    //-------------//
     /**
      * Create a curve by concatenating two curves (which may have some points in common).
      *
@@ -278,6 +298,9 @@ public abstract class CurvesBuilder
     protected abstract void createInter (Curve curve,
                                          Set<Inter> inters);
 
+    //---------------//
+    // defineExtArea //
+    //---------------//
     /**
      * Define extension area on current side of the curve.
      * (side is defined by 'reverse' current value)
@@ -291,8 +314,8 @@ public abstract class CurvesBuilder
     protected Area defineExtArea (Curve curve,
                                   FilamentLine tgLine)
     {
-        Point se = curve.getEnd(reverse);
-        Point2D uv = getEndVector(curve);
+        Point ce = curve.getEnd(reverse); // Curve End
+        Point2D uv = getEndVector(curve); // Unit Vector
         GeoPath path;
 
         if (tgLine != null) {
@@ -302,38 +325,39 @@ public abstract class CurvesBuilder
             int yDir = (uv.getY() > 0) ? 1 : (-1);
             double dl1 = yDir * params.lineBoxDeltaIn;
             double dl2 = yDir * params.lineBoxDeltaOut;
-            double yLine = tgLine.yAt(se.x);
+            double yLine = tgLine.yAt(ce.x);
             path = new GeoPath(
                     new Line2D.Double(
-                            new Point2D.Double(se.x - dx, yLine),
-                            new Point2D.Double(se.x - dx, yLine + dl1)));
-            yLine = tgLine.yAt(se.x + lg);
+                            new Point2D.Double(ce.x - dx, yLine),
+                            new Point2D.Double(ce.x - dx, yLine + dl1)));
+            yLine = tgLine.yAt(ce.x + lg);
             path.append(
                     new Line2D.Double(
-                            new Point2D.Double(se.x + lg, yLine + dl2),
-                            new Point2D.Double(se.x + lg, yLine)),
+                            new Point2D.Double(ce.x + lg, yLine + dl2),
+                            new Point2D.Double(ce.x + lg, yLine)),
                     true);
         } else {
             if (uv == null) {
                 return null;
             }
 
+            double lg = params.gapBoxLength;
+            Point2D lgVect = new Point2D.Double(lg * uv.getX(), lg * uv.getY());
+            Point2D ce2 = PointUtil.addition(ce, lgVect);
+
             double dl1 = params.gapBoxDeltaIn;
             Point2D dlVect = new Point2D.Double(-dl1 * uv.getY(), dl1 * uv.getX());
             path = new GeoPath(
                     new Line2D.Double(
-                            PointUtil.addition(se, dlVect),
-                            PointUtil.subtraction(se, dlVect)));
+                            PointUtil.addition(ce, dlVect),
+                            PointUtil.subtraction(ce, dlVect)));
 
-            double lg = params.gapBoxLength;
-            Point2D lgVect = new Point2D.Double(lg * uv.getX(), lg * uv.getY());
-            Point2D se2 = PointUtil.addition(se, lgVect);
             double dl2 = params.gapBoxDeltaOut;
             dlVect = new Point2D.Double(-dl2 * uv.getY(), dl2 * uv.getX());
             path.append(
                     new Line2D.Double(
-                            PointUtil.subtraction(se2, dlVect),
-                            PointUtil.addition(se2, dlVect)),
+                            PointUtil.subtraction(ce2, dlVect),
+                            PointUtil.addition(ce2, dlVect)),
                     true);
         }
 
@@ -346,6 +370,11 @@ public abstract class CurvesBuilder
         return area;
     }
 
+    /**
+     * Additional filtering if any on the provided collection of inters.
+     *
+     * @param inters the collection of inters to further filter
+     */
     protected abstract void filterInters (Set<Inter> inters);
 
     /**
@@ -402,26 +431,46 @@ public abstract class CurvesBuilder
         return PointUtil.dotProduct(arcVector, unit);
     }
 
+    /**
+     * Among the clump of curves built from a common trunk, weed out some of them.
+     *
+     * @param clump the competing curves on the same side of a given seed
+     */
     protected abstract void weed (Set<Curve> clump);
 
+    //-------------//
+    // createCurve //
+    //-------------//
     /**
      * Create a curve instance from a seed arc
      *
-     * @param arc   the seed arc
-     * @param model a model if any
+     * @param seedArc the seed arc
+     * @param model   a model if any
      * @return the created curve
      */
-    protected Curve createCurve (Arc arc,
+    protected Curve createCurve (Arc seedArc,
                                  Model model)
     {
         return createInstance(
-                arc.getJunction(true),
-                arc.getJunction(false),
-                arc.getPoints(),
+                seedArc.getJunction(true),
+                seedArc.getJunction(false),
+                seedArc.getPoints(),
                 model,
-                Arrays.asList(arc));
+                Arrays.asList(seedArc));
     }
 
+    //-------------//
+    // createCurve //
+    //-------------//
+    /**
+     * Create a new curve by appending an arc to an existing curve.
+     *
+     * @param curve   the existing curve
+     * @param arcView properly oriented view on appended arc
+     * @param points  the full sequence of points (curve + arc)
+     * @param model   new underlying model, if any
+     * @return the created curve
+     */
     protected Curve createCurve (Curve curve,
                                  ArcView arcView,
                                  List<Point> points,
@@ -448,6 +497,9 @@ public abstract class CurvesBuilder
         return createInstance(firstJunction, lastJunction, points, model, parts);
     }
 
+    //-----------------//
+    // needGlobalModel //
+    //-----------------//
     /**
      * Make sure the curve has a global model and report it.
      *
@@ -466,6 +518,40 @@ public abstract class CurvesBuilder
         return model;
     }
 
+    //--------------//
+    // erasedInters //
+    //--------------//
+    /**
+     * Report all erased inters in provided system that intersect the provided box.
+     *
+     * @param system    the system being processed
+     * @param box       the box to be intersected
+     * @param crossable true for crossable, false for non-crossable
+     * @return the collection of erased inter instances with proper crossable characteristic
+     */
+    private Set<Inter> erasedInters (SystemInfo system,
+                                     Rectangle box,
+                                     boolean crossable)
+    {
+        Set<Inter> found = new HashSet<Inter>();
+        List<Inter> inters = skeleton.getErasedInters(crossable).get(system);
+
+        for (Inter inter : inters) {
+            if (inter.getBounds().intersects(box)) {
+                Area area = inter.getArea();
+
+                if ((area == null) || area.intersects(box)) {
+                    found.add(inter);
+                }
+            }
+        }
+
+        return found;
+    }
+
+    //--------//
+    // extend //
+    //--------//
     /**
      * Try to recursively extend a curve in the current orientation.
      *
@@ -512,51 +598,283 @@ public abstract class CurvesBuilder
         }
     }
 
+    //---------------------//
+    // filterReachableArcs //
+    //---------------------//
     /**
-     * Build all possible curve extensions, just one arc past the ending gap.
+     * Check extensions to the arcs reachable from curve end and remove the ones that
+     * would cross non-crossable items.
      *
-     * @param curve   the curve to extend
-     * @param browsed arcs already browsed (kept or not)
-     * @param newSeqs (output) to be populated with new sequences found
-     * @param tgLine  tangent staff line if any
+     * @param curve         the curve being extended (on 'reverse' side)
+     * @param reachableArcs (input/output) the set of arcs within reach
      */
-    private void scanGap (Curve curve,
-                          Set<Arc> browsed,
-                          List<Curve> newSeqs,
-                          FilamentLine tgLine)
+    private void filterReachableArcs (Curve curve,
+                                      Set<ArcView> reachableArcs)
     {
-        // Look for arcs ends in extension window
-        Area area = defineExtArea(curve, tgLine);
+        final Point ce = curve.getEnd(reverse);
+        final Rectangle extBox = getExtensionBox(curve, reachableArcs);
+        final List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(ce);
+
+        for (SystemInfo system : systems) {
+            final Collection<Inter> ncs = erasedInters(system, extBox, false);
+
+            if (ncs.isEmpty()) {
+                continue;
+            }
+
+            for (Iterator<ArcView> it = reachableArcs.iterator(); it.hasNext();) {
+                final ArcView arcView = it.next();
+                final Point ae = arcView.getEnd(!reverse); // Arc end
+                Area lineArea = null; // Lazily computed
+
+                for (Inter nc : ncs) {
+                    // Check extension line would cross item bounds
+                    if (nc.getBounds().intersectsLine(ce.x, ce.y, ae.x, ae.y)) {
+                        final boolean crossing;
+
+                        // Have a closer look (for beams mainly)
+                        Area ncArea = nc.getArea();
+
+                        if (ncArea != null) {
+                            if (lineArea == null) {
+                                lineArea = getLineArea(ce, ae);
+                            }
+
+                            crossing = AreaUtil.intersection(lineArea, ncArea);
+                        } else {
+                            crossing = true;
+                        }
+
+                        if (crossing) {
+                            logger.warn("Non-crossable {} for {} rev:{}", nc, curve, reverse);
+                            it.remove();
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //
+    //    //------------------//
+    //    // findHiddenInters //
+    //    //------------------//
+    //    /**
+    //     * Retrieve all the hidden inters that are relevant for the considered extensions.
+    //     *
+    //     * @param curve         curve being extended (on 'reverse' side)
+    //     * @param reachableArcs the arcs nearby
+    //     * @return the collection of relevant erased inters
+    //     */
+    //    private Set<Inter> findHiddenInters (Curve curve,
+    //                                         Set<ArcView> reachableArcs)
+    //    {
+    //        final Set<Inter> hiddens = new HashSet<Inter>();
+    //        final Point ce = curve.getEnd(reverse);
+    //        final Rectangle extBox = getExtensionBox(curve, reachableArcs);
+    //        final List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(ce);
+    //
+    //        for (SystemInfo system : systems) {
+    //            hiddens.addAll(erasedInters(system, extBox, true));
+    //        }
+    //
+    //        return hiddens;
+    //    }
+    //
+    //-------------------//
+    // findReachableArcs //
+    //-------------------//
+    /**
+     * Retrieve all arcs within reach from curve end (over some white gap)
+     *
+     * @param curve   current curve (on 'reverse' side)
+     * @param browsed arcs already considered
+     * @param tgLine  tangent line nearby if any
+     * @return the set of (new) reachable arcs
+     */
+    private Set<ArcView> findReachableArcs (Curve curve,
+                                            Set<Arc> browsed,
+                                            FilamentLine tgLine)
+    {
+        final Set<ArcView> reachableArcs = new HashSet<ArcView>();
+        final Area area = defineExtArea(curve, tgLine);
 
         if (area != null) {
-            Rectangle box = area.getBounds();
-            int xMax = (box.x + box.width) - 1;
+            // Check for reachable arcs in the extension area
+            final Rectangle box = area.getBounds();
+            final int xMax = (box.x + box.width) - 1;
 
             for (Point end : skeleton.arcsEnds) {
                 if (area.contains(end)) {
-                    Arc arc = skeleton.arcsMap.get(end);
+                    final Arc arc = skeleton.arcsMap.get(end);
 
                     if (!arc.isAssigned() && !browsed.contains(arc)) {
-                        curves.checkBreak(arc);
+                        reachableArcs.add(curve.getArcView(arc, reverse));
                         browsed.add(arc);
-
-                        Curve sl = addArc(arc, curve);
-
-                        if (sl != null) {
-                            newSeqs.add(sl);
-
-                            if (tgLine != null) {
-                                sl.setCrossedLine(tgLine);
-                            }
-                        }
                     }
                 } else if (end.x > xMax) {
                     break; // Since list arcsEnds is sorted
                 }
             }
         }
+
+        return reachableArcs;
     }
 
+    //-----------------//
+    // getExtensionBox //
+    //-----------------//
+    /**
+     * Compute the bounding box of all extension lines from curve end to reachable arcs.
+     * (making sure that interior of rectangle is not empty)
+     *
+     * @param curve         the curve being extended (on 'reverse' side)
+     * @param reachableArcs the arcs nearby
+     * @return the global bounding box
+     */
+    private Rectangle getExtensionBox (Curve curve,
+                                       Set<ArcView> reachableArcs)
+    {
+        Point ce = curve.getEnd(reverse);
+        Rectangle extBox = new Rectangle(ce.x, ce.y, 1, 1);
+
+        for (ArcView arcView : reachableArcs) {
+            extBox.add(arcView.getEnd(!reverse));
+        }
+
+        return extBox;
+    }
+
+    //-------------//
+    // getLineArea //
+    //-------------//
+    /**
+     * Define a line "area" from one point to the other with non-zero thickness
+     *
+     * @param p1 one point
+     * @param p2 another point
+     * @return a line area with a thickness of approximately 2 pixels
+     */
+    private Area getLineArea (Point p1,
+                              Point p2)
+    {
+        // Determine if line is rather horizontal or vertical to infer margin values to apply
+        final int dx = Math.abs(p2.x - p1.x);
+        final int dy = Math.abs(p2.y - p1.y);
+
+        final int mx = (dx >= dy) ? 0 : 1; // Margin on X
+        final int my = (dx >= dy) ? 1 : 0; // Margin on Y
+
+        GeoPath path = new GeoPath(new Line2D.Double(p1.x - mx, p1.y - my, p2.x - mx, p2.y - my));
+        path.append(new Line2D.Double(p2.x + mx, p2.y + my, p1.x + mx, p1.y + my), true);
+        path.closePath();
+
+        return new Area(path);
+    }
+
+    //-----------------//
+    // isGapAcceptable //
+    //-----------------//
+    /**
+     * Check whether the gap between curve and candidate arc is acceptable, taking any
+     * hidden inter into account.
+     * To do so, we use a "line area" between curve and arc and fill it with hidden items.
+     * We then check the widest true gap against maximum acceptable value.
+     *
+     * @param curve        curve to extend
+     * @param arcView      candidate arc
+     * @param hiddenInters relevant hidden inters
+     * @return true for acceptable, false otherwise
+     */
+    private boolean isGapAcceptable (Curve curve,
+                                     ArcView arcView)
+    {
+        Point ce = curve.getEnd(reverse);
+        Point ae = arcView.getEnd(!reverse);
+
+        // Check for adjacent points
+        if ((Math.abs(ae.x - ce.x) <= 1) && (Math.abs(ae.y - ce.y) <= 1)) {
+            logger.info("Adjacent points {} {}", ce, ae);
+
+            return true;
+        }
+
+        CurveGap gap = CurveGap.create(ce, ae);
+        Area lArea = gap.getArea();
+        curve.addAttachment("G", lArea);
+
+        int[] vector = gap.computeVector(binaryBuf);
+        int hole = gap.getLargestGap();
+
+        logger.info("{} {} rev:{} {} hole:{}", curve, arcView.getArc(), reverse, vector, hole);
+
+        return hole <= params.gapMaxLength;
+    }
+
+    //---------//
+    // scanGap //
+    //---------//
+    /**
+     * Build all possible curve extensions, just one arc past the ending gap.
+     * <p>
+     * The gap may be due to actual lack of black pixels but also to hidden items, some of which
+     * being crossable (like bar line or stem) and some not (like note or beam). So the improved
+     * strategy for handling gaps is the following:<ol>
+     * <li>Using large gap window, check whether there is at least one reachable arc. If not, scan
+     * is stopped.</li>
+     * <li>If line between curve end and reachable arc would hit a non-crossable item, this
+     * extension is not allowed.</li>
+     * <li>For allowed extensions, check the actual white gap, taking crossable items if any into
+     * account.</li>
+     * </ol>
+     *
+     * @param curve     the curve to extend
+     * @param browsed   arcs already browsed (kept or not)
+     * @param newCurves (output) to be populated with new curves found
+     * @param tgLine    tangent staff line if any
+     */
+    private void scanGap (Curve curve,
+                          Set<Arc> browsed,
+                          List<Curve> newCurves,
+                          FilamentLine tgLine)
+    {
+        // Find arcs within reach
+        final Set<ArcView> reachables = findReachableArcs(curve, browsed, tgLine);
+
+        if (reachables.isEmpty()) {
+            return;
+        }
+
+        // Remove extensions that hit non-crossable inters
+        filterReachableArcs(curve, reachables);
+
+        // Closer look at actual white gap for each allowed extension
+        for (ArcView arcView : reachables) {
+            curves.checkBreak(arcView.getArc());
+
+            // Check true gaps in the extension
+            if (!isGapAcceptable(curve, arcView)) {
+                continue;
+            }
+
+            // OK, let's try to append arc to curve and check resulting model
+            Curve sl = addArc(arcView, curve);
+
+            if (sl != null) {
+                newCurves.add(sl);
+
+                if (tgLine != null) {
+                    sl.setCrossedLine(tgLine);
+                }
+            }
+        }
+    }
+
+    //-----------//
+    // scanPivot //
+    //-----------//
     /**
      * Build all possible curve extensions, just one arc past the ending junction
      *
@@ -611,7 +929,7 @@ public abstract class CurvesBuilder
             if ((arc != null) && !arc.isAssigned() && !browsed.contains(arc)) {
                 browsed.add(arc);
 
-                Curve sl = addArc(arc, curve);
+                Curve sl = addArc(curve.getArcView(arc, reverse), curve);
 
                 if (sl != null) {
                     newCurves.add(sl);
@@ -633,7 +951,13 @@ public abstract class CurvesBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction gapBoxLength = new Scale.Fraction(1.0, "Length for gap box");
+        final Scale.Fraction gapMaxLength = new Scale.Fraction(
+                0.25,
+                "Maximum acceptable length for true gap");
+
+        final Scale.Fraction gapBoxLength = new Scale.Fraction(
+                1.0,
+                "Length used for gap lookup box");
 
         final Scale.Fraction gapBoxDeltaIn = new Scale.Fraction(
                 0.2,
@@ -670,6 +994,8 @@ public abstract class CurvesBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        final double gapMaxLength;
+
         final double gapBoxLength;
 
         final double gapBoxDeltaIn;
@@ -692,6 +1018,7 @@ public abstract class CurvesBuilder
          */
         public Parameters (Scale scale)
         {
+            gapMaxLength = scale.toPixels(constants.gapMaxLength);
             gapBoxLength = scale.toPixels(constants.gapBoxLength);
             gapBoxDeltaIn = scale.toPixels(constants.gapBoxDeltaIn);
             gapBoxDeltaOut = scale.toPixels(constants.gapBoxDeltaOut);

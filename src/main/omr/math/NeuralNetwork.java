@@ -113,16 +113,8 @@ public class NeuralNetwork
      * @param inputSize    number of cells in input layer
      * @param hiddenSize   number of cells in hidden layer
      * @param outputSize   number of cells in output layer
-     * @param amplitude    amplitude ( <= 1.0) for initial random values
-     *                     @para
-     * m inputLabels array
-     * o f
-     * labels
-     * for
-     * input
-     * cells,
-     * or
-     * null
+     * @param amplitude    amplitude ( less than or = 1.0) for initial random values
+     * @param inputLabels  array of labels for input cells, or null
      * @param outputLabels array of labels for output cells, or null
      */
     public NeuralNetwork (int inputSize,

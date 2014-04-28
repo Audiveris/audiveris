@@ -24,7 +24,7 @@ import java.awt.geom.Point2D;
  *
  * @author Hervé Bitteur
  */
-public class AreaUtil
+public abstract class AreaUtil
 {
     //~ Methods ------------------------------------------------------------------------------------
 

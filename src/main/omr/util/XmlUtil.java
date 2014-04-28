@@ -16,15 +16,10 @@ package omr.util;
  *
  * @author Hervé Bitteur
  */
-public class XmlUtil
+public abstract class XmlUtil
 {
-    //~ Constructors -------------------------------------------------------------------------------
-
-    private XmlUtil ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------------------//
     // stripNonValidXMLCharacters //
     //----------------------------//

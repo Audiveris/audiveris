@@ -232,42 +232,6 @@ public abstract class Curve
     public ArcView getArcView (Arc arc,
                                boolean rev)
     {
-        //        if (reverse) {
-        //            // Normal orientation, check at curve start
-        //            if (getJunction(true) != null) {
-        //                if ((arc.getJunction(true) != null)
-        //                    && arc.getJunction(true).equals(getJunction(true))) {
-        //                    return new ArcView(arc, true);
-        //                }
-        //            } else {
-        //                // Curve with free ending, use shortest distance
-        //                Point slurEnd = getEnd(reverse);
-        //                double toStart = slurEnd.distanceSq(arc.getEnd(true));
-        //                double toStop = slurEnd.distanceSq(arc.getEnd(false));
-        //
-        //                if (toStart < toStop) {
-        //                    return new ArcView(arc, true);
-        //                }
-        //            }
-        //        } else {
-        //            // Normal orientation, check at curve stop
-        //            if (getJunction(false) != null) {
-        //                // Curve ending at pivot
-        //                if ((arc.getJunction(false) != null)
-        //                    && arc.getJunction(false).equals(getJunction(false))) {
-        //                    return new ArcView(arc, true);
-        //                }
-        //            } else {
-        //                // Curve with free ending, use shortest distance
-        //                Point slurEnd = getEnd(reverse);
-        //                double toStart = slurEnd.distanceSq(arc.getEnd(true));
-        //                double toStop = slurEnd.distanceSq(arc.getEnd(false));
-        //
-        //                if (toStop < toStart) {
-        //                    return new ArcView(arc, true);
-        //                }
-        //            }
-        //        }
         Point curveJunction = getJunction(rev);
 
         if (curveJunction != null) {

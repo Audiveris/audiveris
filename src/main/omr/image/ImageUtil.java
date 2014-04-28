@@ -36,7 +36,7 @@ import javax.media.jai.JAI;
  *
  * @author Hervé Bitteur
  */
-public class ImageUtil
+public abstract class ImageUtil
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

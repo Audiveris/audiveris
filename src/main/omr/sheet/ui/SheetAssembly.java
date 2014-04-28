@@ -80,7 +80,7 @@ public class SheetAssembly
     private Panel component = new Panel();
 
     /** To manually control the zoom ratio. */
-    private final LogSlider slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 4, 0);
+    private final LogSlider slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 5, 0);
 
     /** Tabbed container for all views of the sheet. */
     private final JTabbedPane viewsPane = new JTabbedPane();

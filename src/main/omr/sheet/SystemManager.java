@@ -98,6 +98,36 @@ public class SystemManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------------//
+    // containingSystems //
+    //-------------------//
+    /**
+     * Report the systems that contain the provided rectangle
+     *
+     * @param rect  the provided rectangle
+     * @param found (output) list to be populated (allocated if null)
+     * @return the containing systems info, perhaps empty but not null
+     */
+    public List<SystemInfo> containingSystems (Rectangle2D rect,
+                                               List<SystemInfo> found)
+    {
+        if (found != null) {
+            found.clear();
+        } else {
+            found = new ArrayList<SystemInfo>();
+        }
+
+        for (SystemInfo system : systems) {
+            Area area = system.getArea();
+
+            if ((area != null) && area.contains(rect)) {
+                found.add(system);
+            }
+        }
+
+        return found;
+    }
+
     //----------------//
     // dispatchGlyphs //
     //----------------//

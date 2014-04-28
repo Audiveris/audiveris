@@ -38,8 +38,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code Curves} handles several kinds of curves (slurs, wedges, endings) by
- * walking along the arcs of a sheet skeleton.
+ * Class {@code Curves} is the platform used to handle several kinds of curves (slurs,
+ * wedges, endings) by walking along the arcs of a sheet skeleton.
  * <p>
  * We have to visit each pixel of the buffer, detect junction points and arcs departing or arriving
  * at junction points.
@@ -50,7 +50,7 @@ public class Curves
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Point[] breakPoints = new Point[]{///new Point(1673, 808) // BINGO
+    private static final Point[] breakPoints = new Point[]{new Point(1196, 1314) // BINGO
     //
     };
 
@@ -73,6 +73,7 @@ public class Curves
     /** Registered item renderers, if any. */
     private final Set<ItemRenderer> itemRenderers = new LinkedHashSet<ItemRenderer>();
 
+    /** Builder for slurs (also used to evaluate arcs). */
     private SlursBuilder slursBuilder;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -113,13 +114,13 @@ public class Curves
     public void buildCurves ()
     {
         // Retrieve junctions.
-        StopWatch watch = new StopWatch("Slurs");
-        watch.start("retrieveJunctions");
+        StopWatch watch = new StopWatch("Curves");
+        watch.start("Junctions retrieval");
         new JunctionRetriever(skeleton).scanImage();
 
         // Scan arcs between junctions
         slursBuilder = new SlursBuilder(this);
-        watch.start("retrieveArcs");
+        watch.start("Arcs retrieval");
         new ArcRetriever(this).scanImage();
 
         // Retrieve slurs from arcs
@@ -152,7 +153,7 @@ public class Curves
     /**
      * Debug method to break on a specific arc.
      *
-     * @param arc
+     * @param arc current arc being processed
      */
     public void checkBreak (Arc arc)
     {
@@ -174,7 +175,7 @@ public class Curves
     // getSegments //
     //-------------//
     /**
-     * @return the segments
+     * @return the segments retrieved
      */
     public List<SegmentInter> getSegments ()
     {

@@ -197,7 +197,7 @@ public class Template
                 x -= offset.x;
                 y -= offset.y;
             } else {
-                logger.warn("No {} anchor defined for {} template", anchor, key);
+                logger.error("No {} anchor defined for {} template", anchor, key);
             }
         }
 

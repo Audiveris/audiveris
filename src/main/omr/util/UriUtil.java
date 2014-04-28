@@ -21,7 +21,7 @@ import java.net.URL;
  *
  * @author Hervé Bitteur
  */
-public class UriUtil
+public abstract class UriUtil
 {
     //~ Methods ------------------------------------------------------------------------------------
 

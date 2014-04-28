@@ -27,17 +27,12 @@ import javax.swing.SpinnerModel;
  *
  * @author Hervé Bitteur
  */
-public class SpinnerUtil
+public abstract class SpinnerUtil
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Specific value to indicate that spinner value is invalid : {@value} */
     public static final int NO_VALUE = 0;
-
-    //~ Constructors -------------------------------------------------------------------------------
-    private SpinnerUtil ()
-    {
-    }
 
     //~ Methods ------------------------------------------------------------------------------------
     //----------------//
@@ -59,17 +54,17 @@ public class SpinnerUtil
         ftf.getActionMap().put(
                 "enterAction",
                 new AbstractAction()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                try {
-                    spinner.setValue(Integer.parseInt(ftf.getText()));
-                } catch (Exception ex) {
-                    // Reset to last value
-                    ftf.setText(ftf.getValue().toString());
-                }
-            }
+                {
+                    @Override
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        try {
+                            spinner.setValue(Integer.parseInt(ftf.getText()));
+                        } catch (Exception ex) {
+                            // Reset to last value
+                            ftf.setText(ftf.getValue().toString());
+                        }
+                    }
                 });
     }
 

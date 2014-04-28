@@ -20,7 +20,7 @@ import java.awt.geom.Line2D;
  *
  * @author Hervé Bitteur
  */
-public class GeoUtil
+public abstract class GeoUtil
 {
     //~ Methods ------------------------------------------------------------------------------------
 

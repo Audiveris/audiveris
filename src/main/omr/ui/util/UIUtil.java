@@ -49,7 +49,7 @@ import javax.swing.border.Border;
  *
  * @author Hervé Bitteur and Brenton Partridge
  */
-public class UIUtil
+public abstract class UIUtil
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -69,11 +69,6 @@ public class UIUtil
             e.getWindow().dispose();
         }
     };
-
-    //~ Constructors -------------------------------------------------------------------------------
-    private UIUtil ()
-    {
-    }
 
     //~ Methods ------------------------------------------------------------------------------------
     //------------------//

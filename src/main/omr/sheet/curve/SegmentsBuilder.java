@@ -140,11 +140,12 @@ public class SegmentsBuilder
     // addArc //
     //--------//
     @Override
-    protected Curve addArc (Arc arc,
+    protected Curve addArc (ArcView arcView,
                             Curve curve)
     {
+                final Arc arc = arcView.getArc();
+
         SegmentInfo segment = (SegmentInfo) curve;
-        ArcView arcView = segment.getArcView(arc, reverse);
         Model model = needGlobalModel(segment);
 
         // Check arc roughly goes in curve end direction

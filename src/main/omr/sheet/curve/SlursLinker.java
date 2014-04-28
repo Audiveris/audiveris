@@ -337,34 +337,6 @@ public class SlursLinker
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //----------//
-    // NoteLink //
-    //----------//
-    public static class NoteLink
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        public final Inter note; // Note linked to slur end
-
-        public final Double distance; // A distance between note & slur end
-
-        public final Double euclidean; // Euclidean distance between note & slur end
-
-        public final boolean direct; // False if via stem
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public NoteLink (Inter note,
-                         Double distance,
-                         Double euclidean,
-                         boolean direct)
-        {
-            this.note = note;
-            this.distance = distance;
-            this.euclidean = euclidean;
-            this.direct = direct;
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -414,6 +386,37 @@ public class SlursLinker
         final Scale.Fraction wideSlurWidth = new Scale.Fraction(
                 6.0,
                 "Minimum width to be a wide slur");
+    }
+
+    //----------//
+    // NoteLink //
+    //----------//
+    /**
+     * Formalizes a relation between a slur end and a note nearby.
+     */
+    private static class NoteLink
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        public final Inter note; // Note linked to slur end
+
+        public final Double distance; // A distance between note & slur end
+
+        public final Double euclidean; // Euclidean distance between note & slur end
+
+        public final boolean direct; // False if via stem
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public NoteLink (Inter note,
+                         Double distance,
+                         Double euclidean,
+                         boolean direct)
+        {
+            this.note = note;
+            this.distance = distance;
+            this.euclidean = euclidean;
+            this.direct = direct;
+        }
     }
 
     //------------//
@@ -707,10 +710,10 @@ public class SlursLinker
                     found.put(
                             in,
                             new NoteLink(
-                            in,
-                            distanceToNote(slurEnd, center),
-                            euclidianToNote(slurEnd, center),
-                            true));
+                                    in,
+                                    distanceToNote(slurEnd, center),
+                                    euclidianToNote(slurEnd, center),
+                                    true));
                 }
             }
 
@@ -872,15 +875,15 @@ public class SlursLinker
             Collections.sort(
                     list,
                     new Comparator<SlurInter>()
-            {
-                @Override
-                public int compare (SlurInter s1,
-                                    SlurInter s2)
-                {
-                    return Double.compare(
-                            meanAbscissaDist(map.get(s1)),
-                            meanAbscissaDist(map.get(s2)));
-                }
+                    {
+                        @Override
+                        public int compare (SlurInter s1,
+                                            SlurInter s2)
+                        {
+                            return Double.compare(
+                                    meanAbscissaDist(map.get(s1)),
+                                    meanAbscissaDist(map.get(s2)));
+                        }
                     });
 
             // Now, select between slurs with same embraced heads, if any

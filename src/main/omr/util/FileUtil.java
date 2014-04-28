@@ -26,21 +26,13 @@ import java.nio.channels.FileChannel;
  *
  * @author Hervé Bitteur
  */
-public class FileUtil
+public abstract class FileUtil
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    
-    private static final Logger logger = LoggerFactory.getLogger(
-            FileUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
-    //~ Constructors -----------------------------------------------------------
-    // Not meant to be instantiated
-    private FileUtil ()
-    {
-    }
-
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // copy //
     //------//
@@ -63,10 +55,7 @@ public class FileUtil
             input = new FileInputStream(source).getChannel();
             output = new FileOutputStream(target).getChannel();
 
-            MappedByteBuffer buffer = input.map(
-                    FileChannel.MapMode.READ_ONLY,
-                    0,
-                    input.size());
+            MappedByteBuffer buffer = input.map(FileChannel.MapMode.READ_ONLY, 0, input.size());
             output.write(buffer);
         } finally {
             if (input != null) {

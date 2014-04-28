@@ -210,15 +210,15 @@ public class SlursBuilder
     // addArc //
     //--------//
     @Override
-    protected Curve addArc (Arc arc,
+    protected Curve addArc (ArcView arcView,
                             Curve curve)
     {
+        final Arc arc = arcView.getArc();
         if ((maxLength != null) && (arc.getLength() > maxLength)) {
             return null;
         }
 
         SlurInfo slur = (SlurInfo) curve;
-        ArcView arcView = slur.getArcView(arc, reverse);
 
         // Check extension is compatible with slur (side) circle
         // Use slur side circle to check position of arc WRT circle

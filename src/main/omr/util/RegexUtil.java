@@ -18,7 +18,7 @@ import java.util.regex.Matcher;
  *
  * @author Hervé Bitteur
  */
-public class RegexUtil
+public abstract class RegexUtil
 {
     //~ Methods ------------------------------------------------------------------------------------
 

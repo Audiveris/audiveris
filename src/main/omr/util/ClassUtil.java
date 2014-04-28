@@ -21,16 +21,11 @@ import java.io.File;
  *
  * @author Hervé Bitteur
  */
-public class ClassUtil
+public abstract class ClassUtil
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
-
-    //~ Constructors -------------------------------------------------------------------------------
-    private ClassUtil ()
-    {
-    }
 
     //~ Methods ------------------------------------------------------------------------------------
     //-----------------//

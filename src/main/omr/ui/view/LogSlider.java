@@ -52,24 +52,15 @@ public class LogSlider
     /**
      * Creates a new {@code LogSlider} instance.
      *
-     * @param base        to specify the base of logarithm, generally either 2
-     *                    or
-     *                    10.
-     * @param minors      number of minor intervals within one major interval
-     *                    (if
-     *                    specified as 1 minor per major, this means that
-     *                    there is no minor ticks)
-     * @param orientation to specify the slider orientation, either VERTICAL
-     *                    or HORIZONTAL.
-     * @param min         to set lower bound of the slider, specified in power
-     *                    of
-     *                    base, for example -3 to mean 1/8 (2**-3 if base =
-     *                    2).
-     * @param max         to set upper bound, for example 5 to mean 32 (2**5, if
-     *                    base
-     *                    = 2).
-     * @param initial     to set the slider initial value, specified in power of
-     *                    base, for example 0 to mean 1 (2**0, if base = 2)
+     * @param base        to specify the base of logarithm, generally either 2 or 10.
+     * @param minors      number of minor intervals within one major interval (if specified as 1
+     *                    minor per major, this means that there is no minor ticks)
+     * @param orientation to specify the slider orientation, either VERTICAL or HORIZONTAL.
+     * @param min         to set lower bound of the slider, specified in power of base, for example
+     *                    -3 to mean 1/8 (2**-3 if base = 2).
+     * @param max         to set upper bound, for example 5 to mean 32 (2**5, if base = 2).
+     * @param initial     to set the slider initial value, specified in power of base, for example 0
+     *                    to mean 1 (2**0, if base = 2)
      */
     public LogSlider (int base,
                       int minors,
@@ -106,7 +97,7 @@ public class LogSlider
             labelTable.put(
                     Integer.valueOf(i * unit),
                     new JLabel(
-                    (i < 0) ? ("1/" + (int) expOf(-i * unit)) : ("" + (int) expOf(i * unit))));
+                            (i < 0) ? ("1/" + (int) expOf(-i * unit)) : ("" + (int) expOf(i * unit))));
         }
 
         setLabelTable(labelTable);

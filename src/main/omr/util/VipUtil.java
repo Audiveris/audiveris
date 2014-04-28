@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @author Hervé Bitteur
  */
-public class VipUtil
+public abstract class VipUtil
 {
     //~ Static fields/initializers ---------------------------------------------
 

@@ -15,14 +15,15 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
 
 import omr.image.ImageUtil;
-
-import omr.score.ui.PageEraser;
 
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import omr.sig.Inter;
 
 import omr.ui.util.ItemRenderer;
 
@@ -41,8 +42,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class {@code Skeleton} handles the skeleton structure used for slurs and wedges
- * retrieval.
+ * Class {@code Skeleton} handles the skeleton structure used for slurs and segments
+ * retrieval, including the navigation along the skeleton.
+ * <p>
+ * We use special color values to record information directly within the skeleton buffer.
  *
  * @author Hervé Bitteur
  */
@@ -69,7 +72,7 @@ public class Skeleton
     static final int JUNCTION_PROCESSED = 90;
 
     /**
-     * Directions.
+     * Headings.
      * <pre>
      * +-----+-----+-----+
      * |     |     |     |
@@ -86,13 +89,13 @@ public class Skeleton
      * +-----+-----+-----+
      * </pre>
      */
-    /** Delta abscissa, per direction. ... 0. 1. 2. 3. 4 . 5 . 6 . 7. 8 */
+    /** Delta abscissa, per heading. ... 0. 1. 2. 3. 4 . 5 . 6 . 7. 8 */
     static final int[] dxs = new int[]{0, 1, 1, 1, 0, -1, -1, -1, 0};
 
-    /** Delta ordinate, per direction. ... 0 . 1. 2. 3. 4. 5. 6 . 7. 8 */
+    /** Delta ordinate, per heading. ... 0 . 1. 2. 3. 4. 5. 6 . 7. 8 */
     static final int[] dys = new int[]{0, -1, 0, 1, 1, 1, 0, -1, -1};
 
-    /** Directions to scan, according to last direction. */
+    /** Headings to scan, according to last heading. */
     static final int[][] scans = new int[][]{
         {2, 4, 6, 8, 1, 3, 5, 7}, // 0
         {2, 8, 1, 3, 7}, // 1
@@ -105,26 +108,26 @@ public class Skeleton
         {2, 6, 8, 1, 7} //  8
     };
 
-    /** Map (Dx,Dy) -> Direction. */
+    /** Map (Dx,Dy) -> Heading. */
     static final int[][] deltaToDir = new int[][]{
         {7, 6, 5}, // x:-1, y: -1, 0, +1
         {8, 0, 4}, // x: 0, y: -1, 0, +1
         {1, 2, 3} //  x:+1, y: -1, 0, +1
     };
 
-    /** Vertical directions: south & north. */
+    /** Vertical headings: south & north. */
     static final int[] vertDirs = new int[]{4, 8};
 
-    /** Horizontal directions: east & west. */
+    /** Horizontal headings: east & west. */
     static final int[] horiDirs = new int[]{2, 6};
 
-    /** Side directions: verticals + horizontals. */
+    /** Side headings: verticals + horizontals. */
     static final int[] sideDirs = new int[]{2, 4, 6, 8};
 
-    /** Diagonal directions: ne, se, sw, nw. */
+    /** Diagonal headings: ne, se, sw, nw. */
     static final int[] diagDirs = new int[]{1, 3, 5, 7};
 
-    /** All directions. */
+    /** All headings. */
     static final int[] allDirs = new int[]{2, 4, 6, 8, 1, 3, 5, 7};
 
     private static final Color ARC_SLUR = Color.RED;
@@ -147,6 +150,15 @@ public class Skeleton
     /** List of arcs end points, with no junction, by abscissa. */
     public final List<Point> arcsEnds = new ArrayList<Point>();
 
+    /** Map of non crossable erased inters. */
+    private Map<SystemInfo, List<Inter>> nonCrossables;
+
+    /** Map of crossable erased inters. */
+    private Map<SystemInfo, List<Inter>> crossables;
+
+    /** Map of erased (seed) glyphs. */
+    private Map<SystemInfo, List<Glyph>> erasedSeeds;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Skeleton object.
@@ -159,50 +171,89 @@ public class Skeleton
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // getPixel //
-    //----------//
-    public int getPixel (int x,
-                         int y)
+    //---------------//
+    // buildSkeleton //
+    //---------------//
+    /**
+     * Generate the skeleton from page binary image.
+     * <p>
+     * We must keep track of erased shapes at system level.<ul>
+     * <li>Notes and beams cannot be crossed by a curve.
+     * Question: Should we indicate this with a specific background value (after binarization)?</li>
+     * <li>Bar lines, connections and stems can be crossed by a curve.
+     * Perhaps another specific background value could be used?</li>
+     * </ul>
+     *
+     * @return the skeleton image (in parallel of setting the skeleton buffer)
+     */
+    public BufferedImage buildSkeleton ()
     {
-        return buf.get(x, y);
-    }
+        // First, get a skeleton of binary image
+        Picture picture = sheet.getPicture();
 
-    @Override
-    public void renderItems (Graphics2D g)
-    {
-        // Render seeds
-        for (Arc arc : arcsMap.values()) {
-            setColor(arc, g);
+        ByteProcessor buffer = picture.getSource(Picture.SourceKey.STAFF_LINE_FREE);
+        buffer = (ByteProcessor) buffer.duplicate();
+        buffer.skeletonize();
 
-            for (Point p : arc.getPoints()) {
-                g.fillRect(p.x, p.y, 1, 1);
-            }
+        BufferedImage img = buffer.getBufferedImage();
+
+        // Erase good shapes of each system, both non-crossables and crossables
+        Graphics2D g = img.createGraphics();
+        CurvesEraser eraser = new CurvesEraser(buffer, g, sheet);
+
+        // Non Crossable inters
+        nonCrossables = eraser.eraseShapes(
+                Arrays.asList(
+                        Shape.WHOLE_NOTE,
+                        Shape.WHOLE_NOTE_SMALL,
+                        Shape.NOTEHEAD_BLACK,
+                        Shape.NOTEHEAD_BLACK_SMALL,
+                        Shape.NOTEHEAD_VOID,
+                        Shape.NOTEHEAD_VOID_SMALL,
+                        Shape.BEAM,
+                        Shape.BEAM_HOOK,
+                        Shape.BEAM_SMALL,
+                        Shape.BEAM_HOOK_SMALL));
+
+        // Crossable inters
+        crossables = eraser.eraseShapes(
+                Arrays.asList(
+                        Shape.THICK_BARLINE,
+                        Shape.THIN_BARLINE,
+                        Shape.THIN_CONNECTION,
+                        Shape.THICK_CONNECTION,
+                        Shape.LEDGER,
+                        Shape.STEM));
+
+        // Erase vertical seeds
+        erasedSeeds = eraser.eraseGlyphs(Arrays.asList(Shape.VERTICAL_SEED));
+
+        // Build buffer
+        buffer = new ByteProcessor(img);
+        buffer.threshold(127);
+
+        // Keep a copy on disk?
+        if (constants.keepSkeleton.isSet()) {
+            ImageUtil.saveOnDisk(img, sheet.getPage().getId() + ".skl");
         }
-    }
 
-    //----------//
-    // setPixel //
-    //----------//
-    public void setPixel (int x,
-                          int y,
-                          int val)
-    {
-        buf.set(x, y, val);
+        buf = buffer;
+
+        return img;
     }
 
     //--------//
     // getDir //
     //--------//
     /**
-     * Report the precise direction that goes from 'from' to 'to'.
+     * Report the precise heading that goes from point 'from' to point 'to'.
      *
      * @param from p1
      * @param to   p2
-     * @return direction p1 -> p2
+     * @return heading p1 -> p2
      */
-    static int getDir (Point from,
-                       Point to)
+    public static int getDir (Point from,
+                              Point to)
     {
         int dx = to.x - from.x;
         int dy = to.y - from.y;
@@ -219,7 +270,7 @@ public class Skeleton
      * @param pix pixel gray value
      * @return true if junction
      */
-    static boolean isJunction (int pix)
+    public static boolean isJunction (int pix)
     {
         return (pix >= JUNCTION) && (pix <= (JUNCTION + 10));
     }
@@ -234,7 +285,7 @@ public class Skeleton
      * @param pix pixel gray value
      * @return true if junction already processed
      */
-    static boolean isJunctionProcessed (int pix)
+    public static boolean isJunctionProcessed (int pix)
     {
         return pix == JUNCTION_PROCESSED;
     }
@@ -249,7 +300,7 @@ public class Skeleton
      * @param pix pixel gray value
      * @return true if arc already processed
      */
-    static boolean isProcessed (int pix)
+    public static boolean isProcessed (int pix)
     {
         return (pix >= PROCESSED) && (pix < (PROCESSED + 10));
     }
@@ -258,76 +309,99 @@ public class Skeleton
     // isSide //
     //--------//
     /**
-     * Tell whether the provided direction is a side one (H or V).
+     * Tell whether the provided heading is a side one (Horizontal or Vertical).
      *
-     * @param dir provided direction
+     * @param dir provided heading
      * @return true if horizontal or vertical
      */
-    static boolean isSide (int dir)
+    public static boolean isSide (int dir)
     {
         return (dir % 2) == 0;
     }
 
-    //---------------//
-    // buildSkeleton //
-    //---------------//
+    //----------//
+    // getPixel //
+    //----------//
     /**
-     * Generate the skeleton from page binary image.
+     * Report pixel value at (x, y) location
      *
-     * @return the skeleton buffer
+     * @param x abscissa
+     * @param y ordinate
+     * @return pixel value
      */
-    BufferedImage buildSkeleton ()
+    public int getPixel (int x,
+                         int y)
     {
-        // First, get a skeleton of binary image
-        Picture picture = sheet.getPicture();
-
-        ///ByteProcessor buffer = picture.getSource(Picture.SourceKey.BINARY);
-        ByteProcessor buffer = picture.getSource(Picture.SourceKey.STAFF_LINE_FREE);
-        buffer = (ByteProcessor) buffer.duplicate();
-        buffer.skeletonize();
-
-        BufferedImage img = buffer.getBufferedImage();
-
-        // Erase good shapes of each system
-        Graphics2D g = img.createGraphics();
-        PageEraser eraser = new PageEraser(buffer, g, sheet, false);
-        eraser.eraseShapes(
-                Arrays.asList(
-                        Shape.THICK_BARLINE,
-                        Shape.THIN_BARLINE,
-                        Shape.THIN_CONNECTION,
-                        Shape.THICK_CONNECTION,
-                        Shape.STEM,
-                        Shape.WHOLE_NOTE,
-                        Shape.WHOLE_NOTE_SMALL,
-                        Shape.NOTEHEAD_BLACK,
-                        Shape.NOTEHEAD_BLACK_SMALL,
-                        Shape.NOTEHEAD_VOID,
-                        Shape.NOTEHEAD_VOID_SMALL,
-                        Shape.BEAM,
-                        Shape.BEAM_HOOK,
-                        Shape.BEAM_SMALL,
-                        Shape.BEAM_HOOK_SMALL));
-
-        // Erase vertical seeds
-        for (SystemInfo system : sheet.getSystems()) {
-            eraser.eraseGlyphs(system.lookupShapedGlyphs(Shape.VERTICAL_SEED));
-        }
-
-        // Build buffer
-        buffer = new ByteProcessor(img);
-        buffer.threshold(127);
-
-        // Keep a copy on disk?
-        if (constants.keepSkeleton.isSet()) {
-            ImageUtil.saveOnDisk(img, sheet.getPage().getId() + ".skl");
-        }
-
-        buf = buffer;
-
-        return img;
+        return buf.get(x, y);
     }
 
+    //-------------//
+    // renderItems //
+    //-------------//
+    @Override
+    public void renderItems (Graphics2D g)
+    {
+        // Render seeds
+        for (Arc arc : arcsMap.values()) {
+            setColor(arc, g);
+
+            for (Point p : arc.getPoints()) {
+                g.fillRect(p.x, p.y, 1, 1);
+            }
+        }
+    }
+
+    //----------//
+    // setPixel //
+    //----------//
+    /**
+     * Set pixel value at provided location
+     *
+     * @param x   abscissa
+     * @param y   ordinate
+     * @param val pixel value to set
+     */
+    public void setPixel (int x,
+                          int y,
+                          int val)
+    {
+        buf.set(x, y, val);
+    }
+
+    //-----------------//
+    // getErasedInters //
+    //-----------------//
+    /**
+     * Report the collection of erased inters, with provided crossable characteristic
+     *
+     * @param crossable true fro crossable, false for non crossable
+     * @return the desired erased inters
+     */
+    Map<SystemInfo, List<Inter>> getErasedInters (boolean crossable)
+    {
+        return crossable ? crossables : nonCrossables;
+    }
+
+    //----------------//
+    // getErasedSeeds //
+    //----------------//
+    /**
+     * @return the erasedSeeds
+     */
+    Map<SystemInfo, List<Glyph>> getErasedSeeds ()
+    {
+        return erasedSeeds;
+    }
+
+    //----------//
+    // setColor //
+    //----------//
+    /**
+     * Paint the arc with a color that indicates its type of arc.
+     *
+     * @param arc the arc to paint
+     * @param g   graphics context
+     */
     private void setColor (Arc arc,
                            Graphics2D g)
     {

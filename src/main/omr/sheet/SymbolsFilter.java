@@ -34,8 +34,6 @@ import omr.run.Orientation;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
-import omr.score.ui.PageEraser;
-
 import omr.sheet.ui.ImageView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.ScrollImageView;
@@ -106,14 +104,13 @@ public class SymbolsFilter
     //---------//
     /**
      * Start from the staff-free image, remove all good inters, and build the runs and
-     * sections that compose symbols glyphs.
+     * sections that compose symbols glyphs put in SYMBOL layer.
+     * <p>
      * For not so good inters (they have already survived the first RESOLUTION step) we put them
      * aside as optional glyphs that can take part of the symbols glyphs clustering and thus
      * compete for valuable compounds.
-     *
-     * @return the list of symbol glyphs created
      */
-    public List<Glyph> process ()
+    public void process ()
     {
         logger.info("SymbolsFilter running...");
 
@@ -124,7 +121,7 @@ public class SymbolsFilter
 
         // Erase good shapes of each system
         Graphics2D g = img.createGraphics();
-        PageEraser eraser = new PageEraser(buffer, g, sheet, true);
+        SymbolsEraser eraser = new SymbolsEraser(buffer, g, sheet);
         Map<SystemInfo, List<Glyph>> optionalMap = eraser.eraseShapes(
                 Arrays.asList(
                         Shape.THICK_BARLINE,
@@ -154,14 +151,34 @@ public class SymbolsFilter
             ImageUtil.saveOnDisk(img, sheet.getPage().getId() + ".sym");
         }
 
-        // Display for visual check?
-        if (constants.showSymbols.isSet() && (optionalMap != null) && (Main.getGui() != null)) {
-            sheet.getAssembly().addViewTab(
-                    "Symbols",
-                    new ScrollImageView(sheet, new MyView(img, optionalMap)),
-                    new BoardsPane(new PixelBoard(sheet)));
+        // Dispatch optional glyphs
+        if (optionalMap != null) {
+            dispatchOptionals(optionalMap);
+
+            // Display for visual check?
+            if (constants.showSymbols.isSet() && (Main.getGui() != null)) {
+                sheet.getAssembly().addViewTab(
+                        "Symbols",
+                        new ScrollImageView(sheet, new MyView(img, optionalMap)),
+                        new BoardsPane(new PixelBoard(sheet)));
+            }
         }
 
+        buildSymbolsGlyphs(buffer);
+    }
+
+    //--------------------//
+    // buildSymbolsGlyphs //
+    //--------------------//
+    /**
+     * Build the symbols glyphs from the provided buffer.
+     * <p>
+     * Optional glyphs (corresponding to weak inters) are provided separately per system
+     *
+     * @param buffer image with symbols pixels
+     */
+    private void buildSymbolsGlyphs (ByteProcessor buffer)
+    {
         // Runs
         RunsTable runTable = new RunsTableFactory(SYMBOL_ORIENTATION, buffer, 0).createTable(
                 "symbols");
@@ -181,13 +198,6 @@ public class SymbolsFilter
 
         // Dispatch each glyph to its relevant system(s)
         dispatchPageSymbols(glyphs);
-
-        // Dispatch optional glyphs
-        if (optionalMap != null) {
-            dispatchOptionals(optionalMap);
-        }
-
-        return glyphs;
     }
 
     //-------------------//
@@ -275,7 +285,7 @@ public class SymbolsFilter
             final Rectangle clip = g.getClipBounds();
 
             // Good inters are erased and not taken into account for symbols
-            // Bads are temporarily erased and used as optional glyphs for symbols
+            // Weak ones are temporarily erased and used as optional glyphs for symbols
             for (Glyph glyph : optionals) {
                 if (glyph.getBounds().intersects(clip)) {
                     for (Section section : glyph.getMembers()) {

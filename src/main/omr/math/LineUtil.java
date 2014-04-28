@@ -19,15 +19,8 @@ import java.awt.geom.Point2D;
  *
  * @author Hervé Bitteur
  */
-public class LineUtil
+public abstract class LineUtil
 {
-    //~ Constructors -------------------------------------------------------------------------------
-
-    /** Not meant to be instantiated. */
-    private LineUtil ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // bisector //
