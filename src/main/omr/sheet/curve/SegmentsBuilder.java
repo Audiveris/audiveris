@@ -103,6 +103,13 @@ public class SegmentsBuilder
             purgeDuplicates();
 
             logger.info("Segments: {}", segments.size());
+
+            // Retrieve underlying glyph for each segment
+            for (SegmentInter s : segments) {
+                SegmentInfo info = s.getInfo();
+                info.getGlyph(sheet, params.maxRunDistance);
+            }
+
         } catch (Throwable ex) {
             logger.warn("Error in SegmentsBuilder: " + ex, ex);
         }
@@ -143,7 +150,7 @@ public class SegmentsBuilder
     protected Curve addArc (ArcView arcView,
                             Curve curve)
     {
-                final Arc arc = arcView.getArc();
+        final Arc arc = arcView.getArc();
 
         SegmentInfo segment = (SegmentInfo) curve;
         Model model = needGlobalModel(segment);
@@ -350,6 +357,11 @@ public class SegmentsBuilder
         final Scale.Fraction minProjection = new Scale.Fraction(
                 -1.0,
                 "Minimum projection on curve for arc extension");
+
+        final Scale.Fraction maxRunDistance = new Scale.Fraction(
+                0.2,
+                "Maximum distance from any run end to curve points");
+
     }
 
     //------------//
@@ -372,6 +384,8 @@ public class SegmentsBuilder
 
         final double minProjection;
 
+        final double maxRunDistance;
+
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
@@ -380,6 +394,7 @@ public class SegmentsBuilder
             maxExtDistance = scale.toPixelsDouble(constants.maxExtDistance);
             maxSegmentDistance = scale.toPixelsDouble(constants.maxSegmentDistance);
             minProjection = scale.toPixelsDouble(constants.minProjection);
+            maxRunDistance = scale.toPixelsDouble(constants.maxRunDistance);
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);

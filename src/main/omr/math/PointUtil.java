@@ -13,6 +13,7 @@ package omr.math;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
+import java.util.Comparator;
 
 /**
  * Class {@code PointUtil} gathers utility methods for points (and vectors).
@@ -21,8 +22,31 @@ import java.awt.geom.Point2D;
  */
 public abstract class PointUtil
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** To compare points on abscissa. */
+    public static final Comparator<Point> byAbscissa = new Comparator<Point>()
+    {
+        @Override
+        public int compare (Point p1,
+                            Point p2)
+        {
+            return Integer.compare(p1.x, p2.x);
+        }
+    };
+
+    /** To compare points on ordinate. */
+    public static final Comparator<Point> byOrdinate = new Comparator<Point>()
+    {
+        @Override
+        public int compare (Point p1,
+                            Point p2)
+        {
+            return Integer.compare(p1.y, p2.y);
+        }
+    };
+
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addition //
     //----------//

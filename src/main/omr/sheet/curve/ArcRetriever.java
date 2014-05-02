@@ -20,6 +20,10 @@ import omr.grid.FilamentLine;
 import omr.grid.StaffInfo;
 
 import omr.math.BasicLine;
+import omr.math.PointUtil;
+
+import omr.run.Run;
+import omr.run.RunsTable;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -37,7 +41,6 @@ import static java.lang.Math.min;
 import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -86,6 +89,9 @@ public class ArcRetriever
     @Navigable(false)
     private final Sheet sheet;
 
+    /** All vertical runs of the page. */
+    private final RunsTable verticalRuns;
+
     /** Curves environment. */
     @Navigable(false)
     private final Curves curves;
@@ -115,6 +121,7 @@ public class ArcRetriever
     {
         this.curves = curves;
         sheet = curves.getSheet();
+        verticalRuns = sheet.getWholeVerticalTable();
         skeleton = curves.getSkeleton();
 
         params = new Parameters(sheet.getScale());
@@ -136,7 +143,11 @@ public class ArcRetriever
                 if (pix == ARC) {
                     // Basic arc pixel, not yet processed, so scan full arc
                     scanArc(x, y, null, 0);
-                } else if (isJunction(pix)) {
+                }
+
+                pix = skeleton.getPixel(x, y);
+
+                if (isJunction(pix)) {
                     // Junction pixel, so scan all arcs linked to this junction point
                     if (!isJunctionProcessed(pix)) {
                         scanJunction(x, y);
@@ -146,17 +157,10 @@ public class ArcRetriever
         }
 
         // Sort arcsEnds by abscissa
-        Collections.sort(
-                skeleton.arcsEnds,
-                new Comparator<Point>()
-        {
-            @Override
-            public int compare (Point p1,
-                                Point p2)
-            {
-                return Integer.compare(p1.x, p2.x);
-            }
-                });
+        Collections.sort(skeleton.arcsEnds, PointUtil.byAbscissa);
+
+        // Sort arcsPivots by abscissa
+        Collections.sort(skeleton.arcsPivots, PointUtil.byAbscissa);
     }
 
     //-------//
@@ -398,13 +402,22 @@ public class ArcRetriever
      * @param y             starting ordinate
      * @param startJunction start junction point if any, null if none
      * @param lastDir       last direction (0 if none)
-     * @return the arc fully scanned
      */
-    private Arc scanArc (int x,
-                         int y,
-                         Point startJunction,
-                         int lastDir)
+    private void scanArc (int x,
+                          int y,
+                          Point startJunction,
+                          int lastDir)
     {
+        // Check vertical run at location
+        Run run = verticalRuns.getRunAt(x, y);
+        int runLength = run.getLength();
+
+        if (runLength > params.maxRunLength) {
+            skeleton.setPixel(x, y, JUNCTION);
+
+            return;
+        }
+
         // Remember starting point
         Arc arc = new Arc(startJunction);
         addPoint(arc, x, y, false);
@@ -430,22 +443,21 @@ public class ArcRetriever
 
         // Check arc shape
         ArcShape shape = determineShape(arc);
-        storeShape(arc, shape);
 
-        if (shape.isSlurRelevant()) {
-            Point first = arc.getPoints().get(0);
-            skeleton.arcsMap.put(first, arc);
-            skeleton.arcsEnds.add(first);
+        if (arc.getLength() > 0) {
+            storeShape(arc, shape);
 
-            Point last = arc.getPoints().get(arc.getPoints().size() - 1);
-            skeleton.arcsMap.put(last, arc);
-            skeleton.arcsEnds.add(last);
+            if (shape.isSlurRelevant()) {
+                Point first = arc.getPoints().get(0);
+                skeleton.arcsMap.put(first, arc);
+                skeleton.arcsEnds.add(first);
 
-            return arc;
-        } else {
-            hide(arc);
-
-            return null;
+                Point last = arc.getPoints().get(arc.getPoints().size() - 1);
+                skeleton.arcsMap.put(last, arc);
+                skeleton.arcsEnds.add(last);
+            } else {
+                hide(arc);
+            }
         }
     }
 
@@ -472,14 +484,17 @@ public class ArcRetriever
 
             if (pix == ARC) {
                 scanArc(nx, ny, startJunction, dir);
-            } else if (isJunction(pix)) {
+            }
+
+            pix = skeleton.getPixel(nx, ny);
+
+            if (isJunction(pix)) {
                 if (!isJunctionProcessed(pix)) {
                     // We have a junction point, touching this one, hence use a no-point arc
                     Point stopJunction = new Point(nx, ny);
                     Arc arc = new Arc(startJunction, stopJunction);
                     arc.checkOrientation();
-                    skeleton.arcsMap.put(startJunction, arc);
-                    skeleton.arcsMap.put(stopJunction, arc);
+                    skeleton.addVoidArc(arc);
                 }
             }
         }
@@ -514,8 +529,7 @@ public class ArcRetriever
     /**
      * Walk along the arc in the desired orientation, starting at (x,y) point, until no
      * more incremental move is possible.
-     * Detect the end of a straight line (either horizontal or vertical) and insert an artificial
-     * junction point.
+     * Always check the vertical run which contains the current point.
      *
      * @param xStart  starting abscissa
      * @param yStart  starting ordinate
@@ -535,6 +549,21 @@ public class ArcRetriever
         Status status;
 
         while (Status.CONTINUE == (status = move(arc, cx, cy, reverse))) {
+            // Check vertical run length at current point
+            Run run = verticalRuns.getRunAt(cx, cy);
+            int runLength = run.getLength();
+
+            if (runLength > params.maxRunLength) {
+                logger.debug("Stopping {} before x:{} y:{} lg:{}", arc, cx, cy, runLength);
+                // Insert an artificial junction point and stop the arc
+                skeleton.setPixel(cx, cy, JUNCTION);
+
+                Point junctionPt = new Point(cx, cy);
+                arc.setJunction(junctionPt, reverse);
+
+                return;
+            }
+
             addPoint(arc, cx, cy, reverse);
         }
     }
@@ -577,6 +606,10 @@ public class ArcRetriever
                 "(co)tangent",
                 0.03,
                 "Minimum (inverted) slope, to detect vertical and horizontal lines");
+
+        final Scale.Fraction maxRunLength = new Scale.Fraction(
+                0.6,
+                "Maximum length for a vertical run");
     }
 
     //------------//
@@ -603,6 +636,8 @@ public class ArcRetriever
 
         final double minSlope;
 
+        final int maxRunLength;
+
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -620,6 +655,7 @@ public class ArcRetriever
             minStaffArcLength = scale.toPixels(constants.minStaffArcLength);
             maxStaffArcLength = scale.toPixels(constants.maxStaffArcLength);
             minStaffLineDistance = scale.toPixelsDouble(constants.minStaffLineDistance);
+            maxRunLength = scale.toPixels(constants.maxRunLength);
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);

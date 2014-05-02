@@ -147,8 +147,14 @@ public class Skeleton
     /** Map of relevant arcs. (end points -> arc) */
     public final Map<Point, Arc> arcsMap = new LinkedHashMap<Point, Arc>();
 
+    /** Map of void arcs. (pivot -> arc(s)) */
+    public final Map<Point, List<Arc>> voidArcsMap = new LinkedHashMap<Point, List<Arc>>();
+
     /** List of arcs end points, with no junction, by abscissa. */
     public final List<Point> arcsEnds = new ArrayList<Point>();
+
+    /** List of arc pivot points, by abscissa. */
+    public final List<Point> arcsPivots = new ArrayList<Point>();
 
     /** Map of non crossable erased inters. */
     private Map<SystemInfo, List<Inter>> nonCrossables;
@@ -226,8 +232,7 @@ public class Skeleton
                         Shape.STEM));
 
         // Erase vertical seeds
-        erasedSeeds = eraser.eraseGlyphs(Arrays.asList(Shape.VERTICAL_SEED));
-
+        ///erasedSeeds = eraser.eraseGlyphs(Arrays.asList(Shape.VERTICAL_SEED));
         // Build buffer
         buffer = new ByteProcessor(img);
         buffer.threshold(127);
@@ -279,8 +284,7 @@ public class Skeleton
     // isJunctionProcessed //
     //---------------------//
     /**
-     * Tell whether the pixel value indicates a junction point
-     * already processed.
+     * Tell whether the pixel value indicates a junction point already processed.
      *
      * @param pix pixel gray value
      * @return true if junction already processed
@@ -294,8 +298,7 @@ public class Skeleton
     // isProcessed //
     //-------------//
     /**
-     * Tell whether the pixel value indicates an end point of an arc
-     * already processed.
+     * Tell whether the pixel value indicates an end point of an arc already processed.
      *
      * @param pix pixel gray value
      * @return true if arc already processed
@@ -317,6 +320,33 @@ public class Skeleton
     public static boolean isSide (int dir)
     {
         return (dir % 2) == 0;
+    }
+
+    //------------//
+    // addVoidArc //
+    //------------//
+    /**
+     * Add a void arc (reduced to its junctions points) into the specific void arcs map.
+     *
+     * @param arc the void arc to register
+     */
+    public void addVoidArc (Arc arc)
+    {
+        for (boolean rev : new boolean[]{true, false}) {
+            Point junctionPt = arc.getJunction(rev);
+            List<Arc> arcs = voidArcsMap.get(junctionPt);
+
+            if (arcs == null) {
+                voidArcsMap.put(junctionPt, arcs = new ArrayList<Arc>());
+            }
+
+            arcs.add(arc);
+
+            // Register pivot points
+            if (!arcsPivots.contains(junctionPt)) {
+                arcsPivots.add(junctionPt);
+            }
+        }
     }
 
     //----------//

@@ -153,7 +153,7 @@ public class LinesRetriever
     /**
      * Build the underlying horizontal lag, and first populate it with
      * only the long horizontal sections.
-     * Short horizontal sections will be added later (via createShortSections())
+     * Short horizontal sections will be added later (via {@link #createShortSections()})
      *
      * @param wholeVertTable the provided table of all (vertical) runs
      * @param showRuns       (debug) true to create intermediate views on runs
@@ -943,7 +943,7 @@ public class LinesRetriever
                 "Maximum ratio in length for a run to be combined with an existing section");
 
         final Constant.Ratio maxLengthRatioShort = new Constant.Ratio(
-                3.0,
+                2.5, //3.0,
                 "Maximum ratio in length for a short run to be combined with an existing section");
 
         // Constants specified WRT *maximum* line thickness (scale.getmaxFore())

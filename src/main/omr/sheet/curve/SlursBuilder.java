@@ -25,7 +25,6 @@ import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 
-import omr.sig.Exclusion;
 import omr.sig.GradeImpacts;
 import omr.sig.Inter;
 import omr.sig.SIGraph;
@@ -138,6 +137,12 @@ public class SlursBuilder
             }
 
             logger.info("Slurs: {}", pageSlurs.size());
+
+            // Retrieve underlying glyph for each slur
+            for (SlurInter s : pageSlurs) {
+                SlurInfo info = s.getInfo();
+                info.getGlyph(sheet, params.maxRunDistance);
+            }
         } catch (Throwable ex) {
             logger.warn("Error in SlursBuilder: " + ex, ex);
         }
@@ -214,6 +219,7 @@ public class SlursBuilder
                             Curve curve)
     {
         final Arc arc = arcView.getArc();
+
         if ((maxLength != null) && (arc.getLength() > maxLength)) {
             return null;
         }
@@ -482,29 +488,10 @@ public class SlursBuilder
 
         clump.clear();
 
-        // Discard the ones with too short abscissa length
-        int upperXLength = 0;
-        SlurInter longest = null;
-
-        for (SlurInter slur : inters) {
-            int xLength = slur.getInfo().getXLength();
-
-            if (upperXLength < xLength) {
-                upperXLength = xLength;
-                longest = slur;
-            }
-        }
-
+        // Discard the ones with too short distance from one end to the other
+        SlurInter longest = purgeShortests(inters);
         if (longest == null) {
             return;
-        }
-
-        int quorum = (int) Math.ceil(params.quorumRatio * upperXLength);
-
-        for (Iterator<SlurInter> it = inters.iterator(); it.hasNext();) {
-            if (quorum > it.next().getInfo().getLength()) {
-                it.remove();
-            }
         }
 
         // Discard those with grade lower than grade of longest candidate
@@ -519,6 +506,41 @@ public class SlursBuilder
         for (SlurInter slur : inters) {
             clump.add(slur.getInfo());
         }
+    }
+
+    /**
+     * Discard the inters with shortest extension.
+     * @param inters the collection to purge
+     * @return the longest inter
+     */
+    private SlurInter purgeShortests(List<SlurInter> inters)
+    {
+        int maxExt2 = 0;
+        SlurInter longest = null;
+
+        for (SlurInter slur : inters) {
+            int ext2 = slur.getInfo().getExtensionSq();
+
+            if (maxExt2 < ext2) {
+                maxExt2 = ext2;
+                longest = slur;
+            }
+        }
+
+        if (longest == null) {
+            return null;
+        }
+
+        int quorum = (int) Math.ceil(params.quorumRatio * params.quorumRatio * maxExt2);
+
+        for (Iterator<SlurInter> it = inters.iterator(); it.hasNext();) {
+            SlurInfo slur = it.next().getInfo();
+            if (slur.getExtensionSq() < quorum) {
+                it.remove();
+            }
+        }
+
+        return longest;
     }
 
     /**
@@ -764,7 +786,7 @@ public class SlursBuilder
                 "Length for side osculatory model");
 
         final Scale.Fraction minCircleRadius = new Scale.Fraction(
-                0.5,
+                0.4,
                 "Minimum circle radius for a slur");
 
         final Scale.Fraction maxCircleRadius = new Scale.Fraction(
@@ -799,7 +821,7 @@ public class SlursBuilder
 
         final Constant.Double minAngleFromVerticalLow = new Constant.Double(
                 "degree",
-                20.0,
+                10.0,
                 "Low minimum angle (in degrees) between slur and vertical");
 
         final Constant.Double minAngleFromVerticalHigh = new Constant.Double(
@@ -814,6 +836,10 @@ public class SlursBuilder
         final Scale.Fraction minProjection = new Scale.Fraction(
                 -1.0,
                 "Minimum projection on curve for arc extension");
+
+        final Scale.Fraction maxRunDistance = new Scale.Fraction(
+                0.25,
+                "Maximum distance from any run end to curve points");
     }
 
     //------------//
@@ -866,6 +892,8 @@ public class SlursBuilder
 
         final double minProjection;
 
+        final double maxRunDistance;
+
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -894,6 +922,7 @@ public class SlursBuilder
             minAngleFromVerticalHigh = toRadians(constants.minAngleFromVerticalHigh.getValue());
             quorumRatio = constants.quorumRatio.getValue();
             minProjection = scale.toPixelsDouble(constants.minProjection);
+            maxRunDistance = scale.toPixelsDouble(constants.maxRunDistance);
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);

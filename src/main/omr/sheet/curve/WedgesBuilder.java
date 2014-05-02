@@ -84,13 +84,13 @@ public class WedgesBuilder
     // buildWedges //
     //-------------//
     /**
-     * Wedges are like "hair pins", composed of two converging lines.
+     * Wedges look like "hair pins", composed of two converging lines.
      * The pair of lines of a wedge are of similar length (short or long) and rather horizontal.
      * By comparison, ending lines are isolated, long and strictly horizontal.
      */
     public void buildWedges ()
     {
-        // Use a area on left end of a segment and look for compatible segments
+        // Use an area on left end of a segment and look for compatible segments
         // Do the same on right end of segments
         List<SegmentInter> segments = curves.getSegments();
 

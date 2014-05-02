@@ -717,7 +717,7 @@ public class SlursLinker
                 }
             }
 
-            if (info.isHorizontal()) {
+            ///if (info.isHorizontal()) {
                 // Determine the stems related to notes found
                 Set<Inter> relatedStems = stemsOf(found.keySet());
 
@@ -740,7 +740,7 @@ public class SlursLinker
                         }
                     }
                 }
-            }
+            ///}
 
             return found;
         }
@@ -869,6 +869,7 @@ public class SlursLinker
         private SlurInter selectAmong (Set<SlurInter> inters,
                                        final Map<SlurInter, Map<HorizontalSide, NoteLink>> map)
         {
+            logger.info("selectAmong {}", inters);
             List<SlurInter> list = new ArrayList<SlurInter>(inters);
 
             // Sort by mean x-distance
@@ -916,6 +917,7 @@ public class SlursLinker
 
                     // We do have the same embraced notes as slurs above, so use Euclidian distance
                     double dist = meanEuclidianDist(m);
+                    logger.info("   {} euclide:{}", slur, dist);
 
                     if (dist < bestDist) {
                         bestDist = dist;

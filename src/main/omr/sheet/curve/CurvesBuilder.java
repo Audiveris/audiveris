@@ -130,6 +130,135 @@ public abstract class CurvesBuilder
     protected abstract Curve addArc (ArcView arcView,
                                      Curve curve);
 
+    /**
+     * Check whether the provided points can represent a curve.
+     *
+     * @param points the provided points
+     * @return the model if OK, null if not
+     */
+    protected abstract Model computeModel (List<Point> points);
+
+    //-------------//
+    // createCurve //
+    //-------------//
+    /**
+     * Create a curve instance from a seed arc
+     *
+     * @param seedArc the seed arc
+     * @param model   a model if any
+     * @return the created curve
+     */
+    protected Curve createCurve (Arc seedArc,
+                                 Model model)
+    {
+        return createInstance(
+                seedArc.getJunction(true),
+                seedArc.getJunction(false),
+                seedArc.getPoints(),
+                model,
+                Arrays.asList(seedArc));
+    }
+
+    //-------------//
+    // createCurve //
+    //-------------//
+    /**
+     * Create a new curve by appending an arc to an existing curve.
+     *
+     * @param curve   the existing curve
+     * @param arcView properly oriented view on appended arc
+     * @param points  the full sequence of points (curve + arc)
+     * @param model   new underlying model, if any
+     * @return the created curve
+     */
+    protected Curve createCurve (Curve curve,
+                                 ArcView arcView,
+                                 List<Point> points,
+                                 Model model)
+    {
+        Point firstJunction;
+        Point lastJunction;
+
+        if (reverse) {
+            firstJunction = arcView.getJunction(reverse);
+            lastJunction = curve.getJunction(!reverse);
+        } else {
+            firstJunction = curve.getJunction(!reverse);
+            lastJunction = arcView.getJunction(reverse);
+        }
+
+        if (points == null) {
+            points = curve.getAllPoints(arcView, reverse);
+        }
+
+        Set<Arc> parts = new HashSet<Arc>(curve.getParts());
+        parts.add(arcView.getArc());
+
+        return createInstance(firstJunction, lastJunction, points, model, parts);
+    }
+
+    /**
+     * Create a curve instance of proper type.
+     *
+     * @param firstJunction first junction point, if any
+     * @param lastJunction  second junction point, if any
+     * @param points        provided list of points
+     * @param model         an already computed model if any
+     * @param parts         all arcs used for this curve
+     * @return the created curve instance
+     */
+    protected abstract Curve createInstance (Point firstJunction,
+                                             Point lastJunction,
+                                             List<Point> points,
+                                             Model model,
+                                             Collection<Arc> parts);
+
+    /**
+     * (Try to) create an Inter instance from a curve candidate
+     *
+     * @param curve  the candidate
+     * @param inters (output) to be appended with created Inter instances
+     */
+    protected abstract void createInter (Curve curve,
+                                         Set<Inter> inters);
+
+    /**
+     * Additional filtering if any on the provided collection of inters.
+     *
+     * @param inters the collection of inters to further filter
+     */
+    protected abstract void filterInters (Set<Inter> inters);
+
+    /**
+     * Report the number of points at beginning of arc tested for connection.
+     *
+     * @return the number of points for which distance will be checked, or null for no limit
+     */
+    protected abstract Integer getArcCheckLength ();
+
+    /**
+     * Report the tangent unit vector at curve end.
+     *
+     * @param curve the curve
+     * @return the unit vector which extends the curve end
+     */
+    protected abstract Point2D getEndVector (Curve curve);
+
+    /**
+     * Check whether the curve end is getting tangent to staff line.
+     *
+     * @param curve the curve to check (on current side)
+     * @return the tangent staff line or null
+     */
+    protected abstract FilamentLine getTangentLine (Curve curve);
+
+    /**
+     * Among the clump of curves built from a common trunk, weed out some of them.
+     *
+     * @param clump the competing curves on the same side of a given seed
+     */
+    protected abstract void weed (Set<Curve> clump);
+
     //-------------//
     // arcDistance //
     //-------------//
@@ -223,14 +352,6 @@ public abstract class CurvesBuilder
         }
     }
 
-    /**
-     * Check whether the provided points can represent a curve.
-     *
-     * @param points the provided points
-     * @return the model if OK, null if not
-     */
-    protected abstract Model computeModel (List<Point> points);
-
     //-------------//
     // createCurve //
     //-------------//
@@ -272,31 +393,6 @@ public abstract class CurvesBuilder
                 null,
                 parts);
     }
-
-    /**
-     * Create a curve instance of proper type.
-     *
-     * @param firstJunction first junction point, if any
-     * @param lastJunction  second junction point, if any
-     * @param points        provided list of points
-     * @param model         an already computed model if any
-     * @param parts         all arcs used for this curve
-     * @return the created curve instance
-     */
-    protected abstract Curve createInstance (Point firstJunction,
-                                             Point lastJunction,
-                                             List<Point> points,
-                                             Model model,
-                                             Collection<Arc> parts);
-
-    /**
-     * (Try to) create an Inter instance from a curve candidate
-     *
-     * @param curve  the candidate
-     * @param inters (output) to be appended with created Inter instances
-     */
-    protected abstract void createInter (Curve curve,
-                                         Set<Inter> inters);
 
     //---------------//
     // defineExtArea //
@@ -370,35 +466,26 @@ public abstract class CurvesBuilder
         return area;
     }
 
+    //-----------------//
+    // needGlobalModel //
+    //-----------------//
     /**
-     * Additional filtering if any on the provided collection of inters.
+     * Make sure the curve has a global model and report it.
      *
-     * @param inters the collection of inters to further filter
+     * @param curve the curve at hand
+     * @return the curve global model
      */
-    protected abstract void filterInters (Set<Inter> inters);
+    protected Model needGlobalModel (Curve curve)
+    {
+        Model model = curve.getModel();
 
-    /**
-     * Report the number of points at beginning of arc tested for connection.
-     *
-     * @return the number of points for which distance will be checked, or null for no limit
-     */
-    protected abstract Integer getArcCheckLength ();
+        if (model == null) {
+            model = computeModel(curve.getPoints());
+            curve.setModel(model);
+        }
 
-    /**
-     * Report the tangent unit vector at curve end.
-     *
-     * @param curve the curve
-     * @return the unit vector which extends the curve end
-     */
-    protected abstract Point2D getEndVector (Curve curve);
-
-    /**
-     * Check whether the curve end is getting tangent to staff line.
-     *
-     * @param curve the curve to check (on current side)
-     * @return the tangent staff line or null
-     */
-    protected abstract FilamentLine getTangentLine (Curve curve);
+        return model;
+    }
 
     //------------//
     // projection //
@@ -429,93 +516,6 @@ public abstract class CurvesBuilder
         Point2D unit = model.getEndVector(reverse);
 
         return PointUtil.dotProduct(arcVector, unit);
-    }
-
-    /**
-     * Among the clump of curves built from a common trunk, weed out some of them.
-     *
-     * @param clump the competing curves on the same side of a given seed
-     */
-    protected abstract void weed (Set<Curve> clump);
-
-    //-------------//
-    // createCurve //
-    //-------------//
-    /**
-     * Create a curve instance from a seed arc
-     *
-     * @param seedArc the seed arc
-     * @param model   a model if any
-     * @return the created curve
-     */
-    protected Curve createCurve (Arc seedArc,
-                                 Model model)
-    {
-        return createInstance(
-                seedArc.getJunction(true),
-                seedArc.getJunction(false),
-                seedArc.getPoints(),
-                model,
-                Arrays.asList(seedArc));
-    }
-
-    //-------------//
-    // createCurve //
-    //-------------//
-    /**
-     * Create a new curve by appending an arc to an existing curve.
-     *
-     * @param curve   the existing curve
-     * @param arcView properly oriented view on appended arc
-     * @param points  the full sequence of points (curve + arc)
-     * @param model   new underlying model, if any
-     * @return the created curve
-     */
-    protected Curve createCurve (Curve curve,
-                                 ArcView arcView,
-                                 List<Point> points,
-                                 Model model)
-    {
-        Point firstJunction;
-        Point lastJunction;
-
-        if (reverse) {
-            firstJunction = arcView.getJunction(reverse);
-            lastJunction = curve.getJunction(!reverse);
-        } else {
-            firstJunction = curve.getJunction(!reverse);
-            lastJunction = arcView.getJunction(reverse);
-        }
-
-        if (points == null) {
-            points = curve.getAllPoints(arcView, reverse);
-        }
-
-        Set<Arc> parts = new HashSet<Arc>(curve.getParts());
-        parts.add(arcView.getArc());
-
-        return createInstance(firstJunction, lastJunction, points, model, parts);
-    }
-
-    //-----------------//
-    // needGlobalModel //
-    //-----------------//
-    /**
-     * Make sure the curve has a global model and report it.
-     *
-     * @param curve the curve at hand
-     * @return the curve global model
-     */
-    protected Model needGlobalModel (Curve curve)
-    {
-        Model model = curve.getModel();
-
-        if (model == null) {
-            model = computeModel(curve.getPoints());
-            curve.setModel(model);
-        }
-
-        return model;
     }
 
     //--------------//
@@ -646,7 +646,7 @@ public abstract class CurvesBuilder
                         }
 
                         if (crossing) {
-                            logger.warn("Non-crossable {} for {} rev:{}", nc, curve, reverse);
+                            logger.debug("Non-crossable {} for {} rev:{}", nc, curve, reverse);
                             it.remove();
 
                             break;
@@ -706,6 +706,7 @@ public abstract class CurvesBuilder
             final Rectangle box = area.getBounds();
             final int xMax = (box.x + box.width) - 1;
 
+            // Look for end points
             for (Point end : skeleton.arcsEnds) {
                 if (area.contains(end)) {
                     final Arc arc = skeleton.arcsMap.get(end);
@@ -716,6 +717,24 @@ public abstract class CurvesBuilder
                     }
                 } else if (end.x > xMax) {
                     break; // Since list arcsEnds is sorted
+                }
+            }
+
+            // Look for pivots of void arcs
+            for (Point pt : skeleton.arcsPivots) {
+                if (area.contains(pt)) {
+                    List<Arc> arcs = skeleton.voidArcsMap.get(pt);
+
+                    if (arcs != null) {
+                        for (Arc arc : arcs) {
+                            if (!arc.isAssigned() && !browsed.contains(arc)) {
+                                reachableArcs.add(curve.getArcView(arc, reverse));
+                                browsed.add(arc);
+                            }
+                        }
+                    }
+                } else if (pt.x > xMax) {
+                    break; // Since list arcsPivots is sorted
                 }
             }
         }
@@ -741,7 +760,17 @@ public abstract class CurvesBuilder
         Rectangle extBox = new Rectangle(ce.x, ce.y, 1, 1);
 
         for (ArcView arcView : reachableArcs) {
-            extBox.add(arcView.getEnd(!reverse));
+            Point arcEnd = arcView.getEnd(!reverse);
+
+            if (arcEnd != null) {
+                extBox.add(arcEnd);
+            } else {
+                Point arcPt = arcView.getJunction(!reverse);
+
+                if (arcPt != null) {
+                    extBox.add(arcPt);
+                }
+            }
         }
 
         return extBox;
@@ -792,11 +821,20 @@ public abstract class CurvesBuilder
                                      ArcView arcView)
     {
         Point ce = curve.getEnd(reverse);
+
+        if (ce == null) {
+            ce = curve.getJunction(reverse);
+        }
+
         Point ae = arcView.getEnd(!reverse);
+
+        if (ae == null) {
+            ae = arcView.getJunction(!reverse);
+        }
 
         // Check for adjacent points
         if ((Math.abs(ae.x - ce.x) <= 1) && (Math.abs(ae.y - ce.y) <= 1)) {
-            logger.info("Adjacent points {} {}", ce, ae);
+            logger.debug("Adjacent points {} {}", ce, ae);
 
             return true;
         }
@@ -808,7 +846,7 @@ public abstract class CurvesBuilder
         int[] vector = gap.computeVector(binaryBuf);
         int hole = gap.getLargestGap();
 
-        logger.info("{} {} rev:{} {} hole:{}", curve, arcView.getArc(), reverse, vector, hole);
+        logger.debug("{} {} rev:{} {} hole:{}", curve, arcView.getArc(), reverse, vector, hole);
 
         return hole <= params.gapMaxLength;
     }
@@ -895,6 +933,7 @@ public abstract class CurvesBuilder
         // Try to go past this pivot, keeping only the acceptable possibilities
         final Point np = new Point();
         boolean sideJunctionMet = false;
+        List<Arc> arcs = new ArrayList<Arc>();
 
         for (int dir : scans[lastDir]) {
             // If junction has already been met on side dir, stop here
@@ -910,32 +949,39 @@ public abstract class CurvesBuilder
                 continue;
             }
 
-            Arc arc = null;
+            arcs.clear();
 
             if (isProcessed(pix)) {
                 // Check arc shape
                 ArcShape shape = ArcShape.values()[pix - PROCESSED];
 
                 if (shape.isSlurRelevant()) {
-                    arc = skeleton.arcsMap.get(np); // Retrieve arc data
+                    Arc arc = skeleton.arcsMap.get(np); // Retrieve arc data
                     curves.checkBreak(arc);
+                    arcs.add(arc);
                 }
             } else if (isJunction(pix)) {
                 if (!np.equals(pivot)) {
-                    arc = skeleton.arcsMap.get(pivot);
+                    List<Arc> pivotArcs = skeleton.voidArcsMap.get(pivot);
+
+                    if (pivotArcs != null) {
+                        arcs.addAll(pivotArcs);
+                    }
                 }
             }
 
-            if ((arc != null) && !arc.isAssigned() && !browsed.contains(arc)) {
-                browsed.add(arc);
+            for (Arc arc : arcs) {
+                if (!arc.isAssigned() && !browsed.contains(arc)) {
+                    browsed.add(arc);
 
-                Curve sl = addArc(curve.getArcView(arc, reverse), curve);
+                    Curve sl = addArc(curve.getArcView(arc, reverse), curve);
 
-                if (sl != null) {
-                    newCurves.add(sl);
+                    if (sl != null) {
+                        newCurves.add(sl);
 
-                    if (isSide(dir) && isJunction(pix)) {
-                        sideJunctionMet = true;
+                        if (isSide(dir) && isJunction(pix)) {
+                            sideJunctionMet = true;
+                        }
                     }
                 }
             }

@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sheet.curve;
 
+import omr.math.PointUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,6 +154,21 @@ public class Arc
         } else {
             return points.get(points.size() - 1);
         }
+    }
+
+    /**
+     * Report the (square of) distance from arc first poit to arc last point
+     *
+     * @return the square of arc distance
+     */
+    public int getExtensionSq ()
+    {
+        Point p1 = points.get(0);
+        Point p2 = points.get(points.size() - 1);
+        int dx = p2.x - p1.x;
+        int dy = p2.y - p1.y;
+
+        return (dx * dx) + (dy * dy);
     }
 
     /**
