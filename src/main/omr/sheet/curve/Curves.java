@@ -50,7 +50,7 @@ public class Curves
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Point[] breakPoints = new Point[]{ new Point(1573, 473) // BINGO
+    private static final Point[] breakPoints = new Point[]{ new Point(439, 465) // BINGO
     //
     };
 

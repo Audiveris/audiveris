@@ -135,11 +135,9 @@ public class CurvesEraser
                 inter.accept(this);
             }
 
-            // Erase each staff DMZ?
+            // Erase system DMZ?
             if (constants.useDmz.isSet()) {
-                for (StaffInfo staff : system.getStaves()) {
-                    eraseDmz(staff);
-                }
+                eraseDmz(system);
             }
         }
 
@@ -157,15 +155,17 @@ public class CurvesEraser
     // eraseDmz //
     //----------//
     /**
-     * Erase from image the DMZ part of a staff
+     * Erase from image the DMZ part of a system.
      *
-     * @param staff the staff to process
+     * @param system the system to process
      */
-    private void eraseDmz (StaffInfo staff)
+    private void eraseDmz (SystemInfo system)
     {
-        int dmzEnd = staff.getDmzEnd();
-        int top = staff.getFirstLine().yAt(dmzEnd) - dmzDyMargin;
-        int bot = staff.getLastLine().yAt(dmzEnd) + dmzDyMargin;
+        StaffInfo firstStaff = system.getFirstStaff();
+        StaffInfo lastStaff = system.getLastStaff();
+        int dmzEnd = firstStaff.getDmzEnd();
+        int top = firstStaff.getFirstLine().yAt(dmzEnd) - dmzDyMargin;
+        int bot = lastStaff.getLastLine().yAt(dmzEnd) + dmzDyMargin;
         g.fillRect(0, top, dmzEnd, bot - top + 1);
     }
 

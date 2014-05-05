@@ -139,6 +139,24 @@ public class ShapeDescriptor
     }
 
     //-----------//
+    // getBounds //
+    //-----------//
+    /**
+     * Report the descriptor box knowing the symbol box.
+     *
+     * @param symBox the symbol box
+     * @return the bounds of containing descriptor
+     */
+    public Rectangle getBounds (Rectangle symBox)
+    {
+        for (Template tpl : variants.values()) {
+            return tpl.getBounds(symBox);
+        }
+
+        return null;
+    }
+
+    //-----------//
     // getHeight //
     //-----------//
     public int getHeight ()
@@ -250,6 +268,126 @@ public class ShapeDescriptor
         sb.append("(").append(width).append("x").append(height).append(")");
 
         return sb.toString();
+    }
+
+    //------------------//
+    // computeDistances //
+    //------------------//
+    /**
+     * Compute all distances to nearest foreground pixel.
+     * For this we work as if there was a foreground rectangle right around the image.
+     * Similarly, the non-relevant pixels are assumed to be foreground.
+     * This is to allow the detection of reliable background key points.
+     *
+     * @param img the source image
+     * @param key the template specs
+     * @return the table of distances to foreground
+     */
+    private static Table computeDistances (BufferedImage img,
+                                           Key key)
+    {
+        // Retrieve foreground pixels
+        final int width = img.getWidth();
+        final int height = img.getHeight();
+        final boolean[][] fore = new boolean[width + 2][height + 2];
+
+        // Fill with img foreground pixels and irrelevant pixels
+        for (int y = 1; y < (height + 1); y++) {
+            for (int x = 1; x < (width + 1); x++) {
+                Color pix = new Color(img.getRGB(x - 1, y - 1), true);
+
+                if (pix.equals(Color.BLACK) || (pix.getAlpha() == 0)) {
+                    fore[x][y] = true;
+                }
+            }
+        }
+
+        // Surround with a rectangle of foreground pixels
+        for (int y = 0; y < (height + 2); y++) {
+            fore[0][y] = true;
+            fore[width + 1][y] = true;
+        }
+
+        for (int x = 0; x < (width + 2); x++) {
+            fore[x][0] = true;
+            fore[x][height + 1] = true;
+        }
+
+        // Compute template distance transform
+        final Table distances = new ChamferDistance.Short().compute(fore);
+
+        if (logger.isDebugEnabled()) {
+            distances.dump(key + "  distances");
+        }
+
+        // Trim the distance table of its surrounding rectangle?
+        return distances;
+    }
+
+    //---------//
+    // getCode //
+    //---------//
+    private static int getCode (Key key)
+    {
+        switch (key.shape) {
+        case NOTEHEAD_BLACK:
+        case NOTEHEAD_BLACK_SMALL:
+            return 207;
+
+        case NOTEHEAD_VOID:
+        case NOTEHEAD_VOID_SMALL:
+            return 250;
+
+        case WHOLE_NOTE:
+        case WHOLE_NOTE_SMALL:
+            return 119;
+        }
+
+        logger.error(key.shape + " is not supported!");
+
+        return 0;
+    }
+
+    //--------------//
+    // getKeyPoints //
+    //--------------//
+    /**
+     * Build the collection of key points to be used for matching tests.
+     * These are the locations where the image distance value will be checked against the recorded
+     * template distance value.
+     * TODO: We could carefully select a subset of these locations?
+     *
+     * @param img       the template source image
+     * @param distances the template distances (extended on each direction)
+     * @return the collection of key locations, with their corresponding distance value
+     */
+    private static List<PixelDistance> getKeyPoints (BufferedImage img,
+                                                     Table distances)
+    {
+        // Generate key points
+        List<PixelDistance> keyPoints = new ArrayList<PixelDistance>();
+
+        for (int y = 0, h = img.getHeight(); y < h; y++) {
+            for (int x = 0, w = img.getWidth(); x < w; x++) {
+                Color pix = new Color(img.getRGB(x, y), true);
+
+                // Select only relevant pixels
+                if (pix.getAlpha() == 255) {
+                    if (pix.getGreen() != 0) {
+                        // Green = hole, use dist to nearest foreground
+                        keyPoints.add(new PixelDistance(x, y, distances.getValue(x + 1, y + 1)));
+                    } else if (pix.getRed() != 0) {
+                        // Red = background, use dist to nearest foreground
+                        keyPoints.add(new PixelDistance(x, y, distances.getValue(x + 1, y + 1)));
+                    } else {
+                        // Black = foreground,  dist to nearest foreground is 0
+                        keyPoints.add(new PixelDistance(x, y, 0));
+                    }
+                }
+            }
+        }
+
+        return keyPoints;
     }
 
     //------------//
@@ -409,60 +547,6 @@ public class ShapeDescriptor
             Template tpl = createTemplate(key, font);
             putTemplate(key, tpl);
         }
-    }
-
-    //------------------//
-    // computeDistances //
-    //------------------//
-    /**
-     * Compute all distances to nearest foreground pixel.
-     * For this we work as if there was a foreground rectangle right around the image.
-     * Similarly, the non-relevant pixels are assumed to be foreground.
-     * This is to allow the detection of reliable background key points.
-     *
-     * @param img the source image
-     * @param key the template specs
-     * @return the table of distances to foreground
-     */
-    private static Table computeDistances (BufferedImage img,
-                                           Key key)
-    {
-        // Retrieve foreground pixels
-        final int width = img.getWidth();
-        final int height = img.getHeight();
-        final boolean[][] fore = new boolean[width + 2][height + 2];
-
-        // Fill with img foreground pixels and irrelevant pixels
-        for (int y = 1; y < (height + 1); y++) {
-            for (int x = 1; x < (width + 1); x++) {
-                Color pix = new Color(img.getRGB(x - 1, y - 1), true);
-
-                if (pix.equals(Color.BLACK) || (pix.getAlpha() == 0)) {
-                    fore[x][y] = true;
-                }
-            }
-        }
-
-        // Surround with a rectangle of foreground pixels
-        for (int y = 0; y < (height + 2); y++) {
-            fore[0][y] = true;
-            fore[width + 1][y] = true;
-        }
-
-        for (int x = 0; x < (width + 2); x++) {
-            fore[x][0] = true;
-            fore[x][height + 1] = true;
-        }
-
-        // Compute template distance transform
-        final Table distances = new ChamferDistance.Short().compute(fore);
-
-        if (logger.isDebugEnabled()) {
-            distances.dump(key + "  distances");
-        }
-
-        // Trim the distance table of its surrounding rectangle?
-        return distances;
     }
 
     //----------------//
@@ -630,30 +714,6 @@ public class ShapeDescriptor
         return borders;
     }
 
-    //---------//
-    // getCode //
-    //---------//
-    private static int getCode (Key key)
-    {
-        switch (key.shape) {
-        case NOTEHEAD_BLACK:
-        case NOTEHEAD_BLACK_SMALL:
-            return 207;
-
-        case NOTEHEAD_VOID:
-        case NOTEHEAD_VOID_SMALL:
-            return 250;
-
-        case WHOLE_NOTE:
-        case WHOLE_NOTE_SMALL:
-            return 119;
-        }
-
-        logger.error(key.shape + " is not supported!");
-
-        return 0;
-    }
-
     //---------------//
     // getExtensions //
     //---------------//
@@ -728,48 +788,6 @@ public class ShapeDescriptor
         }
 
         return ext;
-    }
-
-    //--------------//
-    // getKeyPoints //
-    //--------------//
-    /**
-     * Build the collection of key points to be used for matching tests.
-     * These are the locations where the image distance value will be checked against the recorded
-     * template distance value.
-     * TODO: We could carefully select a subset of these locations?
-     *
-     * @param img       the template source image
-     * @param distances the template distances (extended on each direction)
-     * @return the collection of key locations, with their corresponding distance value
-     */
-    private static List<PixelDistance> getKeyPoints (BufferedImage img,
-                                                     Table distances)
-    {
-        // Generate key points
-        List<PixelDistance> keyPoints = new ArrayList<PixelDistance>();
-
-        for (int y = 0, h = img.getHeight(); y < h; y++) {
-            for (int x = 0, w = img.getWidth(); x < w; x++) {
-                Color pix = new Color(img.getRGB(x, y), true);
-
-                // Select only relevant pixels
-                if (pix.getAlpha() == 255) {
-                    if (pix.getGreen() != 0) {
-                        // Green = hole, use dist to nearest foreground
-                        keyPoints.add(new PixelDistance(x, y, distances.getValue(x + 1, y + 1)));
-                    } else if (pix.getRed() != 0) {
-                        // Red = background, use dist to nearest foreground
-                        keyPoints.add(new PixelDistance(x, y, distances.getValue(x + 1, y + 1)));
-                    } else {
-                        // Black = foreground,  dist to nearest foreground is 0
-                        keyPoints.add(new PixelDistance(x, y, 0));
-                    }
-                }
-            }
-        }
-
-        return keyPoints;
     }
 
     //--------------//

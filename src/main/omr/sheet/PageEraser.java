@@ -216,12 +216,14 @@ public abstract class PageEraser
     @Override
     public void visit (SlurInter slur)
     {
-        CubicCurve2D curve = slur.getInfo().getCurve();
+//        CubicCurve2D curve = slur.getInfo().getCurve();
+//
+//        if (curve != null) {
+//            g.setStroke(lineStroke);
+//            g.draw(curve);
+//        }
 
-        if (curve != null) {
-            g.setStroke(lineStroke);
-            g.draw(curve);
-        }
+        processGlyph(slur.getGlyph());
     }
 
     @Override

@@ -689,9 +689,9 @@ public abstract class CurvesBuilder
     /**
      * Retrieve all arcs within reach from curve end (over some white gap)
      *
-     * @param curve   current curve (on 'reverse' side)
+     * @param curve        current curve (on 'reverse' side)
      * @param browsed arcs already considered
-     * @param tgLine  tangent line nearby if any
+     * @param tgLine       tangent line nearby if any
      * @return the set of (new) reachable arcs
      */
     private Set<ArcView> findReachableArcs (Curve curve,
@@ -720,23 +720,23 @@ public abstract class CurvesBuilder
                 }
             }
 
-            // Look for pivots of void arcs
-            for (Point pt : skeleton.arcsPivots) {
-                if (area.contains(pt)) {
-                    List<Arc> arcs = skeleton.voidArcsMap.get(pt);
-
-                    if (arcs != null) {
-                        for (Arc arc : arcs) {
-                            if (!arc.isAssigned() && !browsed.contains(arc)) {
-                                reachableArcs.add(curve.getArcView(arc, reverse));
-                                browsed.add(arc);
-                            }
-                        }
-                    }
-                } else if (pt.x > xMax) {
-                    break; // Since list arcsPivots is sorted
-                }
-            }
+//            // Look for pivots of void arcs
+//            for (Point pt : skeleton.arcsPivots) {
+//                if (area.contains(pt)) {
+//                    List<Arc> arcs = skeleton.voidArcsMap.get(pt);
+//
+//                    if (arcs != null) {
+//                        for (Arc arc : arcs) {
+//                            if (!arc.isAssigned() && !browsed.contains(arc)) {
+//                                reachableArcs.add(curve.getArcView(arc, reverse));
+//                                browsed.add(arc);
+//                            }
+//                        }
+//                    }
+//                } else if (pt.x > xMax) {
+//                    break; // Since list arcsPivots is sorted
+//                }
+//            }
         }
 
         return reachableArcs;

@@ -16,6 +16,8 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Shape;
+
 import omr.grid.FilamentLine;
 import omr.grid.StaffInfo;
 
@@ -138,11 +140,11 @@ public class SlursBuilder
 
             logger.info("Slurs: {}", pageSlurs.size());
 
-            // Retrieve underlying glyph for each slur
-            for (SlurInter s : pageSlurs) {
-                SlurInfo info = s.getInfo();
-                info.getGlyph(sheet, params.maxRunDistance);
-            }
+            //            // Retrieve underlying glyph for each slur
+            //            for (SlurInter s : pageSlurs) {
+            //                SlurInfo info = s.getInfo();
+            //                info.getGlyph(sheet, params.maxRunDistance);
+            //            }
         } catch (Throwable ex) {
             logger.warn("Error in SlursBuilder: " + ex, ex);
         }
@@ -383,6 +385,12 @@ public class SlursBuilder
         GradeImpacts impacts = computeImpacts(slur, true);
 
         if ((impacts != null) && (impacts.getGrade() >= SlurInter.getMinGrade())) {
+            slur.retrieveGlyph(sheet, params.maxRunDistance);
+
+            if (slur.getGlyph() != null) {
+                slur.getGlyph().setShape(Shape.SLUR);
+            }
+
             inters.add(new SlurInter(slur, impacts));
         }
     }
@@ -490,6 +498,7 @@ public class SlursBuilder
 
         // Discard the ones with too short distance from one end to the other
         SlurInter longest = purgeShortests(inters);
+
         if (longest == null) {
             return;
         }
@@ -506,41 +515,6 @@ public class SlursBuilder
         for (SlurInter slur : inters) {
             clump.add(slur.getInfo());
         }
-    }
-
-    /**
-     * Discard the inters with shortest extension.
-     * @param inters the collection to purge
-     * @return the longest inter
-     */
-    private SlurInter purgeShortests(List<SlurInter> inters)
-    {
-        int maxExt2 = 0;
-        SlurInter longest = null;
-
-        for (SlurInter slur : inters) {
-            int ext2 = slur.getInfo().getExtensionSq();
-
-            if (maxExt2 < ext2) {
-                maxExt2 = ext2;
-                longest = slur;
-            }
-        }
-
-        if (longest == null) {
-            return null;
-        }
-
-        int quorum = (int) Math.ceil(params.quorumRatio * params.quorumRatio * maxExt2);
-
-        for (Iterator<SlurInter> it = inters.iterator(); it.hasNext();) {
-            SlurInfo slur = it.next().getInfo();
-            if (slur.getExtensionSq() < quorum) {
-                it.remove();
-            }
-        }
-
-        return longest;
     }
 
     /**
@@ -609,6 +583,8 @@ public class SlursBuilder
         double angleImpact = (params.maxArcAngleHigh - arcAngle) / (params.maxArcAngleHigh
                                                                     - params.maxArcAngleLow);
 
+        // Features below are relevant only for full slur evaluations
+        ///if (both) {
         // No vertical slur (mid angle close to 0 or PI)
         double midAngle = circle.getMidAngle();
 
@@ -660,10 +636,14 @@ public class SlursBuilder
 
         return new SlurInter.Impacts(
                 distImpact,
+                angleImpact,
                 widthImpact,
                 heightImpact,
-                angleImpact,
                 vertImpact);
+
+        //        } else {
+        //            return new SlurInter.Impacts(distImpact, angleImpact, 0.5, 0.5, 0.5);
+        //        }
     }
 
     /**
@@ -709,6 +689,43 @@ public class SlursBuilder
         Collections.sort(list, Arc.byReverseLength);
 
         return list;
+    }
+
+    /**
+     * Discard the inters with shortest extension.
+     *
+     * @param inters the collection to purge
+     * @return the longest inter
+     */
+    private SlurInter purgeShortests (List<SlurInter> inters)
+    {
+        int maxExt2 = 0;
+        SlurInter longest = null;
+
+        for (SlurInter slur : inters) {
+            int ext2 = slur.getInfo().getExtensionSq();
+
+            if (maxExt2 < ext2) {
+                maxExt2 = ext2;
+                longest = slur;
+            }
+        }
+
+        if (longest == null) {
+            return null;
+        }
+
+        int quorum = (int) Math.ceil(params.quorumRatio * params.quorumRatio * maxExt2);
+
+        for (Iterator<SlurInter> it = inters.iterator(); it.hasNext();) {
+            SlurInfo slur = it.next().getInfo();
+
+            if (slur.getExtensionSq() < quorum) {
+                it.remove();
+            }
+        }
+
+        return longest;
     }
 
     //----------//
@@ -794,7 +811,7 @@ public class SlursBuilder
                 "Maximum circle radius for a slur");
 
         final Scale.Fraction minSlurWidthLow = new Scale.Fraction(
-                0.8,
+                0.6,
                 "Low minimum width for a slur");
 
         final Scale.Fraction minSlurWidthHigh = new Scale.Fraction(
@@ -802,7 +819,7 @@ public class SlursBuilder
                 "High minimum width for a slur");
 
         final Scale.Fraction minSlurHeightLow = new Scale.Fraction(
-                0.08,
+                0.07,
                 "Low minimum height for a slur");
 
         final Scale.Fraction minSlurHeightHigh = new Scale.Fraction(

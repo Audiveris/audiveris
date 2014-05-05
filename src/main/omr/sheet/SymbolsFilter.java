@@ -138,13 +138,12 @@ public class SymbolsFilter
                         Shape.CRESCENDO,
                         Shape.DECRESCENDO,
                         Shape.ENDING,
-                        Shape.LEDGER // Small shapes are treated differently?
-                //Shape.WHOLE_NOTE_SMALL,
-                //Shape.NOTEHEAD_BLACK_SMALL,
-                //Shape.NOTEHEAD_VOID_SMALL,
-                //Shape.BEAM_SMALL,
-                //Shape.BEAM_HOOK_SMALL
-                ));
+                        Shape.LEDGER,
+                        Shape.WHOLE_NOTE_SMALL,
+                        Shape.NOTEHEAD_BLACK_SMALL,
+                        Shape.NOTEHEAD_VOID_SMALL,
+                        Shape.BEAM_SMALL,
+                        Shape.BEAM_HOOK_SMALL));
 
         // Keep a copy on disk?
         if (constants.keepSymbolsBuffer.isSet()) {

@@ -44,12 +44,23 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code ArcRetriever} retrieve all arcs and store the interesting ones in
- * arcsMap.
- * Each arc has its two ending points flagged with a specific gray value to remember the arc shape.
+ * Class {@code ArcRetriever} retrieves all arcs and store the interesting ones in
+ * skeleton arcsMap (and voidArcsMap for void arcs).
+ * Each non-void arc has its two ending points flagged with a specific gray value to remember the
+ * arc shape.
+ * <p>
+ * This arc retrieval is performed as a standalone task, out of any curve retrieval (which is
+ * performed later).
+ * Hence it cannot use the model of a current curve to drive arc retrieval, which could be
+ * interesting when dealing with near vertical arcs.
+ * Only if the vertical run which contains the current point is longer than a threshold, an
+ * artificial junction point is set to force arc split at this point (since a switch from horizontal
+ * to vertical does not always result in a junction point being detected).
+ * If a skeleton sequence of points share the same (long) vertical run, only two junction points are
+ * set, one at the beginning and one at the end.
  * <pre>
  * - scanImage()              // Scan the whole image for arc starts
- *   + scanJunction()         // Scan arcs leaving a junction point
+ *   + scanJunction()         // Scan all arcs leaving a junction point
  *   |   + scanArc()
  *   + scanArc()              // Scan one arc
  *       + walkAlong()        // Walk till arc end (forward or backward)
@@ -111,6 +122,9 @@ public class ArcRetriever
     /** Last direction. */
     int lastDir;
 
+    /** Are we in a long run part?. */
+    boolean longRunPart;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates an ArcRetriever object
@@ -133,19 +147,23 @@ public class ArcRetriever
     //-----------//
     /**
      * Scan the whole image.
+     * Note the skeleton image has background pixels on the image border, hence there is no
+     * foreground point to look for there.
      */
     public void scanImage ()
     {
-        for (int x = 1, w = sheet.getWidth(); x < w; x++) {
-            for (int y = 1, h = sheet.getHeight(); y < h; y++) {
+        for (int x = 1, w = sheet.getWidth() - 1; x < w; x++) {
+            for (int y = 1, h = sheet.getHeight() - 1; y < h; y++) {
                 int pix = skeleton.getPixel(x, y);
 
                 if (pix == ARC) {
                     // Basic arc pixel, not yet processed, so scan full arc
                     scanArc(x, y, null, 0);
-                }
 
-                pix = skeleton.getPixel(x, y);
+                    // Re-read pixel value, since an artificial junction may have been set
+                    // (when the starting point is located on a long vertical run)
+                    pix = skeleton.getPixel(x, y);
+                }
 
                 if (isJunction(pix)) {
                     // Junction pixel, so scan all arcs linked to this junction point
@@ -395,8 +413,24 @@ public class ArcRetriever
     // scanArc //
     //---------//
     /**
-     * Scan an arc both ways, starting from a point of the arc, not necessarily an end
+     * Start the scan of an arc both ways, starting from a point of the arc, not
+     * necessarily an end point.
+     * <p>
+     * If the very first point is part of a long run, walk along the arc both ways until either a
+     * non-long run is met, or a junction point or a dead end.
+     * Make sure the "long-run part" is surrounded by junction points (or arc dead end).
+     * <p>
+     * If, during the scan, a "long-run" is encountered, a junction must be inserted and the arc
+     * scan stopped. The "long-run part" will be scanned later, certainly from the inserted junction
      * point.
+     * <p>
+     * TODO: Perhaps a similar junction point should be inserted when arc gets vertical (and not
+     * necessarily composed of long runs).
+     * <p>
+     * A long-run cannot be part of a curve, unless the curve is nearly vertical at this point.
+     * We should keep track of crossed runs, since they define the curve thickness (unless the run
+     * gets too far away from the curve, in this case it is crossed by the curve rather than being
+     * part of it).
      *
      * @param x             starting abscissa
      * @param y             starting ordinate
@@ -408,15 +442,9 @@ public class ArcRetriever
                           Point startJunction,
                           int lastDir)
     {
-        // Check vertical run at location
+        // Check vertical run at first location
         Run run = verticalRuns.getRunAt(x, y);
-        int runLength = run.getLength();
-
-        if (runLength > params.maxRunLength) {
-            skeleton.setPixel(x, y, JUNCTION);
-
-            return;
-        }
+        longRunPart = run.getLength() > params.maxRunLength;
 
         // Remember starting point
         Arc arc = new Arc(startJunction);
@@ -431,10 +459,13 @@ public class ArcRetriever
             // Set lastDir as the opposite of initial starting dir
             if (arc.getPoints().size() > 1) {
                 lastDir = getDir(arc.getPoints().get(1), arc.getPoints().get(0));
-            } else if (arc.getJunction(false) != null) {
+            } else if ((arc.getJunction(false) != null) && (arc.getPoints().size() > 0)) {
                 lastDir = getDir(arc.getJunction(false), arc.getPoints().get(0));
+            } else {
+                lastDir = 0;
             }
 
+            longRunPart = run.getLength() > params.maxRunLength;
             walkAlong(arc, x, y, true, lastDir);
         }
 
@@ -448,11 +479,11 @@ public class ArcRetriever
             storeShape(arc, shape);
 
             if (shape.isSlurRelevant()) {
-                Point first = arc.getPoints().get(0);
+                Point first = arc.getEnd(true);
                 skeleton.arcsMap.put(first, arc);
                 skeleton.arcsEnds.add(first);
 
-                Point last = arc.getPoints().get(arc.getPoints().size() - 1);
+                Point last = arc.getEnd(false);
                 skeleton.arcsMap.put(last, arc);
                 skeleton.arcsEnds.add(last);
             } else {
@@ -473,7 +504,7 @@ public class ArcRetriever
     private void scanJunction (int x,
                                int y)
     {
-        Point startJunction = new Point(x, y);
+        final Point startJunction = new Point(x, y);
         skeleton.setPixel(x, y, JUNCTION_PROCESSED);
 
         // Scan all arcs that depart from this junction point
@@ -484,9 +515,10 @@ public class ArcRetriever
 
             if (pix == ARC) {
                 scanArc(nx, ny, startJunction, dir);
-            }
 
-            pix = skeleton.getPixel(nx, ny);
+                // Re-read the pixel value
+                pix = skeleton.getPixel(nx, ny);
+            }
 
             if (isJunction(pix)) {
                 if (!isJunctionProcessed(pix)) {
@@ -551,17 +583,32 @@ public class ArcRetriever
         while (Status.CONTINUE == (status = move(arc, cx, cy, reverse))) {
             // Check vertical run length at current point
             Run run = verticalRuns.getRunAt(cx, cy);
-            int runLength = run.getLength();
 
-            if (runLength > params.maxRunLength) {
-                logger.debug("Stopping {} before x:{} y:{} lg:{}", arc, cx, cy, runLength);
-                // Insert an artificial junction point and stop the arc
-                skeleton.setPixel(cx, cy, JUNCTION);
+            if (run.getLength() > params.maxRunLength) {
+                if (!longRunPart) {
+                    logger.debug("Start of long run part at {} before x:{} y:{}", arc, cx, cy);
+                    // Insert a junction point
+                    skeleton.setPixel(cx, cy, JUNCTION);
+                    arc.setJunction(new Point(cx, cy), reverse);
 
-                Point junctionPt = new Point(cx, cy);
-                arc.setJunction(junctionPt, reverse);
+                    return; // Stop the arc
+                }
+            } else {
+                if (longRunPart) {
+                    // We have detected the end of the long run part
+                    logger.debug("End of long run part {} before x:{} y:{}", arc, cx, cy);
 
-                return;
+                    // Insert a junction point and shorten the points sequence accordingly
+                    Point vp = arc.getEnd(reverse);
+
+                    if (vp != null) {
+                        skeleton.setPixel(vp.x, vp.y, JUNCTION);
+                        arc.setJunction(vp, reverse);
+                        arc.getPoints().remove(reverse ? 0 : (arc.getPoints().size() - 1));
+                    }
+
+                    return; // Stop the arc
+                }
             }
 
             addPoint(arc, cx, cy, reverse);
@@ -657,9 +704,10 @@ public class ArcRetriever
             minStaffLineDistance = scale.toPixelsDouble(constants.minStaffLineDistance);
             maxRunLength = scale.toPixels(constants.maxRunLength);
 
-            if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
-            }
+            //            if (logger.isDebugEnabled()) {
+            Main.dumping.dump(this);
+
+            //            }
         }
     }
 }

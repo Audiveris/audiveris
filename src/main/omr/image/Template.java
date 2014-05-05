@@ -16,6 +16,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 
+import omr.math.GeoUtil;
 import omr.math.TableUtil;
 
 import ij.process.ByteProcessor;
@@ -239,6 +240,21 @@ public class Template
         final Point offset = getOffset(anchor);
 
         return new Rectangle(x - offset.x, y - offset.y, width, height);
+    }
+
+    //-----------------//
+    // getDescLocation //
+    //-----------------//
+    /**
+     * Report the bounds of descriptor knowing the symbol box.
+     *
+     * @param symBox the symbol box
+     * @return the descriptor box
+     */
+    public Rectangle getBounds (Rectangle symBox)
+    {
+        Point center = GeoUtil.centerOf(symBox);
+        return getBoundsAt(center.x, center.y, Anchor.CENTER);
     }
 
     //---------------------//

@@ -104,11 +104,11 @@ public class SegmentsBuilder
 
             logger.info("Segments: {}", segments.size());
 
-            // Retrieve underlying glyph for each segment
-            for (SegmentInter s : segments) {
-                SegmentInfo info = s.getInfo();
-                info.getGlyph(sheet, params.maxRunDistance);
-            }
+//            // Retrieve underlying glyph for each segment
+//            for (SegmentInter s : segments) {
+//                SegmentInfo info = s.getInfo();
+//                info.getGlyph(sheet, params.maxRunDistance);
+//            }
 
         } catch (Throwable ex) {
             logger.warn("Error in SegmentsBuilder: " + ex, ex);

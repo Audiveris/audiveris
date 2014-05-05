@@ -26,6 +26,7 @@ import omr.lag.SectionsBuilder;
 
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
+
 import static omr.sheet.SymbolsFilter.SYMBOL_ORIENTATION;
 
 import omr.sig.AbstractNoteInter;
@@ -35,6 +36,9 @@ import omr.sig.StemInter;
 
 import ij.process.ByteProcessor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -43,6 +47,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import omr.image.Anchored;
 
 /**
  * Class {@code SymbolsEraser} erases shapes and glyphs to prepare symbols retrieval.
@@ -58,8 +63,12 @@ import java.util.TreeMap;
 public class SymbolsEraser
         extends PageEraser
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(
+            SymbolsEraser.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Lag used by optional sections. */
     private final Lag symLag;
 
@@ -152,7 +161,7 @@ public class SymbolsEraser
             final boolean hasLine = (pitch % 2) == 0;
             final Template tpl = desc.getTemplate(
                     new Template.Key(inter.getShape(), hasLine));
-            final Rectangle box = inter.getBounds();
+            final Rectangle box = desc.getBounds(inter.getBounds());
             final List<Point> fores = tpl.getForegroundPixels(box, buffer);
 
             // Erase foreground pixels

@@ -40,7 +40,7 @@ public class SlurInter
     public SlurInter (SlurInfo info,
                       GradeImpacts impacts)
     {
-        super(info.getBounds(), Shape.SLUR, impacts);
+        super(info.getGlyph(), info.getBounds(), Shape.SLUR, impacts);
         this.info = info;
 
         // To debug attachments
@@ -90,23 +90,23 @@ public class SlurInter
         //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{
-            "dist", "width", "height", "angle", "vert"
+            "dist", "angle", "width", "height", "vert"
         };
 
         private static final double[] WEIGHTS = new double[]{3, 1, 1, 1, 1};
 
         //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double dist,
+                        double angle,
                         double width,
                         double height,
-                        double angle,
                         double vert)
         {
             super(NAMES, WEIGHTS);
             setImpact(0, dist);
-            setImpact(1, width);
-            setImpact(2, height);
-            setImpact(3, angle);
+            setImpact(1, angle);
+            setImpact(2, width);
+            setImpact(3, height);
             setImpact(4, vert);
         }
     }

@@ -89,10 +89,10 @@ public class Skeleton
      * +-----+-----+-----+
      * </pre>
      */
-    /** Delta abscissa, per heading. ... 0. 1. 2. 3. 4 . 5 . 6 . 7. 8 */
+    /** Delta abscissa, per heading. 0 1 2. 3. 4 . 5 . 6 . 7. 8 */
     static final int[] dxs = new int[]{0, 1, 1, 1, 0, -1, -1, -1, 0};
 
-    /** Delta ordinate, per heading. ... 0 . 1. 2. 3. 4. 5. 6 . 7. 8 */
+    /** Delta ordinate, per heading. 0 1. 2. 3. 4. 5. 6 . 7 . 8 */
     static final int[] dys = new int[]{0, -1, 0, 1, 1, 1, 0, -1, -1};
 
     /** Headings to scan, according to last heading. */
@@ -177,6 +177,124 @@ public class Skeleton
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // addVoidArc //
+    //------------//
+    /**
+     * Add a void arc (reduced to its junctions points) into the specific void arcs map.
+     *
+     * @param arc the void arc to register
+     */
+    public void addVoidArc (Arc arc)
+    {
+        for (boolean rev : new boolean[]{true, false}) {
+            Point junctionPt = arc.getJunction(rev);
+            List<Arc> arcs = voidArcsMap.get(junctionPt);
+
+            if (arcs == null) {
+                voidArcsMap.put(junctionPt, arcs = new ArrayList<Arc>());
+            }
+
+            arcs.add(arc);
+
+            // Register pivot points
+            if (!arcsPivots.contains(junctionPt)) {
+                arcsPivots.add(junctionPt);
+            }
+        }
+    }
+
+    //--------//
+    // getDir //
+    //--------//
+    /**
+     * Report the precise heading that goes from point 'from' to point 'to'.
+     *
+     * @param from p1
+     * @param to   p2
+     * @return heading p1 -> p2
+     */
+    public static int getDir (Point from,
+                              Point to)
+    {
+        int dx = to.x - from.x;
+        int dy = to.y - from.y;
+
+        return deltaToDir[1 + dx][1 + dy];
+    }
+
+    //----------//
+    // getPixel //
+    //----------//
+    /**
+     * Report pixel value at (x, y) location
+     *
+     * @param x abscissa
+     * @param y ordinate
+     * @return pixel value
+     */
+    public int getPixel (int x,
+                         int y)
+    {
+        return buf.get(x, y);
+    }
+
+    //------------//
+    // isJunction //
+    //------------//
+    /**
+     * Tell whether the pixel value indicates a junction point.
+     *
+     * @param pix pixel gray value
+     * @return true if junction
+     */
+    public static boolean isJunction (int pix)
+    {
+        return (pix >= JUNCTION) && (pix <= (JUNCTION + 10));
+    }
+
+    //---------------------//
+    // isJunctionProcessed //
+    //---------------------//
+    /**
+     * Tell whether the pixel value indicates a junction point already processed.
+     *
+     * @param pix pixel gray value
+     * @return true if junction already processed
+     */
+    public static boolean isJunctionProcessed (int pix)
+    {
+        return pix == JUNCTION_PROCESSED;
+    }
+
+    //-------------//
+    // isProcessed //
+    //-------------//
+    /**
+     * Tell whether the pixel value indicates an end point of an arc already processed.
+     *
+     * @param pix pixel gray value
+     * @return true if arc already processed
+     */
+    public static boolean isProcessed (int pix)
+    {
+        return (pix >= PROCESSED) && (pix < (PROCESSED + 10));
+    }
+
+    //--------//
+    // isSide //
+    //--------//
+    /**
+     * Tell whether the provided heading is a side one (Horizontal or Vertical).
+     *
+     * @param dir provided heading
+     * @return true if horizontal or vertical
+     */
+    public static boolean isSide (int dir)
+    {
+        return (dir % 2) == 0;
+    }
+
     //---------------//
     // buildSkeleton //
     //---------------//
@@ -247,124 +365,6 @@ public class Skeleton
         return img;
     }
 
-    //--------//
-    // getDir //
-    //--------//
-    /**
-     * Report the precise heading that goes from point 'from' to point 'to'.
-     *
-     * @param from p1
-     * @param to   p2
-     * @return heading p1 -> p2
-     */
-    public static int getDir (Point from,
-                              Point to)
-    {
-        int dx = to.x - from.x;
-        int dy = to.y - from.y;
-
-        return deltaToDir[1 + dx][1 + dy];
-    }
-
-    //------------//
-    // isJunction //
-    //------------//
-    /**
-     * Tell whether the pixel value indicates a junction point.
-     *
-     * @param pix pixel gray value
-     * @return true if junction
-     */
-    public static boolean isJunction (int pix)
-    {
-        return (pix >= JUNCTION) && (pix <= (JUNCTION + 10));
-    }
-
-    //---------------------//
-    // isJunctionProcessed //
-    //---------------------//
-    /**
-     * Tell whether the pixel value indicates a junction point already processed.
-     *
-     * @param pix pixel gray value
-     * @return true if junction already processed
-     */
-    public static boolean isJunctionProcessed (int pix)
-    {
-        return pix == JUNCTION_PROCESSED;
-    }
-
-    //-------------//
-    // isProcessed //
-    //-------------//
-    /**
-     * Tell whether the pixel value indicates an end point of an arc already processed.
-     *
-     * @param pix pixel gray value
-     * @return true if arc already processed
-     */
-    public static boolean isProcessed (int pix)
-    {
-        return (pix >= PROCESSED) && (pix < (PROCESSED + 10));
-    }
-
-    //--------//
-    // isSide //
-    //--------//
-    /**
-     * Tell whether the provided heading is a side one (Horizontal or Vertical).
-     *
-     * @param dir provided heading
-     * @return true if horizontal or vertical
-     */
-    public static boolean isSide (int dir)
-    {
-        return (dir % 2) == 0;
-    }
-
-    //------------//
-    // addVoidArc //
-    //------------//
-    /**
-     * Add a void arc (reduced to its junctions points) into the specific void arcs map.
-     *
-     * @param arc the void arc to register
-     */
-    public void addVoidArc (Arc arc)
-    {
-        for (boolean rev : new boolean[]{true, false}) {
-            Point junctionPt = arc.getJunction(rev);
-            List<Arc> arcs = voidArcsMap.get(junctionPt);
-
-            if (arcs == null) {
-                voidArcsMap.put(junctionPt, arcs = new ArrayList<Arc>());
-            }
-
-            arcs.add(arc);
-
-            // Register pivot points
-            if (!arcsPivots.contains(junctionPt)) {
-                arcsPivots.add(junctionPt);
-            }
-        }
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    /**
-     * Report pixel value at (x, y) location
-     *
-     * @param x abscissa
-     * @param y ordinate
-     * @return pixel value
-     */
-    public int getPixel (int x,
-                         int y)
-    {
-        return buf.get(x, y);
-    }
-
     //-------------//
     // renderItems //
     //-------------//
@@ -379,6 +379,12 @@ public class Skeleton
                 g.fillRect(p.x, p.y, 1, 1);
             }
         }
+
+//        // Render artificial junction points (for vertical parts)
+//        for (Point p : arcsPivots) {
+//            g.setColor(Color.MAGENTA);
+//            g.fillOval(p.x, p.y, 1, 1);
+//        }
     }
 
     //----------//

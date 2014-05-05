@@ -54,15 +54,16 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public abstract class Curve
-    extends Arc
-    implements AttachmentHolder
+        extends Arc
+        implements AttachmentHolder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger           logger = LoggerFactory.getLogger(Curve.class);
+    private static final Logger logger = LoggerFactory.getLogger(Curve.class);
 
     /** Comparison by left abscissa. */
-    public static final Comparator<Curve> byLeftAbscissa = new Comparator<Curve>() {
+    public static final Comparator<Curve> byLeftAbscissa = new Comparator<Curve>()
+    {
         @Override
         public int compare (Curve c1,
                             Curve c2)
@@ -72,7 +73,8 @@ public abstract class Curve
     };
 
     /** Comparison by right abscissa. */
-    public static final Comparator<Curve> byRightAbscissa = new Comparator<Curve>() {
+    public static final Comparator<Curve> byRightAbscissa = new Comparator<Curve>()
+    {
         @Override
         public int compare (Curve c1,
                             Curve c2)
@@ -81,9 +83,7 @@ public abstract class Curve
         }
     };
 
-
     //~ Instance fields ----------------------------------------------------------------------------
-
     /** Unique id. (within containing sheet) */
     protected final int id;
 
@@ -106,7 +106,6 @@ public abstract class Curve
     protected Glyph glyph;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     /**
      * Creates a new Curve object.
      *
@@ -117,11 +116,11 @@ public abstract class Curve
      * @param model         underlying model, if any
      * @param parts         all arcs used for this curve
      */
-    public Curve (int             id,
-                  Point           firstJunction,
-                  Point           lastJunction,
-                  List<Point>     points,
-                  Model           model,
+    public Curve (int id,
+                  Point firstJunction,
+                  Point lastJunction,
+                  List<Point> points,
+                  Model model,
                   Collection<Arc> parts)
     {
         super(firstJunction, lastJunction, points, model);
@@ -130,12 +129,33 @@ public abstract class Curve
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------------//
+    // getAbscissaComparator //
+    //-----------------------//
+    /**
+     * Report a comparator on abscissa
+     *
+     * @param reverse which side is concerned
+     * @return the comparator ready for use
+     */
+    public static Comparator<Curve> getAbscissaComparator (final boolean reverse)
+    {
+        return new Comparator<Curve>()
+        {
+            @Override
+            public int compare (Curve a1,
+                                Curve a2)
+            {
+                return Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
+            }
+        };
+    }
 
     //---------------//
     // addAttachment //
     //---------------//
     @Override
-    public void addAttachment (String         id,
+    public void addAttachment (String id,
                                java.awt.Shape attachment)
     {
         assert attachment != null : "Adding a null attachment";
@@ -158,27 +178,6 @@ public abstract class Curve
         for (Arc part : parts) {
             part.setAssigned(true);
         }
-    }
-
-    //-----------------------//
-    // getAbscissaComparator //
-    //-----------------------//
-    /**
-     * Report a comparator on abscissa
-     *
-     * @param reverse which side is concerned
-     * @return the comparator ready for use
-     */
-    public static Comparator<Curve> getAbscissaComparator (final boolean reverse)
-    {
-        return new Comparator<Curve>() {
-                @Override
-                public int compare (Curve a1,
-                                    Curve a2)
-                {
-                    return Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
-                }
-            };
     }
 
     //    //------------//
@@ -253,7 +252,7 @@ public abstract class Curve
      * @param rev side for slur extension
      * @return the proper view on extension arc
      */
-    public ArcView getArcView (Arc     arc,
+    public ArcView getArcView (Arc arc,
                                boolean rev)
     {
         Point curveJunction = getJunction(rev);
@@ -334,19 +333,12 @@ public abstract class Curve
     // getGlyph //
     //----------//
     /**
-     * Report the underlying glyph (lazily retrieved)
+     * Report the underlying glyph, if any.
      *
-     * @param sheet          the containing sheet
-     * @param maxRunDistance maximum distance from any run end to curve points
      * @return the underlying glyph (with relevant runs only)
      */
-    public Glyph getGlyph (Sheet  sheet,
-                           double maxRunDistance)
+    public Glyph getGlyph ()
     {
-        if (glyph == null) {
-            glyph = retrieveGlyph(sheet, maxRunDistance);
-        }
-
         return glyph;
     }
 
@@ -437,6 +429,76 @@ public abstract class Curve
         }
     }
 
+    //---------------//
+    // retrieveGlyph //
+    //---------------//
+    /**
+     * Retrieve the underlying glyph of a curve.
+     * Based on each point of curve sequence of points, we find the containing run (either
+     * horizontal or vertical), then the containing section.
+     * <p>
+     * However, we have to check that the containing section is actually compatible with the curve,
+     * to avoid picking up sections that cannot be part of the curve.
+     * Compatibility is checked for all vertices of section polygon.
+     *
+     * @param sheet          the containing sheet
+     * @param maxRunDistance maximum distance from any section vertex to curve points
+     * @return the curve glyph
+     */
+    public Glyph retrieveGlyph (Sheet sheet,
+                                double maxRunDistance)
+    {
+        RunsTable table = sheet.getWholeVerticalTable();
+        Lag hLag = sheet.getLag(Lags.HLAG);
+        Lag vLag = sheet.getLag(Lags.VLAG);
+        Set<Section> sectionsIn = new HashSet<Section>();
+        Set<Section> sectionsOut = new HashSet<Section>();
+
+        for (int index = 0; index < points.size(); index++) {
+            Point point = points.get(index);
+            Run wholeRun = table.getRunAt(point.x, point.y);
+
+            for (int y = wholeRun.getStart(); y <= wholeRun.getStop(); y++) {
+                Run run = hLag.getRunAt(point.x, y);
+
+                if (run == null) {
+                    run = vLag.getRunAt(point.x, y);
+                }
+
+                if (run != null) {
+                    Section section = run.getSection();
+
+                    if (section != null) {
+                        if (!sectionsIn.contains(section) && !sectionsOut.contains(section)) {
+                            if (isCloseToCurve(section, maxRunDistance, index)) {
+                                sectionsIn.add(section);
+                            } else {
+                                sectionsOut.add(section);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!sectionsIn.isEmpty()) {
+            GlyphNest nest = sheet.getNest();
+            Glyph curveGlyph = nest.buildGlyph(
+                    sectionsIn,
+                    GlyphLayer.DEFAULT,
+                    true,
+                    GlyphComposition.Linking.NO_LINK);
+            logger.info("{} -> {}", this, curveGlyph);
+
+            setGlyph(curveGlyph);
+            return curveGlyph;
+        } else {
+            logger.warn("{} -> no glyph", this);
+
+            return null;
+        }
+    }
+
     //    //-------------------//
     //    // retrieveJunctions //
     //    //-------------------//
@@ -482,7 +544,7 @@ public abstract class Curve
      * @param area    the extension area on 'reverse' side
      * @param reverse which end
      */
-    public void setExtArea (Area    area,
+    public void setExtArea (Area area,
                             boolean reverse)
     {
         if (reverse) {
@@ -490,6 +552,19 @@ public abstract class Curve
         } else {
             lastExtArea = area;
         }
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    /**
+     * Assign the underlying glyph
+     *
+     * @param glyph the underlying glyph (with relevant runs only)
+     */
+    public void setGlyph (Glyph glyph)
+    {
+        this.glyph = glyph;
     }
 
     //
@@ -549,19 +624,19 @@ public abstract class Curve
      * @return true for OK
      */
     private boolean isCloseToCurve (Section section,
-                                    double  maxRunDistance,
-                                    int     index)
+                                    double maxRunDistance,
+                                    int index)
     {
-        final double  maxD2 = maxRunDistance * maxRunDistance;
+        final double maxD2 = maxRunDistance * maxRunDistance;
         final Polygon poly = section.getPolygon();
 
         for (int i = 0; i < poly.npoints; i++) {
-            int     x = poly.xpoints[i];
-            int     y = poly.ypoints[i];
+            int x = poly.xpoints[i];
+            int y = poly.ypoints[i];
             boolean close = false;
 
             for (int ip = index; ip < points.size(); ip++) {
-                Point  point = points.get(ip);
+                Point point = points.get(ip);
                 double dx = point.x - x;
                 double dy = point.y - y;
                 double d2 = (dx * dx) + (dy * dy);
@@ -575,7 +650,7 @@ public abstract class Curve
 
             if (!close) {
                 for (int ip = index - 1; ip >= 0; ip--) {
-                    Point  point = points.get(ip);
+                    Point point = points.get(ip);
                     double dx = point.x - x;
                     double dy = point.y - y;
                     double d2 = (dx * dx) + (dy * dy);
@@ -621,76 +696,6 @@ public abstract class Curve
         if (!s1.isEmpty()) {
             return s1.get(0);
         } else {
-            return null;
-        }
-    }
-
-    //---------------//
-    // retrieveGlyph //
-    //---------------//
-    /**
-     * Retrieve the underlying glyph of a curve.
-     * Based on each point of curve sequence of points, we find the containing run (either
-     * horizontal or vertical), then the containing section.
-     * <p>
-     * However, we have to check that the containing section is actually compatible with the curve,
-     * to avoid picking up sections that cannot be part of the curve.
-     * Compatibility is checked for all vertices of section polygon.
-     *
-     * @param sheet          the containing sheet
-     * @param maxRunDistance maximum distance from any section vertex to curve points
-     * @return the curve glyph
-     */
-    private Glyph retrieveGlyph (Sheet  sheet,
-                                 double maxRunDistance)
-    {
-        RunsTable    table = sheet.getWholeVerticalTable();
-        Lag          hLag = sheet.getLag(Lags.HLAG);
-        Lag          vLag = sheet.getLag(Lags.VLAG);
-        Set<Section> sectionsIn = new HashSet<Section>();
-        Set<Section> sectionsOut = new HashSet<Section>();
-
-        for (int index = 0; index < points.size(); index++) {
-            Point point = points.get(index);
-            Run   wholeRun = table.getRunAt(point.x, point.y);
-
-            for (int y = wholeRun.getStart(); y <= wholeRun.getStop(); y++) {
-                Run run = hLag.getRunAt(point.x, y);
-
-                if (run == null) {
-                    run = vLag.getRunAt(point.x, y);
-                }
-
-                if (run != null) {
-                    Section section = run.getSection();
-
-                    if (section != null) {
-                        if (!sectionsIn.contains(section) && !sectionsOut.contains(section)) {
-                            if (isCloseToCurve(section, maxRunDistance, index)) {
-                                sectionsIn.add(section);
-                            } else {
-                                sectionsOut.add(section);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!sectionsIn.isEmpty()) {
-            GlyphNest nest = sheet.getNest();
-            Glyph     curveGlyph = nest.buildGlyph(
-                sectionsIn,
-                GlyphLayer.DEFAULT,
-                true,
-                GlyphComposition.Linking.NO_LINK);
-            curveGlyph.setShape(Shape.SLUR); //Hmm !!! TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!
-            logger.info("{} -> {}", this, curveGlyph);
-
-            return curveGlyph;
-        } else {
-            logger.warn("{} -> no glyph", this);
-
             return null;
         }
     }
