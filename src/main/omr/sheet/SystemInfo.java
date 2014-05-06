@@ -53,6 +53,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -880,6 +881,26 @@ public class SystemInfo
     public StaffInfo getStaffAt (Point2D point)
     {
         return StaffManager.getStaffAt(point, staves);
+    }
+
+    //---------------//
+    // getStaffBelow //
+    //---------------//
+    /**
+     * Determine the staff which is just below the given point.
+     *
+     * @param point the given point
+     * @return the staff below
+     */
+    public StaffInfo getStaffBelow (Point point)
+    {
+        for (StaffInfo staff : staves) {
+            if (staff.getAreaBounds().getCenterY() > point.y) {
+                return staff;
+            }
+        }
+
+        return null;
     }
 
     //-----------//

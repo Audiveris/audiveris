@@ -488,12 +488,12 @@ public abstract class Curve
                     GlyphLayer.DEFAULT,
                     true,
                     GlyphComposition.Linking.NO_LINK);
-            logger.info("{} -> {}", this, curveGlyph);
+            logger.debug("{} -> {}", this, curveGlyph);
 
             setGlyph(curveGlyph);
             return curveGlyph;
         } else {
-            logger.warn("{} -> no glyph", this);
+            logger.debug("{} -> no glyph", this);
 
             return null;
         }

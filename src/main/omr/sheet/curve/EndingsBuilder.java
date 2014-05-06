@@ -252,76 +252,88 @@ public class EndingsBuilder
             return;
         }
 
-        StaffInfo staff = sheet.getStaffManager().getStaffAt(leftEnd);
-        SystemInfo system = staff.getSystem();
-        SIGraph sig = system.getSig();
-        List<Inter> systemBars = sig.inters(BarlineInter.class);
+        // Relevant system(s)
+        List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(leftEnd, null);
+        systems.retainAll(sheet.getSystemManager().getSystemsOf(rightEnd, null));
 
-        // Left leg (mandatory)
-        Glyph leftLeg = lookupLeg(seg, true, staff);
+        for (SystemInfo system : systems) {
+            SIGraph sig = system.getSig();
 
-        if (leftLeg == null) {
-            return;
-        }
+            // Consider the staff just below the segment
+            StaffInfo staff = system.getStaffBelow(leftEnd);
 
-        // Left bar (or DMZ)
-        BarlineInter leftBar = lookupBar(seg, true, staff, systemBars);
+            if (staff == null) {
+                continue;
+            }
 
-        if (leftBar == null) {
-            return;
-        }
+            List<Inter> systemBars = sig.inters(BarlineInter.class);
 
-        double leftDist = Math.abs(leftBar.getMedian().xAtY(leftEnd.y) - leftEnd.x);
+            // Left leg (mandatory)
+            Glyph leftLeg = lookupLeg(seg, true, staff);
 
-        // Right leg (optional)
-        Glyph rightLeg = lookupLeg(seg, false, staff);
+            if (leftLeg == null) {
+                continue;
+            }
 
-        // Right bar
-        BarlineInter rightBar = lookupBar(seg, false, staff, systemBars);
+            // Left bar (or DMZ)
+            BarlineInter leftBar = lookupBar(seg, true, staff, systemBars);
 
-        if (rightBar == null) {
-            return;
-        }
+            if (leftBar == null) {
+                continue;
+            }
 
-        double rightDist = Math.abs(rightBar.getMedian().xAtY(rightEnd.y) - rightEnd.x);
+            double leftDist = Math.abs(leftBar.getMedian().xAtY(leftEnd.y) - leftEnd.x);
 
-        // Create ending inter
-        GradeImpacts segImp = segment.getImpacts();
-        double straight = segImp.getGrade() / segImp.getIntrinsicRatio();
+            // Right leg (optional)
+            Glyph rightLeg = lookupLeg(seg, false, staff);
 
-        GradeImpacts impacts = new EndingInter.Impacts(
-                straight,
-                1 - (slope / params.maxSlope),
-                (length - params.minLengthLow) / (params.minLengthHigh - params.minLengthLow),
-                1 - (leftDist / params.maxBarShift),
-                1 - (rightDist / params.maxBarShift));
+            // Right bar
+            BarlineInter rightBar = lookupBar(seg, false, staff, systemBars);
 
-        if (impacts.getGrade() >= EndingInter.getMinGrade()) {
-            Line2D leftLine = new Line2D.Double(
-                    leftLeg.getStartPoint(VERTICAL),
-                    leftLeg.getStopPoint(VERTICAL));
-            Line2D rightLine = (rightLeg == null) ? null
-                    : new Line2D.Double(
-                            rightLeg.getStartPoint(VERTICAL),
-                            rightLeg.getStopPoint(VERTICAL));
-            EndingInter endingInter = new EndingInter(
-                    segment,
-                    line,
-                    leftLine,
-                    rightLine,
-                    segment.getBounds(),
-                    impacts);
-            sig.addVertex(endingInter);
+            if (rightBar == null) {
+                continue;
+            }
 
-            Scale scale = sheet.getScale();
-            sig.addEdge(
-                    endingInter,
-                    leftBar,
-                    new EndingBarRelation(LEFT, scale.pixelsToFrac(leftDist)));
-            sig.addEdge(
-                    endingInter,
-                    rightBar,
-                    new EndingBarRelation(RIGHT, scale.pixelsToFrac(rightDist)));
+            double rightDist = Math.abs(rightBar.getMedian().xAtY(rightEnd.y) - rightEnd.x);
+
+            // Create ending inter
+            GradeImpacts segImp = segment.getImpacts();
+            double straight = segImp.getGrade() / segImp.getIntrinsicRatio();
+
+            GradeImpacts impacts = new EndingInter.Impacts(
+                    straight,
+                    1 - (slope / params.maxSlope),
+                    (length - params.minLengthLow) / (params.minLengthHigh - params.minLengthLow),
+                    1 - (leftDist / params.maxBarShift),
+                    1 - (rightDist / params.maxBarShift));
+
+            if (impacts.getGrade() >= EndingInter.getMinGrade()) {
+                Line2D leftLine = new Line2D.Double(
+                        leftLeg.getStartPoint(VERTICAL),
+                        leftLeg.getStopPoint(VERTICAL));
+                Line2D rightLine = (rightLeg == null) ? null
+                        : new Line2D.Double(
+                                rightLeg.getStartPoint(VERTICAL),
+                                rightLeg.getStopPoint(VERTICAL));
+                EndingInter endingInter = new EndingInter(
+                        segment,
+                        line,
+                        leftLine,
+                        rightLine,
+                        segment.getBounds(),
+                        impacts);
+                sig.addVertex(endingInter);
+
+                Scale scale = sheet.getScale();
+                sig.addEdge(
+                        endingInter,
+                        leftBar,
+                        new EndingBarRelation(LEFT, scale.pixelsToFrac(leftDist)));
+                sig.addEdge(
+                        endingInter,
+                        rightBar,
+                        new EndingBarRelation(RIGHT, scale.pixelsToFrac(rightDist)));
+            }
         }
     }
 

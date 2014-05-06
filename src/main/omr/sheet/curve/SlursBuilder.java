@@ -389,9 +389,8 @@ public class SlursBuilder
 
             if (slur.getGlyph() != null) {
                 slur.getGlyph().setShape(Shape.SLUR);
+                inters.add(new SlurInter(slur, impacts));
             }
-
-            inters.add(new SlurInter(slur, impacts));
         }
     }
 

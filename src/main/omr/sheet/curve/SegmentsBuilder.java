@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import omr.glyph.facets.Glyph;
 
 /**
  * Class {@code SegmentsBuilder} retrieves straight segments that can be used to build
@@ -103,13 +104,6 @@ public class SegmentsBuilder
             purgeDuplicates();
 
             logger.info("Segments: {}", segments.size());
-
-//            // Retrieve underlying glyph for each segment
-//            for (SegmentInter s : segments) {
-//                SegmentInfo info = s.getInfo();
-//                info.getGlyph(sheet, params.maxRunDistance);
-//            }
-
         } catch (Throwable ex) {
             logger.warn("Error in SegmentsBuilder: " + ex, ex);
         }
@@ -211,8 +205,12 @@ public class SegmentsBuilder
 
         if (impacts != null) {
             SegmentInter inter = new SegmentInter(segment, impacts);
-            inters.add(inter);
-            segments.add(inter);
+            Glyph glyph = segment.retrieveGlyph(sheet, params.maxRunDistance);
+            if (glyph != null) {
+                segment.setGlyph(glyph);
+                inters.add(inter);
+                segments.add(inter);
+            }
         }
     }
 

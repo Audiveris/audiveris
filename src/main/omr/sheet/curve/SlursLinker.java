@@ -214,9 +214,9 @@ public class SlursLinker
             lastExt = extension(mid, last, params.coverageVExt);
 
             Point2D bisUnit = info.getBisUnit();
-            Point2D depth = new Point2D.Double(
-                    params.coverageVDepth * bisUnit.getX(),
-                    params.coverageVDepth * bisUnit.getY());
+            double vDepth = (abs(first.getX() - last.getX()) <= params.maxSmallSlurWidth)
+                    ? params.coverageVDepthSmall : params.coverageVDepth;
+            Point2D depth = new Point2D.Double(vDepth * bisUnit.getX(), vDepth * bisUnit.getY());
             firstBase = new Point2D.Double(
                     firstExt.getX() + depth.getX(),
                     firstExt.getY() + depth.getY());
@@ -336,6 +336,21 @@ public class SlursLinker
         return bounds;
     }
 
+    private String toFullString (Collection<SlurInter> inters)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (SlurInter slur : inters) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+
+            sb.append(slur).append(slur.getInfo());
+        }
+
+        return "[" + sb + "]";
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -369,6 +384,10 @@ public class SlursLinker
                 2.0,
                 "Vertical extension of vertical slur coverage");
 
+        final Scale.Fraction coverageVDepthSmall = new Scale.Fraction(
+                1.5,
+                "Vertical extension of small vertical slur coverage");
+
         final Constant.Double slopeSeparator = new Constant.Double(
                 "tangent",
                 0.5,
@@ -386,6 +405,10 @@ public class SlursLinker
         final Scale.Fraction wideSlurWidth = new Scale.Fraction(
                 6.0,
                 "Minimum width to be a wide slur");
+
+        final Scale.Fraction maxSmallSlurWidth = new Scale.Fraction(
+                1.5,
+                "Maximum width for a small slur");
     }
 
     //----------//
@@ -441,6 +464,8 @@ public class SlursLinker
 
         final int coverageVDepth;
 
+        final int coverageVDepthSmall;
+
         final double slopeSeparator;
 
         final double maxOrphanSlope;
@@ -448,6 +473,8 @@ public class SlursLinker
         final int maxOrphanDx;
 
         final int wideSlurWidth;
+
+        final int maxSmallSlurWidth;
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
@@ -463,10 +490,12 @@ public class SlursLinker
             coverageVExt = scale.toPixels(constants.coverageVExt);
             coverageVIn = scale.toPixels(constants.coverageVIn);
             coverageVDepth = scale.toPixels(constants.coverageVDepth);
+            coverageVDepthSmall = scale.toPixels(constants.coverageVDepthSmall);
             slopeSeparator = constants.slopeSeparator.getValue();
             maxOrphanSlope = constants.maxOrphanSlope.getValue();
             maxOrphanDx = scale.toPixels(constants.maxOrphanDx);
             wideSlurWidth = scale.toPixels(constants.wideSlurWidth);
+            maxSmallSlurWidth = scale.toPixels(constants.maxSmallSlurWidth);
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);
@@ -718,30 +747,30 @@ public class SlursLinker
             }
 
             ///if (info.isHorizontal()) {
-                // Determine the stems related to notes found
-                Set<Inter> relatedStems = stemsOf(found.keySet());
+            // Determine the stems related to notes found
+            Set<Inter> relatedStems = stemsOf(found.keySet());
 
-                // Look for stems intersected (if not related to any note found)
-                for (Inter is : stems.get(side)) {
-                    if (!relatedStems.contains(is)) {
-                        Glyph glyph = is.getGlyph();
+            // Look for stems intersected (if not related to any note found)
+            for (Inter is : stems.get(side)) {
+                if (!relatedStems.contains(is)) {
+                    Glyph glyph = is.getGlyph();
 
-                        if (area.intersects(glyph.getBounds())) {
-                            // Find out the best note on the stem
-                            NoteLink noteLink = pickupStemNote(is, slurEnd, bisUnit);
+                    if (area.intersects(glyph.getBounds())) {
+                        // Find out the best note on the stem
+                        NoteLink noteLink = pickupStemNote(is, slurEnd, bisUnit);
 
-                            if (noteLink != null) {
-                                NoteLink direct = found.get(noteLink.note);
+                        if (noteLink != null) {
+                            NoteLink direct = found.get(noteLink.note);
 
-                                if (direct == null) {
-                                    found.put(noteLink.note, noteLink);
-                                }
+                            if (direct == null) {
+                                found.put(noteLink.note, noteLink);
                             }
                         }
                     }
                 }
-            ///}
+            }
 
+            ///}
             return found;
         }
 
@@ -861,6 +890,7 @@ public class SlursLinker
          * First, sort the slurs by increasing mean X-distance to their heads.
          * Second, among the first ones that share the same heads, select the one with shortest
          * mean Euclidean-distance.
+         * (TODO: this 2nd point is very questionable, we could use slur grade as well).
          *
          * @param inters the competitors
          * @param map    their links to notes
@@ -869,7 +899,13 @@ public class SlursLinker
         private SlurInter selectAmong (Set<SlurInter> inters,
                                        final Map<SlurInter, Map<HorizontalSide, NoteLink>> map)
         {
-            logger.info("selectAmong {}", inters);
+            if ((inters == null) || inters.isEmpty()) {
+                return null;
+            } else if (inters.size() == 1) {
+                return inters.iterator().next();
+            }
+
+            ///logger.info("selectAmong {}", toFullString(inters));
             List<SlurInter> list = new ArrayList<SlurInter>(inters);
 
             // Sort by mean x-distance
@@ -901,6 +937,7 @@ public class SlursLinker
                     bestLeft = m.get(LEFT);
                     bestRight = m.get(RIGHT);
                     bestDist = meanEuclidianDist(m);
+                    logger.debug("   {} {} euclide:{}", slur, slur.getInfo(), bestDist);
                 } else {
                     // Check whether embraced notes are still the same
                     NoteLink left = m.get(LEFT);
@@ -917,7 +954,7 @@ public class SlursLinker
 
                     // We do have the same embraced notes as slurs above, so use Euclidian distance
                     double dist = meanEuclidianDist(m);
-                    logger.info("   {} euclide:{}", slur, dist);
+                    logger.debug("   {} {} euclide:{}", slur, slur.getInfo(), dist);
 
                     if (dist < bestDist) {
                         bestDist = dist;
