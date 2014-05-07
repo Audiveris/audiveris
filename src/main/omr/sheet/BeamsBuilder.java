@@ -391,6 +391,7 @@ public class BeamsBuilder
         }
 
         // Minimum & maximum mean hook height
+        // TODO: for hooks, since spots are rounded rectangles, the mean thickness is underestimated
         final double meanHeight = glyph.getMeanThickness(Orientation.HORIZONTAL);
 
         if (meanHeight < itemParams.minHeightLow) {
@@ -1533,7 +1534,7 @@ public class BeamsBuilder
         final Scale.Fraction maxHookWidth = new Scale.Fraction(2.0, "Maximum width for a hook");
 
         final Constant.Ratio minHeightRatioLow = new Constant.Ratio(
-                0.75,
+                0.7,
                 "Low minimum height for a beam or hook, specified as ratio of typical beam");
 
         final Constant.Ratio maxHeightRatioHigh = new Constant.Ratio(

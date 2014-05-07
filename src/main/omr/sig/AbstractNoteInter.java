@@ -14,12 +14,30 @@ package omr.sig;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.GlyphLayer;
+import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
 
 import omr.image.ShapeDescriptor;
+import omr.image.Template;
 
+import omr.lag.BasicLag;
+import omr.lag.JunctionRatioPolicy;
+import omr.lag.Lag;
+import omr.lag.Section;
+import omr.lag.SectionsBuilder;
+
+import omr.run.Orientation;
+import omr.run.RunsTable;
+import omr.run.RunsTableFactory;
+
+import ij.process.ByteProcessor;
+
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
 /**
  * Class {@code AbstractNoteInter} is an abstract base for heads and notes interpretations.
@@ -41,27 +59,6 @@ public class AbstractNoteInter
     protected final int pitch;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //    /**
-    //     * Creates a new AbstractNoteInter object.
-    //     *
-    //     * @param descriptor the shape template descriptor
-    //     * @param box        the object bounds
-    //     * @param shape      the underlying shape
-    //     * @param grade      the inter intrinsic grade
-    //     * @param pitch      the note pitch
-    //     */
-    //    public AbstractNoteInter (ShapeDescriptor descriptor,
-    //                              Rectangle box,
-    //                              Shape shape,
-    //                              double grade,
-    //                              int pitch)
-    //    {
-    //        super(box, shape, grade);
-    //
-    //        this.descriptor = descriptor;
-    //        this.pitch = pitch;
-    //    }
-    //
     /**
      * Creates a new AbstractNoteInter object.
      *
@@ -134,6 +131,70 @@ public class AbstractNoteInter
     public static double getShrinkVertRatio ()
     {
         return constants.shrinkVertRatio.getValue();
+    }
+
+    //----------//
+    // overlaps //
+    //----------//
+    /**
+     * Specific overlap implementation between notes, based on their pitch value
+     *
+     * @param that another inter (perhaps a note)
+     * @return true if overlap is detected
+     */
+    @Override
+    public boolean overlaps (Inter that)
+    {
+        if (that instanceof AbstractNoteInter) {
+            AbstractNoteInter thatNote = (AbstractNoteInter) that;
+
+            if (Math.abs(thatNote.getPitch() - pitch) > 1) {
+                return false;
+            }
+        }
+
+        return super.overlaps(that);
+    }
+
+    //---------------//
+    // retrieveGlyph //
+    //---------------//
+    /**
+     * Use descriptor to build an underlying glyph.
+     *
+     * @param image the image to read pixels from
+     * @param nest  the nest to hold the created glyph
+     */
+    public void retrieveGlyph (ByteProcessor image,
+                               GlyphNest nest)
+    {
+        final boolean hasLine = (pitch % 2) == 0;
+        final Template tpl = descriptor.getTemplate(new Template.Key(getShape(), hasLine));
+        final Rectangle descBox = descriptor.getBounds(getBounds());
+        final List<Point> fores = tpl.getForegroundPixels(descBox, image);
+
+        ByteProcessor buf = new ByteProcessor(descBox.width, descBox.height);
+        buf.invert();
+
+        for (Point p : fores) {
+            buf.set(p.x, p.y, 0);
+        }
+
+        // Runs
+        RunsTable runTable = new RunsTableFactory(Orientation.VERTICAL, buf, 0).createTable(
+                "note");
+
+        // Sections
+        Lag lag = new BasicLag("note", Orientation.VERTICAL);
+        SectionsBuilder sectionsBuilder = new SectionsBuilder(lag, new JunctionRatioPolicy());
+        List<Section> sections = sectionsBuilder.createSections(runTable, false);
+
+        // Translate sections to absolute coordinates
+        for (Section section : sections) {
+            section.translate(descBox.getLocation());
+        }
+
+        glyph = nest.buildGlyph(sections, GlyphLayer.DEFAULT, true, Glyph.Linking.NO_LINK);
     }
 
     //--------//

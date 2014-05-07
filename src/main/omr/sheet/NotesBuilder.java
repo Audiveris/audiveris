@@ -60,6 +60,8 @@ import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.StopWatch;
 
+import ij.process.ByteProcessor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,6 +154,9 @@ public class NotesBuilder
     /** The vertical (stem) seeds for the system. */
     private List<Glyph> systemSeeds;
 
+    /** The image used to retrieve underlying glyphs. */
+    private ByteProcessor image;
+
     //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // NotesBuilder //
@@ -192,6 +197,7 @@ public class NotesBuilder
         Collections.sort(systemSeeds, Glyph.byOrdinate);
 
         distances = sheet.getDistanceImage();
+        image = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
 
         for (StaffInfo staff : system.getStaves()) {
             logger.debug("Staff #{}", staff.getId());
@@ -226,7 +232,7 @@ public class NotesBuilder
     //------------------//
     // aggregateMatches //
     //------------------//
-    private List<Inter> aggregateMatches (List<Inter> inters)
+    private List<AbstractNoteInter> aggregateMatches (List<AbstractNoteInter> inters)
     {
         // Sort by decreasing grade
         Collections.sort(inters, Inter.byReverseGrade);
@@ -235,7 +241,7 @@ public class NotesBuilder
         // Avoid duplicate locations
         List<Aggregate> aggregates = new ArrayList<Aggregate>();
 
-        for (Inter inter : inters) {
+        for (AbstractNoteInter inter : inters) {
             // Check among already filtered locations for similar location
             Aggregate aggregate = null;
 
@@ -258,7 +264,7 @@ public class NotesBuilder
             aggregate.add(inter);
         }
 
-        List<Inter> filtered = new ArrayList<Inter>();
+        List<AbstractNoteInter> filtered = new ArrayList<AbstractNoteInter>();
 
         for (Aggregate ag : aggregates) {
             filtered.add(ag.getMainInter());
@@ -279,10 +285,10 @@ public class NotesBuilder
      * @param pitch  the note pitch
      * @return the inter created, if any
      */
-    private Inter createInter (PixelDistance loc,
-                               Anchor anchor,
-                               Shape shape,
-                               int pitch)
+    private AbstractNoteInter createInter (PixelDistance loc,
+                                           Anchor anchor,
+                                           Shape shape,
+                                           int pitch)
     {
         final double distImpact = 1 - (loc.d / params.maxMatchingDistance);
         final GradeImpacts impacts = new AbstractNoteInter.Impacts(distImpact);
@@ -332,12 +338,12 @@ public class NotesBuilder
      * @param competitors all competitors, including seed-based inter instances
      * @return the filtered x-based instances
      */
-    private List<Inter> filterSeedConflicts (List<Inter> inters,
-                                             List<Inter> competitors)
+    private List<AbstractNoteInter> filterSeedConflicts (List<AbstractNoteInter> inters,
+                                                         List<Inter> competitors)
     {
-        List<Inter> filtered = new ArrayList<Inter>();
+        List<AbstractNoteInter> filtered = new ArrayList<AbstractNoteInter>();
 
-        for (Inter inter : inters) {
+        for (AbstractNoteInter inter : inters) {
             if (!overlapSeed(inter, competitors)) {
                 filtered.add(inter);
             }
@@ -698,10 +704,10 @@ public class NotesBuilder
 
         Point point;
 
-        List<Inter> matches = new ArrayList<Inter>();
+        List<AbstractNoteInter> matches = new ArrayList<AbstractNoteInter>();
 
         //~ Methods --------------------------------------------------------------------------------
-        public void add (Inter inter)
+        public void add (AbstractNoteInter inter)
         {
             if (point == null) {
                 point = GeoUtil.centerOf(inter.getBounds());
@@ -710,7 +716,7 @@ public class NotesBuilder
             matches.add(inter);
         }
 
-        public Inter getMainInter ()
+        public AbstractNoteInter getMainInter ()
         {
             return matches.get(0);
         }
@@ -978,7 +984,7 @@ public class NotesBuilder
 
         private final int[] yOpen = new int[params.maxOpenDy];
 
-        private List<Inter> inters = new ArrayList<Inter>();
+        private List<AbstractNoteInter> inters = new ArrayList<AbstractNoteInter>();
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
@@ -1025,7 +1031,7 @@ public class NotesBuilder
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        public List<Inter> lookup ()
+        public List<AbstractNoteInter> lookup ()
         {
             return useSeeds ? lookupSeeds() : lookupRange();
         }
@@ -1033,10 +1039,10 @@ public class NotesBuilder
         //------//
         // eval //
         //------//
-        private Inter eval (Shape shape,
-                            int x,
-                            int y,
-                            Anchor anchor)
+        private AbstractNoteInter eval (Shape shape,
+                                        int x,
+                                        int y,
+                                        Anchor anchor)
         {
             final ShapeDescriptor desc = catalog.getDescriptor(shape);
             final Rectangle tplBox = desc.getTemplateBoundsAt(x, y, anchor);
@@ -1109,7 +1115,7 @@ public class NotesBuilder
         //-------------//
         // lookupRange //
         //-------------//
-        private List<Inter> lookupRange ()
+        private List<AbstractNoteInter> lookupRange ()
         {
             // Abscissa range for scan
             final int scanLeft = Math.max(
@@ -1123,7 +1129,7 @@ public class NotesBuilder
 
                 for (int y : ordinates(ord)) {
                     for (Shape shape : ShapeSet.TemplateNotes) {
-                        Inter inter = eval(shape, x, y, MIDDLE_LEFT);
+                        AbstractNoteInter inter = eval(shape, x, y, MIDDLE_LEFT);
 
                         if (inter != null) {
                             inters.add(inter);
@@ -1138,7 +1144,8 @@ public class NotesBuilder
             // Check conflict with seed-based instances
             inters = filterSeedConflicts(inters, competitors);
 
-            for (Inter inter : inters) {
+            for (AbstractNoteInter inter : inters) {
+                inter.retrieveGlyph(image, sheet.getNest());
                 sig.addVertex(inter);
             }
 
@@ -1148,7 +1155,7 @@ public class NotesBuilder
         //-------------//
         // lookupSeeds //
         //-------------//
-        private List<Inter> lookupSeeds ()
+        private List<AbstractNoteInter> lookupSeeds ()
         {
             // Intersected seeds in the area
             final List<Glyph> seeds = getSeedsSlice(area);
@@ -1174,11 +1181,11 @@ public class NotesBuilder
 
                 for (Anchor anchor : anchors) {
                     // For each stem side, keep only the best shape
-                    Inter bestInter = null;
+                    AbstractNoteInter bestInter = null;
 
                     for (int y : ordinates(ord)) {
                         for (Shape shape : ShapeSet.StemTemplateNotes) {
-                            Inter inter = eval(shape, x, y, anchor);
+                            AbstractNoteInter inter = eval(shape, x, y, anchor);
 
                             if (inter != null) {
                                 if ((bestInter == null)
@@ -1190,6 +1197,7 @@ public class NotesBuilder
                     }
 
                     if (bestInter != null) {
+                        bestInter.retrieveGlyph(image, sheet.getNest());
                         sig.addVertex(bestInter);
                         inters.add(bestInter);
                     }

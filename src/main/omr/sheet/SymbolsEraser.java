@@ -26,7 +26,6 @@ import omr.lag.SectionsBuilder;
 
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
-
 import static omr.sheet.SymbolsFilter.SYMBOL_ORIENTATION;
 
 import omr.sig.AbstractNoteInter;
@@ -47,7 +46,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import omr.image.Anchored;
 
 /**
  * Class {@code SymbolsEraser} erases shapes and glyphs to prepare symbols retrieval.
@@ -232,8 +230,8 @@ public class SymbolsEraser
     /**
      * Save the provided pixels as optional glyphs.
      *
-     * @param box   the absolute bounding box
-     * @param fores foreground pixels with coordinates relative to bounding box
+     * @param box   the absolute bounding box of inter descriptor (perhaps larger than the symbol)
+     * @param fores foreground pixels with coordinates relative to descriptor bounding box
      */
     private void savePixels (Rectangle box,
                              List<Point> fores)

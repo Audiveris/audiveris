@@ -43,7 +43,7 @@ public abstract class AbstractInter
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying glyph, if any. */
-    protected final Glyph glyph;
+    protected Glyph glyph;
 
     /** The assigned shape. */
     protected final Shape shape;

@@ -55,18 +55,18 @@ import java.util.Objects;
  * @author Hervé Bitteur
  */
 public class Template
-        implements Anchored
+    implements Anchored
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Constants constants = new Constants();
-
-    private static final Logger logger = LoggerFactory.getLogger(Template.class);
+    private static final Constants          constants = new Constants();
+    private static final Logger             logger = LoggerFactory.getLogger(Template.class);
 
     /** Ratio applied to small symbols (cue / grace). */
     public static final double smallRatio = constants.smallRatio.getValue();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Template key. */
     private final Key key;
 
@@ -90,6 +90,7 @@ public class Template
     private final Map<Anchor, Point> offsets = new EnumMap<Anchor, Point>(Anchor.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     //----------//
     // Template //
     //----------//
@@ -102,10 +103,10 @@ public class Template
      * @param symbolBounds bounds of symbol within template
      * @param keyPoints    the set of defining points
      */
-    public Template (Key key,
-                     int width,
-                     int height,
-                     Rectangle symbolBounds,
+    public Template (Key                 key,
+                     int                 width,
+                     int                 height,
+                     Rectangle           symbolBounds,
                      List<PixelDistance> keyPoints)
     {
         this.key = key;
@@ -116,6 +117,7 @@ public class Template
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // addAnchor //
     //-----------//
@@ -125,8 +127,8 @@ public class Template
                                  double yRatio)
     {
         offsets.put(
-                anchor,
-                new Point((int) Math.rint(xRatio * width), (int) Math.rint(yRatio * height)));
+            anchor,
+            new Point((int) Math.rint(xRatio * width), (int) Math.rint(yRatio * height)));
     }
 
     //------//
@@ -185,9 +187,9 @@ public class Template
      * @param distances the distance transform image to search
      * @return the quadratic average distance computed on all key positions
      */
-    public double evaluate (int x,
-                            int y,
-                            Anchor anchor,
+    public double evaluate (int           x,
+                            int           y,
+                            Anchor        anchor,
                             DistanceTable distances)
     {
         // Offsets to apply to location?
@@ -204,12 +206,12 @@ public class Template
 
         // Loop through template key positions and read related distance.
         // Compute the mean value on all distances read
-        final int imgWidth = distances.getWidth();
-        final int imgHeight = distances.getHeight();
+        final int    imgWidth = distances.getWidth();
+        final int    imgHeight = distances.getHeight();
         final double foreWeight = constants.foreWeight.getValue();
         final double backWeight = constants.backWeight.getValue();
-        double weights = 0; // Sum of weights
-        double total = 0; // Sum of square weighted distances
+        double       weights = 0; // Sum of weights
+        double       total = 0; // Sum of square weighted distances
 
         for (PixelDistance pix : keyPoints) {
             int nx = x + pix.x;
@@ -229,19 +231,6 @@ public class Template
         return res;
     }
 
-    //-------------//
-    // getBoundsAt //
-    //-------------//
-    @Override
-    public Rectangle getBoundsAt (int x,
-                                  int y,
-                                  Anchor anchor)
-    {
-        final Point offset = getOffset(anchor);
-
-        return new Rectangle(x - offset.x, y - offset.y, width, height);
-    }
-
     //-----------------//
     // getDescLocation //
     //-----------------//
@@ -254,7 +243,21 @@ public class Template
     public Rectangle getBounds (Rectangle symBox)
     {
         Point center = GeoUtil.centerOf(symBox);
+
         return getBoundsAt(center.x, center.y, Anchor.CENTER);
+    }
+
+    //-------------//
+    // getBoundsAt //
+    //-------------//
+    @Override
+    public Rectangle getBoundsAt (int    x,
+                                  int    y,
+                                  Anchor anchor)
+    {
+        final Point offset = getOffset(anchor);
+
+        return new Rectangle(x - offset.x, y - offset.y, width, height);
     }
 
     //---------------------//
@@ -267,11 +270,11 @@ public class Template
      * @param image global image to be read
      * @return the collection of foreground pixels, relative to template box.
      */
-    public List<Point> getForegroundPixels (Rectangle box,
+    public List<Point> getForegroundPixels (Rectangle     box,
                                             ByteProcessor image)
     {
-        final int imgWidth = image.getWidth();
-        final int imgHeight = image.getHeight();
+        final int         imgWidth = image.getWidth();
+        final int         imgHeight = image.getHeight();
         final List<Point> fores = new ArrayList<Point>();
 
         for (PixelDistance pix : keyPoints) {
@@ -288,6 +291,56 @@ public class Template
 
                 if (val == 0) {
                     fores.add(new Point(pix.x, pix.y));
+                }
+            }
+        }
+
+        return fores;
+    }
+
+    //---------------------//
+    // getForegroundPixels2 //
+    //---------------------//
+    /**
+     * Collect the image foreground pixels located under the template foreground areas.
+     *
+     * @param box   absolute positioning of template box in global image
+     * @param image global image to be read
+     * @return the collection of foreground pixels, relative to template box.
+     */
+    public List<Point> getForegroundPixels2 (Rectangle     box,
+                                             ByteProcessor image)
+    {
+        final int         imgWidth = image.getWidth();
+        final int         imgHeight = image.getHeight();
+        final List<Point> fores = new ArrayList<Point>();
+
+        ByteProcessor     buf = new ByteProcessor(box.width, box.height);
+        buf.invert();
+
+        for (PixelDistance pix : keyPoints) {
+            if (pix.d > 0) {
+                continue;
+            }
+
+            int nx = box.x + pix.x;
+            int ny = box.y + pix.y;
+
+            if ((nx >= 0) && (nx < imgWidth) && (ny >= 0) && (ny < imgHeight)) {
+                // Check if we have some image foreground there
+                int val = image.get(nx, ny);
+
+                if (val == 0) {
+                    buf.set(pix.x, pix.y, 0);
+                }
+            }
+        }
+        buf.dilate();
+
+        for (int y = 0; y < box.height; y++) {
+            for (int x = 0; x < box.width; x++) {
+                if (buf.get(x, y) == 0) {
+                    fores.add(new Point(x, y));
                 }
             }
         }
@@ -357,8 +410,8 @@ public class Template
      * @param anchor chosen anchor
      * @return the corresponding symbol bounds
      */
-    public Rectangle getSymbolBoundsAt (int x,
-                                        int y,
+    public Rectangle getSymbolBoundsAt (int    x,
+                                        int    y,
                                         Anchor anchor)
     {
         Rectangle tplBox = getBoundsAt(x, y, anchor);
@@ -395,7 +448,7 @@ public class Template
 
         for (Entry<Anchor, Point> entry : offsets.entrySet()) {
             sb.append(" ").append(entry.getKey()).append(":(").append(entry.getValue().x).append(
-                    ",").append(entry.getValue().y).append(")");
+                ",").append(entry.getValue().y).append(")");
         }
 
         sb.append(" keyPoints:").append(keyPoints.size());
@@ -406,6 +459,7 @@ public class Template
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----//
     // Key //
     //-----//
@@ -416,13 +470,14 @@ public class Template
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        public final Shape shape;
+        public final Shape   shape;
 
         /** Middle hasLine or not. */
         public final boolean hasLine;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Key (Shape shape,
+
+        public Key (Shape   shape,
                     boolean line)
         {
             this.shape = shape;
@@ -430,6 +485,7 @@ public class Template
         }
 
         //~ Methods --------------------------------------------------------------------------------
+
         @Override
         public boolean equals (Object obj)
         {
@@ -476,20 +532,18 @@ public class Template
     // Constants //
     //-----------//
     private static final class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         final Constant.Ratio smallRatio = new Constant.Ratio(
-                0.67,
-                "Global ratio applied to small (cue/grace) templates");
-
+            0.67,
+            "Global ratio applied to small (cue/grace) templates");
         final Constant.Ratio foreWeight = new Constant.Ratio(
-                1.0,
-                "Weight assigned to template foreground pixels");
-
+            1.0,
+            "Weight assigned to template foreground pixels");
         final Constant.Ratio backWeight = new Constant.Ratio(
-                2.0,
-                "Weight assigned to template background pixels");
+            2.0,
+            "Weight assigned to template background pixels");
     }
 }

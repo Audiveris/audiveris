@@ -388,6 +388,11 @@ public class SymbolsBuilder
         final List<Inter> allInters = new ArrayList<Inter>();
         final Point center = glyph.getLocation();
         final StaffInfo staff = system.getStaffAt(center);
+
+        if (staff == null) {
+            return allInters;
+        }
+
         glyph.setPitchPosition(staff.pitchPositionOf(center));
 
         Evaluation[] evals = evaluator.evaluate(
@@ -502,6 +507,128 @@ public class SymbolsBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Cluster //
+    //---------//
+    /**
+     * Handles a cluster of connected glyphs, to retrieve all acceptable compounds built
+     * on subsets of these glyphs.
+     * <p>
+     * The processing of any given subset consists in the following:<ol>
+     * <li>Build the compound of chosen vertices, and record acceptable evaluations.</li>
+     * <li>Build the set of new reachable vertices.</li>
+     * <li>For each reachable vertex, recursively process the new set composed of current set + the
+     * reachable vertex.</li></ol>
+     * Any two subsets are mutually exclusive if they have a glyph in common.
+     */
+    private class Cluster
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** The graph of the connected glyphs, with their distance edges. */
+        private final SimpleGraph<Glyph, Distance> graph;
+
+        /** Map (seed -> inters that involve this seed). */
+        private final Map<Glyph, Set<Inter>> seedInters = new HashMap<Glyph, Set<Inter>>();
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Cluster (SimpleGraph<Glyph, Distance> graph)
+        {
+            this.graph = graph;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public void decompose ()
+        {
+            List<Glyph> seeds = new ArrayList<Glyph>(graph.vertexSet());
+            Collections.sort(seeds, Glyph.byId);
+
+            logger.info("Decomposing {}", Glyphs.toString("cluster", seeds));
+
+            Set<Glyph> forbidden = new HashSet<Glyph>();
+
+            for (Glyph seed : seeds) {
+                if (seed.isVip()) {
+                    logger.info("   Seed #{}", seed.getId());
+                }
+
+                process(Collections.singleton(seed), forbidden);
+                forbidden.add(seed);
+            }
+
+            // Formalized exclusion between subsets that have a glyph in common
+            //            for (Glyph seed : seeds) {
+            //                sig.insertExclusions(
+            //                        new ArrayList<Inter>(seedInters.get(seed)),
+            //                        Exclusion.Cause.OVERLAP);
+            //            }
+        }
+
+        private Set<Glyph> getOutliers (Set<Glyph> set)
+        {
+            Set<Glyph> outliers = new HashSet<Glyph>();
+
+            for (Glyph glyph : set) {
+                outliers.addAll(Graphs.neighborListOf(graph, glyph));
+            }
+
+            outliers.removeAll(set);
+
+            return outliers;
+        }
+
+        private void process (Set<Glyph> set,
+                              Set<Glyph> forbidden)
+        {
+            processCount++;
+
+            ///logger.info("      Processing {}", Glyphs.toString(set));
+            // Build compound and get acceptable evaluations for the compound
+            Glyph compound = (set.size() == 1) ? set.iterator().next()
+                    : sheet.getNest()
+                    .buildGlyph(set, true, Glyph.Linking.NO_LINK);
+            Collection<Inter> inters = evaluateGlyph(compound);
+
+            // Flag exclusions
+            for (Glyph glyph : set) {
+                Set<Inter> involved = seedInters.get(glyph);
+
+                if (involved == null) {
+                    seedInters.put(glyph, involved = new HashSet<Inter>());
+                }
+
+                involved.addAll(inters);
+            }
+
+            // Reachable outliers
+            Set<Glyph> outliers = getOutliers(set);
+            outliers.removeAll(forbidden);
+
+            if (outliers.isEmpty()) {
+                return;
+            }
+
+            Set<Glyph> newForbidden = new HashSet<Glyph>();
+            newForbidden.addAll(forbidden);
+
+            Rectangle setBox = Glyphs.getBounds(set);
+
+            for (Glyph outlier : outliers) {
+                // Check appending this atom does not make the symbol too wide or too high
+                Rectangle symBox = outlier.getBounds().union(setBox);
+
+                if ((symBox.width <= params.maxSymbolWidth)
+                    && (symBox.height <= params.maxSymbolHeight)) {
+                    Set<Glyph> larger = new HashSet<Glyph>();
+                    larger.addAll(set);
+                    larger.add(outlier);
+                    process(larger, newForbidden);
+                    newForbidden.add(outlier);
+                }
+            }
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -626,128 +753,6 @@ public class SymbolsBuilder
             maxStemFlagGapY = scale.toPixels(FlagStemRelation.getYGapMaximum());
 
             Main.dumping.dump(this);
-        }
-    }
-
-    //---------//
-    // Cluster //
-    //---------//
-    /**
-     * Handles a cluster of connected glyphs, to retrieve all acceptable compounds built
-     * on subsets of these glyphs.
-     * <p>
-     * The processing of any given subset consists in the following:<ol>
-     * <li>Build the compound of chosen vertices, and record acceptable evaluations.</li>
-     * <li>Build the set of new reachable vertices.</li>
-     * <li>For each reachable vertex, recursively process the new set composed of current set + the
-     * reachable vertex.</li></ol>
-     * Any two subsets are mutually exclusive if they have a glyph in common.
-     */
-    private class Cluster
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** The graph of the connected glyphs, with their distance edges. */
-        private final SimpleGraph<Glyph, Distance> graph;
-
-        /** Map (seed -> inters that involve this seed). */
-        private final Map<Glyph, Set<Inter>> seedInters = new HashMap<Glyph, Set<Inter>>();
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Cluster (SimpleGraph<Glyph, Distance> graph)
-        {
-            this.graph = graph;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public void decompose ()
-        {
-            List<Glyph> seeds = new ArrayList<Glyph>(graph.vertexSet());
-            Collections.sort(seeds, Glyph.byId);
-
-            logger.info("Decomposing {}", Glyphs.toString("cluster", seeds));
-
-            Set<Glyph> forbidden = new HashSet<Glyph>();
-
-            for (Glyph seed : seeds) {
-                if (seed.isVip()) {
-                    logger.info("   Seed #{}", seed.getId());
-                }
-
-                process(Collections.singleton(seed), forbidden);
-                forbidden.add(seed);
-            }
-
-            // Formalized exclusion between subsets that have a glyph in common
-            //            for (Glyph seed : seeds) {
-            //                sig.insertExclusions(
-            //                        new ArrayList<Inter>(seedInters.get(seed)),
-            //                        Exclusion.Cause.OVERLAP);
-            //            }
-        }
-
-        private Set<Glyph> getOutliers (Set<Glyph> set)
-        {
-            Set<Glyph> outliers = new HashSet<Glyph>();
-
-            for (Glyph glyph : set) {
-                outliers.addAll(Graphs.neighborListOf(graph, glyph));
-            }
-
-            outliers.removeAll(set);
-
-            return outliers;
-        }
-
-        private void process (Set<Glyph> set,
-                              Set<Glyph> forbidden)
-        {
-            processCount++;
-
-            ///logger.info("      Processing {}", Glyphs.toString(set));
-            // Build compound and get acceptable evaluations for the compound
-            Glyph compound = (set.size() == 1) ? set.iterator().next()
-                    : sheet.getNest()
-                    .buildGlyph(set, true, Glyph.Linking.NO_LINK);
-            Collection<Inter> inters = evaluateGlyph(compound);
-
-            // Flag exclusions
-            for (Glyph glyph : set) {
-                Set<Inter> involved = seedInters.get(glyph);
-
-                if (involved == null) {
-                    seedInters.put(glyph, involved = new HashSet<Inter>());
-                }
-
-                involved.addAll(inters);
-            }
-
-            // Reachable outliers
-            Set<Glyph> outliers = getOutliers(set);
-            outliers.removeAll(forbidden);
-
-            if (outliers.isEmpty()) {
-                return;
-            }
-
-            Set<Glyph> newForbidden = new HashSet<Glyph>();
-            newForbidden.addAll(forbidden);
-
-            Rectangle setBox = Glyphs.getBounds(set);
-
-            for (Glyph outlier : outliers) {
-                // Check appending this atom does not make the symbol too wide or too high
-                Rectangle symBox = outlier.getBounds().union(setBox);
-
-                if ((symBox.width <= params.maxSymbolWidth)
-                    && (symBox.height <= params.maxSymbolHeight)) {
-                    Set<Glyph> larger = new HashSet<Glyph>();
-                    larger.addAll(set);
-                    larger.add(outlier);
-                    process(larger, newForbidden);
-                    newForbidden.add(outlier);
-                }
-            }
         }
     }
 }
