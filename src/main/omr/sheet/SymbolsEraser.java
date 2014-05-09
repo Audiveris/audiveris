@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.GlyphLayer;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
@@ -62,6 +65,8 @@ public class SymbolsEraser
         extends PageEraser
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(
             SymbolsEraser.class);
@@ -149,25 +154,25 @@ public class SymbolsEraser
     @Override
     public void visit (AbstractNoteInter inter)
     {
-        if (systemWeaks == null) {
-            // Strong inter: Use plain symbol painting
-            visit((Inter) inter);
-        } else {
-            // Weak inter: Use descriptor here
-            final ShapeDescriptor desc = inter.getDescriptor();
-            final int pitch = inter.getPitch();
-            final boolean hasLine = (pitch % 2) == 0;
-            final Template tpl = desc.getTemplate(
-                    new Template.Key(inter.getShape(), hasLine));
-            final Rectangle box = desc.getBounds(inter.getBounds());
-            final List<Point> fores = tpl.getForegroundPixels(box, buffer);
+        final ShapeDescriptor desc = inter.getDescriptor();
+        final int pitch = inter.getPitch();
+        final boolean hasLine = (pitch % 2) == 0;
+        final Template tpl = desc.getTemplate(new Template.Key(inter.getShape(), hasLine));
+        final Rectangle box = desc.getBounds(inter.getBounds());
 
-            // Erase foreground pixels
-            for (final Point p : fores) {
-                g.fillRect(box.x + p.x, box.y + p.y, 1, 1);
-            }
+        // Use underlying glyph (enlarged only for strong inters)
+        final List<Point> fores = tpl.getForegroundPixels(
+                box,
+                buffer,
+                (systemWeaks == null) ? constants.margin.getValue() : 0);
 
-            // Save foreground pixels for optional glyphs
+        // Erase foreground pixels
+        for (final Point p : fores) {
+            g.fillRect(box.x + p.x, box.y + p.y, 1, 1);
+        }
+
+        // Save foreground pixels for optional (weak) glyphs
+        if (systemWeaks != null) {
             savePixels(box, fores);
         }
     }
@@ -266,5 +271,20 @@ public class SymbolsEraser
         for (Glyph glyph : glyphs) {
             systemWeaks.add(glyph);
         }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Integer margin = new Constant.Integer(
+                "pixels",
+                2,
+                "Number of pixels added around notes");
     }
 }
