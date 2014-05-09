@@ -595,6 +595,13 @@ public class PagePhysicalPainter
         setColor(stem);
 
         //TODO: use proper stem thickness! (see ledger)
+        if (stemStroke == null) {
+            stemStroke = new BasicStroke(
+                    (float) system.getInfo().getSheet().getStemThickness(),
+                    BasicStroke.CAP_ROUND,
+                    BasicStroke.JOIN_ROUND);
+        }
+
         g.setStroke(stemStroke);
 
         stem.getGlyph().renderLine(g);

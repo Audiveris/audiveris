@@ -15,6 +15,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
+import omr.grid.StaffInfo;
+
 import omr.lag.Section;
 
 import omr.math.GeoUtil;
@@ -22,6 +24,7 @@ import omr.math.GeoUtil;
 import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.sig.AbstractBeamInter;
+import omr.sig.AbstractNoteInter;
 import omr.sig.BarConnectionInter;
 import omr.sig.BarlineInter;
 import omr.sig.BraceInter;
@@ -44,15 +47,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
-
 import static java.awt.BasicStroke.*;
-
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import java.awt.geom.CubicCurve2D;
 
 /**
  * Class {@code PageEraser} erases selected shapes on the provided graphics environment.
@@ -90,6 +90,9 @@ public abstract class PageEraser
     // Stroke for lines (endings, wedges, slurs)
     private final Stroke lineStroke;
 
+    // Vertical margin added above and below any staff DMZ
+    private final int dmzDyMargin;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new PageEraser object.
@@ -106,8 +109,11 @@ public abstract class PageEraser
         this.g = g;
         this.sheet = sheet;
 
-        // Properly scaled font
         Scale scale = sheet.getScale();
+
+        // Properly scaled font
+        dmzDyMargin = scale.toPixels(constants.staffVerticalMargin);
+
         int symbolSize = scale.toPixels(constants.symbolSize);
         musicFont = MusicFont.getFont(symbolSize);
 
@@ -124,64 +130,6 @@ public abstract class PageEraser
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
-    //    //-------------//
-    //    // eraseShapes //
-    //    //-------------//
-    //    /**
-    //     * Erase from image graphics all instances of provided shapes.
-    //     *
-    //     * @param shapes the shapes to process
-    //     * @return the erased bad inter instances per system
-    //     */
-    //    public Map<SystemInfo, List<Glyph>> eraseShapes (Collection<Shape> shapes)
-    //    {
-    //        final Map<SystemInfo, List<Glyph>> weaksMap = (!processWeaks) ? null
-    //                : new TreeMap<SystemInfo, List<Glyph>>();
-    //
-    //        for (SystemInfo system : sheet.getSystems()) {
-    //            final SIGraph sig = system.getSig();
-    //            final List<Inter> strongs = new ArrayList<Inter>();
-    //            final List<Inter> weaks = processWeaks ? new ArrayList<Inter>() : null;
-    //            systemWeaks = null;
-    //
-    //            for (Inter inter : sig.vertexSet()) {
-    //                if (!inter.isDeleted() && shapes.contains(inter.getShape())) {
-    //                    if (canHide(inter)) {
-    //                        strongs.add(inter);
-    //                    } else if (weaks != null) {
-    //                        weaks.add(inter);
-    //                    }
-    //                }
-    //            }
-    //
-    //            // Simply erase the strongs
-    //            for (Inter inter : strongs) {
-    //                inter.accept(this);
-    //            }
-    //
-    //            // Erase each staff DMZ?
-    //            if (constants.useDmz.isSet()) {
-    //                for (StaffInfo staff : system.getStaves()) {
-    //                    eraseDmz(staff);
-    //                }
-    //            }
-    //
-    //            // Should we erase and save the weaks?
-    //            if (weaksMap != null) {
-    //                systemWeaks = new ArrayList<Glyph>();
-    //                weaksMap.put(system, systemWeaks);
-    //
-    //                for (Inter inter : weaks) {
-    //                    inter.accept(this);
-    //                }
-    //            }
-    //
-    //            systemWeaks = null;
-    //        }
-    //
-    //        return weaksMap;
-    //    }
     @Override
     public void visit (Inter inter)
     {
@@ -202,6 +150,13 @@ public abstract class PageEraser
     }
 
     @Override
+    public void visit (AbstractNoteInter inter)
+    {
+        // Use plain symbol painting to symply erase the note
+        visit((Inter) inter);
+    }
+
+    @Override
     public void visit (StemInter stem)
     {
         processGlyph(stem.getGlyph());
@@ -216,13 +171,12 @@ public abstract class PageEraser
     @Override
     public void visit (SlurInter slur)
     {
-//        CubicCurve2D curve = slur.getInfo().getCurve();
-//
-//        if (curve != null) {
-//            g.setStroke(lineStroke);
-//            g.draw(curve);
-//        }
-
+        //        CubicCurve2D curve = slur.getInfo().getCurve();
+        //
+        //        if (curve != null) {
+        //            g.setStroke(lineStroke);
+        //            g.draw(curve);
+        //        }
         processGlyph(slur.getGlyph());
     }
 
@@ -286,6 +240,24 @@ public abstract class PageEraser
         return inter.isGood();
     }
 
+    //----------//
+    // eraseDmz //
+    //----------//
+    /**
+     * Erase from image the DMZ part of a system.
+     *
+     * @param system the system to process
+     */
+    protected void eraseDmz (SystemInfo system)
+    {
+        StaffInfo firstStaff = system.getFirstStaff();
+        StaffInfo lastStaff = system.getLastStaff();
+        int dmzEnd = firstStaff.getDmzEnd();
+        int top = firstStaff.getFirstLine().yAt(dmzEnd) - dmzDyMargin;
+        int bot = lastStaff.getLastLine().yAt(dmzEnd) + dmzDyMargin;
+        g.fillRect(0, top, dmzEnd, bot - top + 1);
+    }
+
     //--------------//
     // processGlyph //
     //--------------//
@@ -316,5 +288,9 @@ public abstract class PageEraser
                 "Symbols size to use for eraser");
 
         final Scale.Fraction lineMargin = new Scale.Fraction(0.1, "Margin drawn around lines");
+
+        final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
+                2.0,
+                "Margin erased above & below staff DMZ area");
     }
 }

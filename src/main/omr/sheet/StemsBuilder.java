@@ -150,7 +150,7 @@ public class StemsBuilder
     private final Skew skew;
 
     /** Scale-dependent parameters. */
-    private final Parameters params;
+    private Parameters params;
 
     /** Vertical seeds for this system. */
     private List<Glyph> systemSeeds;
@@ -183,7 +183,6 @@ public class StemsBuilder
         Sheet sheet = system.getSheet();
         scale = sheet.getScale();
         skew = sheet.getSkew();
-        params = new Parameters(system, scale);
 
         ShapeSymbol symbol = Shape.NOTEHEAD_BLACK.getSymbol();
         headSymbolDim = symbol.getDimension(MusicFont.getFont(scale.getInterline()));
@@ -247,6 +246,10 @@ public class StemsBuilder
      */
     public void linkStems ()
     {
+        if (params == null) {
+            params = new Parameters(system, scale);
+        }
+
         StopWatch watch = new StopWatch("StemsBuilder S#" + system.getId());
         watch.start("collections");
         // The sorted stem seeds for this system
@@ -323,13 +326,13 @@ public class StemsBuilder
         Collections.sort(
                 rels,
                 new Comparator<BeamStemRelation>()
-        {
-            @Override
-            public int compare (BeamStemRelation o1,
-                                BeamStemRelation o2)
-            {
-                return Double.compare(o1.getCrossPoint().getX(), o2.getCrossPoint().getX());
-            }
+                {
+                    @Override
+                    public int compare (BeamStemRelation o1,
+                                        BeamStemRelation o2)
+                    {
+                        return Double.compare(o1.getCrossPoint().getX(), o2.getCrossPoint().getX());
+                    }
                 });
 
         BeamStemRelation prevRel = null;
@@ -534,77 +537,6 @@ public class StemsBuilder
         final Scale.Fraction yGapTiny = new Scale.Fraction(
                 0.1,
                 "Maximum vertical tiny gap between stem & head");
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final double slopeMargin;
-
-        final int maxHeadOutDx;
-
-        final int maxBeamInDx;
-
-        final int maxHeadInDx;
-
-        final int vicinityMargin;
-
-        final int maxStemHeadGapY;
-
-        final int maxYGap;
-
-        final int maxStemThickness;
-
-        final int minHeadSectionContribution;
-
-        final int minStemExtension;
-
-        final int minHeadBeamDistance;
-
-        final int maxInterBeamGap;
-
-        final int minBeamStemsGap;
-
-        final double maxSeedJitter;
-
-        final double maxSectionJitter;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (SystemInfo system,
-                           Scale scale)
-        {
-            slopeMargin = constants.slopeMargin.getValue();
-            maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum());
-            maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum());
-            maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum());
-            vicinityMargin = scale.toPixels(constants.vicinityMargin);
-            maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum());
-            maxYGap = system.verticalsBuilder.getMaxYGap();
-            maxStemThickness = scale.getMainStem() + 1;
-            minHeadSectionContribution = scale.toPixels(constants.minHeadSectionContribution);
-            minStemExtension = scale.toPixels(constants.minStemExtension);
-            minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
-            maxInterBeamGap = scale.toPixels(constants.maxInterBeamGap);
-            minBeamStemsGap = scale.toPixels(constants.minBeamStemsGap);
-            maxSeedJitter = constants.maxSeedJitter.getValue() * scale.getMainStem();
-            maxSectionJitter = constants.maxSectionJitter.getValue() * scale.getMainStem();
-
-            if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
-            }
-        }
     }
 
     //------------//
@@ -1544,18 +1476,18 @@ public class StemsBuilder
                 Collections.sort(
                         candidates,
                         new Comparator<Inter>()
-                {
-                    @Override
-                    public int compare (Inter i1,
-                                        Inter i2)
-                    {
-                        AbstractBeamInter b1 = (AbstractBeamInter) i1;
-                        AbstractBeamInter b2 = (AbstractBeamInter) i2;
+                        {
+                            @Override
+                            public int compare (Inter i1,
+                                                Inter i2)
+                            {
+                                AbstractBeamInter b1 = (AbstractBeamInter) i1;
+                                AbstractBeamInter b2 = (AbstractBeamInter) i2;
 
-                        return Double.compare(
-                                yDir * (getTargetPt(getLimit(b1)).getY() - refPt.getY()),
-                                yDir * (getTargetPt(getLimit(b2)).getY() - refPt.getY()));
-                    }
+                                return Double.compare(
+                                        yDir * (getTargetPt(getLimit(b1)).getY() - refPt.getY()),
+                                        yDir * (getTargetPt(getLimit(b2)).getY() - refPt.getY()));
+                            }
                         });
 
                 // Build the list of beams
@@ -1681,7 +1613,7 @@ public class StemsBuilder
 
                 // Widen head box with typical stem width
                 final Rectangle wideHeadBox = head.getBounds();
-                wideHeadBox.grow(scale.getMainStem(), 0);
+                wideHeadBox.grow(system.getSheet().getStemThickness(), 0);
 
                 // Browse both vertical and horizontal sections in the system
                 for (Collection<Section> collection : Arrays.asList(
@@ -1835,17 +1767,17 @@ public class StemsBuilder
                 Collections.sort(
                         glyphs,
                         new Comparator<Glyph>()
-                {
-                    @Override
-                    public int compare (Glyph o1,
-                                        Glyph o2)
-                    {
-                        // Sort by decreasing contribution
-                        int c1 = getContrib(o1.getBounds());
-                        int c2 = getContrib(o2.getBounds());
+                        {
+                            @Override
+                            public int compare (Glyph o1,
+                                                Glyph o2)
+                            {
+                                // Sort by decreasing contribution
+                                int c1 = getContrib(o1.getBounds());
+                                int c2 = getContrib(o2.getBounds());
 
-                        return Integer.signum(c2 - c1);
-                    }
+                                return Integer.signum(c2 - c1);
+                            }
                         });
             }
 
@@ -1858,6 +1790,78 @@ public class StemsBuilder
             private void sortByDistance (List<Glyph> glyphs)
             {
                 Collections.sort(glyphs, (yDir > 0) ? Glyph.byOrdinate : Glyph.byReverseOrdinate);
+            }
+        }
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final double slopeMargin;
+
+        final int maxHeadOutDx;
+
+        final int maxBeamInDx;
+
+        final int maxHeadInDx;
+
+        final int vicinityMargin;
+
+        final int maxStemHeadGapY;
+
+        final int maxYGap;
+
+        final int maxStemThickness;
+
+        final int minHeadSectionContribution;
+
+        final int minStemExtension;
+
+        final int minHeadBeamDistance;
+
+        final int maxInterBeamGap;
+
+        final int minBeamStemsGap;
+
+        final double maxSeedJitter;
+
+        final double maxSectionJitter;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (SystemInfo system,
+                           Scale scale)
+        {
+            final int stemThickness = system.getSheet().getStemThickness();
+            slopeMargin = constants.slopeMargin.getValue();
+            maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum());
+            maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum());
+            maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum());
+            vicinityMargin = scale.toPixels(constants.vicinityMargin);
+            maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum());
+            maxYGap = system.verticalsBuilder.getMaxYGap();
+            maxStemThickness = stemThickness + 1; //TODO why +1 ???
+            minHeadSectionContribution = scale.toPixels(constants.minHeadSectionContribution);
+            minStemExtension = scale.toPixels(constants.minStemExtension);
+            minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
+            maxInterBeamGap = scale.toPixels(constants.maxInterBeamGap);
+            minBeamStemsGap = scale.toPixels(constants.minBeamStemsGap);
+            maxSeedJitter = constants.maxSeedJitter.getValue() * stemThickness;
+            maxSectionJitter = constants.maxSectionJitter.getValue() * stemThickness;
+
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
             }
         }
     }

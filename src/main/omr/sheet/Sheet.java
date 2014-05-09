@@ -157,6 +157,9 @@ public class Sheet
     /** Global scale for this sheet */
     private Scale scale;
 
+    /** Retrieved stem thickness. */
+    private int stemThickness;
+
     /** Table of all vertical (foreground) runs. */
     private RunsTable wholeVerticalTable;
 
@@ -176,6 +179,9 @@ public class Sheet
     //
     /** Scale */
     private ScaleBuilder scaleBuilder;
+
+    /** Stem */
+    private StemScaler stemScaler;
 
     /** Spots */
     private SpotsBuilder spotsBuilder;
@@ -770,6 +776,32 @@ public class Sheet
         return staffManager;
     }
 
+    //---------------//
+    // getStemScaler //
+    //---------------//
+    /**
+     * @return the stemScaler
+     */
+    public StemScaler getStemScaler ()
+    {
+        if (stemScaler == null) {
+            stemScaler = new StemScaler(this);
+        }
+
+        return stemScaler;
+    }
+
+    //------------------//
+    // getStemThickness //
+    //------------------//
+    /**
+     * @return the stemThickness
+     */
+    public int getStemThickness ()
+    {
+        return stemThickness;
+    }
+
     //----------------------//
     // getSymbolsController //
     //----------------------//
@@ -1163,6 +1195,17 @@ public class Sheet
     public String toString ()
     {
         return "{Sheet " + page.getId() + "}";
+    }
+
+    //------------------//
+    // setStemThickness //
+    //------------------//
+    /**
+     * @param stemThickness the stemThickness to set
+     */
+    void setStemThickness (int stemThickness)
+    {
+        this.stemThickness = stemThickness;
     }
 
     //-------------//

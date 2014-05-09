@@ -18,7 +18,6 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.math.Histogram;
-import omr.math.Histogram.HistoEntry;
 import omr.math.Histogram.MaxEntry;
 import omr.math.Histogram.PeakEntry;
 import omr.math.IntegerHistogram;
@@ -39,13 +38,6 @@ import omr.util.StopWatch;
 
 import ij.process.ByteProcessor;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartFrame;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +46,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JOptionPane;
-import javax.swing.WindowConstants;
 
 /**
  * Class {@code ScaleBuilder} computes the global scale of a given sheet by processing
@@ -107,9 +98,6 @@ public class ScaleBuilder
     /** Keeper of vertical run length histograms, for foreground & background. */
     private VertHistoKeeper vertHistoKeeper;
 
-    /** Keeper of horizontal run length histogram. */
-    private HoriHistoKeeper horiHistoKeeper;
-
     /** Histogram on vertical foreground runs. */
     private IntegerHistogram foreHisto;
 
@@ -118,9 +106,6 @@ public class ScaleBuilder
 
     /** Histogram on vertical pairs of runs. */
     private IntegerHistogram bothHisto;
-
-    /** Histogram on horizontal foreground runs. */
-    private IntegerHistogram horiHisto;
 
     /** Absolute population percentage for validating an extremum. */
     private final double quorumRatio = constants.quorumRatio.getValue();
@@ -145,9 +130,6 @@ public class ScaleBuilder
 
     /** Second frequent length of vertical foreground runs found, if any. */
     private MaxEntry<Integer> beamEntry;
-
-    /** Most frequent length of horizontal foreground runs found, if any. */
-    private MaxEntry<Integer> stemEntry;
 
     /** Second frequent length of vertical background runs found, if any. */
     private PeakEntry<Double> secondBackPeak;
@@ -180,10 +162,6 @@ public class ScaleBuilder
     {
         if (vertHistoKeeper != null) {
             vertHistoKeeper.writePlot();
-
-            if (horiHistoKeeper != null) {
-                horiHistoKeeper.writePlot();
-            }
         } else {
             logger.info("No scale data available yet");
         }
@@ -246,23 +224,11 @@ public class ScaleBuilder
             // Check we have acceptable resolution.  If not, throw StepException
             checkResolution();
 
-            // Look at horizontal histo for stem thickness
-            RunsTableFactory horiFactory = new RunsTableFactory(
-                    Orientation.HORIZONTAL,
-                    binaryBuffer,
-                    0);
-            RunsTable horiTable = horiFactory.createTable("horiBinary");
-            horiFactory = null; // To allow garbage collection ASAP
-            horiHistoKeeper = new HoriHistoKeeper(picture.getWidth() - 1);
-            horiHistoKeeper.buildHistograms(horiTable, picture.getHeight());
-            retrieveHoriPeak();
-
             // Here, we keep going on with scale data
             scale = new Scale(
                     computeLine(),
                     computeInterline(),
                     computeBeam(),
-                    computeStem(),
                     computeSecondInterline());
 
             logger.info("{}{}", sheet.getLogPrefix(), scale);
@@ -406,24 +372,6 @@ public class ScaleBuilder
         }
     }
 
-    //-------------//
-    // computeStem //
-    //-------------//
-    private int computeStem ()
-    {
-        if (stemEntry != null) {
-            return stemEntry.getKey();
-        }
-
-        if (forePeak != null) {
-            logger.info("{}No stem peak found, computing a default value", sheet.getLogPrefix());
-
-            return (int) Math.rint(constants.stemAsForeRatio.getValue() * forePeak.getKey().best);
-        }
-
-        return -1;
-    }
-
     //---------//
     // getPeak //
     //---------//
@@ -482,24 +430,6 @@ public class ScaleBuilder
                 throw new StepException("Sheet removed");
             } else {
                 throw new StepException("Sheet ignored");
-            }
-        }
-    }
-
-    //------------------//
-    // retrieveHoriPeak //
-    //------------------//
-    private void retrieveHoriPeak ()
-            throws StepException
-    {
-        List<MaxEntry<Integer>> horiMaxima = horiHisto.getPreciseMaxima();
-
-        if (!horiMaxima.isEmpty()) {
-            MaxEntry<Integer> max = horiMaxima.get(0);
-
-            if (max.getValue() >= quorumRatio) {
-                stemEntry = max;
-                logger.debug(" stem: {}", stemEntry);
             }
         }
     }
@@ -600,7 +530,7 @@ public class ScaleBuilder
 
         final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
-                "Should we print the StopWatch on binarization?");
+                "Should we print the StopWatch on scale computation?");
 
         final Constant.Integer minResolution = new Constant.Integer(
                 "Pixels",
@@ -646,230 +576,6 @@ public class ScaleBuilder
         final Constant.Ratio stemAsForeRatio = new Constant.Ratio(
                 1.0,
                 "Default stem thickness defined as ratio of foreground peak");
-    }
-
-    //-----------------//
-    // HoriHistoKeeper //
-    //-----------------//
-    /**
-     * Handles the histogram of horizontal foreground runs.
-     */
-    private class HoriHistoKeeper
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final int[] fore; // (black) foreground runs
-
-        // We are not interested of horizontal runs longer than this value
-        private final int maxFore = 20;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Create an instance of histoKeeper.
-         *
-         * @param wMax the maximum possible horizontal run length value
-         */
-        public HoriHistoKeeper (int wMax)
-        {
-            // Allocate histogram counters
-            fore = new int[wMax + 2];
-
-            // Useful?
-            Arrays.fill(fore, 0);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        //
-        //-----------//
-        // writePlot //
-        //-----------//
-        public void writePlot ()
-        {
-            new Plotter("horizontal black", fore, horiHisto, null, stemEntry, null, maxFore).plot(
-                    new Point(80, 80));
-        }
-
-        //-----------------//
-        // buildHistograms //
-        //-----------------//
-        private void buildHistograms (RunsTable horiTable,
-                                      int height)
-        {
-            for (int y = 0; y < height; y++) {
-                List<Run> runSeq = horiTable.getSequence(y);
-
-                for (Run run : runSeq) {
-                    // Process this foreground run
-                    int foreLength = run.getLength();
-
-                    if (foreLength <= maxFore) {
-                        fore[foreLength]++;
-                    }
-                }
-            }
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("fore values: {}", Arrays.toString(fore));
-            }
-
-            // Create foreground histogram
-            horiHisto = createHistogram(fore);
-        }
-
-        //-----------------//
-        // createHistogram //
-        //-----------------//
-        private IntegerHistogram createHistogram (int... vals)
-        {
-            IntegerHistogram histo = new IntegerHistogram();
-
-            for (int i = 0; i < vals.length; i++) {
-                histo.increaseCount(i, vals[i]);
-            }
-
-            return histo;
-        }
-    }
-
-    //---------//
-    // Plotter //
-    //---------//
-    /**
-     * In charge of building and displaying a chart on provided
-     * collection of lengths values.
-     */
-    private class Plotter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final String name;
-
-        private final int[] values;
-
-        private final Histogram<Integer> histo;
-
-        private final Double spreadRatio;
-
-        private final HistoEntry<? extends Number> peak;
-
-        private final PeakEntry<Double> secondPeak;
-
-        private final int upper;
-
-        private final XYSeriesCollection dataset = new XYSeriesCollection();
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Plotter (String name,
-                        int[] values,
-                        Histogram<Integer> histo,
-                        Double spreadRatio,
-                        HistoEntry<? extends Number> peak,
-                        PeakEntry<Double> secondPeak, // if any
-                        int upper)
-        {
-            this.name = name;
-            this.values = values;
-            this.histo = histo;
-            this.spreadRatio = spreadRatio;
-            this.peak = peak;
-            this.secondPeak = secondPeak;
-            this.upper = upper;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public void plot (Point upperLeft)
-        {
-            // All values, quorum line & spread line
-            plotValues();
-            plotQuorumLine();
-
-            if (spreadRatio != null) {
-                plotSpreadLine("", (PeakEntry) peak);
-            }
-
-            // Second peak spread line?
-            if (secondPeak != null) {
-                plotSpreadLine("Second", secondPeak);
-            }
-
-            // Chart
-            JFreeChart chart = ChartFactory.createXYLineChart(
-                    sheet.getId() + " (" + name + " runs)", // Title
-                    "Lengths - " + ((scale != null) ? scale : "*no scale*"), // X-Axis label
-                    "Counts", // Y-Axis label
-                    dataset, // Dataset
-                    PlotOrientation.VERTICAL, // orientation,
-                    true, // Show legend
-                    false, // Show tool tips
-                    false // urls
-            );
-
-            // Hosting frame
-            ChartFrame frame = new ChartFrame(sheet.getId() + " - " + name + " runs", chart, true);
-            frame.pack();
-            frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            frame.setLocation(upperLeft);
-            frame.setVisible(true);
-        }
-
-        private void plotQuorumLine ()
-        {
-            int threshold = histo.getQuorumValue(quorumRatio);
-            String pc = (int) (quorumRatio * 100) + "%";
-            XYSeries series = new XYSeries("Quorum@" + pc + ":" + threshold);
-            series.add(0, threshold);
-            series.add(upper, threshold);
-            dataset.addSeries(series);
-        }
-
-        private void plotSpreadLine (String prefix,
-                                     PeakEntry<Double> peak)
-        {
-            if (peak != null) {
-                int threshold = histo.getQuorumValue(peak.getValue() * spreadRatio);
-                String pc = (int) (spreadRatio * 100) + "%";
-                XYSeries series = new XYSeries(prefix + "Spread@" + pc + ":" + threshold);
-                series.add((double) peak.getKey().first, threshold);
-                series.add((double) peak.getKey().second, threshold);
-                dataset.addSeries(series);
-            }
-        }
-
-        private void plotValues ()
-        {
-            Integer key = null;
-            Integer secKey = null;
-
-            if (peak != null) {
-                double mainKey = peak.getBest().doubleValue();
-                key = (int) mainKey;
-            }
-
-            if (secondPeak != null) {
-                double secondKey = secondPeak.getBest();
-                secKey = (int) secondKey;
-            }
-
-            XYSeries series = new XYSeries(
-                    "Peak:" + key + "(" + (int) (peak.getValue() * 100) + "%)"
-                    + ((secondPeak != null) ? (" & " + secKey) : ""));
-
-            for (int i = 0; i <= upper; i++) {
-                series.add(i, values[i]);
-            }
-
-            dataset.addSeries(series);
-
-            // Derivative
-            XYSeries derivative = new XYSeries("Derivative");
-            derivative.add(0, 0);
-
-            for (int i = 1; i <= upper; i++) {
-                derivative.add(i, values[i] - values[i - 1]);
-            }
-
-            dataset.addSeries(derivative);
-        }
     }
 
     //-----------------//
@@ -919,19 +625,26 @@ public class ScaleBuilder
             int upper = (int) Math.min(
                     fore.length,
                     ((backPeak != null) ? ((backPeak.getKey().best * 3) / 2) : 20));
+            String xLabel = "Lengths - " + ((scale != null) ? scale : "*no scale*");
 
-            new Plotter("vertical both", both, bothHisto, bothSpreadRatio, bothPeak, null, upper).plot(
-                    new Point(0, 0));
-            new Plotter("vertical black", fore, foreHisto, foreSpreadRatio, forePeak, null, upper).plot(
-                    new Point(0, 0));
-            new Plotter(
+            new HistogramPlotter(sheet, "vertical both", both, bothHisto, bothPeak, null, upper).plot(
+                    new Point(0, 0),
+                    xLabel,
+                    bothSpreadRatio,
+                    quorumRatio);
+            new HistogramPlotter(sheet, "vertical black", fore, foreHisto, forePeak, null, upper).plot(
+                    new Point(0, 0),
+                    xLabel,
+                    foreSpreadRatio,
+                    quorumRatio);
+            new HistogramPlotter(
+                    sheet,
                     "vertical white",
                     back,
                     backHisto,
-                    backSpreadRatio,
                     backPeak,
                     secondBackPeak,
-                    upper).plot(new Point(40, 40));
+                    upper).plot(new Point(40, 40), xLabel, backSpreadRatio, quorumRatio);
         }
 
         //-----------------//

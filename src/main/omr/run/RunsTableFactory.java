@@ -45,9 +45,6 @@ public class RunsTableFactory
     /** The minimum value for a run length to be considered. */
     private final int minLength;
 
-    /** Remember if we have to swap x and y coordinates. */
-    private final boolean swapNeeded;
-
     /** The created RunsTable. */
     private RunsTable table;
 
@@ -72,8 +69,6 @@ public class RunsTableFactory
         this.orientation = orientation;
         this.source = source;
         this.minLength = minLength;
-
-        swapNeeded = orientation.isVertical();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -112,7 +107,9 @@ public class RunsTableFactory
                 orientation,
                 new Dimension(source.getWidth(), source.getHeight()));
 
-        RunsRetriever retriever = new RunsRetriever(orientation, new MyAdapter(filter));
+        RunsRetriever retriever = new RunsRetriever(
+                orientation,
+                orientation.isVertical() ? new VerticalAdapter(filter) : new HorizontalAdapter(filter));
 
         retriever.retrieveRuns(new Rectangle(0, 0, source.getWidth(), source.getHeight()));
 
@@ -144,17 +141,56 @@ public class RunsTableFactory
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //
+    //-------------------//
+    // HorizontalAdapter //
+    //-------------------//
+    /**
+     * Adapter for horizontal runs.
+     */
+    private class HorizontalAdapter
+            extends MyAdapter
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public HorizontalAdapter (Filter filter)
+        {
+            super(filter);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public final int getLevel (int coord,
+                                   int pos)
+        {
+            return source.get(coord, pos);
+        }
+
+        @Override
+        public final boolean isFore (int coord,
+                                     int pos)
+        {
+            return source.get(coord, pos) == 0;
+        }
+
+        @Override
+        protected boolean checkFilter (int coord,
+                                       int pos,
+                                       int length)
+        {
+            return filter.check(coord - length, pos, length);
+        }
+    }
+
     // ----------//
     // MyAdapter //
     // ----------//
-    private class MyAdapter
+    private abstract class MyAdapter
             implements RunsRetriever.Adapter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Potential filter on candidates. */
-        private final Filter filter;
+        protected final Filter filter;
 
         //~ Constructors ---------------------------------------------------------------------------
         public MyAdapter (Filter filter)
@@ -163,9 +199,9 @@ public class RunsTableFactory
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        // --------//
+        //---------//
         // backRun //
-        // --------//
+        //---------//
         @Override
         public final void backRun (int coord,
                                    int pos,
@@ -186,13 +222,8 @@ public class RunsTableFactory
             // We consider only runs that are longer than minLength
             if (length >= minLength) {
                 // Run filter if any
-                if (filter != null) {
-                    final boolean ok = swapNeeded ? filter.check(pos, coord - length, length)
-                            : filter.check(coord - length, pos, length);
-
-                    if (!ok) {
-                        return;
-                    }
+                if ((filter != null) && !checkFilter(coord, pos, length)) {
+                    return;
                 }
 
                 final int level = ((2 * cumul) + length) / (2 * length);
@@ -200,41 +231,13 @@ public class RunsTableFactory
             }
         }
 
-        // ---------//
-        // getLevel //
-        // ---------//
-        @Override
-        public final int getLevel (int coord,
-                                   int pos)
-        {
-            if (swapNeeded) {
-                return source.get(pos, coord);
-            } else {
-                return source.get(coord, pos);
-            }
-        }
-
-        // -------//
-        // isFore //
-        // -------//
-        @Override
-        public final boolean isFore (int coord,
-                                     int pos)
-        {
-            if (swapNeeded) {
-                return source.get(pos, coord) == 0;
-            } else {
-                return source.get(coord, pos) == 0;
-            }
-        }
-
-        // ----------//
+        //-----------//
         // terminate //
-        // ----------//
+        //-----------//
         @Override
         public final void terminate ()
         {
-            logger.debug("{} Retrieved runs: {}", table, table.getRunCount());
+            ///logger.debug("{} Retrieved runs: {}", table, table.getRunCount());
         }
 
         //--------------//
@@ -267,6 +270,53 @@ public class RunsTableFactory
 
             // No annotation: it's safer to assume no thread safety
             return false;
+        }
+
+        //-------------//
+        // checkFilter //
+        //-------------//
+        protected abstract boolean checkFilter (int coord,
+                                                int pos,
+                                                int length);
+    }
+
+    //-----------------//
+    // VerticalAdapter //
+    //-----------------//
+    /**
+     * Adapter for vertical runs.
+     */
+    private class VerticalAdapter
+            extends MyAdapter
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public VerticalAdapter (Filter filter)
+        {
+            super(filter);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public final int getLevel (int coord,
+                                   int pos)
+        {
+            return source.get(pos, coord);
+        }
+
+        @Override
+        public final boolean isFore (int coord,
+                                     int pos)
+        {
+            return source.get(pos, coord) == 0;
+        }
+
+        @Override
+        protected boolean checkFilter (int coord,
+                                       int pos,
+                                       int length)
+        {
+            return filter.check(pos, coord - length, length);
         }
     }
 }

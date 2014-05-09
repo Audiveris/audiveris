@@ -92,9 +92,6 @@ public class Scale
     /** Beam thickness (detected or computed). */
     private final int beamValue;
 
-    /** Stem thickness (detected or computed). */
-    private final int stemValue;
-
     /** Second interline range, if any. */
     private final Range secondInterlineRange;
 
@@ -125,7 +122,7 @@ public class Scale
     public Scale (int interline,
                   int mainFore)
     {
-        this(new Range(-1, mainFore, -1), new Range(-1, interline, -1), -1, -1, null);
+        this(new Range(-1, mainFore, -1), new Range(-1, interline, -1), -1,  null);
     }
 
     //-------//
@@ -137,19 +134,16 @@ public class Scale
      * @param lineRange            range of line thickness
      * @param interlineRange       range of interline
      * @param beamValue            beam thickness
-     * @param stemValue            stem thickness
      * @param secondInterlineRange range of secondInterline
      */
     public Scale (Range lineRange,
                   Range interlineRange,
                   int beamValue,
-                  int stemValue,
                   Range secondInterlineRange)
     {
         this.lineRange = lineRange;
         this.interlineRange = interlineRange;
         this.beamValue = beamValue;
-        this.stemValue = stemValue;
         this.secondInterlineRange = secondInterlineRange;
     }
 
@@ -159,7 +153,7 @@ public class Scale
     /** No-arg constructor, needed by JAXB. */
     private Scale ()
     {
-        this(null, null, -1, -1, null);
+        this(null, null, -1,  null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -216,21 +210,6 @@ public class Scale
     public int getMainFore ()
     {
         return lineRange.best;
-    }
-
-    //-------------//
-    // getMainStem //
-    //-------------//
-    /**
-     * Report the main stem thickness.
-     *
-     * @return the main stem thickness, either the detected value if any or a
-     *         default value computed from line value if no stem value was
-     *         detected.
-     */
-    public int getMainStem ()
-    {
-        return stemValue;
     }
 
     //------------//
@@ -465,8 +444,6 @@ public class Scale
         sb.append(" interline: ").append(interlineRange);
 
         sb.append(" beam: ").append(beamValue);
-
-        sb.append(" stem: ").append(stemValue);
 
         if (secondInterlineRange != null) {
             sb.append(" secondInterline: ").append(secondInterlineRange);

@@ -137,7 +137,7 @@ public class SheetBench
         }
 
         addProp("scale.mainBeam", scale.getMainBeam());
-        addProp("scale.mainStem", scale.getMainStem());
+        ///addProp("scale.mainStem", scale.getMainStem());
     }
 
     //------------//

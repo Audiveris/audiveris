@@ -53,6 +53,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
+import omr.sheet.StemScaler;
 
 /**
  * Class {@code SheetActions} simply gathers UI actions related to sheet handling.
@@ -173,6 +174,30 @@ public class SheetActions
                 scaleBuilder.displayChart();
             } else {
                 logger.warn("Cannot display scale plot, for lack of scale data");
+            }
+        }
+    }
+
+    //----------//
+    // plotStem //
+    //----------//
+    /**
+     * Action that allows to display the plot of stem scaler.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = SHEET_AVAILABLE)
+    public void plotStem (ActionEvent e)
+    {
+        Sheet sheet = SheetsController.getCurrentSheet();
+
+        if (sheet != null) {
+            StemScaler stemScaler = sheet.getStemScaler();
+
+            if (stemScaler != null) {
+                stemScaler.displayChart();
+            } else {
+                logger.warn("Cannot display stem plot, for lack of stem data");
             }
         }
     }

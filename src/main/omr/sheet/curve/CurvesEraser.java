@@ -17,16 +17,12 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
-
 import omr.lag.Section;
 
 import omr.sheet.PageEraser;
-import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.sig.AbstractNoteInter;
 import omr.sig.Inter;
 import omr.sig.SIGraph;
 
@@ -58,9 +54,6 @@ public class CurvesEraser
     private static final Logger logger = LoggerFactory.getLogger(CurvesEraser.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    // Vertical margin added above and below any staff DMZ
-    private final int dmzDyMargin;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CurvesEraser object.
@@ -74,9 +67,6 @@ public class CurvesEraser
                          Sheet sheet)
     {
         super(buffer, g, sheet);
-
-        Scale scale = sheet.getScale();
-        dmzDyMargin = scale.toPixels(constants.staffVerticalMargin);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -144,31 +134,6 @@ public class CurvesEraser
         return erasedMap;
     }
 
-    @Override
-    public void visit (AbstractNoteInter inter)
-    {
-        // Use plain symbol painting to symply erase the note
-        visit((Inter) inter);
-    }
-
-    //----------//
-    // eraseDmz //
-    //----------//
-    /**
-     * Erase from image the DMZ part of a system.
-     *
-     * @param system the system to process
-     */
-    private void eraseDmz (SystemInfo system)
-    {
-        StaffInfo firstStaff = system.getFirstStaff();
-        StaffInfo lastStaff = system.getLastStaff();
-        int dmzEnd = firstStaff.getDmzEnd();
-        int top = firstStaff.getFirstLine().yAt(dmzEnd) - dmzDyMargin;
-        int bot = lastStaff.getLastLine().yAt(dmzEnd) + dmzDyMargin;
-        g.fillRect(0, top, dmzEnd, bot - top + 1);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -181,9 +146,5 @@ public class CurvesEraser
         final Constant.Boolean useDmz = new Constant.Boolean(
                 true,
                 "Should we erase the DMZ at staff start");
-
-        final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
-                2.0,
-                "Margin erased above & below staff DMZ area");
     }
 }

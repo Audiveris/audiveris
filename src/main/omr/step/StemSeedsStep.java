@@ -12,7 +12,10 @@
 package omr.step;
 
 import omr.sheet.Sheet;
+import omr.sheet.StemScaler;
 import omr.sheet.SystemInfo;
+
+import java.util.Collection;
 
 /**
  * Class {@code StemSeedsStep} implements <b>STEM_SEEDS</b> step, which retrieves all
@@ -63,5 +66,16 @@ public class StemSeedsStep
             throws StepException
     {
         system.verticalsBuilder.buildVerticals(); // -> Stem seeds
+    }
+
+    //----------//
+    // doProlog //
+    //----------//
+    @Override
+    protected void doProlog (Collection<SystemInfo> systems,
+                             Sheet sheet)
+            throws StepException
+    {
+        sheet.getStemScaler().retrieveStem();
     }
 }
