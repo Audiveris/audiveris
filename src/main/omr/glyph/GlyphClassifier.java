@@ -22,7 +22,7 @@ public class GlyphClassifier
 
     public static ShapeEvaluator getInstance ()
     {
-        ///return GlyphNetwork.getInstance();
-        return WekaClassifier.getInstance();
+        return GlyphNetwork.getInstance();
+        ///return WekaClassifier.getInstance();
     }
 }

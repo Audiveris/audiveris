@@ -643,6 +643,8 @@ public class SymbolsBuilder
         /**
          * Value for this maximum distance is key.
          * Accepting large gaps would quickly turn into an explosion of subset possibilities.
+         * Use DMZ for relaxed constraints (case of F clefs split by top staff line).
+         * Use distance from staff for more text-oriented distances?
          */
         private final Scale.Fraction maxGap = new Scale.Fraction(
                 0.5,

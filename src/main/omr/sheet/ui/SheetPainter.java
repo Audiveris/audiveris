@@ -328,11 +328,10 @@ public class SheetPainter
     {
         setColor(inter);
 
-        ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
-        Glyph glyph = inter.getGlyph();
-
+        ///Glyph glyph = inter.getGlyph();
         ///Point center = (glyph != null) ? glyph.getCentroid() : GeoUtil.centerOf(inter.getBounds());
         Point center = GeoUtil.centerOf(inter.getBounds());
+        ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
     }
 

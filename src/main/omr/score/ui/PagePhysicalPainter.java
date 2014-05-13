@@ -579,10 +579,10 @@ public class PagePhysicalPainter
     {
         setColor(inter);
 
+        //        Glyph glyph = inter.getGlyph();
+        //        Point center = (glyph != null) ? glyph.getCentroid() : GeoUtil.centerOf(inter.getBounds());
+        Point center = GeoUtil.centerOf(inter.getBounds());
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
-        Glyph glyph = inter.getGlyph();
-        Point center = (glyph != null) ? glyph.getCentroid()
-                : GeoUtil.centerOf(inter.getBounds());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
     }
 
