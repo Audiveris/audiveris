@@ -92,7 +92,8 @@ public class SymbolsStep
     //----------//
     /**
      * {@inheritDoc}
-     * Prepare image without staff lines and with all (good) inters erased.
+     * Prepare image without staff lines, with all good inters erased and with all weak
+     * inters saved as optional symbol parts.
      */
     @Override
     protected void doProlog (Collection<SystemInfo> systems,

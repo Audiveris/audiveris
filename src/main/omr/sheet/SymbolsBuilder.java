@@ -33,6 +33,7 @@ import omr.image.DistanceTable;
 import omr.lag.Section;
 
 import omr.math.GeoOrder;
+import omr.math.GeoUtil;
 import omr.math.LineUtil;
 
 import omr.run.Orientation;
@@ -141,7 +142,10 @@ public class SymbolsBuilder
     {
         logger.info("System#{} symbols", system.getId());
 
+        // Retrieve all candidates
         List<Glyph> glyphs = getSymbolsGlyphs();
+
+        // Process all relevant combinations of glyphs
         buildClusters(glyphs);
         logger.info("System#{} symbols processed: {}", system.getId(), processCount);
     }
@@ -156,17 +160,23 @@ public class SymbolsBuilder
      */
     private void buildClusters (List<Glyph> glyphs)
     {
+        final int dmzEnd = system.getFirstStaff().getDmzEnd();
+
         /** Graph of glyphs, linked by their distance. */
         SimpleGraph<Glyph, Distance> systemGraph = new SimpleGraph<Glyph, Distance>(Distance.class);
-        final int gapInt = (int) Math.ceil(params.maxGap);
 
         for (Glyph glyph : glyphs) {
             systemGraph.addVertex(glyph);
         }
 
         for (int i = 0; i < glyphs.size(); i++) {
-            Glyph glyph = glyphs.get(i);
-            Rectangle fatBox = glyph.getBounds();
+            final Glyph glyph = glyphs.get(i);
+
+            // Choose appropriate maxGap depending on whether glyph is in DMZ or not
+            final double maxGap = (glyph.getLocation().x <= dmzEnd) ? params.maxDmzGap
+                    : params.maxGap;
+            final int gapInt = (int) Math.ceil(maxGap);
+            final Rectangle fatBox = glyph.getBounds();
             fatBox.grow(gapInt, gapInt);
 
             final int xBreak = fatBox.x + fatBox.width;
@@ -190,14 +200,8 @@ public class SymbolsBuilder
                 // Precise distance from glyph to other
                 double dist = measureDistance(fatBox, distTable, other);
 
-                if (dist <= params.maxGap) {
+                if (dist <= maxGap) {
                     systemGraph.addEdge(glyph, other, new Distance(dist));
-
-                    //                    logger.info(
-                    //                            "#{} to #{} = {}",
-                    //                            glyph.getId(),
-                    //                            other.getId(),
-                    //                            String.format("%.1f", dist));
                 }
             }
         }
@@ -205,13 +209,9 @@ public class SymbolsBuilder
         // Retrieve the components (sets of connected vertices)
         ConnectivityInspector inspector = new ConnectivityInspector(systemGraph);
         List<Set<Glyph>> sets = inspector.connectedSets();
-
         logger.info("sets: {}", sets.size());
 
         for (Set<Glyph> set : sets) {
-            List<Glyph> list = new ArrayList<Glyph>(set);
-            Collections.sort(list, Glyph.byId);
-
             if (set.size() > 1) {
                 // Consider decompositions of this set
                 SimpleGraph<Glyph, Distance> compGraph = new SimpleGraph<Glyph, Distance>(
@@ -236,6 +236,8 @@ public class SymbolsBuilder
     //--------------//
     /**
      * Create the proper inter instance(s) for the provided evaluated glyph.
+     * <p>
+     * TODO: method to be completed so that all inter classes are handled!!!!
      *
      * @param eval  evaluation detail
      * @param glyph evaluated glyph
@@ -416,11 +418,6 @@ public class SymbolsBuilder
                     }
                 }
             }
-
-            //            // Mutual exclusions between inters of the same glyph
-            //            if (allInters.size() > 1) {
-            //                sig.insertExclusions(allInters, Exclusion.Cause.OVERLAP);
-            //            }
         }
 
         return allInters;
@@ -519,7 +516,6 @@ public class SymbolsBuilder
      * <li>Build the set of new reachable vertices.</li>
      * <li>For each reachable vertex, recursively process the new set composed of current set + the
      * reachable vertex.</li></ol>
-     * Any two subsets are mutually exclusive if they have a glyph in common.
      */
     private class Cluster
     {
@@ -542,7 +538,6 @@ public class SymbolsBuilder
         {
             List<Glyph> seeds = new ArrayList<Glyph>(graph.vertexSet());
             Collections.sort(seeds, Glyph.byId);
-
             logger.info("Decomposing {}", Glyphs.toString("cluster", seeds));
 
             Set<Glyph> forbidden = new HashSet<Glyph>();
@@ -555,13 +550,6 @@ public class SymbolsBuilder
                 process(Collections.singleton(seed), forbidden);
                 forbidden.add(seed);
             }
-
-            // Formalized exclusion between subsets that have a glyph in common
-            //            for (Glyph seed : seeds) {
-            //                sig.insertExclusions(
-            //                        new ArrayList<Inter>(seedInters.get(seed)),
-            //                        Exclusion.Cause.OVERLAP);
-            //            }
         }
 
         private Set<Glyph> getOutliers (Set<Glyph> set)
@@ -575,6 +563,21 @@ public class SymbolsBuilder
             outliers.removeAll(set);
 
             return outliers;
+        }
+
+        /**
+         * Symbol height is not limited if on left of system (braces / brackets).
+         *
+         * @param symBox symbol bounding box
+         * @return true if OK
+         */
+        private boolean isHeightAcceptable (Rectangle symBox)
+        {
+            if (GeoUtil.centerOf(symBox).x < system.getLeft()) {
+                return true;
+            } else {
+                return symBox.height <= params.maxSymbolHeight;
+            }
         }
 
         private void process (Set<Glyph> set,
@@ -615,10 +618,10 @@ public class SymbolsBuilder
 
             for (Glyph outlier : outliers) {
                 // Check appending this atom does not make the symbol too wide or too high
+                // We can have very high symbols only for braces/brackets (left of system)
                 Rectangle symBox = outlier.getBounds().union(setBox);
 
-                if ((symBox.width <= params.maxSymbolWidth)
-                    && (symBox.height <= params.maxSymbolHeight)) {
+                if ((symBox.width <= params.maxSymbolWidth) && isHeightAcceptable(symBox)) {
                     Set<Glyph> larger = new HashSet<Glyph>();
                     larger.addAll(set);
                     larger.add(outlier);
@@ -640,12 +643,14 @@ public class SymbolsBuilder
         /**
          * Value for this maximum distance is key.
          * Accepting large gaps would quickly turn into an explosion of subset possibilities.
-         * Typical gap is given by F-key, often segmented by upper staff line into left and right
-         * parts, but perhaps this case alone could be handled specifically thanks to the two dots.
          */
         private final Scale.Fraction maxGap = new Scale.Fraction(
-                0.5, //1.0,
+                0.5,
                 "Maximum distance between two compound parts");
+
+        private final Scale.Fraction maxDmzGap = new Scale.Fraction(
+                1.0,
+                "Maximum distance between two compound parts, when in DMZ");
 
         private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
                 0.03,
@@ -657,7 +662,7 @@ public class SymbolsBuilder
 
         private final Scale.Fraction maxSymbolHeight = new Scale.Fraction(
                 10.0,
-                "Maximum height for a symbol");
+                "Maximum height for a symbol (when found within staff abscissa range)");
     }
 
     //----------//
@@ -735,6 +740,8 @@ public class SymbolsBuilder
 
         final double maxGap;
 
+        final double maxDmzGap;
+
         final int maxSymbolWidth;
 
         final int maxSymbolHeight;
@@ -747,6 +754,7 @@ public class SymbolsBuilder
         public Parameters (Scale scale)
         {
             maxGap = scale.toPixelsDouble(constants.maxGap);
+            maxDmzGap = scale.toPixelsDouble(constants.maxDmzGap);
             maxSymbolWidth = scale.toPixels(constants.maxSymbolWidth);
             maxSymbolHeight = scale.toPixels(constants.maxSymbolHeight);
             minWeight = scale.toPixels(constants.minWeight);

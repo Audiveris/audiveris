@@ -352,6 +352,11 @@ public class ShapeSet
             F_CLEF_8VA,
             F_CLEF_8VB);
 
+    /** Small Clefs */
+    public static final EnumSet<Shape> SmallClefs = EnumSet.of(
+            G_CLEF_SMALL,
+            F_CLEF_SMALL);
+
     static {
         // Make sure all the shape colors are defined
         ShapeSet.defineAllShapeColors();

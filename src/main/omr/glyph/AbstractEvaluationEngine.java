@@ -118,7 +118,7 @@ public abstract class AbstractEvaluationEngine
             //
             // Successful checks?
             if (conditions.contains(Condition.CHECKED)) {
-                Evaluation oldEval = new Evaluation(eval.shape, eval.grade);
+                ///Evaluation oldEval = new Evaluation(eval.shape, eval.grade);
                 double[]   ins = ShapeDescription.features(glyph);
                 // This may change the eval shape...
                 glyphChecker.annotate(system, eval, glyph, ins);

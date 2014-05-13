@@ -149,7 +149,7 @@ public class ShapeChecker
                           Glyph glyph,
                           double[] features)
     {
-        if (!constants.applySpecificCheck.getValue()) {
+        if (!constants.applySpecificCheck.isSet()) {
             return;
         }
 
@@ -433,6 +433,19 @@ public class ShapeChecker
             {
                 // Must be outside staff height
                 return Math.abs(glyph.getPitchPosition()) > 4;
+            }
+        };
+
+        new Checker("WithinDMZ", SmallClefs)
+        {
+            @Override
+            public boolean check (SystemInfo system,
+                                  Evaluation eval,
+                                  Glyph glyph,
+                                  double[] features)
+            {
+                // Must be on right side of system DMZ
+                return Math.abs(glyph.getLocation().x) > system.getFirstStaff().getDmzEnd();
             }
         };
 
