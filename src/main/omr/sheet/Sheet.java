@@ -157,8 +157,11 @@ public class Sheet
     /** Global scale for this sheet */
     private Scale scale;
 
-    /** Retrieved stem thickness. */
-    private int stemThickness;
+    /** Most frequent stem thickness. */
+    private int mainStem;
+
+    /** Largest stem thickness. */
+    private int maxStem;
 
     /** Table of all vertical (foreground) runs. */
     private RunsTable wholeVerticalTable;
@@ -603,6 +606,28 @@ public class Sheet
         return lastLongHSectionId;
     }
 
+    //-------------//
+    // getMainStem //
+    //-------------//
+    /**
+     * @return the main Stem thickness
+     */
+    public int getMainStem ()
+    {
+        return mainStem;
+    }
+
+    //------------//
+    // getMaxStem //
+    //------------//
+    /**
+     * @return the maximum Stem thickness
+     */
+    public int getMaxStem ()
+    {
+        return maxStem;
+    }
+
     //---------//
     // getNest //
     //---------//
@@ -789,17 +814,6 @@ public class Sheet
         }
 
         return stemScaler;
-    }
-
-    //------------------//
-    // getStemThickness //
-    //------------------//
-    /**
-     * @return the stemThickness
-     */
-    public int getStemThickness ()
-    {
-        return stemThickness;
     }
 
     //----------------------//
@@ -1197,15 +1211,26 @@ public class Sheet
         return "{Sheet " + page.getId() + "}";
     }
 
-    //------------------//
-    // setStemThickness //
-    //------------------//
+    //-------------//
+    // setMainStem //
+    //-------------//
     /**
-     * @param stemThickness the stemThickness to set
+     * @param mainStem the main Stem to set
      */
-    void setStemThickness (int stemThickness)
+    void setMainStem (int mainStem)
     {
-        this.stemThickness = stemThickness;
+        this.mainStem = mainStem;
+    }
+
+    //------------//
+    // setMaxStem //
+    //------------//
+    /**
+     * @param maxStem the maximum Stem to set
+     */
+    void setMaxStem (int maxStem)
+    {
+        this.maxStem = maxStem;
     }
 
     //-------------//

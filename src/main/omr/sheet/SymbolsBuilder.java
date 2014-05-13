@@ -305,7 +305,7 @@ public class SymbolsBuilder
         // Look for stems nearby, using the lowest (for up) or highest (for down) third of height
         Shape shape = flag.getShape();
         boolean isUp = ShapeSet.FlagsUp.contains(shape);
-        int stemWidth = sheet.getStemThickness();
+        int stemWidth = sheet.getMainStem();
         Rectangle flagBox = flag.getBounds();
         int height = (int) Math.rint(flagBox.height / 3.0);
         int y = isUp ? ((flagBox.y + flagBox.height) - height - params.maxStemFlagGapY)

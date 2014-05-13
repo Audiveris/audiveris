@@ -372,34 +372,6 @@ public class ScaleBuilder
         }
     }
 
-    //---------//
-    // getPeak //
-    //---------//
-    private PeakEntry<Double> getPeak (Histogram<?> histo,
-                                       Double spreadRatio,
-                                       int index)
-    {
-        PeakEntry<Double> peak = null;
-
-        // Find peak(s) using quorum threshold
-        List<PeakEntry<Double>> peaks = histo.getDoublePeaks(histo.getQuorumValue(quorumRatio));
-
-        if (index < peaks.size()) {
-            peak = peaks.get(index);
-
-            // Refine peak using spread threshold?
-            if (spreadRatio != null) {
-                peaks = histo.getDoublePeaks(histo.getQuorumValue(peak.getValue() * spreadRatio));
-
-                if (index < peaks.size()) {
-                    peak = peaks.get(index);
-                }
-            }
-        }
-
-        return peak;
-    }
-
     //--------------//
     // makeDecision //
     //--------------//
@@ -442,7 +414,7 @@ public class ScaleBuilder
     {
         StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
         // Foreground peak
-        forePeak = getPeak(foreHisto, foreSpreadRatio, 0);
+        forePeak = foreHisto.getPeak(quorumRatio, foreSpreadRatio, 0);
         sb.append("fore:").append(forePeak);
 
         if (forePeak.getValue() == 1d) {
@@ -452,9 +424,10 @@ public class ScaleBuilder
         }
 
         // Pair peak
-        bothPeak = getPeak(bothHisto, bothSpreadRatio, 0);
+        bothPeak = bothHisto.getPeak(quorumRatio, bothSpreadRatio, 0);
+        
         // Background peak
-        backPeak = getPeak(backHisto, backSpreadRatio, 0);
+        backPeak = backHisto.getPeak(quorumRatio, backSpreadRatio, 0);
 
         if (backPeak.getValue() == 1d) {
             String msg = "All image pixels are background." + " Check binarization parameters";
@@ -463,7 +436,7 @@ public class ScaleBuilder
         }
 
         // Second background peak?
-        secondBackPeak = getPeak(backHisto, backSpreadRatio, 1);
+        secondBackPeak = backHisto.getPeak(quorumRatio, backSpreadRatio, 1);
 
         if (secondBackPeak != null) {
             // Check whether we should merge with first foreground peak

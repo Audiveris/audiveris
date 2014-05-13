@@ -597,7 +597,7 @@ public class PagePhysicalPainter
         //TODO: use proper stem thickness! (see ledger)
         if (stemStroke == null) {
             stemStroke = new BasicStroke(
-                    (float) system.getInfo().getSheet().getStemThickness(),
+                    (float) system.getInfo().getSheet().getMainStem(),
                     BasicStroke.CAP_ROUND,
                     BasicStroke.JOIN_ROUND);
         }

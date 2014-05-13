@@ -18,7 +18,7 @@ import omr.glyph.Shape;
 
 import omr.image.ImageUtil;
 
-import omr.math.Histogram;
+import omr.math.Histogram.PeakEntry;
 import omr.math.IntegerHistogram;
 
 import omr.run.Orientation;
@@ -48,8 +48,8 @@ import java.util.List;
  * Class {@code StemScaler} retrieves the typical thickness of stems in a sheet.
  * <p>
  * Computation is based on histogram of lengths of horizontal runs.
- * For precise results, we have to "remove" the detected bar lines 'and connections) otherwise their
- * horizontal runs might impact stem width measurement.
+ * For precise results, we have to "remove" the detected bar lines (and connections) otherwise their
+ * horizontal runs might impact stem thickness measurement.
  *
  * @author Hervé Bitteur
  */
@@ -73,7 +73,13 @@ public class StemScaler
     private IntegerHistogram histo;
 
     /** Most frequent length of horizontal foreground runs found, if any. */
-    private Histogram.MaxEntry<Integer> stemEntry;
+    private PeakEntry<Double> peak;
+
+    /** Absolute population percentage for validating an extremum. */
+    private final double quorumRatio = constants.quorumRatio.getValue();
+
+    /** Relative population percentage for reading spread. */
+    private final double spreadRatio = constants.spreadRatio.getValue();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -126,11 +132,7 @@ public class StemScaler
             RunsTable horiTable = runFactory.createTable("horiRuns");
             histoKeeper = new HistoKeeper(picture.getWidth() - 1);
             histoKeeper.buildHistograms(horiTable, picture.getHeight());
-            retrieveHoriPeak();
-
-            int stem = computeStem();
-            sheet.setStemThickness(stem);
-            logger.info("{}Stem thickness: {}", sheet.getLogPrefix(), stem);
+            computeStem();
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -141,17 +143,26 @@ public class StemScaler
     //-------------//
     // computeStem //
     //-------------//
-    private int computeStem ()
+    private void computeStem ()
     {
-        if (stemEntry != null) {
-            return stemEntry.getKey();
+        peak = histo.getPeak(quorumRatio, spreadRatio, 0);
+        final int mainStem;
+        final int maxStem;
+
+        if (peak != null) {
+            mainStem = (int) Math.rint(peak.getKey().best);
+            maxStem = (int) Math.rint(peak.getKey().second);
+        } else {
+            Scale scale = sheet.getScale();
+            double ratio = constants.stemAsForeRatio.getValue();
+            mainStem = (int) Math.rint(ratio * scale.getMainFore());
+            maxStem = (int) Math.rint(ratio * scale.getMaxFore());
+            logger.info("{}No stem peak found, computing defaults", sheet.getLogPrefix());
         }
 
-        Scale scale = sheet.getScale();
-        int stem = (int) Math.rint(constants.stemAsForeRatio.getValue() * scale.getMainFore());
-        logger.info("{}No stem peak found, computed default as {}", sheet.getLogPrefix(), stem);
-
-        return stem;
+        sheet.setMainStem((int) Math.rint(peak.getKey().best));
+        sheet.setMaxStem((int) Math.rint(peak.getKey().second));
+        logger.info("{}Stem main: {}, max: {}", sheet.getLogPrefix(), mainStem, maxStem);
     }
 
     //-----------//
@@ -180,21 +191,23 @@ public class StemScaler
         return buf;
     }
 
-    //------------------//
-    // retrieveHoriPeak //
-    //------------------//
-    private void retrieveHoriPeak ()
+    //--------------//
+    // retrievePeak //
+    //--------------//
+    private void retrievePeak ()
     {
-        List<Histogram.MaxEntry<Integer>> horiMaxima = histo.getPreciseMaxima();
+        peak = histo.getPeak(quorumRatio, spreadRatio, 0);
 
-        if (!horiMaxima.isEmpty()) {
-            Histogram.MaxEntry<Integer> max = horiMaxima.get(0);
-
-            if (max.getValue() >= constants.quorumRatio.getValue()) {
-                stemEntry = max;
-                logger.debug("stem: {}", stemEntry);
-            }
-        }
+        //        List<Histogram.PeakEntry<Integer>> horiMaxima = histo.getPreciseMaxima();
+        //
+        //        if (!horiMaxima.isEmpty()) {
+        //            Histogram.MaxEntry<Integer> max = horiMaxima.get(0);
+        //
+        //            if (max.getValue() >= constants.quorumRatio.getValue()) {
+        //                stemPeak = max;
+        //                logger.debug("stem: {}", stemPeak);
+        //            }
+        //        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -221,6 +234,10 @@ public class StemScaler
         final Constant.Ratio quorumRatio = new Constant.Ratio(
                 0.1,
                 "Absolute ratio of total pixels for peak acceptance");
+
+        final Constant.Ratio spreadRatio = new Constant.Ratio(
+                0.30,
+                "Relative ratio of best count for stem spread reading");
 
         final Constant.Ratio stemAsForeRatio = new Constant.Ratio(
                 1.0,
@@ -264,11 +281,11 @@ public class StemScaler
         //-----------//
         public void writePlot ()
         {
-            new HistogramPlotter(sheet, "horizontal black", fore, histo, stemEntry, null, maxFore).plot(
+            new HistogramPlotter(sheet, "horizontal black", fore, histo, peak, null, maxFore).plot(
                     new Point(80, 80),
                     "Lengths for stem",
-                    null,
-                    null);
+                    spreadRatio,
+                    quorumRatio);
         }
 
         //-----------------//

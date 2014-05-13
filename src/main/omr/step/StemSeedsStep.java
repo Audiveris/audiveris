@@ -12,7 +12,6 @@
 package omr.step;
 
 import omr.sheet.Sheet;
-import omr.sheet.StemScaler;
 import omr.sheet.SystemInfo;
 
 import java.util.Collection;

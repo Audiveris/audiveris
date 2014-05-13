@@ -312,11 +312,11 @@ class BasicEnvironment
         return withLedger;
     }
 
-    //----------//
-    // overlaps //
-    //----------//
+    //------------//
+    // intersects //
+    //------------//
     @Override
-    public boolean overlaps (Glyph that)
+    public boolean intersects (Glyph that)
     {
         // Very rough test
         final Rectangle thisBox = glyph.getBounds();

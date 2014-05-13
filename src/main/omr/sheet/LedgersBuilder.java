@@ -35,7 +35,6 @@ import omr.lag.Section;
 import omr.math.GeoUtil;
 import omr.math.LineUtil;
 import static omr.run.Orientation.*;
-import omr.run.Run;
 
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
@@ -109,8 +108,6 @@ public class LedgersBuilder
 
     private static final Failure TOO_SHIFTED = new Failure("Hori-TooShifted");
 
-    private static final Failure TOO_BLACK = new Failure("Hori-TooBlack");
-
     //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related sheet. */
@@ -180,14 +177,13 @@ public class LedgersBuilder
     {
         try {
             // Cache input image
-            Picture picture = sheet.getPicture();
-            pixelFilter = picture.getSource(Picture.SourceKey.STAFF_LINE_FREE);
+            pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.STAFF_LINE_FREE);
 
-            // Retrieve the (good) system beams
+            // Put apart the (good) system beams
             systemBeams = getGoodBeams();
 
-            // System sections to provide to factory
-            List<Section> sections = system.getHorizontalFullSections(); //getCandidateSections();
+            // Retrieve system sections to provide to factory
+            List<Section> sections = getCandidateSections();
 
             // Retrieve system candidate glyphs out of candidate sections
             ledgerCandidates = getCandidateGlyphs(sections);
@@ -195,10 +191,7 @@ public class LedgersBuilder
             // Filter candidates accurately, line by line
             filterLedgers();
         } catch (Throwable ex) {
-            logger.warn("Error retrieving horizontals. ", ex);
-        } finally {
-            // User feedback
-            /////feedback();
+            logger.warn("Error retrieving ledgers. " + ex, ex);
         }
     }
 
@@ -354,7 +347,7 @@ public class LedgersBuilder
         factory.setMaxOverlapSpace(constants.maxOverlapSpace);
 
         if (system.getId() == 1) {
-            factory.dump("HorizontalsBuilder factory");
+            factory.dump("LedgersBuilder factory");
         }
 
         for (Section section : sections) {
@@ -376,6 +369,11 @@ public class LedgersBuilder
             glyphs.removeAll(toRemove);
         }
 
+        // This is only meant to show them in specific color
+        for (Glyph glyph : glyphs) {
+            glyph.setShape(Shape.LEDGER_CANDIDATE);
+        }
+
         return glyphs;
     }
 
@@ -384,7 +382,8 @@ public class LedgersBuilder
     //----------------------//
     /**
      * Retrieve good candidate sections.
-     * These are sections from a (complete) horizontal lag that do not stand within staves.
+     * These are sections from a (complete) horizontal lag that do not stand within staves and that
+     * intersect a horizontal section.
      *
      * @return list of sections kept
      */
@@ -394,15 +393,18 @@ public class LedgersBuilder
         int minWidth = scale.toPixels(constants.minLedgerLengthLow);
 
         for (Section section : system.getHorizontalFullSections()) {
-            // Check minimum length (useless test!!! TODO)
+            // Check minimum length
             if (section.getBounds().width < minWidth) {
+                continue;
+            }
+
+            // Check this section intersects a horizontal section
+            if (!intersectHorizontal(section)) {
                 continue;
             }
 
             keptSections.add(section);
         }
-
-        logger.debug("S#{} keptSections: {}", system.getId(), keptSections.size());
 
         return keptSections;
     }
@@ -521,6 +523,32 @@ public class LedgersBuilder
 
             return staffLine.yAt(stick.getAreaCenter().getX());
         }
+    }
+
+    //---------------------//
+    // intersectHorizontal //
+    //---------------------//
+    /**
+     * Check whether the provided section intersects at least one horizontal section of
+     * the system.
+     *
+     * @param section the provided (full length) section
+     * @return true if intersects a horizontal section
+     */
+    private boolean intersectHorizontal (Section section)
+    {
+        Rectangle sectionBox = section.getBounds();
+
+        // Check this section intersects a horizontal section
+        for (Section hs : system.getHorizontalSections()) {
+            if (hs.getBounds().intersects(sectionBox)) {
+                if (hs.intersects(section)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     //------------//
@@ -719,11 +747,11 @@ public class LedgersBuilder
         // Constants specified WRT mean line thickness
         // -------------------------------------------
         Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
-                1.0,
+                1.5, //  1.0,
                 "Maximum delta position between two overlapping filaments");
 
         Scale.LineFraction maxThicknessHigh = new Scale.LineFraction(
-                2.0,
+                3,
                 "High Maximum thickness of an interesting stick (WRT staff line)");
 
         Scale.LineFraction maxThicknessLow = new Scale.LineFraction(
@@ -741,11 +769,11 @@ public class LedgersBuilder
                 "Minimum length for a section to be considered as core");
 
         Scale.Fraction maxCoordGap = new Scale.Fraction(
-                0.2,
+                0.0,
                 "Maximum abscissa gap between ledger filaments");
 
         Scale.Fraction maxPosGap = new Scale.Fraction(
-                0.2,
+                0.3, //0.2,
                 "Maximum ordinate gap between ledger filaments");
 
         Scale.Fraction maxOverlapSpace = new Scale.Fraction(
@@ -915,42 +943,6 @@ public class LedgersBuilder
         }
     }
 
-    //-------------//
-    // BottomCheck //
-    //-------------//
-    private class BottomCheck
-            extends Check<GlyphContext>
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        protected BottomCheck ()
-        {
-            super(
-                    "Bottom",
-                    "Check that bottom of ledger touches some white pixels",
-                    constants.minWhiteLow,
-                    constants.minWhiteHigh,
-                    true,
-                    TOO_BLACK);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected double getValue (GlyphContext context)
-        {
-            Glyph stick = context.stick;
-            double sumFree = 0;
-
-            for (Section section : stick.getMembers()) {
-                Run run = section.getFirstRun();
-                double free = (1 - section.getLastAdjacency()) * run.getLength();
-                sumFree += free;
-            }
-
-            return sumFree / stick.getLength(HORIZONTAL);
-        }
-    }
-
     //------------------//
     // LedgerCheckBoard //
     //------------------//
@@ -1031,10 +1023,10 @@ public class LedgersBuilder
             add(0.5, new LeftPitchCheck());
             add(0.5, new RightPitchCheck());
 
-            if (isLong) {
-                add(1, new TopCheck());
-                add(1, new BottomCheck());
-            }
+            //            if (isLong) {
+            //                add(1, new TopCheck());
+            //                add(1, new BottomCheck());
+            //            }
         }
     }
 
@@ -1218,40 +1210,76 @@ public class LedgersBuilder
             return sheet.getScale().pixelsToFrac(stick.getMeanDistance());
         }
     }
-
-    //----------//
-    // TopCheck //
-    //----------//
-    private class TopCheck
-            extends Check<GlyphContext>
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        protected TopCheck ()
-        {
-            super(
-                    "Top",
-                    "Check that top of ledger touches some white pixels",
-                    constants.minWhiteLow,
-                    constants.minWhiteHigh,
-                    true,
-                    TOO_BLACK);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected double getValue (GlyphContext context)
-        {
-            Glyph stick = context.stick;
-            double sumFree = 0;
-
-            for (Section section : stick.getMembers()) {
-                Run run = section.getFirstRun();
-                double free = (1 - section.getFirstAdjacency()) * run.getLength();
-                sumFree += free;
-            }
-
-            return sumFree / stick.getLength(HORIZONTAL);
-        }
-    }
 }
+//    //-------------//
+//    // BottomCheck //
+//    //-------------//
+//    private class BottomCheck
+//            extends Check<GlyphContext>
+//    {
+//        //~ Constructors ---------------------------------------------------------------------------
+//
+//        protected BottomCheck ()
+//        {
+//            super(
+//                    "Bottom",
+//                    "Check that bottom of ledger touches some white pixels",
+//                    constants.minWhiteLow,
+//                    constants.minWhiteHigh,
+//                    true,
+//                    TOO_BLACK);
+//        }
+//
+//        //~ Methods --------------------------------------------------------------------------------
+//        @Override
+//        protected double getValue (GlyphContext context)
+//        {
+//            Glyph stick = context.stick;
+//            double sumFree = 0;
+//
+//            for (Section section : stick.getMembers()) {
+//                Run run = section.getFirstRun();
+//                double free = (1 - section.getLastAdjacency()) * run.getLength();
+//                sumFree += free;
+//            }
+//
+//            return sumFree / stick.getLength(HORIZONTAL);
+//        }
+//    }
+//    //----------//
+//    // TopCheck //
+//    //----------//
+//    private class TopCheck
+//            extends Check<GlyphContext>
+//    {
+//        //~ Constructors ---------------------------------------------------------------------------
+//
+//        protected TopCheck ()
+//        {
+//            super(
+//                    "Top",
+//                    "Check that top of ledger touches some white pixels",
+//                    constants.minWhiteLow,
+//                    constants.minWhiteHigh,
+//                    true,
+//                    TOO_BLACK);
+//        }
+//
+//        //~ Methods --------------------------------------------------------------------------------
+//        @Override
+//        protected double getValue (GlyphContext context)
+//        {
+//            Glyph stick = context.stick;
+//            double sumFree = 0;
+//
+//            for (Section section : stick.getMembers()) {
+//                Run run = section.getFirstRun();
+//                double free = (1 - section.getFirstAdjacency()) * run.getLength();
+//                sumFree += free;
+//            }
+//
+//            return sumFree / stick.getLength(HORIZONTAL);
+//        }
+//    }
+//
+//    private static final Failure TOO_BLACK = new Failure("Hori-TooBlack");

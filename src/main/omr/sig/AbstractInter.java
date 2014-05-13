@@ -446,7 +446,7 @@ public abstract class AbstractInter
         } else if (that.getArea() != null) {
             return that.getArea().intersects(this.getCoreBounds());
         } else if ((this.getGlyph() != null) && (that.getGlyph() != null)) {
-            return this.getGlyph().overlaps(that.getGlyph());
+            return this.getGlyph().intersects(that.getGlyph());
         } else {
             return this.getCoreBounds().intersects(that.getCoreBounds());
         }

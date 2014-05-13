@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sheet;
 
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 import omr.glyph.GlyphNest;
 import omr.glyph.GlyphsModel;
 import omr.glyph.ui.GlyphsController;
@@ -36,6 +38,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import omr.glyph.ui.ViewParameters;
+import omr.lag.Section;
+import omr.ui.util.UIUtil;
 
 /**
  * Class {@code HoriController} display horizontal glyphs for ledgers etc.
@@ -184,6 +189,38 @@ public class HoriController
                 logger.warn(getClass().getName() + " onEvent error", ex);
             }
         }
+
+    //--------//
+    // render //
+    //--------//
+    /**
+     * Render the nest in the provided Graphics context, which may be
+     * already scaled.
+     *
+     * @param g the graphics context
+     */
+    @Override
+    public void render (Graphics2D g)
+    {
+        // Should we draw the section borders?
+        final boolean drawBorders = ViewParameters.getInstance().isSectionMode();
+
+        // Stroke for borders
+        final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+
+        for (Lag lag : lags) {
+            // Render all sections, using the colors they have been assigned
+            for (Section section : lag.getVertices()) {
+                section.render(g, drawBorders, null);
+            }
+        }
+
+        // Paint additional items, such as recognized items, etc...
+        renderItems(g);
+
+        // Restore stroke
+        g.setStroke(oldStroke);
+    }
 
         //        //-------------//
         //        // renderItems //

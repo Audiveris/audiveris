@@ -561,4 +561,12 @@ public interface Section
      * @return true if intersection is not empty
      */
     boolean intersects (Rectangle rectangle);
+
+    /**
+     * Check whether this section intersects that other section.
+     *
+     * @param that the other section
+     * @return true if intersection is not empty
+     */
+    boolean intersects (Section that);
 }

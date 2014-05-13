@@ -320,6 +320,7 @@ public enum Shape
     NOISE("Too small stuff", new Color(0xcccccc)),
     STAFF_LINE("Staff Line", new Color(0xffffcc)),
     LEDGER("Ledger", new Color(0xaaaaaa)),
+    LEDGER_CANDIDATE("Ledger candidate", new Color(0xaaffaa)),
     ENDING_HORIZONTAL("Horizontal part of ending"),
     ENDING_VERTICAL("Vertical part of ending"),
     SEGMENT("Wedge or ending segment"),

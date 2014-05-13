@@ -969,6 +969,30 @@ public class BasicSection
         return getPolygon().intersects(rect);
     }
 
+    //------------//
+    // intersects //
+    //------------//
+    @Override
+    public boolean intersects (Section that)
+    {
+        int pos = getFirstPos();
+
+        for (Run run : getRuns()) {
+            final int start = run.getStart();
+            final Rectangle runBox = (orientation == Orientation.HORIZONTAL)
+                    ? new Rectangle(start, pos, run.getLength(), 1)
+                    : new Rectangle(pos, start, 1, run.getLength());
+
+            if (that.intersects(runBox)) {
+                return true;
+            }
+
+            pos++;
+        }
+
+        return false;
+    }
+
     //-------//
     // isFat //
     //-------//

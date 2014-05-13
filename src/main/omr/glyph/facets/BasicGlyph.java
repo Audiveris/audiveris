@@ -811,9 +811,9 @@ public class BasicGlyph
     }
 
     @Override
-    public boolean overlaps (Glyph that)
+    public boolean intersects (Glyph that)
     {
-        return environment.overlaps(that);
+        return environment.intersects(that);
     }
 
     @Override

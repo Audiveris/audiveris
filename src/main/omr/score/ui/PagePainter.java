@@ -306,7 +306,7 @@ public abstract class PagePainter
         try {
             final Point left = new Point(beam.getPoint(HorizontalSide.LEFT));
             final Point right = new Point(beam.getPoint(HorizontalSide.RIGHT));
-            final int dx = (int) Math.rint(system.getInfo().getSheet().getStemThickness() / 2d);
+            final int dx = (int) Math.rint(system.getInfo().getSheet().getMainStem() / 2d);
             final int dy = (int) Math.rint(beamHalfThickness);
 
             // Compute precise abscissae values
@@ -1124,7 +1124,7 @@ public abstract class PagePainter
     {
         // Compute symbol abscissa according to chord stem
         int stemX = chord.getTailLocation().x;
-        double dx = (system.getInfo().getSheet().getStemThickness() / 2d) - 2d; // slight adjustment
+        double dx = (system.getInfo().getSheet().getMainStem() / 2d) - 2d; // slight adjustment
 
         if (sysPoint.x < stemX) {
             // Symbol is on left side of stem

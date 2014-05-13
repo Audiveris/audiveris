@@ -1613,7 +1613,7 @@ public class StemsBuilder
 
                 // Widen head box with typical stem width
                 final Rectangle wideHeadBox = head.getBounds();
-                wideHeadBox.grow(system.getSheet().getStemThickness(), 0);
+                wideHeadBox.grow(system.getSheet().getMainStem(), 0);
 
                 // Browse both vertical and horizontal sections in the system
                 for (Collection<Section> collection : Arrays.asList(
@@ -1690,7 +1690,7 @@ public class StemsBuilder
                             continue SectionLoop;
                         }
 
-                        // A section which overlaps an existing seed is useless
+                        // A section which intersects an existing seed is useless
                         for (Glyph seed : seeds) {
                             if (GeoUtil.yOverlap(sectBox, seed.getBounds()) > 0) {
                                 continue SectionLoop;
@@ -1843,7 +1843,7 @@ public class StemsBuilder
         public Parameters (SystemInfo system,
                            Scale scale)
         {
-            final int stemThickness = system.getSheet().getStemThickness();
+            final int stemThickness = system.getSheet().getMainStem();
             slopeMargin = constants.slopeMargin.getValue();
             maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum());
             maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum());
@@ -1851,7 +1851,7 @@ public class StemsBuilder
             vicinityMargin = scale.toPixels(constants.vicinityMargin);
             maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum());
             maxYGap = system.verticalsBuilder.getMaxYGap();
-            maxStemThickness = stemThickness + 1; //TODO why +1 ???
+            maxStemThickness = system.getSheet().getMaxStem();
             minHeadSectionContribution = scale.toPixels(constants.minHeadSectionContribution);
             minStemExtension = scale.toPixels(constants.minStemExtension);
             minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);

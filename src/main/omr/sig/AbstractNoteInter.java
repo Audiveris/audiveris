@@ -32,7 +32,12 @@ import omr.run.Orientation;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
+import omr.sheet.Scale;
+
 import ij.process.ByteProcessor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -48,6 +53,8 @@ public class AbstractNoteInter
         extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractNoteInter.class);
 
     private static final Constants constants = new Constants();
 
@@ -145,14 +152,27 @@ public class AbstractNoteInter
     @Override
     public boolean overlaps (Inter that)
     {
+        // Specific between notes
         if (that instanceof AbstractNoteInter) {
             AbstractNoteInter thatNote = (AbstractNoteInter) that;
 
+            // Check vertical distance
             if (Math.abs(thatNote.getPitch() - pitch) > 1) {
                 return false;
             }
+
+            // Check horizontal distance
+            Rectangle common = box.intersection(thatNote.box);
+            boolean res = common.width > (constants.maxOverlapDxRatio.getValue() * box.width);
+
+            if (this.isVip() || that.isVip()) {
+                logger.info("{} vs {} dx:{} overlap:{}", getId(), that.getId(), common.width, res);
+            }
+
+            return res;
         }
 
+        // Basic test
         return super.overlaps(that);
     }
 
@@ -254,5 +274,9 @@ public class AbstractNoteInter
         final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
                 0.5,
                 "Vertical shrink ratio to apply when checking note overlap");
+
+        final Constant.Ratio maxOverlapDxRatio = new Constant.Ratio(
+                0.2,
+                "Maximum acceptable abscissa overlap ratio between notes");
     }
 }

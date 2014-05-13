@@ -13,6 +13,7 @@ package omr.sheet;
 
 import omr.Main;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.grid.StaffInfo;
@@ -25,14 +26,20 @@ import omr.lag.Lags;
 import omr.lag.SectionsBuilder;
 
 import omr.run.Orientation;
+
 import static omr.run.Orientation.HORIZONTAL;
+
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
+
+import omr.util.VipUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.util.List;
+import omr.lag.Section;
 
 /**
  * Class {@code LedgersFilter} filters the full sheet image for runs suitable for
@@ -53,6 +60,9 @@ public class LedgersFilter
     /** Related sheet. */
     private final Sheet sheet;
 
+    // Debug
+    final List<Integer> vipSections;
+
     //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // LedgersFilter //
@@ -65,6 +75,13 @@ public class LedgersFilter
     public LedgersFilter (Sheet sheet)
     {
         this.sheet = sheet;
+
+        // VIPs
+        vipSections = VipUtil.decodeIds(constants.ledgerVipSections.getValue());
+
+        if (!vipSections.isEmpty()) {
+            logger.info("Ledger VIP sections: {}", vipSections);
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -77,7 +94,8 @@ public class LedgersFilter
     public void process ()
     {
         final Scale scale = sheet.getScale();
-        final int minDistanceFromStaff = scale.toPixels(constants.minDistanceFromStaff);
+        final int minDistanceFromStaff = scale.toPixels(
+                constants.minDistanceFromStaff);
         final int minRunLength = scale.toPixels(constants.minRunLength);
         final StaffManager staffManager = sheet.getStaffManager();
         final RunsTableFactory.Filter filter = new RunsTableFactory.Filter()
@@ -107,6 +125,7 @@ public class LedgersFilter
                 new JunctionShiftPolicy(maxShift));
 
         sectionsBuilder.createSections(hugeHoriTable, true);
+        setVipSections(lag);
 
         sheet.setLag(Lags.FULL_HLAG, lag);
         sheet.getSystemManager().dispatchHorizontalHugeSections();
@@ -115,6 +134,22 @@ public class LedgersFilter
             // Display a view on this lag
             HoriController horiController = new HoriController(sheet, lag);
             horiController.refresh();
+        }
+    }
+
+    //----------------//
+    // setVipSections //
+    //----------------//
+    private void setVipSections (Lag lag)
+    {
+        // Debug sections VIPs
+        for (int id : vipSections) {
+            Section sect = lag.getVertexById(id);
+
+            if (sect != null) {
+                sect.setVip();
+                logger.info("Ledger vip section: {}", sect);
+            }
         }
     }
 
@@ -127,16 +162,20 @@ public class LedgersFilter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.Fraction minDistanceFromStaff = new Scale.Fraction(
+        final Scale.Fraction minDistanceFromStaff = new Scale.Fraction(
                 0.25,
                 "Minimum vertical distance from nearest staff");
 
-        Scale.Fraction maxRunShift = new Scale.Fraction(
-                0.05,
+        final Scale.Fraction maxRunShift = new Scale.Fraction(
+                0, //0.05,
                 "Max shift between two runs of ledger sections");
 
-        Scale.Fraction minRunLength = new Scale.Fraction(
+        final Scale.Fraction minRunLength = new Scale.Fraction(
                 0.15,
                 "Minimum length for a ledger run (not section)");
+
+        final Constant.String ledgerVipSections = new Constant.String(
+                "",
+                "(Debug) Comma-separated list of VIP ledger sections");
     }
 }
