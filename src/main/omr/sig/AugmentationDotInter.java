@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                   S u p p o r t I m p a c t s                                  //
+//                             A u g m e n t a t i o n D o t I n t e r                            //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -11,41 +11,28 @@
 // </editor-fold>
 package omr.sig;
 
+import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
+
 /**
- * Class {@code SupportImpacts} handles impacts for a supporting relation.
+ * Class {@code AugmentationDotInter} represent an augmentation dot for a note or a rest.
  *
  * @author Hervé Bitteur
  */
-public class SupportImpacts
-        extends BasicImpacts
+public class AugmentationDotInter
+        extends AbstractInter
 {
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new RelationImpacts object.
+     * Creates a new AugmentationDotInter object.
      *
-     * @param names   array of names
-     * @param weights array of weights
+     * @param glyph underlying glyph
+     * @param grade evaluation value
      */
-    public SupportImpacts (String[] names,
-                           double[] weights)
+    public AugmentationDotInter (Glyph glyph,
+                                 double grade)
     {
-        super(names, weights);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //-------------------//
-    // getIntrinsicRatio //
-    //-------------------//
-    /**
-     * A relation is not supposed to have a contextual grade, so there is no point to
-     * leave room for it.
-     *
-     * @return 1
-     */
-    @Override
-    public double getIntrinsicRatio ()
-    {
-        return 1;
+        super(glyph, null, Shape.AUGMENTATION_DOT, grade);
     }
 }

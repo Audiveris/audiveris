@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
@@ -275,6 +276,45 @@ public abstract class AbstractInter
         }
 
         return null;
+    }
+
+    //-----------//
+    // getCenter //
+    //-----------//
+    @Override
+    public Point getCenter ()
+    {
+        if (box != null) {
+            return GeoUtil.centerOf(box);
+        }
+
+        if (glyph != null) {
+            return glyph.getAreaCenter();
+        }
+
+        return null;
+    }
+
+    //---------------//
+    // getCenterLeft //
+    //---------------//
+    @Override
+    public Point getCenterLeft ()
+    {
+        Rectangle bounds = getBounds();
+
+        return new Point(bounds.x, bounds.y + (bounds.height / 2));
+    }
+
+    //----------------//
+    // getCenterRight //
+    //----------------//
+    @Override
+    public Point getCenterRight ()
+    {
+        Rectangle bounds = getBounds();
+
+        return new Point(bounds.x + bounds.width, bounds.y + (bounds.height / 2));
     }
 
     //--------------------//

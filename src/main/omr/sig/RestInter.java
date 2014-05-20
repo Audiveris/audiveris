@@ -43,7 +43,7 @@ public class RestInter
     // create //
     //--------//
     /**
-     * (Try to) create a Clef inter.
+     * (Try to) create a Rest inter.
      *
      * @param shape precise shape
      * @param glyph underlying glyph

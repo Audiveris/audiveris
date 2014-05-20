@@ -117,37 +117,13 @@ public class SIGraph
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // getInter //
-    //----------//
-    /**
-     * Report the (first) interpretation if any of desired class for
-     * the glyph at hand.
-     * TODO: Could we have several inters of desired class for the same glyph?
-     *
-     * @param glyph  the underlying glyph
-     * @param classe the interpretation class desired
-     * @return the existing interpretation if any, or null
-     */
-    public static Inter getInter (Glyph glyph,
-                                  Class classe)
-    {
-        for (Inter inter : glyph.getInterpretations()) {
-            if (classe.isAssignableFrom(inter.getClass())) {
-                return inter;
-            }
-        }
-
-        return null;
-    }
-
     //-----------//
     // addVertex //
     //-----------//
     /**
      * {@inheritDoc}
-     * Overridden so that all interpretations keep a pointer to their
-     * hosting sig.
+     * <p>
+     * Overridden so that all interpretations keep a pointer to their hosting sig.
      *
      * @param inter the brand new interpretation
      * @return true if the inter was actually added, false if it existed before
@@ -221,7 +197,7 @@ public class SIGraph
     public List<Inter> containingInters (Point point)
     {
         List<Inter> found = new ArrayList<Inter>();
-        
+
         for (Inter inter : vertexSet()) {
             if (inter.getBounds().contains(point)) {
                 // More precise test if we know inter area
@@ -299,6 +275,30 @@ public class SIGraph
     public Set<Relation> getExclusions (Inter inter)
     {
         return getRelations(inter, Exclusion.class);
+    }
+
+    //----------//
+    // getInter //
+    //----------//
+    /**
+     * Report the (first) interpretation if any of desired class for
+     * the glyph at hand.
+     * TODO: Could we have several inters of desired class for the same glyph?
+     *
+     * @param glyph  the underlying glyph
+     * @param classe the interpretation class desired
+     * @return the existing interpretation if any, or null
+     */
+    public static Inter getInter (Glyph glyph,
+                                  Class classe)
+    {
+        for (Inter inter : glyph.getInterpretations()) {
+            if (classe.isAssignableFrom(inter.getClass())) {
+                return inter;
+            }
+        }
+
+        return null;
     }
 
     //-------------//
@@ -461,8 +461,7 @@ public class SIGraph
     // getSupports //
     //-------------//
     /**
-     * Report the set of supporting relations the provided inter is
-     * involved in.
+     * Report the set of supporting relations the provided inter is involved in.
      *
      * @param inter the provided interpretation
      * @return set of supporting relations for inter, maybe empty but not null
@@ -832,7 +831,7 @@ public class SIGraph
      * <pre>
      * Strategy is as follows:
      * - Pick up among all current exclusions the one whose high inter has the
-     * highest CG value among all exclusions.
+     * highest CG contribution among all exclusions.
      * - Remove the low inter of this chosen exclusion.
      * - Recompute all CG values.
      * - Iterate until no more exclusion is left.
@@ -952,87 +951,74 @@ public class SIGraph
     //------------------------//
     /**
      * Compute the contextual probability for a interpretation which is supported by
-     * a collection of relations.
+     * a collection of relations with partners.
      * It is assumed that all these supporting relations involve the inter as either a target or a
      * source, otherwise a runtime exception is thrown.
      * <p>
      * There may be mutual exclusion between some partners. In this case, we identify all partitions
-     * of compatible partners and report the best resulting contextual value among those partitions.
-     * <p>
-     * More difficult, some partners are in conflict only with respect to the inter instance between
-     * them: typically a note head with stem on right and stem on left with same direction. These
-     * stems are not in conflict per se, both can support the note head, but not jointly.
-     * In fact, a note head cannot be jointly supported by several head-stem relationships!
+     * of compatible partners and report the best resulting contextual contribution among those
+     * partitions.
      *
      * @param inter    the inter whose contextual grade is to be computed
      * @param supports all supporting relations inter is involved with, some may be in conflict
-     * @param logging  true for getting a printout of contributions
+     * @param logging  (debug) true for getting a printout of contributions retained
      * @return the best resulting contextual probability for the inter
      */
     private Double computeContextualGrade (Inter inter,
                                            List<? extends Support> supports,
                                            boolean logging)
     {
-        final int maxSupportCount = constants.maxSupportCount.getValue();
-        final List<Inter> others = new ArrayList<Inter>();
-        final Map<Inter, Support> map = new HashMap<Inter, Support>();
+        /** Collection of partners. */
+        final List<Inter> partners = new ArrayList<Inter>();
+
+        /** Map: partner -> support ratio. */
+        final Map<Inter, Double> partnerRatios = new HashMap<Inter, Double>();
+
+        /** (debug) map: partner -> support relation. */
+        final Map<Inter, Support> supportMap = logging ? new HashMap<Inter, Support>() : null;
 
         // Check inter involvement
         for (Support support : supports) {
-            final Inter other;
+            final Inter partner;
+            final double ratio;
 
             if (inter == getEdgeTarget(support)) {
-                other = getEdgeSource(support);
+                ratio = support.getTargetRatio();
+                partner = getEdgeSource(support);
             } else if (inter == getEdgeSource(support)) {
-                other = getEdgeTarget(support);
+                ratio = support.getSourceRatio();
+                partner = getEdgeTarget(support);
             } else {
                 throw new RuntimeException("No common interpretation");
             }
 
-            others.add(other);
-            map.put(other, support);
+            if (ratio > 1) {
+                partners.add(partner);
+                partnerRatios.put(partner, ratio);
+
+                if (supportMap != null) {
+                    supportMap.put(partner, support);
+                }
+            }
         }
 
         // Check for mutual exclusion between 'others'
-        List<List<Inter>> seqs = getPartners(inter, others);
+        List<List<Inter>> seqs = getPartners(inter, partners);
         double bestCg = 0;
         List<Inter> bestSeq = null;
 
         for (List<Inter> seq : seqs) {
-            int n = seq.size();
-
-            // Make sure we have only a reasonable number of supporting relations
-            // Keeping only the best ratio*partner values
-            if (n > maxSupportCount) {
-                List<SupportingInter> sups = new ArrayList<SupportingInter>();
-
-                for (int i = 0; i < n; i++) {
-                    Inter other = seq.get(i);
-                    Support support = map.get(other);
-                    sups.add(new SupportingInter(other, support));
-                }
-
-                Collections.sort(sups, SupportingInter.byReverseValue);
-                seq.clear();
-                n = maxSupportCount;
-
-                for (int i = 0; i < n; i++) {
-                    seq.add(sups.get(i).partner);
-                }
-            }
-
+            int n = shrinkPartners(seq, partnerRatios);
             double[] ratios = new double[n];
-            double[] partners = new double[n];
+            double[] partnerGrades = new double[n];
 
             for (int i = 0; i < n; i++) {
-                Inter other = seq.get(i);
-                Support support = map.get(other);
-                // We assume support ratio does not depend on relation direction
-                ratios[i] = support.getSupportRatio();
-                partners[i] = other.getGrade();
+                Inter partner = seq.get(i);
+                ratios[i] = partnerRatios.get(partner);
+                partnerGrades[i] = partner.getGrade();
             }
 
-            double cg = Grades.contextual(inter.getGrade(), partners, ratios);
+            double cg = Grades.contextual(inter.getGrade(), partnerGrades, ratios);
 
             if (cg > bestCg) {
                 bestCg = cg;
@@ -1042,23 +1028,13 @@ public class SIGraph
 
         if (logging) {
             logger.info(
-                    "VIP {} cg:{} {}",
+                    "{} cg:{} {}",
                     inter,
                     String.format("%.3f", bestCg),
-                    supportsSeenFrom(inter, map, bestSeq));
+                    supportsSeenFrom(inter, supportMap, bestSeq));
         }
 
         return bestCg;
-    }
-
-    //------------//
-    // contextual //
-    //------------//
-    private double contextual (Inter target,
-                               Support support,
-                               Inter source)
-    {
-        return Grades.contextual(target.getGrade(), source.getGrade(), support.getSupportRatio());
     }
 
     //----------------//
@@ -1074,6 +1050,67 @@ public class SIGraph
         }
 
         return inters;
+    }
+
+    //----------------//
+    // shrinkPartners //
+    //----------------//
+    /**
+     * Check, and shrink if needed, the collection of partners.
+     *
+     * @param list          (input/output) the list of partners which may be modified
+     * @param partnerRatios (input) the support ratio brought by each partner
+     * @return the final number of partners kept
+     */
+    private int shrinkPartners (List<Inter> list,
+                                Map<Inter, Double> partnerRatios)
+    {
+        final int maxSupportCount = constants.maxSupportCount.getValue();
+        int n = list.size();
+
+        if (n > maxSupportCount) {
+            class Contribution
+            {
+
+                final Inter partner;
+
+                final double value; // Concrete contribution brought by the partner
+
+                public Contribution (Inter partner,
+                                     double ratio)
+                {
+                    this.partner = partner;
+                    value = ratio * partner.getGrade();
+                }
+            }
+
+            List<Contribution> contribs = new ArrayList<Contribution>();
+
+            for (int i = 0; i < n; i++) {
+                Inter partner = list.get(i);
+                contribs.add(new Contribution(partner, partnerRatios.get(partner)));
+            }
+
+            Collections.sort(
+                    contribs,
+                    new Comparator<Contribution>()
+                    {
+                        @Override
+                        public int compare (Contribution o1,
+                                            Contribution o2)
+                        {
+                            return Double.compare(o2.value, o1.value);
+                        }
+                    });
+            list.clear();
+            n = maxSupportCount;
+
+            for (int i = 0; i < n; i++) {
+                list.add(contribs.get(i).partner);
+            }
+        }
+
+        return n;
     }
 
     //---------//
@@ -1097,18 +1134,18 @@ public class SIGraph
     //------------------//
     private String supportsSeenFrom (Inter inter,
                                      Map<Inter, Support> map,
-                                     List<Inter> others)
+                                     List<Inter> partners)
     {
         StringBuilder sb = new StringBuilder();
 
-        for (Inter other : others) {
+        for (Inter partner : partners) {
             if (sb.length() == 0) {
                 sb.append("[");
             } else {
                 sb.append(", ");
             }
 
-            Support support = map.get(other);
+            Support support = map.get(partner);
             sb.append(support.seenFrom(inter));
         }
 
@@ -1118,41 +1155,6 @@ public class SIGraph
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------------//
-    // SupportingInter //
-    //-----------------//
-    public static class SupportingInter
-    {
-        //~ Static fields/initializers -------------------------------------------------------------
-
-        /** For comparing instances according to their reverse value. */
-        public static final Comparator<SupportingInter> byReverseValue = new Comparator<SupportingInter>()
-        {
-            @Override
-            public int compare (SupportingInter o1,
-                                SupportingInter o2)
-            {
-                return Double.compare(o2.value, o1.value);
-            }
-        };
-
-        //~ Instance fields ------------------------------------------------------------------------
-        final Inter partner;
-
-        final Support support;
-
-        final double value;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public SupportingInter (Inter partner,
-                                Support support)
-        {
-            this.partner = partner;
-            this.support = support;
-            value = support.getSupportRatio() * partner.getGrade();
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//

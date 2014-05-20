@@ -47,74 +47,72 @@ public class Grades
 
         return value;
     }
-
+//
+//    //------------//
+//    // contextual //
+//    //------------//
+//    /**
+//     * Compute the contextual probability of an inter when supported
+//     * by a partner through a supporting relation with 'ratio' value.
+//     *
+//     * @param inter the intrinsic grade of the inter
+//     * @param partner the intrinsic grade of a supporting partner
+//     * @param ratio  the ratio of supporting relation
+//     * @return the resulting contextual probability for inter
+//     */
+//    public static double contextual (double inter,
+//                                     double partner,
+//                                     double ratio)
+//    {
+//        return (partner * support(inter, ratio)) + ((1 - partner) * inter);
+//    }
+//
+//    //------------//
+//    // contextual //
+//    //------------//
+//    /**
+//     * Compute the contextual probability of an inter when supported by two partners.
+//     *
+//     * @param inter  the intrinsic grade of the target
+//     * @param partner1 intrinsic grade of partner #1
+//     * @param ratio1  ratio of supporting partner #1
+//     * @param partner2 intrinsic grade of partner #2
+//     * @param ratio2  ratio of supporting partner #2
+//     * @return the resulting contextual probability for target
+//     */
+//    public static double contextual (double inter,
+//                                     double partner1,
+//                                     double ratio1,
+//                                     double partner2,
+//                                     double ratio2)
+//    {
+//        return (partner1 * partner2 * support(inter, ratio1 * ratio2))
+//               + ((1 - partner1) * partner2 * support(inter, ratio2))
+//               + (partner1 * (1 - partner2) * support(inter, ratio1))
+//               + ((1 - partner1) * (1 - partner2) * inter);
+//    }
+//
     //------------//
     // contextual //
     //------------//
     /**
-     * Compute the contextual probability of a target when supported
-     * by a source with 'ratio' value.
+     * General computation of contextual probability for an inter when supported by an
+     * array of partners.
      *
-     * @param target the intrinsic grade of the target
-     * @param source the intrinsic grade of a supporting source
-     * @param ratio  the ratio of supporting source
-     * @return the resulting contextual probability for target
+     * @param inter  the (intrinsic grade of the) inter
+     * @param partners the array of (intrinsic grades of the) supporting partners
+     * @param ratios  the array of ratios of supporting partners, parallel to partners array
+     * @return the resulting contextual probability for inter
      */
-    public static double contextual (double target,
-                                     double source,
-                                     double ratio)
-    {
-        return (source * support(target, ratio)) + ((1 - source) * target);
-    }
-
-    //------------//
-    // contextual //
-    //------------//
-    /**
-     * Compute the contextual probability of a target when supported
-     * by two sources.
-     *
-     * @param target  the intrinsic grade of the target
-     * @param source1 intrinsic grade of source #1
-     * @param ratio1  ratio of supporting source #1
-     * @param source2 intrinsic grade of source #2
-     * @param ratio2  ratio of supporting source #2
-     * @return the resulting contextual probability for target
-     */
-    public static double contextual (double target,
-                                     double source1,
-                                     double ratio1,
-                                     double source2,
-                                     double ratio2)
-    {
-        return (source1 * source2 * support(target, ratio1 * ratio2))
-               + ((1 - source1) * source2 * support(target, ratio2))
-               + (source1 * (1 - source2) * support(target, ratio1))
-               + ((1 - source1) * (1 - source2) * target);
-    }
-
-    //------------//
-    // contextual //
-    //------------//
-    /**
-     * General computation of contextual probability for a target when
-     * supported by an array of sources.
-     *
-     * @param target  the intrinsic grade of the target
-     * @param sources the array of (intrinsic grades of the) supporting sources
-     * @param ratios  the array of ratios of supporting sources, parallel to
-     *                sources array
-     * @return the resulting contextual probability for target
-     */
-    public static double contextual (double target,
-                                     double[] sources,
+    public static double contextual (double inter,
+                                     double[] partners,
                                      double[] ratios)
     {
         assert ratios != null : "Null ratios array";
-        assert sources != null : "Null sources array";
-        assert ratios.length == sources.length : "Arrays of different lengths";
+        assert partners != null : "Null sources array";
+        assert ratios.length == partners.length : "Arrays of different lengths";
 
-        final int n = sources.length; // Nb of supporting sources
+        final int n = partners.length; // Nb of supporting partners
         final int combNb = (int) Math.pow(2, n); // Nb of combinations
         final boolean[] trueFalse = new boolean[]{true, false};
 
@@ -148,7 +146,7 @@ public class Grades
 
             for (int i = 0; i < n; i++) {
                 if (vector[i]) {
-                    prob *= sources[i];
+                    prob *= partners[i];
 
                     if (w != null) {
                         w *= ratios[i];
@@ -156,11 +154,11 @@ public class Grades
                         w = ratios[i];
                     }
                 } else {
-                    prob *= (1 - sources[i]);
+                    prob *= (1 - partners[i]);
                 }
             }
 
-            double value = (w != null) ? support(target, w) : target;
+            double value = (w != null) ? support(inter, w) : inter;
             double line = prob * value;
 
             //            System.out.printf(
@@ -180,17 +178,16 @@ public class Grades
     // support //
     //---------//
     /**
-     * Compute the actual support brought on a interpretation with
-     * 'target' grade
+     * Compute the actual support brought on a interpretation with 'inter' grade
      *
-     * @param target the intrinsic grade of target
-     * @param ratio  the supporting ratio of a source
+     * @param inter the intrinsic grade of inter
+     * @param ratio  the supporting ratio of a partner
      * @return the resulting support
      */
-    private static double support (double target,
+    private static double support (double inter,
                                    double ratio)
     {
-        double support = (ratio * target) / (1 + ((ratio - 1) * target));
+        double support = (ratio * inter) / (1 + ((ratio - 1) * inter));
 
         //        System.out.printf(
         //                "target:%.2f ratio:%.2f -> support:%.2f%n",

@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                   S u p p o r t I m p a c t s                                  //
+//                             R e p e a t D o t D o t R e l a t i o n                            //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -11,41 +11,24 @@
 // </editor-fold>
 package omr.sig;
 
+
 /**
- * Class {@code SupportImpacts} handles impacts for a supporting relation.
+ * Class {@code RepeatDotDotRelation} represents the relation between two repeat dots
+ * in a pair.
  *
  * @author Hervé Bitteur
  */
-public class SupportImpacts
-        extends BasicImpacts
+public class RepeatDotDotRelation
+    extends BasicSupport
 {
-    //~ Constructors -------------------------------------------------------------------------------
-
-    /**
-     * Creates a new RelationImpacts object.
-     *
-     * @param names   array of names
-     * @param weights array of weights
-     */
-    public SupportImpacts (String[] names,
-                           double[] weights)
-    {
-        super(names, weights);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------------//
-    // getIntrinsicRatio //
-    //-------------------//
-    /**
-     * A relation is not supposed to have a contextual grade, so there is no point to
-     * leave room for it.
-     *
-     * @return 1
-     */
+
+    //---------//
+    // getName //
+    //---------//
     @Override
-    public double getIntrinsicRatio ()
+    public String getName ()
     {
-        return 1;
+        return "RepeatDot-Dot";
     }
 }

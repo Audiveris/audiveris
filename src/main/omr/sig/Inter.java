@@ -233,6 +233,27 @@ public interface Inter
     Rectangle getBounds ();
 
     /**
+     * Report the inter center.
+     *
+     * @return center
+     */
+    Point getCenter ();
+
+    /**
+     * Report the inter center left.
+     *
+     * @return left point at mid height
+     */
+    Point getCenterLeft ();
+
+    /**
+     * Report the inter center right.
+     *
+     * @return right point at mid height
+     */
+    Point getCenterRight ();
+
+    /**
      * Report the contextual grade, (0..1 probability) computed for
      * interpretation.
      *

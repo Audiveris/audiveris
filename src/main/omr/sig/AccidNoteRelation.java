@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                  H e a d S t e m R e l a t i o n                               //
+//                                A c c i d N o t e R e l a t i o n                               //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -16,42 +16,52 @@ import omr.constant.ConstantSet;
 
 import omr.sheet.Scale;
 
-import omr.util.HorizontalSide;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code HeadStemRelation} represents the relation support between a head and a
- * stem.
+ * Class {@code AccidNoteRelation} represents the relation support between an accidental
+ * (sharp, flat, natural) and a note.
  *
  * @author Hervé Bitteur
  */
-public class HeadStemRelation
+public class AccidNoteRelation
         extends AbstractConnection
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(HeadStemRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(AccidNoteRelation.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Which side of head is used?. */
-    private HorizontalSide headSide;
+    private static final double[] IN_WEIGHTS = new double[]{
+        constants.xInWeight.getValue(),
+        constants.yWeight.getValue()
+    };
 
-    /** Which part of stem is used?. */
-    private StemPortion stemPortion;
+    private static final double[] OUT_WEIGHTS = new double[]{
+        constants.xOutWeight.getValue(),
+        constants.yWeight.getValue()
+    };
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new HeadStemRelation object.
+     * Creates a new AccidNoteRelation object.
      */
-    public HeadStemRelation ()
+    public AccidNoteRelation ()
     {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // getName //
+    //---------//
+    @Override
+    public String getName ()
+    {
+        return "Accid-Note";
+    }
+
     //------------------//
     // getXInGapMaximum //
     //------------------//
@@ -76,98 +86,54 @@ public class HeadStemRelation
         return constants.yGapMax;
     }
 
-    /**
-     * @return the headSide
-     */
-    public HorizontalSide getHeadSide ()
-    {
-        return headSide;
-    }
-
+    //--------------//
+    // getInWeights //
+    //--------------//
     @Override
-    public String getName ()
+    protected double[] getInWeights ()
     {
-        return "Head-Stem";
+        return IN_WEIGHTS;
     }
 
-    /**
-     * @return the stem Portion
-     */
-    public StemPortion getStemPortion ()
-    {
-        return stemPortion;
-    }
-
-    /**
-     * @param headSide the headSide to set
-     */
-    public void setHeadSide (HorizontalSide headSide)
-    {
-        this.headSide = headSide;
-    }
-
-    /**
-     * @param stemPortion the stem portion to set
-     */
-    public void setStemPortion (StemPortion stemPortion)
-    {
-        this.stemPortion = stemPortion;
-    }
-
-    //----------------//
-    // getSourceCoeff //
-    //----------------//
+    //---------------//
+    // getOutWeights //
+    //---------------//
     @Override
-    protected double getSourceCoeff ()
+    protected double[] getOutWeights ()
     {
-        return constants.supportCoeff.getValue();
+        return OUT_WEIGHTS;
     }
 
     //----------------//
     // getTargetCoeff //
     //----------------//
+    /**
+     * AccidNoteRelation brings no support on target (Note) side.
+     *
+     * @return 0
+     */
     @Override
     protected double getTargetCoeff ()
     {
-        return constants.supportCoeff.getValue();
+        return 0.0;
     }
 
-    //--------------//
-    // getXInGapMax //
-    //--------------//
     @Override
     protected Scale.Fraction getXInGapMax ()
     {
         return getXInGapMaximum();
     }
 
-    //---------------//
-    // getXOutGapMax //
-    //---------------//
     @Override
     protected Scale.Fraction getXOutGapMax ()
     {
         return getXOutGapMaximum();
     }
 
-    //------------//
-    // getYGapMax //
-    //------------//
     @Override
     protected Scale.Fraction getYGapMax ()
     {
         return getYGapMaximum();
-    }
-
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" ").append(headSide);
-
-        sb.append(",").append(stemPortion);
-
-        return sb.toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -179,20 +145,24 @@ public class HeadStemRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio supportCoeff = new Constant.Ratio(
-                4, //5,
-                "Value for coeff in support formula");
-
         final Scale.Fraction yGapMax = new Scale.Fraction(
-                0.8,
-                "Maximum vertical gap between stem & head");
+                0.4,
+                "Maximum vertical gap between accid & note");
 
         final Scale.Fraction xInGapMax = new Scale.Fraction(
-                0.3,
-                "Maximum horizontal overlap between stem & head");
+                0.2,
+                "Maximum horizontal overlap between accid & note");
 
         final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                0.3,
-                "Maximum horizontal gap between stem & head");
+                2.0,
+                "Maximum horizontal gap between accid & note");
+
+        final Constant.Ratio xInWeight = new Constant.Ratio(1, "Relative impact weight for xInGap");
+
+        final Constant.Ratio xOutWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for xOutGap");
+
+        final Constant.Ratio yWeight = new Constant.Ratio(4, "Relative impact weight for yGap");
     }
 }

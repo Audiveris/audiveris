@@ -17,8 +17,10 @@ import omr.selection.GlyphEvent;
 import omr.selection.SelectionService;
 
 import omr.sheet.Sheet;
+import omr.sheet.SymbolFactory;
 import omr.sheet.SymbolsBuilder;
 import omr.sheet.SymbolsFilter;
+import omr.sheet.SymbolsLinker;
 import omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
@@ -84,7 +86,9 @@ public class SymbolsStep
     public void doSystem (SystemInfo system)
             throws StepException
     {
-        new SymbolsBuilder(system).buildSymbols();
+        SymbolFactory factory = new SymbolFactory(system);
+        new SymbolsBuilder(system, factory).buildSymbols();
+        new SymbolsLinker(system, factory).linkSymbols();
     }
 
     //----------//

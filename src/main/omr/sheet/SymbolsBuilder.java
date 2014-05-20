@@ -20,9 +20,7 @@ import omr.glyph.GlyphClassifier;
 import omr.glyph.GlyphLayer;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
-import omr.glyph.Shape;
 import omr.glyph.ShapeEvaluator;
-import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
@@ -32,25 +30,10 @@ import omr.image.DistanceTable;
 
 import omr.lag.Section;
 
-import omr.math.GeoOrder;
 import omr.math.GeoUtil;
-import omr.math.LineUtil;
 
 import omr.run.Orientation;
-import static omr.run.Orientation.VERTICAL;
 import omr.run.Run;
-
-import omr.sig.AccidentalInter;
-import omr.sig.BraceInter;
-import omr.sig.ClefInter;
-import omr.sig.FingeringInter;
-import omr.sig.FlagInter;
-import omr.sig.FlagStemRelation;
-import omr.sig.Inter;
-import omr.sig.NumberInter;
-import omr.sig.RestInter;
-import omr.sig.SIGraph;
-import omr.sig.StemPortion;
 
 import omr.util.Navigable;
 
@@ -63,16 +46,11 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -99,36 +77,34 @@ public class SymbolsBuilder
     @Navigable(false)
     private final Sheet sheet;
 
-    /** The related SIG. */
-    private final SIGraph sig;
-
     /** Shape classifier to use. */
     private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
+
+    /** Companion factory for symbols inters. */
+    private final SymbolFactory factory;
 
     /** Scale-dependent global constants. */
     private final Parameters params;
 
-    /** All system stems, ordered by abscissa. */
-    private final List<Inter> systemStems;
-
+    /** Just for feedback. */
     int processCount = 0;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new BeamsBuilder object.
+     * Creates a new SymbolsBuilder object.
      *
-     * @param system the dedicated system
+     * @param system  the dedicated system
+     * @param factory the dedicated symbol factory
      */
-    public SymbolsBuilder (SystemInfo system)
+    public SymbolsBuilder (SystemInfo system,
+                           SymbolFactory factory)
     {
         this.system = system;
+        this.factory = factory;
 
-        sig = system.getSig();
         sheet = system.getSheet();
-        params = new Parameters(sheet.getScale());
 
-        systemStems = sig.inters(Shape.STEM);
-        Collections.sort(systemStems, Inter.byAbscissa);
+        params = new Parameters(sheet.getScale());
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -136,51 +112,72 @@ public class SymbolsBuilder
     // buildSymbols //
     //--------------//
     /**
-     * Find possible interpretations of symbols among system glyphs.
+     * Find all possible interpretations of symbols composed from available system glyphs.
+     * <p>
+     * <b>Synopsis:</b>
+     * <pre>
+     * - getSymbolsGlyphs()                             // Retrieve all glyphs usable for symbols
+     * - buildGlyphsGraph()                             // Build graph with distances
+     * - processClusters():                             // Group connected glyphs into clusters
+     *    + FOREACH cluster of connected glyphs:
+     *       + cluster.decompose()                      // Decompose cluster into all subsets
+     *       + FOREACH subset process(subset):
+     *          - build compound glyph                  // Build one compound glyph per subset
+     *          - evaluateGlyph(compound)               // Run shape classifier on compound
+     *          - FOREACH acceptable evaluation
+     *             + symbolFactory.create(eval, glyph) // Create inter(s) related to evaluation
+     * </pre>
      */
     public void buildSymbols ()
     {
-        logger.info("System#{} symbols", system.getId());
+        logger.info("System#{} buildSymbols", system.getId());
 
-        // Retrieve all candidates
+        // Retrieve all candidate glyphs
         List<Glyph> glyphs = getSymbolsGlyphs();
 
-        // Process all relevant combinations of glyphs
-        buildClusters(glyphs);
+        // Formalize glyphs relationships in a system-level graph
+        SimpleGraph<Glyph, Distance> systemGraph = buildGlyphsGraph(glyphs);
+
+        // Process all sets of connected glyphs
+        processClusters(systemGraph);
+
         logger.info("System#{} symbols processed: {}", system.getId(), processCount);
     }
 
-    //---------------//
-    // buildClusters //
-    //---------------//
+    //------------------//
+    // buildGlyphsGraph //
+    //------------------//
     /**
-     * Build all clusters of connectable glyphs, using glyph-to-glyph distance.
+     * Build the graph of glyphs candidates, linked using glyph-to-glyph distances.
      *
      * @param glyphs the list of leaf glyph instances (sorted by abscissa)
+     * @return the graph of candidate glyphs
      */
-    private void buildClusters (List<Glyph> glyphs)
+    private SimpleGraph<Glyph, Distance> buildGlyphsGraph (List<Glyph> glyphs)
     {
         final int dmzEnd = system.getFirstStaff().getDmzEnd();
 
         /** Graph of glyphs, linked by their distance. */
         SimpleGraph<Glyph, Distance> systemGraph = new SimpleGraph<Glyph, Distance>(Distance.class);
 
+        // Populate all glyphs as graph vertices
         for (Glyph glyph : glyphs) {
             systemGraph.addVertex(glyph);
         }
 
+        // Populate edges (glyph to glyph distances) when applicable
         for (int i = 0; i < glyphs.size(); i++) {
             final Glyph glyph = glyphs.get(i);
 
             // Choose appropriate maxGap depending on whether glyph is in DMZ or not
+            DistanceTable distTable = null; // Glyph-centered distance table
             final double maxGap = (glyph.getLocation().x <= dmzEnd) ? params.maxDmzGap
                     : params.maxGap;
             final int gapInt = (int) Math.ceil(maxGap);
             final Rectangle fatBox = glyph.getBounds();
             fatBox.grow(gapInt, gapInt);
 
-            final int xBreak = fatBox.x + fatBox.width;
-            DistanceTable distTable = null;
+            final int xBreak = fatBox.x + fatBox.width; // Glyphs are sorted by abscissa
 
             for (Glyph other : glyphs.subList(i + 1, glyphs.size())) {
                 Rectangle otherBox = other.getBounds();
@@ -192,7 +189,7 @@ public class SymbolsBuilder
                     break;
                 }
 
-                // We need a distance table around the glyph
+                // We now need the glyph distance table, if not yet computed
                 if (distTable == null) {
                     distTable = new GlyphDistance().computeDistances(fatBox, glyph);
                 }
@@ -206,170 +203,7 @@ public class SymbolsBuilder
             }
         }
 
-        // Retrieve the components (sets of connected vertices)
-        ConnectivityInspector inspector = new ConnectivityInspector(systemGraph);
-        List<Set<Glyph>> sets = inspector.connectedSets();
-        logger.info("sets: {}", sets.size());
-
-        for (Set<Glyph> set : sets) {
-            if (set.size() > 1) {
-                // Consider decompositions of this set
-                SimpleGraph<Glyph, Distance> compGraph = new SimpleGraph<Glyph, Distance>(
-                        Distance.class);
-                Set<Distance> edges = new HashSet<Distance>();
-
-                for (Glyph glyph : set) {
-                    edges.addAll(systemGraph.edgesOf(glyph));
-                }
-
-                Graphs.addAllEdges(compGraph, systemGraph, edges);
-                new Cluster(compGraph).decompose();
-            } else {
-                // Isolated glyph, to be evaluated directly
-                evaluateGlyph(set.iterator().next());
-            }
-        }
-    }
-
-    //--------------//
-    // createInters //
-    //--------------//
-    /**
-     * Create the proper inter instance(s) for the provided evaluated glyph.
-     * <p>
-     * TODO: method to be completed so that all inter classes are handled!!!!
-     *
-     * @param eval  evaluation detail
-     * @param glyph evaluated glyph
-     * @param staff related staff
-     * @return the collection of created instance(s)
-     */
-    private List<? extends Inter> createInters (Evaluation eval,
-                                                Glyph glyph,
-                                                StaffInfo staff)
-    {
-        final Shape shape = eval.shape;
-        final double grade = Inter.intrinsicRatio * eval.grade;
-
-        if (glyph.isVip()) {
-            logger.info("glyph#{} {}", glyph.getId(), eval.shape);
-        }
-
-        if (ShapeSet.Clefs.contains(shape)) {
-            return Arrays.asList(ClefInter.create(shape, glyph, grade, staff));
-        } else if (ShapeSet.Rests.contains(shape)) {
-            return Arrays.asList(RestInter.create(shape, glyph, grade));
-        } else if (ShapeSet.Accidentals.contains(shape)) {
-            return Arrays.asList(AccidentalInter.create(shape, glyph, grade));
-        } else if (ShapeSet.Flags.contains(shape)) {
-            FlagInter flagInter = FlagInter.create(shape, glyph, grade);
-            detectFlagStemRelation(flagInter);
-
-            return Arrays.asList(flagInter);
-        } else if ((shape == Shape.BRACE) || (shape == Shape.BRACKET)) {
-            return Arrays.asList(BraceInter.create(shape, glyph, grade));
-        } else if (ShapeSet.PartialTimes.contains(shape)) {
-            return Arrays.asList(NumberInter.create(shape, glyph, grade));
-        } else if (ShapeSet.FullTimes.contains(shape)) {
-            //            List<Inter> nd = TimeInter.create(shape, glyph, grade);
-            //
-            //            if (nd.size() > 1) {
-            //                for (Inter inter : nd) {
-            //                    sig.addVertex(inter);
-            //                }
-            //
-            //                for (int i = 0; i < nd.size(); i++) {
-            //                    Inter inter = nd.get(i);
-            //
-            //                    for (Inter other : nd.subList(i + 1, nd.size())) {
-            //                        sig.addEdge(inter, other, new BasicSupport());
-            //                    }
-            //                }
-            //            }
-        } else if (ShapeSet.Digits.contains(shape)) {
-            return Arrays.asList(FingeringInter.create(shape, glyph, grade));
-        }
-
-        return null;
-    }
-
-    //------------------------//
-    // detectFlagStemRelation //
-    //------------------------//
-    /**
-     * Detect Flag/Stem adjacency for the provided flag and thus mutual support
-     * (rather than exclusion).
-     *
-     * @param flag the provided flag
-     */
-    private void detectFlagStemRelation (FlagInter flag)
-    {
-        // Look for stems nearby, using the lowest (for up) or highest (for down) third of height
-        Shape shape = flag.getShape();
-        boolean isUp = ShapeSet.FlagsUp.contains(shape);
-        int stemWidth = sheet.getMainStem();
-        Rectangle flagBox = flag.getBounds();
-        int height = (int) Math.rint(flagBox.height / 3.0);
-        int y = isUp ? ((flagBox.y + flagBox.height) - height - params.maxStemFlagGapY)
-                : (flagBox.y + params.maxStemFlagGapY);
-
-        //TODO: -1 is used to cope with stem margin when erased (To be improved)
-        Rectangle box = new Rectangle((flagBox.x - 1) - stemWidth, y, stemWidth, height);
-
-        // We need a flag ref point to compute x and y distances to stem
-        Glyph glyph = flag.getGlyph();
-        Section section = glyph.getFirstSection();
-        Point refPt = new Point(
-                flagBox.x,
-                isUp ? section.getStartCoord() : section.getStopCoord());
-        int midFlagY = (section.getStartCoord() + section.getStopCoord()) / 2;
-        glyph.addAttachment("fs", box);
-
-        Scale scale = sheet.getScale();
-        List<Inter> stems = sig.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, box);
-
-        for (Inter stem : stems) {
-            Glyph stemGlyph = stem.getGlyph();
-            Point2D start = stemGlyph.getStartPoint(VERTICAL);
-            Point2D stop = stemGlyph.getStopPoint(VERTICAL);
-            Point2D crossPt = LineUtil.intersectionAtY(start, stop, refPt.getY());
-            double xGap = refPt.getX() - crossPt.getX();
-            double yGap;
-
-            if (refPt.getY() < start.getY()) {
-                yGap = start.getY() - refPt.getY();
-            } else if (refPt.getY() > stop.getY()) {
-                yGap = refPt.getY() - stop.getY();
-            } else {
-                yGap = 0;
-            }
-
-            FlagStemRelation fRel = new FlagStemRelation();
-            fRel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
-
-            if (fRel.getGrade() >= fRel.getMinGrade()) {
-                // Determine and check stem portion
-                //TODO: this may be too strict, STEM_MIDDLE can happen with stack of flags?
-                double midStemY = (start.getY() + stop.getY()) / 2;
-
-                if (isUp) {
-                    if (midFlagY > midStemY) {
-                        fRel.setStemPortion(StemPortion.STEM_BOTTOM);
-                    } else {
-                        continue;
-                    }
-                } else {
-                    if (midFlagY < midStemY) {
-                        fRel.setStemPortion(StemPortion.STEM_TOP);
-                    } else {
-                        continue;
-                    }
-                }
-
-                sig.addVertex(flag);
-                sig.addEdge(flag, stem, fRel);
-            }
-        }
+        return systemGraph;
     }
 
     //---------------//
@@ -379,20 +213,18 @@ public class SymbolsBuilder
      * Evaluate a provided glyph and create all acceptable inter instances.
      *
      * @param glyph the glyph to evaluate
-     * @return the collection of inters created
      */
-    private List<Inter> evaluateGlyph (Glyph glyph)
+    private void evaluateGlyph (Glyph glyph)
     {
         if (glyph.isVip()) {
             logger.info("VIP buildSymbols on glyph#{}", glyph.getId());
         }
 
-        final List<Inter> allInters = new ArrayList<Inter>();
         final Point center = glyph.getLocation();
         final StaffInfo staff = system.getStaffAt(center);
 
         if (staff == null) {
-            return allInters;
+            return;
         }
 
         glyph.setPitchPosition(staff.pitchPositionOf(center));
@@ -408,19 +240,33 @@ public class SymbolsBuilder
         if (evals.length > 0) {
             // Create one interpretation for each acceptable evaluation
             for (Evaluation eval : evals) {
-                List<? extends Inter> inters = createInters(eval, glyph, staff);
-
-                if ((inters != null) && !inters.isEmpty()) {
-                    allInters.addAll(inters);
-
-                    for (Inter inter : inters) {
-                        sig.addVertex(inter);
-                    }
+                try {
+                    factory.create(eval, glyph, staff);
+                } catch (Exception ex) {
+                    logger.warn("Error in glyph evaluation " + ex, ex);
                 }
             }
         }
+    }
 
-        return allInters;
+    //-----------------//
+    // getClusterGraph //
+    //-----------------//
+    private SimpleGraph<Glyph, Distance> getClusterGraph (Set<Glyph> set,
+                                                          SimpleGraph<Glyph, Distance> systemGraph)
+    {
+        // Make a copy of just the subgraph for this set
+        SimpleGraph<Glyph, Distance> clusterGraph = new SimpleGraph<Glyph, Distance>(
+                Distance.class);
+        Set<Distance> edges = new HashSet<Distance>();
+
+        for (Glyph glyph : set) {
+            edges.addAll(systemGraph.edgesOf(glyph));
+        }
+
+        Graphs.addAllEdges(clusterGraph, systemGraph, edges);
+
+        return clusterGraph;
     }
 
     //------------------//
@@ -503,135 +349,35 @@ public class SymbolsBuilder
         return (double) bestDist / distTable.getNormalizer();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Cluster //
-    //---------//
+    //-----------------//
+    // processClusters //
+    //-----------------//
     /**
-     * Handles a cluster of connected glyphs, to retrieve all acceptable compounds built
-     * on subsets of these glyphs.
-     * <p>
-     * The processing of any given subset consists in the following:<ol>
-     * <li>Build the compound of chosen vertices, and record acceptable evaluations.</li>
-     * <li>Build the set of new reachable vertices.</li>
-     * <li>For each reachable vertex, recursively process the new set composed of current set + the
-     * reachable vertex.</li></ol>
+     * Process all clusters of connected glyphs, based on the glyphs graph.
+     *
+     * @param systemGraph the graph of candidate glyphs, with their mutual distances
      */
-    private class Cluster
+    private void processClusters (SimpleGraph<Glyph, Distance> systemGraph)
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        // Retrieve all the clusters of glyphs (sets of connected glyphs)
+        ConnectivityInspector inspector = new ConnectivityInspector(systemGraph);
+        List<Set<Glyph>> sets = inspector.connectedSets();
+        logger.info("sets: {}", sets.size());
 
-        /** The graph of the connected glyphs, with their distance edges. */
-        private final SimpleGraph<Glyph, Distance> graph;
+        for (Set<Glyph> set : sets) {
+            if (set.size() > 1) {
+                // Use just the subgraph for this set
+                SimpleGraph<Glyph, Distance> clusterGraph = getClusterGraph(set, systemGraph);
 
-        /** Map (seed -> inters that involve this seed). */
-        private final Map<Glyph, Set<Inter>> seedInters = new HashMap<Glyph, Set<Inter>>();
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Cluster (SimpleGraph<Glyph, Distance> graph)
-        {
-            this.graph = graph;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public void decompose ()
-        {
-            List<Glyph> seeds = new ArrayList<Glyph>(graph.vertexSet());
-            Collections.sort(seeds, Glyph.byId);
-            logger.info("Decomposing {}", Glyphs.toString("cluster", seeds));
-
-            Set<Glyph> forbidden = new HashSet<Glyph>();
-
-            for (Glyph seed : seeds) {
-                if (seed.isVip()) {
-                    logger.info("   Seed #{}", seed.getId());
-                }
-
-                process(Collections.singleton(seed), forbidden);
-                forbidden.add(seed);
-            }
-        }
-
-        private Set<Glyph> getOutliers (Set<Glyph> set)
-        {
-            Set<Glyph> outliers = new HashSet<Glyph>();
-
-            for (Glyph glyph : set) {
-                outliers.addAll(Graphs.neighborListOf(graph, glyph));
-            }
-
-            outliers.removeAll(set);
-
-            return outliers;
-        }
-
-        /**
-         * Symbol height is not limited if on left of system (braces / brackets).
-         *
-         * @param symBox symbol bounding box
-         * @return true if OK
-         */
-        private boolean isHeightAcceptable (Rectangle symBox)
-        {
-            if (GeoUtil.centerOf(symBox).x < system.getLeft()) {
-                return true;
+                new Cluster(clusterGraph).decompose();
             } else {
-                return symBox.height <= params.maxSymbolHeight;
-            }
-        }
-
-        private void process (Set<Glyph> set,
-                              Set<Glyph> forbidden)
-        {
-            processCount++;
-
-            ///logger.info("      Processing {}", Glyphs.toString(set));
-            // Build compound and get acceptable evaluations for the compound
-            Glyph compound = (set.size() == 1) ? set.iterator().next()
-                    : sheet.getNest()
-                    .buildGlyph(set, true, Glyph.Linking.NO_LINK);
-            Collection<Inter> inters = evaluateGlyph(compound);
-
-            // Flag exclusions
-            for (Glyph glyph : set) {
-                Set<Inter> involved = seedInters.get(glyph);
-
-                if (involved == null) {
-                    seedInters.put(glyph, involved = new HashSet<Inter>());
-                }
-
-                involved.addAll(inters);
-            }
-
-            // Reachable outliers
-            Set<Glyph> outliers = getOutliers(set);
-            outliers.removeAll(forbidden);
-
-            if (outliers.isEmpty()) {
-                return;
-            }
-
-            Set<Glyph> newForbidden = new HashSet<Glyph>();
-            newForbidden.addAll(forbidden);
-
-            Rectangle setBox = Glyphs.getBounds(set);
-
-            for (Glyph outlier : outliers) {
-                // Check appending this atom does not make the symbol too wide or too high
-                // We can have very high symbols only for braces/brackets (left of system)
-                Rectangle symBox = outlier.getBounds().union(setBox);
-
-                if ((symBox.width <= params.maxSymbolWidth) && isHeightAcceptable(symBox)) {
-                    Set<Glyph> larger = new HashSet<Glyph>();
-                    larger.addAll(set);
-                    larger.add(outlier);
-                    process(larger, newForbidden);
-                    newForbidden.add(outlier);
-                }
+                // The set is just an isolated glyph, to be evaluated directly
+                evaluateGlyph(set.iterator().next());
             }
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -670,6 +416,10 @@ public class SymbolsBuilder
     //----------//
     // Distance //
     //----------//
+    /**
+     * Class to formalize an acceptable distance between two glyphs.
+     * A simple Double could not be used, because auto-boxing may try to reuse instances.
+     */
     private static class Distance
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -686,12 +436,14 @@ public class SymbolsBuilder
     //---------------//
     // GlyphDistance //
     //---------------//
+    /**
+     * Handles the distances in the vicinity of a glyph.
+     */
     private static class GlyphDistance
             extends ChamferDistance.Short
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        ///private int normalizer;
         public GlyphDistance ()
         {
         }
@@ -750,8 +502,6 @@ public class SymbolsBuilder
 
         final int minWeight;
 
-        final int maxStemFlagGapY;
-
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
@@ -760,9 +510,140 @@ public class SymbolsBuilder
             maxSymbolWidth = scale.toPixels(constants.maxSymbolWidth);
             maxSymbolHeight = scale.toPixels(constants.maxSymbolHeight);
             minWeight = scale.toPixels(constants.minWeight);
-            maxStemFlagGapY = scale.toPixels(FlagStemRelation.getYGapMaximum());
 
             Main.dumping.dump(this);
+        }
+    }
+
+    //---------//
+    // Cluster //
+    //---------//
+    /**
+     * Handles a cluster of connected glyphs, to retrieve all acceptable compounds built
+     * on subsets of these glyphs.
+     * <p>
+     * The processing of any given subset consists in the following:<ol>
+     * <li>Build the compound of chosen vertices, and record acceptable evaluations.</li>
+     * <li>Build the set of new reachable vertices.</li>
+     * <li>For each reachable vertex, recursively process the new set composed of current set + the
+     * reachable vertex.</li></ol>
+     */
+    private class Cluster
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Graph of the connected glyphs, with their distance edges if any. */
+        private final SimpleGraph<Glyph, Distance> graph;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Cluster (SimpleGraph<Glyph, Distance> graph)
+        {
+            this.graph = graph;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Identify all acceptable compounds within the cluster and evaluate them.
+         */
+        public void decompose ()
+        {
+            final Set<Glyph> used = new HashSet<Glyph>(); // Glyphs used so far
+            final List<Glyph> seeds = new ArrayList<Glyph>(graph.vertexSet());
+            Collections.sort(seeds, Glyph.byId); // It's easier to debug
+            logger.info("Decomposing {}", Glyphs.toString("cluster", seeds));
+
+            for (Glyph seed : seeds) {
+                if (seed.isVip()) {
+                    logger.info("   Seed #{}", seed.getId());
+                }
+
+                used.add(seed);
+                process(Collections.singleton(seed), used);
+            }
+        }
+
+        /**
+         * Retrieve all glyphs at acceptable distance from at least one member of the
+         * provided set.
+         *
+         * @param set the provided set
+         * @return all the glyphs reachable from the set
+         */
+        private Set<Glyph> getOutliers (Set<Glyph> set)
+        {
+            Set<Glyph> outliers = new HashSet<Glyph>();
+
+            for (Glyph glyph : set) {
+                outliers.addAll(Graphs.neighborListOf(graph, glyph));
+            }
+
+            outliers.removeAll(set);
+
+            return outliers;
+        }
+
+        /**
+         * Check whether symbol size is acceptable.
+         *
+         * @param symBox symbol bounding box
+         * @return true if OK
+         */
+        private boolean isSizeAcceptable (Rectangle symBox)
+        {
+            // Check width
+            if (symBox.width > params.maxSymbolWidth) {
+                return false;
+            }
+
+            // Check height (not limited if on left of system: braces / brackets)
+            if (GeoUtil.centerOf(symBox).x < system.getLeft()) {
+                return true;
+            } else {
+                return symBox.height <= params.maxSymbolHeight;
+            }
+        }
+
+        /**
+         * Process the provided set of glyphs.
+         *
+         * @param set  the current glyphs
+         * @param used
+         */
+        private void process (Set<Glyph> set,
+                              Set<Glyph> used)
+        {
+            processCount++;
+
+            // Build compound and get acceptable evaluations for the compound
+            Glyph compound = (set.size() == 1) ? set.iterator().next()
+                    : sheet.getNest().buildGlyph(set, true, Glyph.Linking.NO_LINK);
+
+            // Create all acceptable inters, if any, for the compound
+            evaluateGlyph(compound);
+
+            // Identify all outliers immediately reachable from the compound
+            Set<Glyph> outliers = getOutliers(set);
+            outliers.removeAll(used);
+
+            if (outliers.isEmpty()) {
+                return; // No further growth is possible
+            }
+
+            Rectangle setBox = Glyphs.getBounds(set);
+            Set<Glyph> newUsed = new HashSet<Glyph>(used);
+
+            for (Glyph outlier : outliers) {
+                newUsed.add(outlier);
+
+                // Check appending this atom does not make the resulting symbol too wide or too high
+                Rectangle symBox = outlier.getBounds().union(setBox);
+
+                if (isSizeAcceptable(symBox)) {
+                    Set<Glyph> largerSet = new HashSet<Glyph>(set);
+                    largerSet.add(outlier);
+                    process(largerSet, newUsed);
+                }
+            }
         }
     }
 }

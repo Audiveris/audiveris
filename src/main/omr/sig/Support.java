@@ -32,16 +32,21 @@ public interface Support
     GradeImpacts getImpacts ();
 
     /**
-     * Report the support ratio brought by this support relation.
-     * Note: the value could depend on relation direction, but we use the
-     * same value in both directions, for the time being.
+     * Report the support ratio for source inter
      *
-     * @return the support value
+     * @return support ratio for source (value is always >= 1)
      */
-    double getSupportRatio ();
+    double getSourceRatio ();
 
     /**
-     * Assign details about the final relation grade
+     * Report the support ratio for target inter
+     *
+     * @return support ratio for target (value is always >= 1)
+     */
+    double getTargetRatio ();
+
+    /**
+     * Assign details about the relation grade
      *
      * @param impacts the grade impacts
      */

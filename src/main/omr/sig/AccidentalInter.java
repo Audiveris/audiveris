@@ -59,9 +59,9 @@ public class AccidentalInter
      * @param grade evaluation value
      * @return the created instance or null if failed
      */
-    public static Inter create (Shape shape,
-                                Glyph glyph,
-                                double grade)
+    public static AccidentalInter create (Shape shape,
+                                          Glyph glyph,
+                                          double grade)
     {
         return new AccidentalInter(glyph, shape, grade);
     }

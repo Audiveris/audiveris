@@ -36,7 +36,7 @@ public class BasicSupport
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new BasicSupport object.
+     * Creates a new BasicSupport object, with a grade set to 1.
      */
     public BasicSupport ()
     {
@@ -91,13 +91,22 @@ public class BasicSupport
         return "Support";
     }
 
-    //-----------------//
-    // getSupportRatio //
-    //-----------------//
+    //----------------//
+    // getSourceRatio //
+    //----------------//
     @Override
-    public double getSupportRatio ()
+    public final double getSourceRatio ()
     {
-        return 1.0 + (getSupportCoeff() * grade);
+        return 1.0 + (getSourceCoeff() * grade);
+    }
+
+    //----------------//
+    // getTargetRatio //
+    //----------------//
+    @Override
+    public final double getTargetRatio ()
+    {
+        return 1.0 + (getTargetCoeff() * grade);
     }
 
     //----------//
@@ -129,13 +138,24 @@ public class BasicSupport
         return String.format("%.2f~%s", grade, getName());
     }
 
-    //-----------------//
-    // getSupportCoeff //
-    //-----------------//
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
     /**
-     * @return the coefficient used to compute support ratio
+     * @return the coefficient used to compute source support ratio
      */
-    protected double getSupportCoeff ()
+    protected double getSourceCoeff ()
+    {
+        return constants.defaultSupportCoeff.getValue();
+    }
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    /**
+     * @return the coefficient used to compute target support ratio
+     */
+    protected double getTargetCoeff ()
     {
         return constants.defaultSupportCoeff.getValue();
     }

@@ -133,11 +133,20 @@ public class BeamStemRelation
         this.stemPortion = stemPortion;
     }
 
-    //-----------------//
-    // getSupportCoeff //
-    //-----------------//
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
     @Override
-    protected double getSupportCoeff ()
+    protected double getSourceCoeff ()
+    {
+        return constants.supportCoeff.getValue();
+    }
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    @Override
+    protected double getTargetCoeff ()
     {
         return constants.supportCoeff.getValue();
     }

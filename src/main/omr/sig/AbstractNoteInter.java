@@ -32,8 +32,6 @@ import omr.run.Orientation;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
-import omr.sheet.Scale;
-
 import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;

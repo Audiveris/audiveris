@@ -163,6 +163,11 @@ public class SigSolver
                 modifs += checkStems();
                 deletions += purgeWeakInters();
 
+                modifs += checkRepeatDots();
+                modifs += checkAugmentationDots();
+                modifs += checkAugmented();
+                deletions += purgeWeakInters();
+
                 if (logging) {
                     logger.info("S#{} modifs: {}", system.getId(), modifs);
                 }
@@ -175,6 +180,43 @@ public class SigSolver
                 logger.info("S#{} reductions: {}", system.getId(), reductions);
             }
         } while ((reductions > 0) || (deletions > 0));
+    }
+
+    //---------------------//
+    // reduceAugmentations //
+    //---------------------//
+    /**
+     * Reduce the number of augmentation relations to one.
+     *
+     * @param rels the augmentation links for the same entity
+     * @return the number of relation deleted
+     */
+    int reduceAugmentations (Set<Relation> rels)
+    {
+        int modifs = 0;
+
+        // Simply select the relation with best grade
+        double bestGrade = 0;
+        AbstractConnection bestLink = null;
+
+        for (Relation rel : rels) {
+            AbstractConnection link = (AbstractConnection) rel;
+            double grade = link.getGrade();
+
+            if (grade > bestGrade) {
+                bestGrade = grade;
+                bestLink = link;
+            }
+        }
+
+        for (Relation rel : rels) {
+            if (rel != bestLink) {
+                sig.removeEdge(rel);
+                modifs++;
+            }
+        }
+
+        return modifs;
     }
 
     //------------------//
@@ -205,6 +247,69 @@ public class SigSolver
         return hasLeft && hasRight;
     }
 
+    //-----------------------//
+    // checkAugmentationDots //
+    //-----------------------//
+    /**
+     * Perform checks on augmentation dots.
+     * <p>
+     * An augmentation dot needs a target to augment (note, rest) or another augmentation dot.
+     *
+     * @return the count of modifications done
+     */
+    private int checkAugmentationDots ()
+    {
+        int modifs = 0;
+        List<Inter> dots = sig.inters(AugmentationDotInter.class);
+
+        for (Iterator<Inter> it = dots.iterator(); it.hasNext();) {
+            AugmentationDotInter dot = (AugmentationDotInter) it.next();
+
+            if (!dotHasAugmentationTarget(dot)) {
+                if (dot.isVip() || logger.isDebugEnabled()) {
+                    logger.info("Deleting augmentation dot lacking target {}", dot);
+                }
+
+                sig.removeVertex(dot);
+                it.remove();
+                modifs++;
+            }
+        }
+
+        return modifs;
+    }
+
+    //----------------//
+    // checkAugmented //
+    //----------------//
+    /**
+     * Perform checks on augmented entities.
+     * <p>
+     * An entity (note, rest or augmentation dot) can have at most one augmentation dot.
+     *
+     * @return the count of modifications done
+     */
+    private int checkAugmented ()
+    {
+        int modifs = 0;
+        List<Inter> entities = sig.inters(AbstractNoteInter.class);
+        entities.addAll(sig.inters(RestInter.class));
+
+        for (Inter entity : entities) {
+            Set<Relation> rels = sig.getRelations(entity, AugmentationRelation.class);
+
+            if (rels.size() > 1) {
+                modifs += reduceAugmentations(rels);
+
+                if (entity.isVip() || logger.isDebugEnabled()) {
+                    logger.info("Reduced augmentations for {}", entity);
+                }
+            }
+        }
+
+        return modifs;
+    }
+
     //------------//
     // checkBeams //
     //------------//
@@ -229,6 +334,38 @@ public class SigSolver
                 sig.removeVertex(beam);
                 it.remove();
                 modifs++;
+            }
+        }
+
+        return modifs;
+    }
+
+    //------------//
+    // checkFlags //
+    //------------//
+    /**
+     * Perform checks on flags.
+     *
+     * @return the count of modifications done
+     */
+    private int checkFlags ()
+    {
+        int modifs = 0;
+        final List<Inter> flags = sig.inters(ShapeSet.Flags.getShapes());
+
+        for (Iterator<Inter> it = flags.iterator(); it.hasNext();) {
+            final Inter flag = it.next();
+
+            if (!flagHasStem(flag)) {
+                if (flag.isVip() || logger.isDebugEnabled()) {
+                    logger.info("No stem for {}", flag);
+                }
+
+                sig.removeVertex(flag);
+                it.remove();
+                modifs++;
+
+                continue;
             }
         }
 
@@ -337,14 +474,14 @@ public class SigSolver
     }
 
     //------------//
-    // checkFlags //
+    // checkHooks //
     //------------//
     /**
-     * Perform checks on flags.
+     * Perform checks on beam hooks.
      *
      * @return the count of modifications done
      */
-    private int checkFlags ()
+    private int checkHooks ()
     {
         int modifs = 0;
         final List<Inter> flags = sig.inters(ShapeSet.Flags.getShapes());
@@ -363,40 +500,6 @@ public class SigSolver
 
                 continue;
             }
-        }
-
-        return modifs;
-    }
-
-    //------------//
-    // checkHooks //
-    //------------//
-    /**
-     * Perform checks on beam hooks.
-     *
-     * @return the count of modifications done
-     */
-    private int checkHooks ()
-    {
-        int modifs = 0;
-        List<Inter> hooks = sig.inters(BeamHookInter.class);
-
-        for (Iterator<Inter> it = hooks.iterator(); it.hasNext();) {
-            BeamHookInter hook = (BeamHookInter) it.next();
-
-            if (!hookHasStem(hook)) {
-                if (hook.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Deleting beam hook lacking stem {}", hook);
-                }
-
-                sig.removeVertex(hook);
-                it.remove();
-                modifs++;
-
-                continue;
-            }
-
-            //TODO: Check the hook has a beam nearby on the same stem
         }
 
         return modifs;
@@ -454,6 +557,36 @@ public class SigSolver
                 }
             }
         } while (modified);
+
+        return modifs;
+    }
+
+    //-----------------//
+    // checkRepeatDots //
+    //-----------------//
+    /**
+     * Perform checks on repeat dots
+     *
+     * @return the count of modifications done
+     */
+    private int checkRepeatDots ()
+    {
+        int modifs = 0;
+        List<Inter> dots = sig.inters(RepeatDotInter.class);
+
+        for (Iterator<Inter> it = dots.iterator(); it.hasNext();) {
+            RepeatDotInter dot = (RepeatDotInter) it.next();
+
+            if (!dotHasSibling(dot)) {
+                if (dot.isVip() || logger.isDebugEnabled()) {
+                    logger.info("Deleting repeat dot lacking sibling {}", dot);
+                }
+
+                sig.removeVertex(dot);
+                it.remove();
+                modifs++;
+            }
+        }
 
         return modifs;
     }
@@ -631,6 +764,50 @@ public class SigSolver
         }
     }
 
+    //--------------------------//
+    // dotHasAugmentationTarget //
+    //--------------------------//
+    /**
+     * Check whether the augmentation dot has a target (note or rest or other dot)
+     *
+     * @param dot the augmentation dot inter
+     * @return true if OK
+     */
+    private boolean dotHasAugmentationTarget (AugmentationDotInter dot)
+    {
+        for (Relation rel : sig.edgesOf(dot)) {
+            if (rel instanceof AugmentationRelation) {
+                return true;
+            }
+
+            if (rel instanceof DoubleDotRelation) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //---------------//
+    // dotHasSibling //
+    //---------------//
+    /**
+     * Check if the repeat dot has a sibling dot.
+     *
+     * @param dot the repeat dot inter
+     * @return true if OK
+     */
+    private boolean dotHasSibling (Inter dot)
+    {
+        for (Relation rel : sig.edgesOf(dot)) {
+            if (rel instanceof RepeatDotDotRelation) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //---------//
     // exclude //
     //---------//
@@ -642,26 +819,6 @@ public class SigSolver
                 sig.insertExclusion(i1, i2, Exclusion.Cause.INCOMPATIBLE);
             }
         }
-    }
-
-    //-------------//
-    // headHasStem //
-    //-------------//
-    /**
-     * Check if the head has a stem relation.
-     *
-     * @param head the head inter (black of void)
-     * @return true if OK
-     */
-    private boolean headHasStem (Inter head)
-    {
-        for (Relation rel : sig.edgesOf(head)) {
-            if (rel instanceof HeadStemRelation) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     //-------------//
@@ -677,6 +834,26 @@ public class SigSolver
     {
         for (Relation rel : sig.edgesOf(flag)) {
             if (rel instanceof FlagStemRelation) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //-------------//
+    // headHasStem //
+    //-------------//
+    /**
+     * Check if the head has a stem relation.
+     *
+     * @param head the head inter (black of void)
+     * @return true if OK
+     */
+    private boolean headHasStem (Inter head)
+    {
+        for (Relation rel : sig.edgesOf(head)) {
+            if (rel instanceof HeadStemRelation) {
                 return true;
             }
         }

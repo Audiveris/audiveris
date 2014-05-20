@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                 F l a g S t e m R e l a t i o n                                //
+//                             R e p e a t D o t B a r R e l a t i o n                            //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -20,55 +20,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code FlagStemRelation} represents the relation support between a flag and a
- * stem.
+ * Class {@code RepeatDotBarRelation} represents the relation between a repeat dot and
+ * the related bar line.
  *
  * @author Hervé Bitteur
  */
-public class FlagStemRelation
+public class RepeatDotBarRelation
         extends AbstractConnection
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(FlagStemRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(RepeatDotBarRelation.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Which part of stem is used?. */
-    private StemPortion stemPortion;
-
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new FlagStemRelation object.
-     */
-    public FlagStemRelation ()
-    {
-    }
+    private static final double[] OUT_WEIGHTS = new double[]{
+        constants.xOutWeight.getValue(),
+        constants.yWeight.getValue()
+    };
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Override
-    public String getName ()
-    {
-        return "Flag-Stem";
-    }
-
-    /**
-     * @return the stem Portion
-     */
-    public StemPortion getStemPortion ()
-    {
-        return stemPortion;
-    }
-
-    //------------------//
-    // getXInGapMaximum //
-    //------------------//
-    public static Scale.Fraction getXInGapMaximum ()
-    {
-        return constants.xInGapMax;
-    }
-
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
@@ -85,18 +56,36 @@ public class FlagStemRelation
         return constants.yGapMax;
     }
 
-    /**
-     * @param stemPortion the stem portion to set
-     */
-    public void setStemPortion (StemPortion stemPortion)
+    //---------//
+    // getName //
+    //---------//
+    @Override
+    public String getName ()
     {
-        this.stemPortion = stemPortion;
+        return "RepeatDot-Bar";
     }
 
+    //---------------//
+    // getOutWeights //
+    //---------------//
     @Override
-    protected Scale.Fraction getXInGapMax ()
+    protected double[] getOutWeights ()
     {
-        return getXInGapMaximum();
+        return OUT_WEIGHTS;
+    }
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    /**
+     * RepeatDotBarRelation brings no support on target (bar line) side.
+     *
+     * @return 0
+     */
+    @Override
+    protected double getTargetCoeff ()
+    {
+        return 0.0;
     }
 
     @Override
@@ -111,15 +100,6 @@ public class FlagStemRelation
         return getYGapMaximum();
     }
 
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" ").append(stemPortion);
-
-        return sb.toString();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -129,16 +109,18 @@ public class FlagStemRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction yGapMax = new Scale.Fraction(
-                0.4,
-                "Maximum vertical gap between stem & flag");
-
-        final Scale.Fraction xInGapMax = new Scale.Fraction(
-                0.3,
-                "Maximum horizontal overlap between stem & flag");
-
         final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                0.3,
-                "Maximum horizontal gap between stem & flag");
+                1.5,
+                "Maximum horizontal gap between dot center & barline reference point");
+
+        final Scale.Fraction yGapMax = new Scale.Fraction(
+                0.5,
+                "Maximum vertical gap between dot center & barline reference point");
+
+        final Constant.Ratio xOutWeight = new Constant.Ratio(
+                3,
+                "Relative impact weight for xOutGap");
+
+        final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
     }
 }

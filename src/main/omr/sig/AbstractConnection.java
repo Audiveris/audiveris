@@ -79,22 +79,51 @@ public abstract class AbstractConnection
         if (xDistance >= 0) {
             double xMax = getXOutGapMax().getValue();
             double xImpact = (xMax - xDistance) / xMax;
-            setImpacts(new OutImpacts(yImpact, xImpact));
+            setImpacts(new OutImpacts(xImpact, yImpact, getOutWeights()));
         } else {
             double xMax = getXInGapMax().getValue();
             double xImpact = (xMax + xDistance) / xMax;
-            setImpacts(new InImpacts(yImpact, xImpact));
+            setImpacts(new InImpacts(xImpact, yImpact, getInWeights()));
         }
 
         // Compute grade
         setGrade(impacts.getGrade());
     }
 
-    protected abstract Scale.Fraction getXInGapMax ();
+    /**
+     * Report maximum acceptable overlap.
+     * This method is disabled by default, to be overridden if overlap is possible
+     *
+     * @return the maximum overlap acceptable
+     */
+    protected Scale.Fraction getXInGapMax ()
+    {
+        throw new UnsupportedOperationException();
+    }
 
     protected abstract Scale.Fraction getXOutGapMax ();
 
     protected abstract Scale.Fraction getYGapMax ();
+
+    /**
+     * Method to override to provide specific weights for xInGap and yGap.
+     *
+     * @return weights to use
+     */
+    protected double[] getInWeights ()
+    {
+        return InImpacts.WEIGHTS;
+    }
+
+    /**
+     * Method to override to provide specific weights for xOutGap and yGap.
+     *
+     * @return weights to use
+     */
+    protected double[] getOutWeights ()
+    {
+        return OutImpacts.WEIGHTS;
+    }
 
     //-----------//
     // internals //
@@ -119,17 +148,19 @@ public abstract class AbstractConnection
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
-        protected static final String[] NAMES = new String[]{"yGap", "xInGap"};
+        protected static final String[] NAMES = new String[]{"xInGap", "yGap"};
 
-        protected static final double[] WEIGHTS = new double[]{1, 2};
+        // Default weights
+        protected static final double[] WEIGHTS = new double[]{2, 1};
 
         //~ Constructors ---------------------------------------------------------------------------
-        public InImpacts (double yGap,
-                          double xInGap)
+        public InImpacts (double xInGap,
+                          double yGap,
+                          double[] weights)
         {
-            super(NAMES, WEIGHTS);
-            setImpact(0, yGap);
-            setImpact(1, xInGap);
+            super(NAMES, weights);
+            setImpact(0, xInGap);
+            setImpact(1, yGap);
         }
     }
 
@@ -141,17 +172,19 @@ public abstract class AbstractConnection
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
-        protected static final String[] NAMES = new String[]{"yGap", "xOutGap"};
+        protected static final String[] NAMES = new String[]{"xOutGap", "yGap"};
 
-        protected static final double[] WEIGHTS = new double[]{1, 4};
+        // Defaults weights
+        protected static final double[] WEIGHTS = new double[]{4, 1};
 
         //~ Constructors ---------------------------------------------------------------------------
-        public OutImpacts (double yGap,
-                           double xOutGap)
+        public OutImpacts (double xOutGap,
+                           double yGap,
+                           double[] weights)
         {
-            super(NAMES, WEIGHTS);
-            setImpact(0, yGap);
-            setImpact(1, xOutGap);
+            super(NAMES, weights);
+            setImpact(0, xOutGap);
+            setImpact(1, yGap);
         }
     }
 }

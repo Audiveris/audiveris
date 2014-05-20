@@ -1,8 +1,8 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         C h a m f e r D i s t a n c e                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  C h a m f e r D i s t a n c e                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 package omr.image;
 
 import ij.process.ByteProcessor;
@@ -176,7 +176,7 @@ public interface ChamferDistance
         // process //
         //---------//
         /**
-         * Run the forward and backward passes then normalize.
+         * Run the forward and backward passes.
          *
          * @param output the output data to process
          */
@@ -246,16 +246,10 @@ public interface ChamferDistance
                     }
                 }
             }
-
-            //            // normalize (Not for integral values!)
-            //            for (int y = 0; y < height; y++) {
-            //                for (int x = 0; x < width; x++) {
-            //                    output[x][y] /= normalizer;
-            //                }
-            //            }
         }
 
-        /** To get a Table instance of proper type and size.
+        /**
+         * To get a Table instance of proper type and size.
          *
          * @param width  desired width
          * @param height desired height
