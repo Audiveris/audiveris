@@ -161,7 +161,7 @@ public class ShapeSet
      * should Shape enum order be modified. Prefer the use of shapesOf()
      * which lists precisely all set members.
      */
-    public static final ShapeSet Accidentals = new ShapeSet(
+    public static final ShapeSet Alterations = new ShapeSet(
             SHARP,
             new Color(0x9933ff),
             shapesOf(FLAT, NATURAL, SHARP, DOUBLE_SHARP, DOUBLE_FLAT));

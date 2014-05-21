@@ -77,14 +77,14 @@ public class ClefInter
     /**
      * (Try to) create a Clef inter.
      *
-     * @param shape precise shape
      * @param glyph underlying glyph
+     * @param shape precise shape
      * @param grade evaluation value
      * @param staff related staff
      * @return the created instance or null if failed
      */
-    public static Inter create (Shape shape,
-                                Glyph glyph,
+    public static Inter create (Glyph glyph,
+                                Shape shape,
                                 double grade,
                                 StaffInfo staff)
     {

@@ -105,7 +105,7 @@ public enum Shape
     PERCUSSION_CLEF("Percussion Clef"),
 
     //
-    // Accidentals -------------------------------------------------------------------
+    // Alterations -------------------------------------------------------------
     //
     FLAT("Minus one half step", new Color(0x00aaaa)),
     NATURAL("Natural value", new Color(0x0066ff)),
@@ -113,7 +113,7 @@ public enum Shape
     DOUBLE_SHARP("Double Sharp"),
     DOUBLE_FLAT("Double Flat"),
     //
-    // Time ----------------------------------------------------------
+    // Time --------------------------------------------------------------------
     //
     TIME_ZERO("Digit 0"),
     TIME_ONE("Digit 1"),
@@ -150,7 +150,7 @@ public enum Shape
     ONE_128TH_REST("Rest for a 1/128"),
 
     //
-    // Flags ---------------------------------------------------------------
+    // Flags -------------------------------------------------------------------
     //
     FLAG_1("Single flag down"),
     FLAG_1_UP("Single flag up"),
@@ -475,7 +475,7 @@ public enum Shape
     public boolean isPersistent ()
     {
         return ShapeSet.Clefs.contains(this) || ShapeSet.Times.contains(this)
-               || ShapeSet.Accidentals.contains(this);
+               || ShapeSet.Alterations.contains(this);
     }
 
     //--------//

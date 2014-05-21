@@ -40,20 +40,12 @@ public class StaccatoNoteRelation
     };
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------------//
-    // getXOutGapMaximum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMaximum ()
+    //------------------//
+    // getXInGapMaximum //
+    //------------------//
+    public static Scale.Fraction getInGapMaximum ()
     {
-        return constants.xOutGapMax;
-    }
-
-    //----------------//
-    // getYGapMaximum //
-    //----------------//
-    public static Scale.Fraction getYGapMaximum ()
-    {
-        return constants.yGapMax;
+        return constants.xGapMax;
     }
 
     //---------//
@@ -63,6 +55,22 @@ public class StaccatoNoteRelation
     public String getName ()
     {
         return "Staccato-Note";
+    }
+
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum ()
+    {
+        return constants.xGapMax;
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum ()
+    {
+        return constants.yGapMax;
     }
 
     //--------------//
@@ -118,7 +126,7 @@ public class StaccatoNoteRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction xOutGapMax = new Scale.Fraction(
+        final Scale.Fraction xGapMax = new Scale.Fraction(
                 0.75,
                 "Maximum horizontal gap between staccato center & note reference point");
 

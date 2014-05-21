@@ -91,7 +91,7 @@ public class ShapeBoard
     private static final Map<ShapeSet, Integer> heights = new HashMap<ShapeSet, Integer>();
 
     static {
-        heights.put(ShapeSet.Accidentals, 40);
+        heights.put(ShapeSet.Alterations, 40);
         heights.put(ShapeSet.Articulations, 60);
         heights.put(ShapeSet.Attributes, 40);
         heights.put(ShapeSet.Barlines, 100);

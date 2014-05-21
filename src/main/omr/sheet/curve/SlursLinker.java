@@ -21,7 +21,6 @@ import omr.glyph.facets.Glyph;
 import omr.grid.StaffInfo;
 
 import omr.math.GeoPath;
-import omr.math.GeoUtil;
 import omr.math.LineUtil;
 import static omr.math.LineUtil.*;
 import static omr.math.PointUtil.*;
@@ -37,6 +36,7 @@ import omr.sig.Inter;
 import omr.sig.Relation;
 import omr.sig.SIGraph;
 import omr.sig.SlurInter;
+import omr.sig.SlurNoteRelation;
 import omr.sig.StemInter;
 
 import omr.util.HorizontalSide;
@@ -135,8 +135,6 @@ public class SlursLinker
             SlurInter selected = linker.process();
 
             if (selected != null) {
-                system.getSig().addVertex(selected);
-
                 return selected;
             }
         }
@@ -419,26 +417,57 @@ public class SlursLinker
      */
     private static class NoteLink
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
+        public static Comparator<NoteLink> byEuclidean = new Comparator<NoteLink>()
+        {
+            @Override
+            public int compare (NoteLink o1,
+                                NoteLink o2)
+            {
+                return Double.compare(o1.euclidean, o2.euclidean);
+            }
+        };
+
+        public static Comparator<NoteLink> global = new Comparator<NoteLink>()
+        {
+            @Override
+            public int compare (NoteLink o1,
+                                NoteLink o2)
+            {
+                // If notes are rather vertically aligned (parts of same chord), use euclidean
+                // Otherwise use x-distance, regardless of y-distance
+                if (Math.abs(o1.dx - o2.dx) <= o1.note.getBounds().width) {
+                    return Double.compare(o1.euclidean, o2.euclidean);
+                } else {
+                    return Integer.compare(Math.abs(o1.dx), Math.abs(o2.dx));
+                }
+            }
+        };
+
+        //~ Instance fields ------------------------------------------------------------------------
         public final Inter note; // Note linked to slur end
 
-        public final Double distance; // A distance between note & slur end
+        public final int dx; // dx (positive or negative) from slur end to note center
 
-        public final Double euclidean; // Euclidean distance between note & slur end
+        public final int dy; // dy (positive or negative) from slur end to note center
+
+        public final double euclidean; // Euclidean distance between slur end and note center
 
         public final boolean direct; // False if via stem
 
         //~ Constructors ---------------------------------------------------------------------------
-        public NoteLink (Inter note,
-                         Double distance,
-                         Double euclidean,
+        public NoteLink (Point slurEnd,
+                         Inter note,
                          boolean direct)
         {
             this.note = note;
-            this.distance = distance;
-            this.euclidean = euclidean;
             this.direct = direct;
+
+            Point center = note.getCenter();
+            dx = center.x - slurEnd.x;
+            dy = center.y - slurEnd.y;
+            euclidean = Math.hypot(dx, dy);
         }
     }
 
@@ -562,18 +591,11 @@ public class SlursLinker
 
                     for (HorizontalSide side : HorizontalSide.values()) {
                         Map<Inter, NoteLink> m = (side == LEFT) ? lefts : rights;
-                        Entry<Inter, NoteLink> best = null;
+                        List<NoteLink> list = new ArrayList<NoteLink>(m.values());
+                        Collections.sort(list, NoteLink.global);
 
-                        for (Entry<Inter, NoteLink> entry : m.entrySet()) {
-                            if (best == null) {
-                                best = entry;
-                            } else if (best.getValue().distance > entry.getValue().distance) {
-                                best = entry;
-                            }
-                        }
-
-                        if (best != null) {
-                            links.put(side, best.getValue());
+                        if (!list.isEmpty()) {
+                            links.put(side, list.get(0));
                         }
                     }
                 }
@@ -714,6 +736,31 @@ public class SlursLinker
             return nonOrphans;
         }
 
+        //------//
+        // link //
+        //------//
+        /**
+         * Insert relations between slur and linked notes.
+         *
+         * @param slur      chosen slur
+         * @param leftLink  link to left note, if any
+         * @param rightLink link to right note, if any
+         */
+        private void link (SlurInter slur,
+                           NoteLink leftLink,
+                           NoteLink rightLink)
+        {
+            sig.addVertex(slur);
+
+            for (HorizontalSide side : HorizontalSide.values()) {
+                NoteLink link = (side == LEFT) ? leftLink : rightLink;
+
+                if (link != null) {
+                    sig.addEdge(slur, link.note, new SlurNoteRelation(side));
+                }
+            }
+        }
+
         /**
          * Retrieve the note(s) embraced by the slur side.
          *
@@ -731,18 +778,11 @@ public class SlursLinker
             Point slurEnd = info.getEnd(side == LEFT);
 
             // Look for notes center contained directly
-            for (Inter in : notes.get(side)) {
-                Rectangle noteBox = in.getBounds();
+            for (Inter note : notes.get(side)) {
+                Point center = note.getCenter();
 
-                if (area.contains(GeoUtil.centerOf(noteBox))) {
-                    Point center = GeoUtil.centerOf(in.getBounds());
-                    found.put(
-                            in,
-                            new NoteLink(
-                                    in,
-                                    distanceToNote(slurEnd, center),
-                                    euclidianToNote(slurEnd, center),
-                                    true));
+                if (area.contains(center)) {
+                    found.put(note, new NoteLink(slurEnd, note, true));
                 }
             }
 
@@ -750,7 +790,7 @@ public class SlursLinker
             // Determine the stems related to notes found
             Set<Inter> relatedStems = stemsOf(found.keySet());
 
-            // Look for stems intersected (if not related to any note found)
+            // Look for stems intersected (if not related to any note already found)
             for (Inter is : stems.get(side)) {
                 if (!relatedStems.contains(is)) {
                     Glyph glyph = is.getGlyph();
@@ -789,7 +829,7 @@ public class SlursLinker
                 NoteLink link = map.get(side);
 
                 if (link != null) {
-                    dist += link.distance;
+                    dist += Math.abs(link.dx);
                     n++;
                 }
             }
@@ -834,30 +874,22 @@ public class SlursLinker
                                          Point2D bisUnit)
         {
             Set<Relation> hsRels = sig.getRelations(stem, HeadStemRelation.class);
-            Inter bestNote = null;
-            Point bestCenter = null;
-            double bestDist = Double.MAX_VALUE;
+            List<NoteLink> links = new ArrayList<NoteLink>();
 
             for (Relation rel : hsRels) {
                 Inter note = (AbstractNoteInter) sig.getEdgeSource(rel);
-                Point center = GeoUtil.centerOf(note.getBounds());
+                Point center = note.getCenter();
 
                 // Check relative position WRT slur end
                 if (dotProduct(subtraction(center, slurEnd), bisUnit) > 0) {
-                    double dist = distanceToNote(slurEnd, center);
-
-                    if (dist < bestDist) {
-                        bestDist = dist;
-                        bestNote = note;
-                        bestCenter = center;
-                    }
+                    links.add(new NoteLink(slurEnd, note, false));
                 }
             }
 
-            if (bestNote != null) {
-                double euclidian = euclidianToNote(slurEnd, bestCenter);
+            if (!links.isEmpty()) {
+                Collections.sort(links, NoteLink.byEuclidean);
 
-                return new NoteLink(bestNote, bestDist, euclidian, false);
+                return links.get(0);
             } else {
                 return null;
             }
@@ -902,7 +934,11 @@ public class SlursLinker
             if ((inters == null) || inters.isEmpty()) {
                 return null;
             } else if (inters.size() == 1) {
-                return inters.iterator().next();
+                SlurInter slur = inters.iterator().next();
+                Map<HorizontalSide, NoteLink> m = map.get(slur);
+                link(slur, m.get(LEFT), m.get(RIGHT));
+
+                return slur;
             }
 
             ///logger.info("selectAmong {}", toFullString(inters));
@@ -961,6 +997,11 @@ public class SlursLinker
                         bestSlur = slur;
                     }
                 }
+            }
+
+            // Formalize relationships between slur and notes
+            if (bestSlur != null) {
+                link(bestSlur, bestLeft, bestRight);
             }
 
             return bestSlur;

@@ -15,7 +15,7 @@ import omr.Main;
 
 import omr.glyph.Evaluation;
 import omr.glyph.Shape;
-import static omr.glyph.ShapeSet.Accidentals;
+import static omr.glyph.ShapeSet.Alterations;
 import static omr.glyph.ShapeSet.Clefs;
 import static omr.glyph.ShapeSet.Digits;
 import static omr.glyph.ShapeSet.Flags;
@@ -35,7 +35,7 @@ import static omr.run.Orientation.VERTICAL;
 
 import omr.sig.AbstractNoteInter;
 import omr.sig.AccidNoteRelation;
-import omr.sig.AccidentalInter;
+import omr.sig.AlterationlInter;
 import omr.sig.BarlineInter;
 import omr.sig.BraceInter;
 import omr.sig.ClefInter;
@@ -96,13 +96,13 @@ public class SymbolFactory
     private final List<Inter> systemStems;
 
     /** All system notes, ordered by abscissa. */
-    private  List<Inter> systemNotes;
+    private List<Inter> systemNotes;
 
     /** All system rests, ordered by abscissa. */
-    private  List<Inter> systemRests;
+    private List<Inter> systemRests;
 
     /** All system bar lines, ordered by abscissa. */
-    private  List<Inter> systemBars;
+    private List<Inter> systemBars;
 
     /** Dot factory companion. */
     private final DotFactory dotFactory;
@@ -153,17 +153,17 @@ public class SymbolFactory
         }
 
         if (Clefs.contains(shape)) {
-            sig.addVertex(ClefInter.create(shape, glyph, grade, staff));
+            sig.addVertex(ClefInter.create(glyph, shape, grade, staff));
         } else if (Rests.contains(shape)) {
-            sig.addVertex(RestInter.create(shape, glyph, grade));
-        } else if (Accidentals.contains(shape)) {
-            AccidentalInter accidInter = AccidentalInter.create(shape, glyph, grade);
-            sig.addVertex(accidInter);
-            detectAccidNoteRelation(accidInter);
+            sig.addVertex(new RestInter(glyph, shape, grade));
+        } else if (Alterations.contains(shape)) {
+            AlterationlInter alterInter = new AlterationlInter(glyph, shape, grade);
+            sig.addVertex(alterInter);
+            detectAccidNoteRelation(alterInter);
         } else if (Flags.contains(shape)) {
-            checkFlagStemRelation(FlagInter.create(shape, glyph, grade));
+            checkFlagStemRelation(new FlagInter(glyph, shape, grade));
         } else if ((shape == Shape.BRACE) || (shape == Shape.BRACKET)) {
-            sig.addVertex(BraceInter.create(shape, glyph, grade));
+            sig.addVertex(new BraceInter(glyph, shape, grade));
         } else if (PartialTimes.contains(shape)) {
             sig.addVertex(NumberInter.create(shape, glyph, grade));
         } else if (FullTimes.contains(shape)) {
@@ -185,7 +185,7 @@ public class SymbolFactory
         } else if (Digits.contains(shape)) {
             sig.addVertex(FingeringInter.create(shape, glyph, grade));
         } else if (shape == Shape.DOT_set) {
-            dotFactory.checkDot(eval, glyph);
+            dotFactory.processDot(eval, glyph);
         }
     }
 
@@ -338,7 +338,7 @@ public class SymbolFactory
      *
      * @param accid the provided accidental inter (sharp, flat or natural)
      */
-    private void detectAccidNoteRelation (AccidentalInter accid)
+    private void detectAccidNoteRelation (AlterationlInter accid)
     {
         // Look for notes nearby on the right side of accidental
         final int xGapMax = scale.toPixels(AccidNoteRelation.getXOutGapMaximum());

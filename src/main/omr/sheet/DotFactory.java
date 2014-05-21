@@ -110,29 +110,6 @@ public class DotFactory
         //        }
     }
 
-    //----------//
-    // checkDot //
-    //----------//
-    /**
-     * Run the various checks for the provided dot-shaped glyph
-     *
-     * @param eval  evaluation result
-     * @param glyph underlying glyph
-     */
-    public void checkDot (Evaluation eval,
-                          Glyph glyph)
-    {
-        // Try as repeat dot
-        checkRepeat(eval, glyph);
-
-        // Try as staccato dot
-        checkStaccato(eval, glyph);
-
-        // Postpone the processing as augmentation dot until all symbols have been retrieved
-        // So, simply record the candidate glyph
-        augDots.add(new AugDot(eval, glyph));
-    }
-
     //------------//
     // pairRepeat //
     //------------//
@@ -164,6 +141,29 @@ public class DotFactory
                 }
             }
         }
+    }
+
+    //------------//
+    // processDot //
+    //------------//
+    /**
+     * Run the various checks for the provided dot-shaped glyph
+     *
+     * @param eval  evaluation result
+     * @param glyph underlying glyph
+     */
+    public void processDot (Evaluation eval,
+                            Glyph glyph)
+    {
+        // Try as repeat dot
+        checkRepeat(eval, glyph);
+
+        // Try as staccato dot
+        checkStaccato(eval, glyph);
+
+        // Postpone the processing as augmentation dot until all symbols have been retrieved
+        // So, simply record the candidate glyph
+        augDots.add(new AugDot(eval, glyph));
     }
 
     //------------------------//

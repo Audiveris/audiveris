@@ -240,7 +240,7 @@ public class SystemTranslator
         @Override
         public boolean isRelevant (Glyph glyph)
         {
-            return Accidentals.contains(glyph.getShape());
+            return Alterations.contains(glyph.getShape());
         }
 
         @Override

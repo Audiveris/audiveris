@@ -39,23 +39,6 @@ public class BraceInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // create //
-    //--------//
-    /**
-     * (Try to) create a Brace inter.
-     *
-     * @param shape precise shape
-     * @param glyph underlying glyph
-     * @param grade evaluation value
-     * @return the created instance or null if failed
-     */
-    public static Inter create (Shape shape,
-                                Glyph glyph,
-                                double grade)
-    {
-        return new BraceInter(glyph, shape, grade);
-    }
 
     //--------//
     // accept //

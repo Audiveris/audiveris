@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                  A c c i d e n t a l I n t e r                                 //
+//                                  A l t e r a t i o n I n t e r                                 //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -15,23 +15,24 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 /**
- * Class {@code AccidentalInter} represents an accidental (#,b, etc).
+ * Class {@code AlterationlInter} represents an alteration (sharp, flat, natural,
+ * double-sharp, double-flat).
  *
  * @author Hervé Bitteur
  */
-public class AccidentalInter
+public class AlterationlInter
         extends AbstractInter
 {
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new AccidentalInter object.
+     * Creates a new AlterationlInter object.
      *
      * @param glyph underlying glyph
      * @param shape precise shape
      * @param grade evaluation value
      */
-    public AccidentalInter (Glyph glyph,
+    public AlterationlInter (Glyph glyph,
                             Shape shape,
                             double grade)
     {
@@ -46,23 +47,5 @@ public class AccidentalInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    //--------//
-    // create //
-    //--------//
-    /**
-     * (Try to) create an Accidental inter.
-     *
-     * @param shape precise shape
-     * @param glyph underlying glyph
-     * @param grade evaluation value
-     * @return the created instance or null if failed
-     */
-    public static AccidentalInter create (Shape shape,
-                                          Glyph glyph,
-                                          double grade)
-    {
-        return new AccidentalInter(glyph, shape, grade);
     }
 }

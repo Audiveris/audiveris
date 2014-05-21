@@ -47,22 +47,4 @@ public class FlagInter
     {
         visitor.visit(this);
     }
-
-    //--------//
-    // create //
-    //--------//
-    /**
-     * (Try to) create a Flag inter.
-     *
-     * @param shape precise shape
-     * @param glyph underlying glyph
-     * @param grade evaluation value
-     * @return the created instance or null if failed
-     */
-    public static FlagInter create (Shape shape,
-                                    Glyph glyph,
-                                    double grade)
-    {
-        return new FlagInter(glyph, shape, grade);
-    }
 }

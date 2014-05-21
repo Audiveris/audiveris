@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code AccidNoteRelation} represents the relation support between an accidental
- * (sharp, flat, natural) and a note.
+ * alteration (sharp, flat, natural, double-sharp, double-flat) and a note.
  *
  * @author Hervé Bitteur
  */

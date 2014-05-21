@@ -139,12 +139,6 @@ public class SlursBuilder
             }
 
             logger.info("Slurs: {}", pageSlurs.size());
-
-            //            // Retrieve underlying glyph for each slur
-            //            for (SlurInter s : pageSlurs) {
-            //                SlurInfo info = s.getInfo();
-            //                info.getGlyph(sheet, params.maxRunDistance);
-            //            }
         } catch (Throwable ex) {
             logger.warn("Error in SlursBuilder: " + ex, ex);
         }
