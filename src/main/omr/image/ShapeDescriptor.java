@@ -814,7 +814,7 @@ public class ShapeDescriptor
         //~ Instance fields ------------------------------------------------------------------------
 
         final Constant.Boolean keepTemplates = new Constant.Boolean(
-                true,
+                false,
                 "Should we keep the templates images?");
 
         final Constant.Ratio stemDx = new Constant.Ratio(

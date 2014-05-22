@@ -59,14 +59,13 @@ public class BeamsStep
     //----------//
     /**
      * {@inheritDoc}
-     * Perform a closing operation on the whole image with a disk
-     * shape as the structure element to point out concentrations of
-     * foreground pixels (for beams, for black heads).
+     * <p>
+     * Perform a closing operation on the whole image with a disk shape as the structure
+     * element to point out concentrations of foreground pixels (for beams essentially).
      */
     @Override
     protected void doProlog (Collection<SystemInfo> systems,
                              Sheet sheet)
-            throws StepException
     {
         // Retrieve significant spots for the whole sheet
         sheet.getSpotsBuilder().buildPageSpots();

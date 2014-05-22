@@ -246,7 +246,7 @@ public class SymbolsFilter
                 "Should we display the symbols buffer?");
 
         final Constant.Boolean keepSymbolsBuffer = new Constant.Boolean(
-                true,
+                false,
                 "Should we store skeleton images on disk?");
     }
 

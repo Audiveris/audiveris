@@ -704,10 +704,9 @@ public class ArcRetriever
             minStaffLineDistance = scale.toPixelsDouble(constants.minStaffLineDistance);
             maxRunLength = scale.toPixels(constants.maxRunLength);
 
-            //            if (logger.isDebugEnabled()) {
-            Main.dumping.dump(this);
-
-            //            }
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
+            }
         }
     }
 }

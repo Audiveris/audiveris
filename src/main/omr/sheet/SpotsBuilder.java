@@ -21,6 +21,8 @@ import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.grid.StaffInfo;
+
 import omr.image.ImageUtil;
 import omr.image.MorphoProcessor;
 import omr.image.StructureElement;
@@ -158,6 +160,11 @@ public class SpotsBuilder
                                    double beam,
                                    String cueId)
     {
+        // Erase DMZ for non-cue buffers
+        if (cueId == null) {
+            eraseDmzAreas(buffer);
+        }
+
         final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
         final float radius = (float) (diameter - 1) / 2;
         logger.info(
@@ -182,7 +189,7 @@ public class SpotsBuilder
             }
 
             // Display the gray-level view of all spots
-            if (Main.getGui() != null) {
+            if ((Main.getGui() != null) && constants.displaySpotView.isSet()) {
                 sheet.getAssembly().addViewTab(
                         "SpotView",
                         new ScrollImageView(sheet, new ImageView(img)),
@@ -262,6 +269,30 @@ public class SpotsBuilder
         logger.info("{}Spots retrieved: {}", sheet.getLogPrefix(), count);
     }
 
+    //---------------//
+    // eraseDmzAreas //
+    //---------------//
+    private void eraseDmzAreas (ByteProcessor buffer)
+    {
+        final int dmzDyMargin = sheet.getScale().toPixels(constants.staffVerticalMargin);
+
+        buffer.setValue(255);
+
+        for (SystemInfo system : sheet.getSystems()) {
+            StaffInfo firstStaff = system.getFirstStaff();
+            StaffInfo lastStaff = system.getLastStaff();
+            int dmzEnd = firstStaff.getDmzEnd();
+            int top = firstStaff.getFirstLine().yAt(dmzEnd) - dmzDyMargin;
+            int bot = lastStaff.getLastLine().yAt(dmzEnd) + dmzDyMargin;
+
+            buffer.setRoi(0, top, dmzEnd, bot - top + 1);
+            buffer.fill();
+        }
+
+        buffer.resetRoi();
+        buffer.setValue(0);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -274,6 +305,10 @@ public class SpotsBuilder
         final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
+
+        final Constant.Boolean displaySpotView = new Constant.Boolean(
+                false,
+                "Should we display the spot view?");
 
         final Constant.Boolean keepPageSpots = new Constant.Boolean(
                 false,
@@ -291,5 +326,9 @@ public class SpotsBuilder
                 "pixel",
                 140,
                 "Global threshold used for binarization of gray spots");
+
+        final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
+                2.0,
+                "Margin erased above & below staff DMZ area");
     }
 }
