@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="2813" interline="22" shape="DIGIT_1">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-18.370270486118546</pitch-position>
+    <section first-pos="1559" orientation="VERTICAL" id="3848">
+        <run length="2" start="776"/>
+        <run length="2" start="776"/>
+        <run length="2" start="776"/>
+        <run length="2" start="776"/>
+    </section>
+    <section first-pos="1560" orientation="VERTICAL" id="3851">
+        <run length="2" start="796"/>
+        <run length="2" start="796"/>
+    </section>
+    <section first-pos="1562" orientation="VERTICAL" id="3856">
+        <run length="3" start="795"/>
+        <run length="3" start="795"/>
+    </section>
+    <section first-pos="1563" orientation="VERTICAL" id="3857">
+        <run length="3" start="775"/>
+    </section>
+    <section first-pos="1564" orientation="VERTICAL" id="3859">
+        <run length="4" start="775"/>
+    </section>
+    <section first-pos="1564" orientation="VERTICAL" id="3860">
+        <run length="18" start="780"/>
+    </section>
+    <section first-pos="1565" orientation="VERTICAL" id="3862">
+        <run length="24" start="774"/>
+        <run length="24" start="774"/>
+        <run length="24" start="774"/>
+        <run length="24" start="774"/>
+    </section>
+    <section first-pos="1569" orientation="VERTICAL" id="3866">
+        <run length="3" start="795"/>
+    </section>
+    <section first-pos="1570" orientation="VERTICAL" id="3867">
+        <run length="2" start="796"/>
+        <run length="2" start="796"/>
+        <run length="2" start="796"/>
+    </section>
+</glyph>

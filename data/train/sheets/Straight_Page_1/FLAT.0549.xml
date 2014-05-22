@@ -4,34 +4,34 @@
     <with-ledger>false</with-ledger>
     <pitch-position>0.4</pitch-position>
     <section orientation="VERTICAL" first-pos="281" id="642">
-        <run start="1428" level="24" length="41"/>
-        <run start="1428" level="25" length="40"/>
+        <run start="1428" length="41"/>
+        <run start="1428" length="40"/>
     </section>
     <section orientation="VERTICAL" first-pos="283" id="646">
-        <run start="1452" level="0" length="1"/>
-        <run start="1452" level="0" length="1"/>
+        <run start="1452" length="1"/>
+        <run start="1452" length="1"/>
     </section>
     <section orientation="VERTICAL" first-pos="283" id="647">
-        <run start="1464" level="67" length="3"/>
-        <run start="1464" level="100" length="2"/>
-        <run start="1463" level="100" length="2"/>
-        <run start="1462" level="67" length="3"/>
-        <run start="1461" level="0" length="3"/>
-        <run start="1459" level="0" length="4"/>
-        <run start="1457" level="0" length="5"/>
+        <run start="1464" length="3"/>
+        <run start="1464" length="2"/>
+        <run start="1463" length="2"/>
+        <run start="1462" length="3"/>
+        <run start="1461" length="3"/>
+        <run start="1459" length="4"/>
+        <run start="1457" length="5"/>
     </section>
     <section orientation="VERTICAL" first-pos="289" id="655">
-        <run start="1452" level="0" length="1"/>
+        <run start="1452" length="1"/>
     </section>
     <section orientation="VERTICAL" first-pos="290" id="656">
-        <run start="1450" level="36" length="11"/>
-        <run start="1450" level="40" length="10"/>
-        <run start="1450" level="44" length="9"/>
+        <run start="1450" length="11"/>
+        <run start="1450" length="10"/>
+        <run start="1450" length="9"/>
     </section>
     <section orientation="VERTICAL" first-pos="293" id="660">
-        <run start="1450" level="200" length="2"/>
+        <run start="1450" length="2"/>
     </section>
     <section orientation="VERTICAL" first-pos="293" id="661">
-        <run start="1453" level="0" length="4"/>
+        <run start="1453" length="4"/>
     </section>
 </glyph>

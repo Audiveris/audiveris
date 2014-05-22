@@ -4,16 +4,16 @@
     <with-ledger>false</with-ledger>
     <pitch-position>-1.0232558139534884</pitch-position>
         <section orientation="VERTICAL" id="3423" first-pos="1090">
-            <run start="2754" length="2" level="188"/>
-            <run start="2752" length="6" level="123"/>
-            <run start="2751" length="8" level="48"/>
-            <run start="2750" length="10" level="38"/>
-            <run start="2750" length="11" level="24"/>
-            <run start="2750" length="11" level="24"/>
-            <run start="2750" length="11" level="24"/>
-            <run start="2750" length="11" level="38"/>
-            <run start="2751" length="9" level="29"/>
-            <run start="2751" length="9" level="63"/>
-            <run start="2753" length="5" level="112"/>
+            <run start="2754" length="2"/>
+            <run start="2752" length="6"/>
+            <run start="2751" length="8"/>
+            <run start="2750" length="10"/>
+            <run start="2750" length="11"/>
+            <run start="2750" length="11"/>
+            <run start="2750" length="11"/>
+            <run start="2750" length="11"/>
+            <run start="2751" length="9"/>
+            <run start="2751" length="9"/>
+            <run start="2753" length="5"/>
         </section>
 </glyph>

@@ -4,69 +4,69 @@
     <with-ledger>false</with-ledger>
     <pitch-position>-6.702702702702703</pitch-position>
     <section orientation="VERTICAL" first-pos="610" id="1169">
-        <run start="1117" level="141" length="6"/>
-        <run start="1114" level="69" length="9"/>
-        <run start="1111" level="74" length="9"/>
-        <run start="1109" level="76" length="9"/>
-        <run start="1108" level="58" length="8"/>
-        <run start="1106" level="57" length="8"/>
-        <run start="1105" level="54" length="8"/>
-        <run start="1104" level="53" length="8"/>
-        <run start="1103" level="48" length="8"/>
-        <run start="1102" level="37" length="8"/>
-        <run start="1101" level="33" length="8"/>
-        <run start="1100" level="26" length="8"/>
-        <run start="1099" level="39" length="9"/>
-        <run start="1098" level="36" length="9"/>
-        <run start="1098" level="28" length="9"/>
-        <run start="1097" level="19" length="9"/>
-        <run start="1097" level="19" length="9"/>
-        <run start="1096" level="36" length="10"/>
-        <run start="1096" level="6" length="9"/>
-        <run start="1095" level="23" length="10"/>
-        <run start="1095" level="28" length="10"/>
-        <run start="1095" level="35" length="10"/>
-        <run start="1095" level="18" length="10"/>
-        <run start="1095" level="18" length="10"/>
-        <run start="1095" level="18" length="10"/>
-        <run start="1095" level="18" length="10"/>
-        <run start="1095" level="18" length="10"/>
-        <run start="1095" level="18" length="10"/>
-        <run start="1095" level="35" length="10"/>
-        <run start="1095" level="26" length="10"/>
-        <run start="1095" level="23" length="10"/>
-        <run start="1096" level="6" length="9"/>
-        <run start="1096" level="36" length="10"/>
-        <run start="1097" level="17" length="9"/>
-        <run start="1097" level="19" length="9"/>
-        <run start="1098" level="29" length="9"/>
-        <run start="1098" level="33" length="9"/>
-        <run start="1099" level="40" length="9"/>
-        <run start="1100" level="22" length="8"/>
-        <run start="1101" level="30" length="8"/>
-        <run start="1102" level="36" length="8"/>
-        <run start="1103" level="42" length="8"/>
-        <run start="1104" level="46" length="8"/>
-        <run start="1105" level="45" length="8"/>
-        <run start="1106" level="59" length="8"/>
-        <run start="1108" level="59" length="8"/>
-        <run start="1110" level="54" length="8"/>
-        <run start="1112" level="75" length="9"/>
-        <run start="1114" level="72" length="9"/>
-        <run start="1117" level="164" length="6"/>
+        <run start="1117" length="6"/>
+        <run start="1114" length="9"/>
+        <run start="1111" length="9"/>
+        <run start="1109" length="9"/>
+        <run start="1108" length="8"/>
+        <run start="1106" length="8"/>
+        <run start="1105" length="8"/>
+        <run start="1104" length="8"/>
+        <run start="1103" length="8"/>
+        <run start="1102" length="8"/>
+        <run start="1101" length="8"/>
+        <run start="1100" length="8"/>
+        <run start="1099" length="9"/>
+        <run start="1098" length="9"/>
+        <run start="1098" length="9"/>
+        <run start="1097" length="9"/>
+        <run start="1097" length="9"/>
+        <run start="1096" length="10"/>
+        <run start="1096" length="9"/>
+        <run start="1095" length="10"/>
+        <run start="1095" length="10"/>
+        <run start="1095" length="10"/>
+        <run start="1095" length="10"/>
+        <run start="1095" length="10"/>
+        <run start="1095" length="10"/>
+        <run start="1095" length="10"/>
+        <run start="1095" length="10"/>
+        <run start="1095" length="10"/>
+        <run start="1095" length="10"/>
+        <run start="1095" length="10"/>
+        <run start="1095" length="10"/>
+        <run start="1096" length="9"/>
+        <run start="1096" length="10"/>
+        <run start="1097" length="9"/>
+        <run start="1097" length="9"/>
+        <run start="1098" length="9"/>
+        <run start="1098" length="9"/>
+        <run start="1099" length="9"/>
+        <run start="1100" length="8"/>
+        <run start="1101" length="8"/>
+        <run start="1102" length="8"/>
+        <run start="1103" length="8"/>
+        <run start="1104" length="8"/>
+        <run start="1105" length="8"/>
+        <run start="1106" length="8"/>
+        <run start="1108" length="8"/>
+        <run start="1110" length="8"/>
+        <run start="1112" length="9"/>
+        <run start="1114" length="9"/>
+        <run start="1117" length="6"/>
     </section>
     <section orientation="VERTICAL" first-pos="629" id="1187">
-        <run start="1118" level="200" length="3"/>
-        <run start="1116" level="48" length="7"/>
-        <run start="1115" level="27" length="9"/>
-        <run start="1114" level="35" length="11"/>
-        <run start="1114" level="19" length="11"/>
-        <run start="1114" level="0" length="11"/>
-        <run start="1114" level="0" length="11"/>
-        <run start="1114" level="15" length="11"/>
-        <run start="1114" level="35" length="11"/>
-        <run start="1115" level="27" length="9"/>
-        <run start="1116" level="44" length="7"/>
-        <run start="1118" level="180" length="3"/>
+        <run start="1118" length="3"/>
+        <run start="1116" length="7"/>
+        <run start="1115" length="9"/>
+        <run start="1114" length="11"/>
+        <run start="1114" length="11"/>
+        <run start="1114" length="11"/>
+        <run start="1114" length="11"/>
+        <run start="1114" length="11"/>
+        <run start="1114" length="11"/>
+        <run start="1115" length="9"/>
+        <run start="1116" length="7"/>
+        <run start="1118" length="3"/>
     </section>
 </glyph>

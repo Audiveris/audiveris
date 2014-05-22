@@ -4,50 +4,50 @@
     <with-ledger>false</with-ledger>
     <pitch-position>-9.04109589041096</pitch-position>
     <section orientation="VERTICAL" first-pos="1791" id="4983">
-        <run start="540" level="191" length="2"/>
-        <run start="540" level="57" length="3"/>
-        <run start="540" level="59" length="3"/>
-        <run start="540" level="66" length="3"/>
-        <run start="541" level="53" length="3"/>
-        <run start="541" level="57" length="3"/>
-        <run start="542" level="62" length="3"/>
-        <run start="542" level="60" length="3"/>
-        <run start="542" level="62" length="3"/>
-        <run start="543" level="61" length="3"/>
-        <run start="543" level="63" length="3"/>
-        <run start="544" level="2" length="2"/>
-        <run start="544" level="66" length="3"/>
-        <run start="544" level="68" length="3"/>
-        <run start="545" level="65" length="3"/>
-        <run start="545" level="65" length="3"/>
-        <run start="545" level="70" length="3"/>
+        <run start="540" length="2"/>
+        <run start="540" length="3"/>
+        <run start="540" length="3"/>
+        <run start="540" length="3"/>
+        <run start="541" length="3"/>
+        <run start="541" length="3"/>
+        <run start="542" length="3"/>
+        <run start="542" length="3"/>
+        <run start="542" length="3"/>
+        <run start="543" length="3"/>
+        <run start="543" length="3"/>
+        <run start="544" length="2"/>
+        <run start="544" length="3"/>
+        <run start="544" length="3"/>
+        <run start="545" length="3"/>
+        <run start="545" length="3"/>
+        <run start="545" length="3"/>
     </section>
     <section orientation="VERTICAL" first-pos="1791" id="4984">
-        <run start="556" level="191" length="2"/>
-        <run start="555" level="55" length="3"/>
-        <run start="555" level="65" length="3"/>
-        <run start="554" level="58" length="3"/>
-        <run start="554" level="53" length="3"/>
-        <run start="554" level="2" length="2"/>
-        <run start="553" level="55" length="3"/>
-        <run start="553" level="61" length="3"/>
-        <run start="552" level="64" length="3"/>
-        <run start="552" level="61" length="3"/>
-        <run start="552" level="65" length="3"/>
-        <run start="551" level="62" length="3"/>
-        <run start="551" level="63" length="3"/>
-        <run start="551" level="4" length="2"/>
-        <run start="550" level="68" length="3"/>
-        <run start="550" level="68" length="3"/>
-        <run start="549" level="70" length="3"/>
+        <run start="556" length="2"/>
+        <run start="555" length="3"/>
+        <run start="555" length="3"/>
+        <run start="554" length="3"/>
+        <run start="554" length="3"/>
+        <run start="554" length="2"/>
+        <run start="553" length="3"/>
+        <run start="553" length="3"/>
+        <run start="552" length="3"/>
+        <run start="552" length="3"/>
+        <run start="552" length="3"/>
+        <run start="551" length="3"/>
+        <run start="551" length="3"/>
+        <run start="551" length="2"/>
+        <run start="550" length="3"/>
+        <run start="550" length="3"/>
+        <run start="549" length="3"/>
     </section>
     <section orientation="VERTICAL" first-pos="1808" id="5050">
-        <run start="546" level="63" length="6"/>
-        <run start="546" level="70" length="6"/>
-        <run start="547" level="10" length="4"/>
-        <run start="547" level="55" length="4"/>
-        <run start="547" level="61" length="3"/>
-        <run start="548" level="44" length="2"/>
-        <run start="548" level="142" length="2"/>
+        <run start="546" length="6"/>
+        <run start="546" length="6"/>
+        <run start="547" length="4"/>
+        <run start="547" length="4"/>
+        <run start="547" length="3"/>
+        <run start="548" length="2"/>
+        <run start="548" length="2"/>
     </section>
 </glyph>

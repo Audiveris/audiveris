@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="2859" interline="22" shape="CLUTTER">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-1.3452374334239408</pitch-position>
+    <section first-pos="1800" orientation="VERTICAL" id="4163">
+        <run length="10" start="3059"/>
+        <run length="9" start="3059"/>
+        <run length="9" start="3059"/>
+        <run length="9" start="3059"/>
+        <run length="9" start="3058"/>
+    </section>
+    <section first-pos="1800" orientation="VERTICAL" id="4164">
+        <run length="9" start="3082"/>
+        <run length="9" start="3082"/>
+        <run length="10" start="3081"/>
+        <run length="9" start="3081"/>
+        <run length="9" start="3081"/>
+        <run length="10" start="3080"/>
+    </section>
+    <section first-pos="1805" orientation="VERTICAL" id="4181">
+        <run length="1" start="3054"/>
+    </section>
+    <section first-pos="1805" orientation="VERTICAL" id="4182">
+        <run length="17" start="3057"/>
+    </section>
+    <section first-pos="1805" orientation="VERTICAL" id="4183">
+        <run length="1" start="3075"/>
+    </section>
+    <section first-pos="1806" orientation="VERTICAL" id="4184">
+        <run length="61" start="3040"/>
+        <run length="60" start="3041"/>
+    </section>
+    <section first-pos="1808" orientation="VERTICAL" id="4191">
+        <run length="11" start="3056"/>
+        <run length="9" start="3057"/>
+        <run length="8" start="3057"/>
+        <run length="9" start="3056"/>
+        <run length="9" start="3056"/>
+    </section>
+    <section first-pos="1808" orientation="VERTICAL" id="4192">
+        <run length="27" start="3074"/>
+    </section>
+    <section first-pos="1809" orientation="VERTICAL" id="4193">
+        <run length="10" start="3079"/>
+        <run length="9" start="3079"/>
+        <run length="9" start="3079"/>
+    </section>
+    <section first-pos="1812" orientation="VERTICAL" id="4199">
+        <run length="6" start="3081"/>
+    </section>
+</glyph>

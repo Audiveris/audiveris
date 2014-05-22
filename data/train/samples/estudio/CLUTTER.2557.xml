@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="2557" interline="22" shape="CLUTTER">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-16.41279421519391</pitch-position>
+    <section first-pos="547" orientation="VERTICAL" id="1912">
+        <run length="2" start="182"/>
+        <run length="2" start="182"/>
+        <run length="2" start="182"/>
+    </section>
+    <section first-pos="550" orientation="VERTICAL" id="1923">
+        <run length="19" start="181"/>
+        <run length="22" start="179"/>
+        <run length="25" start="176"/>
+        <run length="25" start="176"/>
+    </section>
+    <section first-pos="554" orientation="VERTICAL" id="1928">
+        <run length="2" start="182"/>
+        <run length="2" start="182"/>
+        <run length="2" start="182"/>
+        <run length="2" start="182"/>
+    </section>
+    <section first-pos="554" orientation="VERTICAL" id="1929">
+        <run length="2" start="199"/>
+        <run length="2" start="199"/>
+        <run length="2" start="199"/>
+        <run length="2" start="198"/>
+    </section>
+    <section first-pos="558" orientation="VERTICAL" id="1937">
+        <run length="1" start="198"/>
+    </section>
+</glyph>

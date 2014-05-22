@@ -4,40 +4,40 @@
     <with-ledger>false</with-ledger>
     <pitch-position>-4.864864864864865</pitch-position>
     <section orientation="VERTICAL" first-pos="1645" id="2589">
-        <run start="2505" level="23" length="43"/>
-        <run start="2505" level="70" length="43"/>
+        <run start="2505" length="43"/>
+        <run start="2505" length="43"/>
     </section>
     <section orientation="VERTICAL" first-pos="1647" id="2592">
-        <run start="2522" level="0" length="7"/>
-        <run start="2521" level="24" length="8"/>
-        <run start="2521" level="43" length="8"/>
-        <run start="2521" level="30" length="8"/>
-        <run start="2521" level="0" length="7"/>
-        <run start="2520" level="30" length="8"/>
-        <run start="2520" level="42" length="8"/>
-        <run start="2520" level="24" length="8"/>
+        <run start="2522" length="7"/>
+        <run start="2521" length="8"/>
+        <run start="2521" length="8"/>
+        <run start="2521" length="8"/>
+        <run start="2521" length="7"/>
+        <run start="2520" length="8"/>
+        <run start="2520" length="8"/>
+        <run start="2520" length="8"/>
     </section>
     <section orientation="VERTICAL" first-pos="1647" id="2593">
-        <run start="2542" level="80" length="5"/>
-        <run start="2542" level="91" length="5"/>
+        <run start="2542" length="5"/>
+        <run start="2542" length="5"/>
     </section>
     <section orientation="VERTICAL" first-pos="1648" id="2594">
-        <run start="2539" level="192" length="1"/>
+        <run start="2539" length="1"/>
     </section>
     <section orientation="VERTICAL" first-pos="1649" id="2595">
-        <run start="2539" level="145" length="8"/>
-        <run start="2539" level="130" length="8"/>
-        <run start="2539" level="114" length="7"/>
-        <run start="2538" level="133" length="8"/>
-        <run start="2538" level="143" length="8"/>
-        <run start="2538" level="124" length="8"/>
+        <run start="2539" length="8"/>
+        <run start="2539" length="8"/>
+        <run start="2539" length="7"/>
+        <run start="2538" length="8"/>
+        <run start="2538" length="8"/>
+        <run start="2538" length="8"/>
     </section>
     <section orientation="VERTICAL" first-pos="1655" id="2606">
-        <run start="2519" level="126" length="43"/>
-        <run start="2519" level="32" length="43"/>
-        <run start="2519" level="194" length="43"/>
+        <run start="2519" length="43"/>
+        <run start="2519" length="43"/>
+        <run start="2519" length="43"/>
     </section>
     <section orientation="VERTICAL" first-pos="1658" id="2611">
-        <run start="2540" level="200" length="2"/>
+        <run start="2540" length="2"/>
     </section>
 </glyph>

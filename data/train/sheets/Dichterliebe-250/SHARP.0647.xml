@@ -4,59 +4,59 @@
     <with-ledger>false</with-ledger>
     <pitch-position>-3.1232876712328768</pitch-position>
     <section orientation="VERTICAL" first-pos="279" id="456">
-        <run start="2782" level="200" length="2"/>
-        <run start="2782" level="200" length="2"/>
+        <run start="2782" length="2"/>
+        <run start="2782" length="2"/>
     </section>
     <section orientation="VERTICAL" first-pos="281" id="470">
-        <run start="2779" level="129" length="7"/>
-        <run start="2779" level="114" length="7"/>
-        <run start="2778" level="123" length="8"/>
+        <run start="2779" length="7"/>
+        <run start="2779" length="7"/>
+        <run start="2778" length="8"/>
     </section>
     <section orientation="VERTICAL" first-pos="281" id="471">
-        <run start="2797" level="82" length="8"/>
-        <run start="2797" level="98" length="8"/>
-        <run start="2797" level="103" length="8"/>
+        <run start="2797" length="8"/>
+        <run start="2797" length="8"/>
+        <run start="2797" length="8"/>
     </section>
     <section orientation="VERTICAL" first-pos="284" id="479">
-        <run start="2766" level="118" length="48"/>
-        <run start="2766" level="38" length="48"/>
-        <run start="2766" level="167" length="48"/>
+        <run start="2766" length="48"/>
+        <run start="2766" length="48"/>
+        <run start="2766" length="48"/>
     </section>
     <section orientation="VERTICAL" first-pos="287" id="495">
-        <run start="2777" level="113" length="8"/>
+        <run start="2777" length="8"/>
     </section>
     <section orientation="VERTICAL" first-pos="287" id="496">
-        <run start="2797" level="114" length="6"/>
-        <run start="2797" level="130" length="6"/>
-        <run start="2794" level="156" length="9"/>
-        <run start="2794" level="143" length="8"/>
-        <run start="2794" level="148" length="8"/>
-        <run start="2793" level="155" length="9"/>
+        <run start="2797" length="6"/>
+        <run start="2797" length="6"/>
+        <run start="2794" length="9"/>
+        <run start="2794" length="8"/>
+        <run start="2794" length="8"/>
+        <run start="2793" length="9"/>
     </section>
     <section orientation="VERTICAL" first-pos="288" id="497">
-        <run start="2777" level="100" length="6"/>
-        <run start="2776" level="111" length="7"/>
-        <run start="2776" level="101" length="7"/>
-        <run start="2776" level="86" length="7"/>
-        <run start="2775" level="98" length="8"/>
+        <run start="2777" length="6"/>
+        <run start="2776" length="7"/>
+        <run start="2776" length="7"/>
+        <run start="2776" length="7"/>
+        <run start="2775" length="8"/>
     </section>
     <section orientation="VERTICAL" first-pos="288" id="498">
-        <run start="2784" level="153" length="1"/>
-        <run start="2784" level="192" length="1"/>
+        <run start="2784" length="1"/>
+        <run start="2784" length="1"/>
     </section>
     <section orientation="VERTICAL" first-pos="293" id="507">
-        <run start="2764" level="181" length="48"/>
-        <run start="2764" level="40" length="49"/>
-        <run start="2764" level="94" length="49"/>
+        <run start="2764" length="48"/>
+        <run start="2764" length="49"/>
+        <run start="2764" length="49"/>
     </section>
     <section orientation="VERTICAL" first-pos="296" id="519">
-        <run start="2774" level="82" length="9"/>
-        <run start="2774" level="67" length="9"/>
-        <run start="2773" level="129" length="10"/>
+        <run start="2774" length="9"/>
+        <run start="2774" length="9"/>
+        <run start="2773" length="10"/>
     </section>
     <section orientation="VERTICAL" first-pos="296" id="520">
-        <run start="2792" level="110" length="6"/>
-        <run start="2792" level="100" length="6"/>
-        <run start="2791" level="147" length="7"/>
+        <run start="2792" length="6"/>
+        <run start="2792" length="6"/>
+        <run start="2791" length="7"/>
     </section>
 </glyph>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="558" interline="22" shape="TIME_ONE">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-11.588873664551954</pitch-position>
+    <section first-pos="1033" orientation="VERTICAL" id="481">
+        <run length="1" start="70"/>
+    </section>
+    <section first-pos="1034" orientation="VERTICAL" id="482">
+        <run length="2" start="37"/>
+    </section>
+    <section first-pos="1034" orientation="VERTICAL" id="483">
+        <run length="2" start="69"/>
+        <run length="2" start="69"/>
+    </section>
+    <section first-pos="1035" orientation="VERTICAL" id="484">
+        <run length="3" start="36"/>
+    </section>
+    <section first-pos="1036" orientation="VERTICAL" id="485">
+        <run length="5" start="34"/>
+    </section>
+    <section first-pos="1036" orientation="VERTICAL" id="486">
+        <run length="2" start="64"/>
+    </section>
+    <section first-pos="1036" orientation="VERTICAL" id="487">
+        <run length="4" start="67"/>
+    </section>
+    <section first-pos="1037" orientation="VERTICAL" id="488">
+        <run length="38" start="33"/>
+        <run length="40" start="31"/>
+        <run length="40" start="31"/>
+        <run length="40" start="31"/>
+        <run length="40" start="31"/>
+        <run length="40" start="31"/>
+        <run length="41" start="31"/>
+        <run length="40" start="32"/>
+    </section>
+    <section first-pos="1045" orientation="VERTICAL" id="489">
+        <run length="2" start="69"/>
+    </section>
+    <section first-pos="1046" orientation="VERTICAL" id="490">
+        <run length="1" start="70"/>
+        <run length="1" start="70"/>
+    </section>
+</glyph>

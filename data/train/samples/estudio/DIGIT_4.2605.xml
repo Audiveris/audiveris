@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="2605" interline="22" shape="DIGIT_4">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>16.811083265802775</pitch-position>
+    <section first-pos="774" orientation="VERTICAL" id="2202">
+        <run length="1" start="552"/>
+    </section>
+    <section first-pos="775" orientation="VERTICAL" id="2203">
+        <run length="3" start="551"/>
+    </section>
+    <section first-pos="776" orientation="VERTICAL" id="2204">
+        <run length="5" start="549"/>
+        <run length="6" start="548"/>
+    </section>
+    <section first-pos="778" orientation="VERTICAL" id="2208">
+        <run length="4" start="547"/>
+        <run length="4" start="545"/>
+        <run length="4" start="544"/>
+        <run length="4" start="543"/>
+        <run length="4" start="541"/>
+        <run length="5" start="540"/>
+    </section>
+    <section first-pos="778" orientation="VERTICAL" id="2209">
+        <run length="2" start="552"/>
+        <run length="2" start="552"/>
+        <run length="2" start="552"/>
+        <run length="2" start="552"/>
+        <run length="2" start="552"/>
+    </section>
+    <section first-pos="781" orientation="VERTICAL" id="2211">
+        <run length="1" start="558"/>
+    </section>
+    <section first-pos="782" orientation="VERTICAL" id="2215">
+        <run length="3" start="557"/>
+        <run length="3" start="557"/>
+    </section>
+    <section first-pos="783" orientation="VERTICAL" id="2219">
+        <run length="3" start="552"/>
+    </section>
+    <section first-pos="784" orientation="VERTICAL" id="2221">
+        <run length="22" start="538"/>
+        <run length="23" start="537"/>
+        <run length="24" start="536"/>
+        <run length="24" start="536"/>
+    </section>
+    <section first-pos="788" orientation="VERTICAL" id="2222">
+        <run length="12" start="537"/>
+    </section>
+    <section first-pos="788" orientation="VERTICAL" id="2223">
+        <run length="8" start="552"/>
+    </section>
+    <section first-pos="789" orientation="VERTICAL" id="2225">
+        <run length="2" start="552"/>
+        <run length="2" start="552"/>
+        <run length="2" start="552"/>
+    </section>
+    <section first-pos="789" orientation="VERTICAL" id="2226">
+        <run length="2" start="558"/>
+        <run length="2" start="558"/>
+    </section>
+</glyph>

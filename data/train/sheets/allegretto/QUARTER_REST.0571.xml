@@ -4,89 +4,89 @@
     <with-ledger>false</with-ledger>
     <pitch-position>-0.3218390804597701</pitch-position>
         <section orientation="VERTICAL" id="4044" first-pos="2318">
-            <run start="1890" length="6" level="123"/>
+            <run start="1890" length="6"/>
         </section>
         <section orientation="VERTICAL" id="4047" first-pos="2319">
-            <run start="1887" length="12" level="70"/>
-            <run start="1886" length="16" level="45"/>
+            <run start="1887" length="12"/>
+            <run start="1886" length="16"/>
         </section>
         <section orientation="VERTICAL" id="4055" first-pos="2321">
-            <run start="1882" length="22" level="56"/>
-            <run start="1882" length="23" level="46"/>
-            <run start="1882" length="23" level="44"/>
-            <run start="1882" length="23" level="79"/>
+            <run start="1882" length="22"/>
+            <run start="1882" length="23"/>
+            <run start="1882" length="23"/>
+            <run start="1882" length="23"/>
         </section>
         <section orientation="VERTICAL" id="4074" first-pos="2325">
-            <run start="1882" length="13" level="67"/>
-            <run start="1882" length="11" level="78"/>
-            <run start="1882" length="9" level="60"/>
-            <run start="1882" length="9" level="78"/>
-            <run start="1882" length="8" level="87"/>
+            <run start="1882" length="13"/>
+            <run start="1882" length="11"/>
+            <run start="1882" length="9"/>
+            <run start="1882" length="9"/>
+            <run start="1882" length="8"/>
         </section>
         <section orientation="VERTICAL" id="4088" first-pos="2330">
-            <run start="1860" length="29" level="47"/>
+            <run start="1860" length="29"/>
         </section>
         <section orientation="VERTICAL" id="4081" first-pos="2327">
-            <run start="1860" length="18" level="51"/>
-            <run start="1860" length="19" level="35"/>
-            <run start="1860" length="21" level="37"/>
+            <run start="1860" length="18"/>
+            <run start="1860" length="19"/>
+            <run start="1860" length="21"/>
         </section>
         <section orientation="VERTICAL" id="4078" first-pos="2326">
-            <run start="1861" length="1" level="200"/>
+            <run start="1861" length="1"/>
         </section>
         <section orientation="VERTICAL" id="4061" first-pos="2324">
-            <run start="1867" length="7" level="129"/>
-            <run start="1864" length="11" level="64"/>
-            <run start="1863" length="13" level="37"/>
+            <run start="1867" length="7"/>
+            <run start="1864" length="11"/>
+            <run start="1863" length="13"/>
         </section>
         <section orientation="VERTICAL" id="4092" first-pos="2331">
-            <run start="1851" length="38" level="77"/>
+            <run start="1851" length="38"/>
         </section>
         <section orientation="VERTICAL" id="4087" first-pos="2330">
-            <run start="1849" length="10" level="124"/>
+            <run start="1849" length="10"/>
         </section>
         <section orientation="VERTICAL" id="4077" first-pos="2326">
-            <run start="1847" length="2" level="187"/>
-            <run start="1847" length="3" level="125"/>
-            <run start="1847" length="5" level="126"/>
-            <run start="1848" length="5" level="102"/>
+            <run start="1847" length="2"/>
+            <run start="1847" length="3"/>
+            <run start="1847" length="5"/>
+            <run start="1848" length="5"/>
         </section>
         <section orientation="VERTICAL" id="4094" first-pos="2332">
-            <run start="1852" length="21" level="72"/>
-            <run start="1853" length="18" level="83"/>
-            <run start="1854" length="15" level="90"/>
-            <run start="1855" length="13" level="115"/>
-            <run start="1857" length="10" level="142"/>
-            <run start="1859" length="6" level="182"/>
-            <run start="1860" length="2" level="200"/>
+            <run start="1852" length="21"/>
+            <run start="1853" length="18"/>
+            <run start="1854" length="15"/>
+            <run start="1855" length="13"/>
+            <run start="1857" length="10"/>
+            <run start="1859" length="6"/>
+            <run start="1860" length="2"/>
         </section>
         <section orientation="VERTICAL" id="4095" first-pos="2332">
-            <run start="1878" length="11" level="110"/>
+            <run start="1878" length="11"/>
         </section>
         <section orientation="VERTICAL" id="4097" first-pos="2333">
-            <run start="1879" length="1" level="201"/>
+            <run start="1879" length="1"/>
         </section>
         <section orientation="VERTICAL" id="4098" first-pos="2333">
-            <run start="1881" length="8" level="112"/>
-            <run start="1882" length="6" level="90"/>
-            <run start="1882" length="7" level="91"/>
-            <run start="1882" length="7" level="87"/>
-            <run start="1882" length="7" level="116"/>
-            <run start="1885" length="4" level="103"/>
-            <run start="1886" length="3" level="190"/>
+            <run start="1881" length="8"/>
+            <run start="1882" length="6"/>
+            <run start="1882" length="7"/>
+            <run start="1882" length="7"/>
+            <run start="1882" length="7"/>
+            <run start="1885" length="4"/>
+            <run start="1886" length="3"/>
         </section>
         <section orientation="VERTICAL" id="4075" first-pos="2325">
-            <run start="1899" length="6" level="147"/>
-            <run start="1900" length="5" level="176"/>
-            <run start="1901" length="4" level="180"/>
+            <run start="1899" length="6"/>
+            <run start="1900" length="5"/>
+            <run start="1901" length="4"/>
         </section>
         <section orientation="VERTICAL" id="4082" first-pos="2328">
-            <run start="1901" length="1" level="206"/>
-            <run start="1901" length="1" level="169"/>
-            <run start="1901" length="1" level="207"/>
+            <run start="1901" length="1"/>
+            <run start="1901" length="1"/>
+            <run start="1901" length="1"/>
         </section>
         <section orientation="VERTICAL" id="4083" first-pos="2328">
-            <run start="1903" length="2" level="200"/>
-            <run start="1904" length="1" level="200"/>
+            <run start="1903" length="2"/>
+            <run start="1904" length="1"/>
         </section>
 </glyph>

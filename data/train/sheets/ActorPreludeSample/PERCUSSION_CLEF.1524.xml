@@ -4,21 +4,21 @@
     <with-ledger>false</with-ledger>
     <pitch-position>-0.08163265306122448</pitch-position>
     <section orientation="VERTICAL" first-pos="398" id="1427">
-        <run start="2688" level="119" length="25"/>
-        <run start="2688" level="46" length="25"/>
-        <run start="2688" level="46" length="25"/>
-        <run start="2688" level="46" length="25"/>
-        <run start="2688" level="46" length="25"/>
-        <run start="2688" level="46" length="25"/>
-        <run start="2688" level="95" length="25"/>
+        <run start="2688" length="25"/>
+        <run start="2688" length="25"/>
+        <run start="2688" length="25"/>
+        <run start="2688" length="25"/>
+        <run start="2688" length="25"/>
+        <run start="2688" length="25"/>
+        <run start="2688" length="25"/>
     </section>
     <section orientation="VERTICAL" first-pos="407" id="1577">
-        <run start="2688" level="191" length="25"/>
-        <run start="2688" level="46" length="25"/>
-        <run start="2688" level="46" length="25"/>
-        <run start="2688" level="46" length="25"/>
-        <run start="2688" level="46" length="25"/>
-        <run start="2688" level="46" length="25"/>
-        <run start="2688" level="46" length="25"/>
+        <run start="2688" length="25"/>
+        <run start="2688" length="25"/>
+        <run start="2688" length="25"/>
+        <run start="2688" length="25"/>
+        <run start="2688" length="25"/>
+        <run start="2688" length="25"/>
+        <run start="2688" length="25"/>
     </section>
 </glyph>

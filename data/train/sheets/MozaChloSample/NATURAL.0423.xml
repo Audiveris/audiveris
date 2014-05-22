@@ -4,27 +4,27 @@
     <with-ledger>false</with-ledger>
     <pitch-position>-6.666666666666667</pitch-position>
     <section orientation="VERTICAL" first-pos="1075" id="1949">
-        <run start="513" level="100" length="32"/>
-        <run start="513" level="49" length="32"/>
+        <run start="513" length="32"/>
+        <run start="513" length="32"/>
     </section>
     <section orientation="VERTICAL" first-pos="1077" id="1953">
-        <run start="525" level="39" length="6"/>
-        <run start="525" level="3" length="5"/>
-        <run start="525" level="3" length="5"/>
-        <run start="524" level="33" length="6"/>
-        <run start="524" level="32" length="6"/>
-        <run start="524" level="31" length="6"/>
+        <run start="525" length="6"/>
+        <run start="525" length="5"/>
+        <run start="525" length="5"/>
+        <run start="524" length="6"/>
+        <run start="524" length="6"/>
+        <run start="524" length="6"/>
     </section>
     <section orientation="VERTICAL" first-pos="1077" id="1954">
-        <run start="539" level="1" length="5"/>
-        <run start="538" level="36" length="6"/>
-        <run start="538" level="33" length="6"/>
-        <run start="538" level="33" length="6"/>
-        <run start="538" level="0" length="5"/>
-        <run start="537" level="29" length="6"/>
+        <run start="539" length="5"/>
+        <run start="538" length="6"/>
+        <run start="538" length="6"/>
+        <run start="538" length="6"/>
+        <run start="538" length="5"/>
+        <run start="537" length="6"/>
     </section>
     <section orientation="VERTICAL" first-pos="1083" id="1978">
-        <run start="523" level="11" length="32"/>
-        <run start="524" level="191" length="30"/>
+        <run start="523" length="32"/>
+        <run start="524" length="30"/>
     </section>
 </glyph>

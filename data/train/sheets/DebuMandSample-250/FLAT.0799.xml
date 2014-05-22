@@ -4,35 +4,35 @@
     <with-ledger>false</with-ledger>
     <pitch-position>-8.421052631578947</pitch-position>
     <section orientation="VERTICAL" first-pos="1037" id="1876">
-        <run start="2885" level="3" length="44"/>
-        <run start="2885" level="2" length="43"/>
+        <run start="2885" length="44"/>
+        <run start="2885" length="43"/>
     </section>
     <section orientation="VERTICAL" first-pos="1039" id="1887">
-        <run start="2907" level="111" length="7"/>
-        <run start="2907" level="71" length="4"/>
-        <run start="2906" level="90" length="4"/>
-        <run start="2906" level="0" length="3"/>
-        <run start="2905" level="90" length="5"/>
-        <run start="2905" level="64" length="5"/>
-        <run start="2905" level="53" length="6"/>
-        <run start="2905" level="59" length="10"/>
+        <run start="2907" length="7"/>
+        <run start="2907" length="4"/>
+        <run start="2906" length="4"/>
+        <run start="2906" length="3"/>
+        <run start="2905" length="5"/>
+        <run start="2905" length="5"/>
+        <run start="2905" length="6"/>
+        <run start="2905" length="10"/>
     </section>
     <section orientation="VERTICAL" first-pos="1039" id="1888">
-        <run start="2924" level="110" length="4"/>
-        <run start="2923" level="122" length="4"/>
-        <run start="2923" level="65" length="3"/>
-        <run start="2922" level="55" length="3"/>
-        <run start="2921" level="77" length="4"/>
-        <run start="2919" level="98" length="5"/>
-        <run start="2918" level="58" length="5"/>
-        <run start="2917" level="57" length="5"/>
+        <run start="2924" length="4"/>
+        <run start="2923" length="4"/>
+        <run start="2923" length="3"/>
+        <run start="2922" length="3"/>
+        <run start="2921" length="4"/>
+        <run start="2919" length="5"/>
+        <run start="2918" length="5"/>
+        <run start="2917" length="5"/>
     </section>
     <section orientation="VERTICAL" first-pos="1047" id="1911">
-        <run start="2905" level="59" length="17"/>
-        <run start="2905" level="62" length="16"/>
-        <run start="2906" level="64" length="14"/>
-        <run start="2907" level="72" length="12"/>
-        <run start="2908" level="74" length="10"/>
-        <run start="2909" level="172" length="8"/>
+        <run start="2905" length="17"/>
+        <run start="2905" length="16"/>
+        <run start="2906" length="14"/>
+        <run start="2907" length="12"/>
+        <run start="2908" length="10"/>
+        <run start="2909" length="8"/>
     </section>
 </glyph>

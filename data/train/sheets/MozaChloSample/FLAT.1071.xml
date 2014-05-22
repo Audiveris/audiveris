@@ -4,37 +4,37 @@
     <with-ledger>false</with-ledger>
     <pitch-position>-3.5555555555555554</pitch-position>
     <section orientation="VERTICAL" first-pos="254" id="506">
-        <run start="1885" level="60" length="42"/>
-        <run start="1885" level="33" length="42"/>
+        <run start="1885" length="42"/>
+        <run start="1885" length="42"/>
     </section>
     <section orientation="VERTICAL" first-pos="256" id="520">
-        <run start="1908" level="130" length="6"/>
-        <run start="1908" level="188" length="3"/>
+        <run start="1908" length="6"/>
+        <run start="1908" length="3"/>
     </section>
     <section orientation="VERTICAL" first-pos="256" id="521">
-        <run start="1924" level="200" length="2"/>
-        <run start="1923" level="177" length="3"/>
-        <run start="1922" level="103" length="3"/>
-        <run start="1921" level="83" length="4"/>
-        <run start="1920" level="65" length="4"/>
-        <run start="1919" level="41" length="4"/>
-        <run start="1917" level="35" length="5"/>
+        <run start="1924" length="2"/>
+        <run start="1923" length="3"/>
+        <run start="1922" length="3"/>
+        <run start="1921" length="4"/>
+        <run start="1920" length="4"/>
+        <run start="1919" length="4"/>
+        <run start="1917" length="5"/>
     </section>
     <section orientation="VERTICAL" first-pos="262" id="536">
-        <run start="1910" level="88" length="2"/>
+        <run start="1910" length="2"/>
     </section>
     <section orientation="VERTICAL" first-pos="263" id="547">
-        <run start="1908" level="46" length="14"/>
-        <run start="1908" level="39" length="13"/>
-        <run start="1908" level="39" length="12"/>
-        <run start="1908" level="41" length="11"/>
-        <run start="1908" level="47" length="10"/>
-        <run start="1908" level="78" length="9"/>
+        <run start="1908" length="14"/>
+        <run start="1908" length="13"/>
+        <run start="1908" length="12"/>
+        <run start="1908" length="11"/>
+        <run start="1908" length="10"/>
+        <run start="1908" length="9"/>
     </section>
     <section orientation="VERTICAL" first-pos="269" id="563">
-        <run start="1908" level="200" length="2"/>
+        <run start="1908" length="2"/>
     </section>
     <section orientation="VERTICAL" first-pos="269" id="564">
-        <run start="1911" level="195" length="2"/>
+        <run start="1911" length="2"/>
     </section>
 </glyph>

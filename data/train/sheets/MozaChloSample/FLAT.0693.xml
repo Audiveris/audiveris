@@ -4,37 +4,37 @@
     <with-ledger>false</with-ledger>
     <pitch-position>-0.6197183098591549</pitch-position>
     <section orientation="VERTICAL" first-pos="236" id="444">
-        <run start="1013" level="48" length="42"/>
-        <run start="1013" level="23" length="42"/>
+        <run start="1013" length="42"/>
+        <run start="1013" length="42"/>
     </section>
     <section orientation="VERTICAL" first-pos="238" id="455">
-        <run start="1035" level="78" length="6"/>
-        <run start="1034" level="80" length="4"/>
-        <run start="1034" level="28" length="3"/>
-        <run start="1033" level="73" length="4"/>
-        <run start="1033" level="38" length="4"/>
-        <run start="1033" level="45" length="5"/>
-        <run start="1033" level="25" length="6"/>
-        <run start="1033" level="7" length="10"/>
+        <run start="1035" length="6"/>
+        <run start="1034" length="4"/>
+        <run start="1034" length="3"/>
+        <run start="1033" length="4"/>
+        <run start="1033" length="4"/>
+        <run start="1033" length="5"/>
+        <run start="1033" length="6"/>
+        <run start="1033" length="10"/>
     </section>
     <section orientation="VERTICAL" first-pos="238" id="456">
-        <run start="1051" level="73" length="3"/>
-        <run start="1050" level="68" length="3"/>
-        <run start="1049" level="52" length="3"/>
-        <run start="1048" level="81" length="4"/>
-        <run start="1047" level="66" length="4"/>
-        <run start="1046" level="41" length="4"/>
-        <run start="1045" level="45" length="5"/>
-        <run start="1044" level="68" length="5"/>
+        <run start="1051" length="3"/>
+        <run start="1050" length="3"/>
+        <run start="1049" length="3"/>
+        <run start="1048" length="4"/>
+        <run start="1047" length="4"/>
+        <run start="1046" length="4"/>
+        <run start="1045" length="5"/>
+        <run start="1044" length="5"/>
     </section>
     <section orientation="VERTICAL" first-pos="246" id="477">
-        <run start="1033" level="32" length="15"/>
-        <run start="1033" level="38" length="14"/>
-        <run start="1034" level="37" length="12"/>
-        <run start="1035" level="56" length="11"/>
-        <run start="1036" level="68" length="9"/>
+        <run start="1033" length="15"/>
+        <run start="1033" length="14"/>
+        <run start="1034" length="12"/>
+        <run start="1035" length="11"/>
+        <run start="1036" length="9"/>
     </section>
     <section orientation="VERTICAL" first-pos="251" id="492">
-        <run start="1039" level="191" length="1"/>
+        <run start="1039" length="1"/>
     </section>
 </glyph>

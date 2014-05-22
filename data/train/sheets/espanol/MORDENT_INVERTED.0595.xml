@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph id="595" interline="22" shape="MORDENT_INVERTED">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>11.534883720930232</pitch-position>
+        <section orientation="VERTICAL" id="1778" first-pos="469">
+            <run start="1068" length="3"/>
+            <run start="1066" length="5"/>
+            <run start="1064" length="7"/>
+            <run start="1062" length="9"/>
+            <run start="1061" length="8"/>
+            <run start="1059" length="8"/>
+            <run start="1057" length="8"/>
+            <run start="1056" length="8"/>
+            <run start="1054" length="8"/>
+            <run start="1053" length="7"/>
+            <run start="1051" length="8"/>
+            <run start="1049" length="11"/>
+            <run start="1048" length="14"/>
+            <run start="1048" length="16"/>
+            <run start="1048" length="17"/>
+            <run start="1050" length="17"/>
+            <run start="1052" length="17"/>
+            <run start="1054" length="16"/>
+            <run start="1056" length="15"/>
+            <run start="1057" length="14"/>
+            <run start="1059" length="13"/>
+            <run start="1061" length="11"/>
+            <run start="1063" length="9"/>
+            <run start="1064" length="8"/>
+            <run start="1062" length="10"/>
+            <run start="1060" length="11"/>
+        </section>
+        <section orientation="VERTICAL" id="1886" first-pos="495">
+            <run start="1041" length="27"/>
+        </section>
+        <section orientation="VERTICAL" id="1889" first-pos="496">
+            <run start="1040" length="37"/>
+            <run start="1040" length="38"/>
+            <run start="1040" length="39"/>
+            <run start="1041" length="38"/>
+        </section>
+        <section orientation="VERTICAL" id="1897" first-pos="500">
+            <run start="1050" length="9"/>
+            <run start="1049" length="12"/>
+            <run start="1048" length="15"/>
+            <run start="1048" length="16"/>
+            <run start="1049" length="16"/>
+            <run start="1051" length="16"/>
+            <run start="1052" length="17"/>
+            <run start="1054" length="16"/>
+            <run start="1056" length="15"/>
+            <run start="1058" length="14"/>
+            <run start="1060" length="12"/>
+            <run start="1062" length="10"/>
+            <run start="1063" length="9"/>
+            <run start="1065" length="7"/>
+            <run start="1063" length="9"/>
+            <run start="1062" length="9"/>
+            <run start="1059" length="11"/>
+            <run start="1058" length="10"/>
+            <run start="1056" length="10"/>
+            <run start="1056" length="7"/>
+            <run start="1056" length="5"/>
+            <run start="1057" length="2"/>
+        </section>
+        <section orientation="VERTICAL" id="1898" first-pos="500">
+            <run start="1074" length="4"/>
+        </section>
+</glyph>

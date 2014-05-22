@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="2642" interline="22" shape="CLUTTER">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-18.23642293783128</pitch-position>
+    <section first-pos="912" orientation="VERTICAL" id="2442">
+        <run length="14" start="165"/>
+    </section>
+    <section first-pos="913" orientation="VERTICAL" id="2444">
+        <run length="19" start="162"/>
+        <run length="23" start="160"/>
+        <run length="26" start="159"/>
+    </section>
+    <section first-pos="916" orientation="VERTICAL" id="2454">
+        <run length="29" start="157"/>
+    </section>
+    <section first-pos="917" orientation="VERTICAL" id="2456">
+        <run length="8" start="156"/>
+    </section>
+    <section first-pos="917" orientation="VERTICAL" id="2457">
+        <run length="7" start="181"/>
+    </section>
+    <section first-pos="918" orientation="VERTICAL" id="2460">
+        <run length="3" start="155"/>
+    </section>
+    <section first-pos="918" orientation="VERTICAL" id="2461">
+        <run length="4" start="185"/>
+    </section>
+    <section first-pos="919" orientation="VERTICAL" id="2464">
+        <run length="2" start="154"/>
+    </section>
+    <section first-pos="919" orientation="VERTICAL" id="2465">
+        <run length="2" start="188"/>
+        <run length="2" start="189"/>
+    </section>
+    <section first-pos="920" orientation="VERTICAL" id="2467">
+        <run length="1" start="154"/>
+    </section>
+    <section first-pos="921" orientation="VERTICAL" id="2470">
+        <run length="1" start="190"/>
+    </section>
+</glyph>
