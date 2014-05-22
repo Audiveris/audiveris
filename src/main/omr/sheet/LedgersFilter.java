@@ -23,23 +23,21 @@ import omr.lag.BasicLag;
 import omr.lag.JunctionShiftPolicy;
 import omr.lag.Lag;
 import omr.lag.Lags;
+import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
 import omr.run.Orientation;
-
 import static omr.run.Orientation.HORIZONTAL;
-
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
-import omr.util.VipUtil;
+import omr.util.IntUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.util.List;
-import omr.lag.Section;
 
 /**
  * Class {@code LedgersFilter} filters the full sheet image for runs suitable for
@@ -77,7 +75,7 @@ public class LedgersFilter
         this.sheet = sheet;
 
         // VIPs
-        vipSections = VipUtil.decodeIds(constants.ledgerVipSections.getValue());
+        vipSections = IntUtil.parseInts(constants.ledgerVipSections.getValue());
 
         if (!vipSections.isEmpty()) {
             logger.info("Ledger VIP sections: {}", vipSections);

@@ -14,7 +14,7 @@ package omr.sig;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.util.VipUtil;
+import omr.util.IntUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class SigManager
      */
     public SigManager ()
     {
-        vipInters = VipUtil.decodeIds(constants.vipInters.getValue());
+        vipInters = IntUtil.parseInts(constants.vipInters.getValue());
 
         if (!vipInters.isEmpty()) {
             logger.info("VIP inters: {}", vipInters);

@@ -39,7 +39,7 @@ import omr.selection.UserEvent;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
-import omr.util.VipUtil;
+import omr.util.IntUtil;
 
 import org.bushe.swing.event.EventSubscriber;
 
@@ -809,7 +809,7 @@ public class BasicNest
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters ()
         {
-            vipGlyphs = VipUtil.decodeIds(constants.vipGlyphs.getValue());
+            vipGlyphs = IntUtil.parseInts(constants.vipGlyphs.getValue());
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);

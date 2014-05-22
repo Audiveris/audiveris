@@ -45,10 +45,10 @@ import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
+import omr.util.IntUtil;
 import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.StopWatch;
-import omr.util.VipUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1070,7 +1070,7 @@ public class LinesRetriever
                     scale.toPixelsDouble(constants.maxStickerExtension));
 
             // VIPs
-            vipSections = VipUtil.decodeIds(constants.horizontalVipSections.getValue());
+            vipSections = IntUtil.parseInts(constants.horizontalVipSections.getValue());
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);

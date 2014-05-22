@@ -57,11 +57,11 @@ import omr.ui.Colors;
 import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
 
+import omr.util.IntUtil;
 import omr.util.Navigable;
 import omr.util.StopWatch;
 import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
-import omr.util.VipUtil;
 import omr.util.WrappedInteger;
 
 import ij.process.ByteProcessor;
@@ -1327,7 +1327,7 @@ public class BarsRetriever
             maxConnectionWhiteRatio = constants.maxConnectionWhiteRatio.getValue();
 
             // VIPs
-            vipSections = VipUtil.decodeIds(constants.verticalVipSections.getValue());
+            vipSections = IntUtil.parseInts(constants.verticalVipSections.getValue());
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);

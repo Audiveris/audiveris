@@ -26,6 +26,7 @@ import omr.sig.SegmentInter;
 import omr.ui.BoardsPane;
 import omr.ui.util.ItemRenderer;
 
+import omr.util.IntUtil;
 import omr.util.Navigable;
 import omr.util.StopWatch;
 
@@ -53,13 +54,11 @@ public class Curves
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Point[] breakPoints = new Point[]{ ///new Point(615, 439) // BINGO
-    //
-    };
-
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Curves.class);
+
+    private static final List<Point> breakPoints = getBreakPoints();
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
@@ -171,7 +170,7 @@ public class Curves
         for (Point pt : breakPoints) {
             if (pt.equals(arc.getEnd(false)) || pt.equals(arc.getEnd(true))) {
                 view.selectPoint(arc.getEnd(true));
-                logger.info("BINGO break on {}", arc);
+                logger.info("Curve break on {}", arc);
 
                 break;
             }
@@ -229,6 +228,40 @@ public class Curves
         view.selectPoint(point);
     }
 
+    //----------------//
+    // getBreakPoints //
+    //----------------//
+    /**
+     * Debugging method to define image points that arc processing should break upon.
+     *
+     * @return the collection of points, perhaps empty
+     */
+    private static List<Point> getBreakPoints ()
+    {
+        List<Point> points = new ArrayList<Point>();
+
+        try {
+            String str = constants.breakPointCoordinates.getValue();
+            List<Integer> ints = IntUtil.parseInts(str);
+            int count = ints.size();
+
+            if ((count % 2) != 0) {
+                logger.warn("Odd number of coordinates for break points: {}", str);
+            }
+
+            for (int i = 0; i < (count / 2); i++) {
+                points.add(new Point(ints.get(2 * i), ints.get((2 * i) + 1)));
+            }
+
+            if (!points.isEmpty()) {
+                logger.info("Curve break points: {}", points);
+            }
+        } catch (Exception ignored) {
+        }
+
+        return points;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -241,6 +274,10 @@ public class Curves
         Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
+
+        Constant.String breakPointCoordinates = new Constant.String(
+                "",
+                "(Debug) Coordinates of curve break points if any");
     }
 
     //--------//
