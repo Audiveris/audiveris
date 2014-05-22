@@ -41,7 +41,7 @@ public class LedgersStep
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 DATA_TAB,
-                "Retrieve ledgers & horizontal endings");
+                "Retrieve ledgers");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ public class LedgersStep
     public void doSystem (SystemInfo system)
             throws StepException
     {
-        system.ledgersBuilder.buildLedgers(); // -> Ledgers
+        system.ledgersBuilder.buildLedgers();
     }
 
     //----------//
@@ -70,14 +70,14 @@ public class LedgersStep
     //----------//
     /**
      * {@inheritDoc}
-     * Retrieve horizontal sticks out of full filtered image.
+     * <p>
+     * Retrieve horizontal sticks for ledger candidates.
      */
     @Override
     protected void doProlog (Collection<SystemInfo> systems,
                              Sheet sheet)
             throws StepException
     {
-        // Retrieve long horizontal runs outside staves for ledgers/endings
         new LedgersFilter(sheet).process();
     }
 }

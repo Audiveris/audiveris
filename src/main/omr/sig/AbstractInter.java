@@ -227,7 +227,7 @@ public abstract class AbstractInter
                         getClass().getSimpleName(),
                         Integer.toHexString(this.hashCode()),
                         (sig != null) ? (" S#" + sig.getSystem().getId()) : ""));
-        sb.append(String.format("   %s%n", this));
+        sb.append(String.format("   %s grade:%.6f%n", this, this.getGrade()));
 
         if (!getDetails().isEmpty()) {
             sb.append(String.format("   %s", getDetails()));
@@ -578,10 +578,10 @@ public abstract class AbstractInter
             sb.append("#").append(getId());
         }
 
-        sb.append(String.format("(%.2f", grade));
+        sb.append(String.format("(%.3f", grade));
 
         if (contextualGrade != null) {
-            sb.append(String.format("/%.2f", contextualGrade));
+            sb.append(String.format("/%.3f", contextualGrade));
         }
 
         sb.append(")");

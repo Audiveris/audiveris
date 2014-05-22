@@ -112,7 +112,7 @@ public class SymbolsFilter
      */
     public void process ()
     {
-        logger.info("SymbolsFilter running...");
+        logger.debug("SymbolsFilter running...");
 
         Picture picture = sheet.getPicture();
         ByteProcessor buf = picture.getSource(Picture.SourceKey.STAFF_LINE_FREE);
@@ -193,7 +193,7 @@ public class SymbolsFilter
                 GlyphLayer.SYMBOL,
                 true,
                 Glyph.Linking.NO_LINK);
-        logger.info("Symbol glyphs: {}", glyphs.size());
+        logger.debug("Symbol glyphs: {}", glyphs.size());
 
         // Dispatch each glyph to its relevant system(s)
         dispatchPageSymbols(glyphs);

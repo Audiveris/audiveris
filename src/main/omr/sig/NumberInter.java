@@ -72,13 +72,13 @@ public class NumberInter
     /**
      * (Try to) create a Number inter.
      *
-     * @param shape precise shape
      * @param glyph underlying glyph
+     * @param shape precise shape
      * @param grade evaluation value
      * @return the created instance or null if failed
      */
-    public static Inter create (Shape shape,
-                                Glyph glyph,
+    public static Inter create (Glyph glyph,
+                                Shape shape,
                                 double grade)
     {
         return new NumberInter(glyph, shape, grade, valueOf(shape));

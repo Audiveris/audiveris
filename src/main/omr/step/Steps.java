@@ -60,9 +60,9 @@ public class Steps
 
     public static final String NOTES = "NOTES";
 
-    public static final String STEM_LINKS = "STEM_LINKS";
+    public static final String STEMS = "STEMS";
 
-    public static final String RESOLUTION = "RESOLUTION";
+    public static final String REDUCTION = "REDUCTION";
 
     public static final String CUE_BEAMS = "CUE_BEAMS";
 
@@ -71,6 +71,10 @@ public class Steps
     public static final String TEXTS = "TEXTS";
 
     public static final String SYMBOLS = "SYMBOLS";
+
+    public static final String SYMBOL_REDUCTION = "SYMBOL_REDUCTION";
+
+    //-- TODO: Current end of mandatory steps --
 
     public static final String MEASURES = "MEASURES";
 
@@ -107,12 +111,12 @@ public class Steps
         addStep(new BeamsStep());
         addStep(new LedgersStep());
         addStep(new NotesStep());
-        addStep(new StemLinksStep());
-        addStep(new ResolutionStep());
+        addStep(new StemsStep());
+        addStep(new ReductionStep());
         addStep(new CueBeamsStep());
         addStep(new CurvesStep());
         addStep(new SymbolsStep());
-        addStep(new ResolutionStep());
+        addStep(new SymbolReductionStep());
 
         //        addStep(new TextsStep());
         ///addNoStep(SYMBOLS);

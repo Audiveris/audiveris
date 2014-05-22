@@ -15,6 +15,7 @@ import omr.Main;
 
 import omr.glyph.Evaluation;
 import omr.glyph.Shape;
+import static omr.glyph.ShapeSet.*;
 import static omr.glyph.ShapeSet.Alterations;
 import static omr.glyph.ShapeSet.Clefs;
 import static omr.glyph.ShapeSet.Digits;
@@ -39,6 +40,7 @@ import omr.sig.AlterationlInter;
 import omr.sig.BarlineInter;
 import omr.sig.BraceInter;
 import omr.sig.ClefInter;
+import omr.sig.DynamicsInter;
 import omr.sig.FingeringInter;
 import omr.sig.FlagInter;
 import omr.sig.FlagStemRelation;
@@ -165,7 +167,7 @@ public class SymbolFactory
         } else if ((shape == Shape.BRACE) || (shape == Shape.BRACKET)) {
             sig.addVertex(new BraceInter(glyph, shape, grade));
         } else if (PartialTimes.contains(shape)) {
-            sig.addVertex(NumberInter.create(shape, glyph, grade));
+            sig.addVertex(NumberInter.create(glyph, shape, grade));
         } else if (FullTimes.contains(shape)) {
             //            List<Inter> nd = TimeInter.create(shape, glyph, grade);
             //
@@ -183,7 +185,9 @@ public class SymbolFactory
             //                }
             //            }
         } else if (Digits.contains(shape)) {
-            sig.addVertex(FingeringInter.create(shape, glyph, grade));
+            sig.addVertex(FingeringInter.create(glyph, shape, grade));
+        } else if (Dynamics.contains(shape)) {
+            sig.addVertex(new DynamicsInter(glyph, shape, grade));
         } else if (shape == Shape.DOT_set) {
             dotFactory.processDot(eval, glyph);
         }
@@ -406,7 +410,9 @@ public class SymbolFactory
         {
             maxStemFlagGapY = scale.toPixels(FlagStemRelation.getYGapMaximum());
 
-            Main.dumping.dump(this);
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
+            }
         }
     }
 }

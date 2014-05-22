@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                    S t e m S e e d s S t e p                                   //
+//                              S y m b o l R e d u c t i o n S t e p                             //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -11,52 +11,36 @@
 // </editor-fold>
 package omr.step;
 
-import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import java.util.Collection;
+import omr.sig.SIGraph.ReductionMode;
+import static omr.step.Step.DATA_TAB;
 
 /**
- * Class {@code StemSeedsStep} implements <b>STEM_SEEDS</b> step, which retrieves all
- * vertical sticks that may constitute <i>seeds</i> of future stems.
+ * Class {@code SymbolReductionStep}implements <b>SYMBOL_REDUCTION</b> step, which tries
+ * to reduce the SIG incrementally after symbols have been retrieved.
  *
  * @author Hervé Bitteur
  */
-public class StemSeedsStep
+public class SymbolReductionStep
         extends AbstractSystemStep
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //---------------//
-    // StemSeedsStep //
-    //---------------//
     /**
-     * Creates a new StemSeedsStep object.
+     * Creates a new SymbolReductionStep object.
      */
-    public StemSeedsStep ()
+    public SymbolReductionStep ()
     {
         super(
-                Steps.STEM_SEEDS,
+                Steps.SYMBOL_REDUCTION,
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 DATA_TAB,
-                "Retrieve stem seeds");
+                "Reduce symbols");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // displayUI //
-    //-----------//
-    @Override
-    public void displayUI (Sheet sheet)
-    {
-        // We need a system of this sheet (any one)
-        SystemInfo aSystem = sheet.getSystems().get(0);
-
-        // Add stem checkboard
-        aSystem.verticalsBuilder.addCheckBoard();
-    }
-
     //----------//
     // doSystem //
     //----------//
@@ -64,17 +48,6 @@ public class StemSeedsStep
     public void doSystem (SystemInfo system)
             throws StepException
     {
-        system.verticalsBuilder.buildVerticals(); // -> Stem seeds
-    }
-
-    //----------//
-    // doProlog //
-    //----------//
-    @Override
-    protected void doProlog (Collection<SystemInfo> systems,
-                             Sheet sheet)
-            throws StepException
-    {
-        sheet.getStemScaler().retrieveStem();
+        system.sigReducer.reduce(ReductionMode.RELAXED);
     }
 }

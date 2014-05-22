@@ -28,7 +28,7 @@ import java.awt.geom.Point2D;
  * @author Hervé Bitteur
  */
 public class BeamStemRelation
-        extends AbstractConnection
+        extends StemConnection
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -39,9 +39,6 @@ public class BeamStemRelation
     //~ Instance fields ----------------------------------------------------------------------------
     /** Which portion of beam is used?. */
     private BeamPortion beamPortion;
-
-    /** Which part of stem is used?. */
-    private StemPortion stemPortion;
 
     /** Precise point where the stem crosses the beam. */
     private Point2D crossPoint;
@@ -75,14 +72,6 @@ public class BeamStemRelation
     public String getName ()
     {
         return "Beam-Stem";
-    }
-
-    /**
-     * @return the stem Portion
-     */
-    public StemPortion getStemPortion ()
-    {
-        return stemPortion;
     }
 
     //------------------//
@@ -125,21 +114,13 @@ public class BeamStemRelation
         this.crossPoint = crossPoint;
     }
 
-    /**
-     * @param stemPortion the stem portion to set
-     */
-    public void setStemPortion (StemPortion stemPortion)
-    {
-        this.stemPortion = stemPortion;
-    }
-
     //----------------//
     // getSourceCoeff //
     //----------------//
     @Override
     protected double getSourceCoeff ()
     {
-        return constants.supportCoeff.getValue();
+        return constants.sourceCoeff.getValue();
     }
 
     //----------------//
@@ -148,7 +129,7 @@ public class BeamStemRelation
     @Override
     protected double getTargetCoeff ()
     {
-        return constants.supportCoeff.getValue();
+        return constants.targetCoeff.getValue();
     }
 
     //--------------//
@@ -204,9 +185,13 @@ public class BeamStemRelation
 
         final Constant.Ratio minGrade = new Constant.Ratio(0.1, "Minimum interpretation grade");
 
-        final Constant.Ratio supportCoeff = new Constant.Ratio(
-                5,
-                "Value for coeff in support formula");
+        final Constant.Ratio sourceCoeff = new Constant.Ratio(
+                4, //5,
+                "Value for source (beam) coeff in support formula");
+
+        final Constant.Ratio targetCoeff = new Constant.Ratio(
+                2, //5,
+                "Value for target (stem) coeff in support formula");
 
         final Scale.Fraction yGapMax = new Scale.Fraction(
                 1.0,

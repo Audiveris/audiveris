@@ -59,7 +59,7 @@ public class SymbolsLinker
      */
     public void linkSymbols ()
     {
-        logger.info("System#{} linkSymbols", system.getId());
+        logger.debug("System#{} linkSymbols", system.getId());
         factory.linkSymbols();
     }
 }

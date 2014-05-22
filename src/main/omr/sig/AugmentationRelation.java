@@ -88,6 +88,18 @@ public class AugmentationRelation
         return 0.0;
     }
 
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
+    /**
+     * @return the coefficient used to compute source support ratio
+     */
+    @Override
+    protected double getSourceCoeff ()
+    {
+        return 0.5;
+    }
+
     @Override
     protected Scale.Fraction getXOutGapMax ()
     {

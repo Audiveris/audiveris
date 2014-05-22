@@ -23,13 +23,14 @@ import org.slf4j.LoggerFactory;
  * @author Hervé Bitteur
  */
 public abstract class AbstractConnection
-        extends BasicSupport
+    extends BasicSupport
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractConnection.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Horizontal distance at connection (in interline).
      * Positive value for an 'out' distance (gap).
@@ -44,6 +45,7 @@ public abstract class AbstractConnection
     protected Double yDistance;
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * @return the horizontal distance
      */
@@ -91,21 +93,6 @@ public abstract class AbstractConnection
     }
 
     /**
-     * Report maximum acceptable overlap.
-     * This method is disabled by default, to be overridden if overlap is possible
-     *
-     * @return the maximum overlap acceptable
-     */
-    protected Scale.Fraction getXInGapMax ()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    protected abstract Scale.Fraction getXOutGapMax ();
-
-    protected abstract Scale.Fraction getYGapMax ();
-
-    /**
      * Method to override to provide specific weights for xInGap and yGap.
      *
      * @return weights to use
@@ -125,6 +112,21 @@ public abstract class AbstractConnection
         return OutImpacts.WEIGHTS;
     }
 
+    protected abstract Scale.Fraction getXOutGapMax ();
+
+    protected abstract Scale.Fraction getYGapMax ();
+
+    /**
+     * Report maximum acceptable overlap.
+     * This method is disabled by default, to be overridden if overlap is possible
+     *
+     * @return the maximum overlap acceptable
+     */
+    protected Scale.Fraction getXInGapMax ()
+    {
+        throw new UnsupportedOperationException();
+    }
+
     //-----------//
     // internals //
     //-----------//
@@ -133,29 +135,33 @@ public abstract class AbstractConnection
     {
         StringBuilder sb = new StringBuilder(super.internals());
 
-        sb.append("@(").append(String.format("%.2f", xDistance)).append(",").append(
+        if ((xDistance != null) && (yDistance != null)) {
+            sb.append("@(").append(String.format("%.2f", xDistance)).append(",").append(
                 String.format("%.2f", yDistance)).append(")");
+        }
 
         return sb.toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // InImpacts //
     //-----------//
     public static class InImpacts
-            extends SupportImpacts
+        extends SupportImpacts
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
-        protected static final String[] NAMES = new String[]{"xInGap", "yGap"};
+        protected static final String[] NAMES = new String[] { "xInGap", "yGap" };
 
         // Default weights
-        protected static final double[] WEIGHTS = new double[]{2, 1};
+        protected static final double[] WEIGHTS = new double[] { 1, 1 };
 
         //~ Constructors ---------------------------------------------------------------------------
-        public InImpacts (double xInGap,
-                          double yGap,
+
+        public InImpacts (double   xInGap,
+                          double   yGap,
                           double[] weights)
         {
             super(NAMES, weights);
@@ -168,18 +174,19 @@ public abstract class AbstractConnection
     // OutImpacts //
     //------------//
     public static class OutImpacts
-            extends SupportImpacts
+        extends SupportImpacts
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
-        protected static final String[] NAMES = new String[]{"xOutGap", "yGap"};
+        protected static final String[] NAMES = new String[] { "xOutGap", "yGap" };
 
         // Defaults weights
-        protected static final double[] WEIGHTS = new double[]{4, 1};
+        protected static final double[] WEIGHTS = new double[] { 2, 1 };
 
         //~ Constructors ---------------------------------------------------------------------------
-        public OutImpacts (double xOutGap,
-                           double yGap,
+
+        public OutImpacts (double   xOutGap,
+                           double   yGap,
                            double[] weights)
         {
             super(NAMES, weights);

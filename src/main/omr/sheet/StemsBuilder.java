@@ -990,6 +990,9 @@ public class StemsBuilder
 
                     if (hRel.getGrade() >= hRel.getMinGrade()) {
                         // Determine stem portion (with 1/3 head margin)
+                        // If the stem is connected to a beam, then the actual stem end is the beam
+                        // connection point
+                        sig.getRelations(stemInter, BeamStemRelation.class);
                         if (yDir > 0) {
                             if (stemBox.y >= (headBox.y - (headBox.height / 3))) {
                                 hRel.setStemPortion(StemPortion.STEM_TOP);

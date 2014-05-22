@@ -68,6 +68,18 @@ public class SIGraph
 
     private static final Logger logger = LoggerFactory.getLogger(SIGraph.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /** Reduction mode. */
+    public static enum ReductionMode
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        /** (Almost) all exclusions are reduced. */
+        STRICT,
+        /** Strong exclusions are reduced, Weak ones are left for later processing. */
+        RELAXED;
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated sheet */
     private final Sheet sheet;
@@ -827,26 +839,34 @@ public class SIGraph
     // reduceExclusions //
     //------------------//
     /**
-     * Reduce all exclusions until there is no one left.
+     * Reduce the provided exclusions as much as possible by removing the source or
+     * target vertex of lower contextual grade.
      * <pre>
      * Strategy is as follows:
      * - Pick up among all current exclusions the one whose high inter has the
-     * highest CG contribution among all exclusions.
+     *   highest contextual grade contribution among all exclusions.
      * - Remove the low inter of this chosen exclusion.
      * - Recompute all CG values.
      * - Iterate until no more exclusion is left.
      * </pre>
      *
+     * @param mode      selected reduction mode
      * @param relations the collection to process
      * @return the set of vertices removed
      */
-    public Set<Inter> reduceExclusions (Collection<? extends Relation> relations)
+    public Set<Inter> reduceExclusions (ReductionMode mode,
+                                        Collection<? extends Relation> relations)
     {
-        Set<Inter> removed = new HashSet<Inter>();
+        // Which threshold we use for exclusions
+        final double minDelta = (mode == ReductionMode.STRICT)
+                ? constants.deltaGradeStrict.getValue()
+                : constants.deltaGradeRelaxed.getValue();
+        final Set<Inter> removed = new HashSet<Inter>();
+        final Set<Relation> tiedExclusions = new HashSet<Relation>();
         Relation bestRel;
 
         do {
-            // Chose best exclusion
+            // Choose exclusion with the highest source or target grade
             double bestCP = 0;
             bestRel = null;
 
@@ -878,7 +898,7 @@ public class SIGraph
                 }
             }
 
-            // Kill the weaker branch of the selected exclusion
+            // Remove the weaker branch of the selected exclusion (if grade delta is significant)
             if (bestRel != null) {
                 final Inter source = getEdgeSource(bestRel);
                 Double scp = source.getContextualGrade();
@@ -894,29 +914,46 @@ public class SIGraph
                     tcp = target.getGrade();
                 }
 
-                Inter weaker = (scp < tcp) ? source : target;
+                double delta = Math.abs(tcp - scp);
 
-                if (weaker.isVip()) {
-                    logger.info(
-                            "VIP conflict {} deleting weaker {}",
-                            bestRel.toLongString(this),
-                            weaker);
-                }
+                if (delta >= minDelta) {
+                    Inter weaker = (scp < tcp) ? source : target;
 
-                Set<Relation> edges = edgesOf(weaker);
-                Set<Inter> involved = involvedInters(edges);
+                    if (weaker.isVip()) {
+                        logger.info(
+                                "VIP conflict {} deleting weaker {}",
+                                bestRel.toLongString(this),
+                                weaker);
+                    }
 
-                relations.removeAll(edges);
-                removed.add(weaker);
-                removeVertex(weaker);
-                involved.remove(weaker);
+                    Set<Relation> edges = edgesOf(weaker);
+                    Set<Inter> involved = involvedInters(edges);
 
-                // Update contextual values
-                for (Inter inter : involved) {
-                    computeContextualGrade(inter, false);
+                    relations.removeAll(edges);
+                    removed.add(weaker);
+                    removeVertex(weaker);
+                    involved.remove(weaker);
+
+                    // Update contextual values
+                    for (Inter inter : involved) {
+                        computeContextualGrade(inter, false);
+                    }
+                } else {
+                    if (mode == ReductionMode.STRICT) {
+                        logger.warn("STRICT tight exclusion: {} {} vs {}", delta, source, target);
+                    } else if (source.isVip() || target.isVip() || logger.isDebugEnabled()) {
+                        logger.info("RELAXED tight exclusion: {} {} vs {}", delta, source, target);
+                    }
+
+                    tiedExclusions.add(bestRel);
+                    relations.remove(bestRel);
                 }
             }
         } while (bestRel != null);
+
+        if (!tiedExclusions.isEmpty()) {
+            logger.debug("Exclusions left over: {}", tiedExclusions.size());
+        }
 
         return removed;
     }
@@ -925,14 +962,15 @@ public class SIGraph
     // reduceExclusions //
     //------------------//
     /**
-     * Process each exclusion in the SIG by removing the source or
-     * target vertex of lower contextual grade.
+     * Process each exclusion in the SIG by removing the source or target vertex of
+     * lower contextual grade.
      *
+     * @param mode selected reduction mode
      * @return the set of vertices removed
      */
-    public Set<Inter> reduceExclusions ()
+    public Set<Inter> reduceExclusions (ReductionMode mode)
     {
-        return reduceExclusions(new HashSet<Relation>(edgeSet()));
+        return reduceExclusions(mode, new HashSet<Relation>(edgeSet()));
     }
 
     //--------------//
@@ -1167,6 +1205,14 @@ public class SIGraph
                 "count",
                 6,
                 "Upper limit on number of supports used for contextual grade");
+
+        Constant.Ratio deltaGradeStrict = new Constant.Ratio(
+                0.00001,
+                "Minimum grade delta to reduce an exclusion in STRICT mode");
+
+        Constant.Ratio deltaGradeRelaxed = new Constant.Ratio(
+                0.01,
+                "Minimum grade delta to reduce an exclusion in RELAXED mode");
     }
 
     //----------//

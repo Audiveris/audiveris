@@ -47,6 +47,7 @@ import omr.sig.Exclusion;
 import omr.sig.Inter;
 import omr.sig.LedgerInter;
 import omr.sig.SIGraph;
+import omr.sig.SIGraph.ReductionMode;
 
 import omr.step.Step;
 
@@ -164,7 +165,7 @@ public class LedgersBuilder
     {
         SheetAssembly assembly = sheet.getAssembly();
         assembly.addBoard(Step.DATA_TAB, new LedgerCheckBoard());
-        assembly.addBoard(Step.HORI_TAB, new LedgerCheckBoard());
+        assembly.addBoard(Step.LEDGER_TAB, new LedgerCheckBoard());
     }
 
     //--------------//
@@ -699,7 +700,7 @@ public class LedgersBuilder
         }
 
         if (!exclusions.isEmpty()) {
-            Set<Inter> deletions = sig.reduceExclusions(exclusions);
+            Set<Inter> deletions = sig.reduceExclusions(ReductionMode.STRICT, exclusions);
             logger.debug(
                     "Staff: {} index: {} deletions: {} {}",
                     staff.getId(),

@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        S i g S o l v e r                                       //
+//                                       S i g R e d u c e r                                      //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -20,6 +20,8 @@ import omr.math.GeoOrder;
 import omr.math.GeoUtil;
 
 import omr.sheet.SystemInfo;
+
+import omr.sig.SIGraph.ReductionMode;
 import static omr.sig.StemPortion.*;
 
 import omr.util.HorizontalSide;
@@ -46,15 +48,15 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 
 /**
- * Class {@code SigSolver} deals with SIG resolution.
+ * Class {@code SigReducer} deals with SIG reduction.
  *
  * @author Hervé Bitteur
  */
-public class SigSolver
+public class SigReducer
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(SigSolver.class);
+    private static final Logger logger = LoggerFactory.getLogger(SigReducer.class);
 
     /** Shapes for which overlap detection is (currently) disabled. */
     private static final EnumSet disabledShapes = EnumSet.copyOf(
@@ -81,17 +83,17 @@ public class SigSolver
     private final SIGraph sig;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // SigSolver //
-    //-----------//
+    //------------//
+    // SigReducer //
+    //------------//
     /**
-     * Creates a new SigSolver object.
+     * Creates a new SigReducer object.
      *
      * @param system the related system
      * @param sig    the system SIG
      */
-    public SigSolver (SystemInfo system,
-                      SIGraph sig)
+    public SigReducer (SystemInfo system,
+                       SIGraph sig)
     {
         this.system = system;
         this.sig = sig;
@@ -102,8 +104,7 @@ public class SigSolver
     // contextualize //
     //---------------//
     /**
-     * Compute contextual grades of target interpretations based on
-     * their supporting sources.
+     * Compute contextual grades of interpretations based on their supporting partners.
      */
     public void contextualize ()
     {
@@ -116,18 +117,20 @@ public class SigSolver
         }
     }
 
-    //-------//
-    // solve //
-    //-------//
+    //--------//
+    // reduce //
+    //--------//
     /**
-     * Reduce the interpretations and relations of the SIG.
+     * Reduce all the interpretations and relations of the SIG.
+     *
+     * @param mode selected reduction mode
      */
-    public void solve ()
+    public void reduce (ReductionMode mode)
     {
         final boolean logging = false;
 
         if (logging) {
-            logger.info("S#{} solving sig ...", system.getId());
+            logger.info("S#{} reducing sig ...", system.getId());
         }
 
         // General overlap checks
@@ -174,7 +177,7 @@ public class SigSolver
             } while (modifs > 0);
 
             // Remaining exclusions
-            reductions = sig.reduceExclusions().size();
+            reductions = sig.reduceExclusions(mode).size();
 
             if (logging) {
                 logger.info("S#{} reductions: {}", system.getId(), reductions);
@@ -391,20 +394,19 @@ public class SigSolver
         int modifs = 0;
 
         // Check all connected stems
-        List<HeadStemRelation> stemRels = new ArrayList<HeadStemRelation>();
-
-        for (Relation rel : sig.edgesOf(head)) {
-            if (rel instanceof HeadStemRelation) {
-                stemRels.add((HeadStemRelation) rel);
-            }
-        }
+        Set<Relation> stemRels = sig.getRelations(head, HeadStemRelation.class);
 
         RelsLoop:
-        for (HeadStemRelation rel : stemRels) {
+        for (Relation relation : stemRels) {
+            HeadStemRelation rel = (HeadStemRelation) relation;
             StemInter stem = (StemInter) sig.getEdgeTarget(rel);
 
             // What is the stem direction? (up: dir < 0, down: dir > 0)
             int dir = stemDirection(stem);
+
+            if (dir == 0) {
+                continue; // We cannot check
+            }
 
             // Side is normal?
             HorizontalSide headSide = rel.getHeadSide();
@@ -945,37 +947,37 @@ public class SigSolver
         return false;
     }
 
-    //------------------//
-    // lookupExclusions //
-    //------------------//
-    private int lookupExclusions ()
-    {
-        // Deletions
-        Set<Inter> toRemove = new HashSet<Inter>();
-
-        for (Relation rel : sig.edgeSet()) {
-            if (rel instanceof Exclusion) {
-                final Inter source = sig.getEdgeSource(rel);
-                final double scp = source.getContextualGrade();
-                final Inter target = sig.getEdgeTarget(rel);
-                final double tcp = target.getContextualGrade();
-                Inter weaker = (scp < tcp) ? source : target;
-
-                if (weaker.isVip()) {
-                    logger.info("Remaining {} deleting weaker {}", rel.toLongString(sig), weaker);
-                }
-
-                toRemove.add(weaker);
-            }
-        }
-
-        for (Inter inter : toRemove) {
-            sig.removeVertex(inter);
-        }
-
-        return toRemove.size();
-    }
-
+    //    //------------------//
+    //    // lookupExclusions //
+    //    //------------------//
+    //    private int lookupExclusions ()
+    //    {
+    //        // Deletions
+    //        Set<Inter> toRemove = new HashSet<Inter>();
+    //
+    //        for (Relation rel : sig.edgeSet()) {
+    //            if (rel instanceof Exclusion) {
+    //                final Inter source = sig.getEdgeSource(rel);
+    //                final double scp = source.getContextualGrade();
+    //                final Inter target = sig.getEdgeTarget(rel);
+    //                final double tcp = target.getContextualGrade();
+    //                Inter weaker = (scp < tcp) ? source : target;
+    //
+    //                if (weaker.isVip()) {
+    //                    logger.info("Remaining {} deleting weaker {}", rel.toLongString(sig), weaker);
+    //                }
+    //
+    //                toRemove.add(weaker);
+    //            }
+    //        }
+    //
+    //        for (Inter inter : toRemove) {
+    //            sig.removeVertex(inter);
+    //        }
+    //
+    //        return toRemove.size();
+    //    }
+    //
     //-----------------//
     // purgeWeakInters //
     //-----------------//
@@ -990,7 +992,7 @@ public class SigSolver
     // stemDirection //
     //---------------//
     /**
-     * Report the direction of the provided stem.
+     * Report the direction of the provided stem (WRT its tail).
      * <p>
      * For this, we check what is found on each stem end (beam/flag or head)
      * and use contextual grade to choose the best reference.
@@ -1003,36 +1005,32 @@ public class SigSolver
         double up = 0;
         double down = 0;
 
-        for (Relation rel : sig.edgesOf(stem)) {
+        for (Relation rel : sig.getRelations(stem, StemConnection.class)) {
+            Inter source = sig.getEdgeSource(rel);
+            StemConnection link = (StemConnection) rel;
+            StemPortion portion = link.getStemPortion();
+
             if (rel instanceof HeadStemRelation) {
+                // Head -> Stem
                 HeadStemRelation headStem = (HeadStemRelation) rel;
-                StemPortion portion = headStem.getStemPortion();
 
                 if (portion == StemPortion.STEM_BOTTOM) {
                     if (headStem.getHeadSide() == RIGHT) {
-                        Inter head = sig.getEdgeSource(rel);
-                        up = Math.max(up, head.getContextualGrade());
+                        up = Math.max(up, source.getContextualGrade());
                     }
                 } else if (portion == StemPortion.STEM_TOP) {
                     if (headStem.getHeadSide() == LEFT) {
-                        Inter head = sig.getEdgeSource(rel);
-                        down = Math.max(down, head.getContextualGrade());
+                        down = Math.max(down, source.getContextualGrade());
                     }
                 }
-            } else if (rel instanceof BeamStemRelation) {
-                BeamStemRelation beamStem = (BeamStemRelation) rel;
-                StemPortion portion = beamStem.getStemPortion();
-
+            } else {
+                // Tail (Beam or Flag) -> Stem
                 if (portion == StemPortion.STEM_BOTTOM) {
-                    Inter beam = sig.getEdgeSource(rel);
-                    down = Math.max(down, beam.getContextualGrade());
+                    down = Math.max(down, source.getContextualGrade());
                 } else if (portion == StemPortion.STEM_TOP) {
-                    Inter beam = sig.getEdgeSource(rel);
-                    up = Math.max(up, beam.getContextualGrade());
+                    up = Math.max(up, source.getContextualGrade());
                 }
             }
-
-            //TODO: one day, check for flag?
         }
 
         return Double.compare(down, up);
@@ -1049,14 +1047,12 @@ public class SigSolver
      */
     private boolean stemHasHeadAtStart (StemInter stem)
     {
-        for (Relation rel : sig.edgesOf(stem)) {
-            if (rel instanceof HeadStemRelation) {
-                HeadStemRelation hsRel = (HeadStemRelation) rel;
+        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
+            HeadStemRelation hsRel = (HeadStemRelation) rel;
 
-                // Check stem portion
-                if (hsRel.getStemPortion() != StemPortion.STEM_MIDDLE) {
-                    return true;
-                }
+            // Check stem portion
+            if (hsRel.getStemPortion() != StemPortion.STEM_MIDDLE) {
+                return true;
             }
         }
 
@@ -1083,19 +1079,17 @@ public class SigSolver
         final StemPortion forbidden = (dir > 0) ? STEM_BOTTOM : STEM_TOP;
         final List<Relation> toRemove = new ArrayList<Relation>();
 
-        for (Relation rel : sig.edgesOf(stem)) {
-            if (rel instanceof HeadStemRelation) {
-                // Check stem portion
-                HeadStemRelation hsRel = (HeadStemRelation) rel;
-                StemPortion portion = hsRel.getStemPortion();
+        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
+            // Check stem portion
+            HeadStemRelation hsRel = (HeadStemRelation) rel;
+            StemPortion portion = hsRel.getStemPortion();
 
-                if (portion == forbidden) {
-                    if (stem.isVip() || logger.isDebugEnabled()) {
-                        logger.info("Cutting rel between {} and {}", stem, sig.getEdgeSource(rel));
-                    }
-
-                    toRemove.add(rel);
+            if (portion == forbidden) {
+                if (stem.isVip() || logger.isDebugEnabled()) {
+                    logger.info("Cutting relation between {} and {}", stem, sig.getEdgeSource(rel));
                 }
+
+                toRemove.add(rel);
             }
         }
 

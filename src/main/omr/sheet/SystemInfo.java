@@ -36,13 +36,15 @@ import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
 import omr.sig.SIGraph;
-import omr.sig.SigSolver;
+import omr.sig.SigReducer;
 
 import omr.text.TextBuilder;
 import omr.text.TextLine;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -128,7 +130,7 @@ public class SystemInfo
     public final LedgersBuilder ledgersBuilder;
 
     /** Dedicated SIG processor */
-    public final SigSolver sigSolver;
+    public final SigReducer sigReducer;
 
     /** Dedicated glyph inspector */
     private final GlyphInspector glyphInspector;
@@ -241,7 +243,7 @@ public class SystemInfo
         setStaves(staves);
 
         sig = new SIGraph(this);
-        sigSolver = new SigSolver(this, sig);
+        sigReducer = new SigReducer(this, sig);
         measuresBuilder = new MeasuresBuilder(this);
         textBuilder = new TextBuilder(this);
         compoundBuilder = new CompoundBuilder(this);

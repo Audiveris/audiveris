@@ -102,7 +102,7 @@ public class HoriController
         view = new MyView(getNest());
 
         sheet.getAssembly().addViewTab(
-                Step.HORI_TAB,
+                Step.LEDGER_TAB,
                 new ScrollView(view),
                 new BoardsPane(
                 new PixelBoard(sheet),

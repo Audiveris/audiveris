@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                    S t e m L i n k s S t e p                                   //
+//                                        S t e m s S t e p                                       //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -17,33 +17,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code StemLinksStep} implements <b>STEM_LINKS</b> step, which establishes all
+ * Class {@code StemsStep} implements <b>STEMS</b> step, which establishes all
  * possible relations between stems and note heads or beams.
  *
  * @author Hervé Bitteur
  */
-public class StemLinksStep
+public class StemsStep
         extends AbstractSystemStep
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(StemLinksStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(StemsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // StemLinksStep //
-    //---------------//
+    //-----------//
+    // StemsStep //
+    //-----------//
     /**
-     * Creates a new StemLinksStep object.
+     * Creates a new StemsStep object.
      */
-    public StemLinksStep ()
+    public StemsStep ()
     {
         super(
-                Steps.STEM_LINKS,
+                Steps.STEMS,
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 DATA_TAB,
-                "Link stems to heads & beams");
+                "Build stems");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -55,6 +55,6 @@ public class StemLinksStep
             throws StepException
     {
         system.stemsBuilder.linkStems(); // -> Stems links to heads & beams
-        system.sigSolver.contextualize();
+        system.sigReducer.contextualize();
     }
 }

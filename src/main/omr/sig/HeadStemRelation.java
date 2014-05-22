@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * @author Hervé Bitteur
  */
 public class HeadStemRelation
-        extends AbstractConnection
+        extends StemConnection
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -40,9 +40,6 @@ public class HeadStemRelation
     /** Which side of head is used?. */
     private HorizontalSide headSide;
 
-    /** Which part of stem is used?. */
-    private StemPortion stemPortion;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new HeadStemRelation object.
@@ -52,6 +49,20 @@ public class HeadStemRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * @return the headSide
+     */
+    public HorizontalSide getHeadSide ()
+    {
+        return headSide;
+    }
+
+    @Override
+    public String getName ()
+    {
+        return "Head-Stem";
+    }
+
     //------------------//
     // getXInGapMaximum //
     //------------------//
@@ -77,41 +88,11 @@ public class HeadStemRelation
     }
 
     /**
-     * @return the headSide
-     */
-    public HorizontalSide getHeadSide ()
-    {
-        return headSide;
-    }
-
-    @Override
-    public String getName ()
-    {
-        return "Head-Stem";
-    }
-
-    /**
-     * @return the stem Portion
-     */
-    public StemPortion getStemPortion ()
-    {
-        return stemPortion;
-    }
-
-    /**
      * @param headSide the headSide to set
      */
     public void setHeadSide (HorizontalSide headSide)
     {
         this.headSide = headSide;
-    }
-
-    /**
-     * @param stemPortion the stem portion to set
-     */
-    public void setStemPortion (StemPortion stemPortion)
-    {
-        this.stemPortion = stemPortion;
     }
 
     //----------------//
@@ -120,7 +101,7 @@ public class HeadStemRelation
     @Override
     protected double getSourceCoeff ()
     {
-        return constants.supportCoeff.getValue();
+        return constants.sourceCoeff.getValue();
     }
 
     //----------------//
@@ -129,7 +110,7 @@ public class HeadStemRelation
     @Override
     protected double getTargetCoeff ()
     {
-        return constants.supportCoeff.getValue();
+        return constants.targetCoeff.getValue();
     }
 
     //--------------//
@@ -179,9 +160,13 @@ public class HeadStemRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio supportCoeff = new Constant.Ratio(
+        final Constant.Ratio sourceCoeff = new Constant.Ratio(
                 4, //5,
-                "Value for coeff in support formula");
+                "Value for source (head) coeff in support formula");
+
+        final Constant.Ratio targetCoeff = new Constant.Ratio(
+                2, //5,
+                "Value for target (stem) coeff in support formula");
 
         final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.8,

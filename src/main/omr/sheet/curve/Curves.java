@@ -13,6 +13,9 @@ package omr.sheet.curve;
 
 import omr.Main;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.sheet.Sheet;
 import omr.sheet.ui.ImageView;
 import omr.sheet.ui.PixelBoard;
@@ -53,6 +56,8 @@ public class Curves
     private static final Point[] breakPoints = new Point[]{ ///new Point(615, 439) // BINGO
     //
     };
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Curves.class);
 
@@ -144,7 +149,9 @@ public class Curves
         watch.start("buildEndings");
         endingsBuilder.buildEndings();
 
-        watch.print();
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
     }
 
     //------------//
@@ -223,6 +230,19 @@ public class Curves
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+    }
+
     //--------//
     // MyView //
     //--------//

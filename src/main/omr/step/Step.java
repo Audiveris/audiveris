@@ -41,7 +41,7 @@ public interface Step
 
     public static final String DATA_TAB = "Data";
 
-    public static final String HORI_TAB = "Ledgers";
+    public static final String LEDGER_TAB = "Ledgers";
 
     public static final String SKELETON_TAB = "Skeleton";
 

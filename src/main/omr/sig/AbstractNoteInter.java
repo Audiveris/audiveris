@@ -164,7 +164,7 @@ public class AbstractNoteInter
             boolean res = common.width > (constants.maxOverlapDxRatio.getValue() * box.width);
 
             if (this.isVip() || that.isVip()) {
-                logger.info("{} vs {} dx:{} overlap:{}", getId(), that.getId(), common.width, res);
+                logger.info("VIP {} vs {} dx:{} overlap:{}", this, that, common.width, res);
             }
 
             return res;

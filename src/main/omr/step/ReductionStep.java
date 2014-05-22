@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                   R e s o l u t i o n S t e p                                  //
+//                                    R e d u c t i o n S t e p                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -16,30 +16,32 @@ import static omr.sheet.Picture.SourceKey.*;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.sig.SIGraph.ReductionMode;
+
 import java.util.Collection;
 
 /**
- * Class {@code ResolutionStep} implements <b>RESOLUTION</b> step, which tries to reduce
- * the SIG incrementally.
+ * Class {@code ReductionStep} implements <b>REDUCTION</b> step, which tries to reduce
+ * the SIG incrementally after structures (notes + stems + beams) have been retrieved.
  *
  * @author Hervé Bitteur
  */
-public class ResolutionStep
+public class ReductionStep
         extends AbstractSystemStep
 {
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new ResolutionStep object.
+     * Creates a new ReductionStep object.
      */
-    public ResolutionStep ()
+    public ReductionStep ()
     {
         super(
-                Steps.RESOLUTION,
+                Steps.REDUCTION,
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 DATA_TAB,
-                "Resolve interpretations");
+                "Reduce structures");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -50,7 +52,7 @@ public class ResolutionStep
     public void doSystem (SystemInfo system)
             throws StepException
     {
-        system.sigSolver.solve();
+        system.sigReducer.reduce(ReductionMode.STRICT);
     }
 
     @Override

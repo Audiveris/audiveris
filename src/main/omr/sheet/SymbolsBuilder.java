@@ -130,7 +130,7 @@ public class SymbolsBuilder
      */
     public void buildSymbols ()
     {
-        logger.info("System#{} buildSymbols", system.getId());
+        logger.debug("System#{} buildSymbols", system.getId());
 
         // Retrieve all candidate glyphs
         List<Glyph> glyphs = getSymbolsGlyphs();
@@ -141,7 +141,7 @@ public class SymbolsBuilder
         // Process all sets of connected glyphs
         processClusters(systemGraph);
 
-        logger.info("System#{} symbols processed: {}", system.getId(), processCount);
+        logger.debug("System#{} symbols processed: {}", system.getId(), processCount);
     }
 
     //------------------//
@@ -362,7 +362,7 @@ public class SymbolsBuilder
         // Retrieve all the clusters of glyphs (sets of connected glyphs)
         ConnectivityInspector inspector = new ConnectivityInspector(systemGraph);
         List<Set<Glyph>> sets = inspector.connectedSets();
-        logger.info("sets: {}", sets.size());
+        logger.debug("sets: {}", sets.size());
 
         for (Set<Glyph> set : sets) {
             if (set.size() > 1) {
@@ -378,6 +378,138 @@ public class SymbolsBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Cluster //
+    //---------//
+    /**
+     * Handles a cluster of connected glyphs, to retrieve all acceptable compounds built
+     * on subsets of these glyphs.
+     * <p>
+     * The processing of any given subset consists in the following:<ol>
+     * <li>Build the compound of chosen vertices, and record acceptable evaluations.</li>
+     * <li>Build the set of new reachable vertices.</li>
+     * <li>For each reachable vertex, recursively process the new set composed of current set + the
+     * reachable vertex.</li></ol>
+     */
+    private class Cluster
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Graph of the connected glyphs, with their distance edges if any. */
+        private final SimpleGraph<Glyph, Distance> graph;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Cluster (SimpleGraph<Glyph, Distance> graph)
+        {
+            this.graph = graph;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Identify all acceptable compounds within the cluster and evaluate them.
+         */
+        public void decompose ()
+        {
+            final Set<Glyph> used = new HashSet<Glyph>(); // Glyphs used so far
+            final List<Glyph> seeds = new ArrayList<Glyph>(graph.vertexSet());
+            Collections.sort(seeds, Glyph.byId); // It's easier to debug
+            logger.debug("Decomposing {}", Glyphs.toString("cluster", seeds));
+
+            for (Glyph seed : seeds) {
+                if (seed.isVip()) {
+                    logger.info("   Seed #{}", seed.getId());
+                }
+
+                used.add(seed);
+                process(Collections.singleton(seed), used);
+            }
+        }
+
+        /**
+         * Retrieve all glyphs at acceptable distance from at least one member of the
+         * provided set.
+         *
+         * @param set the provided set
+         * @return all the glyphs reachable from the set
+         */
+        private Set<Glyph> getOutliers (Set<Glyph> set)
+        {
+            Set<Glyph> outliers = new HashSet<Glyph>();
+
+            for (Glyph glyph : set) {
+                outliers.addAll(Graphs.neighborListOf(graph, glyph));
+            }
+
+            outliers.removeAll(set);
+
+            return outliers;
+        }
+
+        /**
+         * Check whether symbol size is acceptable.
+         *
+         * @param symBox symbol bounding box
+         * @return true if OK
+         */
+        private boolean isSizeAcceptable (Rectangle symBox)
+        {
+            // Check width
+            if (symBox.width > params.maxSymbolWidth) {
+                return false;
+            }
+
+            // Check height (not limited if on left of system: braces / brackets)
+            if (GeoUtil.centerOf(symBox).x < system.getLeft()) {
+                return true;
+            } else {
+                return symBox.height <= params.maxSymbolHeight;
+            }
+        }
+
+        /**
+         * Process the provided set of glyphs.
+         *
+         * @param set  the current glyphs
+         * @param used
+         */
+        private void process (Set<Glyph> set,
+                              Set<Glyph> used)
+        {
+            processCount++;
+
+            // Build compound and get acceptable evaluations for the compound
+            Glyph compound = (set.size() == 1) ? set.iterator().next()
+                    : sheet.getNest().buildGlyph(set, true, Glyph.Linking.NO_LINK);
+
+            // Create all acceptable inters, if any, for the compound
+            evaluateGlyph(compound);
+
+            // Identify all outliers immediately reachable from the compound
+            Set<Glyph> outliers = getOutliers(set);
+            outliers.removeAll(used);
+
+            if (outliers.isEmpty()) {
+                return; // No further growth is possible
+            }
+
+            Rectangle setBox = Glyphs.getBounds(set);
+            Set<Glyph> newUsed = new HashSet<Glyph>(used);
+
+            for (Glyph outlier : outliers) {
+                newUsed.add(outlier);
+
+                // Check appending this atom does not make the resulting symbol too wide or too high
+                Rectangle symBox = outlier.getBounds().union(setBox);
+
+                if (isSizeAcceptable(symBox)) {
+                    Set<Glyph> largerSet = new HashSet<Glyph>(set);
+                    largerSet.add(outlier);
+                    process(largerSet, newUsed);
+                }
+            }
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -511,138 +643,8 @@ public class SymbolsBuilder
             maxSymbolHeight = scale.toPixels(constants.maxSymbolHeight);
             minWeight = scale.toPixels(constants.minWeight);
 
-            Main.dumping.dump(this);
-        }
-    }
-
-    //---------//
-    // Cluster //
-    //---------//
-    /**
-     * Handles a cluster of connected glyphs, to retrieve all acceptable compounds built
-     * on subsets of these glyphs.
-     * <p>
-     * The processing of any given subset consists in the following:<ol>
-     * <li>Build the compound of chosen vertices, and record acceptable evaluations.</li>
-     * <li>Build the set of new reachable vertices.</li>
-     * <li>For each reachable vertex, recursively process the new set composed of current set + the
-     * reachable vertex.</li></ol>
-     */
-    private class Cluster
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Graph of the connected glyphs, with their distance edges if any. */
-        private final SimpleGraph<Glyph, Distance> graph;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Cluster (SimpleGraph<Glyph, Distance> graph)
-        {
-            this.graph = graph;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        /**
-         * Identify all acceptable compounds within the cluster and evaluate them.
-         */
-        public void decompose ()
-        {
-            final Set<Glyph> used = new HashSet<Glyph>(); // Glyphs used so far
-            final List<Glyph> seeds = new ArrayList<Glyph>(graph.vertexSet());
-            Collections.sort(seeds, Glyph.byId); // It's easier to debug
-            logger.info("Decomposing {}", Glyphs.toString("cluster", seeds));
-
-            for (Glyph seed : seeds) {
-                if (seed.isVip()) {
-                    logger.info("   Seed #{}", seed.getId());
-                }
-
-                used.add(seed);
-                process(Collections.singleton(seed), used);
-            }
-        }
-
-        /**
-         * Retrieve all glyphs at acceptable distance from at least one member of the
-         * provided set.
-         *
-         * @param set the provided set
-         * @return all the glyphs reachable from the set
-         */
-        private Set<Glyph> getOutliers (Set<Glyph> set)
-        {
-            Set<Glyph> outliers = new HashSet<Glyph>();
-
-            for (Glyph glyph : set) {
-                outliers.addAll(Graphs.neighborListOf(graph, glyph));
-            }
-
-            outliers.removeAll(set);
-
-            return outliers;
-        }
-
-        /**
-         * Check whether symbol size is acceptable.
-         *
-         * @param symBox symbol bounding box
-         * @return true if OK
-         */
-        private boolean isSizeAcceptable (Rectangle symBox)
-        {
-            // Check width
-            if (symBox.width > params.maxSymbolWidth) {
-                return false;
-            }
-
-            // Check height (not limited if on left of system: braces / brackets)
-            if (GeoUtil.centerOf(symBox).x < system.getLeft()) {
-                return true;
-            } else {
-                return symBox.height <= params.maxSymbolHeight;
-            }
-        }
-
-        /**
-         * Process the provided set of glyphs.
-         *
-         * @param set  the current glyphs
-         * @param used
-         */
-        private void process (Set<Glyph> set,
-                              Set<Glyph> used)
-        {
-            processCount++;
-
-            // Build compound and get acceptable evaluations for the compound
-            Glyph compound = (set.size() == 1) ? set.iterator().next()
-                    : sheet.getNest().buildGlyph(set, true, Glyph.Linking.NO_LINK);
-
-            // Create all acceptable inters, if any, for the compound
-            evaluateGlyph(compound);
-
-            // Identify all outliers immediately reachable from the compound
-            Set<Glyph> outliers = getOutliers(set);
-            outliers.removeAll(used);
-
-            if (outliers.isEmpty()) {
-                return; // No further growth is possible
-            }
-
-            Rectangle setBox = Glyphs.getBounds(set);
-            Set<Glyph> newUsed = new HashSet<Glyph>(used);
-
-            for (Glyph outlier : outliers) {
-                newUsed.add(outlier);
-
-                // Check appending this atom does not make the resulting symbol too wide or too high
-                Rectangle symBox = outlier.getBounds().union(setBox);
-
-                if (isSizeAcceptable(symBox)) {
-                    Set<Glyph> largerSet = new HashSet<Glyph>(set);
-                    largerSet.add(outlier);
-                    process(largerSet, newUsed);
-                }
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
             }
         }
     }

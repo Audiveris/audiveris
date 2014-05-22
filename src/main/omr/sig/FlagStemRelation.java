@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.sig;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.sheet.Scale;
@@ -26,17 +25,13 @@ import org.slf4j.LoggerFactory;
  * @author Hervé Bitteur
  */
 public class FlagStemRelation
-        extends AbstractConnection
+        extends StemConnection
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(FlagStemRelation.class);
-
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Which part of stem is used?. */
-    private StemPortion stemPortion;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -51,14 +46,6 @@ public class FlagStemRelation
     public String getName ()
     {
         return "Flag-Stem";
-    }
-
-    /**
-     * @return the stem Portion
-     */
-    public StemPortion getStemPortion ()
-    {
-        return stemPortion;
     }
 
     //------------------//
@@ -83,14 +70,6 @@ public class FlagStemRelation
     public static Scale.Fraction getYGapMaximum ()
     {
         return constants.yGapMax;
-    }
-
-    /**
-     * @param stemPortion the stem portion to set
-     */
-    public void setStemPortion (StemPortion stemPortion)
-    {
-        this.stemPortion = stemPortion;
     }
 
     @Override
