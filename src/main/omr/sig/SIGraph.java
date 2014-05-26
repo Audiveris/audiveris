@@ -20,6 +20,8 @@ import omr.glyph.facets.Glyph;
 import omr.math.GeoOrder;
 import static omr.math.GeoOrder.*;
 
+import omr.run.Orientation;
+
 import omr.selection.InterListEvent;
 
 import omr.sheet.Sheet;
@@ -29,6 +31,7 @@ import omr.sig.Exclusion.Cause;
 
 import omr.util.Predicate;
 
+import org.jgrapht.Graphs;
 import org.jgrapht.graph.Multigraph;
 
 import org.slf4j.Logger;
@@ -37,6 +40,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -129,6 +134,30 @@ public class SIGraph
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // getInter //
+    //----------//
+    /**
+     * Report the (first) interpretation if any of desired class for
+     * the glyph at hand.
+     * TODO: Could we have several inters of desired class for the same glyph?
+     *
+     * @param glyph  the underlying glyph
+     * @param classe the interpretation class desired
+     * @return the existing interpretation if any, or null
+     */
+    public static Inter getInter (Glyph glyph,
+                                  Class classe)
+    {
+        for (Inter inter : glyph.getInterpretations()) {
+            if (classe.isAssignableFrom(inter.getClass())) {
+                return inter;
+            }
+        }
+
+        return null;
+    }
+
     //-----------//
     // addVertex //
     //-----------//
@@ -289,28 +318,20 @@ public class SIGraph
         return getRelations(inter, Exclusion.class);
     }
 
-    //----------//
-    // getInter //
-    //----------//
+    //------------------//
+    // getOppositeInter //
+    //------------------//
     /**
-     * Report the (first) interpretation if any of desired class for
-     * the glyph at hand.
-     * TODO: Could we have several inters of desired class for the same glyph?
+     * Report the opposite inter across the given relation of the provided inter
      *
-     * @param glyph  the underlying glyph
-     * @param classe the interpretation class desired
-     * @return the existing interpretation if any, or null
+     * @param inter    one side of the relation
+     * @param relation the relation to cross
+     * @return the vertex at the opposite side of the relation
      */
-    public static Inter getInter (Glyph glyph,
-                                  Class classe)
+    public Inter getOppositeInter (Inter inter,
+                                   Relation relation)
     {
-        for (Inter inter : glyph.getInterpretations()) {
-            if (classe.isAssignableFrom(inter.getClass())) {
-                return inter;
-            }
-        }
-
-        return null;
+        return Graphs.getOppositeVertex(this, relation, inter);
     }
 
     //-------------//
@@ -344,8 +365,7 @@ public class SIGraph
             map.put(inter, concurrents);
 
             for (Relation rel : getExclusions(inter)) {
-                Inter concurrent = (getEdgeTarget(rel) == inter) ? getEdgeSource(rel)
-                        : getEdgeTarget(rel);
+                Inter concurrent = getOppositeInter(inter, rel);
 
                 if ((inter.getId() < concurrent.getId()) && inters.contains(concurrent)) {
                     concurrents.add(concurrent);
@@ -467,6 +487,37 @@ public class SIGraph
         }
 
         return relations;
+    }
+
+    //-------------//
+    // getStemLine //
+    //-------------//
+    /**
+     * Compute the logical connection line of a provided stem, taking all its stem
+     * connections into account.
+     *
+     * @param stem the physical stem
+     * @return the connection range
+     */
+    public Line2D getStemLine (StemInter stem)
+    {
+        Point2D top = stem.getGlyph().getStartPoint(Orientation.VERTICAL);
+        Point2D bottom = stem.getGlyph().getStopPoint(Orientation.VERTICAL);
+
+        for (Relation rel : getRelations(stem, StemConnection.class)) {
+            StemConnection link = (StemConnection) rel;
+            Point2D cross = link.getAnchorPoint();
+
+            if (cross.getY() < top.getY()) {
+                top = cross;
+            }
+
+            if (cross.getY() > bottom.getY()) {
+                bottom = cross;
+            }
+        }
+
+        return new Line2D.Double(top, bottom);
     }
 
     //-------------//

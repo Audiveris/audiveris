@@ -17,7 +17,7 @@ import omr.glyph.facets.Glyph;
 import omr.util.HorizontalSide;
 
 /**
- * Class {@code StemInter} represents instances of Stem interpretations.
+ * Class {@code StemInter} represents Stem interpretations.
  *
  * @author Hervé Bitteur
  */
@@ -66,8 +66,7 @@ public class StemInter
     // lookupHead //
     //------------//
     /**
-     * Lookup a head connected to this stem, with proper head side and
-     * pitch values.
+     * Lookup a head connected to this stem, with proper head side and pitch values.
      * Beware side is defined WRT head, not WRT stem.
      *
      * @param side  desired head side
@@ -77,18 +76,16 @@ public class StemInter
     public Inter lookupHead (HorizontalSide side,
                              int pitch)
     {
-        for (Relation rel : sig.edgesOf(this)) {
-            if (rel instanceof HeadStemRelation) {
-                HeadStemRelation hsRel = (HeadStemRelation) rel;
+        for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
+            HeadStemRelation hsRel = (HeadStemRelation) rel;
 
-                // Check side
-                if (hsRel.getHeadSide() == side) {
-                    // Check pitch
-                    AbstractNoteInter head = (AbstractNoteInter) sig.getEdgeSource(rel);
+            // Check side
+            if (hsRel.getHeadSide() == side) {
+                // Check pitch
+                AbstractNoteInter head = (AbstractNoteInter) sig.getEdgeSource(rel);
 
-                    if (head.getPitch() == pitch) {
-                        return head;
-                    }
+                if (head.getPitch() == pitch) {
+                    return head;
                 }
             }
         }

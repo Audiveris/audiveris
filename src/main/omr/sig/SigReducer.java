@@ -19,6 +19,9 @@ import omr.grid.StaffInfo;
 import omr.math.GeoOrder;
 import omr.math.GeoUtil;
 
+import omr.run.Orientation;
+
+import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.sig.SIGraph.ReductionMode;
@@ -33,9 +36,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,6 +85,10 @@ public class SigReducer
     @Navigable(false)
     private final SystemInfo system;
 
+    /** Scale. */
+    @Navigable(false)
+    private final Scale scale;
+
     /** The related SIG. */
     private final SIGraph sig;
 
@@ -97,6 +107,7 @@ public class SigReducer
     {
         this.system = system;
         this.sig = sig;
+        scale = system.getSheet().getScale();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -381,6 +392,9 @@ public class SigReducer
     /**
      * If head is on the wrong side of the stem, check if there is a
      * head on the other side, located one or two step(s) further.
+     * <p>
+     * If the side is wrong and there is no head on the other side, simply remove this head-stem
+     * relation and insert exclusion instead.
      *
      * @param head the head inter (black or void)
      * @return the number of modifications done
@@ -428,7 +442,7 @@ public class SigReducer
                 }
             }
 
-            // We have a bad head+stem couple, let's remove the relationship
+            // We have a bad head+stem couple, so let's remove the relationship
             if (head.isVip() || logger.isDebugEnabled()) {
                 logger.info("Wrong side for {} on {}", head, stem);
             }
@@ -609,7 +623,7 @@ public class SigReducer
         for (Iterator<Inter> it = stems.iterator(); it.hasNext();) {
             StemInter stem = (StemInter) it.next();
 
-            if (!stemHasHeadAtStart(stem)) {
+            if (!stemHasHeadAtEnd(stem)) {
                 if (stem.isVip() || logger.isDebugEnabled()) {
                     logger.info("Deleting stem lacking starting head {}", stem);
                 }
@@ -913,8 +927,7 @@ public class SigReducer
                                            List<Inter> allNotes)
     {
         Rectangle ledgerBox = new Rectangle(ledger.getBounds());
-        int interline = system.getSheet().getScale().getInterline();
-        ledgerBox.grow(0, interline); // Very high box, but that's OK
+        ledgerBox.grow(0, scale.getInterline()); // Very high box, but that's OK
 
         // Check for another ledger on next line
         int nextIndex = index + Integer.signum(index);
@@ -988,13 +1001,40 @@ public class SigReducer
         return sig.deleteWeakInters().size();
     }
 
+    //--------------//
+    // sortBySource //
+    //--------------//
+    /**
+     * Sort the provided list of relations by decreasing contextual grade of the
+     * relations sources.
+     *
+     * @param rels the relations to sort
+     */
+    private void sortBySource (List<Relation> rels)
+    {
+        Collections.sort(
+                rels,
+                new Comparator<Relation>()
+                {
+                    @Override
+                    public int compare (Relation r1,
+                                        Relation r2)
+                    {
+                        Inter s1 = sig.getEdgeSource(r1);
+                        Inter s2 = sig.getEdgeSource(r2);
+
+                        return Double.compare(s2.getContextualGrade(), s1.getContextualGrade());
+                    }
+                });
+    }
+
     //---------------//
     // stemDirection //
     //---------------//
     /**
-     * Report the direction of the provided stem (WRT its tail).
+     * Report the direction (from head to tail) of the provided stem.
      * <p>
-     * For this, we check what is found on each stem end (beam/flag or head)
+     * For this, we check what is found on each stem end (is it a tail: beam/flag or is it a head)
      * and use contextual grade to choose the best reference.
      *
      * @param stem the stem to check
@@ -1002,56 +1042,75 @@ public class SigReducer
      */
     private int stemDirection (StemInter stem)
     {
-        double up = 0;
-        double down = 0;
+        final Line2D stemLine = sig.getStemLine(stem);
+        final List<Relation> links = new ArrayList<Relation>(
+                sig.getRelations(stem, StemConnection.class));
+        sortBySource(links);
 
-        for (Relation rel : sig.getRelations(stem, StemConnection.class)) {
-            Inter source = sig.getEdgeSource(rel);
-            StemConnection link = (StemConnection) rel;
-            StemPortion portion = link.getStemPortion();
+        for (Relation rel : links) {
+            Inter source = sig.getEdgeSource(rel); // Source is a head, a beam or a flag
 
+            // Retrieve the stem portion for this link
             if (rel instanceof HeadStemRelation) {
                 // Head -> Stem
-                HeadStemRelation headStem = (HeadStemRelation) rel;
+                HeadStemRelation link = (HeadStemRelation) rel;
+                StemPortion portion = link.getStemPortion(source, stemLine, scale);
 
-                if (portion == StemPortion.STEM_BOTTOM) {
-                    if (headStem.getHeadSide() == RIGHT) {
-                        up = Math.max(up, source.getContextualGrade());
+                if (portion == STEM_BOTTOM) {
+                    if (link.getHeadSide() == RIGHT) {
+                        return -1;
                     }
-                } else if (portion == StemPortion.STEM_TOP) {
-                    if (headStem.getHeadSide() == LEFT) {
-                        down = Math.max(down, source.getContextualGrade());
+                } else if (portion == STEM_TOP) {
+                    if (link.getHeadSide() == LEFT) {
+                        return 1;
                     }
                 }
             } else {
                 // Tail (Beam or Flag) -> Stem
-                if (portion == StemPortion.STEM_BOTTOM) {
-                    down = Math.max(down, source.getContextualGrade());
-                } else if (portion == StemPortion.STEM_TOP) {
-                    up = Math.max(up, source.getContextualGrade());
+                if (rel instanceof BeamStemRelation) {
+                    // Beam -> Stem
+                    BeamStemRelation link = (BeamStemRelation) rel;
+                    StemPortion portion = link.getStemPortion(source, stemLine, scale);
+
+                    return (portion == STEM_TOP) ? (-1) : 1;
+                } else {
+                    // Flag -> Stem
+                    FlagStemRelation link = (FlagStemRelation) rel;
+                    StemPortion portion = link.getStemPortion(source, stemLine, scale);
+
+                    if (portion == STEM_TOP) {
+                        return -1;
+                    }
+
+                    if (portion == STEM_BOTTOM) {
+                        return 1;
+                    }
                 }
             }
         }
 
-        return Double.compare(down, up);
+        return 0; // Cannot decide!
     }
 
-    //--------------------//
-    // stemHasHeadAtStart //
-    //--------------------//
+    //------------------//
+    // stemHasHeadAtEnd //
+    //------------------//
     /**
-     * Check if the stem has a head at one (starting) end.
+     * Check if the stem has at least a head at some end.
      *
      * @param stem the stem inter
      * @return true if OK
      */
-    private boolean stemHasHeadAtStart (StemInter stem)
+    private boolean stemHasHeadAtEnd (StemInter stem)
     {
-        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
-            HeadStemRelation hsRel = (HeadStemRelation) rel;
+        final Line2D stemLine = sig.getStemLine(stem);
 
+        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
             // Check stem portion
-            if (hsRel.getStemPortion() != StemPortion.STEM_MIDDLE) {
+            HeadStemRelation hsRel = (HeadStemRelation) rel;
+            Inter head = sig.getOppositeInter(stem, rel);
+
+            if (hsRel.getStemPortion(head, stemLine, scale) != STEM_MIDDLE) {
                 return true;
             }
         }
@@ -1063,26 +1122,31 @@ public class SigReducer
     // stemHasSingleHeadEnd //
     //----------------------//
     /**
-     * Check if the stem does not have one head at each end
+     * Check if the stem does not have heads at both ends.
+     * <p>
+     * If heads are found at the "tail side" of the stem, their relations to the stem are removed
+     * (TODO: and replaced by exclusions?).
      *
      * @param stem the stem inter
      * @return true if OK
      */
     private boolean stemHasSingleHeadEnd (StemInter stem)
     {
-        final int dir = stemDirection(stem);
+        final Line2D stemLine = sig.getStemLine(stem);
+        final int stemDir = stemDirection(stem);
 
-        if (dir == 0) {
+        if (stemDir == 0) {
             return true; // We cannot decide
         }
 
-        final StemPortion forbidden = (dir > 0) ? STEM_BOTTOM : STEM_TOP;
+        final StemPortion forbidden = (stemDir > 0) ? STEM_BOTTOM : STEM_TOP;
         final List<Relation> toRemove = new ArrayList<Relation>();
 
         for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
             // Check stem portion
             HeadStemRelation hsRel = (HeadStemRelation) rel;
-            StemPortion portion = hsRel.getStemPortion();
+            Inter head = sig.getOppositeInter(stem, rel);
+            StemPortion portion = hsRel.getStemPortion(head, stemLine, scale);
 
             if (portion == forbidden) {
                 if (stem.isVip() || logger.isDebugEnabled()) {

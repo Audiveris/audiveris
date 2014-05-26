@@ -15,11 +15,14 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.sheet.Scale;
+import static omr.sig.StemPortion.*;
 
 import omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.awt.geom.Line2D;
 
 /**
  * Class {@code HeadStemRelation} represents the relation support between a head and a
@@ -61,6 +64,29 @@ public class HeadStemRelation
     public String getName ()
     {
         return "Head-Stem";
+    }
+
+    //----------------//
+    // getStemPortion //
+    //----------------//
+    @Override
+    public StemPortion getStemPortion (Inter source,
+                                       Line2D stemLine,
+                                       Scale scale)
+    {
+        final double margin = source.getBounds().height * constants.anchorHeightRatio.getValue();
+        final double midStem = (stemLine.getY1() + stemLine.getY2()) / 2;
+        final double anchor = anchorPoint.getY();
+
+        if (anchor == midStem) {
+            return STEM_MIDDLE;
+        }
+
+        if (anchor > midStem) {
+            return (anchor > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
+        } else {
+            return (anchor < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
+        }
     }
 
     //------------------//
@@ -146,8 +172,6 @@ public class HeadStemRelation
         StringBuilder sb = new StringBuilder(super.internals());
         sb.append(" ").append(headSide);
 
-        sb.append(",").append(stemPortion);
-
         return sb.toString();
     }
 
@@ -179,5 +203,9 @@ public class HeadStemRelation
         final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.3,
                 "Maximum horizontal gap between stem & head");
+
+        final Constant.Ratio anchorHeightRatio = new Constant.Ratio(
+                0.25,
+                "Vertical margin for stem anchor portion (as ratio of head height)");
     }
 }

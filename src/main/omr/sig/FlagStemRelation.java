@@ -12,11 +12,15 @@
 package omr.sig;
 
 import omr.constant.ConstantSet;
+import static omr.glyph.ShapeSet.FlagsUp;
 
 import omr.sheet.Scale;
+import static omr.sig.StemPortion.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.awt.geom.Line2D;
 
 /**
  * Class {@code FlagStemRelation} represents the relation support between a flag and a
@@ -42,6 +46,9 @@ public class FlagStemRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // getName //
+    //---------//
     @Override
     public String getName ()
     {
@@ -72,6 +79,23 @@ public class FlagStemRelation
         return constants.yGapMax;
     }
 
+    //----------------//
+    // getStemPortion //
+    //----------------//
+    @Override
+    public StemPortion getStemPortion (Inter source,
+                                       Line2D stemLine,
+                                       Scale scale)
+    {
+        final double margin = scale.getInterline();
+
+        if (FlagsUp.contains(source.getShape())) {
+            return (anchorPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
+        } else {
+            return (anchorPoint.getY() < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
+        }
+    }
+
     @Override
     protected Scale.Fraction getXInGapMax ()
     {
@@ -94,7 +118,6 @@ public class FlagStemRelation
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" ").append(stemPortion);
 
         return sb.toString();
     }

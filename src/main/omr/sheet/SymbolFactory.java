@@ -48,7 +48,6 @@ import omr.sig.Inter;
 import omr.sig.NumberInter;
 import omr.sig.RestInter;
 import omr.sig.SIGraph;
-import omr.sig.StemPortion;
 
 import omr.util.Navigable;
 
@@ -264,11 +263,12 @@ public class SymbolFactory
     {
         // Look for stems nearby, using the lowest (for up) or highest (for down) third of height
         final Shape shape = flag.getShape();
-        final boolean isUp = FlagsUp.contains(shape);
+        final boolean isFlagUp = FlagsUp.contains(shape);
         final int stemWidth = sheet.getMainStem();
         final Rectangle flagBox = flag.getBounds();
         final int height = (int) Math.rint(flagBox.height / 3.0);
-        final int y = isUp ? ((flagBox.y + flagBox.height) - height - params.maxStemFlagGapY)
+        final int y = isFlagUp
+                ? ((flagBox.y + flagBox.height) - height - params.maxStemFlagGapY)
                 : (flagBox.y + params.maxStemFlagGapY);
 
         // We need a flag ref point to compute x and y distances to stem
@@ -276,14 +276,14 @@ public class SymbolFactory
         final Section section = glyph.getFirstSection();
         final Point refPt = new Point(
                 flagBox.x,
-                isUp ? section.getStartCoord() : section.getStopCoord());
+                isFlagUp ? section.getStartCoord() : section.getStopCoord());
         final int midFlagY = (section.getStartCoord() + section.getStopCoord()) / 2;
 
         //TODO: -1 is used to cope with stem margin when erased (To be improved)
-        final Rectangle box = new Rectangle((flagBox.x - 1) - stemWidth, y, stemWidth, height);
-        glyph.addAttachment("fs", box);
+        final Rectangle luBox = new Rectangle((flagBox.x - 1) - stemWidth, y, stemWidth, height);
+        glyph.addAttachment("fs", luBox);
 
-        final List<Inter> stems = sig.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, box);
+        final List<Inter> stems = sig.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
         boolean inserted = false;
 
         for (Inter stem : stems) {
@@ -291,8 +291,8 @@ public class SymbolFactory
             Point2D start = stemGlyph.getStartPoint(VERTICAL);
             Point2D stop = stemGlyph.getStopPoint(VERTICAL);
             Point2D crossPt = LineUtil.intersectionAtY(start, stop, refPt.getY());
-            double xGap = refPt.getX() - crossPt.getX();
-            double yGap;
+            final double xGap = refPt.getX() - crossPt.getX();
+            final double yGap;
 
             if (refPt.getY() < start.getY()) {
                 yGap = start.getY() - refPt.getY();
@@ -306,20 +306,21 @@ public class SymbolFactory
             fRel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
             if (fRel.getGrade() >= fRel.getMinGrade()) {
-                // Determine and check stem portion
-                //TODO: this may be too strict, STEM_MIDDLE can happen with stack of flags?
+                fRel.setAnchorPoint(
+                        LineUtil.intersectionAtY(
+                                start,
+                                stop,
+                                isFlagUp ? ((flagBox.y + flagBox.height) - 1) : flagBox.y));
+
+                // Check consistency between flag direction and vertical position on stem
                 double midStemY = (start.getY() + stop.getY()) / 2;
 
-                if (isUp) {
-                    if (midFlagY > midStemY) {
-                        fRel.setStemPortion(StemPortion.STEM_BOTTOM);
-                    } else {
+                if (isFlagUp) {
+                    if (midFlagY <= midStemY) {
                         continue;
                     }
                 } else {
-                    if (midFlagY < midStemY) {
-                        fRel.setStemPortion(StemPortion.STEM_TOP);
-                    } else {
+                    if (midFlagY >= midStemY) {
                         continue;
                     }
                 }

@@ -19,7 +19,7 @@ import omr.sheet.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.geom.Point2D;
+import java.awt.geom.Line2D;
 
 /**
  * Class {@code BeamStemRelation} implements the geographic link between a beam
@@ -40,9 +40,6 @@ public class BeamStemRelation
     /** Which portion of beam is used?. */
     private BeamPortion beamPortion;
 
-    /** Precise point where the stem crosses the beam. */
-    private Point2D crossPoint;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamStemRelation object.
@@ -60,18 +57,23 @@ public class BeamStemRelation
         return beamPortion;
     }
 
-    /**
-     * @return the crossPoint
-     */
-    public Point2D getCrossPoint ()
-    {
-        return crossPoint;
-    }
-
     @Override
     public String getName ()
     {
         return "Beam-Stem";
+    }
+
+    //----------------//
+    // getStemPortion //
+    //----------------//
+    @Override
+    public StemPortion getStemPortion (Inter source,
+                                       Line2D stemLine,
+                                       Scale scale)
+    {
+        double midStem = (stemLine.getY1() + stemLine.getY2()) / 2;
+
+        return (anchorPoint.getY() < midStem) ? StemPortion.STEM_TOP : StemPortion.STEM_BOTTOM;
     }
 
     //------------------//
@@ -104,14 +106,6 @@ public class BeamStemRelation
     public void setBeamPortion (BeamPortion beamPortion)
     {
         this.beamPortion = beamPortion;
-    }
-
-    /**
-     * @param crossPoint the crossPoint to set
-     */
-    public void setCrossPoint (Point2D crossPoint)
-    {
-        this.crossPoint = crossPoint;
     }
 
     //----------------//
@@ -159,17 +153,14 @@ public class BeamStemRelation
         return getYGapMaximum();
     }
 
+    //-----------//
+    // internals //
+    //-----------//
     @Override
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());
         sb.append(" ").append(beamPortion);
-
-        if (crossPoint != null) {
-            sb.append(String.format("[x:%.0f,y:%.0f]", crossPoint.getX(), crossPoint.getY()));
-        }
-
-        sb.append(",").append(stemPortion);
 
         return sb.toString();
     }

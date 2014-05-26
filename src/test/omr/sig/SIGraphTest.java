@@ -105,13 +105,11 @@ public class SIGraphTest
         //        Relation hs = factory.createEdge(head, stem);
         HeadStemRelation hs = new HeadStemRelation();
         hs.setHeadSide(HorizontalSide.LEFT);
-        hs.setStemPortion(StemPortion.STEM_TOP);
         hs.setGrade(0.7);
         sig.addEdge(head, stem, hs);
 
         HeadStemRelation hs2 = new HeadStemRelation();
         hs2.setHeadSide(HorizontalSide.LEFT);
-        hs2.setStemPortion(StemPortion.STEM_TOP);
         hs2.setGrade(0.7);
         sig.addEdge(blanche, stem, hs2);
 

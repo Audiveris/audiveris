@@ -216,13 +216,14 @@ public class StemsBuilder
     //-----------//
     /**
      * Link stems to suitable heads and beams in the system.
+     * Retrieval is driven by heads (since a stem always needs a head), and can use beams.
      * <pre>
      * Synopsis:
      *
      * - retrieve systemSeeds, systemBeams, systemHeads
      *
      * FOREACH head in systemHeads:
-     *      FOREACH corner:
+     *      FOREACH corner of the head:
      *          - getReferencePoint()
      *          - getLookupArea()
      *          - link()
@@ -230,14 +231,14 @@ public class StemsBuilder
      *              - lookupSeeds()
      *              - lookupChunks()
      *              - includeItems()
-     *                  - createStemInter() for relevant items
-     *                  - connectHeadStem() for relevant items
+     *                  - createStemInter() for each relevant item
+     *                  - connectHeadStem() for each relevant item
      *              - connectBeamStem() for relevant beams
      *
      * - retrieve systemStems
      *
      * FOREACH head in systemHeads:
-     *      FOREACH corner:
+     *      FOREACH corner of the head:
      *          - reuse()
      *              - connectHeadStem() for relevant stems
      *
@@ -331,7 +332,9 @@ public class StemsBuilder
                     public int compare (BeamStemRelation o1,
                                         BeamStemRelation o2)
                     {
-                        return Double.compare(o1.getCrossPoint().getX(), o2.getCrossPoint().getX());
+                        return Double.compare(
+                                o1.getAnchorPoint().getX(),
+                                o2.getAnchorPoint().getX());
                     }
                 });
 
@@ -339,7 +342,7 @@ public class StemsBuilder
 
         for (BeamStemRelation rel : rels) {
             if (prevRel != null) {
-                double dx = rel.getCrossPoint().getX() - prevRel.getCrossPoint().getX();
+                double dx = rel.getAnchorPoint().getX() - prevRel.getAnchorPoint().getX();
 
                 if (dx < params.minBeamStemsGap) {
                     // Check if there is already an exclusion between the two stems
@@ -387,13 +390,11 @@ public class StemsBuilder
      */
     private void checkHeadStems (Inter head)
     {
-        // Retrieve all nearby stems
+        // Retrieve all stems connected to this head
         List<Inter> allStems = new ArrayList<Inter>();
 
-        for (Relation rel : sig.edgesOf(head)) {
-            if (rel instanceof HeadStemRelation) {
-                allStems.add(sig.getEdgeTarget(rel));
-            }
+        for (Relation rel : sig.getRelations(head, HeadStemRelation.class)) {
+            allStems.add(sig.getEdgeTarget(rel));
         }
 
         // List of non-conflicting stems ensembles
@@ -742,7 +743,7 @@ public class StemsBuilder
                 List<AbstractBeamInter> beams = new ArrayList<AbstractBeamInter>();
                 int groupStart = lookupBeams(beams, beamCandidates);
 
-                // If we have a good beam, stop at the end of beam group
+                // If we have a good beam, stop at the beginning of beam group
                 // using the good beam for the target point
                 if (groupStart != -1) {
                     targetPt = getTargetPt(getLimit(beams.get(groupStart)));
@@ -882,14 +883,17 @@ public class StemsBuilder
                     final Glyph stemGlyph = stemInter.getGlyph();
                     final Line2D beamLimit = getLimit(beam);
                     bRel = new BeamStemRelation();
-                    bRel.setStemPortion(
-                            (yDir > 0) ? StemPortion.STEM_BOTTOM : StemPortion.STEM_TOP);
 
                     // Precise cross point
                     Point2D start = stemGlyph.getStartPoint(Orientation.VERTICAL);
                     Point2D stop = stemGlyph.getStopPoint(Orientation.VERTICAL);
                     Point2D crossPt = crossing(stemGlyph, beam);
-                    bRel.setCrossPoint(crossPt);
+
+                    // Anchor point
+                    bRel.setAnchorPoint(
+                            new Point2D.Double(
+                                    crossPt.getX(),
+                                    crossPt.getY() + (yDir * (beam.getHeight() - 1))));
 
                     // Abscissa -> beamPortion
                     // toLeft & toRight are >0 if within beam, <0 otherwise
@@ -961,12 +965,14 @@ public class StemsBuilder
                     final Rectangle stemBox = stemGlyph.getBounds();
                     final double xGap;
                     final double yGap;
+                    final double xAnchor;
 
                     if (headSection != null) {
                         // xGap computed on head section
                         // yGap measured between head section and stem glyph
                         Rectangle runBox = getRunBox(headSection, corner.hSide);
                         xGap = xDir * (runBox.x - refPt.getX());
+                        xAnchor = runBox.x;
 
                         int overlap = GeoUtil.yOverlap(runBox, stemBox);
                         yGap = Math.abs(Math.min(overlap, 0));
@@ -975,7 +981,8 @@ public class StemsBuilder
                         Point2D start = stemGlyph.getStartPoint(VERTICAL);
                         Point2D stop = stemGlyph.getStopPoint(VERTICAL);
                         Point2D crossPt = LineUtil.intersectionAtY(start, stop, refPt.getY());
-                        xGap = xDir * (crossPt.getX() - refPt.getX());
+                        xAnchor = crossPt.getX();
+                        xGap = xDir * (xAnchor - refPt.getX());
 
                         if (refPt.getY() < start.getY()) {
                             yGap = start.getY() - refPt.getY();
@@ -989,25 +996,10 @@ public class StemsBuilder
                     hRel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
                     if (hRel.getGrade() >= hRel.getMinGrade()) {
-                        // Determine stem portion (with 1/3 head margin)
-                        // If the stem is connected to a beam, then the actual stem end is the beam
-                        // connection point
-                        sig.getRelations(stemInter, BeamStemRelation.class);
-                        if (yDir > 0) {
-                            if (stemBox.y >= (headBox.y - (headBox.height / 3))) {
-                                hRel.setStemPortion(StemPortion.STEM_TOP);
-                            } else {
-                                hRel.setStemPortion(StemPortion.STEM_MIDDLE);
-                            }
-                        } else {
-                            if ((stemBox.y + stemBox.height) <= (headBox.y + headBox.height
-                                                                 + (headBox.height / 3))) {
-                                hRel.setStemPortion(StemPortion.STEM_BOTTOM);
-                            } else {
-                                hRel.setStemPortion(StemPortion.STEM_MIDDLE);
-                            }
-                        }
-
+                        hRel.setAnchorPoint(
+                                new Point2D.Double(
+                                        xAnchor,
+                                        (yDir > 0) ? headBox.y : ((headBox.y + headBox.height) - 1)));
                         sig.addEdge(head, stemInter, hRel);
 
                         if (stemInter.isVip()) {
@@ -1435,9 +1427,13 @@ public class StemsBuilder
 
                                 if (r == null) {
                                     r = new BeamStemRelation();
-                                    r.setStemPortion(rel.getStemPortion());
                                     r.setBeamPortion(rel.getBeamPortion());
-                                    r.setCrossPoint(crossing(stem.getGlyph(), beam));
+
+                                    Point2D crossPt = crossing(stem.getGlyph(), beam);
+                                    r.setAnchorPoint(
+                                            new Point2D.Double(
+                                                    crossPt.getX(),
+                                                    crossPt.getY() + (yDir * (beam.getHeight() - 1))));
                                     r.setGrade(rel.getGrade());
                                     sig.addEdge(next, stem, r);
                                 }
@@ -1906,7 +1902,7 @@ public class StemsBuilder
                 }
             }
 
-            if (head.isVip() && (rels.size() >= 2)) {
+            if (head.isVip() && (rels.size() > 1)) {
                 logger.info("VIP {} with multiple stems {}", head, stems);
             }
 
@@ -1929,7 +1925,7 @@ public class StemsBuilder
         }
 
         /**
-         * Discard the stem link with largest y gap, if any
+         * Discard the stem link with largest significant y gap, if any.
          *
          * @return true if such stem link was found
          */
@@ -1972,7 +1968,7 @@ public class StemsBuilder
             for (HeadStemRelation rel : rels) {
                 double grade = sig.getEdgeTarget(rel).getGrade();
 
-                if (worstGrade > grade) {
+                if (grade < worstGrade) {
                     worstGrade = grade;
                     worstRel = rel;
                 }
@@ -1987,8 +1983,13 @@ public class StemsBuilder
         }
 
         /**
-         * Check whether this is the canonical "shared" config.
-         * (STEM_TOP on head LEFT and STEM_BOTTOM on head RIGHT)
+         * Check whether this is the canonical "shared" configuration.
+         * (STEM_TOP on head LEFT side and STEM_BOTTOM on head RIGHT side).
+         * <pre>
+         *    |
+         *  +O+
+         *  |
+         * </pre>
          *
          * @return true if canonical
          */
@@ -1998,7 +1999,9 @@ public class StemsBuilder
             boolean right = false;
 
             for (HeadStemRelation rel : rels) {
-                StemPortion portion = rel.getStemPortion();
+                StemInter stem = (StemInter) sig.getOppositeInter(head, rel);
+                Line2D stemLine = sig.getStemLine(stem);
+                StemPortion portion = rel.getStemPortion(head, stemLine, scale);
                 HorizontalSide side = rel.getHeadSide();
                 double yGap = rel.getYDistance();
 

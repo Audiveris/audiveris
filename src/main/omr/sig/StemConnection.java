@@ -11,6 +11,11 @@
 // </editor-fold>
 package omr.sig;
 
+import omr.sheet.Scale;
+
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+
 /**
  * Class {@code StemConnection} is the basis for connections to a stem.
  *
@@ -21,29 +26,79 @@ public abstract class StemConnection
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Which part of stem is used?. */
-    protected StemPortion stemPortion;
+    /** Logical connection point. */
+    protected Point2D anchorPoint;
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getStemPortion //
     //----------------//
     /**
+     * Report the portion of the stem the provided source is connected to
+     *
+     * @param source   the item connected to the stem
+     * @param stemLine logical range of the stem
+     * @param scale    global scale
      * @return the stem Portion
      */
-    public StemPortion getStemPortion ()
-    {
-        return stemPortion;
-    }
+    public abstract StemPortion getStemPortion (Inter source,
+                                                Line2D stemLine,
+                                                Scale scale);
 
     //----------------//
-    // setStemPortion //
+    // getAnchorPoint //
     //----------------//
     /**
-     * @param stemPortion the stem portion to set
+     * Report the logical connection point, which is defined as the point with maximum
+     * extension along the logical stem.
+     * This definition allows to use the anchor ordinate to determine the precise stem portion of
+     * the connection.
+     *
+     * @return the anchor point
      */
-    public void setStemPortion (StemPortion stemPortion)
+    public Point2D getAnchorPoint ()
     {
-        this.stemPortion = stemPortion;
+        return anchorPoint;
     }
 
+    //----------------//
+    // setAnchorPoint //
+    //----------------//
+    /**
+     * Set the logical connection point.
+     *
+     * @param anchorPoint the anchor point to set
+     */
+    public void setAnchorPoint (Point2D anchorPoint)
+    {
+        this.anchorPoint = anchorPoint;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        if (anchorPoint != null) {
+            sb.append(String.format(" [x:%.0f,y:%.0f]", anchorPoint.getX(), anchorPoint.getY()));
+        }
+
+        return sb.toString();
+    }
+
+    //
+    //    //----------------//
+    //    // setStemPortion //
+    //    //----------------//
+    //    /**
+    //     * @param stemPortion the stem portion to set
+    //     */
+    //    @Deprecated
+    //    public void setStemPortion (StemPortion stemPortion)
+    //    {
+    //        this.stemPortion = stemPortion;
+    //    }
 }
