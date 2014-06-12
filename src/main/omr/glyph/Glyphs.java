@@ -27,6 +27,8 @@ import omr.sheet.Scale;
 
 import omr.util.Predicate;
 
+import org.jgrapht.graph.SimpleGraph;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,12 +36,15 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -50,7 +55,7 @@ import java.util.TreeSet;
  *
  * @author Hervé Bitteur
  */
-public class Glyphs
+public abstract class Glyphs
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -82,6 +87,70 @@ public class Glyphs
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // buildLinks //
+    //------------//
+    /**
+     * Build the graph of acceptable links within the provided collection of glyphs.
+     *
+     * @param glyphs  the provided glyphs
+     * @param adapter tells the acceptable distance for a given glyph
+     * @return the populated graph
+     */
+    public static SimpleGraph<Glyph, GlyphLink> buildLinks (Collection<Glyph> glyphs,
+                                                            LinkAdapter adapter)
+    {
+        List<Glyph> sortedGlyphs = new ArrayList<Glyph>(glyphs);
+        Collections.sort(sortedGlyphs, Glyph.byAbscissa);
+
+        /** Graph of glyphs, linked by their distance. */
+        SimpleGraph<Glyph, GlyphLink> graph = new SimpleGraph<Glyph, GlyphLink>(GlyphLink.class);
+
+        // Populate graph with all glyphs as vertices
+        for (Glyph glyph : sortedGlyphs) {
+            graph.addVertex(glyph);
+        }
+
+        // Populate edges (glyph to glyph distances) when applicable
+        for (int i = 0; i < sortedGlyphs.size(); i++) {
+            final Glyph glyph = sortedGlyphs.get(i);
+
+            // Choose appropriate maxGap depending on whether glyph is in DMZ or not
+            GlyphDistances glyphDistances = null; // Glyph-centered distance table
+            final double maxGap = adapter.getAcceptableDistance(glyph);
+            final int gapInt = (int) Math.ceil(maxGap);
+            final Rectangle fatBox = glyph.getBounds();
+            fatBox.grow(gapInt, gapInt);
+
+            final int xBreak = fatBox.x + fatBox.width; // Glyphs are sorted by abscissa
+
+            for (Glyph other : sortedGlyphs.subList(i + 1, sortedGlyphs.size())) {
+                Rectangle otherBox = other.getBounds();
+
+                // Rough filtering, using fat box intersection
+                if (!fatBox.intersects(otherBox)) {
+                    continue;
+                } else if (otherBox.x > xBreak) {
+                    break;
+                }
+
+                // We now need the glyph distance table, if not yet computed
+                if (glyphDistances == null) {
+                    glyphDistances = new GlyphDistances(glyph, fatBox);
+                }
+
+                // Precise distance from glyph to other
+                double dist = glyphDistances.distanceTo(other);
+
+                if (dist <= maxGap) {
+                    graph.addEdge(glyph, other, new GlyphLink.Nearby(dist));
+                }
+            }
+        }
+
+        return graph;
+    }
+
     //-----------------//
     // byReverseLength //
     //-----------------//
@@ -761,5 +830,47 @@ public class Glyphs
     public static String toString (Glyph... glyphs)
     {
         return toString("glyphs", glyphs);
+    }
+
+    //----------//
+    // weightOf //
+    //----------//
+    /**
+     * Report the total weight of the collection
+     *
+     * @param glyphs the provided collection of glyph instances
+     * @return the cumulated weight
+     */
+    public static int weightOf (Collection<Glyph> glyphs)
+    {
+        int total = 0;
+
+        if (glyphs != null) {
+            for (Glyph glyph : glyphs) {
+                total += glyph.getWeight();
+            }
+        }
+
+        return total;
+    }
+
+    //~ Inner Interfaces ---------------------------------------------------------------------------
+    //-------------//
+    // LinkAdapter //
+    //-------------//
+    /**
+     * Adapter used by buildLinks() method, to provide the maximum acceptable distance.
+     */
+    public static interface LinkAdapter
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        /**
+         * Report the maximum acceptable distance around the provided glyph.
+         *
+         * @param glyph the glyph at hand
+         * @return the maximum distance to create a link
+         */
+        double getAcceptableDistance (Glyph glyph);
     }
 }

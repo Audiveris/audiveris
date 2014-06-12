@@ -59,7 +59,7 @@ public abstract class AbstractBeamInter
                                  Line2D median,
                                  double height)
     {
-        super(glyph, shape, impacts);
+        super(glyph, null, shape, impacts);
         this.median = median;
         this.height = height;
 

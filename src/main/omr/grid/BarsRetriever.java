@@ -95,7 +95,7 @@ import java.util.TreeSet;
  * Bar lines are used to:
  * <ul>
  * <li>Determine the gathering of staves into systems and parts</li>
- * <li>Determine measures</li>
+ * <li>Determine measures (later)</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -134,7 +134,7 @@ public class BarsRetriever
     /** All alignments found between bars across staves. */
     private final Set<BarAlignment> alignments = new LinkedHashSet<BarAlignment>();
 
-    /** All connections found between bars across staves. */
+    /** All (physical) connections found between bars across staves. */
     private final Set<BarConnection> connections = new LinkedHashSet<BarConnection>();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -273,14 +273,20 @@ public class BarsRetriever
         // Purge long peaks that do not connect staves (and delete their alignments/connections)
         purgeLongPeaks();
 
-        // Refine all staff side abscissae
-        refineSides();
-
         // Create systems & parts from bar connections
         createSystemsAndParts();
 
         // Purge alignments across systems, they are not relevant
         purgeCrossAlignments();
+
+        // Purge brace-based false barlines
+        purgeBraces();
+
+        // Purge C-clef-based false barlines
+        purgeCClefs();
+
+        // Refine all staff side abscissae
+        refineSides();
 
         // Create barline interpretations within each system
         Map<BarPeak, BarlineInter> interMap = createBarlineInters();
@@ -354,13 +360,19 @@ public class BarsRetriever
      */
     private void boostAlignedBars (Map<BarPeak, BarlineInter> interMap)
     {
-        final double ratio = constants.alignedBoostRatio.getValue();
+        final double up = constants.alignedIncreaseRatio.getValue();
+        final double down = constants.unalignedDecreaseRatio.getValue();
 
         for (SystemInfo system : sheet.getSystems()) {
-            for (StaffInfo staff : system.getStaves()) {
+            final List<StaffInfo> staves = system.getStaves();
+            final boolean isMultiStaff = staves.size() > 1;
+
+            for (StaffInfo staff : staves) {
                 for (BarPeak peak : staff.getBarPeaks()) {
                     if (isAligned(peak, TOP) || isAligned(peak, BOTTOM)) {
-                        interMap.get(peak).boost(ratio);
+                        interMap.get(peak).increase(up);
+                    } else if (isMultiStaff) {
+                        interMap.get(peak).decrease(down);
                     }
                 }
             }
@@ -409,6 +421,8 @@ public class BarsRetriever
         StopWatch watch = new StopWatch(isThin ? "THIN" : "THICK");
         watch.start("buildSticks()");
 
+        final double halfLine = scale.getMaxFore() / 2.0;
+
         // Preselect sections of proper max width (thin or thick)
         List<Section> allSections = getSectionsByWidth(maxWidth);
         logger.debug("isThin:{} sections:{}", isThin, allSections.size());
@@ -446,11 +460,11 @@ public class BarsRetriever
                         // Check whether the glyph gets above or below the staff
                         Rectangle glyphBox = glyph.getBounds();
 
-                        if ((peak.getTop() - glyphBox.y) > params.maxBarExtension) {
+                        if ((peak.getTop() - halfLine - glyphBox.y) > params.maxBarExtension) {
                             peak.setAbove();
                         }
 
-                        if (((glyphBox.y + glyphBox.height) - 1 - peak.getBottom()) > params.maxBarExtension) {
+                        if (((glyphBox.y + glyphBox.height) - 1 - halfLine - peak.getBottom()) > params.maxBarExtension) {
                             peak.setBelow();
                         }
                     }
@@ -494,7 +508,15 @@ public class BarsRetriever
 
         final CoreData data = AreaUtil.verticalCore(pixelFilter, leftLine, rightLine);
 
-        logger.debug("{}", data);
+        if (p1.getGlyph().isVip() || p2.getGlyph().isVip()) {
+            logger.info(
+                    "checkConnection s#{} {} and s#{} {} {}",
+                    p1.getStaff().getId(),
+                    p1,
+                    p2.getStaff().getId(),
+                    p2,
+                    data);
+        }
 
         if ((data.gap <= params.maxConnectionGap)
             && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
@@ -779,6 +801,30 @@ public class BarsRetriever
         logger.info("{}Staves:  {}", sheet.getLogPrefix(), ids);
         logger.info("{}Parts:   {}", sheet.getLogPrefix(), partTops);
         logger.info("{}Systems: {}", sheet.getLogPrefix(), systemTops);
+    }
+
+    //------------------//
+    // getConnectedPeak //
+    //------------------//
+    /**
+     * Report the peak on desired side which is connected to the provided one.
+     *
+     * @param peak the provided peak
+     * @param side on which vertical side to loo
+     * @return the connected peak found or null
+     */
+    private BarPeak getConnectedPeak (BarPeak peak,
+                                      VerticalSide side)
+    {
+        final VerticalSide opposite = side.opposite();
+
+        for (BarConnection connection : connections) {
+            if (connection.getPeak(opposite) == peak) {
+                return connection.getPeak(side);
+            }
+        }
+
+        return null;
     }
 
     //--------------//
@@ -1087,6 +1133,129 @@ public class BarsRetriever
         }
     }
 
+    //-------------//
+    // purgeBraces //
+    //-------------//
+    /**
+     * Purge brace portions mistaken for bar lines.
+     * Wrong bar line may result from mistakes on brace portion (on left of staff).
+     * Since we have a brace, we have several staves embraced, so examine the cross-staff
+     * connections to detect such case.
+     */
+    private void purgeBraces ()
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            List<StaffInfo> staves = system.getStaves();
+
+            if (staves.size() == 1) {
+                continue;
+            }
+
+            StaffLoop:
+            for (StaffInfo staff : staves) {
+                logger.debug("purgeBraces system#{} staff#{}", system.getId(), staff.getId());
+
+                BarPeak firstPeak = staff.getBarPeaks().get(0);
+
+                // Braces are thick
+                if (firstPeak.isThin()) {
+                    continue;
+                }
+
+                // Check staff above and below this one, for connection
+                for (VerticalSide side : VerticalSide.values()) {
+                    BarPeak otherPeak = getConnectedPeak(firstPeak, side);
+
+                    if (otherPeak != null) {
+                        continue StaffLoop;
+                    }
+                }
+
+                // Here we have an isolated  (thick) first bar on a multi-staff system!
+                if (firstPeak.getGlyph().isVip()) {
+                    logger.info("staff#{} removed brace portion: {}", staff.getId(), firstPeak);
+                }
+
+                staff.removeBarPeaks(Arrays.asList(firstPeak));
+            }
+        }
+    }
+
+    //-------------//
+    // purgeCClefs //
+    //-------------//
+    /**
+     * Purge C-Clef portions mistaken for bar lines.
+     * C-clef have portions that can be mistaken for bar lines. Look for this immediately after
+     * a bar line.
+     */
+    private void purgeCClefs ()
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            List<StaffInfo> staves = system.getStaves();
+
+            StaffLoop:
+            for (StaffInfo staff : staves) {
+                logger.debug("purgeCClefs system#{} staff#{}", system.getId(), staff.getId());
+
+                List<BarPeak> peaks = staff.getBarPeaks();
+                List<BarPeak> toRemove = new ArrayList<BarPeak>();
+                BarPeak prevPeak = null;
+
+                for (int i = 0; i < peaks.size(); i++) {
+                    BarPeak peak = peaks.get(i);
+
+                    if (!peak.isThin()) {
+                        if (prevPeak != null) {
+                            // Check gap is larger than double bar and smaller than measure
+                            int gap = peak.getStart() - prevPeak.getStop() - 1;
+
+                            if ((gap > params.maxDoubleBarGap)
+                                && (gap < params.minMeasureWidth)
+                                && !isConnected(peak, TOP)
+                                && !isConnected(peak, BOTTOM)) {
+                                if (peak.getGlyph().isVip()) {
+                                    logger.warn("Got a C-Clef part1 at {}", peak);
+                                }
+
+                                toRemove.add(peak);
+
+                                // Look for thin peak right after this one
+                                BarPeak nextPeak = (i < (peaks.size() - 1)) ? peaks.get(i + 1) : null;
+
+                                if (nextPeak != null) {
+                                    int nextGap = nextPeak.getStart() - peak.getStop() - 1;
+
+                                    if (nextPeak.isThin()
+                                        && (nextGap <= params.maxDoubleBarGap)
+                                        && !isConnected(nextPeak, TOP)
+                                        && !isConnected(nextPeak, BOTTOM)) {
+                                        if (peak.getGlyph().isVip() || nextPeak.getGlyph().isVip()) {
+                                            logger.warn("Got a C-Clef part2 at {}", nextPeak);
+                                        }
+
+                                        toRemove.add(nextPeak);
+                                        i++; // Don't browse this peak
+                                    }
+                                }
+                            } else {
+                                prevPeak = peak;
+                            }
+                        } else {
+                            prevPeak = peak;
+                        }
+                    } else {
+                        prevPeak = peak;
+                    }
+                }
+
+                if (!toRemove.isEmpty()) {
+                    staff.removeBarPeaks(toRemove);
+                }
+            }
+        }
+    }
+
     //----------------------//
     // purgeCrossAlignments //
     //----------------------//
@@ -1135,6 +1304,10 @@ public class BarsRetriever
 
             PeakLoop:
             for (BarPeak peak : staff.getBarPeaks()) {
+                if (peak.getGlyph().isVip()) {
+                    logger.warn("purgeLongPeaks on staff#{} {}", staff.getId(), peak);
+                }
+
                 // Thick bars are safe
                 if (!peak.isThin()) {
                     continue;
@@ -1241,7 +1414,7 @@ public class BarsRetriever
                 "Max vertical gap when connecting bar lines");
 
         Constant.Ratio maxConnectionWhiteRatio = new Constant.Ratio(
-                0.20,
+                0.25,
                 "Max white ratio when connecting bar lines");
 
         Scale.Fraction maxRunShift = new Scale.Fraction(
@@ -1269,12 +1442,18 @@ public class BarsRetriever
                 "Max extension of bar above or below staff line");
 
         Scale.Fraction maxDoubleBarGap = new Scale.Fraction(
-                1.0,
+                0.3,
                 "Max horizontal gap between two members of a double bar");
 
-        Constant.Ratio alignedBoostRatio = new Constant.Ratio(
+        Scale.Fraction minMeasureWidth = new Scale.Fraction(2.0, "Minimum width for a measure");
+
+        Constant.Ratio alignedIncreaseRatio = new Constant.Ratio(
                 0.30,
-                "Boost ratio for aligned bar lines");
+                "Increase ratio for aligned bar lines");
+
+        Constant.Ratio unalignedDecreaseRatio = new Constant.Ratio(
+                0.30,
+                "Decrease ratio for unaligned bar lines (in multi-staff systems)");
 
         // Constants for display
         //
@@ -1308,6 +1487,8 @@ public class BarsRetriever
 
         final int maxDoubleBarGap;
 
+        final int minMeasureWidth;
+
         // Debug
         final List<Integer> vipSections;
 
@@ -1324,6 +1505,7 @@ public class BarsRetriever
             maxBarExtension = scale.toPixels(constants.maxBarExtension);
             maxConnectionGap = scale.toPixels(constants.maxConnectionGap);
             maxDoubleBarGap = scale.toPixels(constants.maxDoubleBarGap);
+            minMeasureWidth = scale.toPixels(constants.minMeasureWidth);
             maxConnectionWhiteRatio = constants.maxConnectionWhiteRatio.getValue();
 
             // VIPs

@@ -55,7 +55,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -114,8 +113,11 @@ public class SystemInfo
     /** Dedicated compound builder */
     private final CompoundBuilder compoundBuilder;
 
-    /** Dedicated beams builder */
+    /** Dedicated keys builder */
     public final BeamsBuilder beamsBuilder;
+
+    /** Dedicated beams builder */
+    public final KeysBuilder keysBuilder;
 
     /** Dedicated notes builder */
     public final NotesBuilder notesBuilder;
@@ -247,6 +249,7 @@ public class SystemInfo
         measuresBuilder = new MeasuresBuilder(this);
         textBuilder = new TextBuilder(this);
         compoundBuilder = new CompoundBuilder(this);
+        keysBuilder = new KeysBuilder(this);
         beamsBuilder = new BeamsBuilder(this);
         notesBuilder = new NotesBuilder(this);
         verticalsBuilder = new VerticalsBuilder(this);

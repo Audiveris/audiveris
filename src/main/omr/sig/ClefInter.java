@@ -20,6 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Class {@code ClefInter} handles a Clef interpretation.
@@ -33,49 +36,83 @@ import java.awt.Point;
  * <img
  * src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Middle_C_in_four_clefs.svg/600px-Middle_C_in_four_clefs.svg.png"
  * />
+ * <p>
+ * Step line of the clef : -4 for top line (Baritone), -2 for Bass and Tenor,
+ * 0 for Alto, +2 for Treble and Mezzo-Soprano, +4 for bottom line (Soprano).
  *
  * @author Hervé Bitteur
  */
 public class ClefInter
-        extends AbstractInter
+        extends AbstractPitchedInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ClefInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** A dummy default clef to be used when no current clef is defined */
-    ///private static Clef defaultClef = new Clef(null, null, Shape.G_CLEF, null, +2, null);
-    /**
-     * Step line of the clef : -4 for top line (Baritone), -2 for Bass and Tenor,
-     * 0 for Alto, +2 for Treble and Mezzo-Soprano, +4 for bottom line (Soprano).
-     */
-    private final int pitchPosition;
+    /** Map of sharp pitches per clef kind. */
+    public static final Map<Kind, int[]> sharpsMap = getSharpsMap();
+
+    /** Map of flat pitches per clef kind. */
+    public static final Map<Kind, int[]> flatsMap = getFlatsMap();
+
+    //~ Enumerations -------------------------------------------------------------------------------
+    public static enum Kind
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        TREBLE(Shape.G_CLEF, 2),
+        ALTO(Shape.C_CLEF, 0),
+        BASS(Shape.F_CLEF, -2),
+        TENOR(Shape.C_CLEF, -2);
+
+        //~ Instance fields ------------------------------------------------------------------------
+        /** Symbol shape. */
+        public final Shape shape;
+
+        /** Pitch of reference line. */
+        public final int pitch;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        Kind (Shape shape,
+              int pitch)
+        {
+            this.shape = shape;
+            this.pitch = pitch;
+        }
+    }
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ClefInter object.
      *
-     * @param glyph         the glyph to interpret
-     * @param shape         the possible shape
-     * @param grade         the interpretation quality
-     * @param pitchPosition pitch position
+     * @param glyph the glyph to interpret
+     * @param shape the possible shape
+     * @param grade the interpretation quality
+     * @param pitch pitch position
      */
     public ClefInter (Glyph glyph,
                       Shape shape,
                       double grade,
-                      int pitchPosition)
+                      int pitch)
     {
-        super(glyph, null, shape, grade);
-        this.pitchPosition = pitchPosition;
+        super(glyph, null, shape, grade, pitch);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //--------//
     // create //
     //--------//
     /**
-     * (Try to) create a Clef inter.
+     * Create a Clef inter.
      *
      * @param glyph underlying glyph
      * @param shape precise shape
@@ -83,10 +120,10 @@ public class ClefInter
      * @param staff related staff
      * @return the created instance or null if failed
      */
-    public static Inter create (Glyph glyph,
-                                Shape shape,
-                                double grade,
-                                StaffInfo staff)
+    public static ClefInter create (Glyph glyph,
+                                    Shape shape,
+                                    double grade,
+                                    StaffInfo staff)
     {
         switch (shape) {
         case G_CLEF:
@@ -118,25 +155,76 @@ public class ClefInter
         }
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
+    //-----------//
+    // guessKind //
+    //-----------//
+    public static Kind guessKind (Shape shape,
+                                  Double[] measuredPitches)
     {
-        visitor.visit(this);
+        Map<Kind, int[]> map = (shape == Shape.FLAT) ? flatsMap : sharpsMap;
+        Map<Kind, Double> results = new EnumMap<Kind, Double>(Kind.class);
+        Kind bestKind = null;
+        double bestError = Double.MAX_VALUE;
+
+        for (Entry<Kind, int[]> entry : map.entrySet()) {
+            Kind kind = entry.getKey();
+            int[] pitches = entry.getValue();
+            int count = 0;
+            double error = 0;
+
+            for (int i = 0; i < measuredPitches.length; i++) {
+                Double measured = measuredPitches[i];
+
+                if (measured != null) {
+                    count++;
+
+                    double diff = measured - pitches[i];
+                    error += (diff * diff);
+                }
+            }
+
+            if (count > 0) {
+                error /= count;
+                error = Math.sqrt(error);
+                results.put(kind, error);
+
+                if (error < bestError) {
+                    bestError = error;
+                    bestKind = kind;
+                }
+            }
+        }
+
+        logger.debug("{} results:{}", bestKind, results);
+
+        return bestKind;
     }
 
-    //------------------//
-    // getPitchPosition //
-    //------------------//
-    /**
-     * Report the vertical position of this clef within the staff
-     *
-     * @return the pitch position
-     */
-    public int getPitchPosition ()
+    //-------------//
+    // getFlatsMap //
+    //-------------//
+    private static Map<Kind, int[]> getFlatsMap ()
     {
-        return pitchPosition;
+        Map<Kind, int[]> map = new EnumMap<Kind, int[]>(Kind.class);
+        map.put(Kind.TREBLE, new int[]{0, -3, 1, -2, 2, -1, 3});
+        map.put(Kind.ALTO, new int[]{1, -2, 2, -1, 3, 0, 4});
+        map.put(Kind.BASS, new int[]{2, -1, 3, 0, 4, 1, 5});
+        map.put(Kind.TENOR, new int[]{-1, -4, 0, -3, 1, -2, 2});
+
+        return map;
+    }
+
+    //--------------//
+    // getSharpsMap //
+    //--------------//
+    private static Map<Kind, int[]> getSharpsMap ()
+    {
+        Map<Kind, int[]> map = new EnumMap<Kind, int[]>(Kind.class);
+        map.put(Kind.TREBLE, new int[]{-4, -1, -5, -2, 1, -3, 0});
+        map.put(Kind.ALTO, new int[]{-3, 0, -4, -1, 2, -2, 1});
+        map.put(Kind.BASS, new int[]{-2, 1, -3, 0, 3, -1, 2});
+        map.put(Kind.TENOR, new int[]{2, -2, 1, -3, 0, -4, -1});
+
+        return map;
     }
 }

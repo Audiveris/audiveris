@@ -31,6 +31,7 @@ import omr.sig.BraceInter;
 import omr.sig.EndingInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
+import omr.sig.KeyAlterInter;
 import omr.sig.LedgerInter;
 import omr.sig.SlurInter;
 import omr.sig.StemInter;
@@ -138,6 +139,12 @@ public abstract class PageEraser
         Point center = (glyph != null) ? glyph.getCentroid()
                 : GeoUtil.centerOf(inter.getBounds());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+    }
+
+    @Override
+    public void visit (KeyAlterInter inter)
+    {
+        visit((Inter) inter);
     }
 
     @Override
@@ -255,7 +262,7 @@ public abstract class PageEraser
         int dmzEnd = firstStaff.getDmzEnd();
         int top = firstStaff.getFirstLine().yAt(dmzEnd) - dmzDyMargin;
         int bot = lastStaff.getLastLine().yAt(dmzEnd) + dmzDyMargin;
-        g.fillRect(0, top, dmzEnd, bot - top + 1);
+        g.fillRect(system.getBounds().x, top, dmzEnd, bot - top + 1);
     }
 
     //--------------//

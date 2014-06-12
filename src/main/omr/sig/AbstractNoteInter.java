@@ -44,11 +44,14 @@ import java.util.List;
 
 /**
  * Class {@code AbstractNoteInter} is an abstract base for heads and notes interpretations.
+ * <p>
+ * TODO: in fact, this class is meant to add ShapeDescriptor only.
+ * Perhaps a true abstract "note" inter should comprise rest inter as well.
  *
  * @author Hervé Bitteur
  */
 public class AbstractNoteInter
-        extends AbstractInter
+        extends AbstractPitchedInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -59,9 +62,6 @@ public class AbstractNoteInter
     //~ Instance fields ----------------------------------------------------------------------------
     /** Shape template descriptor. */
     protected final ShapeDescriptor descriptor;
-
-    /** Pitch step. */
-    protected final int pitch;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -79,9 +79,8 @@ public class AbstractNoteInter
                               GradeImpacts impacts,
                               int pitch)
     {
-        super(box, shape, impacts);
+        super(null, box, shape, impacts, pitch);
         this.descriptor = descriptor;
-        this.pitch = pitch;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -109,17 +108,6 @@ public class AbstractNoteInter
     public ShapeDescriptor getDescriptor ()
     {
         return descriptor;
-    }
-
-    //----------//
-    // getPitch //
-    //----------//
-    /**
-     * @return the pitch
-     */
-    public int getPitch ()
-    {
-        return pitch;
     }
 
     //--------------------//

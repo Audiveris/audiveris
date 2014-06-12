@@ -276,6 +276,24 @@ public class GlyphRegression
         return "Linear Evaluator";
     }
 
+    //-----------------------//
+    // getNaturalEvaluations //
+    //-----------------------//
+    @Override
+    public Evaluation[] getNaturalEvaluations (Glyph glyph)
+    {
+        double[] ins = ShapeDescription.features(glyph);
+        Evaluation[] evals = new Evaluation[shapeCount];
+        Shape[] values = Shape.values();
+
+        for (int s = 0; s < shapeCount; s++) {
+            Shape shape = values[s];
+            evals[s] = new Evaluation(shape, 1d / measureDistance(ins, shape));
+        }
+
+        return evals;
+    }
+
     //---------------//
     // includeSample //
     //---------------//
@@ -529,24 +547,6 @@ public class GlyphRegression
     protected String getFileName ()
     {
         return BACKUP_FILE_NAME;
-    }
-
-    //-----------------------//
-    // getNaturalEvaluations //
-    //-----------------------//
-    @Override
-    protected Evaluation[] getNaturalEvaluations (Glyph glyph)
-    {
-        double[] ins = ShapeDescription.features(glyph);
-        Evaluation[] evals = new Evaluation[shapeCount];
-        Shape[] values = Shape.values();
-
-        for (int s = 0; s < shapeCount; s++) {
-            Shape shape = values[s];
-            evals[s] = new Evaluation(shape, 1d / measureDistance(ins, shape));
-        }
-
-        return evals;
     }
 
     //---------//

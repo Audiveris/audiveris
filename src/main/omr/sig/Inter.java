@@ -200,11 +200,17 @@ public interface Inter
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Boost the inter grade.
+     * Increase the inter grade.
      *
      * @param ratio ratio applied
      */
-    void boost (double ratio);
+    void increase (double ratio);
+    /**
+     * Decrease the inter grade.
+     *
+     * @param ratio ratio applied
+     */
+    void decrease (double ratio);
 
     /**
      * Delete this instance, and remove it from its containing SIG.

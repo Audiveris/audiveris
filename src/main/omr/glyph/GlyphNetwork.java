@@ -210,6 +210,29 @@ public class GlyphNetwork
         return constants.momentum.getValue();
     }
 
+    //-----------------------//
+    // getNaturalEvaluations //
+    //-----------------------//
+    @Override
+    public Evaluation[] getNaturalEvaluations (Glyph glyph)
+    {
+        double[] ins = ShapeDescription.features(glyph);
+        double[] outs = new double[shapeCount];
+        Evaluation[] evals = new Evaluation[shapeCount];
+        Shape[] values = Shape.values();
+
+        engine.run(ins, null, outs);
+        normalize(outs);
+
+        for (int s = 0; s < shapeCount; s++) {
+            Shape shape = values[s];
+            // Use a grade in 0 .. 1 range
+            evals[s] = new Evaluation(shape, outs[s]);
+        }
+
+        return evals;
+    }
+
     //------------//
     // getNetwork //
     //------------//
@@ -407,29 +430,6 @@ public class GlyphNetwork
     protected String getFileName ()
     {
         return FILE_NAME;
-    }
-
-    //-----------------------//
-    // getNaturalEvaluations //
-    //-----------------------//
-    @Override
-    protected Evaluation[] getNaturalEvaluations (Glyph glyph)
-    {
-        double[] ins = ShapeDescription.features(glyph);
-        double[] outs = new double[shapeCount];
-        Evaluation[] evals = new Evaluation[shapeCount];
-        Shape[] values = Shape.values();
-
-        engine.run(ins, null, outs);
-        normalize(outs);
-
-        for (int s = 0; s < shapeCount; s++) {
-            Shape shape = values[s];
-            // Use a grade in 0 .. 1 range
-            evals[s] = new Evaluation(shape, outs[s]);
-        }
-
-        return evals;
     }
 
     //--------------//

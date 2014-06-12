@@ -336,7 +336,7 @@ public class Clef
         case C_CLEF:
 
             // Depending on precise clef position, we can have
-            // an Alto C-clef (pp=0) or a Tenor C-clef (pp=+2) [or other stuff]
+            // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
             return (28 - this.pitchPosition - pitchPosition) / 7;
 
         case F_CLEF:

@@ -52,7 +52,7 @@ public class LedgerInter
     public LedgerInter (Glyph glyph,
                         GradeImpacts impacts)
     {
-        super(glyph, Shape.LEDGER, impacts);
+        super(glyph, null, Shape.LEDGER, impacts);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

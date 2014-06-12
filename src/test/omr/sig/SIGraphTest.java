@@ -86,19 +86,19 @@ public class SIGraphTest
         frame.setSize(600, 600);
         frame.setVisible(true);
 
-        Inter blanche = new BasicInter(Shape.NOTEHEAD_VOID, 0.5);
+        Inter blanche = new TestInter(Shape.NOTEHEAD_VOID, 0.5);
         sig.addVertex(blanche);
 
-        Inter head = new BasicInter(Shape.NOTEHEAD_BLACK, 0.6);
+        Inter head = new TestInter(Shape.NOTEHEAD_BLACK, 0.6);
         sig.addVertex(head);
 
-        Inter beam = new BasicInter(Shape.BEAM, 0.8);
+        Inter beam = new TestInter(Shape.BEAM, 0.8);
         sig.addVertex(beam);
 
-        Inter hook = new BasicInter(Shape.BEAM_HOOK, 0.7);
+        Inter hook = new TestInter(Shape.BEAM_HOOK, 0.7);
         sig.addVertex(hook);
 
-        Inter stem = new BasicInter(Shape.STEM, 0.3);
+        Inter stem = new TestInter(Shape.STEM, 0.3);
         sig.addVertex(stem);
 
         //        RelationFactory factory = new RelationFactory();
@@ -118,7 +118,7 @@ public class SIGraphTest
         sig.addEdge(beam, stem, new BasicSupport(0.2));
         sig.addEdge(hook, stem, new BasicSupport(0.4));
 
-        Inter stem2 = new BasicInter(Shape.STEM, 0.5);
+        Inter stem2 = new TestInter(Shape.STEM, 0.5);
         sig.addVertex(stem2);
         sig.addEdge(beam, stem2);
 
@@ -169,15 +169,15 @@ public class SIGraphTest
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //------------//
-    // BasicInter //
-    //------------//
-    private static class BasicInter
+    //-----------//
+    // TestInter //
+    //-----------//
+    private static class TestInter
             extends AbstractInter
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public BasicInter (Shape shape,
+        public TestInter (Shape shape,
                            double grade)
         {
             super((Glyph) null, (Rectangle) null, shape, grade);

@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.run.Orientation;
 import omr.run.Run;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
@@ -20,6 +21,7 @@ import ij.process.ByteProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,8 +41,11 @@ public class SectionsBuilder
     /** Policy for detection of junctions */
     private final JunctionPolicy junctionPolicy;
 
-    /** The lag to populate */
+    /** The lag to populate, if any */
     private final Lag lag;
+
+    /** Orientation for all sections. */
+    private final Orientation orientation;
 
     /** List of sections just created by createSections() */
     private List<Section> created;
@@ -48,9 +53,7 @@ public class SectionsBuilder
     /** All Active sections in the next column */
     private List<Section> nextActives;
 
-    /**
-     * List of sections in previous column that overlap given run in next column
-     */
+    /** List of sections in previous column that overlap given run in next column */
     private List<Section> overlappingSections;
 
     /**
@@ -64,7 +67,7 @@ public class SectionsBuilder
     // SectionsBuilder //
     //-----------------//
     /**
-     * Create an instance of SectionsBuilder.
+     * Create an instance of SectionsBuilder with a lag.
      *
      * @param lag            the lag to populate
      * @param junctionPolicy the policy to detect junctions
@@ -74,6 +77,40 @@ public class SectionsBuilder
     {
         this.lag = lag;
         this.junctionPolicy = junctionPolicy;
+
+        orientation = lag.getOrientation();
+    }
+
+    //-----------------//
+    // SectionsBuilder //
+    //-----------------//
+    /**
+     * Create an instance of SectionsBuilder, with no lag.
+     *
+     * @param orientation    desired orientation for sections
+     * @param junctionPolicy the policy to detect junctions
+     */
+    public SectionsBuilder (Orientation orientation,
+                            JunctionPolicy junctionPolicy)
+    {
+        this.orientation = orientation;
+        this.junctionPolicy = junctionPolicy;
+
+        lag = null;
+    }
+
+    //-----------------//
+    // SectionsBuilder //
+    //-----------------//
+    /**
+     * Create an instance of SectionsBuilder, with default parameters.
+     */
+    public SectionsBuilder ()
+    {
+        orientation = Orientation.VERTICAL;
+        junctionPolicy = new JunctionRatioPolicy();
+
+        lag = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -136,20 +173,51 @@ public class SectionsBuilder
         overlappingSections = null;
 
         // Reset proper Ids
-        for (Section section : lag.getVertices()) {
-            int id = section.getId();
+        if (lag != null) {
+            for (Section section : lag.getVertices()) {
+                int id = section.getId();
 
-            if (id < 0) {
-                section.setId(-id);
+                if (id < 0) {
+                    section.setId(-id);
+                }
             }
         }
 
         // Store the content of runs table into the lag?
-        if (include) {
+        if (include && (lag != null)) {
             lag.addRuns(runsTable);
         }
 
         return created;
+    }
+
+    //----------------//
+    // createSections //
+    //----------------//
+    /**
+     * Build sections out of foreground pixels in a provided buffer.
+     *
+     * @param buffer the provided buffer
+     * @param offset offset, if any, to be applied to sections
+     * @return the collection of created sections, with absolute coordinates
+     */
+    public List<Section> createSections (ByteProcessor buffer,
+                                         Point offset)
+    {
+        // Runs
+        RunsTable runTable = new RunsTableFactory(orientation, buffer, 0).createTable("temp");
+
+        // Sections
+        List<Section> sections = createSections(runTable, false);
+
+        // Translate sections to absolute coordinates
+        if (offset != null) {
+            for (Section section : sections) {
+                section.translate(offset);
+            }
+        }
+
+        return sections;
     }
 
     //----------------//
@@ -168,7 +236,7 @@ public class SectionsBuilder
                                          int minRunLength)
     {
         // Define a proper table factory
-        RunsTableFactory factory = new RunsTableFactory(lag.getOrientation(), source, minRunLength);
+        RunsTableFactory factory = new RunsTableFactory(orientation, source, minRunLength);
 
         // Create the runs table
         RunsTable table = factory.createTable(name);
@@ -195,7 +263,16 @@ public class SectionsBuilder
     private Section createSection (int firstPos,
                                    Run firstRun)
     {
-        Section section = lag.createSection(firstPos, firstRun);
+        final Section section;
+
+        if (lag != null) {
+            section = lag.createSection(firstPos, firstRun);
+        } else {
+            section = new BasicSection(orientation);
+            section.setFirstPos(firstPos);
+            section.append(firstRun);
+        }
+
         created.add(section);
 
         return section;

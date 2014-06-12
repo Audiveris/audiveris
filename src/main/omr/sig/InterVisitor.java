@@ -27,6 +27,8 @@ public interface InterVisitor
 
     void visit (AbstractNoteInter inter);
 
+    void visit (KeyAlterInter inter);
+
     void visit (BraceInter inter);
 
     void visit (StemInter inter);

@@ -20,14 +20,10 @@ import omr.glyph.facets.Glyph;
  * @author Hervé Bitteur
  */
 public class RepeatDotInter
-        extends AbstractInter
+        extends AbstractPitchedInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
-
-    /** Pitch step. */
-    protected final int pitch;
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new RepeatDotInter object.
      *
@@ -39,19 +35,6 @@ public class RepeatDotInter
                            double grade,
                            int pitch)
     {
-        super(glyph, null, Shape.REPEAT_DOT, grade);
-        this.pitch = pitch;
+        super(glyph, null, Shape.REPEAT_DOT, grade, pitch);
     }
-
-    //----------//
-    // getPitch //
-    //----------//
-    /**
-     * @return the pitch
-     */
-    public int getPitch ()
-    {
-        return pitch;
-    }
-
 }

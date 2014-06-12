@@ -285,7 +285,7 @@ public class SpotsBuilder
             int top = firstStaff.getFirstLine().yAt(dmzEnd) - dmzDyMargin;
             int bot = lastStaff.getLastLine().yAt(dmzEnd) + dmzDyMargin;
 
-            buffer.setRoi(0, top, dmzEnd, bot - top + 1);
+            buffer.setRoi(system.getBounds().x, top, dmzEnd, bot - top + 1);
             buffer.fill();
         }
 

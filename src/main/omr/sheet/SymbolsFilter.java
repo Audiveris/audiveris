@@ -106,7 +106,7 @@ public class SymbolsFilter
      * Start from the staff-free image, remove all good inters, and build the runs and
      * sections that compose symbols glyphs put in SYMBOL layer.
      * <p>
-     * For not so good inters (they have already survived the first RESOLUTION step) we put them
+     * For not so good inters (they have already survived the first REDUCTION step) we put them
      * aside as optional glyphs that can take part of the symbols glyphs clustering and thus
      * compete for valuable compounds.
      */

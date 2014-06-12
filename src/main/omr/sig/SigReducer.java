@@ -19,8 +19,6 @@ import omr.grid.StaffInfo;
 import omr.math.GeoOrder;
 import omr.math.GeoUtil;
 
-import omr.run.Orientation;
-
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
@@ -37,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

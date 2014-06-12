@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.step;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.DeltaView;
@@ -34,6 +37,8 @@ public class ScaleStep
         extends AbstractStep
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ScaleStep.class);
 
@@ -61,11 +66,13 @@ public class ScaleStep
     @Override
     public void displayUI (Sheet sheet)
     {
-        // Display delta view
-        sheet.getAssembly().addViewTab(
-                Step.DELTA_TAB,
-                new DeltaView(sheet),
-                new BoardsPane(new PixelBoard(sheet)));
+        if (constants.showDelta.isSet()) {
+            // Display delta view
+            sheet.getAssembly().addViewTab(
+                    Step.DELTA_TAB,
+                    new DeltaView(sheet),
+                    new BoardsPane(new PixelBoard(sheet)));
+        }
     }
 
     //------//
@@ -77,5 +84,19 @@ public class ScaleStep
             throws StepException
     {
         sheet.getScaleBuilder().retrieveScale();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Boolean showDelta = new Constant.Boolean(
+                false,
+                "Should we display the Delta view?");
     }
 }

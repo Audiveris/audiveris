@@ -37,7 +37,7 @@ public class SegmentInter
     public SegmentInter (SegmentInfo info,
                          GradeImpacts impacts)
     {
-        super(info.getBounds(), Shape.SEGMENT, impacts);
+        super(null, info.getBounds(), Shape.SEGMENT, impacts);
 
         this.info = info;
     }

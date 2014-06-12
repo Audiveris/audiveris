@@ -452,6 +452,16 @@ public class BasicNest
         return glyphs;
     }
 
+    //----------------//
+    // retrieveGlyphs //
+    //----------------//
+    @Override
+    public List<Glyph> retrieveGlyphs (Collection<Section> sections,
+                                       GlyphLayer layer)
+    {
+        return retrieveGlyphs(sections, layer, true, Glyph.Linking.NO_LINK);
+    }
+
     //-------------//
     // setServices //
     //-------------//

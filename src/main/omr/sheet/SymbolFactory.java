@@ -15,6 +15,7 @@ import omr.Main;
 
 import omr.glyph.Evaluation;
 import omr.glyph.Shape;
+
 import static omr.glyph.ShapeSet.*;
 import static omr.glyph.ShapeSet.Alterations;
 import static omr.glyph.ShapeSet.Clefs;
@@ -24,6 +25,7 @@ import static omr.glyph.ShapeSet.FlagsUp;
 import static omr.glyph.ShapeSet.FullTimes;
 import static omr.glyph.ShapeSet.PartialTimes;
 import static omr.glyph.ShapeSet.Rests;
+
 import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
@@ -32,11 +34,12 @@ import omr.lag.Section;
 
 import omr.math.GeoOrder;
 import omr.math.LineUtil;
+
 import static omr.run.Orientation.VERTICAL;
 
 import omr.sig.AbstractNoteInter;
 import omr.sig.AccidNoteRelation;
-import omr.sig.AlterationlInter;
+import omr.sig.AlterInter;
 import omr.sig.BarlineInter;
 import omr.sig.BraceInter;
 import omr.sig.ClefInter;
@@ -158,7 +161,7 @@ public class SymbolFactory
         } else if (Rests.contains(shape)) {
             sig.addVertex(new RestInter(glyph, shape, grade));
         } else if (Alterations.contains(shape)) {
-            AlterationlInter alterInter = new AlterationlInter(glyph, shape, grade);
+            AlterInter alterInter = AlterInter.create(glyph, shape, grade, staff);
             sig.addVertex(alterInter);
             detectAccidNoteRelation(alterInter);
         } else if (Flags.contains(shape)) {
@@ -343,7 +346,7 @@ public class SymbolFactory
      *
      * @param accid the provided accidental inter (sharp, flat or natural)
      */
-    private void detectAccidNoteRelation (AlterationlInter accid)
+    private void detectAccidNoteRelation (AlterInter accid)
     {
         // Look for notes nearby on the right side of accidental
         final int xGapMax = scale.toPixels(AccidNoteRelation.getXOutGapMaximum());

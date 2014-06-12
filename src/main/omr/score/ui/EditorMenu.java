@@ -389,6 +389,7 @@ public class EditorMenu
         {
             super("Staff");
             add(new JMenuItem(new PlotAction()));
+            add(new JMenuItem(new PlotDmzAction()));
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -415,7 +416,7 @@ public class EditorMenu
 
             public PlotAction ()
             {
-                putValue(NAME, "Projection");
+                putValue(NAME, "Staff projection");
                 putValue(SHORT_DESCRIPTION, "Display staff horizontal projection");
             }
 
@@ -424,6 +425,32 @@ public class EditorMenu
             public void actionPerformed (ActionEvent e)
             {
                 sheet.getGridBuilder().barsRetriever.plot(staff);
+            }
+        }
+        /**
+         * Plot the x-axis projection of the current staff DMZ.
+         */
+        private class PlotDmzAction
+                extends AbstractAction
+        {
+            //~ Constructors -----------------------------------------------------------------------
+
+            public PlotDmzAction ()
+            {
+                putValue(NAME, "DMZ projection");
+                putValue(SHORT_DESCRIPTION, "Display staff DMZ horizontal projection");
+            }
+
+            //~ Methods ----------------------------------------------------------------------------
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                for (SystemInfo system : sheet.getSystems()) {
+                    if (system.getStaves().contains(staff)) {
+                        system.keysBuilder.plot(staff);
+                        return;
+                    }
+                }
             }
         }
     }

@@ -16,6 +16,7 @@ import omr.glyph.facets.Glyph;
 
 /**
  * Class {@code RestInter} represents a rest.
+ * TODO: Should be closer to AbstractNoteInter?
  *
  * @author Hervé Bitteur
  */

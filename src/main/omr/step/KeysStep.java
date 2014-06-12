@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                  A l t e r a t i o n I n t e r                                 //
+//                                         K e y s S t e p                                        //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -9,43 +9,45 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sig;
+package omr.step;
 
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.sheet.SystemInfo;
 
 /**
- * Class {@code AlterationlInter} represents an alteration (sharp, flat, natural,
- * double-sharp, double-flat).
+ * Class {@code KeysStep} implements <b>KEYS</b> step, which handles the beginning of
+ * each staff (DMZ).
  *
  * @author Hervé Bitteur
  */
-public class AlterationlInter
-        extends AbstractInter
+public class KeysStep
+        extends AbstractSystemStep
 {
     //~ Constructors -------------------------------------------------------------------------------
 
+    //----------//
+    // KeysStep //
+    //----------//
     /**
-     * Creates a new AlterationlInter object.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
+     * Creates a new KeysStep object.
      */
-    public AlterationlInter (Glyph glyph,
-                            Shape shape,
-                            double grade)
+    public KeysStep ()
     {
-        super(glyph, null, shape, grade);
+        super(
+                Steps.KEYS,
+                Level.SHEET_LEVEL,
+                Mandatory.MANDATORY,
+                DATA_TAB,
+                "Retrieve staff keys");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
+    //----------//
+    // doSystem //
+    //----------//
     @Override
-    public void accept (InterVisitor visitor)
+    public void doSystem (SystemInfo system)
+            throws StepException
     {
-        visitor.visit(this);
+        system.keysBuilder.buildKeys(); // -> Staff key
     }
 }

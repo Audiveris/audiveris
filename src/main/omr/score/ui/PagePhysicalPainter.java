@@ -47,6 +47,7 @@ import omr.sig.BraceInter;
 import omr.sig.EndingInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
+import omr.sig.KeyAlterInter;
 import omr.sig.LedgerInter;
 import omr.sig.SIGraph;
 import omr.sig.SlurInter;
@@ -493,17 +494,17 @@ public class PagePhysicalPainter
                     new Point(ul.x + annotationDx, ul.y + annotationDy),
                     TOP_LEFT);
 
-            // System area
-            g.setColor(new Color(255, 0, 0, 50));
-            g.draw(systemInfo.getArea());
-
-            // Staves areas
-            g.setColor(new Color(255, 0, 0, 50));
-
-            for (StaffInfo staff : systemInfo.getStaves()) {
-                g.draw(staff.getArea());
-            }
-
+            //            // System area
+            //            g.setColor(new Color(255, 0, 0, 50));
+            //            g.draw(systemInfo.getArea());
+            //
+            //            // Staves areas
+            //            g.setColor(new Color(255, 0, 0, 50));
+            //
+            //            for (StaffInfo staff : systemInfo.getStaves()) {
+            //                g.draw(staff.getArea());
+            //            }
+            //
             g.setColor(oldColor);
         }
 
@@ -584,6 +585,31 @@ public class PagePhysicalPainter
         Point center = GeoUtil.centerOf(inter.getBounds());
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (KeyAlterInter inter)
+    {
+        setColor(inter);
+
+        Point center = GeoUtil.centerOf(inter.getBounds());
+        StaffInfo staff = systemInfo.getStaffAt(center);
+        double y = staff.pitchToOrdinate(center.x, inter.getPitch());
+        center.y = (int) Math.rint(y);
+
+        Shape shape = inter.getShape();
+        ShapeSymbol symbol = Symbols.getSymbol(shape);
+
+        if (shape == Shape.SHARP) {
+            symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+        } else {
+            Dimension dim = symbol.getDimension(musicFont);
+            center.y += dim.width;
+            symbol.paintSymbol(g, musicFont, center, Alignment.BOTTOM_CENTER);
+        }
     }
 
     //-------//

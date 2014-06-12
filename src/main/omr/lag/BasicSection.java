@@ -134,6 +134,17 @@ public class BasicSection
     {
     }
 
+    //--------------//
+    // BasicSection //
+    //--------------//
+    /**
+     * Creates a new BasicSection.
+     */
+    public BasicSection (Orientation orientation)
+    {
+        this.orientation = orientation;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // addOppositeSection //

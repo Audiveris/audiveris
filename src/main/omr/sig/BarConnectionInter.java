@@ -15,8 +15,6 @@ import omr.glyph.Shape;
 
 import omr.grid.BarConnection;
 
-import java.awt.geom.Area;
-
 /**
  * Class {@code BarConnectionInter} represents a vertical connection between two bar
  * lines across staves.
@@ -42,8 +40,9 @@ public class BarConnectionInter
                                Shape shape,
                                GradeImpacts impacts)
     {
-        super(connection.getArea().getBounds(), shape, impacts);
+        super(null, connection.getArea().getBounds(), shape, impacts);
         this.connection = connection;
+        this.area = connection.getArea();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -54,11 +53,5 @@ public class BarConnectionInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    @Override
-    public Area getArea ()
-    {
-        return connection.getArea();
     }
 }

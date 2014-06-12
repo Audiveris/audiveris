@@ -54,7 +54,7 @@ public class WedgeInter
                        Shape shape,
                        GradeImpacts impacts)
     {
-        super(bounds, shape, impacts);
+        super(null, bounds, shape, impacts);
         this.s1 = s1;
         this.s2 = s2;
         this.l1 = l1;

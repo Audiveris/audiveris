@@ -97,7 +97,7 @@ public abstract class AreaUtil
         int largestGap = 0; // Largest gap so far
         int lastBlackY = -1; // Ordinate of last black row
         int lastWhiteY = -1; // Ordinate of last white row
-        int whiteCount = 0; // Count of rows where stem is white (broken)
+        int whiteCount = 0; // Count of rows where item is white (broken)
 
         final int yMin = (int) Math.ceil(leftLimit.getFirstPoint().getY());
         final int yMax = (int) Math.floor(leftLimit.getLastPoint().getY());
@@ -245,7 +245,7 @@ public abstract class AreaUtil
         public String toString ()
         {
             return String.format(
-                    "length:%d gap:%d white:%.0f%s",
+                    "length:%d largestGap:%d white:%.0f%s",
                     length,
                     gap,
                     100 * whiteRatio,

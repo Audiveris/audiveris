@@ -16,6 +16,7 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
 
+import omr.math.AreaUtil;
 import omr.math.GeoUtil;
 
 import org.slf4j.Logger;
@@ -81,35 +82,7 @@ public abstract class AbstractInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new AbstractInter object.
-     *
-     * @param glyph   the glyph to interpret
-     * @param shape   the possible shape
-     * @param impacts assignment details
-     */
-    public AbstractInter (Glyph glyph,
-                          Shape shape,
-                          GradeImpacts impacts)
-    {
-        this(glyph, null, shape, impacts);
-    }
-
-    /**
-     * Creates a new AbstractInter object.
-     *
-     * @param box     the object bounds
-     * @param shape   the possible shape
-     * @param impacts assignment details
-     */
-    public AbstractInter (Rectangle box,
-                          Shape shape,
-                          GradeImpacts impacts)
-    {
-        this(null, box, shape, impacts);
-    }
-
-    /**
-     * Creates a new AbstractInter object.
+     * Creates a new AbstractInter object, with detailed impacts information.
      *
      * @param glyph   the glyph to interpret
      * @param box     the precise object bounds (if different from glyph bounds)
@@ -126,7 +99,7 @@ public abstract class AbstractInter
     }
 
     /**
-     * Creates a new AbstractInter object.
+     * Creates a new AbstractInter object, with a simple grade value.
      *
      * @param glyph the glyph to interpret
      * @param box   the precise object bounds (if different from glyph bounds)
@@ -154,6 +127,32 @@ public abstract class AbstractInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------//
+    // getGoodGrade //
+    //--------------//
+    /**
+     * Report the minimum grade to consider an interpretation as good.
+     *
+     * @return the minimum grade value for a good interpretation
+     */
+    public static double getGoodGrade ()
+    {
+        return goodGrade;
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    /**
+     * Report the minimum grade for an acceptable interpretation
+     *
+     * @return the minimum grade for keeping an Inter instance
+     */
+    public static double getMinGrade ()
+    {
+        return minGrade;
+    }
+
     //--------//
     // accept //
     //--------//
@@ -179,15 +178,13 @@ public abstract class AbstractInter
         attachments.addAttachment(id, attachment);
     }
 
-    //-------//
-    // boost //
-    //-------//
+    //----------//
+    // decrease //
+    //----------//
     @Override
-    public void boost (double ratio)
+    public void decrease (double ratio)
     {
-        if (grade < intrinsicRatio) {
-            grade += (ratio * (intrinsicRatio - grade));
-        }
+        grade *= (1 - ratio);
     }
 
     //--------//
@@ -367,19 +364,6 @@ public abstract class AbstractInter
         return glyph;
     }
 
-    //--------------//
-    // getGoodGrade //
-    //--------------//
-    /**
-     * Report the minimum grade to consider an interpretation as good.
-     *
-     * @return the minimum grade value for a good interpretation
-     */
-    public static double getGoodGrade ()
-    {
-        return goodGrade;
-    }
-
     //----------//
     // getGrade //
     //----------//
@@ -407,19 +391,6 @@ public abstract class AbstractInter
         return impacts;
     }
 
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    /**
-     * Report the minimum grade for an acceptable interpretation
-     *
-     * @return the minimum grade for keeping an Inter instance
-     */
-    public static double getMinGrade ()
-    {
-        return minGrade;
-    }
-
     //----------//
     // getShape //
     //----------//
@@ -436,6 +407,17 @@ public abstract class AbstractInter
     public SIGraph getSig ()
     {
         return sig;
+    }
+
+    //----------//
+    // increase //
+    //----------//
+    @Override
+    public void increase (double ratio)
+    {
+        if (grade < intrinsicRatio) {
+            grade += (ratio * (intrinsicRatio - grade));
+        }
     }
 
     //-----------//
@@ -482,7 +464,15 @@ public abstract class AbstractInter
     public boolean overlaps (Inter that)
     {
         if (this.area != null) {
-            return this.area.intersects(that.getCoreBounds());
+            if (this.area.intersects(that.getCoreBounds())) {
+                if (that.getArea() != null) {
+                    return AreaUtil.intersection(this.area, that.getArea());
+                } else {
+                    return true;
+                }
+            } else {
+                return false;
+            }
         } else if (that.getArea() != null) {
             return that.getArea().intersects(this.getCoreBounds());
         } else if ((this.getGlyph() != null) && (that.getGlyph() != null)) {
@@ -584,9 +574,18 @@ public abstract class AbstractInter
             sb.append(String.format("/%.3f", contextualGrade));
         }
 
+        sb.append(internals());
         sb.append(")");
 
         return sb.toString();
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    protected String internals ()
+    {
+        return "";
     }
 
     //---------//

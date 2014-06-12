@@ -45,14 +45,18 @@ import omr.sig.WedgeInter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
+
 import static omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static omr.ui.symbol.Alignment.TOP_CENTER;
+
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.OmrFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
+
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
+
 import omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -69,6 +73,8 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
 import java.util.ConcurrentModificationException;
+import omr.glyph.Shape;
+import omr.sig.KeyAlterInter;
 
 /**
  * Class {@code SheetPainter} defines for every node in Page hierarchy the rendering of
@@ -123,6 +129,9 @@ public class SheetPainter
 
     /** Stroke for stems. */
     private final Stroke stemStroke;
+
+    /** Current system. */
+    private SystemInfo system;
 
     //~ Constructors -------------------------------------------------------------------------------
     //--------------//
@@ -270,6 +279,7 @@ public class SheetPainter
     public boolean visit (SystemInfo systemInfo)
     {
         try {
+            this.system = systemInfo;
             Rectangle bounds = systemInfo.getBounds();
 
             if (bounds == null) {
@@ -333,6 +343,31 @@ public class SheetPainter
         Point center = GeoUtil.centerOf(inter.getBounds());
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (KeyAlterInter inter)
+    {
+        setColor(inter);
+
+        Point center = GeoUtil.centerOf(inter.getBounds());
+        StaffInfo staff = system.getStaffAt(center);
+        double y = staff.pitchToOrdinate(center.x, inter.getPitch());
+        center.y = (int) Math.rint(y);
+
+        Shape shape = inter.getShape();
+        ShapeSymbol symbol = Symbols.getSymbol(shape);
+
+        if (shape == Shape.SHARP) {
+            symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+        } else {
+            Dimension dim = symbol.getDimension(musicFont);
+            center.y += dim.width;
+            symbol.paintSymbol(g, musicFont, center, Alignment.BOTTOM_CENTER);
+        }
     }
 
     //-------//

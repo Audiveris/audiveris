@@ -82,7 +82,7 @@ public class StaffInfo
         public int compare (StaffInfo o1,
                             StaffInfo o2)
         {
-            return Integer.compare(o1.id, o2.id);
+            return Integer.compare(o1.getId(), o2.getId());
         }
     };
 
@@ -193,30 +193,21 @@ public class StaffInfo
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------------------//
-    // getLedgerPitchPosition //
-    //------------------------//
+    //--------------------//
+    // getLedgerLineIndex //
+    //--------------------//
     /**
-     * Report the pitch position of a ledger WRT the related staff.
-     * <p>
-     * TODO: This implementation assumes a 5-line staff.
-     * But can we have ledgers on a staff with more (of less) than 5 lines?
+     * Compute staff-based line index, based on provided pitch position
      *
-     * @param lineIndex the ledger line index
-     * @return the ledger pitch position
+     * @param pitchPosition the provided pitch position
+     * @return the computed line index
      */
-    public static int getLedgerPitchPosition (int lineIndex)
+    public static int getLedgerLineIndex (double pitchPosition)
     {
-        //        // Safer, for the time being...
-        //        if (getStaff()
-        //                .getLines()
-        //                .size() != 5) {
-        //            throw new RuntimeException("Only 5-line staves are supported");
-        //        }
-        if (lineIndex > 0) {
-            return 4 + (2 * lineIndex);
+        if (pitchPosition > 0) {
+            return (int) Math.rint(pitchPosition / 2) - 2;
         } else {
-            return -4 + (2 * lineIndex);
+            return (int) Math.rint(pitchPosition / 2) + 2;
         }
     }
 
@@ -600,30 +591,39 @@ public class StaffInfo
         return lines.get(lines.size() - 1);
     }
 
-    //--------------------//
-    // getLedgerLineIndex //
-    //--------------------//
-    /**
-     * Compute staff-based line index, based on provided pitch position
-     *
-     * @param pitchPosition the provided pitch position
-     * @return the computed line index
-     */
-    public static int getLedgerLineIndex (double pitchPosition)
-    {
-        if (pitchPosition > 0) {
-            return (int) Math.rint(pitchPosition / 2) - 2;
-        } else {
-            return (int) Math.rint(pitchPosition / 2) + 2;
-        }
-    }
-
     //--------------//
     // getLedgerMap //
     //--------------//
     public SortedMap<Integer, SortedSet<LedgerInter>> getLedgerMap ()
     {
         return ledgerMap;
+    }
+
+    //------------------------//
+    // getLedgerPitchPosition //
+    //------------------------//
+    /**
+     * Report the pitch position of a ledger WRT the related staff.
+     * <p>
+     * TODO: This implementation assumes a 5-line staff.
+     * But can we have ledgers on a staff with more (of less) than 5 lines?
+     *
+     * @param lineIndex the ledger line index
+     * @return the ledger pitch position
+     */
+    public static int getLedgerPitchPosition (int lineIndex)
+    {
+        //        // Safer, for the time being...
+        //        if (getStaff()
+        //                .getLines()
+        //                .size() != 5) {
+        //            throw new RuntimeException("Only 5-line staves are supported");
+        //        }
+        if (lineIndex > 0) {
+            return 4 + (2 * lineIndex);
+        } else {
+            return -4 + (2 * lineIndex);
+        }
     }
 
     //------------//
@@ -878,6 +878,18 @@ public class StaffInfo
         double bottom = getLastLine().yAt(pt.getX());
 
         return ((lines.size() - 1) * ((2 * pt.getY()) - bottom - top)) / (bottom - top);
+    }
+
+    //-----------------//
+    // pitchToOrdinate //
+    //-----------------//
+    public double pitchToOrdinate (double x,
+                                   double pitch)
+    {
+        double top = getFirstLine().yAt(x);
+        double bottom = getLastLine().yAt(x);
+
+        return 0.5 * (top + bottom + ((pitch * (bottom - top)) / (lines.size() - 1)));
     }
 
     //-------------------//

@@ -114,21 +114,7 @@ public class WekaClassifier
     }
 
     @Override
-    public void train (Collection<Glyph> base,
-                       Monitor monitor,
-                       StartingMode mode)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    protected String getFileName ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    protected Evaluation[] getNaturalEvaluations (Glyph glyph)
+    public Evaluation[] getNaturalEvaluations (Glyph glyph)
     {
         try {
             double[] ins = ShapeDescription.features(glyph);
@@ -158,6 +144,20 @@ public class WekaClassifier
 
             return null;
         }
+    }
+
+    @Override
+    public void train (Collection<Glyph> base,
+                       Monitor monitor,
+                       StartingMode mode)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected String getFileName ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

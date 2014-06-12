@@ -298,6 +298,20 @@ public interface GlyphNest
                                 Glyph.Linking linking);
 
     /**
+     * Browse through the provided sections and return a list of glyph instances, one
+     * for each set of connected sections.
+     * All glyphs are registered, no section is linked to glyph.
+     * <p>
+     * Nota: The method modifies the 'processed' property of each section.
+     *
+     * @param sections the sections to browse
+     * @param layer    the target layer
+     * @return the list of glyph instances created
+     */
+    List<Glyph> retrieveGlyphs (Collection<Section> sections,
+                                GlyphLayer layer);
+
+    /**
      * Inject dependency on location service, and trigger subscriptions
      *
      * @param locationService the location service

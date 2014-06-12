@@ -53,7 +53,7 @@ public class BarlineInter
                          Line median,
                          double width)
     {
-        super(glyph, shape, impacts);
+        super(glyph, null, shape, impacts);
         this.median = median;
         this.width = width;
 

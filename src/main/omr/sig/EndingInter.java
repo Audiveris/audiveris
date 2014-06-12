@@ -54,7 +54,7 @@ public class EndingInter
                         Rectangle    bounds,
                         GradeImpacts impacts)
     {
-        super(bounds, Shape.ENDING, impacts);
+        super(null, bounds, Shape.ENDING, impacts);
         this.segment = segment;
         this.line = line;
         this.leftLeg = leftLeg;

@@ -35,7 +35,7 @@ public class StemInter
     public StemInter (Glyph glyph,
                       GradeImpacts impacts)
     {
-        super(glyph, Shape.STEM, impacts);
+        super(glyph, null, Shape.STEM, impacts);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
