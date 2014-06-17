@@ -128,7 +128,7 @@ public class SymbolsBuilder
         List<Glyph> glyphs = getSymbolsGlyphs();
 
         // Formalize glyphs relationships in a system-level graph
-        final int dmzEnd = system.getFirstStaff().getDmzEnd();
+        final int dmzEnd = system.getFirstStaff().getDmzStop();
         final SimpleGraph<Glyph, GlyphLink> systemGraph = Glyphs.buildLinks(
                 glyphs,
                 new Glyphs.LinkAdapter()
@@ -338,15 +338,15 @@ public class SymbolsBuilder
         }
 
         @Override
-        public List<Glyph> getGlyphs ()
+        public List<Glyph> getParts ()
         {
             return new ArrayList<Glyph>(graph.vertexSet());
         }
 
         @Override
-        public List<Glyph> getNeighbors (Glyph glyph)
+        public List<Glyph> getNeighbors (Glyph part)
         {
-            return Graphs.neighborListOf(graph, glyph);
+            return Graphs.neighborListOf(graph, part);
         }
 
         @Override

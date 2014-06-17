@@ -327,6 +327,7 @@ public class Symbols
         numDen(TIME_SIX_EIGHT, 6, 8);
         map(TIME_THREE, 51);
         numDen(TIME_THREE_FOUR, 3, 4);
+        numDen(TIME_FIVE_FOUR, 5, 4);
         map(TIME_TWELVE, 49, 50);
         map(TIME_TWO, 50);
         numDen(TIME_TWO_FOUR, 2, 4);

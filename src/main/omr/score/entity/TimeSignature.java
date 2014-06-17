@@ -523,6 +523,9 @@ public class TimeSignature
         case TIME_THREE_FOUR:
             return new TimeRational(3, 4);
 
+        case TIME_FIVE_FOUR:
+            return new TimeRational(5, 4);
+
         case TIME_SIX_EIGHT:
             return new TimeRational(6, 8);
 

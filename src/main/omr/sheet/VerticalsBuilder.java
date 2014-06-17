@@ -233,7 +233,7 @@ public class VerticalsBuilder
                 continue;
             }
 
-            if (center.x < staff.getDmzEnd()) {
+            if (center.x < staff.getDmzStop()) {
                 stick.addFailure(IN_DMZ);
 
                 continue;

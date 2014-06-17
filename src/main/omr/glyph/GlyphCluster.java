@@ -64,8 +64,8 @@ public class GlyphCluster
      */
     public void decompose ()
     {
-        final Set<Glyph> used = new HashSet<Glyph>(); // Glyphs used so far
-        final List<Glyph> seeds = adapter.getGlyphs();
+        final Set<Glyph> considered = new HashSet<Glyph>(); // Parts considered so far
+        final List<Glyph> seeds = adapter.getParts();
         Collections.sort(seeds, Glyph.byId); // It's easier to debug
         logger.debug("Decomposing {}", Glyphs.toString("cluster", seeds));
 
@@ -74,24 +74,24 @@ public class GlyphCluster
                 logger.info("   Seed #{}", seed.getId());
             }
 
-            used.add(seed);
-            process(Collections.singleton(seed), used);
+            considered.add(seed);
+            process(Collections.singleton(seed), considered);
         }
     }
 
     /**
-     * Retrieve all glyphs at acceptable distance from at least one member of the
+     * Retrieve all parts at acceptable distance from at least one member of the
      * provided set.
      *
      * @param set the provided set
-     * @return all the glyphs reachable from the set
+     * @return all the parts reachable from the set
      */
     private Set<Glyph> getOutliers (Set<Glyph> set)
     {
         Set<Glyph> outliers = new HashSet<Glyph>();
 
-        for (Glyph glyph : set) {
-            outliers.addAll(adapter.getNeighbors(glyph));
+        for (Glyph part : set) {
+            outliers.addAll(adapter.getNeighbors(part));
         }
 
         outliers.removeAll(set);
@@ -100,13 +100,13 @@ public class GlyphCluster
     }
 
     /**
-     * Process the provided set of glyphs.
+     * Process the provided set of parts.
      *
-     * @param set  the current glyphs
-     * @param used
+     * @param set        the current parts
+     * @param considered all parts considered so far (current parts plus discarded ones)
      */
     private void process (Set<Glyph> set,
-                          Set<Glyph> used)
+                          Set<Glyph> considered)
     {
         // Check what we have got
         int weight = Glyphs.weightOf(set);
@@ -122,17 +122,17 @@ public class GlyphCluster
 
         // Then, identify all outliers immediately reachable from the compound
         Set<Glyph> outliers = getOutliers(set);
-        outliers.removeAll(used);
+        outliers.removeAll(considered);
 
         if (outliers.isEmpty()) {
             return; // No further growth is possible
         }
 
         Rectangle setBox = Glyphs.getBounds(set);
-        Set<Glyph> newUsed = new HashSet<Glyph>(used);
+        Set<Glyph> newConsidered = new HashSet<Glyph>(considered);
 
         for (Glyph outlier : outliers) {
-            newUsed.add(outlier);
+            newConsidered.add(outlier);
 
             // Check appending this atom does not make the resulting symbol too wide or too high
             Rectangle symBox = outlier.getBounds().union(setBox);
@@ -140,7 +140,7 @@ public class GlyphCluster
             if (adapter.isSizeAcceptable(symBox)) {
                 Set<Glyph> largerSet = new HashSet<Glyph>(set);
                 largerSet.add(outlier);
-                process(largerSet, newUsed);
+                process(largerSet, newConsidered);
             }
         }
     }
@@ -161,19 +161,12 @@ public class GlyphCluster
         void evaluateGlyph (Glyph glyph);
 
         /**
-         * Report the glyphs to play with.
+         * Report the neighboring parts of the provided one.
          *
-         * @return the clustered glyphs
-         */
-        List<Glyph> getGlyphs ();
-
-        /**
-         * Report the neighboring glyphs of the provided glyph.
-         *
-         * @param glyph the provided glyph
+         * @param part the provided part
          * @return the neighbors
          */
-        List<Glyph> getNeighbors (Glyph glyph);
+        List<Glyph> getNeighbors (Glyph part);
 
         /**
          * Report the glyph nest to populate.
@@ -181,6 +174,13 @@ public class GlyphCluster
          * @return the hosting glyph nest
          */
         GlyphNest getNest ();
+
+        /**
+         * Report the parts to play with.
+         *
+         * @return the parts to assemble
+         */
+        List<Glyph> getParts ();
 
         /**
          * Check whether symbol size is acceptable.

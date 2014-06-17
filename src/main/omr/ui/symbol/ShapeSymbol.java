@@ -49,10 +49,10 @@ public class ShapeSymbol
             0.15f);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Related shape */
+    /** Related shape. */
     protected final Shape shape;
 
-    /** Is this a decorated symbol (shape with additional stuff) */
+    /** Is this a decorated symbol. (shape with additional stuff) */
     protected final boolean decorated;
 
     //~ Constructors -------------------------------------------------------------------------------

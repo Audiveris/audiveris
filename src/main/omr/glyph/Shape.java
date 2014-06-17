@@ -131,6 +131,7 @@ public enum Shape
     TIME_TWO_TWO("Rational 2/2"),
     TIME_TWO_FOUR("Rational 2/4"),
     TIME_THREE_FOUR("Rational 3/4"),
+    TIME_FIVE_FOUR("Rational 5/4"),
     TIME_SIX_EIGHT("Rational 6/8"),
     COMMON_TIME("Alpha = 4/4", new Color(0xcc6600)),
     CUT_TIME("Semi-Alpha = 2/2"),

@@ -135,9 +135,6 @@ public class KeysBuilder
     private final Map<StaffInfo, KeyProjector> projectors = new TreeMap<StaffInfo, KeyProjector>(
             StaffInfo.byId);
 
-    /** System bar lines, sorted on abscissa. */
-    private List<Inter> systemBars;
-
     /** Theoretical abscissa offset for each slice. */
     private List<Integer> globalOffsets;
 
@@ -145,7 +142,7 @@ public class KeysBuilder
     /**
      * Creates a new KeysBuilder object.
      *
-     * @param system the system to process
+     * @param system the system to findClef
      */
     public KeysBuilder (SystemInfo system)
     {
@@ -160,19 +157,34 @@ public class KeysBuilder
     //-----------//
     // buildKeys //
     //-----------//
+    /**
+     * Process the DMZ that starts all staves in the system.
+     */
     public void buildKeys ()
     {
         logger.debug("buildKeys for S#{}", system.getId());
 
-        systemBars = sig.inters(BarlineInter.class);
-        Collections.sort(systemBars, Inter.byAbscissa);
+        // Compute DMZ starts abscissae based on bar lines or staff starts
+        computeDmzStarts();
 
-        // Initialize all staves projectors
+        // Retrieve DMZ clefs
+        int maxClefOffset = 0;
+
         for (StaffInfo staff : system.getStaves()) {
-            int start = computeDmzStart(staff);
-            int stop = start + params.maxDmzWidth;
-            int browseStart = start + params.minDmzWidth;
-            projectors.put(staff, new KeyProjector(staff, start, stop, browseStart));
+            int measureStart = staff.getDmzStart();
+
+            // Retrieve staff clef
+            new ClefBuilder(staff, measureStart).findClef();
+            maxClefOffset = Math.max(maxClefOffset, staff.getClefStop() - measureStart);
+        }
+
+        refineDmz(maxClefOffset);
+
+        // Retrieve DMZ key-sigs
+        for (StaffInfo staff : system.getStaves()) {
+            int measureStart = staff.getDmzStart();
+            int browseStart = staff.getDmzStop();
+            projectors.put(staff, new KeyProjector(staff, measureStart, browseStart, true));
         }
 
         // Process each staff separately
@@ -184,6 +196,32 @@ public class KeysBuilder
         if (system.getStaves().size() > 1) {
             checkSystemConsistency();
         }
+
+        // Adjust each individual alter pitch, according to best matching key-sig
+        for (KeyProjector projector : projectors.values()) {
+            projector.adjustPitches();
+        }
+
+        // Push DMZ right after key-sig
+        int maxKeyOffset = 0;
+
+        for (StaffInfo staff : system.getStaves()) {
+            int measureStart = staff.getDmzStart();
+            Integer keyStop = staff.getKeyStop();
+
+            if (keyStop != null) {
+                maxKeyOffset = Math.max(maxKeyOffset, keyStop - measureStart);
+            }
+        }
+
+        refineDmz(maxKeyOffset);
+
+        // Compare clef and key
+        //TODO
+        // Retrieve DMZ time-sig
+        //TODO
+        int maxTimeOffset = 0;
+        refineDmz(maxTimeOffset);
     }
 
     //------//
@@ -196,7 +234,13 @@ public class KeysBuilder
      */
     public void plot (StaffInfo staff)
     {
-        projectors.get(staff).plot();
+        KeyProjector projector = projectors.get(staff);
+
+        if (projector != null) {
+            projector.plot();
+        } else {
+            logger.info("No key-projector for staff#{} yet", staff.getId());
+        }
     }
 
     //------------------------//
@@ -266,60 +310,62 @@ public class KeysBuilder
                 }
             }
         }
-
-        // Adjust each individual alter pitch, according to best matching key-sig
-        for (KeyProjector projector : projectors.values()) {
-            projector.adjustPitches();
-        }
     }
 
-    //-----------------//
-    // computeDmzStart //
-    //-----------------//
+    //------------------//
+    // computeDmzStarts //
+    //------------------//
     /**
-     * Computes the minimum abscissa for DMZ area, typically the right abscissa of
-     * the right-most bar line of the starting bar group.
-     * TODO: this could be a more general routine in StaffInfo?
+     * Computes the starting abscissa for each staff DMZ area, typically the point right
+     * after the right-most bar line of the starting bar group.
+     * TODO: could this be a more general routine in StaffInfo?
      *
      * @return measureStart at beginning of staff
      */
-    private int computeDmzStart (StaffInfo staff)
+    private void computeDmzStarts ()
     {
+        /** System bar lines, sorted on abscissa. */
+        final List<Inter> systemBars = sig.inters(BarlineInter.class);
+        Collections.sort(systemBars, Inter.byAbscissa);
+
         int margin = sheet.getScale().getInterline(); // Roughly
-        Point2D leftPt = staff.getFirstLine().getEndPoint(LEFT);
-        Rectangle luBox = new Rectangle(
-                (int) Math.floor(leftPt.getX()),
-                (int) Math.rint(leftPt.getY() + (staff.getHeight() / 2)),
-                margin,
-                0);
-        luBox.grow(0, margin);
 
-        TreeSet<Inter> bars = new TreeSet<Inter>(Inter.byAbscissa);
-        bars.addAll(sig.intersectedInters(systemBars, GeoOrder.BY_ABSCISSA, luBox));
+        for (StaffInfo staff : system.getStaves()) {
+            Point2D leftPt = staff.getFirstLine().getEndPoint(LEFT);
+            Rectangle luBox = new Rectangle(
+                    (int) Math.floor(leftPt.getX()),
+                    (int) Math.rint(leftPt.getY() + (staff.getHeight() / 2)),
+                    margin,
+                    0);
+            luBox.grow(0, margin);
 
-        if (bars.isEmpty()) {
-            // No bar line found, so use the beginning abscissa of lines
-            return (int) Math.rint(leftPt.getX());
-        } else {
-            // Retrieve all bar lines grouped at beginning of staff
-            Set<Inter> toAdd = new HashSet<Inter>();
+            TreeSet<Inter> bars = new TreeSet<Inter>(Inter.byAbscissa);
+            bars.addAll(sig.intersectedInters(systemBars, GeoOrder.BY_ABSCISSA, luBox));
 
-            for (Inter inter : bars) {
-                Set<Relation> gRels = sig.getRelations(inter, BarGroupRelation.class);
+            if (bars.isEmpty()) {
+                // No bar line found, so use the beginning abscissa of lines
+                staff.setDmzStart((int) Math.rint(leftPt.getX()));
+            } else {
+                // Retrieve all bar lines grouped at beginning of staff
+                Set<Inter> toAdd = new HashSet<Inter>();
 
-                for (Relation rel : gRels) {
-                    toAdd.add(sig.getOppositeInter(inter, rel));
+                for (Inter inter : bars) {
+                    Set<Relation> gRels = sig.getRelations(inter, BarGroupRelation.class);
+
+                    for (Relation rel : gRels) {
+                        toAdd.add(sig.getOppositeInter(inter, rel));
+                    }
                 }
+
+                bars.addAll(toAdd);
+
+                // Pick up the right-most bar line in the group
+                BarlineInter last = (BarlineInter) bars.last();
+                int right = last.getCenterRight().x + 1;
+                logger.debug("Staff#{} right:{} bars: {}", staff.getId(), right, bars);
+
+                staff.setDmzStart(right);
             }
-
-            bars.addAll(toAdd);
-
-            // Pick up the right-most bar line in the group
-            BarlineInter last = (BarlineInter) bars.last();
-            int right = last.getCenterRight().x;
-            logger.debug("Staff#{} right:{} bars: {}", staff.getId(), right, bars);
-
-            return right;
         }
     }
 
@@ -426,6 +472,25 @@ public class KeysBuilder
         return meanSliceWidth;
     }
 
+    //-----------//
+    // refineDmz //
+    //-----------//
+    /**
+     * Refine the DMZ end at system levem.
+     * Use the fact that DMZ areas are vertically aligned within a system, even if the key-sig may
+     * vary between staves. So we retrieve the largest offset since measureStart and use it to set
+     * the DMZ end of each staff.
+     */
+    private void refineDmz (int largestOffset)
+    {
+        // Push this value to all staves
+        if (largestOffset > 0) {
+            for (StaffInfo staff : system.getStaves()) {
+                staff.setDmzStop(staff.getDmzStart() + largestOffset);
+            }
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -438,10 +503,6 @@ public class KeysBuilder
         final Scale.Fraction minDmzWidth = new Scale.Fraction(
                 3.0,
                 "Minimum DMZ width (from staff left to end of clef)");
-
-        final Scale.Fraction maxDmzWidth = new Scale.Fraction(
-                15.0,
-                "Maximum DMZ width (from staff left to end of time signature)");
 
         final Scale.Fraction maxSliceDist = new Scale.Fraction(
                 0.5,
@@ -457,15 +518,12 @@ public class KeysBuilder
 
         final int minDmzWidth;
 
-        final int maxDmzWidth;
-
         final int maxSliceDist;
 
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
             minDmzWidth = scale.toPixels(constants.minDmzWidth);
-            maxDmzWidth = scale.toPixels(constants.maxDmzWidth);
             maxSliceDist = scale.toPixels(constants.maxSliceDist);
         }
     }

@@ -15,6 +15,8 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import javax.swing.Icon;
@@ -53,7 +55,7 @@ public interface Symbol
      * @param g         graphic context
      * @param font      properly-scaled font (for interline & zoom)
      * @param location  where to paint the shape with provided alignment
-     * @param alignment the way the symbol is aligned wrt the location
+     * @param alignment the way the symbol is aligned WRT the location
      */
     public void paintSymbol (Graphics2D g,
                              MusicFont font,
@@ -61,10 +63,8 @@ public interface Symbol
                              Alignment alignment);
 
     /**
-     * Build the image that represents the related shape, using the
-     * scaled font.
-     * The main difficulty is to determine up-front the size of the image to
-     * allocate.
+     * Build the image that represents the related shape, using the scaled font.
+     * The main difficulty is to determine up-front the size of the image to allocate.
      *
      * @param font properly-scaled font (for interline & zoom)
      * @return the image built, or null if failed
@@ -72,8 +72,15 @@ public interface Symbol
     SymbolImage buildImage (MusicFont font);
 
     /**
-     * Report the bounding dimension of this symbol for the provided
-     * font.
+     * Report the symbol mass center.
+     *
+     * @param area the contour box of the entity (symbol or glyph)
+     * @return the mass center
+     */
+    Point getCentroid (Rectangle area);
+
+    /**
+     * Report the bounding dimension of this symbol for the provided font.
      *
      * @param font (scaled) music font
      * @return the bounding dimension
@@ -88,8 +95,8 @@ public interface Symbol
     BufferedImage getIconImage ();
 
     /**
-     * Report the symbol reference point, which is usually the area
-     * center, but somewhat different for some symbols (such as flats).
+     * Report the symbol reference point, which is usually the area center, but somewhat
+     * different for some symbols (such as flats).
      *
      * @param area the contour box of the entity (symbol or glyph)
      * @return the reference point

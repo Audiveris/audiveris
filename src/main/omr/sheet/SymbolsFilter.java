@@ -53,11 +53,13 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import omr.glyph.ShapeSet;
 
 /**
  * Class {@code SymbolsFilter} prepares an image with staff lines sections removed and
@@ -75,6 +77,9 @@ public class SymbolsFilter
 
     /** Orientation chosen for symbol runs. */
     public static final Orientation SYMBOL_ORIENTATION = Orientation.VERTICAL;
+
+    /** Shapes to be erased. */
+    private static final EnumSet<Shape> erasedShapes = getErasedShapes();
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
@@ -122,28 +127,7 @@ public class SymbolsFilter
         // Erase good shapes of each system
         Graphics2D g = img.createGraphics();
         SymbolsEraser eraser = new SymbolsEraser(buffer, g, sheet);
-        Map<SystemInfo, List<Glyph>> optionalMap = eraser.eraseShapes(
-                Arrays.asList(
-                        Shape.THICK_BARLINE,
-                        Shape.THIN_BARLINE,
-                        Shape.THIN_CONNECTION,
-                        Shape.THICK_CONNECTION,
-                        Shape.STEM,
-                        Shape.WHOLE_NOTE,
-                        Shape.NOTEHEAD_BLACK,
-                        Shape.NOTEHEAD_VOID,
-                        Shape.BEAM,
-                        Shape.BEAM_HOOK,
-                        Shape.SLUR,
-                        Shape.CRESCENDO,
-                        Shape.DECRESCENDO,
-                        Shape.ENDING,
-                        Shape.LEDGER,
-                        Shape.WHOLE_NOTE_SMALL,
-                        Shape.NOTEHEAD_BLACK_SMALL,
-                        Shape.NOTEHEAD_VOID_SMALL,
-                        Shape.BEAM_SMALL,
-                        Shape.BEAM_HOOK_SMALL));
+        Map<SystemInfo, List<Glyph>> optionalMap = eraser.eraseShapes(erasedShapes);
 
         // Keep a copy on disk?
         if (constants.keepSymbolsBuffer.isSet()) {
@@ -230,6 +214,43 @@ public class SymbolsFilter
                 system.registerGlyph(glyph);
             }
         }
+    }
+
+    //-----------------//
+    // getErasedShapes //
+    //-----------------//
+    private static EnumSet<Shape> getErasedShapes ()
+    {
+        EnumSet<Shape> set = EnumSet.noneOf(Shape.class);
+
+        set.addAll(
+                Arrays.asList(
+                        Shape.THICK_BARLINE,
+                        Shape.THIN_BARLINE,
+                        Shape.THIN_CONNECTION,
+                        Shape.THICK_CONNECTION,
+                        Shape.STEM,
+                        Shape.WHOLE_NOTE,
+                        Shape.NOTEHEAD_BLACK,
+                        Shape.NOTEHEAD_VOID,
+                        Shape.BEAM,
+                        Shape.BEAM_HOOK,
+                        Shape.SLUR,
+                        Shape.CRESCENDO,
+                        Shape.DECRESCENDO,
+                        Shape.ENDING,
+                        Shape.LEDGER,
+                        Shape.WHOLE_NOTE_SMALL,
+                        Shape.NOTEHEAD_BLACK_SMALL,
+                        Shape.NOTEHEAD_VOID_SMALL,
+                        Shape.BEAM_SMALL,
+                        Shape.BEAM_HOOK_SMALL));
+
+        set.addAll(ShapeSet.Clefs.getShapes()); // From staff clef
+        set.addAll(ShapeSet.Alterations.getShapes()); // From staff key-sig
+        //TODO add from staff time-sig
+
+        return set;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

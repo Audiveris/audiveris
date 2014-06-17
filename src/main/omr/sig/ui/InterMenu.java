@@ -103,35 +103,39 @@ public class InterMenu
     //------------//
     private void updateMenu (Collection<Inter> inters)
     {
-        // We rebuild the menu items on each update, since the set of inters is brand new.
-        removeAll();
+        try {
+            // We rebuild the menu items on each update, since the set of inters is brand new.
+            removeAll();
 
-        if ((inters != null) && !inters.isEmpty()) {
-            UIUtil.insertTitle(this, "Interpretations:");
+            if ((inters != null) && !inters.isEmpty()) {
+                UIUtil.insertTitle(this, "Interpretations:");
 
-            for (Inter inter : inters) {
-                final SIGraph sig = inter.getSig();
-                final Set<Relation> rels = sig.edgesOf(inter);
+                for (Inter inter : inters) {
+                    final SIGraph sig = inter.getSig();
+                    final Set<Relation> rels = sig.edgesOf(inter);
 
-                if ((rels == null) || rels.isEmpty()) {
-                    // Just a interpretation item
-                    JMenuItem item = new JMenuItem(new InterAction(inter));
-                    item.addMouseListener(interListener);
-                    add(item);
-                } else {
-                    // A whole menu of relations for this interpretation
-                    JMenu relMenu = new RelationMenu(inter, rels).getMenu();
-                    relMenu.addMouseListener(interListener);
-                    add(relMenu);
+                    if ((rels == null) || rels.isEmpty()) {
+                        // Just a interpretation item
+                        JMenuItem item = new JMenuItem(new InterAction(inter));
+                        item.addMouseListener(interListener);
+                        add(item);
+                    } else {
+                        // A whole menu of relations for this interpretation
+                        JMenu relMenu = new RelationMenu(inter, rels).getMenu();
+                        relMenu.addMouseListener(interListener);
+                        add(relMenu);
+                    }
                 }
+
+                setVisible(true);
+
+                return;
             }
 
-            setVisible(true);
-
-            return;
+            setVisible(false);
+        } catch (Exception ex) {
+            logger.warn("Error updating menu " + ex, ex);
         }
-
-        setVisible(false);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

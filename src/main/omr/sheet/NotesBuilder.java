@@ -1120,7 +1120,7 @@ public class NotesBuilder
             // Abscissa range for scan
             final int scanLeft = Math.max(
                     line.getLeftAbscissa(),
-                    (int) line.getStaff().getDmzEnd());
+                    (int) line.getStaff().getDmzStop());
             final int scanRight = line.getRightAbscissa() - minTemplateWidth;
 
             // Scan from left to right

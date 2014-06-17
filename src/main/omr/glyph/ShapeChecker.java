@@ -445,7 +445,7 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Must be on right side of system DMZ
-                return Math.abs(glyph.getLocation().x) > system.getFirstStaff().getDmzEnd();
+                return Math.abs(glyph.getLocation().x) > system.getFirstStaff().getDmzStop();
             }
         };
 

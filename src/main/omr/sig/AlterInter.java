@@ -19,8 +19,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import omr.util.WrappedDouble;
-
 import java.awt.Point;
 
 /**

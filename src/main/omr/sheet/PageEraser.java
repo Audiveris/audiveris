@@ -28,6 +28,7 @@ import omr.sig.AbstractNoteInter;
 import omr.sig.BarConnectionInter;
 import omr.sig.BarlineInter;
 import omr.sig.BraceInter;
+import omr.sig.ClefInter;
 import omr.sig.EndingInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
@@ -131,6 +132,11 @@ public abstract class PageEraser
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Default strategy for a basic inter is to paint in white the related symbol.
+     *
+     * @param inter the basic inter to erase
+     */
     @Override
     public void visit (Inter inter)
     {
@@ -142,9 +148,15 @@ public abstract class PageEraser
     }
 
     @Override
-    public void visit (KeyAlterInter inter)
+    public void visit (KeyAlterInter alter)
     {
-        visit((Inter) inter);
+        processGlyph(alter.getGlyph());
+    }
+
+    @Override
+    public void visit (ClefInter clef)
+    {
+        processGlyph(clef.getGlyph());
     }
 
     @Override
@@ -259,7 +271,7 @@ public abstract class PageEraser
     {
         StaffInfo firstStaff = system.getFirstStaff();
         StaffInfo lastStaff = system.getLastStaff();
-        int dmzEnd = firstStaff.getDmzEnd();
+        int dmzEnd = firstStaff.getDmzStop();
         int top = firstStaff.getFirstLine().yAt(dmzEnd) - dmzDyMargin;
         int bot = lastStaff.getLastLine().yAt(dmzEnd) + dmzDyMargin;
         g.fillRect(system.getBounds().x, top, dmzEnd, bot - top + 1);
@@ -294,7 +306,9 @@ public abstract class PageEraser
                 1.1, //1.2, // 1.0,
                 "Symbols size to use for eraser");
 
-        final Scale.Fraction lineMargin = new Scale.Fraction(0.1, "Margin drawn around lines");
+        final Scale.Fraction lineMargin = new Scale.Fraction(
+                0.1,
+                "Thickness of white lines drawn on items borders");
 
         final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 2.0,

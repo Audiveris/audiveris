@@ -67,6 +67,7 @@ public class ShapeSet
             TIME_TWO_TWO,
             TIME_TWO_FOUR,
             TIME_THREE_FOUR,
+            TIME_FIVE_FOUR,
             TIME_SIX_EIGHT,
             COMMON_TIME,
             CUT_TIME,

@@ -16,6 +16,7 @@ import static omr.ui.symbol.Alignment.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -25,6 +26,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
@@ -92,6 +94,9 @@ public class BasicSymbol
     /** Image dimension corresponding to standard interline. */
     private Dimension dimension;
 
+    /** Offset of centroid WRT area center, specified in ratio of width and height. */
+    protected Point2D centroidOffset;
+
     //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // BasicSymbol //
@@ -123,14 +128,6 @@ public class BasicSymbol
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // getString //
-    //-----------//
-    public final String getString ()
-    {
-        return new String(codes, 0, codes.length);
-    }
-
     //------------//
     // buildImage //
     //------------//
@@ -150,6 +147,21 @@ public class BasicSymbol
         paint(g, p, ORIGIN, TOP_LEFT);
 
         return img;
+    }
+
+    //-------------//
+    // getCentroid //
+    //-------------//
+    @Override
+    public Point getCentroid (Rectangle area)
+    {
+        if (centroidOffset == null) {
+            computeCentroidOffset();
+        }
+
+        return new Point(
+                (int) Math.rint(area.getCenterX() + (area.getWidth() * centroidOffset.getX())),
+                (int) Math.rint(area.getCenterY() + (area.getHeight() * centroidOffset.getY())));
     }
 
     //--------------//
@@ -207,6 +219,14 @@ public class BasicSymbol
     public Point getRefPoint (Rectangle box)
     {
         return new Point(box.x + (box.width / 2), box.y + (box.height / 2));
+    }
+
+    //-----------//
+    // getString //
+    //-----------//
+    public final String getString ()
+    {
+        return new String(codes, 0, codes.length);
     }
 
     //-----------------//
@@ -426,6 +446,40 @@ public class BasicSymbol
         OmrFont.paint(g, p.layout, location, alignment);
     }
 
+    //-----------------------//
+    // computeCentroidOffset //
+    //-----------------------//
+    private void computeCentroidOffset ()
+    {
+        if (dimension == null) {
+            computeImage();
+        }
+
+        double xBar = 0;
+        double yBar = 0;
+        double weight = 0;
+
+        for (int y = 0, h = image.getHeight(); y < h; y++) {
+            for (int x = 0, w = image.getWidth(); x < w; x++) {
+                Color pix = new Color(image.getRGB(x, y), true);
+                double alpha = pix.getAlpha() / 255.0;
+
+                if (alpha > 0) {
+                    xBar += (alpha * x);
+                    yBar += (alpha * y);
+                    weight += alpha;
+                }
+            }
+        }
+
+        xBar /= weight;
+        yBar /= weight;
+
+        centroidOffset = new Point2D.Double(
+                (xBar / image.getWidth()) - 0.5,
+                (yBar / image.getHeight()) - 0.5);
+    }
+
     //--------------//
     // computeImage //
     //--------------//
@@ -461,7 +515,7 @@ public class BasicSymbol
      * @param codes raw codes
      * @return codes suitable for font display
      */
-    private int[] shiftedCodesOf (int... codes)
+    private int[] shiftedCodesOf (int[] codes)
     {
         int[] values = new int[codes.length];
 
@@ -481,8 +535,7 @@ public class BasicSymbol
     // Params //
     //--------//
     /**
-     * A set of parameters used for building an image and for painting
-     * a symbol.
+     * A set of parameters used for building an image and for painting a symbol.
      */
     protected class Params
     {

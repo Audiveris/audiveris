@@ -20,6 +20,7 @@ import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphLink;
 import omr.glyph.GlyphNest;
 import omr.glyph.Glyphs;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
@@ -111,6 +112,9 @@ public class KeyProjector
     /** Scale-dependent parameters. */
     private final Parameters params;
 
+    /** Initial key-sig or key-sig change?. */
+    private final boolean initial;
+
     /** Shape classifier to use. */
     private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
 
@@ -136,10 +140,10 @@ public class KeyProjector
     private Integer browseStart;
 
     /** Minimum ordinate for key-sig area. */
-    private int areaTop;
+    private int areaTop = Integer.MAX_VALUE;
 
     /** Maximum ordinate for key-sig area. */
-    private int areaBottom;
+    private int areaBottom = Integer.MIN_VALUE;
 
     /** Detected start abscissa, if any, of first pixel in key-sig area. */
     private Integer areaStart;
@@ -165,18 +169,18 @@ public class KeyProjector
      *
      * @param staff        the underlying staff
      * @param measureStart precise beginning abscissa of measure (generally right after bar line).
-     * @param cumulEnd     estimated ending abscissa for cumulated pixels
      * @param browseStart  estimated beginning abscissa for browsing, if any, null otherwise.
+     * @param initial      true for the initial key-sig in DMZ, false for a key-sig change
      */
     public KeyProjector (StaffInfo staff,
                          int measureStart,
-                         int cumulEnd,
-                         Integer browseStart)
+                         Integer browseStart,
+                         boolean initial)
     {
         this.staff = staff;
         this.measureStart = measureStart;
-        this.cumulEnd = cumulEnd;
         this.browseStart = browseStart;
+        this.initial = initial;
 
         system = staff.getSystem();
         sig = system.getSig();
@@ -186,6 +190,8 @@ public class KeyProjector
 
         scale = sheet.getScale();
         params = new Parameters(scale);
+
+        cumulEnd = measureStart + params.maxCumulWidth;
 
         // Cumulate pixels for each abscissa in range
         cumuls = computeCumuls();
@@ -201,28 +207,28 @@ public class KeyProjector
             return;
         }
 
-//        StringBuilder sb = new StringBuilder();
-//
-//        for (Slice slice : slices) {
-//            KeyAlterInter alter = slice.alter;
-//
-//            if (sb.length() > 0) {
-//                sb.append(", ");
-//            }
-//
-//            if (alter != null) {
-//                sb.append(alter.getPitch());
-//            } else {
-//                sb.append("null");
-//            }
-//        }
-//
-//        logger.info("S#{} {}", staff.getId(), sb);
-//
+        //        StringBuilder sb = new StringBuilder();
+        //
+        //        for (Slice slice : slices) {
+        //            KeyAlterInter alter = slice.alter;
+        //
+        //            if (sb.length() > 0) {
+        //                sb.append(", ");
+        //            }
+        //
+        //            if (alter != null) {
+        //                sb.append(alter.getPitch());
+        //            } else {
+        //                sb.append("null");
+        //            }
+        //        }
+        //
+        //        logger.info("S#{} {}", staff.getId(), sb);
+        //
         Double[] mPitches = new Double[slices.size()];
 
         for (int i = 0; i < slices.size(); i++) {
-            KeyAlterInter alter = slices.get(i).alter;
+            KeyAlterInter alter = slices.get(i).getAlter();
 
             if (alter != null) {
                 mPitches[i] = alter.getMeasuredPitch();
@@ -240,7 +246,7 @@ public class KeyProjector
         // Adjust pitches if needed
         for (int i = 0; i < slices.size(); i++) {
             Slice slice = slices.get(i);
-            KeyAlterInter alter = slice.alter;
+            KeyAlterInter alter = slice.getAlter();
             int std = stdPitches[i];
 
             if (alter.getPitch() != std) {
@@ -254,6 +260,13 @@ public class KeyProjector
                 alter.setPitch(std);
             }
         }
+
+        // Adjust key-sig end
+        KeyProjector.Slice lastSlice = slices.get(slices.size() - 1);
+        KeyAlterInter inter = lastSlice.getAlter();
+        Rectangle bounds = inter.getBounds();
+        int end = (bounds.x + bounds.width) - 1;
+        staff.setKeyStop(end);
     }
 
     //----------------//
@@ -419,7 +432,7 @@ public class KeyProjector
             // Nothing interesting there
             return false;
         } else {
-            Slice slice = createSlice(start, (start + stop) - 1);
+            Slice slice = createSlice(start, stop);
             slices.add(slice);
 
             // Reassign staff slice attachments
@@ -443,7 +456,8 @@ public class KeyProjector
     // browseArea //
     //------------//
     /**
-     * Browse the histogram to detect peaks (similar to stems) and spaces (blanks).
+     * Browse the histogram to detect the sequence of peaks (similar to stems) and
+     * spaces (blanks).
      */
     private void browseArea ()
     {
@@ -452,7 +466,7 @@ public class KeyProjector
         final int xMax = cumulEnd;
 
         // Space parameters
-        int maxSpaceCumul = params.maxFirstSpaceCumul; // Initial threshold
+        int maxSpaceCumul = params.maxSpaceCumul;
         int spaceStart = -1; // Space start abscissa
         int spaceStop = -1; // Space stop abscissa
         int spaceArea = 0; // Space area
@@ -465,10 +479,6 @@ public class KeyProjector
 
         for (int x = xMin; x <= xMax; x++) {
             int cumul = cumuls[x];
-
-            if (areaStart != null) {
-                maxSpaceCumul = params.maxSpaceCumul;
-            }
 
             // For peak
             if (cumul >= minPeakCumul) {
@@ -602,14 +612,22 @@ public class KeyProjector
             refineStop(lastGoodPeak(), params.sharpTrail, params.maxSharpTrail);
         } else if (signature < 0) {
             // Flats
-
-            // Start of area, make sure there is nothing right before first peak
             KeyEvent.Peak firstPeak = peaks.get(0);
-            int flatHeading = firstPeak.start - areaStart;
+
+            //            // Check derivative at first peak (TODO: just part of impacts)
+            //            int der = maxDerivative(firstPeak);
+            //
+            //            if (der < params.minFlatDerivative) {
+            //                logger.info("Too low derivative of first flat peak");
+            //
+            //                return starts;
+            //            }
+            //
+            // Start of area, make sure there is nothing right before first peak
+            int flatHeading = ((firstPeak.start + firstPeak.stop) / 2) - areaStart;
 
             if (flatHeading > params.maxFlatHeading) {
-                logger.info("Too large heading before flat peak");
-                signature = 0;
+                logger.info("Too large heading before first flat peak");
 
                 return starts;
             }
@@ -651,10 +669,15 @@ public class KeyProjector
         final int xMax = cumulEnd;
 
         short[] table = new short[xMax + 1];
-        areaTop = staff.getFirstLine().yAt(xMin) - (2 * scale.getInterline());
-        areaBottom = staff.getLastLine().yAt(xMin) + (1 * scale.getInterline());
 
         for (int x = xMin; x <= xMax; x++) {
+            areaTop = Math.min(
+                    areaTop,
+                    staff.getFirstLine().yAt(xMin) - (2 * scale.getInterline()));
+            areaBottom = Math.max(
+                    areaBottom,
+                    staff.getLastLine().yAt(xMin) + (1 * scale.getInterline()));
+
             short cumul = 0;
 
             for (int y = areaTop; y <= areaBottom; y++) {
@@ -685,12 +708,6 @@ public class KeyProjector
                                 int height)
     {
         boolean keepOn = true;
-
-        // We need a space before the very first peak
-        if (areaStart == null) {
-            return true;
-        }
-
         KeyEvent.Peak peak = new KeyEvent.Peak(start, stop, height);
 
         // Check whether this peak could be part of sig, otherwise give up
@@ -699,8 +716,6 @@ public class KeyProjector
             peak.setInvalid();
             keepOn = false;
         } else {
-            //TODO: check derivative for a really sharp peak?
-
             // We may have an interesting peak, check distance since previous peak
             KeyEvent.Peak prevPeak = peaks.isEmpty() ? null : peaks.get(peaks.size() - 1);
 
@@ -726,6 +741,9 @@ public class KeyProjector
                     logger.debug("First peak arrives too late");
                     peak.setInvalid();
                     keepOn = false;
+                } else if (areaStart == null) {
+                    // Set areaStart at beginning of browsing, since no space was found before peak
+                    areaStart = getBrowsingStart();
                 }
             }
         }
@@ -766,6 +784,7 @@ public class KeyProjector
         KeyEvent.Space space = new KeyEvent.Space(spaceStart, spaceStop, spaceArea);
 
         if (areaStart == null) {
+            // This is the very first space found
             if (space.getWidth() > params.maxFirstSpaceWidth) {
                 // No key signature!
                 logger.debug("Staff#{} no key signature.", staff.getId());
@@ -775,14 +794,10 @@ public class KeyProjector
                 // Set areaStart here, since first chunk may be later skipped if lacking peak
                 areaStart = space.stop + 1;
             }
-
-            // clefEnd = (space.start + space.stop) / 2; // approximately
         } else {
             // Make sure we have some item
             if (peaks.isEmpty()) {
                 areaStart = space.stop + 1;
-
-                // clefEnd = (space.start + space.stop) / 2; // approximately
             } else {
                 // Second (wide) space stops it
                 if (space.getWidth() > params.maxInnerSpace) {
@@ -846,23 +861,24 @@ public class KeyProjector
         MyAdapter adapter = new MyAdapter(glyphs, targetShapes);
         new GlyphCluster(adapter).decompose();
 
-        ///logger.info("cutSlice {} glyphs:{} trials:{}", rect, glyphs.size(), adapter.trials);
         if (adapter.bestEval != null) {
             ///sheet.getNest().registerGlyph(adapter.bestGlyph);
-            logger.debug("Glyph#{} {}", adapter.bestGlyph.getId(), adapter.bestEval);
+            logger.info("Glyph#{} {}", adapter.bestGlyph.getId(), adapter.bestEval);
 
-            KeyAlterInter alterInter = KeyAlterInter.create(
-                    adapter.bestGlyph,
-                    adapter.bestEval.shape,
-                    adapter.bestEval.grade,
-                    staff);
+            if (adapter.bestEval.grade >= Grades.keyAlterMinGrade) {
+                KeyAlterInter alterInter = KeyAlterInter.create(
+                        adapter.bestGlyph,
+                        adapter.bestEval.shape,
+                        adapter.bestEval.grade,
+                        staff);
 
-            if (alterInter != null) {
-                sig.addVertex(alterInter);
-                slice.alter = alterInter;
+                if (alterInter != null) {
+                    sig.addVertex(alterInter);
+                    slice.alter = alterInter;
+
+                    return alterInter;
+                }
             }
-
-            return alterInter;
         }
 
         return null;
@@ -885,9 +901,13 @@ public class KeyProjector
             int start = starts.get(i);
             int stop = (i < (count - 1)) ? (starts.get(i + 1) - 1) : areaStop;
             Slice slice = createSlice(start, stop);
-            staff.addAttachment(Integer.toString(i + 1), slice.getRect());
-            slices.add(slice);
-            extractAlter(slice, Collections.singleton(keyShape));
+
+            KeyAlterInter inter = extractAlter(slice, Collections.singleton(keyShape));
+
+            if (inter != null) {
+                slices.add(slice);
+                staff.addAttachment(Integer.toString(i + 1), slice.getRect());
+            }
         }
     }
 
@@ -964,6 +984,26 @@ public class KeyProjector
         return good;
     }
 
+    //---------------//
+    // maxDerivative //
+    //---------------//
+    /**
+     * report the maximum derivative value over a peak range
+     *
+     * @param peak the peak to measure
+     * @return the highest derivative value
+     */
+    private int maxDerivative (KeyEvent.Peak peak)
+    {
+        int der = 0;
+
+        for (int x = peak.start - 1; x <= peak.stop; x++) {
+            der = Math.max(der, derivative(x));
+        }
+
+        return der;
+    }
+
     //-------------//
     // purgeGlyphs //
     //-------------//
@@ -983,6 +1023,7 @@ public class KeyProjector
     private void purgeGlyphs (List<Glyph> glyphs,
                               Rectangle rect)
     {
+        //TODO: use constants!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         final int xMax = (rect.x + rect.width) - 1;
         final int minWeight = 2;
 
@@ -1037,7 +1078,7 @@ public class KeyProjector
     private void reset ()
     {
         for (Slice slice : slices) {
-            KeyAlterInter alter = slice.alter;
+            KeyAlterInter alter = slice.getAlter();
 
             if (alter != null) {
                 sig.removeVertex(alter);
@@ -1155,6 +1196,14 @@ public class KeyProjector
         {
             return rect;
         }
+
+        /**
+         * @return the alter
+         */
+        KeyAlterInter getAlter ()
+        {
+            return alter;
+        }
     }
 
     //-----------//
@@ -1165,13 +1214,17 @@ public class KeyProjector
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        final Scale.Fraction maxCumulWidth = new Scale.Fraction(
+                15.0,
+                "Maximum width (from measure start to end of key-sig or time-sig)");
+
         final Scale.Fraction preStaffMargin = new Scale.Fraction(
                 2.0,
                 "Horizontal margin before staff left (for plot display)");
 
         final Scale.Fraction maxFirstPeakOffset = new Scale.Fraction(
                 2.0,
-                "Maximum x offset of first peak (WRT theoretical clef end)");
+                "Maximum x offset of first peak (WRT browse start)");
 
         final Scale.Fraction minPeakCumul = new Scale.Fraction(
                 1.5,
@@ -1185,8 +1238,12 @@ public class KeyProjector
                 0.4,
                 "Maximum width to accept peak (measured at threshold height)");
 
+        final Scale.Fraction minFlatDerivative = new Scale.Fraction(
+                0.8,
+                "Minimum derivative at peak for a flat item");
+
         final Scale.Fraction maxFlatHeading = new Scale.Fraction(
-                0.5,
+                0.4,
                 "Maximum heading length before peak for a flat item");
 
         final Scale.Fraction flatTrail = new Scale.Fraction(
@@ -1233,10 +1290,6 @@ public class KeyProjector
                 0.4,
                 "Maximum cumul value in space (on top of lines)");
 
-        final Scale.Fraction maxFirstSpaceCumul = new Scale.Fraction(
-                0.7,
-                "Maximum cumul value in first space (on top of lines)");
-
         final Scale.Fraction minFirstSpaceWidth = new Scale.Fraction(
                 0.2,
                 "Minimum initial space before key signature");
@@ -1271,6 +1324,8 @@ public class KeyProjector
 
         final int preStaffMargin;
 
+        final int maxCumulWidth;
+
         final int maxFirstPeakOffset;
 
         final int minFirstSpaceWidth;
@@ -1283,13 +1338,13 @@ public class KeyProjector
 
         final int minPeakCumul;
 
-        final int maxFirstSpaceCumul;
-
         final int maxSpaceCumul;
 
         final int maxPeakCumul;
 
         final int maxPeakWidth;
+
+        final int minFlatDerivative;
 
         final int maxFlatHeading;
 
@@ -1323,6 +1378,7 @@ public class KeyProjector
         public Parameters (Scale scale)
         {
             preStaffMargin = scale.toPixels(constants.preStaffMargin);
+            maxCumulWidth = scale.toPixels(constants.maxCumulWidth);
             maxFirstPeakOffset = scale.toPixels(constants.maxFirstPeakOffset);
             minFirstSpaceWidth = scale.toPixels(constants.minFirstSpaceWidth);
             maxFirstSpaceWidth = scale.toPixels(constants.maxFirstSpaceWidth);
@@ -1330,9 +1386,9 @@ public class KeyProjector
             linesThreshold = 5 * scale.getMainFore();
             minPeakCumul = linesThreshold + scale.toPixels(constants.minPeakCumul);
             maxSpaceCumul = linesThreshold + scale.toPixels(constants.maxSpaceCumul);
-            maxFirstSpaceCumul = linesThreshold + scale.toPixels(constants.maxFirstSpaceCumul);
             maxPeakCumul = scale.toPixels(constants.maxPeakCumul);
             maxPeakWidth = scale.toPixels(constants.maxPeakWidth);
+            minFlatDerivative = scale.toPixels(constants.minFlatDerivative);
             maxFlatHeading = scale.toPixels(constants.maxFlatHeading);
             flatTrail = scale.toPixels(constants.flatTrail);
             minFlatTrail = scale.toPixels(constants.minFlatTrail);
@@ -1409,21 +1465,21 @@ public class KeyProjector
         }
 
         @Override
-        public List<Glyph> getGlyphs ()
+        public List<Glyph> getNeighbors (Glyph part)
         {
-            return new ArrayList<Glyph>(graph.vertexSet());
-        }
-
-        @Override
-        public List<Glyph> getNeighbors (Glyph glyph)
-        {
-            return Graphs.neighborListOf(graph, glyph);
+            return Graphs.neighborListOf(graph, part);
         }
 
         @Override
         public GlyphNest getNest ()
         {
             return sheet.getNest();
+        }
+
+        @Override
+        public List<Glyph> getParts ()
+        {
+            return new ArrayList<Glyph>(graph.vertexSet());
         }
 
         @Override
@@ -1527,36 +1583,18 @@ public class KeyProjector
                 sep.add(x, staff.getHeight());
                 add(sep, Color.CYAN, false);
             }
-
             // Peak min threshold
-            if (areaStart != null) {
-                XYSeries minSeries = new XYSeries("Peak");
-
-                minSeries.add((int) areaStart, params.minPeakCumul);
-
-                if (areaStop != null) {
-                    minSeries.add((int) areaStop, params.minPeakCumul);
-                } else {
-                    minSeries.add(xMax, params.minPeakCumul);
-                }
-
-                add(minSeries, Color.GREEN, false);
-            }
-
             {
-                // First space threshold
-                XYSeries chunkSeries = new XYSeries("firstSpace");
-                chunkSeries.add(getBrowsingStart(), params.maxFirstSpaceCumul);
-                chunkSeries.add(
-                        (areaStart != null) ? (double) areaStart : (double) xMax,
-                        params.maxFirstSpaceCumul);
-                add(chunkSeries, Color.YELLOW, false);
+                XYSeries minSeries = new XYSeries("Peak");
+                minSeries.add((int) getBrowsingStart(), params.minPeakCumul);
+                minSeries.add((areaStop != null) ? (int) areaStop : xMax, params.minPeakCumul);
+                add(minSeries, Color.GREEN, false);
             }
 
             {
                 // Space threshold
                 XYSeries chunkSeries = new XYSeries("Space");
-                int x = (areaStart != null) ? areaStart : getBrowsingStart();
+                int x = getBrowsingStart();
                 chunkSeries.add(x, params.maxSpaceCumul);
                 chunkSeries.add(xMax, params.maxSpaceCumul);
                 add(chunkSeries, Color.YELLOW, false);

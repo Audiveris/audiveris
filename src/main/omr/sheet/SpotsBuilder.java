@@ -281,7 +281,7 @@ public class SpotsBuilder
         for (SystemInfo system : sheet.getSystems()) {
             StaffInfo firstStaff = system.getFirstStaff();
             StaffInfo lastStaff = system.getLastStaff();
-            int dmzEnd = firstStaff.getDmzEnd();
+            int dmzEnd = firstStaff.getDmzStop();
             int top = firstStaff.getFirstLine().yAt(dmzEnd) - dmzDyMargin;
             int bot = lastStaff.getLastLine().yAt(dmzEnd) + dmzDyMargin;
 

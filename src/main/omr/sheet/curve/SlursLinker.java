@@ -695,7 +695,7 @@ public class SlursLinker
                     // Check horizontal gap to end of staff
                     Point slurEnd = info.getEnd(side == LEFT);
                     StaffInfo staff = system.getStaffAt(slurEnd);
-                    int staffEnd = (side == LEFT) ? staff.getDmzEnd() : staff.getAbscissa(
+                    int staffEnd = (side == LEFT) ? staff.getDmzStop() : staff.getAbscissa(
                             side);
 
                     if (abs(slurEnd.x - staffEnd) > params.maxOrphanDx) {

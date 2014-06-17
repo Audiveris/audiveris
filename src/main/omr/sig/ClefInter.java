@@ -61,12 +61,13 @@ public class ClefInter
         //~ Enumeration constant initializers ------------------------------------------------------
 
         TREBLE(Shape.G_CLEF, 2),
-        ALTO(Shape.C_CLEF, 0),
         BASS(Shape.F_CLEF, -2),
-        TENOR(Shape.C_CLEF, -2);
+        ALTO(Shape.C_CLEF, 0),
+        TENOR(Shape.C_CLEF, -2),
+        PERCUSSION(Shape.PERCUSSION_CLEF, 0);
 
         //~ Instance fields ------------------------------------------------------------------------
-        /** Symbol shape. */
+        /** Symbol shape class. (regardless of ottava mark if any) */
         public final Shape shape;
 
         /** Pitch of reference line. */
@@ -135,7 +136,7 @@ public class ClefInter
         case C_CLEF:
 
             // Depending on precise clef position, we can have
-            // an Alto C-clef (pp=0) or a Tenor C-clef (pp=+2) [or other stuff]
+            // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2)
             Point center = glyph.getLocation();
             int pp = (int) Math.rint(staff.pitchPositionOf(center));
 
@@ -200,6 +201,42 @@ public class ClefInter
         return bestKind;
     }
 
+    //--------//
+    // kindOf //
+    //--------//
+    public static Kind kindOf (Glyph glyph,
+                               Shape shape,
+                               StaffInfo staff)
+    {
+        switch (shape) {
+        case G_CLEF:
+        case G_CLEF_SMALL:
+        case G_CLEF_8VA:
+        case G_CLEF_8VB:
+            return Kind.TREBLE;
+
+        case C_CLEF:
+
+            // Disambiguate between Alto C-clef (pp=0) and Tenor C-clef (pp=-2)
+            Point center = glyph.getLocation();
+            int pp = (int) Math.rint(staff.pitchPositionOf(center));
+
+            return (pp >= -1) ? Kind.ALTO : Kind.TENOR;
+
+        case F_CLEF:
+        case F_CLEF_SMALL:
+        case F_CLEF_8VA:
+        case F_CLEF_8VB:
+            return Kind.BASS;
+
+        case PERCUSSION_CLEF:
+            return Kind.PERCUSSION;
+
+        default:
+            return null;
+        }
+    }
+
     //-------------//
     // getFlatsMap //
     //-------------//
@@ -211,6 +248,7 @@ public class ClefInter
         map.put(Kind.BASS, new int[]{2, -1, 3, 0, 4, 1, 5});
         map.put(Kind.TENOR, new int[]{-1, -4, 0, -3, 1, -2, 2});
 
+        // No entry for Percussion
         return map;
     }
 
@@ -225,6 +263,7 @@ public class ClefInter
         map.put(Kind.BASS, new int[]{-2, 1, -3, 0, 3, -1, 2});
         map.put(Kind.TENOR, new int[]{2, -2, 1, -3, 0, -4, -1});
 
+        // No entry for Percussion
         return map;
     }
 }

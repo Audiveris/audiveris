@@ -61,8 +61,7 @@ public class FlatSymbol
     // getRefPoint //
     //-------------//
     /**
-     * Report the symbol reference point which is lower than center
-     * for flats.
+     * Report the symbol reference point which is lower than center for flats.
      */
     @Override
     public Point getRefPoint (Rectangle box)

@@ -44,6 +44,7 @@ import omr.sig.AbstractNoteInter;
 import omr.sig.BarConnectionInter;
 import omr.sig.BarlineInter;
 import omr.sig.BraceInter;
+import omr.sig.ClefInter;
 import omr.sig.EndingInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
@@ -580,11 +581,28 @@ public class PagePhysicalPainter
     {
         setColor(inter);
 
-        //        Glyph glyph = inter.getGlyph();
-        //        Point center = (glyph != null) ? glyph.getCentroid() : GeoUtil.centerOf(inter.getBounds());
-        Point center = GeoUtil.centerOf(inter.getBounds());
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
+        Point center = inter.getCenter();
+
+        // Align on centroid?
+        //        Glyph glyph = inter.getGlyph();
+        //
+        //        if (glyph != null) {
+        //            Point gCentroid = glyph.getCentroid();
+        //            Point sCentroid = symbol.getCentroid(inter.getBounds());
+        //            center.translate(gCentroid.x - sCentroid.x, gCentroid.y - sCentroid.y);
+        //        }
+        //
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (ClefInter clef)
+    {
+        visit((Inter) clef);
     }
 
     //-------//

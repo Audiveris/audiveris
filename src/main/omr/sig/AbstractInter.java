@@ -19,12 +19,15 @@ import omr.glyph.ui.BasicAttachmentHolder;
 import omr.math.AreaUtil;
 import omr.math.GeoUtil;
 
+import omr.ui.symbol.MusicFont;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.font.TextLayout;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.util.Collections;
@@ -286,7 +289,7 @@ public abstract class AbstractInter
         }
 
         if (glyph != null) {
-            return glyph.getAreaCenter();
+            return new Point(glyph.getAreaCenter());
         }
 
         return null;
@@ -311,7 +314,7 @@ public abstract class AbstractInter
     {
         Rectangle bounds = getBounds();
 
-        return new Point(bounds.x + bounds.width, bounds.y + (bounds.height / 2));
+        return new Point((bounds.x + bounds.width) - 1, bounds.y + (bounds.height / 2));
     }
 
     //--------------------//
@@ -407,6 +410,35 @@ public abstract class AbstractInter
     public SIGraph getSig ()
     {
         return sig;
+    }
+
+    //-----------------//
+    // getSymbolBounds //
+    //-----------------//
+    /**
+     * {@inheritDoc}.
+     * <p>
+     * This implementation uses the area center of inter and of symbol.
+     * TODO: A better implementation would use centroids instead, but would require the handling of
+     * symbol centroid.
+     *
+     * @param interline scaling factor
+     * @return the symbol bounds
+     */
+    @Override
+    public Rectangle getSymbolBounds (int interline)
+    {
+        Point center = getCenter(); // Use area center
+
+        MusicFont musicFont = MusicFont.getFont(interline);
+        TextLayout layout = musicFont.layout(getShape());
+        Rectangle2D bounds = layout.getBounds();
+
+        return new Rectangle(
+                center.x - (int) Math.rint(bounds.getWidth() / 2),
+                center.y - (int) Math.rint(bounds.getHeight() / 2),
+                (int) Math.rint(bounds.getWidth()),
+                (int) Math.rint(bounds.getHeight()));
     }
 
     //----------//

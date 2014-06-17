@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet.ui;
 
+import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
@@ -34,9 +35,11 @@ import omr.sig.AbstractNoteInter;
 import omr.sig.BarConnectionInter;
 import omr.sig.BarlineInter;
 import omr.sig.BraceInter;
+import omr.sig.ClefInter;
 import omr.sig.EndingInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
+import omr.sig.KeyAlterInter;
 import omr.sig.LedgerInter;
 import omr.sig.SIGraph;
 import omr.sig.SlurInter;
@@ -45,18 +48,14 @@ import omr.sig.WedgeInter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
-
 import static omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static omr.ui.symbol.Alignment.TOP_CENTER;
-
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.OmrFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
-
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
-
 import omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -73,8 +72,6 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
 import java.util.ConcurrentModificationException;
-import omr.glyph.Shape;
-import omr.sig.KeyAlterInter;
 
 /**
  * Class {@code SheetPainter} defines for every node in Page hierarchy the rendering of
@@ -280,6 +277,7 @@ public class SheetPainter
     {
         try {
             this.system = systemInfo;
+
             Rectangle bounds = systemInfo.getBounds();
 
             if (bounds == null) {
@@ -343,6 +341,15 @@ public class SheetPainter
         Point center = GeoUtil.centerOf(inter.getBounds());
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (ClefInter clef)
+    {
+        visit((Inter) clef);
     }
 
     //-------//

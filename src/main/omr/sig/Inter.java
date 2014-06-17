@@ -18,6 +18,8 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.AttachmentHolder;
 
+import omr.sheet.Scale;
+
 import omr.util.Vip;
 
 import java.awt.Point;
@@ -200,12 +202,6 @@ public interface Inter
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Increase the inter grade.
-     *
-     * @param ratio ratio applied
-     */
-    void increase (double ratio);
-    /**
      * Decrease the inter grade.
      *
      * @param ratio ratio applied
@@ -323,6 +319,21 @@ public interface Inter
      * @return the containing sig
      */
     SIGraph getSig ();
+
+    /**
+     * Report a COPY of the bounding box based on MusicFont symbol.
+     *
+     * @param interline scaling factor
+     * @return the symbol bounding box
+     */
+    Rectangle getSymbolBounds (int interline);
+
+    /**
+     * Increase the inter grade.
+     *
+     * @param ratio ratio applied
+     */
+    void increase (double ratio);
 
     /**
      * Report whether this instance has been deleted.

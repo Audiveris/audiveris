@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.grid;
 
-import omr.constant.ConstantSet;
-
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
 
@@ -69,8 +67,6 @@ public class StaffInfo
         implements AttachmentHolder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(
             StaffInfo.class);
@@ -139,6 +135,21 @@ public class StaffInfo
 
     /** Left extrema. (beginning of lines) */
     private int left;
+
+    /** DMZ start abscissa. (typically right after starting bar line) */
+    private int dmzStart;
+
+    /** Current DMZ stop abscissa. (based on what has been retrieved so far (C+K+T)) */
+    private int dmzStop;
+
+    /** Stop abscissa of clef. */
+    private int clefStop;
+
+    /** Stop abscissa of key-signature, if any. */
+    private Integer keyStop;
+
+    /** Stop abscissa of time-signature, if any. */
+    private Integer timeStop;
 
     /** Right extrema. (end of lines) */
     private int right;
@@ -493,19 +504,30 @@ public class StaffInfo
         return lines.get(idx);
     }
 
-    //-----------//
-    // getDmzEnd //
-    //-----------//
+    //-------------//
+    // getDmzStart //
+    //-------------//
     /**
-     * Report the abscissa at end of staff DMZ area (the initial zone
-     * at the beginning of the staff, dedicated to clef etc, and
-     * without notes or stems.
-     *
-     * @return DMZ right side abscissa
+     * @return the dmzStart
      */
-    public int getDmzEnd ()
+    public int getDmzStart ()
     {
-        return left + specificScale.toPixels(constants.minDMZWidth);
+        return dmzStart;
+    }
+
+    //------------//
+    // getDmzStop //
+    //------------//
+    /**
+     * Report the abscissa at end of staff DMZ area.
+     * The DMZ is the zone at the beginning of the staff, dedicated to clef, plus key-sig if any,
+     * plus time-sig if any. The DMZ cannot contain notes, stems, beams, etc.
+     *
+     * @return DMZ end abscissa
+     */
+    public int getDmzStop ()
+    {
+        return dmzStop;
     }
 
     //----------------//
@@ -1017,6 +1039,30 @@ public class StaffInfo
         this.barPeaks = barPeaks;
     }
 
+    //-------------//
+    // setDmzStart //
+    //-------------//
+    /**
+     * @param dmzStart the dmzStart to set
+     */
+    public void setDmzStart (int dmzStart)
+    {
+        this.dmzStart = dmzStart;
+    }
+
+    //------------//
+    // setDmzStop //
+    //------------//
+    /**
+     * Refine the abscissa of DMZ break.
+     *
+     * @param dmzStop the refined DMZ end value
+     */
+    public void setDmzStop (int dmzStop)
+    {
+        this.dmzStop = dmzStop;
+    }
+
     //----------//
     // setLimit //
     //----------//
@@ -1152,6 +1198,46 @@ public class StaffInfo
         return commonBottom > commonTop;
     }
 
+    /**
+     * @return the clefStop
+     */
+    public int getClefStop ()
+    {
+        return clefStop;
+    }
+
+    /**
+     * @return the keyStop
+     */
+    public Integer getKeyStop ()
+    {
+        return keyStop;
+    }
+
+    /**
+     * @return the timeStop
+     */
+    public Integer getTimeStop ()
+    {
+        return timeStop;
+    }
+
+    /**
+     * @param clefStop the clefStop to set
+     */
+    public void setClefStop (int clefStop)
+    {
+        this.clefStop = clefStop;
+    }
+
+    /**
+     * @param keyStop the keyStop to set
+     */
+    public void setKeyStop (Integer keyStop)
+    {
+        this.keyStop = keyStop;
+    }
+
     //----------//
     // setShort //
     //----------//
@@ -1164,6 +1250,14 @@ public class StaffInfo
     void setShort ()
     {
         isShort = true;
+    }
+
+    /**
+     * @param timeStop the timeStop to set
+     */
+    void setTimeStop (Integer timeStop)
+    {
+        this.timeStop = timeStop;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -1191,18 +1285,5 @@ public class StaffInfo
             this.ledger = ledger;
             this.index = index;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final Scale.Fraction minDMZWidth = new Scale.Fraction(
-                4.0,
-                "Minimum width of zone without notes at beginning of staff");
     }
 }
