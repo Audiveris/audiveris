@@ -16,6 +16,7 @@ import omr.glyph.ui.BasicAttachmentHolder;
 
 import omr.math.GeoPath;
 import omr.math.GeoUtil;
+import omr.math.Projection;
 
 import omr.score.entity.Staff;
 
@@ -128,7 +129,7 @@ public class StaffInfo
     private final List<FilamentLine> lines;
 
     /**
-     * Scale specific to this staff. [not used actually]
+     * Scale specific to this staff. [not used for the time being]
      * (since different staves in a page may exhibit different scales)
      */
     private final Scale specificScale;
@@ -156,6 +157,11 @@ public class StaffInfo
 
     /** Flag for short staff. (With a neighbor on left or right side) */
     private boolean isShort;
+
+    /** Projected foreground pixels, only within staff height, indexed by abscissa.
+     * TODO: perhaps keeping this projection in StaffInfo is useless
+     */
+    private Projection projection;
 
     /** Map of ledgers nearby. */
     private final SortedMap<Integer, SortedSet<LedgerInter>> ledgerMap = new TreeMap<Integer, SortedSet<LedgerInter>>();
@@ -204,24 +210,6 @@ public class StaffInfo
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------------//
-    // getLedgerLineIndex //
-    //--------------------//
-    /**
-     * Compute staff-based line index, based on provided pitch position
-     *
-     * @param pitchPosition the provided pitch position
-     * @return the computed line index
-     */
-    public static int getLedgerLineIndex (double pitchPosition)
-    {
-        if (pitchPosition > 0) {
-            return (int) Math.rint(pitchPosition / 2) - 2;
-        } else {
-            return (int) Math.rint(pitchPosition / 2) + 2;
-        }
-    }
-
     //
     //---------------//
     // addAttachment //
@@ -409,6 +397,14 @@ public class StaffInfo
     public List<BarPeak> getBarPeaks ()
     {
         return Collections.unmodifiableList(barPeaks);
+    }
+
+    /**
+     * @return the clefStop
+     */
+    public int getClefStop ()
+    {
+        return clefStop;
     }
 
     //------------------//
@@ -600,6 +596,14 @@ public class StaffInfo
         return id;
     }
 
+    /**
+     * @return the keyStop
+     */
+    public Integer getKeyStop ()
+    {
+        return keyStop;
+    }
+
     //-------------//
     // getLastLine //
     //-------------//
@@ -611,6 +615,24 @@ public class StaffInfo
     public FilamentLine getLastLine ()
     {
         return lines.get(lines.size() - 1);
+    }
+
+    //--------------------//
+    // getLedgerLineIndex //
+    //--------------------//
+    /**
+     * Compute staff-based line index, based on provided pitch position
+     *
+     * @param pitchPosition the provided pitch position
+     * @return the computed line index
+     */
+    public static int getLedgerLineIndex (double pitchPosition)
+    {
+        if (pitchPosition > 0) {
+            return (int) Math.rint(pitchPosition / 2) - 2;
+        } else {
+            return (int) Math.rint(pitchPosition / 2) + 2;
+        }
     }
 
     //--------------//
@@ -823,6 +845,14 @@ public class StaffInfo
         return new NotePosition(this, pitch, bestLedger);
     }
 
+    /**
+     * @return the projection
+     */
+    public Projection getProjection ()
+    {
+        return projection;
+    }
+
     //---------------//
     // getScoreStaff //
     //---------------//
@@ -867,6 +897,14 @@ public class StaffInfo
     public SystemInfo getSystem ()
     {
         return system;
+    }
+
+    /**
+     * @return the timeStop
+     */
+    public Integer getTimeStop ()
+    {
+        return timeStop;
     }
 
     //---------//
@@ -1039,6 +1077,14 @@ public class StaffInfo
         this.barPeaks = barPeaks;
     }
 
+    /**
+     * @param clefStop the clefStop to set
+     */
+    public void setClefStop (int clefStop)
+    {
+        this.clefStop = clefStop;
+    }
+
     //-------------//
     // setDmzStart //
     //-------------//
@@ -1061,6 +1107,14 @@ public class StaffInfo
     public void setDmzStop (int dmzStop)
     {
         this.dmzStop = dmzStop;
+    }
+
+    /**
+     * @param keyStop the keyStop to set
+     */
+    public void setKeyStop (Integer keyStop)
+    {
+        this.keyStop = keyStop;
     }
 
     //----------//
@@ -1111,6 +1165,14 @@ public class StaffInfo
 
         // Invalidate area, so that it gets recomputed when needed
         area = null;
+    }
+
+    /**
+     * @param projection the projection to set
+     */
+    public void setProjection (Projection projection)
+    {
+        this.projection = projection;
     }
 
     //---------------//
@@ -1198,46 +1260,6 @@ public class StaffInfo
         return commonBottom > commonTop;
     }
 
-    /**
-     * @return the clefStop
-     */
-    public int getClefStop ()
-    {
-        return clefStop;
-    }
-
-    /**
-     * @return the keyStop
-     */
-    public Integer getKeyStop ()
-    {
-        return keyStop;
-    }
-
-    /**
-     * @return the timeStop
-     */
-    public Integer getTimeStop ()
-    {
-        return timeStop;
-    }
-
-    /**
-     * @param clefStop the clefStop to set
-     */
-    public void setClefStop (int clefStop)
-    {
-        this.clefStop = clefStop;
-    }
-
-    /**
-     * @param keyStop the keyStop to set
-     */
-    public void setKeyStop (Integer keyStop)
-    {
-        this.keyStop = keyStop;
-    }
-
     //----------//
     // setShort //
     //----------//
@@ -1255,7 +1277,7 @@ public class StaffInfo
     /**
      * @param timeStop the timeStop to set
      */
-    void setTimeStop (Integer timeStop)
+    public void setTimeStop (Integer timeStop)
     {
         this.timeStop = timeStop;
     }

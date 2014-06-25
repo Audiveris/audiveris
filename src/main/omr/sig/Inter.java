@@ -18,8 +18,6 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.AttachmentHolder;
 
-import omr.sheet.Scale;
-
 import omr.util.Vip;
 
 import java.awt.Point;
@@ -395,6 +393,13 @@ public interface Inter
      * @param sig the containing SIG
      */
     void setSig (SIGraph sig);
+
+    /**
+     * Report a shape-based string.
+     *
+     * @return shape.toString() by default. To be overridden if shape is null.
+     */
+    String shapeString ();
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//

@@ -36,12 +36,15 @@ import omr.sig.KeyAlterInter;
 import omr.sig.LedgerInter;
 import omr.sig.SlurInter;
 import omr.sig.StemInter;
+import omr.sig.TimeInter;
 import omr.sig.WedgeInter;
 
 import omr.ui.symbol.Alignment;
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
+
+import omr.util.HorizontalSide;
 
 import ij.process.ByteProcessor;
 
@@ -92,9 +95,6 @@ public abstract class PageEraser
     // Stroke for lines (endings, wedges, slurs)
     private final Stroke lineStroke;
 
-    // Vertical margin added above and below any staff DMZ
-    private final int dmzDyMargin;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new PageEraser object.
@@ -112,9 +112,6 @@ public abstract class PageEraser
         this.sheet = sheet;
 
         Scale scale = sheet.getScale();
-
-        // Properly scaled font
-        dmzDyMargin = scale.toPixels(constants.staffVerticalMargin);
 
         int symbolSize = scale.toPixels(constants.symbolSize);
         musicFont = MusicFont.getFont(symbolSize);
@@ -151,6 +148,12 @@ public abstract class PageEraser
     public void visit (KeyAlterInter alter)
     {
         processGlyph(alter.getGlyph());
+    }
+
+    @Override
+    public void visit (TimeInter time)
+    {
+        processGlyph(time.getGlyph());
     }
 
     @Override
@@ -259,21 +262,50 @@ public abstract class PageEraser
         return inter.isGood();
     }
 
-    //----------//
-    // eraseDmz //
-    //----------//
+    //----------------//
+    // eraseStavesDmz //
+    //----------------//
+    /**
+     * Erase from image the DMZ part for each staff of a system.
+     * There is one erased area per staff, with an abscissa range from
+     * staff left abscissa to DMZ end.
+     *
+     * @param system  the system to process
+     * @param yMargin the vertical margin erased above and below each staff
+     */
+    protected void eraseStavesDmz (SystemInfo system,
+                                   Scale.Fraction yMargin)
+    {
+        for (StaffInfo staff : system.getStaves()) {
+            int dy = staff.getSpecificScale().toPixels(yMargin);
+            int left = staff.getDmzStart();
+            int right = staff.getDmzStop();
+            int top = staff.getFirstLine().yAt(right) - dy;
+            int bot = staff.getLastLine().yAt(right) + dy;
+            g.fillRect(left, top, right - left + 1, bot - top + 1);
+        }
+    }
+
+    //----------------//
+    // eraseSystemDmz //
+    //----------------//
     /**
      * Erase from image the DMZ part of a system.
+     * The erased area is a single rectangle for the whole system, with an abscissa range from
+     * system left bound to DMZ end.
      *
-     * @param system the system to process
+     * @param system  the system to process
+     * @param yMargin the vertical margin erased above first staff and below last staff
      */
-    protected void eraseDmz (SystemInfo system)
+    protected void eraseSystemDmz (SystemInfo system,
+                                   Scale.Fraction yMargin)
     {
+        int dy = sheet.getScale().toPixels(yMargin);
         StaffInfo firstStaff = system.getFirstStaff();
         StaffInfo lastStaff = system.getLastStaff();
         int dmzEnd = firstStaff.getDmzStop();
-        int top = firstStaff.getFirstLine().yAt(dmzEnd) - dmzDyMargin;
-        int bot = lastStaff.getLastLine().yAt(dmzEnd) + dmzDyMargin;
+        int top = firstStaff.getFirstLine().yAt(dmzEnd) - dy;
+        int bot = lastStaff.getLastLine().yAt(dmzEnd) + dy;
         g.fillRect(system.getBounds().x, top, dmzEnd, bot - top + 1);
     }
 
@@ -309,9 +341,5 @@ public abstract class PageEraser
         final Scale.Fraction lineMargin = new Scale.Fraction(
                 0.1,
                 "Thickness of white lines drawn on items borders");
-
-        final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
-                2.0,
-                "Margin erased above & below staff DMZ area");
     }
 }

@@ -20,6 +20,7 @@ import omr.glyph.facets.Glyph;
 import omr.lag.Section;
 
 import omr.sheet.PageEraser;
+import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -53,7 +54,6 @@ public class CurvesEraser
 
     private static final Logger logger = LoggerFactory.getLogger(CurvesEraser.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CurvesEraser object.
@@ -127,7 +127,7 @@ public class CurvesEraser
 
             // Erase system DMZ?
             if (constants.useDmz.isSet()) {
-                eraseDmz(system);
+                eraseSystemDmz(system, constants.systemVerticalMargin);
             }
         }
 
@@ -146,5 +146,9 @@ public class CurvesEraser
         final Constant.Boolean useDmz = new Constant.Boolean(
                 true,
                 "Should we erase the DMZ at staff start");
+
+        final Scale.Fraction systemVerticalMargin = new Scale.Fraction(
+                2.0,
+                "Margin erased above & below system DMZ area");
     }
 }

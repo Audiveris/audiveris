@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                      N u m b e r I n t e r                                     //
+//                              A b s t r a c t N u m b e r I n t e r                             //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -17,74 +17,54 @@ import omr.glyph.facets.Glyph;
 import java.awt.Rectangle;
 
 /**
- * Class {@code NumberInter} represents a number, such as the top or bottom number in
- * a time signature, or an ending number, or a number for multi-measure rest, etc.
+ * Class {@code AbstractNumberInter} is an abstract inter with a integer value.
  *
  * @author Hervé Bitteur
  */
-@Deprecated
-public class NumberInter
+public abstract class AbstractNumberInter
         extends AbstractInter
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Integer value for the number. */
-    private final int value;
+    protected final int value;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new NumberInter object.
+     * Creates a new AbstractNumberInter object.
      *
      * @param glyph underlying glyph
      * @param shape precise shape
      * @param grade evaluation value
      * @param value number value
      */
-    public NumberInter (Glyph glyph,
-                        Shape shape,
-                        double grade,
-                        int value)
+    public AbstractNumberInter (Glyph glyph,
+                                Shape shape,
+                                double grade,
+                                int value)
     {
         super(glyph, null, shape, grade);
         this.value = value;
     }
 
     /**
-     * Creates a new NumberInter object.
+     * Creates a new AbstractNumberInter object.
      *
      * @param box   bounding box of the number
      * @param shape precise shape
      * @param grade evaluation value
      * @param value number value
      */
-    public NumberInter (Rectangle box,
-                        Shape shape,
-                        double grade,
-                        int value)
+    public AbstractNumberInter (Rectangle box,
+                                Shape shape,
+                                double grade,
+                                int value)
     {
         super(null, box, shape, grade);
         this.value = value;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // create //
-    //--------//
-    /**
-     * (Try to) create a Number inter.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @return the created instance or null if failed
-     */
-    public static Inter create (Glyph glyph,
-                                Shape shape,
-                                double grade)
-    {
-        return new NumberInter(glyph, shape, grade, valueOf(shape));
-    }
-
     //--------//
     // accept //
     //--------//
@@ -105,7 +85,7 @@ public class NumberInter
     //---------//
     // valueOf //
     //---------//
-    private static int valueOf (Shape shape)
+    protected static int valueOf (Shape shape)
     {
         switch (shape) {
         case TIME_ZERO:

@@ -173,7 +173,7 @@ public class StemScaler
         Picture picture = sheet.getPicture();
         ByteProcessor buf = picture.getSource(Picture.SourceKey.STAFF_LINE_FREE);
         BufferedImage img = buf.getBufferedImage();
-        StemEraser eraser = new StemEraser(buf, img.createGraphics(), sheet);
+        StemsEraser eraser = new StemsEraser(buf, img.createGraphics(), sheet);
         eraser.eraseShapes(
                 Arrays.asList(
                         Shape.THICK_BARLINE,
@@ -229,7 +229,11 @@ public class StemScaler
 
         final Constant.Boolean useDmz = new Constant.Boolean(
                 true,
-                "Should we erase the DMZ at staff start");
+                "Should we erase the DMZ at system start");
+
+        final Scale.Fraction systemVerticalMargin = new Scale.Fraction(
+                2.0,
+                "Margin erased above & below system DMZ area");
 
         final Constant.Ratio quorumRatio = new Constant.Ratio(
                 0.1,
@@ -330,15 +334,15 @@ public class StemScaler
         }
     }
 
-    //------------//
-    // StemEraser //
-    //------------//
-    private class StemEraser
+    //-------------//
+    // StemsEraser //
+    //-------------//
+    private class StemsEraser
             extends PageEraser
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public StemEraser (ByteProcessor buffer,
+        public StemsEraser (ByteProcessor buffer,
                            Graphics2D g,
                            Sheet sheet)
         {
@@ -375,7 +379,7 @@ public class StemScaler
 
                 // Erase system DMZ?
                 if (constants.useDmz.isSet()) {
-                    eraseDmz(system);
+                    eraseSystemDmz(system, constants.systemVerticalMargin);
                 }
             }
         }

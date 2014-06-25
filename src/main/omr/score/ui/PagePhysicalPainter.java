@@ -12,7 +12,9 @@
 package omr.score.ui;
 
 import omr.glyph.Shape;
+
 import static omr.glyph.Shape.*;
+
 import omr.glyph.facets.Glyph;
 
 import omr.grid.LineInfo;
@@ -57,13 +59,17 @@ import omr.sig.WedgeInter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
+
 import static omr.ui.symbol.Alignment.*;
+
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.OmrFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
+
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
+
 import omr.ui.util.UIUtil;
 
 import omr.util.TreeNode;
@@ -83,6 +89,7 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ConcurrentModificationException;
+import omr.sig.TimeInter;
 
 /**
  * Class {@code PagePhysicalPainter} paints the recognized page entities at the location
@@ -579,6 +586,10 @@ public class PagePhysicalPainter
     @Override
     public void visit (Inter inter)
     {
+        if (inter.getShape() == null) {
+            return;
+        }
+
         setColor(inter);
 
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
@@ -603,6 +614,15 @@ public class PagePhysicalPainter
     public void visit (ClefInter clef)
     {
         visit((Inter) clef);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (TimeInter time)
+    {
+        visit((Inter) time);
     }
 
     //-------//

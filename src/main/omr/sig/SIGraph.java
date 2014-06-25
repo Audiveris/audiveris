@@ -134,30 +134,6 @@ public class SIGraph
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // getInter //
-    //----------//
-    /**
-     * Report the (first) interpretation if any of desired class for
-     * the glyph at hand.
-     * TODO: Could we have several inters of desired class for the same glyph?
-     *
-     * @param glyph  the underlying glyph
-     * @param classe the interpretation class desired
-     * @return the existing interpretation if any, or null
-     */
-    public static Inter getInter (Glyph glyph,
-                                  Class classe)
-    {
-        for (Inter inter : glyph.getInterpretations()) {
-            if (classe.isAssignableFrom(inter.getClass())) {
-                return inter;
-            }
-        }
-
-        return null;
-    }
-
     //-----------//
     // addVertex //
     //-----------//
@@ -316,6 +292,33 @@ public class SIGraph
     public Set<Relation> getExclusions (Inter inter)
     {
         return getRelations(inter, Exclusion.class);
+    }
+
+    //----------//
+    // getInter //
+    //----------//
+    /**
+     * Report the (first) interpretation if any of desired class for
+     * the glyph at hand.
+     * TODO: Could we have several inters of desired class for the same glyph?
+     * Interpretations are no longer automatically linked back from
+     * glyph!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     *
+     * @param glyph  the underlying glyph
+     * @param classe the interpretation class desired
+     * @return the existing interpretation if any, or null
+     */
+    @Deprecated
+    public static Inter getInter (Glyph glyph,
+                                  Class classe)
+    {
+        for (Inter inter : glyph.getInterpretations()) {
+            if (classe.isAssignableFrom(inter.getClass())) {
+                return inter;
+            }
+        }
+
+        return null;
     }
 
     //------------------//
@@ -575,6 +578,8 @@ public class SIGraph
         Inter target = direct ? inter2 : inter1;
 
         // Look for existing exclusion
+        Set<Relation> rels = getAllEdges(source, target);
+
         for (Relation rel : getAllEdges(source, target)) {
             if (rel instanceof Exclusion) {
                 return (Exclusion) rel;
@@ -613,18 +618,23 @@ public class SIGraph
      *
      * @param inters the set of inters to mutually exclude
      * @param cause  the exclusion cause
+     * @return the exclusions inserted
      */
-    public void insertExclusions (List<Inter> inters,
-                                  Cause cause)
+    public List<Relation> insertExclusions (List<Inter> inters,
+                                            Cause cause)
     {
         ///logger.warn("insertExclusions for size: {}", inters.size());
+        List<Relation> exclusions = new ArrayList<Relation>();
+
         for (int i = 0; i < (inters.size() - 1); i++) {
             Inter inter = inters.get(i);
 
             for (Inter other : inters.subList(i + 1, inters.size())) {
-                insertExclusion(inter, other, cause);
+                exclusions.add(insertExclusion(inter, other, cause));
             }
         }
+
+        return exclusions;
     }
 
     //--------//

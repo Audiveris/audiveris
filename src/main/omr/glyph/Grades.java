@@ -53,6 +53,9 @@ public class Grades
     /** Minimum grade for a key signature item */
     public static final double keyAlterMinGrade = constants.keyAlterMinGrade.getValue();
 
+    /** Minimum grade for a key signature item, on second phase */
+    public static final double keyAlterMinGrade2 = constants.keyAlterMinGrade2.getValue();
+
     /** Minimum grade for a glyph left over */
     public static final double leftOverMinGrade = constants.leftOverMinGrade.getValue();
 
@@ -158,6 +161,10 @@ public class Grades
                 0.0001,
                 "Minimum grade for a key signature item symbol");
 
-        Evaluation.Grade timeMinGrade = new Evaluation.Grade(0, "Minimum grade for a time sig");
+        Evaluation.Grade keyAlterMinGrade2 = new Evaluation.Grade(
+                0.000001,
+                "Minimum grade for a key signature item symbol, on second phase");
+
+        Evaluation.Grade timeMinGrade = new Evaluation.Grade(0.1, "Minimum grade for a time sig");
     }
 }

@@ -30,8 +30,8 @@ public abstract class KeyEvent
     /**
      * Creates a new KeyEvent object.
      *
-     * @param start DOCUMENT ME!
-     * @param stop  DOCUMENT ME!
+     * @param start first abscissa of object
+     * @param stop  last abscissa of object
      */
     public KeyEvent (int start,
                      int stop)

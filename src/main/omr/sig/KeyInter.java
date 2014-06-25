@@ -11,12 +11,11 @@
 // </editor-fold>
 package omr.sig;
 
-import omr.glyph.Shape;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+import java.util.List;
 
 /**
  * Class {@code KeyInter} represents a key signature on a staff.
@@ -25,6 +24,7 @@ import java.awt.Rectangle;
  */
 public class KeyInter
         extends AbstractInter
+        implements InterEnsemble
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -41,18 +41,48 @@ public class KeyInter
         0 // B - Si
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    /** Sequence of key components. */
+    private final List<KeyAlterInter> alters;
+
+    /** Numerical value for signature. */
+    private final int signature;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new KeyInter object.
      *
-     * @param box   the bounding box
-     * @param shape SHARP or FLAT shape
-     * @param grade the interpretation quality
+     * @param box       the bounding box
+     * @param grade     the interpretation quality
+     * @param signature signature value (negative for flats, positive for sharps)
+     * @param alters    sequence of alteration inters
      */
     public KeyInter (Rectangle box,
-                     Shape shape,
-                     double grade)
+                     double grade,
+                     int signature,
+                     List<KeyAlterInter> alters)
     {
-        super(null, box, shape, grade);
+        super(null, box, null, grade);
+        this.alters = alters;
+        this.signature = signature;
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // getMembers //
+    //------------//
+    @Override
+    public List<? extends Inter> getMembers ()
+    {
+        return alters;
+    }
+
+    //-------------//
+    // shapeString //
+    //-------------//
+    @Override
+    public String shapeString ()
+    {
+        return "KEY_SIG:" + signature;
     }
 }

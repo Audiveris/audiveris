@@ -121,8 +121,7 @@ public abstract class AbstractInter
 
         // Cross-linking
         if (glyph != null) {
-            glyph.addInterpretation(this);
-
+            ///glyph.addInterpretation(this);
             if (glyph.isVip()) {
                 setVip();
             }
@@ -130,32 +129,6 @@ public abstract class AbstractInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // getGoodGrade //
-    //--------------//
-    /**
-     * Report the minimum grade to consider an interpretation as good.
-     *
-     * @return the minimum grade value for a good interpretation
-     */
-    public static double getGoodGrade ()
-    {
-        return goodGrade;
-    }
-
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    /**
-     * Report the minimum grade for an acceptable interpretation
-     *
-     * @return the minimum grade for keeping an Inter instance
-     */
-    public static double getMinGrade ()
-    {
-        return minGrade;
-    }
-
     //--------//
     // accept //
     //--------//
@@ -367,6 +340,19 @@ public abstract class AbstractInter
         return glyph;
     }
 
+    //--------------//
+    // getGoodGrade //
+    //--------------//
+    /**
+     * Report the minimum grade to consider an interpretation as good.
+     *
+     * @return the minimum grade value for a good interpretation
+     */
+    public static double getGoodGrade ()
+    {
+        return goodGrade;
+    }
+
     //----------//
     // getGrade //
     //----------//
@@ -392,6 +378,19 @@ public abstract class AbstractInter
     public GradeImpacts getImpacts ()
     {
         return impacts;
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    /**
+     * Report the minimum grade for an acceptable interpretation
+     *
+     * @return the minimum grade for keeping an Inter instance
+     */
+    public static double getMinGrade ()
+    {
+        return minGrade;
     }
 
     //----------//
@@ -495,7 +494,12 @@ public abstract class AbstractInter
     @Override
     public boolean overlaps (Inter that)
     {
-        if (this.area != null) {
+        if (this instanceof InterEnsemble && ((InterEnsemble) this).getMembers().contains(that)) {
+            return false;
+        } else if (that instanceof InterEnsemble
+                   && ((InterEnsemble) that).getMembers().contains(this)) {
+            return false;
+        } else if (this.area != null) {
             if (this.area.intersects(that.getCoreBounds())) {
                 if (that.getArea() != null) {
                     return AreaUtil.intersection(this.area, that.getArea());
@@ -586,6 +590,15 @@ public abstract class AbstractInter
         vip = true;
     }
 
+    //-------------//
+    // shapeString //
+    //-------------//
+    @Override
+    public String shapeString ()
+    {
+        return shape.toString();
+    }
+
     //----------//
     // toString //
     //----------//
@@ -594,7 +607,7 @@ public abstract class AbstractInter
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(shape);
+        sb.append(shapeString());
 
         if (getId() != 0) {
             sb.append("#").append(getId());

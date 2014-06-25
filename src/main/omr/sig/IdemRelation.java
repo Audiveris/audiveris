@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                      I n t e r V i s i t o r                                   //
+//                                     I d e m R e l a t i o n                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -12,40 +12,22 @@
 package omr.sig;
 
 /**
- * Interface {@code InterVisitor} is meant to visit any instance of
- * shape interpretation.
+ * Class {@code IdemRelation} represents the relation of identical inters from one
+ * staff to the other within a system.
  *
  * @author Hervé Bitteur
  */
-public interface InterVisitor
+public class IdemRelation
+        extends BasicSupport
 {
     //~ Methods ------------------------------------------------------------------------------------
 
-    void visit (Inter inter);
-
-    void visit (AbstractBeamInter inter);
-
-    void visit (AbstractNoteInter inter);
-
-    void visit (ClefInter inter);
-
-    void visit (KeyAlterInter inter);
-
-    void visit (TimeInter inter);
-
-    void visit (BraceInter inter);
-
-    void visit (StemInter inter);
-
-    void visit (LedgerInter inter);
-
-    void visit (SlurInter inter);
-
-    void visit (WedgeInter inter);
-
-    void visit (EndingInter inter);
-
-    void visit (BarlineInter inter);
-
-    void visit (BarConnectionInter inter);
+    //---------//
+    // getName //
+    //---------//
+    @Override
+    public String getName ()
+    {
+        return "Idem";
+    }
 }

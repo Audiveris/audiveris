@@ -115,6 +115,10 @@ public class SymbolsEraser
     {
         for (SystemInfo system : sheet.getSystems()) {
             final SIGraph sig = system.getSig();
+
+            // Erase DMZ on each staff of the system
+            eraseStavesDmz(system, constants.staffVerticalMargin);
+
             final List<Inter> strongs = new ArrayList<Inter>();
             final List<Inter> weaks = new ArrayList<Inter>();
             systemWeaks = null;
@@ -197,11 +201,11 @@ public class SymbolsEraser
         }
 
         if (inter instanceof StemInter) {
-            return ctxGrade >= 0.8;
+            return ctxGrade >= 0.7;
         }
 
         if (inter instanceof AbstractNoteInter) {
-            return ctxGrade >= 0.7;
+            return ctxGrade >= 0.6;
         }
 
         return super.canHide(inter);
@@ -286,5 +290,9 @@ public class SymbolsEraser
                 "pixels",
                 2,
                 "Number of pixels added around notes");
+
+        final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
+                0.5,
+                "Margin erased above & below staff DMZ area");
     }
 }

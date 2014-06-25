@@ -15,6 +15,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
+import static omr.sig.ClefInter.ClefKind.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,13 +51,13 @@ public class ClefInter
     private static final Logger logger = LoggerFactory.getLogger(ClefInter.class);
 
     /** Map of sharp pitches per clef kind. */
-    public static final Map<Kind, int[]> sharpsMap = getSharpsMap();
+    public static final Map<ClefKind, int[]> sharpsMap = getSharpsMap();
 
     /** Map of flat pitches per clef kind. */
-    public static final Map<Kind, int[]> flatsMap = getFlatsMap();
+    public static final Map<ClefKind, int[]> flatsMap = getFlatsMap();
 
     //~ Enumerations -------------------------------------------------------------------------------
-    public static enum Kind
+    public static enum ClefKind
     {
         //~ Enumeration constant initializers ------------------------------------------------------
 
@@ -74,13 +75,17 @@ public class ClefInter
         public final int pitch;
 
         //~ Constructors ---------------------------------------------------------------------------
-        Kind (Shape shape,
-              int pitch)
+        ClefKind (Shape shape,
+                  int pitch)
         {
             this.shape = shape;
             this.pitch = pitch;
         }
     }
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    /** Kind of the clef. */
+    private final ClefKind kind;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -90,13 +95,16 @@ public class ClefInter
      * @param shape the possible shape
      * @param grade the interpretation quality
      * @param pitch pitch position
+     * @param kind  clef kind
      */
     public ClefInter (Glyph glyph,
                       Shape shape,
                       double grade,
-                      int pitch)
+                      int pitch,
+                      ClefKind kind)
     {
         super(glyph, null, shape, grade, pitch);
+        this.kind = kind;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -131,7 +139,7 @@ public class ClefInter
         case G_CLEF_SMALL:
         case G_CLEF_8VA:
         case G_CLEF_8VB:
-            return new ClefInter(glyph, shape, grade, 2);
+            return new ClefInter(glyph, shape, grade, 2, TREBLE);
 
         case C_CLEF:
 
@@ -139,36 +147,50 @@ public class ClefInter
             // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2)
             Point center = glyph.getLocation();
             int pp = (int) Math.rint(staff.pitchPositionOf(center));
+            ClefKind kind = (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
 
-            return new ClefInter(glyph, shape, grade, pp);
+            return new ClefInter(glyph, shape, grade, pp, kind);
 
         case F_CLEF:
         case F_CLEF_SMALL:
         case F_CLEF_8VA:
         case F_CLEF_8VB:
-            return new ClefInter(glyph, shape, grade, -2);
+            return new ClefInter(glyph, shape, grade, -2, BASS);
 
         case PERCUSSION_CLEF:
-            return new ClefInter(glyph, shape, grade, 0);
+            return new ClefInter(glyph, shape, grade, 0, PERCUSSION);
 
         default:
             return null;
         }
     }
 
+    /**
+     * @return the kind
+     */
+    public ClefKind getKind ()
+    {
+        return kind;
+    }
+
     //-----------//
     // guessKind //
     //-----------//
-    public static Kind guessKind (Shape shape,
-                                  Double[] measuredPitches)
+    public static ClefKind guessKind (Shape shape,
+                                      Double[] measuredPitches,
+                                      Map<ClefKind, Double> results)
     {
-        Map<Kind, int[]> map = (shape == Shape.FLAT) ? flatsMap : sharpsMap;
-        Map<Kind, Double> results = new EnumMap<Kind, Double>(Kind.class);
-        Kind bestKind = null;
+        Map<ClefKind, int[]> map = (shape == Shape.FLAT) ? flatsMap : sharpsMap;
+
+        if (results == null) {
+            results = new EnumMap<ClefKind, Double>(ClefKind.class);
+        }
+
+        ClefKind bestKind = null;
         double bestError = Double.MAX_VALUE;
 
-        for (Entry<Kind, int[]> entry : map.entrySet()) {
-            Kind kind = entry.getKey();
+        for (Entry<ClefKind, int[]> entry : map.entrySet()) {
+            ClefKind kind = entry.getKey();
             int[] pitches = entry.getValue();
             int count = 0;
             double error = 0;
@@ -204,16 +226,16 @@ public class ClefInter
     //--------//
     // kindOf //
     //--------//
-    public static Kind kindOf (Glyph glyph,
-                               Shape shape,
-                               StaffInfo staff)
+    public static ClefKind kindOf (Glyph glyph,
+                                   Shape shape,
+                                   StaffInfo staff)
     {
         switch (shape) {
         case G_CLEF:
         case G_CLEF_SMALL:
         case G_CLEF_8VA:
         case G_CLEF_8VB:
-            return Kind.TREBLE;
+            return ClefKind.TREBLE;
 
         case C_CLEF:
 
@@ -221,16 +243,16 @@ public class ClefInter
             Point center = glyph.getLocation();
             int pp = (int) Math.rint(staff.pitchPositionOf(center));
 
-            return (pp >= -1) ? Kind.ALTO : Kind.TENOR;
+            return (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
 
         case F_CLEF:
         case F_CLEF_SMALL:
         case F_CLEF_8VA:
         case F_CLEF_8VB:
-            return Kind.BASS;
+            return ClefKind.BASS;
 
         case PERCUSSION_CLEF:
-            return Kind.PERCUSSION;
+            return ClefKind.PERCUSSION;
 
         default:
             return null;
@@ -240,13 +262,13 @@ public class ClefInter
     //-------------//
     // getFlatsMap //
     //-------------//
-    private static Map<Kind, int[]> getFlatsMap ()
+    private static Map<ClefKind, int[]> getFlatsMap ()
     {
-        Map<Kind, int[]> map = new EnumMap<Kind, int[]>(Kind.class);
-        map.put(Kind.TREBLE, new int[]{0, -3, 1, -2, 2, -1, 3});
-        map.put(Kind.ALTO, new int[]{1, -2, 2, -1, 3, 0, 4});
-        map.put(Kind.BASS, new int[]{2, -1, 3, 0, 4, 1, 5});
-        map.put(Kind.TENOR, new int[]{-1, -4, 0, -3, 1, -2, 2});
+        Map<ClefKind, int[]> map = new EnumMap<ClefKind, int[]>(ClefKind.class);
+        map.put(ClefKind.TREBLE, new int[]{0, -3, 1, -2, 2, -1, 3});
+        map.put(ClefKind.ALTO, new int[]{1, -2, 2, -1, 3, 0, 4});
+        map.put(ClefKind.BASS, new int[]{2, -1, 3, 0, 4, 1, 5});
+        map.put(ClefKind.TENOR, new int[]{-1, -4, 0, -3, 1, -2, 2});
 
         // No entry for Percussion
         return map;
@@ -255,13 +277,13 @@ public class ClefInter
     //--------------//
     // getSharpsMap //
     //--------------//
-    private static Map<Kind, int[]> getSharpsMap ()
+    private static Map<ClefKind, int[]> getSharpsMap ()
     {
-        Map<Kind, int[]> map = new EnumMap<Kind, int[]>(Kind.class);
-        map.put(Kind.TREBLE, new int[]{-4, -1, -5, -2, 1, -3, 0});
-        map.put(Kind.ALTO, new int[]{-3, 0, -4, -1, 2, -2, 1});
-        map.put(Kind.BASS, new int[]{-2, 1, -3, 0, 3, -1, 2});
-        map.put(Kind.TENOR, new int[]{2, -2, 1, -3, 0, -4, -1});
+        Map<ClefKind, int[]> map = new EnumMap<ClefKind, int[]>(ClefKind.class);
+        map.put(ClefKind.TREBLE, new int[]{-4, -1, -5, -2, 1, -3, 0});
+        map.put(ClefKind.ALTO, new int[]{-3, 0, -4, -1, 2, -2, 1});
+        map.put(ClefKind.BASS, new int[]{-2, 1, -3, 0, 3, -1, 2});
+        map.put(ClefKind.TENOR, new int[]{2, -2, 1, -3, 0, -4, -1});
 
         // No entry for Percussion
         return map;

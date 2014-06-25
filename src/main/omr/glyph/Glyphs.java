@@ -93,12 +93,12 @@ public abstract class Glyphs
     /**
      * Build the graph of acceptable links within the provided collection of glyphs.
      *
-     * @param glyphs  the provided glyphs
-     * @param adapter tells the acceptable distance for a given glyph
+     * @param glyphs the provided glyphs
+     * @param maxGap maximum acceptable gap between glyphs
      * @return the populated graph
      */
     public static SimpleGraph<Glyph, GlyphLink> buildLinks (Collection<Glyph> glyphs,
-                                                            LinkAdapter adapter)
+                                                            double maxGap)
     {
         List<Glyph> sortedGlyphs = new ArrayList<Glyph>(glyphs);
         Collections.sort(sortedGlyphs, Glyph.byAbscissa);
@@ -117,7 +117,6 @@ public abstract class Glyphs
 
             // Choose appropriate maxGap depending on whether glyph is in DMZ or not
             GlyphDistances glyphDistances = null; // Glyph-centered distance table
-            final double maxGap = adapter.getAcceptableDistance(glyph);
             final int gapInt = (int) Math.ceil(maxGap);
             final Rectangle fatBox = glyph.getBounds();
             fatBox.grow(gapInt, gapInt);

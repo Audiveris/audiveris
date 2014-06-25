@@ -52,7 +52,7 @@ public class Steps
 
     public static final String GRID = "GRID";
 
-    public static final String KEYS = "KEYS";
+    public static final String DMZ = "DMZ";
 
     public static final String STEM_SEEDS = "STEM_SEEDS";
 
@@ -109,7 +109,7 @@ public class Steps
         addStep(new BinaryStep());
         addStep(new ScaleStep());
         addStep(new GridStep());
-        addStep(new KeysStep());
+        addStep(new DmzStep());
         addStep(new StemSeedsStep());
         addStep(new BeamsStep());
         addStep(new LedgersStep());

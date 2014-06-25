@@ -16,6 +16,7 @@ import omr.constant.ConstantSet;
 import omr.math.AreaUtil;
 import omr.math.AreaUtil.CoreData;
 import omr.math.GeoPath;
+import omr.math.Projection;
 
 import omr.sheet.Picture;
 import omr.sheet.Scale;
@@ -105,7 +106,7 @@ public class StaffProjector
     private final List<BarPeak> peaks = new ArrayList<BarPeak>();
 
     /** Count of cumulated foreground pixels, indexed by abscissa. */
-    private short[] values;
+    private Projection projection;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -136,8 +137,8 @@ public class StaffProjector
      */
     public void plot ()
     {
-        if (values == null) {
-            computeValues();
+        if (projection == null) {
+            computeProjection();
         }
 
         new Plotter().plot();
@@ -151,7 +152,7 @@ public class StaffProjector
         logger.debug("Analyzing staff#{}", staff.getId());
 
         // Cumulate pixels for each abscissa
-        computeValues();
+        computeProjection();
 
         // Retrieve regions without staff lines
         findBlanks();
@@ -189,16 +190,17 @@ public class StaffProjector
         return "StaffProjector#" + staff.getId();
     }
 
-    //---------------//
-    // computeValues //
-    //---------------//
+    //-------------------//
+    // computeProjection //
+    //-------------------//
     /**
-     * Compute, for each abscissa value, the pixels cumulated between
+     * Compute, for each abscissa value, the foreground pixels cumulated between
      * first line and last line of staff.
      */
-    private void computeValues ()
+    private void computeProjection ()
     {
-        values = new short[sheet.getWidth()];
+        projection = new Projection.Short(0, sheet.getWidth() - 1);
+        staff.setProjection(projection);
 
         final FilamentLine firstLine = staff.getFirstLine();
         final FilamentLine lastLine = staff.getLastLine();
@@ -217,7 +219,7 @@ public class StaffProjector
                 }
             }
 
-            values[x] = count;
+            projection.increment(x, count);
         }
     }
 
@@ -321,25 +323,6 @@ public class StaffProjector
     }
 
     //------------//
-    // derivative //
-    //------------//
-    /**
-     * Report the first derivative of cumulated values at abscissa x.
-     * It's a very rough computation, but that's OK.
-     *
-     * @param x abscissa (assumed to be within sheet width)
-     * @return computed derivative at x
-     */
-    private int derivative (int x)
-    {
-        if (x == 0) {
-            return 0;
-        }
-
-        return values[x] - values[x - 1];
-    }
-
-    //------------//
     // findBlanks //
     //------------//
     /**
@@ -357,7 +340,7 @@ public class StaffProjector
         int stop = -1;
 
         for (int x = 0; x < sheetWidth; x++) {
-            if (values[x] <= maxValue) {
+            if (projection.getValue(x) <= maxValue) {
                 // No line detected
                 if (start == -1) {
                     start = x;
@@ -415,7 +398,7 @@ public class StaffProjector
         int bestValue = 0;
 
         for (int x = xMin; x <= xMax; x++) {
-            int value = values[x];
+            int value = projection.getValue(x);
 
             if (value >= minValue) {
                 if (start == -1) {
@@ -469,7 +452,7 @@ public class StaffProjector
         int minValue = Integer.MAX_VALUE;
 
         for (int x = xStart + dir; (dir * (xEnd - x)) >= 0; x += dir) {
-            minValue = Math.min(minValue, values[x]);
+            minValue = Math.min(minValue, projection.getValue(x));
         }
 
         return minValue;
@@ -507,7 +490,7 @@ public class StaffProjector
         int bestDer = 0;
 
         for (int x = x1; (dir * (x2 - x)) >= 0; x += dir) {
-            int der = derivative(x);
+            int der = projection.getDerivative(x);
 
             if ((dir * (bestDer - der)) > 0) {
                 bestDer = der;
@@ -515,7 +498,7 @@ public class StaffProjector
             }
 
             // Check we are still higher than chunk level
-            int val = values[x];
+            int val = projection.getValue(x);
 
             if (val < params.chunkThreshold) {
                 break;
@@ -880,7 +863,7 @@ public class StaffProjector
                 XYSeries valueSeries = new XYSeries("Cumuls");
 
                 for (int x = xMin; x <= xMax; x++) {
-                    valueSeries.add(x, values[x]);
+                    valueSeries.add(x, projection.getValue(x));
                 }
 
                 add(valueSeries, Color.RED, false);
@@ -891,7 +874,7 @@ public class StaffProjector
                 XYSeries derivativeSeries = new XYSeries("Derivatives");
 
                 for (int x = xMin; x <= xMax; x++) {
-                    derivativeSeries.add(x, derivative(x));
+                    derivativeSeries.add(x, projection.getDerivative(x));
                 }
 
                 add(derivativeSeries, Color.BLUE, false);

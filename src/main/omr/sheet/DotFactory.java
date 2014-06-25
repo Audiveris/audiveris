@@ -47,6 +47,7 @@ import java.util.List;
  * <li>a part of a repeat sign (upper or lower dot),
  * <li>a staccato sign,
  * <li>a dot of an ending indication, [TODO: Handle dot in ending]
+ * <li>a part of fermata sign, [TODO: Handle dot in fermata]
  * <li>a simple text dot.
  * </ul>
  *
@@ -59,20 +60,20 @@ public class DotFactory
     private static final Logger logger = LoggerFactory.getLogger(DotFactory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     /** The related symbol factory. */
     private final SymbolFactory symbolFactory;
 
     /** The related system. */
     private final SystemInfo system;
-    private final SIGraph       sig;
-    private final Scale         scale;
+
+    private final SIGraph sig;
+
+    private final Scale scale;
 
     /** Candidates for augmentation dots. */
     private final List<AugDot> augDots = new ArrayList<AugDot>();
 
     //~ Constructors -------------------------------------------------------------------------------
-
     /**
      * Creates a new DotFactory object.
      *
@@ -87,7 +88,6 @@ public class DotFactory
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //--------------------//
     // checkAugmentations //
     //--------------------//
@@ -124,8 +124,8 @@ public class DotFactory
 
         for (int i = 0; i < dots.size(); i++) {
             RepeatDotInter dot = (RepeatDotInter) dots.get(i);
-            int            dotPitch = dot.getPitch();
-            Rectangle      luBox = dot.getBounds();
+            int dotPitch = dot.getPitch();
+            Rectangle luBox = dot.getBounds();
             luBox.y -= (scale.getInterline() * dotPitch);
 
             final int xBreak = luBox.x + luBox.width;
@@ -154,7 +154,7 @@ public class DotFactory
      * @param glyph underlying glyph
      */
     public void processDot (Evaluation eval,
-                            Glyph      glyph)
+                            Glyph glyph)
     {
         // Try as repeat dot
         checkRepeat(eval, glyph);
@@ -182,21 +182,21 @@ public class DotFactory
     private void checkAugmentationFirst (AugDot augDot)
     {
         // Look for entities (notes and rests) reachable from this glyph
-        final int       maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum());
-        final int       maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum());
-        final Point     dotCenter = augDot.glyph.getAreaCenter();
+        final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum());
+        final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum());
+        final Point dotCenter = augDot.glyph.getAreaCenter();
         final Rectangle luBox = new Rectangle(dotCenter);
         luBox.grow(0, maxDy);
         luBox.x -= maxDx;
         luBox.width += maxDx;
 
         final List<Inter> entities = sig.intersectedInters(
-            symbolFactory.getSystemNotes(),
-            GeoOrder.BY_ABSCISSA,
-            luBox);
+                symbolFactory.getSystemNotes(),
+                GeoOrder.BY_ABSCISSA,
+                luBox);
 
         entities.addAll(
-            sig.intersectedInters(symbolFactory.getSystemRests(), GeoOrder.BY_ABSCISSA, luBox));
+                sig.intersectedInters(symbolFactory.getSystemRests(), GeoOrder.BY_ABSCISSA, luBox));
 
         if (entities.isEmpty()) {
             return;
@@ -209,11 +209,11 @@ public class DotFactory
 
         for (Inter entity : entities) {
             // Select proper entity reference point (center right)
-            Point  refPt = entity.getCenterRight();
+            Point refPt = entity.getCenterRight();
             double xGap = dotCenter.x - refPt.x;
 
             if (xGap > 0) {
-                double               yGap = Math.abs(refPt.y - dotCenter.y);
+                double yGap = Math.abs(refPt.y - dotCenter.y);
                 AugmentationRelation rel = new AugmentationRelation();
                 rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
@@ -243,22 +243,22 @@ public class DotFactory
      * @param augDot       a candidate for repeat dot
      * @param systemFirsts all (first) repeats recognized during phase #1
      */
-    private void checkAugmentationSecond (AugDot      augDot,
+    private void checkAugmentationSecond (AugDot augDot,
                                           List<Inter> systemFirsts)
     {
         // Look for repeats reachable from this glyph
-        final int       maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum());
-        final int       maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum());
-        final Point     dot = augDot.glyph.getAreaCenter();
+        final int maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum());
+        final int maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum());
+        final Point dot = augDot.glyph.getAreaCenter();
         final Rectangle luBox = new Rectangle(dot);
         luBox.grow(0, maxDy);
         luBox.x -= maxDx;
         luBox.width += maxDx;
 
-        final List<Inter>    firsts = sig.intersectedInters(
-            systemFirsts,
-            GeoOrder.BY_ABSCISSA,
-            luBox);
+        final List<Inter> firsts = sig.intersectedInters(
+                systemFirsts,
+                GeoOrder.BY_ABSCISSA,
+                luBox);
 
         // Remove the repeat, if any, that corresponds to the glyph at hand
         AugmentationDotInter second = null;
@@ -277,16 +277,16 @@ public class DotFactory
         }
 
         DoubleDotRelation bestRel = null;
-        Inter             bestFirst = null;
-        double            bestYGap = Double.MAX_VALUE;
+        Inter bestFirst = null;
+        double bestYGap = Double.MAX_VALUE;
 
         for (Inter first : firsts) {
             // Select proper entity reference point (center right)
-            Point  refPt = first.getCenterRight();
+            Point refPt = first.getCenterRight();
             double xGap = dot.x - refPt.x;
 
             if (xGap > 0) {
-                double            yGap = Math.abs(refPt.y - dot.y);
+                double yGap = Math.abs(refPt.y - dot.y);
                 DoubleDotRelation rel = new DoubleDotRelation();
                 rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
@@ -329,7 +329,7 @@ public class DotFactory
      * @param glyph underlying glyph
      */
     private void checkRepeat (Evaluation eval,
-                              Glyph      glyph)
+                              Glyph glyph)
     {
         // Check vertical pitch position within the staff: close to +1 or -1
         double pitchDif = Math.abs(Math.abs(glyph.getPitchPosition()) - 1);
@@ -340,38 +340,38 @@ public class DotFactory
             return;
         }
 
-        final int       maxDx = scale.toPixels(RepeatDotBarRelation.getXOutGapMaximum());
-        final int       maxDy = scale.toPixels(RepeatDotBarRelation.getYGapMaximum());
-        final Point     dot = glyph.getAreaCenter();
+        final int maxDx = scale.toPixels(RepeatDotBarRelation.getXOutGapMaximum());
+        final int maxDy = scale.toPixels(RepeatDotBarRelation.getYGapMaximum());
+        final Point dot = glyph.getAreaCenter();
         final Rectangle luBox = new Rectangle(dot);
         luBox.grow(maxDx, maxDy);
 
         final List<Inter> bars = sig.intersectedInters(
-            symbolFactory.getSystemBars(),
-            GeoOrder.BY_ABSCISSA,
-            luBox);
+                symbolFactory.getSystemBars(),
+                GeoOrder.BY_ABSCISSA,
+                luBox);
 
         if (bars.isEmpty()) {
             return;
         }
 
         RepeatDotBarRelation bestRel = null;
-        Inter                bestBar = null;
-        double               bestXGap = Double.MAX_VALUE;
+        Inter bestBar = null;
+        double bestXGap = Double.MAX_VALUE;
 
         for (Inter barInter : bars) {
-            BarlineInter         bar = (BarlineInter) barInter;
-            Rectangle            box = bar.getBounds();
-            Point                center = bar.getCenter();
+            BarlineInter bar = (BarlineInter) barInter;
+            Rectangle box = bar.getBounds();
+            Point center = bar.getCenter();
 
             // Select proper bar reference point (left or right side and proper vertical side)
-            double               barY = center.y +
-                                        ((box.height / 8d) * Integer.signum(dot.y - center.y));
-            double               barX = bar.getMedian().xAtY(barY) +
-                                        ((bar.getWidth() / 2) * Integer.signum(dot.x - center.x));
+            double barY = center.y
+                          + ((box.height / 8d) * Integer.signum(dot.y - center.y));
+            double barX = bar.getMedian().xAtY(barY)
+                          + ((bar.getWidth() / 2) * Integer.signum(dot.x - center.x));
 
-            double               xGap = Math.abs(barX - dot.x);
-            double               yGap = Math.abs(barY - dot.y);
+            double xGap = Math.abs(barX - dot.x);
+            double yGap = Math.abs(barY - dot.y);
             RepeatDotBarRelation rel = new RepeatDotBarRelation();
             rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
@@ -385,8 +385,8 @@ public class DotFactory
         }
 
         if (bestRel != null) {
-            double         grade = Inter.intrinsicRatio * eval.grade;
-            int            pitch = (glyph.getPitchPosition() > 0) ? 1 : (-1);
+            double grade = Inter.intrinsicRatio * eval.grade;
+            int pitch = (glyph.getPitchPosition() > 0) ? 1 : (-1);
             RepeatDotInter repeat = new RepeatDotInter(glyph, grade, pitch);
             sig.addVertex(repeat);
             sig.addEdge(repeat, bestBar, bestRel);
@@ -408,37 +408,37 @@ public class DotFactory
      * @param glyph underlying glyph
      */
     private void checkStaccato (Evaluation eval,
-                                Glyph      glyph)
+                                Glyph glyph)
     {
-        final int       maxDx = scale.toPixels(StaccatoNoteRelation.getXOutGapMaximum());
-        final int       maxDy = scale.toPixels(StaccatoNoteRelation.getYGapMaximum());
-        final Point     dot = glyph.getAreaCenter();
+        final int maxDx = scale.toPixels(StaccatoNoteRelation.getXOutGapMaximum());
+        final int maxDy = scale.toPixels(StaccatoNoteRelation.getYGapMaximum());
+        final Point dot = glyph.getAreaCenter();
         final Rectangle luBox = new Rectangle(dot);
         luBox.grow(maxDx, maxDy);
 
         final List<Inter> notes = sig.intersectedInters(
-            symbolFactory.getSystemNotes(),
-            GeoOrder.BY_ABSCISSA,
-            luBox);
+                symbolFactory.getSystemNotes(),
+                GeoOrder.BY_ABSCISSA,
+                luBox);
 
         if (notes.isEmpty()) {
             return;
         }
 
         StaccatoNoteRelation bestRel = null;
-        Inter                bestNote = null;
-        double               bestYGap = Double.MAX_VALUE;
+        Inter bestNote = null;
+        double bestYGap = Double.MAX_VALUE;
 
         for (Inter note : notes) {
-            Rectangle            box = note.getBounds();
-            Point                center = note.getCenter();
+            Rectangle box = note.getBounds();
+            Point center = note.getCenter();
 
             // Select proper note reference point (top or bottom)
-            Point                notePt = new Point(
-                center.x,
-                center.y + ((box.height / 2) * Integer.signum(dot.y - center.y)));
-            double               xGap = Math.abs(notePt.x - dot.x);
-            double               yGap = Math.abs(notePt.y - dot.y);
+            Point notePt = new Point(
+                    center.x,
+                    center.y + ((box.height / 2) * Integer.signum(dot.y - center.y)));
+            double xGap = Math.abs(notePt.x - dot.x);
+            double yGap = Math.abs(notePt.y - dot.y);
             StaccatoNoteRelation rel = new StaccatoNoteRelation();
             rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
@@ -452,7 +452,7 @@ public class DotFactory
         }
 
         if (bestRel != null) {
-            double        grade = Inter.intrinsicRatio * eval.grade;
+            double grade = Inter.intrinsicRatio * eval.grade;
             StaccatoInter staccato = new StaccatoInter(glyph, grade);
             sig.addVertex(staccato);
             sig.addEdge(staccato, bestNote, bestRel);
@@ -461,7 +461,6 @@ public class DotFactory
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //--------//
     // AugDot //
     //--------//
@@ -473,12 +472,12 @@ public class DotFactory
         //~ Instance fields ------------------------------------------------------------------------
 
         final Evaluation eval; // Evaluation result
-        final Glyph      glyph; // Underlying glyph
+
+        final Glyph glyph; // Underlying glyph
 
         //~ Constructors ---------------------------------------------------------------------------
-
         public AugDot (Evaluation eval,
-                       Glyph      glyph)
+                       Glyph glyph)
         {
             this.eval = eval;
             this.glyph = glyph;

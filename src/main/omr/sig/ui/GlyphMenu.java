@@ -76,19 +76,20 @@ public class GlyphMenu
             UIUtil.insertTitle(this, "Glyphs:");
 
             for (Glyph glyph : glyphs) {
-                final Collection<Inter> inters = glyph.getInterpretations();
+                //                final Collection<Inter> inters = glyph.getInterpretations();
+                //
+                //                if (inters.isEmpty()) {
+                // Just a glyph item
+                JMenuItem item = new JMenuItem(new GlyphAction(glyph));
+                item.addMouseListener(glyphListener);
+                add(item);
 
-                if (inters.isEmpty()) {
-                    // Just a glyph item
-                    JMenuItem item = new JMenuItem(new GlyphAction(glyph));
-                    item.addMouseListener(glyphListener);
-                    add(item);
-                } else {
-                    // A whole menu of inters for this glyph
-                    JMenu interMenu = new InterMenu(sheet, glyph, inters);
-                    interMenu.addMouseListener(glyphListener);
-                    add(interMenu);
-                }
+                //                } else {
+                //                    // A whole menu of inters for this glyph
+                //                    JMenu interMenu = new InterMenu(sheet, glyph, inters);
+                //                    interMenu.addMouseListener(glyphListener);
+                //                    add(interMenu);
+                //                }
             }
         }
 

@@ -34,19 +34,17 @@ import static javax.swing.Action.SHORT_DESCRIPTION;
  * @author Hervé Bitteur
  */
 public class InterAction
-    extends AbstractAction
+        extends AbstractAction
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterAction.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     /** The underlying interpretation. */
     private final Inter inter;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     //-------------//
     // InterAction //
     //-------------//
@@ -69,16 +67,18 @@ public class InterAction
      * @param inter the underlying inter
      * @param text  specific item text, if any
      */
-    public InterAction (Inter  inter,
+    public InterAction (Inter inter,
                         String text)
     {
         this.inter = inter;
 
         Shape shape = inter.getShape();
         putValue(
-            NAME,
-            (text != null) ? text : (inter.toString() + " S:" + inter.getSig().getSystem().getId()));
-        putValue(SMALL_ICON, shape.getDecoratedSymbol());
+                NAME,
+                (text != null) ? text : (inter.toString() + " S:" + inter.getSig().getSystem().getId()));
+        if (shape != null) {
+            putValue(SMALL_ICON, shape.getDecoratedSymbol());
+        }
 
         final String details = inter.getDetails();
 
@@ -88,7 +88,6 @@ public class InterAction
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -106,10 +105,10 @@ public class InterAction
     public void publish ()
     {
         inter.getSig().publish(
-            new InterListEvent(
-                this,
-                SelectionHint.INTER_INIT,
-                MouseMovement.PRESSING,
-                Arrays.asList(inter)));
+                new InterListEvent(
+                        this,
+                        SelectionHint.INTER_INIT,
+                        MouseMovement.PRESSING,
+                        Arrays.asList(inter)));
     }
 }

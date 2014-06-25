@@ -396,7 +396,7 @@ public class InterBoard
             shapeField.setText(shape.toString());
             shapeIcon.setIcon(shape.getDecoratedSymbol());
         } else {
-            shapeField.setText("");
+            shapeField.setText((inter != null) ? inter.shapeString() : "");
             shapeIcon.setIcon(null);
         }
 

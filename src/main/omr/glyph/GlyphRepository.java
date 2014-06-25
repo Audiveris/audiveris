@@ -439,7 +439,7 @@ public class GlyphRepository
             }
 
             if (recordGlyph(glyph, shape, sheetDir) > 0) {
-                logger.info("Stored {} into {}", glyph.idString(), sheetDir);
+                logger.info("Stored {} {} into {}", glyph.idString(), shape, sheetDir);
             }
         } else {
             logger.warn("Not recordable {}", glyph);

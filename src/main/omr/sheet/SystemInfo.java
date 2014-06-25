@@ -116,8 +116,8 @@ public class SystemInfo
     /** Dedicated keys builder */
     public final BeamsBuilder beamsBuilder;
 
-    /** Dedicated beams builder */
-    public final KeysBuilder keysBuilder;
+    /** Dedicated DMZ builder */
+    public final DmzBuilder dmzBuilder;
 
     /** Dedicated notes builder */
     public final NotesBuilder notesBuilder;
@@ -249,7 +249,7 @@ public class SystemInfo
         measuresBuilder = new MeasuresBuilder(this);
         textBuilder = new TextBuilder(this);
         compoundBuilder = new CompoundBuilder(this);
-        keysBuilder = new KeysBuilder(this);
+        dmzBuilder = new DmzBuilder(this);
         beamsBuilder = new BeamsBuilder(this);
         notesBuilder = new NotesBuilder(this);
         verticalsBuilder = new VerticalsBuilder(this);

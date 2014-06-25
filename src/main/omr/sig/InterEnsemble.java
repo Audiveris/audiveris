@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                      I n t e r V i s i t o r                                   //
+//                                    I n t e r E n s e m b l e                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -11,41 +11,24 @@
 // </editor-fold>
 package omr.sig;
 
+import java.util.List;
+
 /**
- * Interface {@code InterVisitor} is meant to visit any instance of
- * shape interpretation.
+ * Interface {@code InterEnsemble} refers to an inter that is composed of other inters.
+ * <p>
+ * For example a {@link KeyInter} is an ensemble of {@link KeyAlterInter}, and a
+ * {@link TimePairInter} is an ensemble of two {@link TimeNumberInter} (num & den).
  *
  * @author Hervé Bitteur
  */
-public interface InterVisitor
+public interface InterEnsemble
 {
     //~ Methods ------------------------------------------------------------------------------------
 
-    void visit (Inter inter);
-
-    void visit (AbstractBeamInter inter);
-
-    void visit (AbstractNoteInter inter);
-
-    void visit (ClefInter inter);
-
-    void visit (KeyAlterInter inter);
-
-    void visit (TimeInter inter);
-
-    void visit (BraceInter inter);
-
-    void visit (StemInter inter);
-
-    void visit (LedgerInter inter);
-
-    void visit (SlurInter inter);
-
-    void visit (WedgeInter inter);
-
-    void visit (EndingInter inter);
-
-    void visit (BarlineInter inter);
-
-    void visit (BarConnectionInter inter);
+    /**
+     * Report the list of ensemble members.
+     *
+     * @return the members
+     */
+    List<?extends Inter> getMembers ();
 }

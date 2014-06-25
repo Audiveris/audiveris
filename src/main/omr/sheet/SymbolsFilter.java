@@ -19,6 +19,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.image.ImageUtil;
@@ -59,7 +60,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import omr.glyph.ShapeSet;
 
 /**
  * Class {@code SymbolsFilter} prepares an image with staff lines sections removed and
@@ -124,7 +124,7 @@ public class SymbolsFilter
         BufferedImage img = buf.getBufferedImage();
         ByteProcessor buffer = new ByteProcessor(img);
 
-        // Erase good shapes of each system
+        // Erase DMZ and good shapes of each system
         Graphics2D g = img.createGraphics();
         SymbolsEraser eraser = new SymbolsEraser(buffer, g, sheet);
         Map<SystemInfo, List<Glyph>> optionalMap = eraser.eraseShapes(erasedShapes);
@@ -248,7 +248,8 @@ public class SymbolsFilter
 
         set.addAll(ShapeSet.Clefs.getShapes()); // From staff clef
         set.addAll(ShapeSet.Alterations.getShapes()); // From staff key-sig
-        //TODO add from staff time-sig
+        set.addAll(ShapeSet.FullTimes); // From staff time-sig
+        //TODO add from staff time-sig with num & den
 
         return set;
     }

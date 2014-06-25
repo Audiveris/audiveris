@@ -128,17 +128,7 @@ public class SymbolsBuilder
         List<Glyph> glyphs = getSymbolsGlyphs();
 
         // Formalize glyphs relationships in a system-level graph
-        final int dmzEnd = system.getFirstStaff().getDmzStop();
-        final SimpleGraph<Glyph, GlyphLink> systemGraph = Glyphs.buildLinks(
-                glyphs,
-                new Glyphs.LinkAdapter()
-                {
-                    @Override
-                    public double getAcceptableDistance (Glyph glyph)
-                    {
-                        return (glyph.getLocation().x <= dmzEnd) ? params.maxDmzGap : params.maxGap;
-                    }
-                });
+        final SimpleGraph<Glyph, GlyphLink> systemGraph = Glyphs.buildLinks(glyphs, params.maxGap);
 
         // Process all sets of connected glyphs
         processClusters(systemGraph);
@@ -284,19 +274,9 @@ public class SymbolsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /**
-         * Value for this maximum distance is key.
-         * Accepting large gaps would quickly turn into an explosion of subset possibilities.
-         * Use DMZ for relaxed constraints (case of F clefs split by top staff line).
-         * Use distance from staff for more text-oriented distances?
-         */
         private final Scale.Fraction maxGap = new Scale.Fraction(
                 0.5,
                 "Maximum distance between two compound parts");
-
-        private final Scale.Fraction maxDmzGap = new Scale.Fraction(
-                1.0,
-                "Maximum distance between two compound parts, when in DMZ");
 
         private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
                 0.03,
@@ -338,12 +318,6 @@ public class SymbolsBuilder
         }
 
         @Override
-        public List<Glyph> getParts ()
-        {
-            return new ArrayList<Glyph>(graph.vertexSet());
-        }
-
-        @Override
         public List<Glyph> getNeighbors (Glyph part)
         {
             return Graphs.neighborListOf(graph, part);
@@ -353,6 +327,12 @@ public class SymbolsBuilder
         public GlyphNest getNest ()
         {
             return sheet.getNest();
+        }
+
+        @Override
+        public List<Glyph> getParts ()
+        {
+            return new ArrayList<Glyph>(graph.vertexSet());
         }
 
         @Override
@@ -392,8 +372,6 @@ public class SymbolsBuilder
 
         final double maxGap;
 
-        final double maxDmzGap;
-
         final int maxSymbolWidth;
 
         final int maxSymbolHeight;
@@ -404,7 +382,6 @@ public class SymbolsBuilder
         public Parameters (Scale scale)
         {
             maxGap = scale.toPixelsDouble(constants.maxGap);
-            maxDmzGap = scale.toPixelsDouble(constants.maxDmzGap);
             maxSymbolWidth = scale.toPixels(constants.maxSymbolWidth);
             maxSymbolHeight = scale.toPixels(constants.maxSymbolHeight);
             minWeight = scale.toPixels(constants.minWeight);

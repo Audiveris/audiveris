@@ -61,16 +61,17 @@ public class ShapeSet
             TIME_TWELVE,
             TIME_SIXTEEN);
 
+    /** Specific single-symbol for full time signature */
+    public static final EnumSet<Shape> FullTimes = EnumSet.of(COMMON_TIME, CUT_TIME);
+
     /** Specific multi-symbol for full time signature (such as 4/4 or C) */
-    public static final EnumSet<Shape> FullTimes = EnumSet.of(
+    public static final EnumSet<Shape> ComboTimes = EnumSet.of(
             TIME_FOUR_FOUR,
             TIME_TWO_TWO,
             TIME_TWO_FOUR,
             TIME_THREE_FOUR,
             TIME_FIVE_FOUR,
             TIME_SIX_EIGHT,
-            COMMON_TIME,
-            CUT_TIME,
             CUSTOM_TIME);
 
     /** All sorts of F clefs */
@@ -288,7 +289,7 @@ public class ShapeSet
     public static final ShapeSet Times = new ShapeSet(
             TIME_FOUR_FOUR,
             new Color(0xcc3300),
-            shapesOf(PartialTimes, FullTimes));
+            shapesOf(PartialTimes, FullTimes, ComboTimes));
 
     public static final ShapeSet Digits = new ShapeSet(
             DIGIT_1,
@@ -354,9 +355,7 @@ public class ShapeSet
             F_CLEF_8VB);
 
     /** Small Clefs */
-    public static final EnumSet<Shape> SmallClefs = EnumSet.of(
-            G_CLEF_SMALL,
-            F_CLEF_SMALL);
+    public static final EnumSet<Shape> SmallClefs = EnumSet.of(G_CLEF_SMALL, F_CLEF_SMALL);
 
     static {
         // Make sure all the shape colors are defined

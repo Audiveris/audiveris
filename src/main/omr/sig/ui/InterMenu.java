@@ -112,6 +112,11 @@ public class InterMenu
 
                 for (Inter inter : inters) {
                     final SIGraph sig = inter.getSig();
+
+                    if (sig == null) {
+                        logger.warn("No SIG for {}", inter);
+                    }
+
                     final Set<Relation> rels = sig.edgesOf(inter);
 
                     if ((rels == null) || rels.isEmpty()) {

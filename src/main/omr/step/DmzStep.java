@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                              S y m b o l R e d u c t i o n S t e p                             //
+//                                          D m z S t e p                                         //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -13,31 +13,31 @@ package omr.step;
 
 import omr.sheet.SystemInfo;
 
-import omr.sig.SIGraph.ReductionMode;
-import static omr.step.Step.DATA_TAB;
-
 /**
- * Class {@code SymbolReductionStep}implements <b>SYMBOL_REDUCTION</b> step, which tries
- * to reduce the SIG incrementally after symbols have been retrieved.
+ * Class {@code DmzStep} implements <b>DMZ</b> step, which handles the beginning of
+ * every staff in a system.
  *
  * @author Hervé Bitteur
  */
-public class SymbolReductionStep
+public class DmzStep
         extends AbstractSystemStep
 {
     //~ Constructors -------------------------------------------------------------------------------
 
+    //---------//
+    // DmzStep //
+    //---------//
     /**
-     * Creates a new SymbolReductionStep object.
+     * Creates a new DmzStep object.
      */
-    public SymbolReductionStep ()
+    public DmzStep ()
     {
         super(
-                Steps.SYMBOL_REDUCTION,
+                Steps.DMZ,
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 DATA_TAB,
-                "Reduce symbols");
+                "Retrieve staves DMZ");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -48,7 +48,6 @@ public class SymbolReductionStep
     public void doSystem (SystemInfo system)
             throws StepException
     {
-        //system.sigReducer.reduce(ReductionMode.RELAXED);
-        system.sigReducer.reduce(ReductionMode.STRICT);
+        system.dmzBuilder.processDmz(); // -> Staff clef + key + time
     }
 }

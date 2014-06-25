@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                      I n t e r V i s i t o r                                   //
+//                               T i m e N u m b e r R e l a t i o n                              //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -12,40 +12,22 @@
 package omr.sig;
 
 /**
- * Interface {@code InterVisitor} is meant to visit any instance of
- * shape interpretation.
+ * Class {@code TimeNumberRelation} represents the relation between a top number and a
+ * bottom number in a time signature.
  *
  * @author Hervé Bitteur
  */
-public interface InterVisitor
+public class TimeNumberRelation
+        extends BasicSupport
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
-    void visit (Inter inter);
+    //---------//
+    // getName //
+    //---------//
+    @Override
+    public String getName ()
+    {
+        return "Num-Den";
+    }
 
-    void visit (AbstractBeamInter inter);
-
-    void visit (AbstractNoteInter inter);
-
-    void visit (ClefInter inter);
-
-    void visit (KeyAlterInter inter);
-
-    void visit (TimeInter inter);
-
-    void visit (BraceInter inter);
-
-    void visit (StemInter inter);
-
-    void visit (LedgerInter inter);
-
-    void visit (SlurInter inter);
-
-    void visit (WedgeInter inter);
-
-    void visit (EndingInter inter);
-
-    void visit (BarlineInter inter);
-
-    void visit (BarConnectionInter inter);
 }

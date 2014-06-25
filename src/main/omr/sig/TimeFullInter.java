@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                              S y m b o l R e d u c t i o n S t e p                             //
+//                                    T i m e F u l l I n t e r                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -9,46 +9,50 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.step;
+package omr.sig;
 
-import omr.sheet.SystemInfo;
-
-import omr.sig.SIGraph.ReductionMode;
-import static omr.step.Step.DATA_TAB;
+import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
 
 /**
- * Class {@code SymbolReductionStep}implements <b>SYMBOL_REDUCTION</b> step, which tries
- * to reduce the SIG incrementally after symbols have been retrieved.
+ * Class {@code TimeFullInter} is a time signature defined by a single symbol (either
+ * COMMON or CUT).
  *
  * @author Hervé Bitteur
  */
-public class SymbolReductionStep
-        extends AbstractSystemStep
+public class TimeFullInter
+        extends TimeInter
 {
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new SymbolReductionStep object.
+     * Creates a new {@code TimeFullInter} object.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape (COMMON_TIME or CUT_TIME only)
+     * @param grade evaluation grade
      */
-    public SymbolReductionStep ()
+    public TimeFullInter (Glyph glyph,
+                          Shape shape,
+                          double grade)
     {
-        super(
-                Steps.SYMBOL_REDUCTION,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Reduce symbols");
+        super(glyph, shape, grade);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // doSystem //
-    //----------//
-    @Override
-    public void doSystem (SystemInfo system)
-            throws StepException
+    //-----------//
+    // sigString //
+    //-----------//
+    public String sigString ()
     {
-        //system.sigReducer.reduce(ReductionMode.RELAXED);
-        system.sigReducer.reduce(ReductionMode.STRICT);
+        if (shape == Shape.COMMON_TIME) {
+            return "COMMON";
+        }
+
+        if (shape == Shape.CUT_TIME) {
+            return "CUT";
+        }
+
+        return null;
     }
 }

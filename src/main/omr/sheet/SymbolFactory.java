@@ -22,8 +22,6 @@ import static omr.glyph.ShapeSet.Clefs;
 import static omr.glyph.ShapeSet.Digits;
 import static omr.glyph.ShapeSet.Flags;
 import static omr.glyph.ShapeSet.FlagsUp;
-import static omr.glyph.ShapeSet.FullTimes;
-import static omr.glyph.ShapeSet.PartialTimes;
 import static omr.glyph.ShapeSet.Rests;
 
 import omr.glyph.facets.Glyph;
@@ -48,9 +46,9 @@ import omr.sig.FingeringInter;
 import omr.sig.FlagInter;
 import omr.sig.FlagStemRelation;
 import omr.sig.Inter;
-import omr.sig.NumberInter;
 import omr.sig.RestInter;
 import omr.sig.SIGraph;
+import omr.sig.TimeNumberInter;
 
 import omr.util.Navigable;
 
@@ -62,6 +60,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collections;
 import java.util.List;
+import omr.sig.TimeFullInter;
 
 /**
  * Class {@code SymbolFactory} generates the inter instances corresponding to
@@ -169,23 +168,13 @@ public class SymbolFactory
         } else if ((shape == Shape.BRACE) || (shape == Shape.BRACKET)) {
             sig.addVertex(new BraceInter(glyph, shape, grade));
         } else if (PartialTimes.contains(shape)) {
-            sig.addVertex(NumberInter.create(glyph, shape, grade));
+            TimeNumberInter timeNumberInter = TimeNumberInter.create(glyph, shape, grade, staff);
+
+            if (timeNumberInter != null) {
+                sig.addVertex(timeNumberInter);
+            }
         } else if (FullTimes.contains(shape)) {
-            //            List<Inter> nd = TimeInter.create(shape, glyph, grade);
-            //
-            //            if (nd.size() > 1) {
-            //                for (Inter inter : nd) {
-            //                    sig.addVertex(inter);
-            //                }
-            //
-            //                for (int i = 0; i < nd.size(); i++) {
-            //                    Inter inter = nd.get(i);
-            //
-            //                    for (Inter other : nd.subList(i + 1, nd.size())) {
-            //                        sig.addEdge(inter, other, new BasicSupport());
-            //                    }
-            //                }
-            //            }
+            sig.addVertex(new TimeFullInter(glyph, shape, grade));
         } else if (Digits.contains(shape)) {
             sig.addVertex(FingeringInter.create(glyph, shape, grade));
         } else if (Dynamics.contains(shape)) {

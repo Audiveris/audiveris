@@ -1100,6 +1100,10 @@ public class SigReducer
      */
     private boolean stemHasHeadAtEnd (StemInter stem)
     {
+        if (stem.isVip()) {
+            logger.info("VIP stemHasHeadAtEnd for {}", stem);
+        }
+
         final Line2D stemLine = sig.getStemLine(stem);
 
         for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {

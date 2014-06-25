@@ -447,7 +447,7 @@ public class EditorMenu
             {
                 for (SystemInfo system : sheet.getSystems()) {
                     if (system.getStaves().contains(staff)) {
-                        system.keysBuilder.plot(staff);
+                        system.dmzBuilder.plot(staff);
                         return;
                     }
                 }

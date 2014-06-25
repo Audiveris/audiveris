@@ -48,14 +48,18 @@ import omr.sig.WedgeInter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
+
 import static omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static omr.ui.symbol.Alignment.TOP_CENTER;
+
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.OmrFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
+
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
+
 import omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -72,6 +76,7 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
 import java.util.ConcurrentModificationException;
+import omr.sig.TimeInter;
 
 /**
  * Class {@code SheetPainter} defines for every node in Page hierarchy the rendering of
@@ -334,6 +339,10 @@ public class SheetPainter
     @Override
     public void visit (Inter inter)
     {
+        if (inter.getShape() == null) {
+            return;
+        }
+
         setColor(inter);
 
         ///Glyph glyph = inter.getGlyph();
@@ -350,6 +359,15 @@ public class SheetPainter
     public void visit (ClefInter clef)
     {
         visit((Inter) clef);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (TimeInter time)
+    {
+        visit((Inter) time);
     }
 
     //-------//

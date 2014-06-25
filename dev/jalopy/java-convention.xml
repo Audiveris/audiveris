@@ -196,7 +196,7 @@
 <bottom> */</bottom>
 <exception> * @throws $exceptionType$ DOCUMENT ME!</exception>
 <param> * @param $paramType$ DOCUMENT ME!</param>
-<top>/**| * Creates a new $objectType$ object.</top>
+<top>/**| * Creates a new {@code $objectType$} object.</top>
 </constructor>
 <interface>/**| * DOCUMENT ME!| *| * @author TBD| * @version TBD| */</interface>
 <method>
