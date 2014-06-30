@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="167" interline="20" shape="FLAT">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>0.0</pitch-position>
+    <section first-pos="190" orientation="VERTICAL" id="13">
+        <run length="31" start="302"/>
+    </section>
+    <section first-pos="191" orientation="VERTICAL" id="15">
+        <run length="52" start="301"/>
+        <run length="51" start="302"/>
+    </section>
+    <section first-pos="193" orientation="VERTICAL" id="16">
+        <run length="30" start="307"/>
+    </section>
+    <section first-pos="193" orientation="VERTICAL" id="17">
+        <run length="10" start="343"/>
+    </section>
+    <section first-pos="194" orientation="VERTICAL" id="19">
+        <run length="3" start="332"/>
+    </section>
+    <section first-pos="195" orientation="VERTICAL" id="20">
+        <run length="1" start="332"/>
+    </section>
+    <section first-pos="198" orientation="VERTICAL" id="21">
+        <run length="9" start="342"/>
+        <run length="11" start="340"/>
+        <run length="8" start="338"/>
+    </section>
+    <section first-pos="201" orientation="VERTICAL" id="22">
+        <run length="18" start="327"/>
+    </section>
+    <section first-pos="202" orientation="VERTICAL" id="23">
+        <run length="25" start="327"/>
+    </section>
+</glyph>

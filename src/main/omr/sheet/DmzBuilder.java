@@ -149,7 +149,7 @@ public class DmzBuilder
      */
     public void processDmz ()
     {
-        logger.debug("processDmz for S#{}", system.getId());
+        logger.debug("DMZ processing for S#{}", system.getId());
 
         // Compute DMZ starts abscissae based on bar lines (or staff left abscissa)
         // and store the information in staves themselves.
@@ -159,6 +159,7 @@ public class DmzBuilder
         int clefOffset = clefColumn.retrieveClefs();
         refineDmz(clefOffset);
 
+        // Check for a bar line within reach on right
         // Retrieve DMZ key-sigs
         int keyOffset = keyColumn.retrieveKeys(params.maxDmzWidth);
         refineDmz(keyOffset);
@@ -180,47 +181,32 @@ public class DmzBuilder
      */
     private void computeDmzStarts ()
     {
-        /** System bar lines, sorted on abscissa. */
-        final List<Inter> systemBars = sig.inters(BarlineInter.class);
-        Collections.sort(systemBars, Inter.byAbscissa);
-
-        int margin = sheet.getScale().getInterline(); // Roughly
-
         for (StaffInfo staff : system.getStaves()) {
-            Point2D leftPt = staff.getFirstLine().getEndPoint(LEFT);
-            Rectangle luBox = new Rectangle(
-                    (int) Math.floor(leftPt.getX()),
-                    (int) Math.rint(leftPt.getY() + (staff.getHeight() / 2)),
-                    margin,
-                    0);
-            luBox.grow(0, margin);
+            BarlineInter leftBar = staff.getSideBar(LEFT);
 
-            TreeSet<Inter> bars = new TreeSet<Inter>(Inter.byAbscissa);
-            bars.addAll(sig.intersectedInters(systemBars, GeoOrder.BY_ABSCISSA, luBox));
-
-            if (bars.isEmpty()) {
-                // No bar line found, so use the beginning abscissa of lines
-                staff.setDmzStart((int) Math.rint(leftPt.getX()));
+            if (leftBar == null) {
+                // No left bar line found, so use the beginning abscissa of lines
+                staff.setDmzStart(staff.getAbscissa(LEFT));
             } else {
                 // Retrieve all bar lines grouped at beginning of staff
-                Set<Inter> toAdd = new HashSet<Inter>();
+                // And pick up the last (right-most) bar line in the group
+                BarlineInter lastBar = leftBar;
+                boolean moved;
 
-                for (Inter inter : bars) {
-                    Set<Relation> gRels = sig.getRelations(inter, BarGroupRelation.class);
-
-                    for (Relation rel : gRels) {
-                        toAdd.add(sig.getOppositeInter(inter, rel));
+                do {
+                    moved = false;
+                    for (Relation rel : sig.getRelations(lastBar, BarGroupRelation.class)) {
+                        if (lastBar == sig.getEdgeSource(rel)) {
+                            lastBar = (BarlineInter) sig.getEdgeTarget(rel);
+                            moved = true;
+                        }
                     }
-                }
+                } while (moved);
 
-                bars.addAll(toAdd);
+                int start = lastBar.getCenterRight().x + 1;
+                logger.debug("Staff#{} start:{} bar:{}", staff.getId(), start, lastBar);
 
-                // Pick up the right-most bar line in the group
-                BarlineInter last = (BarlineInter) bars.last();
-                int right = last.getCenterRight().x + 1;
-                logger.debug("Staff#{} right:{} bars: {}", staff.getId(), right, bars);
-
-                staff.setDmzStart(right);
+                staff.setDmzStart(start);
             }
         }
     }

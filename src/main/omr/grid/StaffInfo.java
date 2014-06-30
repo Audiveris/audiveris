@@ -24,6 +24,7 @@ import omr.sheet.NotePosition;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import omr.sig.BarlineInter;
 import omr.sig.Inter;
 import omr.sig.LedgerInter;
 
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -144,7 +146,7 @@ public class StaffInfo
     private int dmzStop;
 
     /** Stop abscissa of clef. */
-    private int clefStop;
+    private Integer clefStop;
 
     /** Stop abscissa of key-signature, if any. */
     private Integer keyStop;
@@ -155,22 +157,24 @@ public class StaffInfo
     /** Right extrema. (end of lines) */
     private int right;
 
-    /** Flag for short staff. (With a neighbor on left or right side) */
+    /** Flag for short staff. (With a neighbor staff on left or right side) */
     private boolean isShort;
-
-    /** Projected foreground pixels, only within staff height, indexed by abscissa.
-     * TODO: perhaps keeping this projection in StaffInfo is useless
-     */
-    private Projection projection;
 
     /** Map of ledgers nearby. */
     private final SortedMap<Integer, SortedSet<LedgerInter>> ledgerMap = new TreeMap<Integer, SortedSet<LedgerInter>>();
 
-    /** Sequence of bar lines. */
+    /** Sequence of bar lines peaks. */
     private List<BarPeak> barPeaks;
 
-    /** Sequence of bar lines. */
+    /** Removed bar lines peaks. */
     private List<BarPeak> removedBarPeaks;
+
+    /** Sequence of bar lines. */
+    private List<BarlineInter> bars;
+
+    /** Side bars, if any. */
+    private Map<HorizontalSide, BarlineInter> sideBars = new EnumMap<HorizontalSide, BarlineInter>(
+            HorizontalSide.class);
 
     /** Containing system. */
     @Navigable(false)
@@ -399,10 +403,21 @@ public class StaffInfo
         return Collections.unmodifiableList(barPeaks);
     }
 
+    //---------//
+    // getBars //
+    //---------//
+    /**
+     * @return the bars
+     */
+    public List<BarlineInter> getBars ()
+    {
+        return Collections.unmodifiableList(bars);
+    }
+
     /**
      * @return the clefStop
      */
-    public int getClefStop ()
+    public Integer getClefStop ()
     {
         return clefStop;
     }
@@ -845,14 +860,6 @@ public class StaffInfo
         return new NotePosition(this, pitch, bestLedger);
     }
 
-    /**
-     * @return the projection
-     */
-    public Projection getProjection ()
-    {
-        return projection;
-    }
-
     //---------------//
     // getScoreStaff //
     //---------------//
@@ -864,6 +871,14 @@ public class StaffInfo
     public Staff getScoreStaff ()
     {
         return scoreStaff;
+    }
+
+    //------------//
+    // getSideBar //
+    //------------//
+    public BarlineInter getSideBar (HorizontalSide side)
+    {
+        return sideBars.get(side);
     }
 
     //------------------//
@@ -1077,6 +1092,17 @@ public class StaffInfo
         this.barPeaks = barPeaks;
     }
 
+    //---------//
+    // setBars //
+    //---------//
+    /**
+     * @param bars the bars to set
+     */
+    public void setBars (List<BarlineInter> bars)
+    {
+        this.bars = bars;
+    }
+
     /**
      * @param clefStop the clefStop to set
      */
@@ -1167,14 +1193,6 @@ public class StaffInfo
         area = null;
     }
 
-    /**
-     * @param projection the projection to set
-     */
-    public void setProjection (Projection projection)
-    {
-        this.projection = projection;
-    }
-
     //---------------//
     // setScoreStaff //
     //---------------//
@@ -1188,6 +1206,15 @@ public class StaffInfo
         this.scoreStaff = scoreStaff;
     }
 
+    //------------//
+    // setSideBar //
+    //------------//
+    public void setSideBar (HorizontalSide side,
+                            BarlineInter inter)
+    {
+        sideBars.put(side, inter);
+    }
+
     //-----------//
     // setSystem //
     //-----------//
@@ -1197,6 +1224,14 @@ public class StaffInfo
     public void setSystem (SystemInfo system)
     {
         this.system = system;
+    }
+
+    /**
+     * @param timeStop the timeStop to set
+     */
+    public void setTimeStop (Integer timeStop)
+    {
+        this.timeStop = timeStop;
     }
 
     //----------//
@@ -1272,14 +1307,6 @@ public class StaffInfo
     void setShort ()
     {
         isShort = true;
-    }
-
-    /**
-     * @param timeStop the timeStop to set
-     */
-    public void setTimeStop (Integer timeStop)
-    {
-        this.timeStop = timeStop;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

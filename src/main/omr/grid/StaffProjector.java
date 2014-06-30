@@ -60,13 +60,41 @@ import javax.swing.WindowConstants;
  * x-axis, in order to retrieve bar lines candidates as well as staff start and stop
  * abscissae.
  * <p>
- * To do so, we analyze the interior of staff because this is where a bar line must be present.
+ * To retrieve bar lines candidates, we analyze the vertical interior of staff because this is where
+ * a bar line must be present.
  * The potential bar portions outside staff height are much less typical of a bar line.
  * <p>
- * The projection also gives information about which abscissa values are outside the staff abscissa
- * range, since the corresponding cumulated value gets close to zero.
- * It also gives indication about lack of chunk (beam or head) on each side of a bar candidate, but
- * this indication is limited to the staff height portion.
+ * A peak in staff projection can result from:<ol>
+ * <li>A thick or thin <b>bar line</b>:
+ * <br><img
+ * src="http://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Barlines.svg/400px-Barlines.svg.png"/>
+ * <li>A <b>bracket</b> portion:
+ * <br><img src="http://donrathjr.com/wp-content/uploads/2010/08/Brackets-and-Braces-4a.png"
+ * width="250" height="216"/>.
+ * <li>A <b>brace</b> portion:
+ * <br><img
+ * src="http://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Brace_(music).png/240px-Brace_(music).png"/>
+ * <br>The brace peak is rather similar to a thick bar line, although its first derivative is lower
+ * and similarly the inter-staff connection is of low quality.
+ * <li>An Alto <b>C-clef</b> portion:
+ * <br><img
+ * src="http://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Alto_clef_with_ref.svg/90px-Alto_clef_with_ref.svg.png"
+ * />
+ * <br>Such C-clef artifacts are detected later, based on their abscissa offset from the measure
+ * start (be it bar-based start or lines-only start).
+ * <li>A <b>stem</b> (with note heads located outside the staff height).
+ * </ol>
+ * <p>
+ * Before this class is used, staves are only defined by their lines made of long horizontal
+ * sections.
+ * This gives a good vertical definition (sufficient to allow the x-axis projection) but a very poor
+ * horizontal definition.
+ * To retrieve precise staff start and stop abscissae, the projection can tell which abscissa values
+ * are outside the staff abscissa range, since the lack of staff lines results in a projection value
+ * close to zero.
+ * <p>
+ * The projection also gives indication about lack of chunk (beam or head) on each side of a bar
+ * candidate, but this indication is limited to the staff height portion.
  *
  * @author Hervé Bitteur
  */
@@ -95,11 +123,11 @@ public class StaffProjector
     /** Pixel source. */
     private final ByteProcessor pixelFilter;
 
-    /** All blank regions found. */
+    /** Sequence of all blank regions found, whatever their width. */
     private final List<Blank> allBlanks = new ArrayList<Blank>();
 
-    /** Selected blank region on each staff side. */
-    private final Map<HorizontalSide, Blank> blanks = new EnumMap<HorizontalSide, Blank>(
+    /** Selected (wide) blank region on each staff side. */
+    private final Map<HorizontalSide, Blank> wideBlanks = new EnumMap<HorizontalSide, Blank>(
             HorizontalSide.class);
 
     /** Sequence of bar peaks found. */
@@ -110,7 +138,7 @@ public class StaffProjector
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new StaffProjector object.
+     * Creates a new {@code StaffProjector} object.
      *
      * @param sheet containing sheet
      * @param staff staff to analyze
@@ -149,20 +177,17 @@ public class StaffProjector
     //---------//
     public List<BarPeak> process ()
     {
-        logger.debug("Analyzing staff#{}", staff.getId());
+        logger.debug("StaffProjector analyzing staff#{}", staff.getId());
 
         // Cumulate pixels for each abscissa
         computeProjection();
 
         // Retrieve regions without staff lines
-        findBlanks();
+        findAllBlanks();
+        selectWideBlanks();
 
-        // Retrieve barline candidates
+        // Retrieve peaks as barline raw candidates
         findPeaks();
-
-        // Refine left and right abscissa values of staff
-        refineStaffSides();
-
         staff.setBarPeaks(peaks);
 
         return peaks;
@@ -200,7 +225,6 @@ public class StaffProjector
     private void computeProjection ()
     {
         projection = new Projection.Short(0, sheet.getWidth() - 1);
-        staff.setProjection(projection);
 
         final FilamentLine firstLine = staff.getFirstLine();
         final FilamentLine lastLine = staff.getLastLine();
@@ -322,16 +346,16 @@ public class StaffProjector
         return null;
     }
 
-    //------------//
-    // findBlanks //
-    //------------//
+    //---------------//
+    // findAllBlanks //
+    //---------------//
     /**
      * Look for all "blank" regions without staff lines.
      * <p>
      * We then select the (wide) region right before the staff and the (wide) region right after the
      * staff, and populate the blanks map with these two ones.
      */
-    private void findBlanks ()
+    private void findAllBlanks ()
     {
         final int maxValue = params.blankThreshold;
         final int sheetWidth = sheet.getWidth();
@@ -362,18 +386,11 @@ public class StaffProjector
         }
 
         logger.debug(
-                "Staff#{} left:{} right:{} {}",
+                "Staff#{} left:{} right:{} allBlanks:{}",
                 staff.getId(),
                 staff.getAbscissa(LEFT),
                 staff.getAbscissa(RIGHT),
                 allBlanks);
-
-        // Select regions for left & right staff sides
-        for (HorizontalSide side : HorizontalSide.values()) {
-            blanks.put(side, selectBlank(side, allBlanks));
-        }
-
-        logger.debug("Staff#{} {}", staff.getId(), blanks);
     }
 
     //-----------//
@@ -387,10 +404,10 @@ public class StaffProjector
     {
         final int minValue = params.barThreshold;
 
-        final Blank leftBlank = blanks.get(LEFT);
+        final Blank leftBlank = wideBlanks.get(LEFT);
         final int xMin = (leftBlank != null) ? leftBlank.stop : 0;
 
-        final Blank rightBlank = blanks.get(RIGHT);
+        final Blank rightBlank = wideBlanks.get(RIGHT);
         final int xMax = (rightBlank != null) ? rightBlank.start : (sheet.getWidth() - 1);
 
         int start = -1;
@@ -430,7 +447,7 @@ public class StaffProjector
             }
         }
 
-        logger.debug("Staff#{} peaks: {}", staff.getId(), peaks);
+        logger.debug("Staff#{} peaks:{}", staff.getId(), peaks);
     }
 
     //----------//
@@ -465,7 +482,7 @@ public class StaffProjector
      * Use extrema of first derivative to refine peak side abscissa.
      * Maximum for left side, minimum for right side.
      * Absolute derivative value indicates if the peak side is really steep: this should exclude
-     * the cases of braces, arpeggiates, stems with heads on left or right side.
+     * most of: braces, arpeggiates, stems with heads on left or right side.
      *
      * @param xStart raw abscissa that starts peak
      * @param xStop  raw abscissa that stops peak
@@ -524,7 +541,9 @@ public class StaffProjector
      * Try to use the extreme peak on a given staff side, to refine the precise abscissa
      * where the staff ends.
      * <p>
-     * This extreme peak (first or last peak according to side) can be used as abscissa reference
+     * When this method is called, the staff sides are defined only by the ends of the lines built
+     * with long sections.
+     * An extreme peak (first or last peak according to side) can be used as abscissa reference
      * only if it is either beyond current staff end or sufficiently close to the end.
      * If no such peak is found, we stop right before the blank region assuming that this is a
      * measure with no outside bar.
@@ -534,35 +553,79 @@ public class StaffProjector
     private void refineStaffSide (HorizontalSide side)
     {
         final int dir = (side == LEFT) ? (-1) : 1;
-        final int staffEnd = staff.getAbscissa(side);
+        final int linesEnd = staff.getAbscissa(side);
+        int staffEnd = linesEnd;
+        BarPeak endPeak = null;
+        Integer peakEnd = null;
 
+        // Look for a suitable peak
         if (!peaks.isEmpty()) {
-            final BarPeak peak = peaks.get((side == LEFT) ? 0 : (peaks.size() - 1));
-            final int peakMid = (peak.getStart() + peak.getStop()) / 2;
+            BarPeak peak = null;
 
-            // Check side position of peak wrt staff, it must be external or close internal
-            final int toPeak = peakMid - staffEnd;
+            if (side == LEFT) {
+                for (BarPeak p : peaks) {
+                    if (p.isBracket()) {
+                        continue;
+                    }
 
-            if (((dir * toPeak) >= 0) || (Math.abs(toPeak) <= params.maxBarToEnd)) {
-                logger.debug(
-                        "Staff#{} {} set at peak {} (vs {})",
-                        staff.getId(),
-                        side,
-                        peakMid,
-                        staffEnd);
-                staff.setAbscissa(side, peakMid);
+                    peak = p;
 
-                return;
+                    break;
+                }
+            } else {
+                peak = peaks.get(peaks.size() - 1);
+
+                // Just in case
+                if (peak.isBracket()) {
+                    peak = null;
+                }
+            }
+
+            if (peak != null) {
+                // Check side position of peak wrt staff, it must be external
+                final int peakMid = (peak.getStart() + peak.getStop()) / 2;
+                final int toPeak = peakMid - linesEnd;
+
+                if ((dir * toPeak) >= 0) {
+                    endPeak = peak;
+                    peakEnd = (side == LEFT) ? endPeak.getStart() : endPeak.getStop();
+                    staffEnd = peakEnd;
+                }
             }
         }
 
-        // Here, no suitable peak was found, so stop at blank region if any
-        Blank blank = blanks.get(side);
+        // Continue and stop at first small blank region encountered if any.
+        // Then keep the additional line chunk if long enough.
+        // If not, use peak mid as staff end.
+        Blank blank = selectBlank(side, staffEnd, params.minSmallBlankWidth);
 
         if (blank != null) {
             int x = (side == LEFT) ? (blank.stop + 1) : (blank.start - 1);
-            logger.debug("Staff#{} {} set at blank {} (vs {})", staff.getId(), side, x, staffEnd);
-            staff.setAbscissa(side, x);
+
+            if (endPeak != null) {
+                int chunkLength = dir * (x - peakEnd);
+
+                if (chunkLength > params.maxBarToEnd) {
+                    // We have significant line chunks beyond bar, hence peak is not the limit
+                    logger.debug(
+                            "Staff#{} {} set at blank {} (vs {})",
+                            staff.getId(),
+                            side,
+                            x,
+                            linesEnd);
+                    staff.setAbscissa(side, x);
+                } else {
+                    // No significant line chunks, ignore them and stay with peak as the limit
+                    final int peakMid = (endPeak.getStart() + endPeak.getStop()) / 2;
+                    logger.debug(
+                            "Staff#{} {} set at peak {} (vs {})",
+                            staff.getId(),
+                            side,
+                            peakMid,
+                            linesEnd);
+                    staff.setAbscissa(side, peakMid);
+                }
+            }
         } else {
             logger.debug("Staff#{} no clear end on {}", staff.getId(), side);
         }
@@ -580,33 +643,33 @@ public class StaffProjector
      * TODO: The selection could be revised in a second phase performed at sheet level, since
      * poor-quality staves may exhibit abnormal blank regions.
      *
-     * @param side   desired side
-     * @param blanks the list of blanks known
+     * @param side     desired side
+     * @param start    abscissa for starting search
+     * @param minWidth minimum blank width
      * @return the relevant blank region found, null if none was found
      */
     private Blank selectBlank (HorizontalSide side,
-                               List<Blank> blanks)
+                               int start,
+                               int minWidth)
     {
         final int dir = (side == LEFT) ? (-1) : 1;
-        final int end = staff.getAbscissa(side) - dir;
-
-        final int rInit = (side == LEFT) ? (blanks.size() - 1) : 0;
-        final int rBreak = (side == LEFT) ? (-1) : blanks.size();
+        final int rInit = (side == LEFT) ? (allBlanks.size() - 1) : 0;
+        final int rBreak = (side == LEFT) ? (-1) : allBlanks.size();
 
         // Find first blank of significant width, if any
         Blank widestBlank = null;
         int widestWidth = -1;
 
         for (int ir = rInit; ir != rBreak; ir += dir) {
-            Blank blank = blanks.get(ir);
+            Blank blank = allBlanks.get(ir);
             int mid = (blank.start + blank.stop) / 2;
 
             // Make sure we are on desired side of the staff
-            if ((dir * (mid - end)) > 0) {
+            if ((dir * (mid - start)) > 0) {
                 int width = blank.getWidth();
 
                 // Stop on first significant blank
-                if (width >= params.minBlankWidth) {
+                if (width >= minWidth) {
                     return blank;
                 }
 
@@ -619,6 +682,23 @@ public class StaffProjector
         }
 
         return widestBlank;
+    }
+
+    //------------------//
+    // selectWideBlanks //
+    //------------------//
+    /**
+     * Select the pair of wide blanks that limit peak search.
+     */
+    private void selectWideBlanks ()
+    {
+        for (HorizontalSide side : HorizontalSide.values()) {
+            wideBlanks.put(
+                    side,
+                    selectBlank(side, staff.getAbscissa(side), params.minWideBlankWidth));
+        }
+
+        logger.debug("Staff#{} wideBlanks:{}", staff.getId(), wideBlanks);
     }
 
     //--------//
@@ -670,47 +750,6 @@ public class StaffProjector
         }
     }
 
-    //-------//
-    // Blank //
-    //-------//
-    /**
-     * A abscissa region where no staff lines are detected and thus
-     * indicates possible end of staff.
-     */
-    private static class Blank
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** First abscissa in region. */
-        private final int start;
-
-        /** Last abscissa in region. */
-        private final int stop;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Blank (int start,
-                      int stop)
-        {
-            this.start = start;
-            this.stop = stop;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public int getWidth ()
-        {
-            return stop - start + 1;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Blank(").append(start).append("-").append(stop).append(")");
-
-            return sb.toString();
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -755,13 +794,65 @@ public class StaffProjector
                 0.4,
                 "Maximum cumul value (in LineFraction) to detect noline region");
 
-        final Scale.Fraction minBlankWidth = new Scale.Fraction(
-                0.4,
-                "Minimum width for a blank region to end a staff side");
+        final Scale.Fraction minWideBlankWidth = new Scale.Fraction(
+                1.0,
+                "Minimum width for a wide blank region (to limit peaks search)");
+
+        final Scale.Fraction minSmallBlankWidth = new Scale.Fraction(
+                0.1,
+                "Minimum width for a small blank region (to end a staff side)");
 
         final Scale.Fraction maxBarToEnd = new Scale.Fraction(
-                3.0,
+                0.5,
                 "Maximum dx between bar and end of staff");
+    }
+
+    //-------//
+    // Blank //
+    //-------//
+    /**
+     * A abscissa region where no staff lines are detected and thus indicates possible
+     * end of staff.
+     */
+    private static class Blank
+            implements Comparable<Blank>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** First abscissa in region. */
+        private final int start;
+
+        /** Last abscissa in region. */
+        private final int stop;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Blank (int start,
+                      int stop)
+        {
+            this.start = start;
+            this.stop = stop;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public int compareTo (Blank that)
+        {
+            return Integer.compare(this.start, that.start);
+        }
+
+        public int getWidth ()
+        {
+            return stop - start + 1;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Blank(").append(start).append("-").append(stop).append(")");
+
+            return sb.toString();
+        }
     }
 
     //------------//
@@ -791,7 +882,9 @@ public class StaffProjector
 
         final int blankThreshold;
 
-        final int minBlankWidth;
+        final int minWideBlankWidth;
+
+        final int minSmallBlankWidth;
 
         final int maxBarToEnd;
 
@@ -808,7 +901,8 @@ public class StaffProjector
             linesThreshold = 4 * scale.getMainFore();
             blankThreshold = (int) Math.rint(
                     scale.getMaxFore() * constants.blankThreshold.getValue());
-            minBlankWidth = scale.toPixels(constants.minBlankWidth);
+            minWideBlankWidth = scale.toPixels(constants.minWideBlankWidth);
+            minSmallBlankWidth = scale.toPixels(constants.minSmallBlankWidth);
             maxBarToEnd = scale.toPixels(constants.maxBarToEnd);
 
             // For chunk threshold the strategy is to use the largest value
@@ -945,7 +1039,7 @@ public class StaffProjector
                 XYSeries zeroSeries = new XYSeries("Zero");
                 zeroSeries.add(xMin, 0);
                 zeroSeries.add(xMax, 0);
-                add(zeroSeries, new Color(255, 255, 255, 100), true);
+                add(zeroSeries, Color.WHITE, true);
             }
 
             // Hosting frame

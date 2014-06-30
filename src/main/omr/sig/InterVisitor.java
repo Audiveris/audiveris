@@ -47,5 +47,9 @@ public interface InterVisitor
 
     void visit (BarlineInter inter);
 
+    void visit (BracketInter inter);
+
     void visit (BarConnectionInter inter);
+
+    void visit (BracketConnectionInter inter);
 }

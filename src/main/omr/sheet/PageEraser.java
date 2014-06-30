@@ -44,20 +44,22 @@ import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
 
-import omr.util.HorizontalSide;
-
 import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
+
 import static java.awt.BasicStroke.*;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import omr.sig.BracketConnectionInter;
+import omr.sig.BracketInter;
 
 /**
  * Class {@code PageEraser} erases selected shapes on the provided graphics environment.
@@ -211,7 +213,23 @@ public abstract class PageEraser
     }
 
     @Override
+    public void visit (BracketInter inter)
+    {
+        g.fill(inter.getArea());
+        g.setStroke(marginStroke);
+        g.draw(inter.getArea());
+    }
+
+    @Override
     public void visit (BarConnectionInter inter)
+    {
+        g.fill(inter.getArea());
+        g.setStroke(marginStroke);
+        g.draw(inter.getArea());
+    }
+
+    @Override
+    public void visit (BracketConnectionInter inter)
     {
         g.fill(inter.getArea());
         g.setStroke(marginStroke);

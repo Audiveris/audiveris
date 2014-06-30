@@ -210,6 +210,9 @@ public class KeyBuilder
     /** Detected stop abscissa, if any, of last pixel in key-sig area. */
     private Integer areaStop;
 
+    /** Cumulated pixels, over space threshold, in area range. */
+    private int areaWeight;
+
     /** Sequence of peaks found. */
     private final List<KeyEvent.Peak> peaks = new ArrayList<KeyEvent.Peak>();
 
@@ -271,7 +274,7 @@ public class KeyBuilder
 
         {
             // Values
-            XYSeries cumulSeries = new XYSeries("Keys");
+            XYSeries cumulSeries = new XYSeries("Key");
 
             for (int x = xMin; x <= xMax; x++) {
                 cumulSeries.add(x, projection.getValue(x));
@@ -289,24 +292,26 @@ public class KeyBuilder
             plotter.add(sep, Color.CYAN, false);
         }
 
-        {
+        if (areaStart != null) {
             // Area limits
-            XYSeries series = new XYSeries("Area");
-            int start = getBrowsingStart();
+            XYSeries series = new XYSeries("KeyArea");
+            int start = areaStart;
             int stop = (areaStop != null) ? (int) areaStop : xMax;
             series.add(start, -Plotter.MARK);
             series.add(start, staff.getHeight());
             series.add(stop, staff.getHeight());
             series.add(stop, -Plotter.MARK);
-            plotter.add(series, Color.GRAY, false);
+            plotter.add(series, Color.ORANGE, false);
         }
 
         {
-            // Peak min threshold
-            XYSeries minSeries = new XYSeries("Peak");
-            minSeries.add((int) getBrowsingStart(), params.minPeakCumul);
-            minSeries.add((areaStop != null) ? (int) areaStop : xMax, params.minPeakCumul);
-            plotter.add(minSeries, Color.GREEN, false);
+            // Browse start a peak threshold
+            XYSeries series = new XYSeries("KeyBrowse");
+            int x = getBrowsingStart();
+            series.add(x, -Plotter.MARK);
+            series.add(x, params.minPeakCumul);
+            series.add((areaStop != null) ? (int) areaStop : xMax, params.minPeakCumul);
+            plotter.add(series, Color.BLACK, false);
         }
 
         {
@@ -396,7 +401,7 @@ public class KeyBuilder
             KeyAlterInter alter = slice.getAlter();
 
             if (alter != null) {
-                alter.increase(0.2); ///////////// !!!!!!!!!!!!!!!!!!
+                alter.increase(0.25); ///////////// !!!!!!!!!!!!!!!!!!
             }
         }
 
@@ -504,7 +509,7 @@ public class KeyBuilder
      */
     public void process ()
     {
-        logger.debug("Processing S#{} staff#{}", system.getId(), staff.getId());
+        logger.debug("Key processing for S#{} staff#{}", system.getId(), staff.getId());
 
         // Retrieve spaces and peaks
         browseArea();
@@ -525,7 +530,30 @@ public class KeyBuilder
             extractSlices(starts);
         }
 
-        logger.debug("Staff#{} sig:{} m:{} {}", staff.getId(), signature, measureStart, events);
+        // Normalized area weight
+        if (!peaks.isEmpty()) {
+            KeyEvent.Peak lastPeak = peaks.get(peaks.size() - 1);
+
+            if (lastPeak.isInvalid() && (events.size() > 1)) {
+                KeyEvent event = events.get(events.size() - 2);
+
+                if (event instanceof KeyEvent.Space) {
+                    KeyEvent.Space space = (KeyEvent.Space) event;
+                    areaWeight = space.getWeight();
+                }
+            }
+        }
+
+        double nw = scale.pixelsToAreaFrac(areaWeight);
+        logger.debug(
+                "Staff#{} sig:{} meas:{} start:{} stop:{} nWeight:{} {}",
+                staff.getId(),
+                signature,
+                measureStart,
+                areaStart,
+                areaStop,
+                String.format("%.1f", nw),
+                events);
     }
 
     //-----------//
@@ -608,7 +636,6 @@ public class KeyBuilder
         int maxSpaceCumul = params.maxSpaceCumul;
         int spaceStart = -1; // Space start abscissa
         int spaceStop = -1; // Space stop abscissa
-        int spaceArea = 0; // Space area
 
         // Peak parameters
         final int minPeakCumul = params.minPeakCumul;
@@ -623,13 +650,12 @@ public class KeyBuilder
             if (cumul >= minPeakCumul) {
                 if (spaceStart != -1) {
                     // End of space
-                    if (!createSpace(spaceStart, spaceStop, spaceArea)) {
+                    if (!createSpace(spaceStart, spaceStop)) {
                         // Too wide space encountered
                         return;
                     }
 
                     spaceStart = -1;
-                    spaceArea = 0;
                 }
 
                 if (peakStart == -1) {
@@ -659,26 +685,30 @@ public class KeyBuilder
                         spaceStart = x;
                     }
 
-                    spaceArea += (maxSpaceCumul - cumul);
                     spaceStop = x;
                 } else {
                     if (spaceStart != -1) {
                         // End of space
-                        if (!createSpace(spaceStart, spaceStop, spaceArea)) {
+                        if (!createSpace(spaceStart, spaceStop)) {
                             // Too wide space encountered
                             return;
                         }
 
                         spaceStart = -1;
-                        spaceArea = 0;
                     }
                 }
+            }
+
+            // Update area weight?
+            ///if ((areaStart != null) && (cumul > maxSpaceCumul)) {
+            if (areaStart != null) {
+                areaWeight += cumul;
             }
         }
 
         // Finish ongoing space if any
         if (spaceStart != -1) {
-            createSpace(spaceStart, spaceStop, spaceArea);
+            createSpace(spaceStart, spaceStop);
         } else if (peakStart != -1) {
             // Finish ongoing peak if any (this is rather unlikely...)
             createPeak(peakStart, peakStop, peakHeight);
@@ -750,11 +780,9 @@ public class KeyBuilder
 
         int res = Collections.binarySearch(clefs, keyInter, Inter.byAbscissa);
         int indexClef = -res - 2;
-        ClefInter lastClef = null;
 
         if (indexClef >= 0) {
-            lastClef = (ClefInter) clefs.get(indexClef);
-
+            ClefInter lastClef = (ClefInter) clefs.get(indexClef);
             Set<Relation> excs = sig.getExclusions(lastClef);
             Set<ClefInter> set = new HashSet<ClefInter>();
 
@@ -768,13 +796,15 @@ public class KeyBuilder
 
             set.add(lastClef);
 
-            logger.info("clefs: {} index:{} lastClef:{} set:{}", clefs, indexClef, lastClef, set);
+            logger.debug("clefs: {} index:{} lastClef:{} set:{}", clefs, indexClef, lastClef, set);
 
             for (ClefInter clef : set) {
                 if (clef.getKind() == guess) {
                     sig.addEdge(clef, keyInter, new ClefKeyRelation());
                 } else {
                     sig.insertExclusion(clef, keyInter, Exclusion.Cause.INCOMPATIBLE);
+
+                    ///sig.removeVertex(clef);
                 }
             }
         }
@@ -823,7 +853,7 @@ public class KeyBuilder
             int flatHeading = ((firstPeak.start + firstPeak.stop) / 2) - areaStart;
 
             if (flatHeading > params.maxFlatHeading) {
-                logger.info("Too large heading before first flat peak");
+                logger.debug("Too large heading before first flat peak");
 
                 return starts;
             }
@@ -924,11 +954,9 @@ public class KeyBuilder
 
                 if (dx > params.maxPeakDx) {
                     // A large dx indicates we are beyond end of key-sig
-                    // So, retrieve the precise end of key-sig last item
-                    logger.debug("Too large delta");
+                    logger.debug("Too large delta since previous peak");
                     peak.setInvalid();
                     keepOn = false;
-                } else {
                 }
             } else {
                 // Very first peak, check offset from theoretical start
@@ -971,15 +999,13 @@ public class KeyBuilder
      *
      * @param spaceStart start space abscissa
      * @param spaceStop  stop space abscissa
-     * @param spaceArea  (not used) total area below threshold
      * @return true to keep browsing, false to stop immediately
      */
     private boolean createSpace (int spaceStart,
-                                 int spaceStop,
-                                 int spaceArea)
+                                 int spaceStop)
     {
         boolean keepOn = true;
-        KeyEvent.Space space = new KeyEvent.Space(spaceStart, spaceStop, spaceArea);
+        KeyEvent.Space space = new KeyEvent.Space(spaceStart, spaceStop, areaWeight);
 
         if (areaStart == null) {
             // This is the very first space found
@@ -1044,11 +1070,11 @@ public class KeyBuilder
         new GlyphCluster(adapter).decompose();
 
         if (adapter.bestEval != null) {
-            ///sheet.getNest().registerGlyph(adapter.bestGlyph);
-            logger.debug("Glyph#{} {}", adapter.bestGlyph.getId(), adapter.bestEval);
+            double grade = Inter.intrinsicRatio * adapter.bestEval.grade;
 
-            if (adapter.bestEval.grade >= minGrade) {
-                double grade = Inter.intrinsicRatio * adapter.bestEval.grade;
+            if (grade >= minGrade) {
+                ///sheet.getNest().registerGlyph(adapter.bestGlyph);
+                logger.debug("Glyph#{} {}", adapter.bestGlyph.getId(), adapter.bestEval);
 
                 KeyAlterInter alterInter = KeyAlterInter.create(
                         adapter.bestGlyph,
@@ -1319,6 +1345,7 @@ public class KeyBuilder
 
         areaStart = null;
         areaStop = null;
+        areaWeight = 0;
     }
 
     //-------------------//
@@ -1457,10 +1484,12 @@ public class KeyBuilder
          */
         public int retrieveKeys (int projectionWidth)
         {
-            // Retrieve DMZ key-sigs
+            // Define each staff key-sig area
             for (StaffInfo staff : system.getStaves()) {
                 int measureStart = staff.getDmzStart();
-                int browseStart = staff.getDmzStop();
+                Integer clefStop = staff.getClefStop();
+                int browseStart = (clefStop != null) ? ((clefStop + staff.getDmzStop()) / 2)
+                        : staff.getDmzStop();
 
                 builders.put(
                         staff,
@@ -1472,6 +1501,8 @@ public class KeyBuilder
                 builder.process();
             }
 
+            // Make sure non-empty key areas do have keys
+            //TODO
             // Check keys alignment at system level, if applicable
             if (system.getStaves().size() > 1) {
                 checkKeysAlignment();
@@ -1519,7 +1550,7 @@ public class KeyBuilder
                     if (index != null) {
                         if (index > i) {
                             // Insert missing slice!
-                            logger.info(
+                            logger.debug(
                                     "{}Staff#{} slice inserted at index:{}",
                                     sheet.getLogPrefix(),
                                     builder.getId(),
@@ -1528,7 +1559,7 @@ public class KeyBuilder
                         }
                     } else {
                         // Slice too far on left
-                        logger.info(
+                        logger.debug(
                                 "{}Staff#{} misaligned slice index:{} x:{}",
                                 sheet.getLogPrefix(),
                                 builder.getId(),
@@ -1658,7 +1689,6 @@ public class KeyBuilder
 
             for (int k = 0; k < G; k++) {
                 Clustering.Gaussian law = laws[k];
-                logger.debug("{} * {}", pi[k], law);
                 theoreticals.add((int) Math.rint(law.getMean()));
             }
 
@@ -1791,7 +1821,7 @@ public class KeyBuilder
                 "Maximum short peak delta for sharps");
 
         final Scale.Fraction minFlatDelta = new Scale.Fraction(
-                0.6,
+                0.5,
                 "Minimum short peak delta for flats");
 
         final Scale.Fraction offsetThreshold = new Scale.Fraction(
@@ -1821,86 +1851,6 @@ public class KeyBuilder
         final Scale.Fraction maxInnerSpace = new Scale.Fraction(
                 0.7,
                 "Maximum inner space within key signature");
-    }
-
-    //-----------//
-    // MyAdapter //
-    //-----------//
-    /**
-     * Handles the integration between glyph clustering class and key-sig environment.
-     */
-    private class MyAdapter
-            implements GlyphCluster.Adapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Graph of the connected glyphs, with their distance edges if any. */
-        private final SimpleGraph<Glyph, GlyphLink> graph;
-
-        /** Relevant shapes. */
-        private final EnumSet<Shape> targetShapes = EnumSet.noneOf(Shape.class);
-
-        private Evaluation bestEval = null;
-
-        private Glyph bestGlyph = null;
-
-        private int trials = 0; // (debug)
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public MyAdapter (List<Glyph> glyphs,
-                          Set<Shape> targetShapes)
-        {
-            this.targetShapes.addAll(targetShapes);
-            graph = Glyphs.buildLinks(glyphs, params.maxGlyphGap);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void evaluateGlyph (Glyph glyph)
-        {
-            trials++;
-
-            Evaluation[] evals = evaluator.getNaturalEvaluations(glyph);
-
-            for (Shape shape : targetShapes) {
-                Evaluation eval = evals[shape.ordinal()];
-
-                if ((bestEval == null) || (bestEval.grade < eval.grade)) {
-                    bestEval = eval;
-                    bestGlyph = glyph;
-                }
-            }
-        }
-
-        @Override
-        public List<Glyph> getNeighbors (Glyph part)
-        {
-            return Graphs.neighborListOf(graph, part);
-        }
-
-        @Override
-        public GlyphNest getNest ()
-        {
-            return sheet.getNest();
-        }
-
-        @Override
-        public List<Glyph> getParts ()
-        {
-            return new ArrayList<Glyph>(graph.vertexSet());
-        }
-
-        @Override
-        public boolean isSizeAcceptable (Rectangle box)
-        {
-            return box.height <= params.maxGlyphHeight;
-        }
-
-        @Override
-        public boolean isWeightAcceptable (int weight)
-        {
-            return weight >= params.minGlyphWeight;
-        }
     }
 
     //------------//
@@ -1988,6 +1938,86 @@ public class KeyBuilder
             maxGlyphGap = scale.toPixelsDouble(constants.maxGlyphGap);
             maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
             minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
+        }
+    }
+
+    //-----------//
+    // MyAdapter //
+    //-----------//
+    /**
+     * Handles the integration between glyph clustering class and key-sig environment.
+     */
+    private class MyAdapter
+            implements GlyphCluster.Adapter
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Graph of the connected glyphs, with their distance edges if any. */
+        private final SimpleGraph<Glyph, GlyphLink> graph;
+
+        /** Relevant shapes. */
+        private final EnumSet<Shape> targetShapes = EnumSet.noneOf(Shape.class);
+
+        private Evaluation bestEval = null;
+
+        private Glyph bestGlyph = null;
+
+        private int trials = 0; // (debug)
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public MyAdapter (List<Glyph> glyphs,
+                          Set<Shape> targetShapes)
+        {
+            this.targetShapes.addAll(targetShapes);
+            graph = Glyphs.buildLinks(glyphs, params.maxGlyphGap);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void evaluateGlyph (Glyph glyph)
+        {
+            trials++;
+
+            Evaluation[] evals = evaluator.getNaturalEvaluations(glyph);
+
+            for (Shape shape : targetShapes) {
+                Evaluation eval = evals[shape.ordinal()];
+
+                if ((bestEval == null) || (bestEval.grade < eval.grade)) {
+                    bestEval = eval;
+                    bestGlyph = glyph;
+                }
+            }
+        }
+
+        @Override
+        public List<Glyph> getNeighbors (Glyph part)
+        {
+            return Graphs.neighborListOf(graph, part);
+        }
+
+        @Override
+        public GlyphNest getNest ()
+        {
+            return sheet.getNest();
+        }
+
+        @Override
+        public List<Glyph> getParts ()
+        {
+            return new ArrayList<Glyph>(graph.vertexSet());
+        }
+
+        @Override
+        public boolean isSizeAcceptable (Rectangle box)
+        {
+            return box.height <= params.maxGlyphHeight;
+        }
+
+        @Override
+        public boolean isWeightAcceptable (int weight)
+        {
+            return weight >= params.minGlyphWeight;
         }
     }
 }

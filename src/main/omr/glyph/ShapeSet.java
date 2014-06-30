@@ -250,7 +250,16 @@ public class ShapeSet
     public static final ShapeSet Markers = new ShapeSet(
             CODA,
             new Color(0x888888),
-            shapesOf(DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK, CAESURA, BRACE, BRACKET));
+            shapesOf(
+                    DAL_SEGNO,
+                    DA_CAPO,
+                    SEGNO,
+                    CODA,
+                    BREATH_MARK,
+                    CAESURA,
+                    BRACE,
+                    BRACKET,
+                    BRACKET_CONNECTION));
 
     public static final ShapeSet Notes = new ShapeSet(
             BREVE,

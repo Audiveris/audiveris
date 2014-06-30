@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                     B a r l i n e I n t e r                                    //
+//                                     B r a c k e t I n t e r                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -17,36 +17,47 @@ import omr.glyph.facets.Glyph;
 import omr.math.Line;
 
 /**
- * Class {@code BarlineInter} represents an interpretation of bar line (thin or thick
- * vertical segment).
+ * Class {@code BracketInter}
  *
  * @author Hervé Bitteur
  */
-public class BarlineInter
+public class BracketInter
         extends AbstractVerticalInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
 
-    /** True if this bar line defines a part. */
-    private boolean partDefining;
+    public static enum BracketKind
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        TOP,
+        BOTH,
+        BOTTOM,
+        NONE;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    /** Bracket kind. */
+    private final BracketKind kind;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new BarlineInter object.
+     * Creates a new {@code BracketInter} object.
      *
      * @param glyph   the underlying glyph
-     * @param shape   the assigned shape
      * @param impacts the assignment details
      * @param median  the median line
      * @param width   the bar line width
+     * @param kind    precise kind of bracket item
      */
-    public BarlineInter (Glyph glyph,
-                         Shape shape,
+    public BracketInter (Glyph glyph,
                          GradeImpacts impacts,
                          Line median,
-                         double width)
+                         double width,
+                         BracketKind kind)
     {
-        super(glyph, shape, impacts, median, width);
+        super(glyph, Shape.BRACKET, impacts, median, width);
+        this.kind = kind;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -66,42 +77,19 @@ public class BarlineInter
     public String getDetails ()
     {
         StringBuilder sb = new StringBuilder(super.getDetails());
-
-        if (partDefining) {
-            sb.append(" part");
-        }
+        sb.append(" ").append(kind);
 
         return sb.toString();
     }
 
-    //--------//
-    // isGood //
-    //--------//
-    @Override
-    public boolean isGood ()
-    {
-        return getGrade() >= 0.6; // TODO, quick & dirty
-    }
-
-    //----------------//
-    // isPartDefining //
-    //----------------//
+    //---------//
+    // getKind //
+    //---------//
     /**
-     * @return the partDefining
+     * @return the kind
      */
-    public boolean isPartDefining ()
+    public BracketKind getKind ()
     {
-        return partDefining;
-    }
-
-    //-----------------//
-    // setPartDefining //
-    //-----------------//
-    /**
-     * @param partDefining the partDefining to set
-     */
-    public void setPartDefining (boolean partDefining)
-    {
-        this.partDefining = partDefining;
+        return kind;
     }
 }

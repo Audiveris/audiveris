@@ -89,7 +89,12 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ConcurrentModificationException;
+import omr.sig.BracketConnectionInter;
+import omr.sig.BracketInter;
 import omr.sig.TimeInter;
+
+import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
+import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
 
 /**
  * Class {@code PagePhysicalPainter} paints the recognized page entities at the location
@@ -730,7 +735,47 @@ public class PagePhysicalPainter
     // visit //
     //-------//
     @Override
+    public void visit (BracketInter bracket)
+    {
+        setColor(bracket);
+        g.fill(bracket.getArea());
+
+        final double ratio = 2.7;
+        final Rectangle   box = bracket.getBounds();
+        final BracketInter.BracketKind kind = bracket.getKind();
+        final double      width = bracket.getWidth();
+        final Dimension   dim = new Dimension(
+            (int) Math.rint(ratio * width),
+            (int) Math.rint(ratio * 1.25 * width));
+
+        if ((kind == BracketInter.BracketKind.TOP) || (kind == BracketInter.BracketKind.BOTH)) {
+            // Draw upper symbol part
+            final Point left = new Point (box.x, box.y + (int) Math.rint(width));
+            OmrFont.paint(g, musicFont.layout(SYMBOL_BRACKET_UPPER_SERIF, dim), left, BOTTOM_LEFT);
+        }
+
+        if ((kind == BracketInter.BracketKind.BOTTOM) || (kind == BracketInter.BracketKind.BOTH)) {
+            // Draw lower symbol part
+            final Point left = new Point(box.x, box.y + box.height -  (int) Math.rint(width));
+            OmrFont.paint(g, musicFont.layout(SYMBOL_BRACKET_LOWER_SERIF, dim), left, TOP_LEFT);
+        }
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
     public void visit (BarConnectionInter connection)
+    {
+        setColor(connection);
+        g.fill(connection.getArea());
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (BracketConnectionInter connection)
     {
         setColor(connection);
         g.fill(connection.getArea());

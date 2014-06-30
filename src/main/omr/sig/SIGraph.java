@@ -911,17 +911,15 @@ public class SIGraph
      * - Iterate until no more exclusion is left.
      * </pre>
      *
-     * @param mode      selected reduction mode
+     * @param minDelta  minimum delta value to decide on conflict
+     * @param warning true to issue a warning on tight exclusion
      * @param relations the collection to process
      * @return the set of vertices removed
      */
-    public Set<Inter> reduceExclusions (ReductionMode mode,
+    public Set<Inter> reduceExclusions (double minDelta,
+                                        boolean warning,
                                         Collection<? extends Relation> relations)
     {
-        // Which threshold we use for exclusions
-        final double minDelta = (mode == ReductionMode.STRICT)
-                ? constants.deltaGradeStrict.getValue()
-                : constants.deltaGradeRelaxed.getValue();
         final Set<Inter> removed = new HashSet<Inter>();
         final Set<Relation> tiedExclusions = new HashSet<Relation>();
         Relation bestRel;
@@ -1000,10 +998,10 @@ public class SIGraph
                         computeContextualGrade(inter, false);
                     }
                 } else {
-                    if (mode == ReductionMode.STRICT) {
+                    if (warning) {
                         logger.warn("STRICT tight exclusion: {} {} vs {}", delta, source, target);
                     } else if (source.isVip() || target.isVip() || logger.isDebugEnabled()) {
-                        logger.info("RELAXED tight exclusion: {} {} vs {}", delta, source, target);
+                        logger.info("Tight exclusion: {} {} vs {}", delta, source, target);
                     }
 
                     tiedExclusions.add(bestRel);
@@ -1017,6 +1015,36 @@ public class SIGraph
         }
 
         return removed;
+    }
+
+    //------------------//
+    // reduceExclusions //
+    //------------------//
+    /**
+     * Reduce the provided exclusions as much as possible by removing the source or
+     * target vertex of lower contextual grade.
+     * <pre>
+     * Strategy is as follows:
+     * - Pick up among all current exclusions the one whose high inter has the
+     *   highest contextual grade contribution among all exclusions.
+     * - Remove the low inter of this chosen exclusion.
+     * - Recompute all CG values.
+     * - Iterate until no more exclusion is left.
+     * </pre>
+     *
+     * @param mode      selected reduction mode
+     * @param relations the collection to process
+     * @return the set of vertices removed
+     */
+    public Set<Inter> reduceExclusions (ReductionMode mode,
+                                        Collection<? extends Relation> relations)
+    {
+        // Which threshold we use for exclusions
+        final double minDelta = (mode == ReductionMode.STRICT)
+                ? constants.deltaGradeStrict.getValue()
+                : constants.deltaGradeRelaxed.getValue();
+
+        return reduceExclusions(minDelta, mode == ReductionMode.STRICT, relations);
     }
 
     //------------------//
@@ -1282,8 +1310,8 @@ public class SIGraph
     /**
      * This class lists a sequence of interpretations statuses.
      * Possible status values are:
-     * -1: the related inter is forbidden (because of a conflict with an inter
-     * located before in the sequence)
+     * -1: the related inter is forbidden (because of a conflict with an inter located before in the
+     * sequence)
      * 0: the related inter is not selected
      * 1: the related inter is selected
      */

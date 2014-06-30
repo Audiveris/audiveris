@@ -13,6 +13,8 @@ package omr.grid;
 
 import omr.glyph.facets.Glyph;
 
+import omr.sig.AbstractVerticalInter;
+import omr.sig.BarlineInter;
 import omr.sig.GradeImpacts;
 
 import omr.util.VerticalSide;
@@ -59,11 +61,23 @@ public class BarPeak
     /** Underlying stick. */
     private Glyph glyph;
 
+    /** Does the related glyph ends as a bracket above the staff?. */
+    private boolean isBracketAbove;
+
+    /** Does the related glyph ends as a bracket below the staff?. */
+    private boolean isBracketBelow;
+
+    /** Does this peak correspond to a bracket middle?. */
+    private boolean isBracketMiddle;
+
     /** Does the related glyph get above the staff?. */
     private boolean isAbove;
 
     /** Does the related glyph get below the staff?. */
     private boolean isBelow;
+
+    /** Corresponding bar or bracket inter, if any. */
+    private AbstractVerticalInter inter;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -137,6 +151,14 @@ public class BarPeak
     public GradeImpacts getImpacts ()
     {
         return impacts;
+    }
+
+    /**
+     * @return the inter
+     */
+    public AbstractVerticalInter getInter ()
+    {
+        return inter;
     }
 
     //-------------//
@@ -222,6 +244,38 @@ public class BarPeak
         }
     }
 
+    //-----------//
+    // isBracket //
+    //-----------//
+    public boolean isBracket ()
+    {
+        return isBracketAbove || isBracketMiddle || isBracketBelow;
+    }
+
+    /**
+     * @return the isBracketAbove
+     */
+    public boolean isBracketAbove ()
+    {
+        return isBracketAbove;
+    }
+
+    /**
+     * @return the isBracketBelow
+     */
+    public boolean isBracketBelow ()
+    {
+        return isBracketBelow;
+    }
+
+    /**
+     * @return the isBracketMiddle
+     */
+    public boolean isBracketMiddle ()
+    {
+        return isBracketMiddle;
+    }
+
     //--------//
     // isThin //
     //--------//
@@ -246,6 +300,30 @@ public class BarPeak
         this.isBelow = true;
     }
 
+    /**
+     *
+     */
+    public void setBracketAbove ()
+    {
+        this.isBracketAbove = true;
+    }
+
+    /**
+     *
+     */
+    public void setBracketBelow ()
+    {
+        this.isBracketBelow = true;
+    }
+
+    /**
+     *
+     */
+    public void setBracketMiddle ()
+    {
+        this.isBracketMiddle = true;
+    }
+
     //----------//
     // setGlyph //
     //----------//
@@ -255,6 +333,14 @@ public class BarPeak
     public void setGlyph (Glyph glyph)
     {
         this.glyph = glyph;
+    }
+
+    /**
+     * @param inter the inter to set
+     */
+    public void setInter (AbstractVerticalInter inter)
+    {
+        this.inter = inter;
     }
 
     //----------//
@@ -276,8 +362,20 @@ public class BarPeak
             sb.append(" glyph#").append(glyph.getId());
         }
 
+        if (isBracketAbove) {
+            sb.append(" bracketTop");
+        }
+
         if (isAbove) {
             sb.append(" above");
+        }
+
+        if (isBracketMiddle) {
+            sb.append(" bracketMiddle");
+        }
+
+        if (isBracketBelow) {
+            sb.append(" bracketBottom");
         }
 
         if (isBelow) {

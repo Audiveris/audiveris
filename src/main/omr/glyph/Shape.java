@@ -301,6 +301,7 @@ public enum Shape
     THIN_CONNECTION("Connection between thin barlines"),
     THICK_BARLINE("Thick bar line"),
     THICK_CONNECTION("Connection between thick barlines"),
+    BRACKET_CONNECTION("Connection between bracket items"),
     DOUBLE_BARLINE("Double thin bar line"),
     FINAL_BARLINE("Thin / Thick bar line"),
     REVERSE_FINAL_BARLINE("Thick / Thin bar line"),

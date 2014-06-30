@@ -274,7 +274,7 @@ public class TimeBuilder
         if (dens.isEmpty()) {
             // Num half needs a den half
             if (!nums.isEmpty()) {
-                logger.info("Staff#{} num without den", staff.getId());
+                logger.debug("Staff#{} num without den", staff.getId());
 
                 Map<Shape, Inter> map = adapters.get(NUM).bestMap;
 
@@ -288,7 +288,7 @@ public class TimeBuilder
         } else if (nums.isEmpty()) {
             // Den half needs a num half
             if (!dens.isEmpty()) {
-                logger.info("Staff#{} den without num", staff.getId());
+                logger.debug("Staff#{} den without num", staff.getId());
 
                 Map<Shape, Inter> map = adapters.get(DEN).bestMap;
 
@@ -333,7 +333,7 @@ public class TimeBuilder
 
         // We need at lest space before and space after
         if (spaces.size() < 2) {
-            logger.info("Staff#{} lacking spaces around time sig", staff.getId());
+            logger.debug("Staff#{} lacking spaces around time sig", staff.getId());
 
             return;
         }
@@ -344,7 +344,7 @@ public class TimeBuilder
         int delta = first.stop - roi.x;
 
         if (delta > params.maxFirstSpaceWidth) {
-            logger.info(
+            logger.debug(
                     "Staff#{} too large space before time sig: {} vs {}",
                     staff.getId(),
                     delta,
@@ -455,7 +455,7 @@ public class TimeBuilder
      */
     private Rectangle getRoi (int start)
     {
-        int stop = (start + params.roiWidth) - 1;
+        int stop = (start + params.roiWidth) - 1; //TODO: check bar line
         int top = Math.min(staff.getFirstLine().yAt(start), staff.getFirstLine().yAt(stop));
         int bottom = Math.max(staff.getLastLine().yAt(stop), staff.getLastLine().yAt(stop));
 
@@ -581,7 +581,7 @@ public class TimeBuilder
                 int gid = inter.getGlyph().getId();
                 sig.addVertex(inter);
                 inters.add(inter);
-                logger.debug("Staff#{} {} g#{} {}", staff.getId(), inter, gid, timeBox);
+                logger.debug("Staff#{} {} {} g#{} {}", staff.getId(), half, inter, gid, timeBox);
             }
         }
 
@@ -728,7 +728,7 @@ public class TimeBuilder
             String sigString = getSigString();
 
             if (sigString != null) {
-                logger.info("System#{} TimeSignature: {}", system.getId(), sigString);
+                logger.debug("System#{} TimeSignature: {}", system.getId(), sigString);
             }
 
             // Push DMZ
@@ -1033,6 +1033,7 @@ public class TimeBuilder
         @Override
         public void evaluateGlyph (Glyph glyph)
         {
+            //TODO: check glyph centroid for a full symbol is not too far from staff middle line
             trials++;
 
             Evaluation[] evals = evaluator.getNaturalEvaluations(glyph);

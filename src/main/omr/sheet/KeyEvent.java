@@ -122,7 +122,7 @@ public abstract class KeyEvent
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Weight (area below the threshold) of the space. */
+        /** Current area weight at beginning of space. */
         private final int weight;
 
         private boolean wide;
@@ -154,6 +154,11 @@ public abstract class KeyEvent
             sb.append("Space(").append(start).append("-").append(stop).append(")/").append(weight);
 
             return sb.toString();
+        }
+
+        int getWeight ()
+        {
+            return weight;
         }
 
         /**

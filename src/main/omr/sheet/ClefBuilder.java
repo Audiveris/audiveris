@@ -34,6 +34,8 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
+import omr.math.GeoUtil;
+
 import omr.run.Orientation;
 
 import omr.sig.ClefInter;
@@ -41,6 +43,9 @@ import omr.sig.ClefInter.ClefKind;
 import omr.sig.Exclusion;
 import omr.sig.Inter;
 import omr.sig.SIGraph;
+
+import omr.ui.symbol.Symbol;
+import omr.ui.symbol.Symbols;
 
 import omr.util.Navigable;
 
@@ -53,6 +58,7 @@ import org.jgrapht.graph.SimpleGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -85,8 +91,6 @@ public class ClefBuilder
      */
     private static final EnumSet<Shape> clefShapes = EnumSet.of(
             F_CLEF,
-            //            F_CLEF_8VA,
-            //            F_CLEF_8VB,
             G_CLEF,
             G_CLEF_8VA,
             G_CLEF_8VB,
@@ -160,7 +164,11 @@ public class ClefBuilder
 
         MyAdapter adapter = new MyAdapter(parts);
         new GlyphCluster(adapter).decompose();
-        logger.debug("Staff#{} cParts:{} trials:{}", staff.getId(), parts.size(), adapter.trials);
+        logger.debug(
+                "Staff#{} clef parts:{} trials:{}",
+                staff.getId(),
+                parts.size(),
+                adapter.trials);
 
         if (!adapter.bestMap.isEmpty()) {
             Integer minClefStop = null;
@@ -172,7 +180,17 @@ public class ClefBuilder
                 inter.increase(0.2); //TODO boost these DMZ clefs
                 inters.add(inter);
 
+                // Unerased staff line chunks may shift the symbol in abscissa,
+                // so use glyph centroid for a better positioning
+                //TODO: we could also check histogram right after clef end, looking for a low point
                 Rectangle clefBox = inter.getSymbolBounds(scale.getInterline());
+                Symbol symbol = Symbols.getSymbol(inter.getShape());
+                Point symbolCentroid = symbol.getCentroid(clefBox);
+                Point glyphCentroid = inter.getGlyph().getCentroid();
+                int dx = glyphCentroid.x - symbolCentroid.x;
+                int dy = glyphCentroid.y - symbolCentroid.y;
+                logger.debug("Centroid translation dx:{} dy:{}", dx, dy);
+                clefBox.translate(dx, 0);
                 inter.setBounds(clefBox);
 
                 int gid = inter.getGlyph().getId();
@@ -365,43 +383,6 @@ public class ClefBuilder
                 "Minimum weight for clef glyph");
     }
 
-    //------------//
-    // Parameters //
-    //------------//
-    private static class Parameters
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final int maxClefEnd;
-
-        final int beltMargin;
-
-        final int xCoreMargin;
-
-        final int yCoreMargin;
-
-        final int minPartWeight;
-
-        final double maxPartGap;
-
-        final double maxGlyphHeight;
-
-        final int minGlyphWeight;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
-        {
-            maxClefEnd = scale.toPixels(constants.maxClefEnd);
-            beltMargin = scale.toPixels(constants.beltMargin);
-            xCoreMargin = scale.toPixels(constants.xCoreMargin);
-            yCoreMargin = scale.toPixels(constants.yCoreMargin);
-            minPartWeight = scale.toPixels(constants.minPartWeight);
-            maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
-            maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
-            minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
-        }
-    }
-
     //-----------//
     // MyAdapter //
     //-----------//
@@ -482,6 +463,43 @@ public class ClefBuilder
         public boolean isWeightAcceptable (int weight)
         {
             return weight >= params.minGlyphWeight;
+        }
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final int maxClefEnd;
+
+        final int beltMargin;
+
+        final int xCoreMargin;
+
+        final int yCoreMargin;
+
+        final int minPartWeight;
+
+        final double maxPartGap;
+
+        final double maxGlyphHeight;
+
+        final int minGlyphWeight;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Parameters (Scale scale)
+        {
+            maxClefEnd = scale.toPixels(constants.maxClefEnd);
+            beltMargin = scale.toPixels(constants.beltMargin);
+            xCoreMargin = scale.toPixels(constants.xCoreMargin);
+            yCoreMargin = scale.toPixels(constants.yCoreMargin);
+            minPartWeight = scale.toPixels(constants.minPartWeight);
+            maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
+            maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
+            minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
         }
     }
 }

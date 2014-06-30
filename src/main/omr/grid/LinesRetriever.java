@@ -392,15 +392,13 @@ public class LinesRetriever
     // retrieveLines //
     //---------------//
     /**
-     * Organize the long and thin horizontal sections into filaments
-     * that will be good candidates for staff lines.
+     * Organize the long and thin horizontal sections into filaments that will be good
+     * candidates for staff lines.
      * <ol>
-     * <li>First, retrieve long horizontal sections and merge them into
-     * filaments.</li>
-     * <li>Second, detect series of filaments regularly spaced and aggregate
-     * them into clusters of lines (as staff candidates). </li>
+     * <li>First, retrieve long horizontal sections and merge them into filaments.</li>
+     * <li>Second, detect series of filaments regularly spaced and aggregate them into clusters of
+     * lines (as staff candidates). </li>
      * </ol>
-     *
      * <p>
      * <b>Synopsis:</b>
      * <pre>
@@ -458,7 +456,9 @@ public class LinesRetriever
                 discardedFilaments = secondClustersRetriever.buildInfo();
             }
 
-            logger.debug("Discarded filaments: {}", Glyphs.toString(discardedFilaments));
+            if (logger.isDebugEnabled()) {
+                logger.debug("Discarded filaments: {}", Glyphs.toString(discardedFilaments));
+            }
 
             // Convert clusters into staves
             watch.start("BuildStaves");
@@ -510,13 +510,12 @@ public class LinesRetriever
     /**
      * Register line clusters as staves.
      * <p>
-     * At this point, all clusters have been constructed and trimmed to the
-     * right number of lines per cluster.
-     * Each cluster can now give birth to a staff, with preliminary values,
-     * since we don't know yet precisely the starting and ending abscissae of
-     * each staff.
-     * This will be refined later, using staff projection to retrieve major
-     * bar lines as well as staff side limits.
+     * At this point, all clusters have been constructed and trimmed to the right number of lines
+     * per cluster.
+     * Each cluster can now give birth to a staff, with preliminary values, since we don't know yet
+     * precisely the starting and ending abscissae of each staff.
+     * This will be refined later, using staff projection to retrieve major bar lines as well as
+     * staff side limits.
      */
     private void buildStaves ()
     {
@@ -732,7 +731,7 @@ public class LinesRetriever
     // includeDiscardedFilaments //
     //---------------------------//
     /**
-     * Last attempt to include discarded filaments to retrieved staff lines
+     * Last attempt to include discarded filaments to retrieved staff lines.
      */
     private void includeDiscardedFilaments ()
     {

@@ -35,8 +35,7 @@ public class BarAlignment
     protected final BarPeak bottomPeak;
 
     /**
-     * Abscissa shift in pixels between de-skewed bottom peak and
-     * de-skewed top peak.
+     * Abscissa shift in pixels between de-skewed bottom peak and de-skewed top peak.
      */
     protected final double dx;
 
