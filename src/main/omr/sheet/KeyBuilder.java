@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
@@ -41,6 +42,7 @@ import omr.run.Orientation;
 
 import omr.sheet.DmzBuilder.Plotter;
 
+import omr.sig.BarlineInter;
 import omr.sig.ClefInter;
 import omr.sig.ClefInter.ClefKind;
 import omr.sig.ClefKeyRelation;
@@ -257,7 +259,7 @@ public class KeyBuilder
 
         scale = sheet.getScale();
         params = new Parameters(scale);
-        cumulEnd = measureStart + globalWidth;
+        cumulEnd = getCumulEnd(globalWidth, measureStart, browseStart);
 
         // Cumulate pixels for each abscissa in range
         projection = getProjection();
@@ -1139,6 +1141,44 @@ public class KeyBuilder
         return (browseStart != null) ? browseStart : measureStart;
     }
 
+    //-------------//
+    // getCumulEnd //
+    //-------------//
+    /**
+     * Determine the abscissa where to stop projection analysis.
+     * <p>
+     * The analysis range is typically [browseStart .. measureStart+globalWidth] but may end
+     * earlier if a (good) bar line is encountered.
+     *
+     * @param globalWidth  theoretical projection length
+     * @param measureStart abscissa at measure start
+     * @param browseStart  abscissa at browse start (just after clef)
+     * @return the end abscissa
+     */
+    private int getCumulEnd (int globalWidth,
+                             int measureStart,
+                             int browseStart)
+    {
+        int end = measureStart + globalWidth;
+
+        for (BarlineInter bar : staff.getBars()) {
+            if (!bar.isGood()) {
+                continue;
+            }
+
+            int barStart = bar.getBounds().x;
+
+            if ((barStart > browseStart) && (barStart <= end)) {
+                logger.debug("Staff#{} stopping key search before {}", staff.getId(), bar);
+                end = barStart - 1;
+
+                break;
+            }
+        }
+
+        return end;
+    }
+
     //---------------//
     // getProjection //
     //---------------//
@@ -1760,6 +1800,14 @@ public class KeyBuilder
                 2.0,
                 "Maximum cumul value in space (specified WRT staff line thickness)");
 
+        final Scale.Fraction typicalAlterationHeight = new Scale.Fraction(
+                3.0,
+                "Typical alteration height (flat or sharp)");
+
+        final Constant.Ratio peakHeightRatio = new Constant.Ratio(
+                0.5,
+                "Ratio of height to detect peaks");
+
         final Scale.Fraction preStaffMargin = new Scale.Fraction(
                 2.0,
                 "Horizontal margin before staff left (for plot display)");
@@ -1767,10 +1815,6 @@ public class KeyBuilder
         final Scale.Fraction maxFirstPeakOffset = new Scale.Fraction(
                 2.0,
                 "Maximum x offset of first peak (WRT browse start)");
-
-        final Scale.Fraction minPeakCumul = new Scale.Fraction(
-                1.75,
-                "Minimum cumul value to detect peak");
 
         final Scale.Fraction maxPeakCumul = new Scale.Fraction(
                 4.0,
@@ -1919,7 +1963,6 @@ public class KeyBuilder
             minFirstSpaceWidth = scale.toPixels(constants.minFirstSpaceWidth);
             maxFirstSpaceWidth = scale.toPixels(constants.maxFirstSpaceWidth);
             maxInnerSpace = scale.toPixels(constants.maxInnerSpace);
-            minPeakCumul = scale.toPixels(constants.minPeakCumul);
             maxSpaceCumul = scale.toPixels(constants.maxSpaceCumul);
             maxPeakCumul = scale.toPixels(constants.maxPeakCumul);
             maxPeakWidth = scale.toPixels(constants.maxPeakWidth);
@@ -1938,6 +1981,13 @@ public class KeyBuilder
             maxGlyphGap = scale.toPixelsDouble(constants.maxGlyphGap);
             maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
             minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
+
+            // Maximum alteration contribution (on top of staff lines)
+            double maxAlterContrib = constants.typicalAlterationHeight.getValue() * (scale.getInterline()
+                                                                                     - scale.getMainFore());
+            minPeakCumul = (int) Math.rint(
+                    (5 * scale.getMainFore())
+                    + (constants.peakHeightRatio.getValue() * maxAlterContrib));
         }
     }
 

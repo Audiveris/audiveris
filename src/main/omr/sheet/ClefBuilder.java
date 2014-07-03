@@ -267,7 +267,9 @@ public class ClefBuilder
         // The rect is used for cropping only.
         // Use a smaller core rectangle which must be intersected by any part candidate
         Rectangle core = new Rectangle(rect);
-        core.grow(-params.xCoreMargin, -params.yCoreMargin);
+        core.grow(0, -params.yCoreMargin);
+        core.x += params.xCoreMargin;
+        core.width -= params.xCoreMargin;
         staff.addAttachment("c", core);
 
         List<Glyph> toRemove = new ArrayList<Glyph>();
@@ -351,7 +353,7 @@ public class ClefBuilder
         //~ Instance fields ------------------------------------------------------------------------
 
         final Scale.Fraction maxClefEnd = new Scale.Fraction(
-                4.0,
+                4.5,
                 "Maximum x distance from measure start to end of clef");
 
         final Scale.Fraction beltMargin = new Scale.Fraction(

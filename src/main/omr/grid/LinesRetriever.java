@@ -27,6 +27,9 @@ import omr.lag.Lags;
 import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
+import omr.math.LineUtil;
+import omr.math.NaturalSpline;
+
 import omr.run.Orientation;
 import static omr.run.Orientation.*;
 import omr.run.Run;
@@ -420,6 +423,9 @@ public class LinesRetriever
             for (Glyph fil : factory.retrieveFilaments(hLag.getSections())) {
                 filaments.add((LineFilament) fil);
             }
+
+            // Purge curved filaments
+            purgeCurvedFilaments();
 
             // Compute global slope out of longest filaments
             watch.start("retrieveGlobalSlope");
@@ -885,6 +891,47 @@ public class LinesRetriever
         }
     }
 
+    //----------------------//
+    // purgeCurvedFilaments //
+    //----------------------//
+    /**
+     * Discard all filaments that exhibit a too strong curvature.
+     */
+    private void purgeCurvedFilaments ()
+    {
+        List<Filament> toRemove = new ArrayList<Filament>();
+
+        for (LineFilament filament : filaments) {
+            Filament fil = filament;
+            Point2D start = fil.getStartPoint(HORIZONTAL);
+            Point2D stop = fil.getStopPoint(HORIZONTAL);
+
+            // Check if this filament is straight enough
+            double xMid = (start.getX() + stop.getX()) / 2;
+            NaturalSpline spline = (NaturalSpline) fil.getLine();
+            double yMid = spline.yAtX(xMid);
+            Point2D mid = new Point2D.Double(xMid, yMid);
+            double rot = LineUtil.rotation(start, stop, mid);
+
+            if (rot > params.maxFilamentRotation) {
+                if (fil.isVip()) {
+                    logger.info(
+                            "VIP curved {} rotation:{} (vs {} radians)",
+                            fil,
+                            String.format("%.3f", rot),
+                            params.maxFilamentRotation);
+                }
+
+                toRemove.add(fil);
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            logger.info("Discarded curved filaments: {}", toRemove.size());
+            filaments.removeAll(toRemove);
+        }
+    }
+
     //---------------------//
     // retrieveGlobalSlope //
     //---------------------//
@@ -934,6 +981,11 @@ public class LinesRetriever
         final Constant.Ratio topRatioForSlope = new Constant.Ratio(
                 0.1,
                 "Percentage of top filaments used to retrieve global slope");
+
+        final Constant.Double maxFilamentRotation = new Constant.Double(
+                "radians",
+                0.1,
+                "Maximum central rotation for filaments");
 
         // Constants for building horizontal sections
         // ------------------------------------------
@@ -995,7 +1047,6 @@ public class LinesRetriever
                 false,
                 "Should we show filament ending tangents?");
 
-        //
         final Constant.Boolean showCombs = new Constant.Boolean(
                 false,
                 "Should we show staff lines combs?");
@@ -1030,6 +1081,9 @@ public class LinesRetriever
         /** Percentage of top filaments used to retrieve global slope */
         final double topRatioForSlope;
 
+        /** Maximum rotation angle for filaments used to retrieve global slope */
+        final double maxFilamentRotation;
+
         /** Maximum sticker thickness */
         final int maxStickerThickness;
 
@@ -1063,6 +1117,7 @@ public class LinesRetriever
             minRunLength = scale.toPixels(constants.minRunLength);
             maxLengthRatioShort = constants.maxLengthRatioShort.getValue();
             topRatioForSlope = constants.topRatioForSlope.getValue();
+            maxFilamentRotation = constants.maxFilamentRotation.getValue();
             maxStickerGap = scale.toPixelsDouble(constants.maxStickerGap);
             maxThinStickerWeight = scale.toPixels(constants.maxThinStickerWeight);
             maxStickerExtension = (int) Math.ceil(

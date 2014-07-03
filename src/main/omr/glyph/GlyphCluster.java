@@ -118,6 +118,8 @@ public class GlyphCluster
 
             // Create all acceptable inters, if any, for the compound
             adapter.evaluateGlyph(compound);
+        } else {
+            logger.debug("Too low weight {} for {}", weight, set);
         }
 
         // Then, identify all outliers immediately reachable from the compound

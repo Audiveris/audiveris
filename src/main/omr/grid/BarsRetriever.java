@@ -33,9 +33,7 @@ import omr.math.BasicLine;
 import omr.math.GeoPath;
 import omr.math.Histogram;
 import omr.math.NaturalSpline;
-
 import static omr.run.Orientation.*;
-
 import omr.run.RunsTable;
 
 import omr.sheet.PartInfo;
@@ -50,6 +48,7 @@ import omr.sig.BarConnectionInter;
 import omr.sig.BarConnectionRelation;
 import omr.sig.BarGroupRelation;
 import omr.sig.BarlineInter;
+import omr.sig.BracketConnectionInter;
 import omr.sig.BracketInter;
 import omr.sig.BracketInter.BracketKind;
 import omr.sig.GradeImpacts;
@@ -63,16 +62,12 @@ import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.IntUtil;
 import omr.util.Navigable;
 import omr.util.StopWatch;
 import omr.util.VerticalSide;
-
 import static omr.util.VerticalSide.*;
-
 import omr.util.WrappedInteger;
 
 import ij.process.ByteProcessor;
@@ -99,7 +94,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import omr.sig.BracketConnectionInter;
 
 /**
  * Class {@code BarsRetriever} focuses on the retrieval of vertical bar lines.
@@ -113,15 +107,15 @@ import omr.sig.BracketConnectionInter;
  * @author Hervé Bitteur
  */
 public class BarsRetriever
-    implements ItemRenderer
+        implements ItemRenderer
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Constants       constants = new Constants();
-    private static final Logger          logger = LoggerFactory.getLogger(BarsRetriever.class);
+    private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(BarsRetriever.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     //
     /** Related sheet. */
     @Navigable(false)
@@ -150,7 +144,6 @@ public class BarsRetriever
     private final Set<BarConnection> connections = new LinkedHashSet<BarConnection>();
 
     //~ Constructors -------------------------------------------------------------------------------
-
     //---------------//
     // BarsRetriever //
     //---------------//
@@ -173,7 +166,6 @@ public class BarsRetriever
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //
     //------------------//
     // buildVerticalLag //
@@ -189,8 +181,8 @@ public class BarsRetriever
         vLag = new BasicLag(Lags.VLAG, VERTICAL);
 
         SectionsBuilder sectionsBuilder = new SectionsBuilder(
-            vLag,
-            new JunctionShiftPolicy(params.maxRunShift));
+                vLag,
+                new JunctionShiftPolicy(params.maxRunShift));
         sectionsBuilder.createSections(longVertTable, true);
 
         sheet.setLag(Lags.VLAG, vLag);
@@ -226,18 +218,18 @@ public class BarsRetriever
         }
 
         final Rectangle clip = g.getClipBounds();
-        final Stroke    oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-        final Color     oldColor = g.getColor();
+        final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+        final Color oldColor = g.getColor();
         g.setColor(Colors.ENTITY_MINOR);
 
         // Draw bar lines (only within staff height)
         for (StaffInfo staff : staffManager.getStaves()) {
             for (BarPeak peak : staff.getBarPeaks()) {
                 Rectangle peakBox = new Rectangle(
-                    peak.getStart(),
-                    peak.getTop(),
-                    peak.getWidth(),
-                    peak.getBottom() - peak.getTop());
+                        peak.getStart(),
+                        peak.getTop(),
+                        peak.getWidth(),
+                        peak.getBottom() - peak.getTop());
 
                 if (clip.intersects(peakBox)) {
                     double xMid = (peak.getStart() + peak.getStop()) / 2d;
@@ -270,7 +262,7 @@ public class BarsRetriever
      * @throws StepException raised if processing must stop
      */
     public void retrieveBarlines ()
-        throws StepException
+            throws StepException
     {
         // Individual staff analysis to find bar peaks
         findBarPeaks();
@@ -302,7 +294,7 @@ public class BarsRetriever
         // Flag bracket peaks as such
         flagBracketPeaks();
 
-        // Refine all staff side abscissae
+        // Define precisely all staff side abscissae
         refineSides();
 
         // Purge C-clef-based false barlines
@@ -335,7 +327,7 @@ public class BarsRetriever
      * @param side which side to look (from provided peak)
      * @return the collection of peaks found, perhaps empty
      */
-    private List<BarPeak> alignedPeaks (BarPeak      peak,
+    private List<BarPeak> alignedPeaks (BarPeak peak,
                                         VerticalSide side)
     {
         final List<BarPeak> found = new ArrayList<BarPeak>();
@@ -358,7 +350,7 @@ public class BarsRetriever
      * @param side the desired vertical side
      * @return the collection found, perhaps empty.
      */
-    private Set<BarAlignment> alignmentsOf (BarPeak      peak,
+    private Set<BarAlignment> alignmentsOf (BarPeak peak,
                                             VerticalSide side)
     {
         Set<BarAlignment> found = new HashSet<BarAlignment>();
@@ -382,8 +374,8 @@ public class BarsRetriever
      */
     private void boostAlignedBars ()
     {
-        final double  up = constants.alignedIncreaseRatio.getValue();
-        final double  down = constants.unalignedDecreaseRatio.getValue();
+        final double up = constants.alignedIncreaseRatio.getValue();
+        final double down = constants.unalignedDecreaseRatio.getValue();
         final boolean deletion = constants.deleteUnalignedBars.isSet();
 
         for (SystemInfo system : sheet.getSystems()) {
@@ -407,6 +399,7 @@ public class BarsRetriever
                     }
 
                     if (!toRemove.isEmpty()) {
+                        logger.debug("Staff#{} removing {}", staff.getId(), toRemove);
                         staff.removeBarPeaks(toRemove);
                     }
                 }
@@ -450,24 +443,25 @@ public class BarsRetriever
      * @param maxWidth value to use as maximum width
      * @param isThin   true to process only thin bars, false to process only thick ones
      */
-    private void buildSticks (int     maxWidth,
+    private void buildSticks (int maxWidth,
                               boolean isThin)
     {
-        StopWatch watch = new StopWatch(isThin ? "THIN" : "THICK");
+        final String kind = isThin ? "THIN" : "THICK";
+        StopWatch watch = new StopWatch(kind);
         watch.start("buildSticks()");
 
-        final double  halfLine = scale.getMaxFore() / 2.0;
+        final double halfLine = scale.getMaxFore() / 2.0;
 
         // Preselect sections of proper max width (thin or thick)
         List<Section> allSections = getSectionsByWidth(maxWidth);
-        logger.debug("isThin:{} sections:{}", isThin, allSections.size());
+        logger.debug("{} sections:{}", kind, allSections.size());
 
         FilamentsFactory factory = new FilamentsFactory(
-            sheet.getScale(),
-            sheet.getNest(),
-            GlyphLayer.DEFAULT,
-            VERTICAL,
-            Filament.class);
+                sheet.getScale(),
+                sheet.getNest(),
+                GlyphLayer.DEFAULT,
+                VERTICAL,
+                Filament.class);
 
         // Factory parameters adjustment
         factory.setMaxCoordGap(constants.maxCoordGap);
@@ -481,11 +475,11 @@ public class BarsRetriever
                 if (peak.isThin() == isThin) {
                     // Take proper slice of sections for this peak
                     List<Section> sections = getPeakSections(peak, allSections);
-                    double        xMid = (peak.getStart() + peak.getStop()) / 2d;
+                    double xMid = (peak.getStart() + peak.getStop()) / 2d;
                     NaturalSpline line = NaturalSpline.interpolate(
-                        new Point2D.Double(xMid, peak.getTop()),
-                        new Point2D.Double(xMid, peak.getBottom()));
-                    List<Glyph>   glyphs = factory.retrieveFilaments(sections, Arrays.asList(line));
+                            new Point2D.Double(xMid, peak.getTop()),
+                            new Point2D.Double(xMid, peak.getBottom()));
+                    List<Glyph> glyphs = factory.retrieveFilaments(sections, Arrays.asList(line));
 
                     // By construction we should have exactly 1 glyph built
                     if (!glyphs.isEmpty()) {
@@ -494,9 +488,9 @@ public class BarsRetriever
 
                         // Check whether the glyph gets above or below the staff
                         Rectangle glyphBox = glyph.getBounds();
-                        double    topExt = peak.getTop() - halfLine - glyphBox.y;
-                        double    bottomExt = (glyphBox.y + glyphBox.height) - 1 - halfLine -
-                                              peak.getBottom();
+                        double topExt = peak.getTop() - halfLine - glyphBox.y;
+                        double bottomExt = (glyphBox.y + glyphBox.height) - 1 - halfLine
+                                           - peak.getBottom();
 
                         if (!peak.isThin()) {
                             // Look for bracket ends on thick peaks
@@ -549,38 +543,38 @@ public class BarsRetriever
      */
     private BarConnection checkConnection (BarAlignment alignment)
     {
-        ByteProcessor  pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
-        BarPeak        p1 = alignment.topPeak;
-        BarPeak        p2 = alignment.bottomPeak;
+        ByteProcessor pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
+        BarPeak p1 = alignment.topPeak;
+        BarPeak p2 = alignment.bottomPeak;
 
         // Theoretical lines on left and right sides
-        final GeoPath  leftLine = new GeoPath(
-            new Line2D.Double(
-                new Point2D.Double(p1.getStart(), p1.getBottom()),
-                new Point2D.Double(p2.getStart(), p2.getTop())));
-        final GeoPath  rightLine = new GeoPath(
-            new Line2D.Double(
-                new Point2D.Double(p1.getStop(), p1.getBottom()),
-                new Point2D.Double(p2.getStop(), p2.getTop())));
+        final GeoPath leftLine = new GeoPath(
+                new Line2D.Double(
+                        new Point2D.Double(p1.getStart(), p1.getBottom()),
+                        new Point2D.Double(p2.getStart(), p2.getTop())));
+        final GeoPath rightLine = new GeoPath(
+                new Line2D.Double(
+                        new Point2D.Double(p1.getStop(), p1.getBottom()),
+                        new Point2D.Double(p2.getStop(), p2.getTop())));
 
         final CoreData data = AreaUtil.verticalCore(pixelFilter, leftLine, rightLine);
 
         if (p1.getGlyph().isVip() || p2.getGlyph().isVip()) {
             logger.info(
-                "VIP checkConnection S#{} {} and S#{} {} {}",
-                p1.getStaff().getId(),
-                p1,
-                p2.getStaff().getId(),
-                p2,
-                data);
+                    "VIP checkConnection S#{} {} and S#{} {} {}",
+                    p1.getStaff().getId(),
+                    p1,
+                    p2.getStaff().getId(),
+                    p2,
+                    data);
         }
 
-        if ((data.gap <= params.maxConnectionGap) &&
-            (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
-            double       whiteImpact = 1 - (data.whiteRatio / params.maxConnectionWhiteRatio);
-            double       gapImpact = 1 - ((double) data.gap / params.maxConnectionGap);
-            double       alignImpact = alignment.getImpacts().getGrade() / alignment.getImpacts()
-                                                                                    .getIntrinsicRatio();
+        if ((data.gap <= params.maxConnectionGap)
+            && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
+            double whiteImpact = 1 - (data.whiteRatio / params.maxConnectionWhiteRatio);
+            double gapImpact = 1 - ((double) data.gap / params.maxConnectionGap);
+            double alignImpact = alignment.getImpacts().getGrade() / alignment.getImpacts()
+                    .getIntrinsicRatio();
             GradeImpacts impacts = new BarConnection.Impacts(alignImpact, whiteImpact, gapImpact);
 
             return new BarConnection(alignment, impacts);
@@ -595,26 +589,23 @@ public class BarsRetriever
     private void createConnectionInters ()
     {
         for (BarConnection connection : connections) {
-            BarPeak    topPeak = connection.topPeak;
+            BarPeak topPeak = connection.topPeak;
             SystemInfo system = topPeak.getStaff().getSystem();
-            SIGraph    sig = system.getSig();
+            SIGraph sig = system.getSig();
 
             if (topPeak.isBracket()) {
-                sig.addVertex(
-                    new BracketConnectionInter(
-                        connection,
-                        connection.getImpacts()));
+                sig.addVertex(new BracketConnectionInter(connection, connection.getImpacts()));
             } else {
                 sig.addVertex(
-                    new BarConnectionInter(
-                        connection,
-                        topPeak.isThin() ? Shape.THIN_CONNECTION : Shape.THICK_CONNECTION,
-                        connection.getImpacts()));
+                        new BarConnectionInter(
+                                connection,
+                                topPeak.isThin() ? Shape.THIN_CONNECTION : Shape.THICK_CONNECTION,
+                                connection.getImpacts()));
             }
 
             // Also, connected bars support each other
             Relation bcRel = new BarConnectionRelation(connection.getImpacts());
-            BarPeak  bottomPeak = connection.bottomPeak;
+            BarPeak bottomPeak = connection.bottomPeak;
             sig.addEdge(topPeak.getInter(), bottomPeak.getInter(), bcRel);
         }
     }
@@ -629,30 +620,30 @@ public class BarsRetriever
 
             for (StaffInfo staff : system.getStaves()) {
                 for (BarPeak peak : staff.getBarPeaks()) {
-                    BasicLine             median = new BasicLine(
-                        new double[] {
-                            (peak.getStart() + peak.getStop()) / 2d,
-                            (peak.getStart() + peak.getStop()) / 2d
-                        },
-                        new double[] { peak.getTop(), peak.getBottom() });
+                    BasicLine median = new BasicLine(
+                            new double[]{
+                                (peak.getStart() + peak.getStop()) / 2d,
+                                (peak.getStart() + peak.getStop()) / 2d
+                            },
+                            new double[]{peak.getTop(), peak.getBottom()});
 
                     AbstractVerticalInter inter;
 
                     if (peak.isBracket()) {
                         BracketKind kind = getBracketKind(peak);
                         inter = new BracketInter(
-                            peak.getGlyph(),
-                            peak.getImpacts(),
-                            median,
-                            peak.getWidth(),
-                            kind);
+                                peak.getGlyph(),
+                                peak.getImpacts(),
+                                median,
+                                peak.getWidth(),
+                                kind);
                     } else {
                         inter = new BarlineInter(
-                            peak.getGlyph(),
-                            peak.isThin() ? Shape.THIN_BARLINE : Shape.THICK_BARLINE,
-                            peak.getImpacts(),
-                            median,
-                            peak.getWidth());
+                                peak.getGlyph(),
+                                peak.isThin() ? Shape.THIN_BARLINE : Shape.THICK_BARLINE,
+                                peak.getImpacts(),
+                                median,
+                                peak.getWidth());
                     }
 
                     sig.addVertex(inter);
@@ -675,7 +666,7 @@ public class BarsRetriever
         for (SystemInfo system : sheet.getSystems()) {
             system.getParts().clear(); // Start from scratch
 
-            int      partTop = -1;
+            int partTop = -1;
             PartInfo part = null;
 
             for (StaffInfo staff : system.getStaves()) {
@@ -704,9 +695,9 @@ public class BarsRetriever
     private List<SystemInfo> createSystems (Integer[] systemTops)
     {
         List<SystemInfo> newSystems = new ArrayList<SystemInfo>();
-        Integer          staffTop = null;
-        int              systemId = 0;
-        SystemInfo       system = null;
+        Integer staffTop = null;
+        int systemId = 0;
+        SystemInfo system = null;
 
         for (int i = 0; i < staffManager.getStaffCount(); i++) {
             StaffInfo staff = staffManager.getStaff(i);
@@ -735,7 +726,7 @@ public class BarsRetriever
      */
     private void createSystemsAndParts ()
     {
-        final int       staffCount = staffManager.getStaffCount();
+        final int staffCount = staffManager.getStaffCount();
 
         // For each staff, gives the staff that starts the containing system
         final Integer[] systemTops = new Integer[staffCount];
@@ -804,7 +795,7 @@ public class BarsRetriever
     {
         // Check among the alignments for peaks connected across staves
         for (Iterator<BarAlignment> it = alignments.iterator(); it.hasNext();) {
-            BarAlignment  alignment = it.next();
+            BarAlignment alignment = it.next();
 
             // Look for concrete connection
             BarConnection connection = checkConnection(alignment);
@@ -961,7 +952,7 @@ public class BarsRetriever
      * @param side on which vertical side to loo
      * @return the connected peak found or null
      */
-    private BarPeak getConnectedPeak (BarPeak      peak,
+    private BarPeak getConnectedPeak (BarPeak peak,
                                       VerticalSide side)
     {
         final VerticalSide opposite = side.opposite();
@@ -1027,19 +1018,19 @@ public class BarsRetriever
      * @param allSections pre-filtered sheet-level collection
      * @return the sub-collection of relevant sections
      */
-    private List<Section> getPeakSections (BarPeak       peak,
+    private List<Section> getPeakSections (BarPeak peak,
                                            List<Section> allSections)
     {
         final Rectangle peakBox = new Rectangle(
-            peak.getStart(),
-            peak.getTop(),
-            peak.getWidth(),
-            peak.getBottom() - peak.getTop() + 1);
+                peak.getStart(),
+                peak.getTop(),
+                peak.getWidth(),
+                peak.getBottom() - peak.getTop() + 1);
 
         // These constants don't need precision and are large enough
         peakBox.grow(scale.getInterline() / 2, params.bracketLookupExtension);
 
-        final int           xBreak = peakBox.x + peakBox.width;
+        final int xBreak = peakBox.x + peakBox.width;
         final List<Section> sections = new ArrayList<Section>();
 
         for (Section section : allSections) {
@@ -1072,7 +1063,7 @@ public class BarsRetriever
     private List<Section> getSectionsByWidth (int maxWidth)
     {
         List<Section> sections = new ArrayList<Section>();
-        Lag           hLag = sheet.getLag(Lags.HLAG);
+        Lag hLag = sheet.getLag(Lags.HLAG);
 
         for (Lag lag : Arrays.asList(vLag, hLag)) {
             for (Section section : lag.getSections()) {
@@ -1128,7 +1119,7 @@ public class BarsRetriever
      * @param side which side to look
      * @return true if aligned or connected
      */
-    private boolean isAligned (BarPeak      peak,
+    private boolean isAligned (BarPeak peak,
                                VerticalSide side)
     {
         for (BarAlignment alignment : alignments) {
@@ -1156,7 +1147,7 @@ public class BarsRetriever
      * @param side which vertical side to look for from peak
      * @return true if a compliant connection was found, false otherwise
      */
-    private boolean isConnected (BarPeak      peak,
+    private boolean isConnected (BarPeak peak,
                                  VerticalSide side)
     {
         final VerticalSide opposite = side.opposite();
@@ -1182,12 +1173,12 @@ public class BarsRetriever
      * @param side       vertical side with respect to reference peak
      * @param otherStaff the other staff to be browsed for alignment with peak
      */
-    private void lookupPeaks (BarPeak      peak,
+    private void lookupPeaks (BarPeak peak,
                               VerticalSide side,
-                              StaffInfo    otherStaff)
+                              StaffInfo otherStaff)
     {
-        final Skew   skew = sheet.getSkew();
-        final int    mid = (peak.getStart() + peak.getStop()) / 2;
+        final Skew skew = sheet.getSkew();
+        final int mid = (peak.getStart() + peak.getStop()) / 2;
         final double dsk = skew.deskewed(new Point(mid, peak.getOrdinate(side))).getX();
 
         for (BarPeak otherPeak : otherStaff.getBarPeaks()) {
@@ -1197,16 +1188,16 @@ public class BarsRetriever
             }
 
             // Vertically aligned, taking sheet slope into account
-            int    otherMid = (otherPeak.getStart() + otherPeak.getStop()) / 2;
-            Point  otherPt = (side == TOP) ? new Point(otherMid, otherPeak.getBottom())
-                             : new Point(otherMid, otherPeak.getTop());
+            int otherMid = (otherPeak.getStart() + otherPeak.getStop()) / 2;
+            Point otherPt = (side == TOP) ? new Point(otherMid, otherPeak.getBottom())
+                    : new Point(otherMid, otherPeak.getTop());
             double otherDsk = skew.deskewed(otherPt).getX();
             double dx = scale.pixelsToFrac(otherDsk - dsk);
 
             if (Math.abs(dx) <= constants.maxAlignmentDx.getValue()) {
-                double             alignImpact = 1 -
-                                                 (Math.abs(dx) / constants.maxAlignmentDx.getValue());
-                GradeImpacts       impacts = new BarAlignment.Impacts(alignImpact);
+                double alignImpact = 1
+                                     - (Math.abs(dx) / constants.maxAlignmentDx.getValue());
+                GradeImpacts impacts = new BarAlignment.Impacts(alignImpact);
                 final BarAlignment alignment;
 
                 if (side == TOP) {
@@ -1251,10 +1242,10 @@ public class BarsRetriever
         // Check duplicate alignments (looking to top & bottom)
         for (VerticalSide side : VerticalSide.values()) {
             Map<BarPeak, BarAlignment> map = new HashMap<BarPeak, BarAlignment>();
-            Set<BarAlignment>          toRemove = new HashSet<BarAlignment>();
+            Set<BarAlignment> toRemove = new HashSet<BarAlignment>();
 
             for (BarAlignment alignment : alignments) {
-                BarPeak      peak = alignment.getPeak(side);
+                BarPeak peak = alignment.getPeak(side);
                 BarAlignment otherAlignment = map.get(peak);
 
                 if (otherAlignment != null) {
@@ -1333,6 +1324,9 @@ public class BarsRetriever
      * Purge C-Clef portions mistaken for bar lines.
      * C-clef have portions that can be mistaken for bar lines. Look for this immediately after
      * a peak (or after lines start).
+     *
+     * TODO: fix this, WRT peak handling, including brackets
+     * TODO: expect thick + thin before deleting a true C-clef peaks
      */
     private void purgeCClefs ()
     {
@@ -1341,37 +1335,32 @@ public class BarsRetriever
 
             StaffLoop:
             for (StaffInfo staff : staves) {
-                logger.debug("purgeCClefs system#{} staff#{}", system.getId(), staff.getId());
-
                 List<BarPeak> peaks = staff.getBarPeaks();
                 List<BarPeak> toRemove = new ArrayList<BarPeak>();
-
-                int           measureStart = staff.getAbscissa(LEFT);
-
-                if (!peaks.isEmpty()) {
-                    BarPeak firstPeak = peaks.get(0);
-
-                    if (measureStart >= firstPeak.getStart()) {
-                        measureStart = firstPeak.getStop() + 1;
-                    }
-                }
+                int measureStart = staff.getAbscissa(LEFT);
 
                 for (int i = 0; i < peaks.size(); i++) {
                     BarPeak peak = peaks.get(i);
 
-                    if (!peak.isThin()) {
+                    if (peak.getStart() <= measureStart) {
+                        continue;
+                    }
+
+                    // Look for a thick peak
+                    if (!peak.isThin() && !peak.isBracket()) {
                         // Check gap is larger than double bar and smaller than measure
                         int gap = peak.getStart() - measureStart;
 
-                        if ((gap > params.maxDoubleBarGap) &&
-                            (gap < params.minMeasureWidth) &&
-                            !isConnected(peak, TOP) &&
-                            !isConnected(peak, BOTTOM)) {
-                            if (peak.getGlyph().isVip()) {
+                        if ((gap > params.maxDoubleBarGap)
+                            && (gap < params.minMeasureWidth)
+                            && !isConnected(peak, TOP)
+                            && !isConnected(peak, BOTTOM)) {
+                            if (logger.isDebugEnabled() || peak.getGlyph().isVip()) {
                                 logger.info("VIP Got a C-Clef peak1 at {}", peak);
                             }
 
                             toRemove.add(peak);
+                            measureStart = peak.getStop() + 1;
 
                             // Look for thin peak right after this one
                             BarPeak nextPeak = (i < (peaks.size() - 1)) ? peaks.get(i + 1) : null;
@@ -1379,28 +1368,32 @@ public class BarsRetriever
                             if (nextPeak != null) {
                                 int nextGap = nextPeak.getStart() - peak.getStop() - 1;
 
-                                if (nextPeak.isThin() &&
-                                    (nextGap <= params.maxDoubleBarGap) &&
-                                    !isConnected(nextPeak, TOP) &&
-                                    !isConnected(nextPeak, BOTTOM)) {
-                                    if (peak.getGlyph().isVip() || nextPeak.getGlyph().isVip()) {
+                                if (nextPeak.isThin()
+                                    && (nextGap <= params.maxDoubleBarGap)
+                                    && !isConnected(nextPeak, TOP)
+                                    && !isConnected(nextPeak, BOTTOM)) {
+                                    if (logger.isDebugEnabled()
+                                        || peak.getGlyph().isVip()
+                                        || nextPeak.getGlyph().isVip()) {
                                         logger.info("VIP Got a C-Clef peak2 at {}", nextPeak);
                                     }
 
                                     toRemove.add(nextPeak);
-                                    i++; // Don't browse this peak
+                                    logger.debug(
+                                            "Staff#{} purging C-Clef {}",
+                                            staff.getId(),
+                                            toRemove);
+                                    staff.removeBarPeaks(toRemove);
+                                    i++; // Don't re-browse this peak
+                                    measureStart = nextPeak.getStop() + 1;
                                 }
                             }
-
+                        } else {
                             measureStart = peak.getStop() + 1;
                         }
                     } else {
                         measureStart = peak.getStop() + 1;
                     }
-                }
-
-                if (!toRemove.isEmpty()) {
-                    staff.removeBarPeaks(toRemove);
                 }
             }
         }
@@ -1502,10 +1495,10 @@ public class BarsRetriever
      * @param removedPeaks the peaks removed
      * @param rels         the collection to purge
      */
-    private void purgeRelations (Set<BarPeak>               removedPeaks,
-                                 Set<?extends BarAlignment> rels)
+    private void purgeRelations (Set<BarPeak> removedPeaks,
+                                 Set<? extends BarAlignment> rels)
     {
-        for (Iterator<?extends BarAlignment> it = rels.iterator(); it.hasNext();) {
+        for (Iterator<? extends BarAlignment> it = rels.iterator(); it.hasNext();) {
             BarAlignment alignment = it.next();
 
             for (VerticalSide side : VerticalSide.values()) {
@@ -1527,7 +1520,7 @@ public class BarsRetriever
     {
         for (SystemInfo system : sheet.getSystems()) {
             for (StaffInfo staff : system.getStaves()) {
-                List<BarPeak>      peaks = staff.getBarPeaks();
+                List<BarPeak> peaks = staff.getBarPeaks();
 
                 // All bars
                 List<BarlineInter> bars = new ArrayList<BarlineInter>();
@@ -1546,8 +1539,8 @@ public class BarsRetriever
                 if (!bars.isEmpty()) {
                     for (HorizontalSide side : HorizontalSide.values()) {
                         BarlineInter bar = bars.get((side == LEFT) ? 0 : (bars.size() - 1));
-                        Rectangle    box = bar.getBounds();
-                        int          end = staff.getAbscissa(side);
+                        Rectangle box = bar.getBounds();
+                        int end = staff.getAbscissa(side);
 
                         if ((end >= box.x) && (end <= ((box.x + box.width) - 1))) {
                             staff.setSideBar(side, bar);
@@ -1585,73 +1578,87 @@ public class BarsRetriever
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.Fraction   maxAlignmentDx = new Scale.Fraction(
-            0.5,
-            "Max abscissa shift for bar alignment");
-        Scale.Fraction   maxConnectionGap = new Scale.Fraction(
-            2.0,
-            "Max vertical gap when connecting bar lines");
-        Constant.Ratio   maxConnectionWhiteRatio = new Constant.Ratio(
-            0.25,
-            "Max white ratio when connecting bar lines");
-        Scale.Fraction   maxRunShift = new Scale.Fraction(
-            0.05,
-            "Max shift between two runs of vertical sections");
-        Scale.Fraction   maxOverlapDeltaPos = new Scale.Fraction(
-            0.4,
-            "Maximum delta position between two overlapping filaments");
-        Scale.Fraction   maxCoordGap = new Scale.Fraction(
-            0,
-            "Maximum delta ordinate for a gap between filaments");
-        Scale.Fraction   maxPosGap = new Scale.Fraction(
-            0.2,
-            "Maximum delta abscissa for a gap between filaments");
-        Scale.Fraction   maxOverlapSpace = new Scale.Fraction(
-            0.1,
-            "Maximum space between overlapping bar filaments");
-        Scale.Fraction   maxBarExtension = new Scale.Fraction(
-            0.25,
-            "Max extension of bar above or below staff line");
-        Scale.Fraction   maxBracketExtension = new Scale.Fraction(
-            1.25,
-            "Max extension for bracket end above or below staff line");
-        Scale.Fraction   bracketLookupExtension = new Scale.Fraction(
-            2.0,
-            "Lookup height for bracket end above or below staff line");
-        Scale.Fraction   maxDoubleBarGap = new Scale.Fraction(
-            0.3,
-            "Max horizontal gap between two members of a double bar");
-        Scale.Fraction   minMeasureWidth = new Scale.Fraction(2.0, "Minimum width for a measure");
-        Constant.Ratio   alignedIncreaseRatio = new Constant.Ratio(
-            0.30,
-            "Increase ratio for aligned bar lines");
-        Constant.Ratio   unalignedDecreaseRatio = new Constant.Ratio(
-            0.30,
-            "Decrease ratio for unaligned bar lines (in multi-staff systems)");
+        Scale.Fraction maxAlignmentDx = new Scale.Fraction(
+                0.5,
+                "Max abscissa shift for bar alignment");
+
+        Scale.Fraction maxConnectionGap = new Scale.Fraction(
+                2.0,
+                "Max vertical gap when connecting bar lines");
+
+        Constant.Ratio maxConnectionWhiteRatio = new Constant.Ratio(
+                0.25,
+                "Max white ratio when connecting bar lines");
+
+        Scale.Fraction maxRunShift = new Scale.Fraction(
+                0.05,
+                "Max shift between two runs of vertical sections");
+
+        Scale.Fraction maxOverlapDeltaPos = new Scale.Fraction(
+                0.4,
+                "Maximum delta position between two overlapping filaments");
+
+        Scale.Fraction maxCoordGap = new Scale.Fraction(
+                0,
+                "Maximum delta ordinate for a gap between filaments");
+
+        Scale.Fraction maxPosGap = new Scale.Fraction(
+                0.2,
+                "Maximum delta abscissa for a gap between filaments");
+
+        Scale.Fraction maxOverlapSpace = new Scale.Fraction(
+                0.1,
+                "Maximum space between overlapping bar filaments");
+
+        Scale.Fraction maxBarExtension = new Scale.Fraction(
+                0.3,
+                "Max extension of bar above or below staff line");
+
+        Scale.Fraction maxBracketExtension = new Scale.Fraction(
+                1.25,
+                "Max extension for bracket end above or below staff line");
+
+        Scale.Fraction bracketLookupExtension = new Scale.Fraction(
+                2.0,
+                "Lookup height for bracket end above or below staff line");
+
+        Scale.Fraction maxDoubleBarGap = new Scale.Fraction(
+                0.6,
+                "Max horizontal gap between two members of a double bar");
+
+        Scale.Fraction minMeasureWidth = new Scale.Fraction(2.0, "Minimum width for a measure");
+
+        Constant.Ratio alignedIncreaseRatio = new Constant.Ratio(
+                0.30,
+                "Increase ratio for aligned bar lines");
+
+        Constant.Ratio unalignedDecreaseRatio = new Constant.Ratio(
+                0.30,
+                "Decrease ratio for unaligned bar lines (in multi-staff systems)");
+
         Constant.Boolean deleteUnalignedBars = new Constant.Boolean(
-            true,
-            "Should unaligned bar lines be deleted? (in multi-staff systems)");
+                true,
+                "Should unaligned bar lines be deleted? (in multi-staff systems)");
 
         // Constants for display
         //
         Constant.Boolean showVerticalLines = new Constant.Boolean(
-            false,
-            "Should we display the vertical lines?");
+                false,
+                "Should we display the vertical lines?");
 
         // Constants for debugging
         //
         Constant.String verticalVipSections = new Constant.String(
-            "",
-            "(Debug) Comma-separated list of VIP vertical sections");
+                "",
+                "(Debug) Comma-separated list of VIP vertical sections");
     }
 
     //------------//
@@ -1661,21 +1668,28 @@ public class BarsRetriever
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final int           maxAlignmentDx;
-        final int           maxRunShift;
-        final int           maxBarExtension;
-        final int           maxBracketExtension;
-        final int           bracketLookupExtension;
-        final int           maxConnectionGap;
-        final double        maxConnectionWhiteRatio;
-        final int           maxDoubleBarGap;
-        final int           minMeasureWidth;
+        final int maxAlignmentDx;
+
+        final int maxRunShift;
+
+        final int maxBarExtension;
+
+        final int maxBracketExtension;
+
+        final int bracketLookupExtension;
+
+        final int maxConnectionGap;
+
+        final double maxConnectionWhiteRatio;
+
+        final int maxDoubleBarGap;
+
+        final int minMeasureWidth;
 
         // Debug
         final List<Integer> vipSections;
 
         //~ Constructors ---------------------------------------------------------------------------
-
         /**
          * Creates a new Parameters object.
          *

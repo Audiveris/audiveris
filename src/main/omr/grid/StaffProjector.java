@@ -175,6 +175,11 @@ public class StaffProjector
     //---------//
     // process //
     //---------//
+    /**
+     * Process the staff projection on x-axis to retrieve peaks that may represent bars.
+     *
+     * @return the sequence of peaks found
+     */
     public List<BarPeak> process ()
     {
         logger.debug("StaffProjector analyzing staff#{}", staff.getId());
@@ -759,7 +764,7 @@ public class StaffProjector
         //~ Instance fields ------------------------------------------------------------------------
 
         final Scale.Fraction maxThinWidth = new Scale.Fraction(
-                0.4,
+                0.40,
                 "Max width for a thin bar line");
 
         final Scale.Fraction staffAbscissaMargin = new Scale.Fraction(
@@ -791,8 +796,8 @@ public class StaffProjector
                 "Maximum cumul value to detect chunk (on top of lines)");
 
         final Scale.LineFraction blankThreshold = new Scale.LineFraction(
-                0.4,
-                "Maximum cumul value (in LineFraction) to detect noline region");
+                3.0,
+                "Maximum cumul value (in LineFraction) to detect no-line regions");
 
         final Scale.Fraction minWideBlankWidth = new Scale.Fraction(
                 1.0,
@@ -899,8 +904,7 @@ public class StaffProjector
             barThreshold = scale.toPixels(constants.barThreshold);
             gapThreshold = scale.toPixels(constants.gapThreshold);
             linesThreshold = 4 * scale.getMainFore();
-            blankThreshold = (int) Math.rint(
-                    scale.getMaxFore() * constants.blankThreshold.getValue());
+            blankThreshold = scale.toPixels(constants.blankThreshold);
             minWideBlankWidth = scale.toPixels(constants.minWideBlankWidth);
             minSmallBlankWidth = scale.toPixels(constants.minSmallBlankWidth);
             maxBarToEnd = scale.toPixels(constants.maxBarToEnd);

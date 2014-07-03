@@ -22,6 +22,7 @@ import java.awt.geom.Point2D;
 public abstract class LineUtil
 {
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // bisector //
     //----------//
@@ -317,5 +318,46 @@ public abstract class LineUtil
         Point2D p4 = new Point2D.Double(1000, y);
 
         return intersection(line.getP1(), line.getP2(), p3, p4);
+    }
+
+    //----------//
+    // rotation //
+    //----------//
+    /**
+     * Computation of rotation from first to last point, with middle as approximate
+     * middle point of the curve.
+     *
+     * @param first  starting point of curve
+     * @param last   ending point of curve
+     * @param middle middle point of curve
+     * @return central rotation angle (in radians) from first to last.
+     */
+    public static double rotation (Point2D first,
+                                   Point2D last,
+                                   Point2D middle)
+    {
+        return rotation(new Line2D.Double(first, last), middle);
+    }
+
+    //----------//
+    // rotation //
+    //----------//
+    /**
+     * Computation of rotation from first to last point, with middle as approximate
+     * middle point of the curve.
+     *
+     * @param line   straight line from curve start to curve stop
+     * @param middle middle point of curve
+     * @return central rotation angle (in radians) from curve start to curve stop.
+     */
+    public static double rotation (Line2D line,
+                                   Point2D middle)
+    {
+        double dx = line.getX2() - line.getX1();
+        double dy = line.getY2() - line.getY1();
+        double halfChordLengthSq = ((dx * dx) + (dy * dy)) / 4;
+        double sagittaSq = line.ptLineDistSq(middle);
+
+        return 4 * Math.atan(Math.sqrt(sagittaSq / halfChordLengthSq));
     }
 }

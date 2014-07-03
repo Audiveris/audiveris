@@ -41,6 +41,7 @@ import omr.run.Orientation;
 import omr.sheet.DmzBuilder.Plotter;
 import static omr.sheet.TimeBuilder.TimeKind.*;
 
+import omr.sig.BarlineInter;
 import omr.sig.Exclusion;
 import omr.sig.IdemRelation;
 import omr.sig.Inter;
@@ -455,11 +456,28 @@ public class TimeBuilder
      */
     private Rectangle getRoi (int start)
     {
-        int stop = (start + params.roiWidth) - 1; //TODO: check bar line
+        // Check bar line for end of ROI
+        int stop = (start + params.roiWidth) - 1;
+
+        for (BarlineInter bar : staff.getBars()) {
+            if (!bar.isGood()) {
+                continue;
+            }
+
+            int barStart = bar.getBounds().x;
+
+            if ((barStart > start) && (barStart <= stop)) {
+                logger.debug("Staff#{} stopping time search before {}", staff.getId(), bar);
+                stop = barStart - 1;
+
+                break;
+            }
+        }
+
         int top = Math.min(staff.getFirstLine().yAt(start), staff.getFirstLine().yAt(stop));
         int bottom = Math.max(staff.getLastLine().yAt(stop), staff.getLastLine().yAt(stop));
 
-        return new Rectangle(start, top, params.roiWidth, bottom - top + 1);
+        return new Rectangle(start, top, stop - start + 1, bottom - top + 1);
     }
 
     //-----------//
@@ -945,9 +963,13 @@ public class TimeBuilder
                 1.0,
                 "Maximum distance between two parts of a single time symbol");
 
-        final Scale.AreaFraction minTimeWeight = new Scale.AreaFraction(
+        final Scale.AreaFraction minFullTimeWeight = new Scale.AreaFraction(
                 1.0,
-                "Minimum weight for a (full or half) time signature");
+                "Minimum weight for a full time signature");
+
+        final Scale.AreaFraction minHalfTimeWeight = new Scale.AreaFraction(
+                0.75,
+                "Minimum weight for a half time signature");
 
         final Scale.Fraction maxSpaceCumul = new Scale.Fraction(
                 0.4,
@@ -985,7 +1007,9 @@ public class TimeBuilder
 
         final double maxPartGap;
 
-        final int minTimeWeight;
+        final int minFullTimeWeight;
+
+        final int minHalfTimeWeight;
 
         final int maxSpaceCumul;
 
@@ -1003,7 +1027,8 @@ public class TimeBuilder
             maxTimeWidth = scale.toPixels(constants.maxTimeWidth);
             minTimeWidth = scale.toPixels(constants.minTimeWidth);
             maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
-            minTimeWeight = scale.toPixels(constants.minTimeWeight);
+            minFullTimeWeight = scale.toPixels(constants.minFullTimeWeight);
+            minHalfTimeWeight = scale.toPixels(constants.minHalfTimeWeight);
             maxSpaceCumul = scale.toPixels(constants.maxSpaceCumul);
             minFirstSpaceWidth = scale.toPixels(constants.minFirstSpaceWidth);
             maxFirstSpaceWidth = scale.toPixels(constants.maxFirstSpaceWidth);
@@ -1053,6 +1078,12 @@ public class TimeBuilder
                 }
             }
         }
+
+        @Override
+        public boolean isWeightAcceptable (int weight)
+        {
+            return weight >= params.minFullTimeWeight;
+        }
     }
 
     //-------------//
@@ -1100,6 +1131,12 @@ public class TimeBuilder
                     }
                 }
             }
+        }
+
+        @Override
+        public boolean isWeightAcceptable (int weight)
+        {
+            return weight >= params.minHalfTimeWeight;
         }
     }
 
@@ -1167,12 +1204,6 @@ public class TimeBuilder
         public boolean isSizeAcceptable (Rectangle box)
         {
             return box.width <= params.maxTimeWidth;
-        }
-
-        @Override
-        public boolean isWeightAcceptable (int weight)
-        {
-            return weight >= params.minTimeWeight;
         }
     }
 }
