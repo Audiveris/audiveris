@@ -63,10 +63,9 @@ public class LineFilamentAlignment
     // fillHoles //
     //-----------//
     /**
-     * Fill large holes (due to missing intermediate points) in
-     * this filament, by interpolating (or extrapolating) from the
-     * collection of rather parallel fils, this filament is part of
-     * (at provided pos index).
+     * Fill large holes (due to missing intermediate points) in this filament, by
+     * interpolating (or extrapolating) from the collection of rather parallel fils,
+     * this filament is part of (at provided pos index).
      *
      * @param pos  the index of this filament in the provided collection
      * @param fils the provided collection of parallel filaments
@@ -136,11 +135,11 @@ public class LineFilamentAlignment
         //~ Instance fields ------------------------------------------------------------------------
 
         final Scale.Fraction virtualSegmentLength = new Scale.Fraction(
-                6,
+                3,
                 "Typical length used for virtual intermediate points");
 
         final Scale.Fraction maxHoleLength = new Scale.Fraction(
-                8,
+                4,
                 "Maximum length for holes without intermediate points");
     }
 

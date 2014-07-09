@@ -492,7 +492,7 @@ public class LineCluster
     // renumberLines //
     //---------------//
     /**
-     * Renumber the remaining lines counting from zero.
+     * Renumber the cluster (remaining) lines counting from zero.
      */
     public void renumberLines ()
     {
@@ -609,22 +609,6 @@ public class LineCluster
     }
 
     //---------//
-    // getLine //
-    //---------//
-    private FilamentLine getLine (int pos,
-                                  LineFilament fil)
-    {
-        FilamentLine line = lines.get(pos);
-
-        if (line == null) {
-            line = new FilamentLine(fil);
-            lines.put(pos, line);
-        }
-
-        return line;
-    }
-
-    //---------//
     // include //
     //---------//
     /**
@@ -667,7 +651,13 @@ public class LineCluster
 
                 if (cluster == null) {
                     int pos = i + deltaPos;
-                    FilamentLine line = getLine(pos, null);
+                    FilamentLine line = lines.get(pos);
+
+                    if (line == null) {
+                        line = new FilamentLine(null);
+                        lines.put(pos, line);
+                    }
+
                     line.add(fil);
 
                     if (fil.isVip()) {
@@ -709,9 +699,17 @@ public class LineCluster
         }
 
         for (Entry<Integer, FilamentLine> entry : that.lines.entrySet()) {
-            int pos = entry.getKey() + deltaPos;
-            FilamentLine line = entry.getValue();
-            getLine(pos, null).include(line);
+            int thisPos = entry.getKey() + deltaPos;
+            FilamentLine thatLine = entry.getValue();
+            FilamentLine thisLine = lines.get(thisPos);
+
+            if (thisLine == null) {
+                thisLine = new FilamentLine(thatLine.fil);
+                thatLine.fil.setCluster(this, thisPos);
+                lines.put(thisPos, thisLine);
+            } else {
+                thisLine.include(thatLine);
+            }
         }
 
         that.parent = this;

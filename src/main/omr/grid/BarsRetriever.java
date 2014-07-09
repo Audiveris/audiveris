@@ -276,6 +276,9 @@ public class BarsRetriever
         // Find all concrete connections across staves
         findConnections();
 
+        // Purge conflicting connections
+        purgeConnections();
+
         // Purge alignments incompatible with connections
         purgeAlignments();
 
@@ -1266,6 +1269,48 @@ public class BarsRetriever
             if (!toRemove.isEmpty()) {
                 logger.debug("Purging {}", toRemove);
                 alignments.removeAll(toRemove);
+            }
+        }
+    }
+
+    //------------------//
+    // purgeConnections //
+    //------------------//
+    /**
+     * Purge the connections collection of duplicates.
+     * <p>
+     * In the collection of connections a peak should appear at most once as
+     * top and at most once as bottom. In case of conflict, use connection quality to disambiguate.
+     */
+    private void purgeConnections ()
+    {
+        // Check duplicate connections (looking to top & bottom)
+        for (VerticalSide side : VerticalSide.values()) {
+            Map<BarPeak, BarConnection> map = new HashMap<BarPeak, BarConnection>();
+            Set<BarConnection> toRemove = new HashSet<BarConnection>();
+
+            for (BarConnection connection : connections) {
+                BarPeak peak = connection.getPeak(side);
+                BarConnection otherConnection = map.get(peak);
+
+                if (otherConnection != null) {
+                    // We have a conflict here, make a decision
+                    logger.debug("Conflict {} vs {}", connection, otherConnection);
+
+                    if (otherConnection.getImpacts().getGrade() >= connection.getImpacts().getGrade()) {
+                        toRemove.add(connection);
+                    } else {
+                        toRemove.add(otherConnection);
+                        map.put(peak, connection);
+                    }
+                } else {
+                    map.put(peak, connection);
+                }
+            }
+
+            if (!toRemove.isEmpty()) {
+                logger.debug("Purging {}", toRemove);
+                connections.removeAll(toRemove);
             }
         }
     }

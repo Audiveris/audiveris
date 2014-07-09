@@ -23,8 +23,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code LineFilament} is a {@link Filament}, used as (part of)
- * a candidate staff line, thus a filament within a cluster.
+ * Class {@code LineFilament} is a {@link Filament}, used as (part of) a candidate
+ * staff line, thus a filament within a cluster.
  * <p>
  * It is a Filament augmented by combs and cluster information.
  */
@@ -112,13 +112,15 @@ public class LineFilament
      * Fill large holes (due to missing intermediate points) in this
      * filament, by interpolating (or extrapolating) from the
      * collection of rather parallel fils, this filament is part of
-     * (at provided clusterPos).
+     * (at provided pos).
      *
      * @param fils the provided collection of parallel filaments
+     * @param pos  line position in staff
      */
-    public void fillHoles (List<LineFilament> fils)
+    public void fillHoles (List<LineFilament> fils,
+                           int pos)
     {
-        getAlignment().fillHoles(clusterPos, fils);
+        getAlignment().fillHoles(pos, fils);
     }
 
     //--------------//

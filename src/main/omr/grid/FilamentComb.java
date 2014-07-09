@@ -155,7 +155,7 @@ public class FilamentComb
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{");
-        sb.append("Pattern");
+        sb.append(getClass().getSimpleName());
 
         sb.append(" col:").append(col);
 

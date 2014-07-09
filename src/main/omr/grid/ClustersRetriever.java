@@ -68,7 +68,7 @@ public class ClustersRetriever
             ClustersRetriever.class);
 
     /**
-     * For comparing Filament instances on their starting point
+     * For comparing Filament instances on their starting point.
      */
     private static final Comparator<Filament> byStartAbscissa = new Comparator<Filament>()
     {
@@ -84,7 +84,7 @@ public class ClustersRetriever
     };
 
     /**
-     * For comparing Filament instances on their stopping point
+     * For comparing Filament instances on their stopping point.
      */
     private static final Comparator<Filament> byStopAbscissa = new Comparator<Filament>()
     {

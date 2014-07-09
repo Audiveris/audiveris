@@ -393,6 +393,15 @@ public class BasicAlignment
         startPoint = stopPoint = null;
     }
 
+    //---------------//
+    // isLineDefined //
+    //---------------//
+    @Override
+    public boolean isLineDefined ()
+    {
+        return line != null;
+    }
+
     //------------//
     // renderLine //
     //------------//

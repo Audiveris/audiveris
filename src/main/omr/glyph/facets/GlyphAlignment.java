@@ -37,7 +37,7 @@ import java.awt.geom.Point2D;
  * @author Hervé Bitteur
  */
 public interface GlyphAlignment
-        extends GlyphFacet
+    extends GlyphFacet
 {
     //~ Methods ------------------------------------------------------------------------------------
 
@@ -50,8 +50,7 @@ public interface GlyphAlignment
     public double getMeanThickness (Orientation orientation);
 
     /**
-     * Report the ratio of length over thickness, using provided
-     * orientation.
+     * Report the ratio of length over thickness, using provided orientation.
      *
      * @param orientation the general orientation reference
      * @return the "slimness" of the glyph
@@ -90,17 +89,16 @@ public interface GlyphAlignment
     int getLength (Orientation orientation);
 
     /**
-     * Return the approximating line computed on the glyph, as an
-     * <b>absolute</b> line, with x for horizontal axis and y for
-     * vertical axis.
+     * Return the approximating line computed on the glyph, as an <b>absolute</b> line,
+     * with x for horizontal axis and y for vertical axis.
      *
      * @return The absolute line
      */
     Line getLine ();
 
     /**
-     * Return the mean quadratic distance of the defining population
-     * of points to the resulting line.
+     * Return the mean quadratic distance of the defining population of points to the
+     * resulting line.
      * This can be used to measure how well the line fits the points.
      *
      * @return the absolute value of the mean distance
@@ -108,8 +106,7 @@ public interface GlyphAlignment
     double getMeanDistance ();
 
     /**
-     * Return the position at the middle of the glyph,
-     * using the provided orientation.
+     * Return the position at the middle of the glyph, using the provided orientation.
      *
      * @return the position of the middle of the glyph
      */
@@ -122,12 +119,12 @@ public interface GlyphAlignment
      * @param orientation the general orientation reference
      * @return the pos value (y for horizontal, x for vertical)
      */
-    double getPositionAt (double coord,
+    double getPositionAt (double      coord,
                           Orientation orientation);
 
     /**
-     * Report the absolute centroid of all the glyph pixels found in the
-     * provided absolute ROI
+     * Report the absolute centroid of all the glyph pixels found in the provided
+     * absolute ROI
      *
      * @param absRoi the desired absolute region of interest
      * @return the absolute barycenter of the pixels found
@@ -135,7 +132,7 @@ public interface GlyphAlignment
     Point2D getRectangleCentroid (Rectangle absRoi);
 
     /**
-     * Report the tangent of glyph line angle with abscissa axis
+     * Report the tangent of glyph line angle with abscissa axis.
      *
      * @return tangent of heading angle (dy/dx).
      */
@@ -151,8 +148,8 @@ public interface GlyphAlignment
     Point2D getStartPoint (Orientation orientation);
 
     /**
-     * Report the absolute point at the end (with respect to the provided
-     * orientation) of the approximating line.
+     * Report the absolute point at the end (with respect to the provided orientation)
+     * of the approximating line.
      *
      * @param orientation the general orientation reference
      * @return the ending point of the line
@@ -168,19 +165,24 @@ public interface GlyphAlignment
     int getThickness (Orientation orientation);
 
     /**
-     * Report the resulting thickness of this glyph at the provided
-     * coordinate, using a predefined probe width.
+     * Report the resulting thickness of this glyph at the provided coordinate, using a
+     * predefined probe width.
      *
      * @param coord       the desired abscissa
      * @param orientation the general orientation reference
      * @return the thickness measured, expressed in number of pixels.
      */
-    double getThicknessAt (double coord,
+    double getThicknessAt (double      coord,
                            Orientation orientation);
 
     /**
-     * Render the main guiding line of the glyph, using the current
-     * foreground color.
+     * Report whether a line definition is available
+     * @return true if line is defined
+     */
+    boolean isLineDefined ();
+
+    /**
+     * Render the main guiding line of the glyph, using the current foreground color.
      *
      * @param g the graphic context
      */

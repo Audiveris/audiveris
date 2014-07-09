@@ -31,6 +31,7 @@ import omr.sheet.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
@@ -240,10 +241,14 @@ public class FilamentAlignment
         final Point2D oldStartPoint = startPoint;
         final Point2D oldStopPoint = stopPoint;
 
-        boolean modified;
+        boolean progressed;
 
         do {
-            modified = false;
+            progressed = false;
+
+            if (line == null) {
+                setEndingPoints(oldStartPoint, oldStopPoint);
+            }
 
             final List<Line2D> bisectors = getBisectors();
 
@@ -311,34 +316,31 @@ public class FilamentAlignment
                     Collections.sort(
                             found,
                             new Comparator<Section>()
-                    {
-                        @Override
-                        public int compare (Section s1,
-                                            Section s2)
-                        {
-                            return Double.compare(
-                                    point.distance(s1.getCentroid()),
-                                    point.distance(s2.getCentroid()));
-                        }
+                            {
+                                @Override
+                                public int compare (Section s1,
+                                                    Section s2)
+                                {
+                                    return Double.compare(
+                                            point.distance(s1.getCentroid()),
+                                            point.distance(s2.getCentroid()));
+                                }
                             });
                 }
 
                 Section section = found.isEmpty() ? null : found.get(0);
 
                 if (section != null) {
-                    logger.debug(
-                            "Removed section#{} from {} F{}",
+                    logger.info(
+                            "*polishCurvature*. Removed section#{} from {} F{}",
                             section.getId(),
                             orientation,
                             glyph.getId());
                     glyph.removeSection(section, Linking.LINK);
-                    modified = true;
+                    progressed = true;
                 }
             }
-        } while (modified);
-
-        // Restore end points
-        setEndingPoints(oldStartPoint, oldStopPoint);
+        } while (progressed);
     }
 
     //------------//
@@ -366,7 +368,19 @@ public class FilamentAlignment
 
             for (Point2D p : points) {
                 ellipse.setFrame(p.getX() - r, p.getY() - r, 2 * r, 2 * r);
+
+                Color oldColor = null;
+
+                if (p.getClass() != Point2D.Double.class) {
+                    oldColor = g.getColor();
+                    g.setColor(Color.red);
+                }
+
                 g.fill(ellipse);
+
+                if (oldColor != null) {
+                    g.setColor(oldColor);
+                }
             }
         }
     }
@@ -507,10 +521,6 @@ public class FilamentAlignment
      */
     private List<Line2D> getBisectors ()
     {
-        if (line == null) {
-            computeLine();
-        }
-
         List<Line2D> bisectors = new ArrayList<Line2D>();
 
         for (int i = 0; i < (points.size() - 1); i++) {
@@ -526,7 +536,7 @@ public class FilamentAlignment
     /**
      * Report radius computed at point with index 'i'.
      * <p>
-     * TODO: This a simplistic way for computing radius, based on insection
+     * TODO: This is a simplistic way for computing radius, based on intersection
      * of the two adjacent bisectors.
      * There may be other ways, such as using the following property:
      * sin angle a / length of segment a = 1 / (2 * radius)

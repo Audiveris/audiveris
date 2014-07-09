@@ -656,8 +656,11 @@ public class FilamentsFactory
                 section.setProcessed(true);
             }
 
-            ///return nest.registerGlyph(fil); // Not really useful, but harmful
-            return fil;
+            if (constants.registerEachAndEveryGlyph.isSet()) {
+                return nest.registerGlyph(fil); // Not really useful, but harmful
+            } else {
+                return fil;
+            }
         } catch (Exception ex) {
             logger.error(null, ex);
 
@@ -747,7 +750,11 @@ public class FilamentsFactory
                 Glyph sectionGlyph = new BasicGlyph(scale.getInterline(), layer);
                 sectionGlyph.addSection(section, GlyphComposition.Linking.NO_LINK);
                 section.setProcessed(true);
-                ///sectionGlyph = nest.registerGlyph(sectionGlyph); // Not really useful
+
+                if (constants.registerEachAndEveryGlyph.isSet()) {
+                    sectionGlyph = nest.registerGlyph(sectionGlyph); // Not really useful
+                }
+
                 sectionGlyphs.add(sectionGlyph);
 
                 if (section.isVip() || nest.isVip(sectionGlyph)) {
@@ -995,6 +1002,10 @@ public class FilamentsFactory
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        Constant.Boolean registerEachAndEveryGlyph = new Constant.Boolean(
+                false,
+                "(Debug) should we register each and every glyph?");
+
         Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -1016,7 +1027,6 @@ public class FilamentsFactory
                 1.7,
                 "Maximum thickness ratio for consistent merge");
 
-        //
         // Constants specified WRT mean line thickness
         // -------------------------------------------
         //
@@ -1032,7 +1042,6 @@ public class FilamentsFactory
                 0.75,
                 "Maximum delta position for a gap between filaments");
 
-        //
         // Constants specified WRT mean interline
         // --------------------------------------
         //

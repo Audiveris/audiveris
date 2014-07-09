@@ -29,6 +29,7 @@ import omr.lag.SectionsBuilder;
 
 import omr.math.LineUtil;
 import omr.math.NaturalSpline;
+import omr.math.Population;
 
 import omr.run.Orientation;
 import static omr.run.Orientation.*;
@@ -36,6 +37,7 @@ import omr.run.Run;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
+import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
@@ -53,6 +55,8 @@ import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.StopWatch;
 
+import ij.process.ByteProcessor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,8 +69,11 @@ import java.awt.Stroke;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class {@code LinesRetriever} retrieves the staff lines of a sheet.
@@ -126,6 +133,9 @@ public class LinesRetriever
 
     /** Too-short horizontal runs */
     private RunsTable shortHoriTable;
+
+    /** Binary buffer. */
+    private ByteProcessor binaryBuffer;
 
     //~ Constructors -------------------------------------------------------------------------------
     //
@@ -243,46 +253,58 @@ public class LinesRetriever
     // completeLines //
     //---------------//
     /**
-     * Complete the retrieved staff lines whenever possible with
-     * filaments and short sections left over.
-     *
+     * Complete the retrieved staff lines whenever possible with filaments and short
+     * sections left over.
+     * <p>
+     * When this method is called, the precise staff abscissa endings are known (thanks to staff
+     * projection and bar line handling).
+     * Lines must be completed accordingly.
+     * Ending points are determined by searching the best vertical fit for a staff pattern of 5 line
+     * segments.
+     * Then filaments and sections are added to the theoretical lines.
+     * <p>
+     * To decide on inclusion of filament or section, the line geometry must be rather precise.
+     * But geometry will be impacted by inclusions.
+     * Hence, line geometry must be recomputed on each major update.
+     * Line geometry is computed by sampling on abscissa and retrieving ordinate barycenter of glyph
+     * sections within each abscissa sample.
      * <p>
      * <b>Synopsis:</b>
      * <pre>
-     *      + includeDiscardedFilaments
+     *      + defineEndPoints()
+     *      + includeDiscardedFilaments()
      *          + canIncludeFilament(fil1, fil2)
+     *          + fil1.stealSections(fil2)
+     *      + fillHoles()
      *      + includeSections()
      *          + canIncludeSection(fil, sct)
+     *          + fil.addSection(sct)
+     *      + polishCurvature()
      * </pre>
      */
     public void completeLines ()
     {
         StopWatch watch = new StopWatch("completeLines");
+        binaryBuffer = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
 
         try {
+            // Define the precise end points for every staff line
+            watch.start("defineEndPoints");
+            defineEndPoints();
+
             // Browse discarded filaments for possible inclusion
             watch.start("include discarded filaments");
             includeDiscardedFilaments();
 
-            // Dispatch short sections into thick & thin ones
-            watch.start("dispatching  thick / thin");
+            // Add intermediate points when needed
+            watch.start("fillHoles");
+            fillHoles();
 
-            final int maxLongId = sheet.getLongSectionMaxId();
+            // Dispatch short sections into thick & thin ones
             final List<Section> thickSections = new ArrayList<Section>();
             final List<Section> thinSections = new ArrayList<Section>();
-
-            for (Section section : hLag.getSections()) {
-                // Skip long sections
-                if (section.getId() <= maxLongId) {
-                    continue;
-                }
-
-                if (section.getWeight() > params.maxThinStickerWeight) {
-                    thickSections.add(section);
-                } else {
-                    thinSections.add(section);
-                }
-            }
+            watch.start("dispatchShortSections");
+            dispatchShortSections(thickSections, thinSections);
 
             // First, consider thick sections and update geometry
             watch.start("include " + thickSections.size() + " thick stickers");
@@ -293,11 +315,12 @@ public class LinesRetriever
             includeSections(thinSections, false);
 
             // Polish staff lines (TODO: to be improved)
-            for (StaffInfo staff : staffManager.getStaves()) {
-                for (FilamentLine line : staff.getLines()) {
-                    line.fil.polishCurvature();
-                }
-            }
+            watch.start("polishCurvatures");
+            polishCurvatures();
+
+            // Add intermediate points when needed
+            watch.start("fillHoles");
+            fillHoles();
         } finally {
             if (constants.printWatch.getValue()) {
                 watch.print();
@@ -472,40 +495,6 @@ public class LinesRetriever
         } finally {
             if (constants.printWatch.getValue()) {
                 watch.print();
-            }
-        }
-    }
-
-    //------------------//
-    // adjustStaffLines //
-    //------------------//
-    /**
-     * Staff by staff, align the lines endings with the system limits,
-     * and check the intermediate line points.
-     *
-     * @param system the system to process
-     */
-    private void adjustStaffLines (SystemInfo system)
-    {
-        for (StaffInfo staff : system.getStaves()) {
-            logger.debug("{}", staff);
-
-            // Adjust left and right endings of each line in the staff
-            for (FilamentLine line : staff.getLines()) {
-                line.setEndingPoints(
-                        getLineEnding(system, staff, line, LEFT),
-                        getLineEnding(system, staff, line, RIGHT));
-            }
-
-            // Insert line intermediate points, if so needed
-            List<LineFilament> fils = new ArrayList<LineFilament>();
-
-            for (FilamentLine line : staff.getLines()) {
-                fils.add(line.fil);
-            }
-
-            for (FilamentLine line : staff.getLines()) {
-                line.fil.fillHoles(fils);
             }
         }
     }
@@ -708,11 +697,93 @@ public class LinesRetriever
                 section);
     }
 
+    //-----------------//
+    // defineEndPoints //
+    //-----------------//
+    /**
+     * Knowing precise abscissa endings for each staff, determine precise ending points
+     * for each staff line.
+     */
+    private void defineEndPoints ()
+    {
+        for (StaffInfo staff : staffManager.getStaves()) {
+            double meanDy = staff.getMeanInterline();
+
+            Map<HorizontalSide, List<Point2D>> endMap = new EnumMap<HorizontalSide, List<Point2D>>(
+                    HorizontalSide.class);
+
+            for (HorizontalSide side : HorizontalSide.values()) {
+                endMap.put(side, retrieveEndPoints(staff, meanDy, side));
+            }
+
+            // Adjust left and right endings of each line in the staff
+            for (int i = 0; i < staff.getLines().size(); i++) {
+                FilamentLine line = staff.getLines().get(i);
+                line.setEndingPoints(endMap.get(LEFT).get(i), endMap.get(RIGHT).get(i));
+            }
+        }
+    }
+
+    //-----------------------//
+    // dispatchShortSections //
+    //-----------------------//
+    /**
+     * Dispatch short horizontal sections into thick and thin collections.
+     *
+     * @param thickSections (output) thick sections
+     * @param thinSections  (output) thin sections
+     */
+    private void dispatchShortSections (List<Section> thickSections,
+                                        List<Section> thinSections)
+    {
+        final int maxLongId = sheet.getLongSectionMaxId();
+
+        for (Section section : hLag.getSections()) {
+            // Skip long sections
+            if (section.getId() <= maxLongId) {
+                continue;
+            }
+
+            if (section.getWeight() > params.maxThinStickerWeight) {
+                thickSections.add(section);
+            } else {
+                thinSections.add(section);
+            }
+        }
+    }
+
+    //-----------//
+    // fillHoles //
+    //-----------//
+    /**
+     * Staff by staff, check the intermediate line points.
+     */
+    private void fillHoles ()
+    {
+        for (StaffInfo staff : staffManager.getStaves()) {
+            logger.debug("{}", staff);
+
+            // Insert line intermediate points, if so needed
+            List<LineFilament> fils = new ArrayList<LineFilament>();
+
+            for (FilamentLine line : staff.getLines()) {
+                fils.add(line.fil);
+            }
+
+            for (int pos = 0; pos < staff.getLines().size(); pos++) {
+                FilamentLine line = staff.getLines().get(pos);
+                line.fil.fillHoles(fils, pos);
+            }
+        }
+    }
+
     //---------------//
     // getLineEnding //
     //---------------//
     /**
      * Report the precise point where a given line should end.
+     * This is based on extrapolation only, and may provide wrong results if missing abscissa range
+     * is too large.
      *
      * @param system the system to process
      * @param staff  containing staff
@@ -720,6 +791,7 @@ public class LinesRetriever
      * @param side   the desired ending
      * @return the computed ending point
      */
+    @Deprecated
     private Point2D getLineEnding (SystemInfo system,
                                    StaffInfo staff,
                                    LineInfo line,
@@ -728,7 +800,7 @@ public class LinesRetriever
         double slope = staff.getEndingSlope(side);
         Point2D linePt = line.getEndPoint(side);
         int staffX = staff.getAbscissa(side);
-        double y = linePt.getY() - ((linePt.getX() - staffX) * slope);
+        double y = linePt.getY() + ((staffX - linePt.getX()) * slope);
 
         return new Point2D.Double(staffX, y);
     }
@@ -789,10 +861,10 @@ public class LinesRetriever
                             }
                         }
                     }
+
+                    line.checkLine(); // Recompute line if needed
                 }
             }
-
-            adjustStaffLines(system);
         }
     }
 
@@ -800,8 +872,7 @@ public class LinesRetriever
     // includeSections //
     //-----------------//
     /**
-     * Include "sticker" sections into their related lines, when
-     * applicable
+     * Include "sticker" sections into their related lines, when applicable
      *
      * @param sections       List of sections that are stickers candidates
      * @param updateGeometry should we update the line geometry with stickers
@@ -816,27 +887,22 @@ public class LinesRetriever
         final int iMax = sections.size() - 1;
 
         for (SystemInfo system : sheet.getSystems()) {
-            // Because of side by side systems, we must restart from top
+            // Because of possible side by side systems, we must restart from top
             int iMin = 0;
 
             for (StaffInfo staff : system.getStaves()) {
                 for (FilamentLine line : staff.getLines()) {
                     /*
-                     * Inclusion on the fly would imply recomputation of
-                     * filament at each section inclusion. So we need to
-                     * retrieve all "stickers" for a given staff line, and
+                     * Inclusion on the fly would imply recomputation of filament at each section
+                     * inclusion. So we need to retrieve all "stickers" for a given staff line, and
                      * perform a global inclusion at the end only.
                      */
                     LineFilament fil = line.fil;
                     Rectangle lineBox = fil.getBounds();
                     lineBox.grow(0, scale.getMainFore());
 
-                    // We must preserve these (imposed) points
-                    final Point2D startPoint = fil.getStartPoint(HORIZONTAL);
-                    final Point2D stopPoint = fil.getStopPoint(HORIZONTAL);
-
-                    double minX = startPoint.getX();
-                    double maxX = stopPoint.getX();
+                    double minX = fil.getStartPoint(HORIZONTAL).getX();
+                    double maxX = fil.getStopPoint(HORIZONTAL).getX();
                     int minY = lineBox.y;
                     int maxY = lineBox.y + lineBox.height;
                     List<Section> stickers = new ArrayList<Section>();
@@ -870,23 +936,29 @@ public class LinesRetriever
                     }
 
                     // Actually include the retrieved stickers?
-                    boolean updated = false;
-
                     for (Section section : stickers) {
                         if (updateGeometry) {
                             // This invalidates glyph cache, including extrema
                             fil.addSection(section);
-                            updated = true;
                         } else {
                             section.setGlyph(fil);
                         }
                     }
 
-                    // Reset imposed extrema points
-                    if (updated) {
-                        fil.setEndingPoints(startPoint, stopPoint);
-                    }
+                    line.checkLine(); // Recompute line if needed
                 }
+            }
+        }
+    }
+
+    //------------------//
+    // polishCurvatures //
+    //------------------//
+    private void polishCurvatures ()
+    {
+        for (StaffInfo staff : staffManager.getStaves()) {
+            for (FilamentLine line : staff.getLines()) {
+                line.fil.polishCurvature();
             }
         }
     }
@@ -930,6 +1002,113 @@ public class LinesRetriever
             logger.info("Discarded curved filaments: {}", toRemove.size());
             filaments.removeAll(toRemove);
         }
+    }
+
+    //-------------------//
+    // retrieveEndPoints //
+    //-------------------//
+    /**
+     * Retrieve the best end point for each line of the provided staff on desired side.
+     * <p>
+     * We know the precise ending abscissa of the staff, but not the precise lines ordinates.
+     * If a line end abscissa is close enough to staff end abscissa, we can simply extrapolate
+     * end ordinate using staff mean slope at end of concrete line.
+     * Otherwise, we have to use a staff pattern and find its best vertical fit.
+     *
+     * @param staff the staff to process
+     * @param side  left or right side
+     * @return the sequence of end points, from top to bottom
+     */
+    private List<Point2D> retrieveEndPoints (StaffInfo staff,
+                                             double meanDy,
+                                             HorizontalSide side)
+    {
+        final int staffX = staff.getAbscissa(side);
+        final Point2D[] endings = new Point2D[staff.getLineCount()];
+        final double slope = staff.getEndingSlope(side);
+        final Population tops = new Population();
+        int bestIndex = 0;
+        double bestDx = Double.MAX_VALUE;
+        boolean missing = false;
+
+        // First, look for close ending lines
+        for (int i = 0; i < endings.length; i++) {
+            FilamentLine line = staff.getLines().get(i);
+            Point2D linePt = line.getEndPoint(side);
+            double dx = staffX - linePt.getX();
+            double dxAbs = Math.abs(dx);
+
+            if (Math.abs(dx) <= params.maxEndingDx) {
+                double y = linePt.getY() + (dx * slope);
+                endings[i] = new Point2D.Double(staffX, y);
+                tops.includeValue(y - (i * meanDy));
+            } else {
+                missing = true;
+
+                if (dxAbs < bestDx) {
+                    bestDx = dxAbs;
+                    bestIndex = i;
+                }
+            }
+        }
+
+        if (missing) {
+            // Use a staff pattern to compute missing ordinates
+            StaffPattern pattern = new StaffPattern(
+                    staff.getLineCount(),
+                    params.patternWidth,
+                    scale.getMainFore(),
+                    scale.getInterline());
+
+            // Find the most probable upper left ordinate
+            final double uly;
+
+            if (tops.getCardinality() > 0) {
+                uly = tops.getMeanValue();
+            } else {
+                // Extrapolate the line which ends closest to the staff end abscissa
+                FilamentLine line = staff.getLines().get(bestIndex);
+                Point2D linePt = line.getEndPoint(side);
+                double dx = staffX - linePt.getX();
+                uly = (linePt.getY() + (dx * slope)) - (bestIndex * meanDy);
+            }
+
+            final int patternX = (side == LEFT) ? staffX : (staffX - params.patternWidth);
+            final int iterMax = 1 + (2 * ((params.patternJitter + 1) / 2));
+            int dy = 0;
+            int bestDy = 0;
+            double bestRatio = 0;
+
+            for (int iter = 1; iter <= iterMax; iter++) {
+                Point2D ul = new Point2D.Double(patternX, uly + dy);
+                double ratio = pattern.evaluate(ul, binaryBuffer);
+                logger.debug("{} iter:{} dy:{} ratio:{}", side, iter, dy, ratio);
+
+                if (ratio > bestRatio) {
+                    bestRatio = ratio;
+                    bestDy = dy;
+                }
+
+                if (dy == 0) {
+                    dy = 1;
+                } else {
+                    dy += (Integer.signum(-dy) * iter);
+                }
+            }
+
+            logger.debug("{} bestDy:{} bestRatio:{}", side, bestDy, bestRatio);
+
+            // Fill the missing points
+            for (int i = 0; i < endings.length; i++) {
+                if (endings[i] == null) {
+                    endings[i] = new Point2D.Double(staffX, uly + bestDy + (i * meanDy));
+                }
+            }
+        }
+
+        logger.debug("Staff#{} {} {}", staff.getId(), side, endings);
+
+        return Arrays.asList(endings);
     }
 
     //---------------------//
@@ -1029,6 +1208,18 @@ public class LinesRetriever
                 1.0,
                 "Minimum length for a horizontal run to be considered");
 
+        final Scale.Fraction maxEndingDx = new Scale.Fraction(
+                1.0,
+                "Maximum abscissa delta between line end and staff end");
+
+        final Scale.Fraction patternWidth = new Scale.Fraction(
+                1.0,
+                "Width of probe for staff pattern");
+
+        final Scale.Fraction patternJitter = new Scale.Fraction(
+                0.25,
+                "Maximum ordinate jitter for staff pattern");
+
         // Constants for display
         // ---------------------
         final Constant.Boolean showHorizontalLines = new Constant.Boolean(
@@ -1096,6 +1287,15 @@ public class LinesRetriever
         /** Maximum weight for a thin sticker */
         final int maxThinStickerWeight;
 
+        /** Maximum abscissa delta between concrete line end and staff end */
+        final int maxEndingDx;
+
+        /** Width used for staff pattern */
+        final int patternWidth;
+
+        /** Maximum ordinate jitter for staff pattern */
+        final int patternJitter;
+
         // Debug
         final List<Integer> vipSections;
 
@@ -1120,6 +1320,9 @@ public class LinesRetriever
             maxFilamentRotation = constants.maxFilamentRotation.getValue();
             maxStickerGap = scale.toPixelsDouble(constants.maxStickerGap);
             maxThinStickerWeight = scale.toPixels(constants.maxThinStickerWeight);
+            maxEndingDx = scale.toPixels(constants.maxEndingDx);
+            patternWidth = scale.toPixels(constants.patternWidth);
+            patternJitter = scale.toPixels(constants.patternJitter);
             maxStickerExtension = (int) Math.ceil(
                     scale.toPixelsDouble(constants.maxStickerExtension));
 

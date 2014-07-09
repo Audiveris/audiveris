@@ -287,21 +287,20 @@ public class StaffProjector
 
         final int stop = newStop.abscissa;
 
-        //        // Check ratio of black pixels in this area (relevant for thick peak)
-        //        int black = 0;
-        //
-        //        for (int x = start; x <= stop; x++) {
-        //            black += values[x];
-        //        }
-        //
-        //        int    area = totalHeight * (stop - start + 1);
-        //        double blackRatio = (double) black / area;
-        //
-        // Compute chunk if any
-        final int leftChunk = getChunk(start, -1);
-        final int rightChunk = getChunk(stop, +1);
-        final int chunk = Math.max(leftChunk, rightChunk);
-        final double chunkRange = params.chunkThreshold - params.linesThreshold;
+        // Compute chunk if relevant
+        final Integer leftChunk = getChunk(start, -1);
+        final Integer rightChunk = getChunk(stop, +1);
+        final int chunk;
+
+        if ((leftChunk != null) && (rightChunk != null)) {
+            chunk = Math.max(leftChunk, rightChunk);
+        } else if (leftChunk != null) {
+            chunk = leftChunk;
+        } else if (rightChunk != null) {
+            chunk = rightChunk;
+        } else {
+            return null;
+        }
 
         if (chunk > params.chunkThreshold) {
             return null;
@@ -322,6 +321,7 @@ public class StaffProjector
 
         // Compute black core & impacts
         double coreImpact = (value - minValue) / valueRange;
+        final double chunkRange = params.chunkThreshold - params.linesThreshold;
         double beltImpact = (params.chunkThreshold - chunk) / chunkRange;
         double gapImpact = 1 - ((double) data.gap / params.gapThreshold);
         GradeImpacts impacts = new BarlineInter.Impacts(
@@ -463,18 +463,26 @@ public class StaffProjector
      *
      * @param xStart starting abscissa
      * @param dir    desired abscissa direction (-1 for LEFT, +1 for RIGHT)
-     * @return the maximum number of pixels found on specified side.
+     * @return the maximum number of pixels found on specified side, null if not relevant.
      *         This number is composed of the staff line pixels plus the pixels
      *         from other stuff (generally beams or note heads) found.
+     *         When two peaks are very close, this test is not reliable between the peaks.
      */
-    private int getChunk (int xStart,
-                          int dir)
+    private Integer getChunk (int xStart,
+                              int dir)
     {
         final int xEnd = xClamp(xStart + (dir * (1 + params.barChunkDx)));
         int minValue = Integer.MAX_VALUE;
 
         for (int x = xStart + dir; (dir * (xEnd - x)) >= 0; x += dir) {
-            minValue = Math.min(minValue, projection.getValue(x));
+            int proj = projection.getValue(x);
+
+            // If we encounter a peak, chunk test is not reliable because of risk of pixels stuck
+            if (proj >= params.barThreshold) {
+                return null;
+            }
+
+            minValue = Math.min(minValue, proj);
         }
 
         return minValue;
@@ -796,7 +804,7 @@ public class StaffProjector
                 "Maximum cumul value to detect chunk (on top of lines)");
 
         final Scale.LineFraction blankThreshold = new Scale.LineFraction(
-                3.0,
+                2.5,
                 "Maximum cumul value (in LineFraction) to detect no-line regions");
 
         final Scale.Fraction minWideBlankWidth = new Scale.Fraction(

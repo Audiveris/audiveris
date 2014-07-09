@@ -26,6 +26,8 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collection;
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * Class {@code FilamentLine} implements a staff line (or a part of it), based on
@@ -34,14 +36,19 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class FilamentLine
-        implements LineInfo
+    implements LineInfo
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Underlying filament. */
     LineFilament fil;
 
+    /** Imposed ending points, if any. */
+    private Map<HorizontalSide, Point2D> endPoints = new EnumMap<HorizontalSide, Point2D>(
+        HorizontalSide.class);
+
     //~ Constructors -------------------------------------------------------------------------------
+
     //--------------//
     // FilamentLine //
     //--------------//
@@ -56,6 +63,7 @@ public class FilamentLine
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----//
     // add //
     //-----//
@@ -65,6 +73,16 @@ public class FilamentLine
             this.fil = fil;
         } else {
             this.fil.include(fil);
+        }
+    }
+
+    //-----------//
+    // checkLine //
+    //-----------//
+    public void checkLine ()
+    {
+        if (!fil.isLineDefined()) {
+            fil.setEndingPoints(endPoints.get(LEFT), endPoints.get(RIGHT));
         }
     }
 
@@ -200,8 +218,8 @@ public class FilamentLine
     // render //
     //--------//
     public void render (Graphics2D g,
-                        int left,
-                        int right)
+                        int        left,
+                        int        right)
     {
         // Ignore left and right
         render(g);
@@ -222,6 +240,8 @@ public class FilamentLine
     public void setEndingPoints (Point2D pStart,
                                  Point2D pStop)
     {
+        endPoints.put(LEFT, pStart);
+        endPoints.put(RIGHT, pStop);
         fil.setEndingPoints(pStart, pStop);
     }
 
@@ -265,10 +285,10 @@ public class FilamentLine
 
         // First, get a rough intersection
         Point2D pt = LineUtil.intersection(
-                getEndPoint(LEFT),
-                getEndPoint(RIGHT),
-                startPoint,
-                stopPoint);
+            getEndPoint(LEFT),
+            getEndPoint(RIGHT),
+            startPoint,
+            stopPoint);
 
         // Second, get a precise ordinate
         double y = yAt(pt.getX());

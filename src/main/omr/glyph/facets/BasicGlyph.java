@@ -702,6 +702,12 @@ public class BasicGlyph
         return geometry.intersects(rectangle);
     }
 
+    @Override
+    public boolean intersects (Glyph that)
+    {
+        return environment.intersects(that);
+    }
+
     //-----------------//
     // invalidateCache //
     //-----------------//
@@ -736,6 +742,12 @@ public class BasicGlyph
     public boolean isKnown ()
     {
         return recognition.isKnown();
+    }
+
+    @Override
+    public boolean isLineDefined ()
+    {
+        return alignment.isLineDefined();
     }
 
     @Override
@@ -808,12 +820,6 @@ public class BasicGlyph
     public void linkAllSections ()
     {
         composition.linkAllSections();
-    }
-
-    @Override
-    public boolean intersects (Glyph that)
-    {
-        return environment.intersects(that);
     }
 
     @Override
