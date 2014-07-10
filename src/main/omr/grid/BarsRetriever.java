@@ -270,6 +270,9 @@ public class BarsRetriever
         // Build core glyph for each peak
         buildBarSticks();
 
+        // Detect braces
+        purgeBracePeaks();
+
         // Find all bar (or bracket) alignments across staves
         findAlignments();
 
@@ -291,11 +294,8 @@ public class BarsRetriever
         // Purge alignments across systems, they are not relevant
         purgeCrossAlignments();
 
-        // Purge brace-based false barlines (useful?)
-        purgeBraces();
-
         // Flag bracket peaks as such
-        flagBracketPeaks();
+        detectBracketPeaks();
 
         // Define precisely all staff side abscissae
         refineSides();
@@ -402,7 +402,7 @@ public class BarsRetriever
                     }
 
                     if (!toRemove.isEmpty()) {
-                        logger.debug("Staff#{} removing {}", staff.getId(), toRemove);
+                        logger.debug("Staff#{} removing isolated {}", staff.getId(), toRemove);
                         staff.removeBarPeaks(toRemove);
                     }
                 }
@@ -742,6 +742,50 @@ public class BarsRetriever
         createParts(partTops);
     }
 
+    //--------------------//
+    // detectBracketPeaks //
+    //--------------------//
+    /**
+     * Among peaks, flag the ones that correspond to brackets rather than bar lines.
+     * <p>
+     * Beware, a bracket may lie on an isolated staff, thus without any connection (to be confirmed)
+     */
+    private void detectBracketPeaks ()
+    {
+        // Use only thick connections
+        List<BarConnection> thicks = new ArrayList<BarConnection>();
+
+        for (BarConnection connection : connections) {
+            if (!connection.topPeak.isThin()) {
+                thicks.add(connection);
+            }
+        }
+
+        // Flag recursively any peak connected to a bracket peak
+        boolean modified;
+
+        do {
+            modified = false;
+
+            for (BarConnection connection : thicks) {
+                BarPeak top = connection.topPeak;
+                BarPeak bottom = connection.bottomPeak;
+
+                if (top.isBracket()) {
+                    if (!bottom.isBracket()) {
+                        bottom.setBracketMiddle();
+                        modified = true;
+                    }
+                } else {
+                    if (bottom.isBracket()) {
+                        top.setBracketMiddle();
+                        modified = true;
+                    }
+                }
+            }
+        } while (modified == true);
+    }
+
     //----------------//
     // findAlignments //
     //----------------//
@@ -809,50 +853,6 @@ public class BarsRetriever
                 it.remove();
             }
         }
-    }
-
-    //------------------//
-    // flagBracketPeaks //
-    //------------------//
-    /**
-     * Among peaks, flag the ones that correspond to brackets rather than bar lines.
-     * <p>
-     * Beware, a bracket may lie on an isolated staff, thus without any connection (to be confirmed)
-     */
-    private void flagBracketPeaks ()
-    {
-        // Use only thick connections
-        List<BarConnection> thicks = new ArrayList<BarConnection>();
-
-        for (BarConnection connection : connections) {
-            if (!connection.topPeak.isThin()) {
-                thicks.add(connection);
-            }
-        }
-
-        // Flag recursively any peak connected to a bracket peak
-        boolean modified;
-
-        do {
-            modified = false;
-
-            for (BarConnection connection : thicks) {
-                BarPeak top = connection.topPeak;
-                BarPeak bottom = connection.bottomPeak;
-
-                if (top.isBracket()) {
-                    if (!bottom.isBracket()) {
-                        bottom.setBracketMiddle();
-                        modified = true;
-                    }
-                } else {
-                    if (bottom.isBracket()) {
-                        top.setBracketMiddle();
-                        modified = true;
-                    }
-                }
-            }
-        } while (modified == true);
     }
 
     //--------------//
@@ -998,9 +998,9 @@ public class BarsRetriever
             }
         }
 
-        logger.debug("Peak width histo: {}", histo.dataString());
-        logger.debug("Thick peak widths: {}", thicks);
-        logger.debug("Thin  peak widths: {}", thins);
+        logger.info("Peak width histo: {}", histo.dataString());
+        logger.info("    Thin  widths: {}", thins);
+        logger.info("    Thick widths: {}", thicks);
 
         if (!thicks.isEmpty()) {
             maxThick.value = thicks.last();
@@ -1031,7 +1031,7 @@ public class BarsRetriever
                 peak.getBottom() - peak.getTop() + 1);
 
         // These constants don't need precision and are large enough
-        peakBox.grow(scale.getInterline() / 2, params.bracketLookupExtension);
+        peakBox.grow(scale.getInterline(), params.bracketLookupExtension);
 
         final int xBreak = peakBox.x + peakBox.width;
         final List<Section> sections = new ArrayList<Section>();
@@ -1185,10 +1185,10 @@ public class BarsRetriever
         final double dsk = skew.deskewed(new Point(mid, peak.getOrdinate(side))).getX();
 
         for (BarPeak otherPeak : otherStaff.getBarPeaks()) {
-            // Same peak kind: thin or thick
-            if (otherPeak.isThin() != peak.isThin()) {
-                continue;
-            }
+            //            // Same peak kind: thin or thick (or simply compare width?)
+            //            if (otherPeak.isThin() != peak.isThin()) {
+            //                continue;
+            //            }
 
             // Vertically aligned, taking sheet slope into account
             int otherMid = (otherPeak.getStart() + otherPeak.getStop()) / 2;
@@ -1273,91 +1273,41 @@ public class BarsRetriever
         }
     }
 
-    //------------------//
-    // purgeConnections //
-    //------------------//
+    //-----------------//
+    // purgeBracePeaks //
+    //-----------------//
     /**
-     * Purge the connections collection of duplicates.
-     * <p>
-     * In the collection of connections a peak should appear at most once as
-     * top and at most once as bottom. In case of conflict, use connection quality to disambiguate.
+     * Purge brace portions mistaken for bar lines peaks.
+     * Wrong bar line peaks may result from mistakes on brace portion.
+     * Such brace portions are characterized with:
+     * - Short average curvature (we use this!)
+     * - Low derivative
+     * - Location on left side of the staff
+     * - Small no-staff blank separation from rest of staff (but perhaps reduced to nothing)
+     * - Significant thickness
+     * - (Not flagged as a bracket)
      */
-    private void purgeConnections ()
+    private void purgeBracePeaks ()
     {
-        // Check duplicate connections (looking to top & bottom)
-        for (VerticalSide side : VerticalSide.values()) {
-            Map<BarPeak, BarConnection> map = new HashMap<BarPeak, BarConnection>();
-            Set<BarConnection> toRemove = new HashSet<BarConnection>();
+        for (StaffInfo staff : staffManager.getStaves()) {
+            List<BarPeak> toRemove = new ArrayList<BarPeak>();
 
-            for (BarConnection connection : connections) {
-                BarPeak peak = connection.getPeak(side);
-                BarConnection otherConnection = map.get(peak);
+            for (BarPeak peak : staff.getBarPeaks()) {
+                Filament glyph = (Filament) peak.getGlyph();
+                double curvature = glyph.getMeanCurvature();
 
-                if (otherConnection != null) {
-                    // We have a conflict here, make a decision
-                    logger.debug("Conflict {} vs {}", connection, otherConnection);
-
-                    if (otherConnection.getImpacts().getGrade() >= connection.getImpacts().getGrade()) {
-                        toRemove.add(connection);
-                    } else {
-                        toRemove.add(otherConnection);
-                        map.put(peak, connection);
+                if (curvature < params.minBarCurvature) {
+                    if (glyph.isVip()) {
+                        logger.info("VIP removing brace {} glyph#{}", peak, glyph.getId());
                     }
-                } else {
-                    map.put(peak, connection);
+
+                    toRemove.add(peak);
                 }
             }
 
             if (!toRemove.isEmpty()) {
-                logger.debug("Purging {}", toRemove);
-                connections.removeAll(toRemove);
-            }
-        }
-    }
-
-    //-------------//
-    // purgeBraces //
-    //-------------//
-    /**
-     * Purge brace portions mistaken for bar lines.
-     * Wrong bar line may result from mistakes on brace portion (on left of staff).
-     * Since we have a brace, we have several staves embraced, so examine the cross-staff
-     * connections to detect such case (since braces should not provide solid connections).
-     */
-    private void purgeBraces ()
-    {
-        for (SystemInfo system : sheet.getSystems()) {
-            List<StaffInfo> staves = system.getStaves();
-
-            if (staves.size() == 1) {
-                continue;
-            }
-
-            StaffLoop:
-            for (StaffInfo staff : staves) {
-                logger.debug("purgeBraces system#{} staff#{}", system.getId(), staff.getId());
-
-                BarPeak firstPeak = staff.getBarPeaks().get(0);
-
-                // Braces are thick
-                if (firstPeak.isThin()) {
-                    continue;
-                }
-
-                // Check staff above and below this one, for connection
-                for (VerticalSide side : VerticalSide.values()) {
-                    BarPeak otherPeak = getConnectedPeak(firstPeak, side);
-
-                    if (otherPeak != null) {
-                        continue StaffLoop;
-                    }
-                }
-
-                // Here we have an isolated (thick) first bar on a multi-staff system!
-                //                if (firstPeak.getGlyph().isVip()) {
-                logger.info("staff#{} removed brace portion: {}", staff.getId(), firstPeak);
-                //                }
-                staff.removeBarPeaks(Arrays.asList(firstPeak));
+                logger.debug("Staff#{} removing brace {}", staff.getId(), toRemove);
+                staff.removeBarPeaks(toRemove);
             }
         }
     }
@@ -1444,6 +1394,48 @@ public class BarsRetriever
         }
     }
 
+    //------------------//
+    // purgeConnections //
+    //------------------//
+    /**
+     * Purge the connections collection of duplicates.
+     * <p>
+     * In the collection of connections a peak should appear at most once as
+     * top and at most once as bottom. In case of conflict, use connection quality to disambiguate.
+     */
+    private void purgeConnections ()
+    {
+        // Check duplicate connections (looking to top & bottom)
+        for (VerticalSide side : VerticalSide.values()) {
+            Map<BarPeak, BarConnection> map = new HashMap<BarPeak, BarConnection>();
+            Set<BarConnection> toRemove = new HashSet<BarConnection>();
+
+            for (BarConnection connection : connections) {
+                BarPeak peak = connection.getPeak(side);
+                BarConnection otherConnection = map.get(peak);
+
+                if (otherConnection != null) {
+                    // We have a conflict here, make a decision
+                    logger.debug("Conflict {} vs {}", connection, otherConnection);
+
+                    if (otherConnection.getImpacts().getGrade() >= connection.getImpacts().getGrade()) {
+                        toRemove.add(connection);
+                    } else {
+                        toRemove.add(otherConnection);
+                        map.put(peak, connection);
+                    }
+                } else {
+                    map.put(peak, connection);
+                }
+            }
+
+            if (!toRemove.isEmpty()) {
+                logger.debug("Purging {}", toRemove);
+                connections.removeAll(toRemove);
+            }
+        }
+    }
+
     //----------------------//
     // purgeCrossAlignments //
     //----------------------//
@@ -1520,7 +1512,7 @@ public class BarsRetriever
             }
 
             if (!toRemove.isEmpty()) {
-                logger.debug("T{} deleting longs {}", staff.getId(), toRemove);
+                logger.debug("Staff#{} removing longs {}", staff.getId(), toRemove);
                 staff.removeBarPeaks(toRemove);
 
                 // Delete the alignments or connections that involved those peaks
@@ -1656,15 +1648,15 @@ public class BarsRetriever
                 "Maximum delta ordinate for a gap between filaments");
 
         Scale.Fraction maxPosGap = new Scale.Fraction(
-                0.2,
-                "Maximum delta abscissa for a gap between filaments");
+                0.25,
+                "Maximum delta abscissa between section and filament skeleton");
 
         Scale.Fraction maxOverlapSpace = new Scale.Fraction(
                 0.1,
                 "Maximum space between overlapping bar filaments");
 
         Scale.Fraction maxBarExtension = new Scale.Fraction(
-                0.3,
+                0.25,
                 "Max extension of bar above or below staff line");
 
         Scale.Fraction maxBracketExtension = new Scale.Fraction(
@@ -1674,6 +1666,10 @@ public class BarsRetriever
         Scale.Fraction bracketLookupExtension = new Scale.Fraction(
                 2.0,
                 "Lookup height for bracket end above or below staff line");
+
+        Scale.Fraction minBarCurvature = new Scale.Fraction(
+                20,
+                "Minimum mean curvature for a bar line (rather than a brace)");
 
         Scale.Fraction maxDoubleBarGap = new Scale.Fraction(
                 0.6,
@@ -1717,11 +1713,13 @@ public class BarsRetriever
 
         final int maxRunShift;
 
-        final int maxBarExtension;
+        final double maxBarExtension;
 
         final int maxBracketExtension;
 
         final int bracketLookupExtension;
+
+        final int minBarCurvature;
 
         final int maxConnectionGap;
 
@@ -1747,6 +1745,7 @@ public class BarsRetriever
             maxBarExtension = scale.toPixels(constants.maxBarExtension);
             maxBracketExtension = scale.toPixels(constants.maxBracketExtension);
             bracketLookupExtension = scale.toPixels(constants.bracketLookupExtension);
+            minBarCurvature = scale.toPixels(constants.minBarCurvature);
             maxConnectionGap = scale.toPixels(constants.maxConnectionGap);
             maxDoubleBarGap = scale.toPixels(constants.maxDoubleBarGap);
             minMeasureWidth = scale.toPixels(constants.minMeasureWidth);

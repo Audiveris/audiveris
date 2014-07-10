@@ -741,12 +741,12 @@ public class KeyBuilder
             // Check trailing length
             if (signature < 0) {
                 if (trail < params.minFlatTrail) {
-                    logger.info("Removing too narrow flat");
+                    logger.debug("Removing too narrow flat");
                     signature += 1;
                 }
             } else {
                 if (trail < params.minSharpTrail) {
-                    logger.info("Removing too narrow sharp");
+                    logger.debug("Removing too narrow sharp");
                     signature -= 1;
                 }
             }

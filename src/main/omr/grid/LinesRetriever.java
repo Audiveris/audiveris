@@ -280,6 +280,7 @@ public class LinesRetriever
      *          + canIncludeSection(fil, sct)
      *          + fil.addSection(sct)
      *      + polishCurvature()
+     *      + fillHoles()
      * </pre>
      */
     public void completeLines ()
@@ -999,7 +1000,7 @@ public class LinesRetriever
         }
 
         if (!toRemove.isEmpty()) {
-            logger.info("Discarded curved filaments: {}", toRemove.size());
+            logger.info("Discarded curved line filaments: {}", toRemove.size());
             filaments.removeAll(toRemove);
         }
     }

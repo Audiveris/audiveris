@@ -31,8 +31,6 @@ import java.util.Map.Entry;
  * The following image, directly pulled from wikipedia, explains the most popular clefs today
  * (Treble, Alto, Tenor and Bass) and for each presents where the "Middle C" note (C4) would take
  * place.
- * These informations are used by methods {@link #octaveOf(omr.score.entity.Clef, int)} and
- * {@link #noteStepOf(omr.score.entity.Clef, int)}.</p>
  * <p>
  * <img
  * src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Middle_C_in_four_clefs.svg/600px-Middle_C_in_four_clefs.svg.png"

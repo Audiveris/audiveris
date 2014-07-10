@@ -153,6 +153,9 @@ public class BarPeak
         return impacts;
     }
 
+    //----------//
+    // getInter //
+    //----------//
     /**
      * @return the inter
      */

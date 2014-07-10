@@ -27,8 +27,10 @@ import omr.sig.GradeImpacts;
 import omr.sig.Inter;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
+
 import omr.util.Navigable;
 
 import ij.process.ByteProcessor;
@@ -496,6 +498,7 @@ public class StaffProjector
      * Maximum for left side, minimum for right side.
      * Absolute derivative value indicates if the peak side is really steep: this should exclude
      * most of: braces, arpeggiates, stems with heads on left or right side.
+     * Update: the test on derivative absolute value is not sufficient to discard braces.
      *
      * @param xStart raw abscissa that starts peak
      * @param xStop  raw abscissa that stops peak
@@ -788,7 +791,7 @@ public class StaffProjector
                 "Abscissa margin for refining peak sides");
 
         final Scale.Fraction minDerivative = new Scale.Fraction(
-                1.2,
+                0.75,
                 "Minimum absolute derivative for peak side");
 
         final Scale.Fraction barThreshold = new Scale.Fraction(

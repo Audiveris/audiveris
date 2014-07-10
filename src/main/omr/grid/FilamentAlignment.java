@@ -105,10 +105,8 @@ public class FilamentAlignment
     // getMeanCurvature //
     //------------------//
     /**
-     * Report the average radius of curvature along all segments of
-     * the curve.
-     * This is not a global radius, but rather a way to measure how straight
-     * the curve is.
+     * Report the average radius of curvature along all segments of the curve.
+     * This is not a global radius, but rather a way to measure how straight the curve is.
      *
      * @return the average of radius measurements along all curve segments
      */
@@ -118,6 +116,10 @@ public class FilamentAlignment
         Line2D prevBisector = null;
         Line2D bisector = null;
         Population curvatures = new Population();
+        
+        if (line == null) {
+            computeLine();
+        }
 
         for (Point2D point : points) {
             if (prevPoint != null) {
