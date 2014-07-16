@@ -569,4 +569,13 @@ public interface Section
      * @return true if intersection is not empty
      */
     boolean intersects (Section that);
+
+    /**
+     * Check whether this section touches that other section
+     *
+     * @param that the other section
+     * @return true if there is contact between the two sections
+     *         (vertically or horizontally, but not in diagonal)
+     */
+    boolean touches (Section that);
 }

@@ -14,7 +14,6 @@ package omr.grid;
 import omr.glyph.facets.Glyph;
 
 import omr.sig.AbstractVerticalInter;
-import omr.sig.BarlineInter;
 import omr.sig.GradeImpacts;
 
 import omr.util.VerticalSide;
@@ -46,9 +45,6 @@ public class BarPeak
     /** Precise right abscissa. */
     private final int stop;
 
-    /** Thin or thick bar. */
-    private final boolean isThin;
-
     /** Cumulated height. */
     private final int value;
 
@@ -57,6 +53,9 @@ public class BarPeak
 
     /** Evaluation. */
     private final GradeImpacts impacts;
+
+    /** Thin or thick peak. */
+    private Boolean isThin;
 
     /** Underlying stick. */
     private Glyph glyph;
@@ -88,7 +87,6 @@ public class BarPeak
      * @param bottom  bottom ordinate
      * @param start   starting abscissa
      * @param stop    stopping abscissa
-     * @param isThin  true for thin, false for thick
      * @param value   count of cumulated pixels
      * @param chunk   count in excess of standard staff lines
      * @param impacts evaluation details
@@ -98,7 +96,6 @@ public class BarPeak
                     int bottom,
                     int start,
                     int stop,
-                    boolean isThin,
                     int value,
                     int chunk,
                     GradeImpacts impacts)
@@ -108,7 +105,6 @@ public class BarPeak
         this.bottom = bottom;
         this.start = start;
         this.stop = stop;
-        this.isThin = isThin;
         this.value = value;
         this.chunk = chunk;
         this.impacts = impacts;
@@ -282,7 +278,7 @@ public class BarPeak
     //--------//
     // isThin //
     //--------//
-    public boolean isThin ()
+    public Boolean isThin ()
     {
         return isThin;
     }
@@ -346,6 +342,14 @@ public class BarPeak
         this.inter = inter;
     }
 
+    //---------//
+    // setThin //
+    //---------//
+    public void setThin (boolean bool)
+    {
+        isThin = bool;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -354,7 +358,11 @@ public class BarPeak
     {
         StringBuilder sb = new StringBuilder();
         sb.append("BarPeak{");
-        sb.append(isThin ? "THIN" : "THICK");
+
+        if (isThin != null) {
+            sb.append(isThin ? "THIN" : "THICK");
+        }
+
         sb.append("(");
         sb.append(start);
         sb.append("-");

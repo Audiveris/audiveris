@@ -30,6 +30,8 @@ import omr.lag.SectionsBuilder;
 import omr.math.AreaUtil;
 import omr.math.AreaUtil.CoreData;
 import omr.math.BasicLine;
+import omr.math.Clustering;
+import omr.math.Clustering.Gaussian;
 import omr.math.GeoPath;
 import omr.math.Histogram;
 import omr.math.NaturalSpline;
@@ -68,7 +70,6 @@ import omr.util.Navigable;
 import omr.util.StopWatch;
 import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
-import omr.util.WrappedInteger;
 
 import ij.process.ByteProcessor;
 
@@ -92,8 +93,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Class {@code BarsRetriever} focuses on the retrieval of vertical bar lines.
@@ -285,6 +286,12 @@ public class BarsRetriever
         // Purge alignments incompatible with connections
         purgeAlignments();
 
+        // Partition peaks between thin and thick
+        partitionWidths();
+
+        // Detect long peaks (& brackets ends)
+        detectLongPeaks();
+
         // Purge long peaks that do not connect staves (and delete their alignments/connections)
         purgeLongPeaks();
 
@@ -294,8 +301,8 @@ public class BarsRetriever
         // Purge alignments across systems, they are not relevant
         purgeCrossAlignments();
 
-        // Flag bracket peaks as such
-        detectBracketPeaks();
+        // Flag bracket middle portions as such
+        detectBracketMiddles();
 
         // Define precisely all staff side abscissae
         refineSides();
@@ -317,6 +324,8 @@ public class BarsRetriever
 
         // Record bars in staff
         recordBars();
+
+        getWidthHistogram(); // BINGO, TO BE REMOVED, this is just for a final snapshot
     }
 
     //--------------//
@@ -416,48 +425,21 @@ public class BarsRetriever
     /**
      * Bar line sticks are needed to detect those which go past staff height above,
      * below, or both.
-     */
-    private void buildBarSticks ()
-    {
-        WrappedInteger maxThickWidth = new WrappedInteger(0);
-        WrappedInteger maxThinWidth = new WrappedInteger(0);
-        getMaxWidths(maxThickWidth, maxThinWidth);
-
-        if (maxThickWidth.value != 0) {
-            buildSticks(maxThickWidth.value, false);
-        }
-
-        if (maxThinWidth.value != 0) {
-            buildSticks(maxThinWidth.value, true);
-        }
-    }
-
-    //-------------//
-    // buildSticks //
-    //-------------//
-    /**
-     * Build sticks corresponding to retrieved bar peaks of a given kind (all thin peaks
-     * or all thick peaks).
      * <p>
      * For each peak, we take a vertical "slice" of the relevant sections.
      * We run the filament factory (with proper thickness value) on the sections and make it focus
      * on bar target line.
-     *
-     * @param maxWidth value to use as maximum width
-     * @param isThin   true to process only thin bars, false to process only thick ones
      */
-    private void buildSticks (int maxWidth,
-                              boolean isThin)
+    private void buildBarSticks ()
     {
-        final String kind = isThin ? "THIN" : "THICK";
-        StopWatch watch = new StopWatch(kind);
+        Histogram<Integer> widths = getWidthHistogram();
+        int maxWidth = widths.lastBucket();
+        StopWatch watch = new StopWatch("buildBarSticks");
         watch.start("buildSticks()");
 
-        final double halfLine = scale.getMaxFore() / 2.0;
-
-        // Preselect sections of proper max width (thin or thick)
+        // Preselect sections of proper max width
         List<Section> allSections = getSectionsByWidth(maxWidth);
-        logger.debug("{} sections:{}", kind, allSections.size());
+        logger.debug("sections:{}", allSections.size());
 
         FilamentsFactory factory = new FilamentsFactory(
                 sheet.getScale(),
@@ -469,62 +451,25 @@ public class BarsRetriever
         // Factory parameters adjustment
         factory.setMaxCoordGap(constants.maxCoordGap);
         factory.setMaxPosGap(constants.maxPosGap);
+        factory.setMaxExpansionSpace(constants.maxExpansionSpace);
         factory.setMaxOverlapSpace(constants.maxOverlapSpace);
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
-        factory.setMaxThickness(maxWidth);
 
         for (StaffInfo staff : staffManager.getStaves()) {
             for (BarPeak peak : staff.getBarPeaks()) {
-                if (peak.isThin() == isThin) {
-                    // Take proper slice of sections for this peak
-                    List<Section> sections = getPeakSections(peak, allSections);
-                    double xMid = (peak.getStart() + peak.getStop()) / 2d;
-                    NaturalSpline line = NaturalSpline.interpolate(
-                            new Point2D.Double(xMid, peak.getTop()),
-                            new Point2D.Double(xMid, peak.getBottom()));
-                    List<Glyph> glyphs = factory.retrieveFilaments(sections, Arrays.asList(line));
+                // Take proper slice of sections for this peak
+                List<Section> sections = getPeakSections(peak, allSections);
+                double xMid = (peak.getStart() + peak.getStop()) / 2d;
+                NaturalSpline line = NaturalSpline.interpolate(
+                        new Point2D.Double(xMid, peak.getTop()),
+                        new Point2D.Double(xMid, peak.getBottom()));
+                ///factory.setMaxThickness(maxWidth);
+                factory.setMaxThickness((int) Math.rint(1.5 * peak.getWidth()));
 
-                    // By construction we should have exactly 1 glyph built
-                    if (!glyphs.isEmpty()) {
-                        Glyph glyph = glyphs.get(0);
-                        peak.setGlyph(glyph);
+                Glyph glyph = factory.retrieveLineFilament(sections, line);
+                peak.setGlyph(glyph);
 
-                        // Check whether the glyph gets above or below the staff
-                        Rectangle glyphBox = glyph.getBounds();
-                        double topExt = peak.getTop() - halfLine - glyphBox.y;
-                        double bottomExt = (glyphBox.y + glyphBox.height) - 1 - halfLine
-                                           - peak.getBottom();
-
-                        if (!peak.isThin()) {
-                            // Look for bracket ends on thick peaks
-                            if (topExt > params.maxBarExtension) {
-                                if (topExt <= params.maxBracketExtension) {
-                                    peak.setBracketAbove();
-                                } else {
-                                    peak.setAbove();
-                                }
-                            }
-
-                            if (bottomExt > params.maxBarExtension) {
-                                if (bottomExt <= params.maxBracketExtension) {
-                                    peak.setBracketBelow();
-                                } else {
-                                    peak.setBelow();
-                                }
-                            }
-                        } else {
-                            if (topExt > params.maxBarExtension) {
-                                peak.setAbove();
-                            }
-
-                            if (bottomExt > params.maxBarExtension) {
-                                peak.setBelow();
-                            }
-                        }
-                    }
-
-                    logger.debug("Staff#{} {}", staff.getId(), peak);
-                }
+                logger.debug("Staff#{} {}", staff.getId(), peak);
             }
         }
 
@@ -742,32 +687,21 @@ public class BarsRetriever
         createParts(partTops);
     }
 
-    //--------------------//
-    // detectBracketPeaks //
-    //--------------------//
+    //----------------------//
+    // detectBracketMiddles //
+    //----------------------//
     /**
-     * Among peaks, flag the ones that correspond to brackets rather than bar lines.
-     * <p>
-     * Beware, a bracket may lie on an isolated staff, thus without any connection (to be confirmed)
+     * Among peaks, flag the ones that correspond to brackets middle portions.
      */
-    private void detectBracketPeaks ()
+    private void detectBracketMiddles ()
     {
-        // Use only thick connections
-        List<BarConnection> thicks = new ArrayList<BarConnection>();
-
-        for (BarConnection connection : connections) {
-            if (!connection.topPeak.isThin()) {
-                thicks.add(connection);
-            }
-        }
-
-        // Flag recursively any peak connected to a bracket peak
+        // Flag recursively any peak connected to a bracket end
         boolean modified;
 
         do {
             modified = false;
 
-            for (BarConnection connection : thicks) {
+            for (BarConnection connection : connections) {
                 BarPeak top = connection.topPeak;
                 BarPeak bottom = connection.bottomPeak;
 
@@ -784,6 +718,62 @@ public class BarsRetriever
                 }
             }
         } while (modified == true);
+    }
+
+    //-----------------//
+    // detectLongPeaks //
+    //-----------------//
+    /**
+     * Detect long bars (those getting above or below the related staff).
+     * <p>
+     * A starting peak, going a little bit beyond staff limits, may be recognized as a bracket
+     * portion with serif end.
+     */
+    private void detectLongPeaks ()
+    {
+        final double halfLine = scale.getMaxFore() / 2.0;
+
+        for (StaffInfo staff : staffManager.getStaves()) {
+            int staffX = staff.getAbscissa(LEFT);
+
+            for (int index = 0; index < staff.getBarPeaks().size(); index++) {
+                BarPeak peak = staff.getBarPeaks().get(index);
+                Glyph glyph = peak.getGlyph();
+
+                if (glyph.isVip()) {
+                    logger.info("VIP detectLongPeaks on staff#{} {}", staff.getId(), peak);
+                }
+
+                // Check whether the glyph gets above and/or below the staff
+                Rectangle glyphBox = glyph.getBounds();
+                double topExt = peak.getTop() - halfLine - glyphBox.y;
+                double bottomExt = (glyphBox.y + glyphBox.height) - 1 - halfLine
+                                   - peak.getBottom();
+
+                // Is this a starting peak? (first peak and located on left side of staff)
+                final boolean startingPeak = (index == 0) && (peak.getStart() <= staffX);
+
+                // Could this peak be top end of bracket?
+                if (startingPeak
+                    && (topExt >= params.minBracketExtension)
+                    && (topExt <= params.maxBracketExtension)
+                    && hasSerif(glyph, -1)) {
+                    peak.setBracketAbove();
+                } else if (topExt > params.maxBarExtension) {
+                    peak.setAbove();
+                }
+
+                // Could this peak be bottom end of bracket?
+                if (startingPeak
+                    && (bottomExt >= params.minBracketExtension)
+                    && (bottomExt <= params.maxBracketExtension)
+                    && hasSerif(glyph, +1)) {
+                    peak.setBracketBelow();
+                } else if (bottomExt > params.maxBarExtension) {
+                    peak.setBelow();
+                }
+            }
+        }
     }
 
     //----------------//
@@ -969,48 +959,48 @@ public class BarsRetriever
         return null;
     }
 
-    //--------------//
-    // getMaxWidths //
-    //--------------//
-    /**
-     * Retrieve the maximum width of thick peaks and the maximum width of thin peaks.
-     *
-     * @param maxThick (output) maximum width of thick peaks
-     * @param maxThin  (output) maximum width of thin peaks
-     */
-    private void getMaxWidths (WrappedInteger maxThick,
-                               WrappedInteger maxThin)
-    {
-        final Histogram<Integer> histo = new Histogram<Integer>();
-        final SortedSet<Integer> thicks = new TreeSet<Integer>();
-        final SortedSet<Integer> thins = new TreeSet<Integer>();
-
-        for (StaffInfo staff : staffManager.getStaves()) {
-            for (BarPeak peak : staff.getBarPeaks()) {
-                int width = peak.getWidth();
-                histo.increaseCount(width, 1);
-
-                if (peak.isThin()) {
-                    thins.add(width);
-                } else {
-                    thicks.add(width);
-                }
-            }
-        }
-
-        logger.info("Peak width histo: {}", histo.dataString());
-        logger.info("    Thin  widths: {}", thins);
-        logger.info("    Thick widths: {}", thicks);
-
-        if (!thicks.isEmpty()) {
-            maxThick.value = thicks.last();
-        }
-
-        if (!thins.isEmpty()) {
-            maxThin.value = thins.last();
-        }
-    }
-
+    //    //--------------//
+    //    // getMaxWidths //
+    //    //--------------//
+    //    /**
+    //     * Retrieve the maximum width of thick peaks and the maximum width of thin peaks.
+    //     *
+    //     * @param maxThick (output) maximum width of thick peaks
+    //     * @param maxThin  (output) maximum width of thin peaks
+    //     */
+    //    private void getMaxWidths (WrappedInteger maxThick,
+    //                               WrappedInteger maxThin)
+    //    {
+    //        final Histogram<Integer> histo = new Histogram<Integer>();
+    //        final SortedSet<Integer> thicks = new TreeSet<Integer>();
+    //        final SortedSet<Integer> thins = new TreeSet<Integer>();
+    //
+    //        for (StaffInfo staff : staffManager.getStaves()) {
+    //            for (BarPeak peak : staff.getBarPeaks()) {
+    //                int width = peak.getWidth();
+    //                histo.increaseCount(width, 1);
+    //
+    //                if (peak.isThin()) {
+    //                    thins.add(width);
+    //                } else {
+    //                    thicks.add(width);
+    //                }
+    //            }
+    //        }
+    //
+    //        logger.info("Peak width histo: {}", histo.dataString());
+    //        logger.info("    Thin  widths: {}", thins);
+    //        logger.info("    Thick widths: {}", thicks);
+    //
+    //        if (!thicks.isEmpty()) {
+    //            maxThick.value = thicks.last();
+    //        }
+    //
+    //        if (!thins.isEmpty()) {
+    //            maxThin.value = thins.last();
+    //        }
+    //    }
+    //
     //-----------------//
     // getPeakSections //
     //-----------------//
@@ -1081,6 +1071,23 @@ public class BarsRetriever
         return sections;
     }
 
+    //-------------------//
+    // getWidthHistogram //
+    //-------------------//
+    private Histogram<Integer> getWidthHistogram ()
+    {
+        final Histogram<Integer> histo = new Histogram<Integer>();
+
+        for (StaffInfo staff : staffManager.getStaves()) {
+            for (BarPeak peak : staff.getBarPeaks()) {
+                int width = peak.getWidth();
+                histo.increaseCount(width, 1);
+            }
+        }
+
+        return histo;
+    }
+
     //---------------//
     // groupBarlines //
     //---------------//
@@ -1109,6 +1116,23 @@ public class BarsRetriever
                 }
             }
         }
+    }
+
+    //----------//
+    // hasSerif //
+    //----------//
+    /**
+     * Check whether the provided peak glyph exhibits a serif on desired side.
+     *
+     * @param glyph provided glyph
+     * @param dir   -1 when looking up, +1 when looking down
+     * @return true if serif is detected
+     */
+    private boolean hasSerif (Glyph glyph,
+                              int dir)
+    {
+        // Check ratio of black pixels in ROI on right side of glyph
+        return true; // BINGO
     }
 
     //-----------//
@@ -1215,6 +1239,101 @@ public class BarsRetriever
     }
 
     //-----------------//
+    // partitionWidths //
+    //-----------------//
+    /**
+     * Assign each peak as being thin or thick.
+     * <p>
+     * We can discard the case of all page peaks being thick, so we simply have to detect whether we
+     * do have some thick ones.
+     * When this method is called, some peaks are still due to stems. We don't know the average
+     * stem width, but typically stem peaks are thinner or equal to bar peaks.
+     * <p>
+     * Thin and thick Gaussian laws are computed on width histogram.
+     * If there is a significant delta between thin and thick mean values then widths are
+     * partitioned, else they are all considered as thin.
+     */
+    private void partitionWidths ()
+    {
+        final Gaussian thin = new Gaussian(params.typicalThinBarWidth, 1.0);
+        final Gaussian thick = new Gaussian(params.typicalThickBarWidth, 1.0);
+
+        final Histogram<Integer> histo = getWidthHistogram();
+        final double[] table = new double[histo.getTotalCount()];
+        int index = 0;
+
+        for (Map.Entry<Integer, Integer> entry : histo.entrySet()) {
+            int key = entry.getKey();
+            int count = entry.getValue();
+
+            for (int i = 0; i < count; i++) {
+                table[index++] = key;
+            }
+        }
+
+        final double[] pi = Clustering.EM(table, new Gaussian[]{thin, thick});
+
+        if (logger.isDebugEnabled()) {
+            logger.info(String.format("THIN  %.3f * %s", pi[0], thin));
+            logger.info(String.format("THICK %.3f * %s", pi[1], thick));
+        }
+
+        final double deltaMean = thick.getMean() - thin.getMean();
+        final double normedDelta = scale.pixelsToFrac(deltaMean);
+
+        if (logger.isDebugEnabled()) {
+            logger.info(
+                    String.format(
+                            "Peaks mean widths thin:%.3f thick:%.3f delta:%.3f(%.3f)",
+                            thin.getMean(),
+                            thick.getMean(),
+                            deltaMean,
+                            normedDelta));
+        }
+
+        Double threshold = null;
+
+        if (normedDelta >= constants.minThinThickDelta.getValue()) {
+            SortedMap<Integer, Integer> thins = new TreeMap<Integer, Integer>();
+            SortedMap<Integer, Integer> thicks = new TreeMap<Integer, Integer>();
+            int lastThin = histo.firstBucket();
+
+            for (Map.Entry<Integer, Integer> entry : histo.entrySet()) {
+                int w = entry.getKey();
+                int count = entry.getValue();
+                double thinProba = thin.proba(w);
+                double thickProba = thick.proba(w);
+
+                if (logger.isDebugEnabled()) {
+                    logger.info(
+                            String.format("k:%2d thin:%.3f thick:%.3f", w, thinProba, thickProba));
+                }
+
+                if (thickProba > thinProba) {
+                    if (threshold == null) {
+                        threshold = 0.5 * (lastThin + w);
+                    }
+
+                    thicks.put(w, count);
+                } else {
+                    lastThin = w;
+                    thins.put(w, count);
+                }
+            }
+
+            logger.info("Thin peaks:{}, Thick peaks:{}", thins, thicks);
+        } else {
+            logger.info("All thin peaks:{}", histo.dataString());
+        }
+
+        for (StaffInfo staff : staffManager.getStaves()) {
+            for (BarPeak peak : staff.getBarPeaks()) {
+                peak.setThin((threshold == null) || (peak.getWidth() <= threshold));
+            }
+        }
+    }
+
+    //-----------------//
     // purgeAlignments //
     //-----------------//
     /**
@@ -1298,7 +1417,7 @@ public class BarsRetriever
 
                 if (curvature < params.minBarCurvature) {
                     if (glyph.isVip()) {
-                        logger.info("VIP removing brace {} glyph#{}", peak, glyph.getId());
+                        logger.info("VIP removing curved {} glyph#{}", peak, glyph.getId());
                     }
 
                     toRemove.add(peak);
@@ -1306,7 +1425,7 @@ public class BarsRetriever
             }
 
             if (!toRemove.isEmpty()) {
-                logger.debug("Staff#{} removing brace {}", staff.getId(), toRemove);
+                logger.debug("Staff#{} removing curved {}", staff.getId(), toRemove);
                 staff.removeBarPeaks(toRemove);
             }
         }
@@ -1317,78 +1436,77 @@ public class BarsRetriever
     //-------------//
     /**
      * Purge C-Clef portions mistaken for bar lines.
-     * C-clef have portions that can be mistaken for bar lines. Look for this immediately after
-     * a peak (or after lines start).
-     *
-     * TODO: fix this, WRT peak handling, including brackets
-     * TODO: expect thick + thin before deleting a true C-clef peaks
+     * <p>
+     * A C-clef exhibits a pair of peaks (a rather thick one followed by a rather thin one).
+     * It should be looked for in two location kinds:
+     * <ul>
+     * <li>At the very beginning of staff with no initial bar line, with only a short chunk of staff
+     * lines.
+     * <li>After a bar line, provided this bar line is not part of a thin + thick + thin group.
+     * For this case the horizontal gap between bar line and start of C-clef must be larger than
+     * maximum multi bar gap.
+     * </ul>
      */
     private void purgeCClefs ()
     {
-        for (SystemInfo system : sheet.getSystems()) {
-            List<StaffInfo> staves = system.getStaves();
+        for (StaffInfo staff : staffManager.getStaves()) {
+            final List<BarPeak> peaks = staff.getBarPeaks();
+            final int staffStart = staff.getAbscissa(LEFT);
+            int measureStart = staffStart;
 
-            StaffLoop:
-            for (StaffInfo staff : staves) {
-                List<BarPeak> peaks = staff.getBarPeaks();
-                List<BarPeak> toRemove = new ArrayList<BarPeak>();
-                int measureStart = staff.getAbscissa(LEFT);
+            for (int i = 0; i < peaks.size(); i++) {
+                BarPeak peak = peaks.get(i);
 
-                for (int i = 0; i < peaks.size(); i++) {
-                    BarPeak peak = peaks.get(i);
+                if (peak.getStart() <= measureStart) {
+                    continue;
+                }
 
-                    if (peak.getStart() <= measureStart) {
-                        continue;
-                    }
+                // Look for a thick peak
+                if (!peak.isThin() && !peak.isBracket()) {
+                    // If at staff start BINGO BINGO BINGO BINGO BINGO BINGO BINGO BINGO BINGO BINGO BINGO BINGO BINGO
+                    // Check gap is larger than double bar gap and smaller than measure
+                    int gap = peak.getStart() - measureStart;
 
-                    // Look for a thick peak
-                    if (!peak.isThin() && !peak.isBracket()) {
-                        // Check gap is larger than double bar and smaller than measure
-                        int gap = peak.getStart() - measureStart;
+                    if ((gap > params.maxDoubleBarGap)
+                        && (gap < params.minMeasureWidth)
+                        && !isConnected(peak, TOP)
+                        && !isConnected(peak, BOTTOM)) {
+                        if (logger.isDebugEnabled() || peak.getGlyph().isVip()) {
+                            logger.info("VIP Got a C-Clef peak1 at {}", peak);
+                        }
 
-                        if ((gap > params.maxDoubleBarGap)
-                            && (gap < params.minMeasureWidth)
-                            && !isConnected(peak, TOP)
-                            && !isConnected(peak, BOTTOM)) {
-                            if (logger.isDebugEnabled() || peak.getGlyph().isVip()) {
-                                logger.info("VIP Got a C-Clef peak1 at {}", peak);
-                            }
+                        final List<BarPeak> toRemove = new ArrayList<BarPeak>();
+                        toRemove.add(peak);
+                        measureStart = peak.getStop() + 1;
 
-                            toRemove.add(peak);
-                            measureStart = peak.getStop() + 1;
+                        // Look for thin peak right after this one
+                        BarPeak nextPeak = (i < (peaks.size() - 1)) ? peaks.get(i + 1) : null;
 
-                            // Look for thin peak right after this one
-                            BarPeak nextPeak = (i < (peaks.size() - 1)) ? peaks.get(i + 1) : null;
+                        if (nextPeak != null) {
+                            int nextGap = nextPeak.getStart() - peak.getStop() - 1;
 
-                            if (nextPeak != null) {
-                                int nextGap = nextPeak.getStart() - peak.getStop() - 1;
-
-                                if (nextPeak.isThin()
-                                    && (nextGap <= params.maxDoubleBarGap)
-                                    && !isConnected(nextPeak, TOP)
-                                    && !isConnected(nextPeak, BOTTOM)) {
-                                    if (logger.isDebugEnabled()
-                                        || peak.getGlyph().isVip()
-                                        || nextPeak.getGlyph().isVip()) {
-                                        logger.info("VIP Got a C-Clef peak2 at {}", nextPeak);
-                                    }
-
-                                    toRemove.add(nextPeak);
-                                    logger.debug(
-                                            "Staff#{} purging C-Clef {}",
-                                            staff.getId(),
-                                            toRemove);
-                                    staff.removeBarPeaks(toRemove);
-                                    i++; // Don't re-browse this peak
-                                    measureStart = nextPeak.getStop() + 1;
+                            if (nextPeak.isThin()
+                                && (nextGap <= params.maxDoubleBarGap)
+                                && !isConnected(nextPeak, TOP)
+                                && !isConnected(nextPeak, BOTTOM)) {
+                                if (logger.isDebugEnabled()
+                                    || peak.getGlyph().isVip()
+                                    || nextPeak.getGlyph().isVip()) {
+                                    logger.info("VIP Got a C-Clef peak2 at {}", nextPeak);
                                 }
+
+                                toRemove.add(nextPeak);
+                                logger.debug("Staff#{} purging C-Clef {}", staff.getId(), toRemove);
+                                staff.removeBarPeaks(toRemove);
+                                i++; // Don't re-browse this peak
+                                measureStart = nextPeak.getStop() + 1;
                             }
-                        } else {
-                            measureStart = peak.getStop() + 1;
                         }
                     } else {
                         measureStart = peak.getStop() + 1;
                     }
+                } else {
+                    measureStart = peak.getStop() + 1;
                 }
             }
         }
@@ -1477,10 +1595,8 @@ public class BarsRetriever
      */
     private void purgeLongPeaks ()
     {
-        final Set<BarPeak> toRemove = new LinkedHashSet<BarPeak>();
-
         for (StaffInfo staff : staffManager.getStaves()) {
-            toRemove.clear();
+            final Set<BarPeak> toRemove = new LinkedHashSet<BarPeak>();
 
             PeakLoop:
             for (BarPeak peak : staff.getBarPeaks()) {
@@ -1488,13 +1604,10 @@ public class BarsRetriever
                     logger.info("VIP purgeLongPeaks on staff#{} {}", staff.getId(), peak);
                 }
 
-                // Thick bars are safe
-                if (!peak.isThin()) {
-                    continue;
-                }
-
+                // Check whether peak goes beyond staff
                 for (VerticalSide side : VerticalSide.values()) {
                     if (peak.isBeyond(side) && !isConnected(peak, side)) {
+                        // Relax check. TODO: is this OK?
                         List<BarPeak> partners = alignedPeaks(peak, side);
 
                         if (partners.size() == 1) {
@@ -1504,6 +1617,10 @@ public class BarsRetriever
                                 // Consider this bar as safe
                                 continue PeakLoop;
                             }
+                        }
+
+                        if (peak.getGlyph().isVip()) {
+                            logger.info("VIP removed long on staff#{} {}", staff.getId(), peak);
                         }
 
                         toRemove.add(peak);
@@ -1623,6 +1740,18 @@ public class BarsRetriever
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        final Scale.Fraction typicalThinBarWidth = new Scale.Fraction(
+                0.25,
+                "Typical width for a THIN bar line");
+
+        final Scale.Fraction typicalThickBarWidth = new Scale.Fraction(
+                0.45,
+                "Typical width for a THICK bar line");
+
+        final Scale.Fraction minThinThickDelta = new Scale.Fraction(
+                0.2,
+                "Minimum difference between THIN/THICK mean values");
+
         Scale.Fraction maxAlignmentDx = new Scale.Fraction(
                 0.5,
                 "Max abscissa shift for bar alignment");
@@ -1651,17 +1780,25 @@ public class BarsRetriever
                 0.25,
                 "Maximum delta abscissa between section and filament skeleton");
 
+        Scale.Fraction maxExpansionSpace = new Scale.Fraction(
+                0,
+                "Maximum abscissa space between section and filament skeleton");
+
         Scale.Fraction maxOverlapSpace = new Scale.Fraction(
                 0.1,
                 "Maximum space between overlapping bar filaments");
 
         Scale.Fraction maxBarExtension = new Scale.Fraction(
+                0.3,
+                "Maximum extension for a bar line above or below staff line");
+
+        Scale.Fraction minBracketExtension = new Scale.Fraction(
                 0.25,
-                "Max extension of bar above or below staff line");
+                "Minimum extension for bracket end above or below staff line");
 
         Scale.Fraction maxBracketExtension = new Scale.Fraction(
                 1.25,
-                "Max extension for bracket end above or below staff line");
+                "Maximum extension for bracket end above or below staff line");
 
         Scale.Fraction bracketLookupExtension = new Scale.Fraction(
                 2.0,
@@ -1675,7 +1812,9 @@ public class BarsRetriever
                 0.6,
                 "Max horizontal gap between two members of a double bar");
 
-        Scale.Fraction minMeasureWidth = new Scale.Fraction(2.0, "Minimum width for a measure");
+        Scale.Fraction minMeasureWidth = new Scale.Fraction(
+                2.0,
+                "Minimum width for a measure");
 
         Constant.Ratio alignedIncreaseRatio = new Constant.Ratio(
                 0.30,
@@ -1709,11 +1848,17 @@ public class BarsRetriever
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        final int typicalThinBarWidth;
+
+        final int typicalThickBarWidth;
+
         final int maxAlignmentDx;
 
         final int maxRunShift;
 
         final double maxBarExtension;
+
+        final int minBracketExtension;
 
         final int maxBracketExtension;
 
@@ -1740,9 +1885,12 @@ public class BarsRetriever
          */
         public Parameters (Scale scale)
         {
+            typicalThinBarWidth = scale.toPixels(constants.typicalThinBarWidth);
+            typicalThickBarWidth = scale.toPixels(constants.typicalThickBarWidth);
             maxAlignmentDx = scale.toPixels(constants.maxAlignmentDx);
             maxRunShift = scale.toPixels(constants.maxRunShift);
             maxBarExtension = scale.toPixels(constants.maxBarExtension);
+            minBracketExtension = scale.toPixels(constants.minBracketExtension);
             maxBracketExtension = scale.toPixels(constants.maxBracketExtension);
             bracketLookupExtension = scale.toPixels(constants.bracketLookupExtension);
             minBarCurvature = scale.toPixels(constants.minBarCurvature);

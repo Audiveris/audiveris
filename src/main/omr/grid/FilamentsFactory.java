@@ -45,6 +45,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -266,37 +267,39 @@ public class FilamentsFactory
         }
     }
 
-    //-------------------//
-    // retrieveFilaments //
-    //-------------------//
+    //----------------------//
+    // retrieveLineFilament //
+    //----------------------//
     /**
-     * Aggregate the long and thin sections into filaments along the
-     * provided skeletons lines.
-     * No merge is performed within the skeletons lines.
+     * Aggregate sections into one filament along the provided skeleton line.
      *
-     * @param source the collection of input sections
-     * @param lines  the collection of skeleton lines
-     * @return the collection of retrieved filaments
+     * @param source the collection of candidate input sections
+     * @param line   the skeleton line
+     * @return the retrieved filament, or null
      */
-    public List<Glyph> retrieveFilaments (Collection<Section> source,
-                                          Collection<? extends Line> lines)
+    public Glyph retrieveLineFilament (Collection<Section> source,
+                                       Line line)
     {
-        StopWatch watch = new StopWatch("FilamentsFactory " + orientation);
-        List<Glyph> filaments = new ArrayList<Glyph>();
+        StopWatch watch = new StopWatch("retrieveLineFilament " + orientation);
 
         try {
             // Aggregate long sections onto provided lines
             watch.start("populateLines");
-            populateLines(filaments, source, lines);
+
+            Glyph fil = populateLine(source, line);
+
+            if (fil == null) {
+                return null;
+            }
 
             // Expand with short sections left over
             watch.start("expandFilaments");
-            expandFilaments(filaments, source);
+            expandFilaments(Arrays.asList(fil), source);
 
-            // (Re)register every filament with its (final) signature
-            return reRegisterFilaments(filaments);
+            // (Re)register filament with its (final) signature
+            return reRegisterFilaments(Arrays.asList(fil)).get(0);
         } catch (Exception ex) {
-            logger.warn("FilamentsFactory cannot retrieveFilaments", ex);
+            logger.warn("FilamentsFactory cannot retrieveLineFilament", ex);
 
             return null;
         } finally {
@@ -579,6 +582,15 @@ public class FilamentsFactory
                         }
 
                         return false;
+                    } else if (expanding && (maxSpace == 0)) {
+                        // Check there is a real contact between filament (one) and section (two)
+                        if (!contact(one, two.getFirstSection())) {
+                            if (logger.isDebugEnabled() || areVips) {
+                                logger.info("{}No contact {} {}", vips, one, two);
+                            }
+
+                            return false;
+                        }
                     }
                 }
             } else {
@@ -643,6 +655,28 @@ public class FilamentsFactory
         }
     }
 
+    //---------//
+    // contact //
+    //---------//
+    /**
+     * Check whether there is contact between provided glyph and section.
+     *
+     * @param glyph   provided filament
+     * @param section section to check for contact with glyph
+     * @return true if contact
+     */
+    private boolean contact (Glyph glyph,
+                             Section section)
+    {
+        for (Section s : glyph.getMembers()) {
+            if (s.touches(section)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //----------------//
     // createFilament //
     //----------------//
@@ -654,13 +688,13 @@ public class FilamentsFactory
             if (section != null) {
                 fil.addSection(section, GlyphComposition.Linking.NO_LINK);
                 section.setProcessed(true);
+
+                if (constants.registerEachAndEveryGlyph.isSet()) {
+                    return nest.registerGlyph(fil); // Not really useful, even harmful if section is null
+                }
             }
 
-            if (constants.registerEachAndEveryGlyph.isSet()) {
-                return nest.registerGlyph(fil); // Not really useful, but harmful
-            } else {
-                return fil;
-            }
+            return fil;
         } catch (Exception ex) {
             logger.error(null, ex);
 
@@ -747,14 +781,7 @@ public class FilamentsFactory
             List<Glyph> sectionGlyphs = new ArrayList<Glyph>(sections.size());
 
             for (Section section : sections) {
-                Glyph sectionGlyph = new BasicGlyph(scale.getInterline(), layer);
-                sectionGlyph.addSection(section, GlyphComposition.Linking.NO_LINK);
-                section.setProcessed(true);
-
-                if (constants.registerEachAndEveryGlyph.isSet()) {
-                    sectionGlyph = nest.registerGlyph(sectionGlyph); // Not really useful
-                }
-
+                Glyph sectionGlyph = createFilament(section);
                 sectionGlyphs.add(sectionGlyph);
 
                 if (section.isVip() || nest.isVip(sectionGlyph)) {
@@ -893,20 +920,18 @@ public class FilamentsFactory
         removeMergedFilaments(filaments);
     }
 
-    //---------------//
-    // populateLines //
-    //---------------//
+    //--------------//
+    // populateLine //
+    //--------------//
     /**
-     * Use the long source sections to stick to the provided skeletons
-     * lines and populate the filaments collection.
+     * Use the long source sections to stick to the provided skeleton line and return
+     * the resulting filament.
      *
-     * @param filaments (output) collection to be populated
-     * @param source    the input sections
-     * @param lines     the imposed skeleton lines
+     * @param source the input sections
+     * @param lines  the imposed skeleton lines
      */
-    private void populateLines (List<Glyph> filaments,
-                                Collection<Section> source,
-                                Collection<? extends Line> lines)
+    private Glyph populateLine (Collection<Section> source,
+                                Line line)
     {
         List<Section> longSections = new ArrayList<Section>();
 
@@ -927,36 +952,39 @@ public class FilamentsFactory
         // Sort sections by decreasing length
         Collections.sort(longSections, Sections.byReverseLength(orientation));
 
-        for (Line line : lines) {
-            Glyph fil = createFilament(null);
-            final Rectangle lineBox = orientation.oriented(line.getBounds());
-            lineBox.grow(params.maxCoordGap, params.maxPosGap);
+        Glyph fil = createFilament(null);
+        final Rectangle lineBox = orientation.oriented(line.getBounds());
+        lineBox.grow(params.maxCoordGap, params.maxPosGap);
 
-            for (Section section : longSections) {
-                if (section.isProcessed()) {
-                    continue;
-                }
-
-                Rectangle sectionBox = orientation.oriented(section.getBounds());
-
-                if (sectionBox.intersects(lineBox)) {
-                    Point centroid = section.getCentroid();
-
-                    // Closer look: check distance to line
-                    double gap = (orientation == HORIZONTAL)
-                            ? (line.yAtXExt(centroid.x) - centroid.y)
-                            : (line.xAtYExt(centroid.y) - centroid.x);
-
-                    if (gap <= params.maxPosGap) {
-                        fil.addSection(section, GlyphComposition.Linking.NO_LINK);
-                        section.setProcessed(true);
-                    }
-                }
+        for (Section section : longSections) {
+            if (section.isProcessed()) {
+                continue;
             }
 
-            if (!fil.getMembers().isEmpty()) {
-                filaments.add(fil);
+            Rectangle sectionBox = orientation.oriented(section.getBounds());
+
+            if (sectionBox.intersects(lineBox)) {
+                Point centroid = section.getCentroid();
+
+                // Closer look: check distance to line
+                double gap = (orientation == HORIZONTAL) ? (line.yAtXExt(centroid.x) - centroid.y)
+                        : (line.xAtYExt(centroid.y) - centroid.x);
+
+                if (Math.abs(gap) <= params.maxPosGap) {
+                    fil.addSection(section, GlyphComposition.Linking.NO_LINK);
+                    section.setProcessed(true);
+                }
             }
+        }
+
+        if (!fil.getMembers().isEmpty()) {
+            if (constants.registerEachAndEveryGlyph.isSet()) {
+                return nest.registerGlyph(fil); // Not really useful
+            } else {
+                return fil;
+            }
+        } else {
+            return null;
         }
     }
 

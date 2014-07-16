@@ -1314,6 +1314,63 @@ public class BasicSection
         return sb.toString();
     }
 
+    //---------//
+    // touches //
+    //---------//
+    @Override
+    public boolean touches (Section that)
+    {
+        Rectangle thatFatBox = that.getBounds();
+        thatFatBox.grow(1, 1);
+
+        // Very rough test
+        if (!getPolygon().intersects(thatFatBox)) {
+            return false;
+        }
+
+        int pos = getFirstPos();
+
+        for (Run run : getRuns()) {
+            final int start = run.getStart();
+            final Rectangle r1 = (orientation == Orientation.HORIZONTAL)
+                    ? new Rectangle(start, pos, run.getLength(), 1)
+                    : new Rectangle(pos, start, 1, run.getLength());
+
+            if (thatFatBox.intersects(r1)) {
+                // Check contact between this run and one of that runs
+                int thatPos = that.getFirstPos();
+
+                for (Run thatRun : that.getRuns()) {
+                    final int thatStart = thatRun.getStart();
+                    final int thatLength = thatRun.getLength();
+                    final Rectangle r2 = (that.getOrientation() == Orientation.HORIZONTAL)
+                            ? new Rectangle(thatStart, thatPos, thatLength, 1)
+                            : new Rectangle(thatPos, thatStart, 1, thatLength);
+                    int x1 = Math.max(r1.x, r2.x);
+                    int x2 = Math.min(r1.x + r1.width, r2.x + r2.width);
+                    int xOver = x2 - x1;
+                    int y1 = Math.max(r1.y, r2.y);
+                    int y2 = Math.min(r1.y + r1.height, r2.y + r2.height);
+                    int yOver = y2 - y1;
+
+                    if ((xOver > 0) && (yOver >= 0)) {
+                        return true;
+                    }
+
+                    if ((xOver >= 0) && (yOver > 0)) {
+                        return true;
+                    }
+
+                    thatPos++;
+                }
+            }
+
+            pos++;
+        }
+
+        return false;
+    }
+
     //-----------//
     // translate //
     //-----------//

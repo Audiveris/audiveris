@@ -28,8 +28,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Class {@code OmrExecutors} handles several pools of threads
- * provided to the Audiveris application: <ul>
+ * Class {@code OmrExecutors} handles several pools of threads provided to Audiveris
+ * application: <ul>
  * <li>lowExecutor: a fixed nb (#cpu+1) of threads with low priority</li>
  * <li>highExecutor: a fixed nb (#cpu+1) of threads with high priority</li>
  * <li>cachedLowExecutor: a varying nb of threads with low priority</li>
@@ -41,10 +41,10 @@ public class OmrExecutors
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    
+
     private static final Logger logger = LoggerFactory.getLogger(OmrExecutors.class);
 
-    
+
     private static final Constants constants = new Constants();
 
     /** Default parameter. */
@@ -69,15 +69,15 @@ public class OmrExecutors
 
     private static final Pool cachedLows = new CachedLows();
 
-    /** To handle all the pools as a whole */
-    private static Collection<Pool> allPools = Arrays.asList(cachedLows, lows, highs);
+    /** To handle all the pools as a whole. */
+    private static final Collection<Pool> allPools = Arrays.asList(cachedLows, lows, highs);
 
-    /** To prevent parallel creation of pools when closing */
+    /** To prevent parallel creation of pools when closing. */
     private static volatile boolean creationAllowed = true;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Not meant to be instantiated
+     * Not meant to be instantiated.
      */
     private OmrExecutors ()
     {
@@ -182,7 +182,7 @@ public class OmrExecutors
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** The underlying pool of threads */
+        /** The underlying pool of threads. */
         protected ExecutorService pool;
 
         //~ Methods --------------------------------------------------------------------------------
@@ -275,23 +275,20 @@ public class OmrExecutors
                 false,
                 "Should we print out current environment?");
 
-        //
         Constant.Boolean useParallelism = new Constant.Boolean(
                 true,
                 "Should we use parallelism when we have several processors?");
 
-        //
         Constant.Integer graceDelay = new Constant.Integer(
                 "seconds",
-                60, //15,
+                60,
                 "Time to wait for terminating tasks");
     }
 
-    //
     //------------//
     // CachedLows //
     //------------//
-    /** Cached pool with low priority */
+    /** Cached pool with low priority. */
     private static class CachedLows
             extends Pool
     {
@@ -394,7 +391,7 @@ public class OmrExecutors
     //-------//
     // Highs //
     //-------//
-    /** Fixed pool with high priority */
+    /** Fixed pool with high priority. */
     private static class Highs
             extends Pool
     {
@@ -418,7 +415,7 @@ public class OmrExecutors
     //------//
     // Lows //
     //------//
-    /** Fixed pool with low priority */
+    /** Fixed pool with low priority. */
     private static class Lows
             extends Pool
     {

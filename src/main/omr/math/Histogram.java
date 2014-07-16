@@ -137,7 +137,7 @@ public class Histogram<K extends Number>
         for (Map.Entry<K, Integer> entry : entrySet()) {
             sb.append(
                 String.format(
-                    "%s%s:%d",
+                    "%s%s=%d",
                     first ? "" : " ",
                     entry.getKey().toString(),
                     entry.getValue()));

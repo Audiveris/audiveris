@@ -25,12 +25,8 @@ import omr.math.Line;
 public class BarlineInter
         extends AbstractVerticalInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
-
-    /** True if this bar line defines a part. */
-    private boolean partDefining;
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new BarlineInter object.
      *
@@ -59,21 +55,6 @@ public class BarlineInter
         visitor.visit(this);
     }
 
-    //------------//
-    // getDetails //
-    //------------//
-    @Override
-    public String getDetails ()
-    {
-        StringBuilder sb = new StringBuilder(super.getDetails());
-
-        if (partDefining) {
-            sb.append(" part");
-        }
-
-        return sb.toString();
-    }
-
     //--------//
     // isGood //
     //--------//
@@ -81,27 +62,5 @@ public class BarlineInter
     public boolean isGood ()
     {
         return getGrade() >= 0.6; // TODO, quick & dirty
-    }
-
-    //----------------//
-    // isPartDefining //
-    //----------------//
-    /**
-     * @return the partDefining
-     */
-    public boolean isPartDefining ()
-    {
-        return partDefining;
-    }
-
-    //-----------------//
-    // setPartDefining //
-    //-----------------//
-    /**
-     * @param partDefining the partDefining to set
-     */
-    public void setPartDefining (boolean partDefining)
-    {
-        this.partDefining = partDefining;
     }
 }

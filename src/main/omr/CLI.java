@@ -82,10 +82,8 @@ import java.util.TreeSet;
  * provided directory. Otherwise, all bench data, whatever its related score,
  * will be written to the provided single file.</dd>
  *
- * <strike>
- * <dt> <b>-midi (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
- * path to MIDI file (or directory). Same note as for -bench.</dd>
- * </strike>
+ * <dt> <strike><b>-midi (DIRNAME | FILENAME)</b></strike> </dt>
+ * <dd> <strike>to define an output path to MIDI file (or directory). Same note as for -bench.</strike></dd>
  *
  * <dt> <b>-print (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
  * path to PDF file (or directory). Same note as for -bench.</dd>
@@ -93,7 +91,7 @@ import java.util.TreeSet;
  * <dt> <b>-export (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
  * path to MusicXML file (or directory). Same note as for -bench.</dd>
  *
- * </dd> </dl>
+ * </dl>
  *
  * @author Hervé Bitteur
  */

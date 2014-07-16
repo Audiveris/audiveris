@@ -44,8 +44,8 @@ public class Sections
     // byReverseLength //
     //-----------------//
     /**
-     * Return a comparator for comparing Section instances on their
-     * decreasing length, using the provided orientation.
+     * Return a comparator for comparing Section instances on their decreasing length,
+     * using the provided orientation.
      *
      * @param orientation the provided orientation
      * @return the properly oriented length comparator
@@ -67,8 +67,7 @@ public class Sections
     // containedSections //
     //-------------------//
     /**
-     * Convenient method to look for sections contained by the provided
-     * rectangle
+     * Convenient method to look for sections contained by the provided rectangle
      *
      * @param rect     provided rectangle
      * @param sections the collection of sections to browse
@@ -140,8 +139,8 @@ public class Sections
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the
-     * section collection, introduced by the provided label.
+     * Convenient method, to build a string with just the ids of the section collection,
+     * introduced by the provided label.
      *
      * @param label    the string that introduces the list of IDs
      * @param sections the collection of sections
@@ -170,8 +169,8 @@ public class Sections
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the
-     * section array, introduced by the provided label.
+     * Convenient method, to build a string with just the ids of the section array,
+     * introduced by the provided label.
      *
      * @param label    the string that introduces the list of IDs
      * @param sections the array of sections
@@ -187,8 +186,8 @@ public class Sections
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the
-     * section collection, introduced by the label "sections".
+     * Convenient method, to build a string with just the ids of the section collection,
+     * introduced by the label "sections".
      *
      * @param sections the collection of sections
      * @return the string built
@@ -202,8 +201,8 @@ public class Sections
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the
-     * section array, introduced by the label "sections".
+     * Convenient method, to build a string with just the ids of the section array,
+     * introduced by the label "sections".
      *
      * @param sections the array of sections
      * @return the string built

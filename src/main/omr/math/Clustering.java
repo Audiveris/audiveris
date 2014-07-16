@@ -23,6 +23,12 @@ public class Clustering
 
     private static final Logger logger = LoggerFactory.getLogger(Clustering.class);
 
+    private static final double TWO_PI_SQ = Math.sqrt(2 * Math.PI);
+
+    private static final double EPSILON = 1E-10;
+
+    private static final int MAX_ITER = 10;
+
     //~ Methods ------------------------------------------------------------------------------------
     /**
      * Compute the mixture coefficients using Expectation-Maximization algorithm.
@@ -45,10 +51,10 @@ public class Clustering
             pi[k] = 1.0 / G;
         }
 
-        // iterative loop (until convergence or 5000 iterations)
+        // iterative loop (until convergence or max iterations)
         double convergence;
 
-        for (int loop = 0; loop < 5000; loop++) {
+        for (int loop = 0; loop < MAX_ITER; loop++) {
             convergence = 0;
 
             // ---- E Step ----
@@ -70,14 +76,17 @@ public class Clustering
             // mixture coefficients (maximum likelihood estimate of binomial distribution)
             for (int k = 0; k < G; k++) {
                 double savedpi = pi[k];
-                pi[k] = 0;
+                double newPi = 0;
 
                 for (int i = 0; i < N; i++) {
-                    pi[k] += t[k][i];
+                    newPi += t[k][i];
                 }
 
-                pi[k] /= N;
-                convergence += ((savedpi - pi[k]) * (savedpi - pi[k]));
+                newPi /= N;
+                pi[k] = newPi;
+
+                double deltaPi = newPi - savedpi;
+                convergence += (deltaPi * deltaPi);
             }
 
             // update the parameters of the laws
@@ -85,7 +94,7 @@ public class Clustering
                 laws[k].improveParameters(N, x, t[k]);
             }
 
-            if (convergence < 1E-10) {
+            if (convergence < EPSILON) {
                 logger.debug("convergence:{} loop:{}", convergence, loop);
 
                 break;
@@ -180,13 +189,21 @@ public class Clustering
         {
             double t = (x - mean);
 
-            return Math.exp(-(t * t) / (2 * sigma * sigma)) / (sigma * Math.sqrt(2 * Math.PI));
+            if (sigma <= EPSILON) {
+                if (Math.abs(t) <= EPSILON) {
+                    return 1.0;
+                } else {
+                    return 0.0;
+                }
+            } else {
+                return Math.exp(-(t * t) / (2 * sigma * sigma)) / (sigma * TWO_PI_SQ);
+            }
         }
 
         @Override
         public String toString ()
         {
-            return "Gaussian (mean=" + mean + ", sigma=" + sigma + ")";
+            return String.format("Gaussian (mean=%.3f, sigma=%.3f)", mean, sigma);
         }
     }
 }

@@ -101,7 +101,7 @@ public class BarConnection
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(impacts);
+        sb.append(" ").append(impacts);
 
         return sb.toString();
     }

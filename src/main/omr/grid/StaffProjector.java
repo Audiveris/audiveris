@@ -27,10 +27,7 @@ import omr.sig.GradeImpacts;
 import omr.sig.Inter;
 
 import omr.util.HorizontalSide;
-
-import static omr.util.HorizontalSide.LEFT;
-import static omr.util.HorizontalSide.RIGHT;
-
+import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
 
 import ij.process.ByteProcessor;
@@ -289,6 +286,11 @@ public class StaffProjector
 
         final int stop = newStop.abscissa;
 
+        // Check peak width is not huge
+        if ((stop - start + 1) > params.maxBarWidth) {
+            return null;
+        }
+
         // Compute chunk if relevant
         final Integer leftChunk = getChunk(start, -1);
         final Integer rightChunk = getChunk(stop, +1);
@@ -335,17 +337,7 @@ public class StaffProjector
         double grade = impacts.getGrade();
 
         if (grade >= Inter.minGrade) {
-            boolean isThin = (stop - start + 1) <= params.maxThinWidth;
-            BarPeak peak = new BarPeak(
-                    staff,
-                    yTop,
-                    yBottom,
-                    start,
-                    stop,
-                    isThin,
-                    value,
-                    chunk,
-                    impacts);
+            BarPeak peak = new BarPeak(staff, yTop, yBottom, start, stop, value, chunk, impacts);
 
             return peak;
         }
@@ -479,9 +471,13 @@ public class StaffProjector
         for (int x = xStart + dir; (dir * (xEnd - x)) >= 0; x += dir) {
             int proj = projection.getValue(x);
 
-            // If we encounter a peak, chunk test is not reliable because of risk of pixels stuck
+            // If we encounter a peak, chunk test may not be reliable because of risk of pixels stuck
             if (proj >= params.barThreshold) {
-                return null;
+                if (minValue <= params.chunkThreshold) {
+                    return minValue;
+                } else {
+                    return null;
+                }
             }
 
             minValue = Math.min(minValue, proj);
@@ -630,6 +626,8 @@ public class StaffProjector
                             x,
                             linesEnd);
                     staff.setAbscissa(side, x);
+
+                    // Moreover, a short chunk indicates peak is not a bar line, perhaps a C-clef.
                 } else {
                     // No significant line chunks, ignore them and stay with peak as the limit
                     final int peakMid = (endPeak.getStart() + endPeak.getStop()) / 2;
@@ -766,63 +764,6 @@ public class StaffProjector
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final Scale.Fraction maxThinWidth = new Scale.Fraction(
-                0.40,
-                "Max width for a thin bar line");
-
-        final Scale.Fraction staffAbscissaMargin = new Scale.Fraction(
-                10,
-                "Abscissa margin for checks around staff");
-
-        final Scale.Fraction barChunkDx = new Scale.Fraction(
-                0.4,
-                "Abscissa margin for chunks check around bar");
-
-        final Scale.Fraction barRefineDx = new Scale.Fraction(
-                0.25,
-                "Abscissa margin for refining peak sides");
-
-        final Scale.Fraction minDerivative = new Scale.Fraction(
-                0.75,
-                "Minimum absolute derivative for peak side");
-
-        final Scale.Fraction barThreshold = new Scale.Fraction(
-                3.0,
-                "Minimum cumul value to detect bar peak");
-
-        final Scale.Fraction gapThreshold = new Scale.Fraction(
-                0.5,
-                "Maximum vertical gap length in a bar");
-
-        final Scale.Fraction chunkThreshold = new Scale.Fraction(
-                0.4,
-                "Maximum cumul value to detect chunk (on top of lines)");
-
-        final Scale.LineFraction blankThreshold = new Scale.LineFraction(
-                2.5,
-                "Maximum cumul value (in LineFraction) to detect no-line regions");
-
-        final Scale.Fraction minWideBlankWidth = new Scale.Fraction(
-                1.0,
-                "Minimum width for a wide blank region (to limit peaks search)");
-
-        final Scale.Fraction minSmallBlankWidth = new Scale.Fraction(
-                0.1,
-                "Minimum width for a small blank region (to end a staff side)");
-
-        final Scale.Fraction maxBarToEnd = new Scale.Fraction(
-                0.5,
-                "Maximum dx between bar and end of staff");
-    }
-
     //-------//
     // Blank //
     //-------//
@@ -871,14 +812,67 @@ public class StaffProjector
         }
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Scale.Fraction staffAbscissaMargin = new Scale.Fraction(
+                10,
+                "Abscissa margin for checks around staff");
+
+        final Scale.Fraction barChunkDx = new Scale.Fraction(
+                0.4,
+                "Abscissa margin for chunks check around bar");
+
+        final Scale.Fraction barRefineDx = new Scale.Fraction(
+                0.25,
+                "Abscissa margin for refining peak sides");
+
+        final Scale.Fraction minDerivative = new Scale.Fraction(
+                0.75,
+                "Minimum absolute derivative for peak side");
+
+        final Scale.Fraction barThreshold = new Scale.Fraction(
+                3.0,
+                "Minimum cumul value to detect bar peak");
+
+        final Scale.Fraction gapThreshold = new Scale.Fraction(
+                0.5,
+                "Maximum vertical gap length in a bar");
+
+        final Scale.Fraction chunkThreshold = new Scale.Fraction(
+                0.4,
+                "Maximum cumul value to detect chunk (on top of lines)");
+
+        final Scale.LineFraction blankThreshold = new Scale.LineFraction(
+                2.5,
+                "Maximum cumul value (in LineFraction) to detect no-line regions");
+
+        final Scale.Fraction minWideBlankWidth = new Scale.Fraction(
+                1.0,
+                "Minimum width for a wide blank region (to limit peaks search)");
+
+        final Scale.Fraction minSmallBlankWidth = new Scale.Fraction(
+                0.1,
+                "Minimum width for a small blank region (to end a staff side)");
+
+        final Scale.Fraction maxBarToEnd = new Scale.Fraction(
+                0.15,
+                "Maximum dx between bar and end of staff");
+
+        final Scale.Fraction maxBarWidth = new Scale.Fraction(1.0, "Maximum bar width");
+    }
+
     //------------//
     // Parameters //
     //------------//
     private static class Parameters
     {
         //~ Instance fields ------------------------------------------------------------------------
-
-        final int maxThinWidth;
 
         final int staffAbscissaMargin;
 
@@ -904,10 +898,11 @@ public class StaffProjector
 
         final int maxBarToEnd;
 
+        final int maxBarWidth;
+
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
-            maxThinWidth = scale.toPixels(constants.maxThinWidth);
             staffAbscissaMargin = scale.toPixels(constants.staffAbscissaMargin);
             barChunkDx = scale.toPixels(constants.barChunkDx);
             barRefineDx = scale.toPixels(constants.barRefineDx);
@@ -919,6 +914,7 @@ public class StaffProjector
             minWideBlankWidth = scale.toPixels(constants.minWideBlankWidth);
             minSmallBlankWidth = scale.toPixels(constants.minSmallBlankWidth);
             maxBarToEnd = scale.toPixels(constants.maxBarToEnd);
+            maxBarWidth = scale.toPixels(constants.maxBarWidth);
 
             // For chunk threshold the strategy is to use the largest value
             // among (4 times max fore) and (4 times mean fore) + fraction

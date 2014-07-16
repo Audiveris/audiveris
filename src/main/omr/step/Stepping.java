@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.step;
 
+import omr.constant.ConstantSet;
+
 import omr.score.Score;
 import omr.score.entity.Page;
 import omr.score.ui.ScoreActions;
@@ -50,6 +52,8 @@ import javax.swing.SwingUtilities;
 public class Stepping
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Stepping.class);
 
@@ -159,11 +163,11 @@ public class Stepping
     // processScore //
     //--------------//
     /**
-     * At score level, perform the desired steps (as well as all needed
-     * intermediate steps).
+     * At score level, perform the desired steps (as well as all needed intermediate
+     * steps).
      * <p>
-     * This method is used from the CLI, from a script or from the Step menu
-     * (via the StepTask), and from the drag&drop handler.
+     * This method is used from the CLI, from a script or from the Step menu (via the StepTask),
+     * and from the drag&drop handler.
      *
      * @param desiredSteps the desired steps
      * @param pages        specific set of pages, if any
@@ -206,10 +210,29 @@ public class Stepping
                         : orderedSteps.last();
             }
 
-            // Add all intermediate mandatory steps
-            for (Step step : range(start, stop)) {
-                if (step.isMandatory()) {
-                    orderedSteps.add(step);
+            // Add all intermediate mandatory steps?
+            if (constants.generateIntermediateSteps.isSet()) {
+                for (Step step : range(start, stop)) {
+                    if (step.isMandatory()) {
+                        orderedSteps.add(step);
+                    }
+                }
+            } else {
+                // Insert steps only until last desired mandatory step
+                Step lastMandatory = null;
+
+                for (Step step : orderedSteps) {
+                    if (step.isMandatory()) {
+                        lastMandatory = step;
+                    }
+                }
+
+                if (lastMandatory != null) {
+                    for (Step step : range(start, lastMandatory)) {
+                        if (step.isMandatory()) {
+                            orderedSteps.add(step);
+                        }
+                    }
                 }
             }
 
@@ -237,14 +260,15 @@ public class Stepping
     // reprocessSheet //
     //----------------//
     /**
-     * For just a given sheet, update the steps already done, starting
-     * from the provided step.
-     * This method will try to minimize the systems to rebuild in each step, by
-     * processing only the provided "impacted" systems.
+     * For just a given sheet, update the steps already done, starting from the provided
+     * step.
+     * This method will try to minimize the systems to rebuild in each step, by processing only the
+     * provided "impacted" systems.
      *
      * @param step            the step to restart from
-     * @param impactedSystems the ordered set of systems to rebuild, or null
-     *                        if all systems must be rebuilt
+     * @param sheet           the sheet to process
+     * @param impactedSystems the ordered set of systems to rebuild, or null if all systems must be
+     *                        rebuilt
      * @param imposed         flag to indicate that update is imposed
      */
     public static void reprocessSheet (Step step,
@@ -259,14 +283,15 @@ public class Stepping
     // reprocessSheet //
     //----------------//
     /**
-     * For just a given sheet, update the steps already done, starting
-     * from the provided step.
-     * This method will try to minimize the systems to rebuild in each step, by
-     * processing only the provided "impacted" systems.
+     * For just a given sheet, update the steps already done, starting from the provided
+     * step.
+     * This method will try to minimize the systems to rebuild in each step, by processing only the
+     * provided "impacted" systems.
      *
      * @param step            the step to restart from
-     * @param impactedSystems the ordered set of systems to rebuild, or null
-     *                        if all systems must be rebuilt
+     * @param sheet           the sheet to process
+     * @param impactedSystems the ordered set of systems to rebuild, or null if all systems must be
+     *                        rebuilt
      * @param imposed         flag to indicate that update is imposed
      * @param merge           true if step SCORE (merge of pages) is allowed
      */
@@ -335,8 +360,8 @@ public class Stepping
     // notifyStep //
     //------------//
     /**
-     * Notify the UI part that the provided step has started or stopped
-     * in the provided sheet.
+     * Notify the UI part that the provided step has started or stopped in the provided
+     * sheet.
      *
      * @param sheet the sheet concerned
      * @param step  the step notified
@@ -375,8 +400,8 @@ public class Stepping
     // doOneScoreStep //
     //----------------//
     /**
-     * At score level, do just one specified step, synchronously, with
-     * display of related UI and recording of the step into the script.
+     * At score level, do just one specified step, synchronously, with display of
+     * related UI and recording of the step into the script.
      *
      * @param step  the step to perform
      * @param score the score to be processed
@@ -405,8 +430,8 @@ public class Stepping
     // doOneSheetStep //
     //----------------//
     /**
-     * At sheet level, do just one specified step, synchronously, with
-     * display of related UI and recording of the step into the script.
+     * At sheet level, do just one specified step, synchronously, with display of
+     * related UI and recording of the step into the script.
      *
      * @param step  the step to perform
      * @param sheet the sheet to be processed
@@ -435,12 +460,11 @@ public class Stepping
     // doScoreStepSet //
     //----------------//
     /**
-     * At score level, perform a set of steps, with online display of a
-     * progress monitor.
-     *
+     * At score level, perform a set of steps, with online display of a progress monitor.
      * <p>
-     * We can perform all the pages in parallel or in sequence, depending on
-     * the value of constant 'pagesInParallel'.</p>
+     * We can perform all the pages in parallel or in sequence, depending on the current value of
+     * {@link OmrExecutors#defaultParallelism}.
+     * TODO: We could allow parallelism within a page and not between pages, to save memory.
      *
      * @param stepSet the set of steps
      * @param score   the score to be processed
@@ -496,8 +520,7 @@ public class Stepping
     //----------------//
     /**
      * At sheet level, perform a set of steps, with online progress monitor.
-     * If any step in the step set throws {@link StepException} the processing
-     * is stopped.
+     * If any step in the step set throws {@link StepException} the processing is stopped.
      *
      * @param stepSet the set of steps
      * @param sheet   the sheet to be processed
@@ -524,8 +547,7 @@ public class Stepping
     /**
      * Notify a simple message, which may be not related to any step.
      *
-     * @param msg the message to display on the UI window, or to write in the
-     *            log if there is no UI.
+     * @param msg the message to display on the UI window, or to write in the log if there is no UI.
      */
     private static void notifyMsg (String msg)
     {
@@ -540,7 +562,7 @@ public class Stepping
     // notifyStart //
     //-------------//
     /**
-     * When running interactively, start the progress bar animation
+     * When running interactively, start the progress bar animation.
      */
     private static void notifyStart ()
     {
@@ -554,7 +576,7 @@ public class Stepping
     // notifyStop //
     //------------//
     /**
-     * When running interactively, stop the progress bar animation
+     * When running interactively, stop the progress bar animation.
      */
     private static void notifyStop ()
     {
@@ -569,8 +591,8 @@ public class Stepping
     // scheduleScoreStepSet //
     //----------------------//
     /**
-     * Organize the scheduling of steps at score level among the sheets,
-     * since some steps have specific requirements
+     * Organize the scheduling of steps at score level among the sheets, since some
+     * steps have specific requirements
      *
      * @param orderedSet the sequence of steps
      * @param score      the score to process
@@ -585,7 +607,7 @@ public class Stepping
             return;
         }
 
-         logger.info("{}Scheduling {}", score.getLogPrefix(), stepSet);
+        logger.info("{}Scheduling {}", score.getLogPrefix(), stepSet);
 
         long startTime = System.currentTimeMillis();
         notifyStart();
@@ -647,5 +669,19 @@ public class Stepping
 
         long stopTime = System.currentTimeMillis();
         logger.debug("End of step set in {} ms.", (stopTime - startTime));
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final omr.constant.Constant.Boolean generateIntermediateSteps = new omr.constant.Constant.Boolean(
+                true,
+                "Should we generate intermediate steps?");
     }
 }

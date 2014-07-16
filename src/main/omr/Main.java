@@ -130,27 +130,49 @@ public class Main
             tasks.addAll(getScriptsTasks());
 
             if (!tasks.isEmpty()) {
-                try {
-                    logger.info("Submitting {} task(s)", tasks.size());
+                // Run all tasks in parallel or one task at a time
+                if (constants.batchTasksInParallel.isSet()) {
+                    try {
+                        logTasks(tasks, true);
 
-                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor().invokeAll(
-                            tasks,
-                            constants.processTimeOut.getValue(),
-                            TimeUnit.SECONDS);
-                    logger.info("Checking {} task(s)", tasks.size());
+                        List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor().invokeAll(
+                                tasks,
+                                constants.processTimeOut.getValue(),
+                                TimeUnit.SECONDS);
+                        logger.info("Checking {} task(s)", tasks.size());
 
-                    // Check for time-out
-                    for (Future<Void> future : futures) {
+                        // Check for time-out
+                        for (Future<Void> future : futures) {
+                            try {
+                                future.get();
+                            } catch (Exception ex) {
+                                logger.warn("Future exception", ex);
+                                failure = true;
+                            }
+                        }
+                    } catch (Exception ex) {
+                        logger.warn("Error in processing tasks", ex);
+                        failure = true;
+                    }
+                } else {
+                    logTasks(tasks, false);
+
+                    for (Callable<Void> task : tasks) {
                         try {
-                            future.get();
+                            Future<Void> future = OmrExecutors.getCachedLowExecutor().submit(task);
+
+                            // Check for time-out
+                            try {
+                                future.get(constants.processTimeOut.getValue(), TimeUnit.SECONDS);
+                            } catch (Exception ex) {
+                                logger.warn("Future exception", ex);
+                                failure = true;
+                            }
                         } catch (Exception ex) {
-                            logger.warn("Future exception", ex);
+                            logger.warn("Error in processing task " + task, ex);
                             failure = true;
                         }
                     }
-                } catch (Exception ex) {
-                    logger.warn("Error in processing tasks", ex);
-                    failure = true;
                 }
             }
 
@@ -220,7 +242,7 @@ public class Main
     /**
      * Prepare the processing of image files listed on command line
      *
-     * @return the collection of proper callables
+     * @return the collection of proper callable instances
      */
     public static List<Callable<Void>> getFilesTasks ()
     {
@@ -273,6 +295,12 @@ public class Main
                                 logger.warn(msg);
                                 throw new RuntimeException(msg);
                             }
+                        }
+
+                        @Override
+                        public String toString ()
+                        {
+                            return "Input " + file;
                         }
                     });
         }
@@ -358,6 +386,12 @@ public class Main
                             ScriptManager.getInstance().loadAndRun(new File(scriptName));
 
                             return null;
+                        }
+
+                        @Override
+                        public String toString ()
+                        {
+                            return "Script " + scriptName;
                         }
                     });
         }
@@ -449,6 +483,23 @@ public class Main
         }
     }
 
+    //----------//
+    // logTasks //
+    //----------//
+    private static void logTasks (List<Callable<Void>> tasks,
+                                  boolean inParallel)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Submitting ").append(tasks.size()).append(" task(s) in ");
+        sb.append(inParallel ? "parallel:" : "sequence:");
+
+        for (Callable task : tasks) {
+            sb.append("\n    ").append(task);
+        }
+
+        logger.info(sb.toString());
+    }
+
     //---------//
     // process //
     //---------//
@@ -530,9 +581,24 @@ public class Main
                 false,
                 "Should we persist CLI-defined constants when running in batch?");
 
+        private final Constant.Boolean batchTasksInParallel = new Constant.Boolean(
+                false,
+                "Should we process all tasks in parallel when running in batch?");
+
         private final Constant.Integer processTimeOut = new Constant.Integer(
                 "Seconds",
-                300,
+                60, //300,
                 "Process time-out, specified in seconds");
     }
+
+    //
+    //    private static class FileCallable
+    //        implements Callable
+    //    {
+    //    }
+    //
+    //    private static class ScriptCallable
+    //        implements Callable
+    //    {
+    //    }
 }

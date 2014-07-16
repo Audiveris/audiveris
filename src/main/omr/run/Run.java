@@ -159,8 +159,7 @@ public class Run
     // getCommonLength //
     //-----------------//
     /**
-     * Report the length of the common part with another run (assumed to be
-     * adjacent)
+     * Report the length of the common part with another run (assumed to be adjacent)
      *
      * @param other the other run
      * @return the length of the common part

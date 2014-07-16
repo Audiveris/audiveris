@@ -77,7 +77,6 @@ public class Steps
     public static final String SYMBOL_REDUCTION = "SYMBOL_REDUCTION";
 
     //-- TODO: Current end of mandatory steps --
-
     public static final String MEASURES = "MEASURES";
 
     public static final String PAGES = "PAGES";
@@ -92,6 +91,8 @@ public class Steps
     public static final String EXPORT = "EXPORT";
 
     public static final String PLUGIN = "PLUGIN";
+
+    public static final String TEST = "TEST";
 
     /** Ordered sequence of steps */
     private static final List<Step> steps = new ArrayList<Step>();
@@ -133,6 +134,7 @@ public class Steps
         addStep(new DeltaStep());
         addStep(new PrintStep());
         addStep(new ExportStep());
+        addStep(new TestStep());
 
         // Plugin step depends on default plugin
         Plugin plugin = PluginsManager.getInstance().getDefaultPlugin();
