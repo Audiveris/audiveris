@@ -518,6 +518,9 @@ public class StaffProjector
         // Best derivative so far
         int bestDer = 0;
 
+        // True if other peak found close to this one
+        boolean closePeakFound = false;
+
         for (int x = x1; (dir * (x2 - x)) >= 0; x += dir) {
             int der = projection.getDerivative(x);
 
@@ -531,12 +534,14 @@ public class StaffProjector
 
             if (val < params.chunkThreshold) {
                 break;
+            } else if ((val >= params.barThreshold) && (x != x1)) {
+                closePeakFound = true;
             }
         }
 
         bestDer = Math.abs(bestDer);
 
-        if (bestDer >= params.minDerivative) {
+        if ((bestDer >= params.minDerivative) || closePeakFound) {
             int x = (dir > 0) ? (bestX - 1) : bestX;
             double derImpact = (double) bestDer / (params.barThreshold - params.minDerivative);
 
