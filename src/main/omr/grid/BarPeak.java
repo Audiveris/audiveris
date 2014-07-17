@@ -75,6 +75,9 @@ public class BarPeak
     /** Does the related glyph get below the staff?. */
     private boolean isBelow;
 
+    /** If this peak accepted as staff end?. */
+    private boolean isEnd;
+
     /** Corresponding bar or bracket inter, if any. */
     private AbstractVerticalInter inter;
 
@@ -246,12 +249,19 @@ public class BarPeak
     //-----------//
     // isBracket //
     //-----------//
+    /**
+     * Report whether this peak is a portion of a bracket.
+     *
+     * @return isBracketAbove || isBracketMiddle || isBracketBelow
+     */
     public boolean isBracket ()
     {
         return isBracketAbove || isBracketMiddle || isBracketBelow;
     }
 
     /**
+     * Report whether this peak is the top portion of a bracket.
+     *
      * @return the isBracketAbove
      */
     public boolean isBracketAbove ()
@@ -260,6 +270,8 @@ public class BarPeak
     }
 
     /**
+     * Report whether this peak is the bottom portion of a bracket.
+     *
      * @return the isBracketBelow
      */
     public boolean isBracketBelow ()
@@ -268,6 +280,8 @@ public class BarPeak
     }
 
     /**
+     * Report whether this peak is a middle portion of a bracket.
+     *
      * @return the isBracketMiddle
      */
     public boolean isBracketMiddle ()
@@ -275,9 +289,24 @@ public class BarPeak
         return isBracketMiddle;
     }
 
+    /**
+     * Report whether this peak defines a staff end.
+     *
+     * @return the isEnd
+     */
+    public boolean isEnd ()
+    {
+        return isEnd;
+    }
+
     //--------//
     // isThin //
     //--------//
+    /**
+     * Report whether this peak is considered as THIN (vs THICK).
+     *
+     * @return isThin
+     */
     public Boolean isThin ()
     {
         return isThin;
@@ -321,6 +350,16 @@ public class BarPeak
     public void setBracketMiddle ()
     {
         this.isBracketMiddle = true;
+    }
+
+    /**
+     * Set this peak as staff end.
+     * 
+     * @param isEnd the isEnd to set
+     */
+    public void setEnd (boolean isEnd)
+    {
+        this.isEnd = isEnd;
     }
 
     //----------//
@@ -371,6 +410,10 @@ public class BarPeak
 
         if (glyph != null) {
             sb.append(" glyph#").append(glyph.getId());
+        }
+
+        if (isEnd) {
+            sb.append(" end");
         }
 
         if (isBracketAbove) {

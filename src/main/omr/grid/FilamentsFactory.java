@@ -272,6 +272,12 @@ public class FilamentsFactory
     //----------------------//
     /**
      * Aggregate sections into one filament along the provided skeleton line.
+     * <p>
+     * This method is used to retrieve the underlying glyph of a bar line peak.
+     * It allows to detect if a bar goes beyond staff height.
+     * It also allows to evaluate glyph straightness and thus discard peaks due to braces.
+     * <p>
+     * Perhaps we could also use the abscissa range of the peak rectangle?
      *
      * @param source the collection of candidate input sections
      * @param line   the skeleton line
@@ -283,7 +289,7 @@ public class FilamentsFactory
         StopWatch watch = new StopWatch("retrieveLineFilament " + orientation);
 
         try {
-            // Aggregate long sections onto provided lines
+            // Aggregate long sections onto skeleton line
             watch.start("populateLines");
 
             Glyph fil = populateLine(source, line);
@@ -357,21 +363,6 @@ public class FilamentsFactory
         params.maxOverlapDeltaPos = scale.toPixels(lFrac);
     }
 
-    //    //------------------------//
-    //    // setMaxSectionThickness //
-    //    //------------------------//
-    //    public void setMaxSectionThickness (Scale.LineFraction lineFrac)
-    //    {
-    //        params.maxSectionThickness = scale.toPixels(lineFrac);
-    //    }
-    //
-    //    //------------------------//
-    //    // setMaxSectionThickness //
-    //    //------------------------//
-    //    public void setMaxSectionThickness (Scale.Fraction frac)
-    //    {
-    //        params.maxSectionThickness = scale.toPixels(frac);
-    //    }
     //--------------------//
     // setMaxOverlapSpace //
     //--------------------//
@@ -926,6 +917,10 @@ public class FilamentsFactory
     /**
      * Use the long source sections to stick to the provided skeleton line and return
      * the resulting filament.
+     * <p>
+     * Strategy: We use only the long sections that close enough to the target line.
+     * (TODO: perhaps we could incrementally add the other long sections if close to some already
+     * included section)
      *
      * @param source the input sections
      * @param lines  the imposed skeleton lines
@@ -933,7 +928,7 @@ public class FilamentsFactory
     private Glyph populateLine (Collection<Section> source,
                                 Line line)
     {
-        List<Section> longSections = new ArrayList<Section>();
+        List<DistantSection> longSections = new ArrayList<DistantSection>();
 
         for (Section section : source) {
             section.setProcessed(false);
@@ -945,38 +940,45 @@ public class FilamentsFactory
                     logger.info("Too short {}", section);
                 }
             } else {
-                longSections.add(section);
+                Point centroid = section.getCentroid();
+                double gap = (orientation == HORIZONTAL) ? (line.yAtXExt(centroid.x) - centroid.y)
+                        : (line.xAtYExt(centroid.y) - centroid.x);
+
+                longSections.add(new DistantSection(section, Math.abs(gap)));
             }
         }
 
-        // Sort sections by decreasing length
-        Collections.sort(longSections, Sections.byReverseLength(orientation));
+        // Sort sections by distance to line
+        Collections.sort(longSections);
 
         Glyph fil = createFilament(null);
-        final Rectangle lineBox = orientation.oriented(line.getBounds());
-        lineBox.grow(params.maxCoordGap, params.maxPosGap);
 
-        for (Section section : longSections) {
+        //        boolean modified;
+        //
+        //        do {
+        //            modified = false;
+        for (Iterator<DistantSection> it = longSections.iterator(); it.hasNext();) {
+            DistantSection dSection = it.next();
+            Section section = dSection.section;
+
             if (section.isProcessed()) {
                 continue;
             }
 
-            Rectangle sectionBox = orientation.oriented(section.getBounds());
+            // Include section if close to the line (TODO: or close to an already included section?)
+            double gap = dSection.dist;
 
-            if (sectionBox.intersects(lineBox)) {
-                Point centroid = section.getCentroid();
-
-                // Closer look: check distance to line
-                double gap = (orientation == HORIZONTAL) ? (line.yAtXExt(centroid.x) - centroid.y)
-                        : (line.xAtYExt(centroid.y) - centroid.x);
-
-                if (Math.abs(gap) <= params.maxPosGap) {
-                    fil.addSection(section, GlyphComposition.Linking.NO_LINK);
-                    section.setProcessed(true);
-                }
+            if (Math.abs(gap) <= params.maxPosGap) {
+                fil.addSection(section, GlyphComposition.Linking.NO_LINK);
+                section.setProcessed(true);
+                it.remove();
+                ///modified = true;
+            } else {
+                break;
             }
         }
 
+        //        } while (modified);
         if (!fil.getMembers().isEmpty()) {
             if (constants.registerEachAndEveryGlyph.isSet()) {
                 return nest.registerGlyph(fil); // Not really useful
@@ -1100,6 +1102,45 @@ public class FilamentsFactory
         Scale.Fraction maxInvolvingLength = new Scale.Fraction(
                 2,
                 "Maximum filament length to apply thickness test");
+    }
+
+    //----------------//
+    // DistantSection //
+    //----------------//
+    /**
+     * Meant to ease sorting of sections according to their distance to line.
+     */
+    private static class DistantSection
+            implements Comparable<DistantSection>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Underlying section. */
+        final Section section;
+
+        /** Distance to line. */
+        final double dist;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public DistantSection (Section section,
+                               double dist)
+        {
+            this.section = section;
+            this.dist = dist;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public int compareTo (DistantSection that)
+        {
+            return Double.compare(dist, that.dist);
+        }
+
+        @Override
+        public String toString ()
+        {
+            return dist + "/" + section;
+        }
     }
 
     //------------//

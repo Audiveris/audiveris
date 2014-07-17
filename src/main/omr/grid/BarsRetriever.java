@@ -41,6 +41,7 @@ import omr.run.RunsTable;
 import omr.sheet.PartInfo;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
+import omr.sheet.Scale.Fraction;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
@@ -67,7 +68,6 @@ import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.IntUtil;
 import omr.util.Navigable;
-import omr.util.StopWatch;
 import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
 
@@ -271,7 +271,7 @@ public class BarsRetriever
         // Build core glyph for each peak
         buildBarSticks();
 
-        // Detect braces
+        // Remove braces
         purgeBracePeaks();
 
         // Find all bar (or bracket) alignments across staves
@@ -434,8 +434,6 @@ public class BarsRetriever
     {
         Histogram<Integer> widths = getWidthHistogram();
         int maxWidth = widths.lastBucket();
-        StopWatch watch = new StopWatch("buildBarSticks");
-        watch.start("buildSticks()");
 
         // Preselect sections of proper max width
         List<Section> allSections = getSectionsByWidth(maxWidth);
@@ -451,7 +449,7 @@ public class BarsRetriever
         // Factory parameters adjustment
         factory.setMaxCoordGap(constants.maxCoordGap);
         factory.setMaxPosGap(constants.maxPosGap);
-        factory.setMaxExpansionSpace(constants.maxExpansionSpace);
+        factory.setMaxExpansionSpace(Fraction.ZERO);
         factory.setMaxOverlapSpace(constants.maxOverlapSpace);
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
 
@@ -463,8 +461,8 @@ public class BarsRetriever
                 NaturalSpline line = NaturalSpline.interpolate(
                         new Point2D.Double(xMid, peak.getTop()),
                         new Point2D.Double(xMid, peak.getBottom()));
-                ///factory.setMaxThickness(maxWidth);
-                factory.setMaxThickness((int) Math.rint(1.5 * peak.getWidth()));
+                factory.setMaxThickness(
+                        (int) Math.rint(constants.glyphWidthRatio.getValue() * peak.getWidth()));
 
                 Glyph glyph = factory.retrieveLineFilament(sections, line);
                 peak.setGlyph(glyph);
@@ -472,8 +470,6 @@ public class BarsRetriever
                 logger.debug("Staff#{} {}", staff.getId(), peak);
             }
         }
-
-        ///watch.print();
     }
 
     //-----------------//
@@ -1441,10 +1437,10 @@ public class BarsRetriever
      * It should be looked for in two location kinds:
      * <ul>
      * <li>At the very beginning of staff with no initial bar line, with only a short chunk of staff
-     * lines.
+     * lines, so that first peak is not a staff end.
      * <li>After a bar line, provided this bar line is not part of a thin + thick + thin group.
      * For this case the horizontal gap between bar line and start of C-clef must be larger than
-     * maximum multi bar gap.
+     * maximum multi-bar gap.
      * </ul>
      */
     private void purgeCClefs ()
@@ -1461,13 +1457,17 @@ public class BarsRetriever
                     continue;
                 }
 
-                // Look for a thick peak
-                if (!peak.isThin() && !peak.isBracket()) {
-                    // If at staff start BINGO BINGO BINGO BINGO BINGO BINGO BINGO BINGO BINGO BINGO BINGO BINGO BINGO
-                    // Check gap is larger than double bar gap and smaller than measure
+                // Look for a rather thick first peak
+                if (!peak.isEnd()
+                    && !peak.isBracket()
+                    && (peak.getWidth() >= params.minPeak1WidthForCClef)) {
+                    // Check gap is larger than multi-bar gap but smaller than measure
                     int gap = peak.getStart() - measureStart;
 
-                    if ((gap > params.maxDoubleBarGap)
+                    // Gap is not relevant for first measure, thanks to !peak.isEnd() test
+                    int minGap = (measureStart == staffStart) ? 0 : params.maxDoubleBarGap;
+
+                    if ((gap > minGap)
                         && (gap < params.minMeasureWidth)
                         && !isConnected(peak, TOP)
                         && !isConnected(peak, BOTTOM)) {
@@ -1477,29 +1477,48 @@ public class BarsRetriever
 
                         final List<BarPeak> toRemove = new ArrayList<BarPeak>();
                         toRemove.add(peak);
-                        measureStart = peak.getStop() + 1;
 
-                        // Look for thin peak right after this one
-                        BarPeak nextPeak = (i < (peaks.size() - 1)) ? peaks.get(i + 1) : null;
+                        // Look for a rather thin second peak right after the first
+                        if ((i + 1) < peaks.size()) {
+                            final BarPeak peak2 = peaks.get(i + 1);
+                            int gap2 = peak2.getStart() - peak.getStop() - 1;
 
-                        if (nextPeak != null) {
-                            int nextGap = nextPeak.getStart() - peak.getStop() - 1;
-
-                            if (nextPeak.isThin()
-                                && (nextGap <= params.maxDoubleBarGap)
-                                && !isConnected(nextPeak, TOP)
-                                && !isConnected(nextPeak, BOTTOM)) {
+                            if ((peak2.getWidth() <= params.maxPeak2WidthForCClef)
+                                && (gap2 <= params.maxDoubleBarGap)
+                                && !isConnected(peak2, TOP)
+                                && !isConnected(peak2, BOTTOM)) {
                                 if (logger.isDebugEnabled()
                                     || peak.getGlyph().isVip()
-                                    || nextPeak.getGlyph().isVip()) {
-                                    logger.info("VIP Got a C-Clef peak2 at {}", nextPeak);
+                                    || peak2.getGlyph().isVip()) {
+                                    logger.info("VIP Got a C-Clef peak2 at {}", peak2);
                                 }
 
-                                toRemove.add(nextPeak);
+                                toRemove.add(peak2);
                                 logger.debug("Staff#{} purging C-Clef {}", staff.getId(), toRemove);
-                                staff.removeBarPeaks(toRemove);
                                 i++; // Don't re-browse this peak
-                                measureStart = nextPeak.getStop() + 1;
+
+                                // Avoid false peaks before the end of C-Clef has been passed
+                                if ((i + 1) < peaks.size()) {
+                                    int mid2 = (peak2.getStart() + peak2.getStop()) / 2;
+                                    int xBreak = mid2 + params.cClefTail;
+
+                                    for (BarPeak otherPeak : peaks.subList(i + 1, peaks.size())) {
+                                        int otherMid = (otherPeak.getStart() + otherPeak.getStop()) / 2;
+
+                                        if (otherMid < xBreak) {
+                                            logger.debug(
+                                                    "Staff#{} purging tail of C-Clef {}",
+                                                    staff.getId(),
+                                                    otherPeak);
+                                            toRemove.add(otherPeak);
+                                            i++; // Don't re-browse this peak
+                                        } else {
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                staff.removeBarPeaks(toRemove);
                             }
                         }
                     } else {
@@ -1777,16 +1796,16 @@ public class BarsRetriever
                 "Maximum delta ordinate for a gap between filaments");
 
         Scale.Fraction maxPosGap = new Scale.Fraction(
-                0.25,
+                0.2,
                 "Maximum delta abscissa between section and filament skeleton");
-
-        Scale.Fraction maxExpansionSpace = new Scale.Fraction(
-                0,
-                "Maximum abscissa space between section and filament skeleton");
 
         Scale.Fraction maxOverlapSpace = new Scale.Fraction(
                 0.1,
                 "Maximum space between overlapping bar filaments");
+
+        Constant.Ratio glyphWidthRatio = new Constant.Ratio(
+                1.25,
+                "Widening ratio for building bar glyphs");
 
         Scale.Fraction maxBarExtension = new Scale.Fraction(
                 0.3,
@@ -1816,26 +1835,34 @@ public class BarsRetriever
                 2.0,
                 "Minimum width for a measure");
 
+        Scale.Fraction minPeak1WidthForCClef = new Scale.Fraction(
+                0.3,
+                "Minimum width for first peak of C-Clef");
+
+        Scale.Fraction maxPeak2WidthForCClef = new Scale.Fraction(
+                0.3,
+                "Maximum width for second peak of C-Clef");
+
+        Scale.Fraction cClefTail = new Scale.Fraction(
+                2.0,
+                "Typical width for tail of C-Clef, from second peak to right end");
+
         Constant.Ratio alignedIncreaseRatio = new Constant.Ratio(
                 0.30,
-                "Increase ratio for aligned bar lines");
+                "Boost ratio for aligned bar lines");
 
         Constant.Ratio unalignedDecreaseRatio = new Constant.Ratio(
                 0.30,
-                "Decrease ratio for unaligned bar lines (in multi-staff systems)");
+                "Penalty ratio for unaligned bar lines (in multi-staff systems)");
 
         Constant.Boolean deleteUnalignedBars = new Constant.Boolean(
                 true,
                 "Should unaligned bar lines be deleted? (in multi-staff systems)");
 
-        // Constants for display
-        //
         Constant.Boolean showVerticalLines = new Constant.Boolean(
                 false,
                 "Should we display the vertical lines?");
 
-        // Constants for debugging
-        //
         Constant.String verticalVipSections = new Constant.String(
                 "",
                 "(Debug) Comma-separated list of VIP vertical sections");
@@ -1874,6 +1901,12 @@ public class BarsRetriever
 
         final int minMeasureWidth;
 
+        final int minPeak1WidthForCClef;
+
+        final int maxPeak2WidthForCClef;
+
+        final int cClefTail;
+
         // Debug
         final List<Integer> vipSections;
 
@@ -1897,6 +1930,9 @@ public class BarsRetriever
             maxConnectionGap = scale.toPixels(constants.maxConnectionGap);
             maxDoubleBarGap = scale.toPixels(constants.maxDoubleBarGap);
             minMeasureWidth = scale.toPixels(constants.minMeasureWidth);
+            cClefTail = scale.toPixels(constants.cClefTail);
+            minPeak1WidthForCClef = scale.toPixels(constants.minPeak1WidthForCClef);
+            maxPeak2WidthForCClef = scale.toPixels(constants.maxPeak2WidthForCClef);
             maxConnectionWhiteRatio = constants.maxConnectionWhiteRatio.getValue();
 
             // VIPs

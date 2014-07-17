@@ -565,7 +565,7 @@ public class StaffProjector
     private void refineStaffSide (HorizontalSide side)
     {
         final int dir = (side == LEFT) ? (-1) : 1;
-        final int linesEnd = staff.getAbscissa(side);
+        final int linesEnd = staff.getAbscissa(side); // As defined by end of long staff lines
         int staffEnd = linesEnd;
         BarPeak endPeak = null;
         Integer peakEnd = null;
@@ -628,6 +628,7 @@ public class StaffProjector
                     staff.setAbscissa(side, x);
 
                     // Moreover, a short chunk indicates peak is not a bar line, perhaps a C-clef.
+                    endPeak.setEnd(false); // Not necessary
                 } else {
                     // No significant line chunks, ignore them and stay with peak as the limit
                     final int peakMid = (endPeak.getStart() + endPeak.getStop()) / 2;
@@ -638,10 +639,19 @@ public class StaffProjector
                             peakMid,
                             linesEnd);
                     staff.setAbscissa(side, peakMid);
+                    endPeak.setEnd(true);
                 }
+            } else {
+                logger.debug(
+                        "Staff#{} {} set at blank {} (vs {})",
+                        staff.getId(),
+                        side,
+                        x,
+                        linesEnd);
+                staff.setAbscissa(side, x);
             }
         } else {
-            logger.debug("Staff#{} no clear end on {}", staff.getId(), side);
+            logger.warn("Staff#{} no clear end on {}", staff.getId(), side);
         }
     }
 
@@ -837,7 +847,7 @@ public class StaffProjector
                 "Minimum absolute derivative for peak side");
 
         final Scale.Fraction barThreshold = new Scale.Fraction(
-                3.0,
+                3.5,
                 "Minimum cumul value to detect bar peak");
 
         final Scale.Fraction gapThreshold = new Scale.Fraction(
@@ -860,11 +870,11 @@ public class StaffProjector
                 0.1,
                 "Minimum width for a small blank region (to end a staff side)");
 
+        final Scale.Fraction maxBarWidth = new Scale.Fraction(1.0, "Maximum bar width");
+
         final Scale.Fraction maxBarToEnd = new Scale.Fraction(
                 0.15,
                 "Maximum dx between bar and end of staff");
-
-        final Scale.Fraction maxBarWidth = new Scale.Fraction(1.0, "Maximum bar width");
     }
 
     //------------//
@@ -896,9 +906,9 @@ public class StaffProjector
 
         final int minSmallBlankWidth;
 
-        final int maxBarToEnd;
-
         final int maxBarWidth;
+
+        final int maxBarToEnd;
 
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
@@ -913,8 +923,8 @@ public class StaffProjector
             blankThreshold = scale.toPixels(constants.blankThreshold);
             minWideBlankWidth = scale.toPixels(constants.minWideBlankWidth);
             minSmallBlankWidth = scale.toPixels(constants.minSmallBlankWidth);
-            maxBarToEnd = scale.toPixels(constants.maxBarToEnd);
             maxBarWidth = scale.toPixels(constants.maxBarWidth);
+            maxBarToEnd = scale.toPixels(constants.maxBarToEnd);
 
             // For chunk threshold the strategy is to use the largest value
             // among (4 times max fore) and (4 times mean fore) + fraction
