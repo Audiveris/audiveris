@@ -107,7 +107,7 @@ public class GlyphsModel
     {
         if (compound) {
             // Build & insert one compound
-            Glyph glyph = nest.buildGlyph(glyphs, true, Glyph.Linking.LINK);
+            Glyph glyph = nest.buildGlyph(glyphs, true);
 
             assignGlyph(glyph, shape, grade);
         } else {

@@ -29,19 +29,18 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Interface {@code GlyphNest} handles a collection of {@link Glyph}
- * instances, with the ability to retrieve a Glyph based on its Id or
- * its location, and the ability to give birth to new glyph instances.
+ * Interface {@code GlyphNest} handles a collection of {@link Glyph} instances, with
+ * the ability to retrieve a Glyph based on its Id or its location, and the ability to
+ * give birth to new glyph instances.
  * <p>
- * A nest has no orientation, nor any of its glyph instances since a glyph is
- * a collection of sections that can be differently oriented.</p>
+ * A nest has no orientation, nor any of its glyph instances since a glyph is a collection of
+ * sections that can be differently oriented.</p>
  * <p>
- * A glyph is made of member sections and always keeps a collection of its
- * member sections. Sections are made of runs of pixels and sections do not
- * overlap in a given layer.
+ * A glyph is made of member sections and always keeps a collection of its member sections. Sections
+ * are made of runs of pixels and sections do not overlap in a given layer.
  * <p>
- * A nest hosts a SelectionService that deals with glyph selection
- * (Events related to Glyph, GlyphId, GlyphSet, GlyphPile, GlyphLayer).
+ * A nest hosts a SelectionService that deals with glyph selection (Events related to Glyph,
+ * GlyphId, GlyphSet, GlyphPile, GlyphLayer).
  * <p>
  * A GlyphNest uses sheet scale, but has no notion of system.
  * Hence, assignment of a glyph to a system must be handled separately.
@@ -54,21 +53,21 @@ import java.util.Set;
  * See {@link GlyphLayer} enumeration.</dd>
  *
  * <dt><b>ID</b></dt>
- * <dd>A glyph instance may be <i>declared</i> at sheet glyph nest, which
- * then maps a sequential ID (unique within the sheet) to the glyph instance.
- * This allows to name the glyph in debugging output and manually retrieve the
- * glyph via its ID at user interface level.
+ * <dd>A glyph instance may be <i>declared</i> at sheet glyph nest, which then maps a sequential ID
+ * (unique within the sheet) to the glyph instance.
+ * This allows to name the glyph in debugging output and manually retrieve the glyph via its ID at
+ * user interface level.
  * A glyph that is not (yet) handled by a nest is called <b>transient</b>.
  * <br/>There is yet no method to simply "declare" a glyph to a nest, only
  * {@link #registerGlyph}.</dd>
  *
  * <dt><b>Signature</b></dt>
  * <dd>A glyph instance may be <b>registered</b> at sheet glyph nest.
- * A signature is then computed based on glyph physical characteristics and
- * registered for a specific layer in glyph nest.
- * This allows to handle <b>original</b> instances and avoid duplicates that
- * would represent the same set of sections.
- * TODO: Is this still useful? This is not certain..
+ * A signature is then computed based on glyph physical characteristics and registered for a
+ * specific layer in glyph nest.
+ * This allows to handle <b>original</b> instances and avoid duplicates that would represent the
+ * same set of sections.
+ * TODO: Is this still useful? This is not certain.
  * <br/>Use {@link #registerGlyph}</dd>
  * </dl>
  *
@@ -88,8 +87,8 @@ public interface GlyphNest
     //~ Methods ------------------------------------------------------------------------------------
     /**
      * Build one glyph in provided layer from a collection of sections.
-     * The returned glyph will be transient (not known by nest) unless the
-     * 'register' parameter is set.
+     * The returned glyph will be transient (not known by nest) unless the 'register' parameter is
+     * set.
      *
      * @param sections the provided members of the future glyph
      * @param layer    the containing layer
@@ -104,23 +103,21 @@ public interface GlyphNest
 
     /**
      * Build one glyph from a collection of glyph parts.
-     * The returned glyph will be transient (not known by nest) unless the
-     * 'register' parameter is set.
+     * The returned glyph will be transient (not known by nest) unless the 'register' parameter is
+     * set.
      * <p>
      * Nota: All parts must belong to the same layer.
      *
      * @param parts    the provided glyph parts
      * @param register true for registering the glyph
-     * @param linking  should we link sections back to glyph?
      * @return the glyph compound
      */
     Glyph buildGlyph (Collection<? extends Glyph> parts,
-                      boolean register,
-                      Glyph.Linking linking);
+                      boolean register);
 
     /**
-     * Look up for <b>all</b> glyph instances in the provided
-     * layer that are contained in a provided rectangle.
+     * Look up for <b>all</b> glyph instances in the provided layer that are contained
+     * in a provided rectangle.
      *
      * @param rect  the coordinates rectangle
      * @param layer the containing glyph layer
@@ -137,24 +134,23 @@ public interface GlyphNest
     void cutServices (SelectionService locationService);
 
     /**
-     * Export the whole unmodifiable collection of glyph instances
-     * of all layers in the nest.
+     * Export the whole unmodifiable collection of glyph instances of all layers in the
+     * nest.
      *
      * @return the collection of glyph instances whatever their layer
      */
     Collection<Glyph> getAllGlyphs ();
 
     /**
-     * Export the whole unmodifiable collection of all glyph instances
-     * ever inserted in the nest.
+     * Export the whole unmodifiable collection of all glyph instances ever inserted in
+     * the nest.
      *
      * @return the collection of glyph instances including deleted ones
      */
     Collection<Glyph> getAllGlyphsEver ();
 
     /**
-     * Retrieve a glyph via its Id among the collection of glyph
-     * instances.
+     * Retrieve a glyph via its Id among the collection of glyph instances.
      *
      * @param id the glyph id to search for
      * @return the glyph found, or null otherwise
@@ -169,8 +165,8 @@ public interface GlyphNest
     SelectionService getGlyphService ();
 
     /**
-     * Export the unmodifiable collection of glyph instances of
-     * the nest for the provided layer.
+     * Export the unmodifiable collection of glyph instances of the nest for the
+     * provided layer.
      *
      * @param layer the containing glyph layer
      * @return the collection of glyph instances for specified layer
@@ -185,8 +181,7 @@ public interface GlyphNest
     String getName ();
 
     /**
-     * Return the original glyph, if any, that the provided glyph
-     * duplicates in its layer.
+     * Return the original glyph, if any, that the provided glyph duplicates in its layer.
      *
      * @param glyph the provided glyph
      * @return the original for this glyph, if any, otherwise null
@@ -194,8 +189,8 @@ public interface GlyphNest
     Glyph getOriginal (Glyph glyph);
 
     /**
-     * Return the original glyph, if any, that corresponds to the
-     * provided signature for the provided layer.
+     * Return the original glyph, if any, that corresponds to the provided signature for
+     * the provided layer.
      *
      * @param signature the provided signature
      * @param layer     the containing glyph layer
@@ -233,8 +228,8 @@ public interface GlyphNest
     Set<Glyph> getSelectedGlyphSet ();
 
     /**
-     * Look up for <b>all</b> glyph instances from provided layer and
-     * that are intersected by the provided rectangle.
+     * Look up for <b>all</b> glyph instances from provided layer and that are
+     * intersected by the provided rectangle.
      *
      * @param rect  the coordinates rectangle
      * @param layer the containing glyph layer
@@ -252,8 +247,7 @@ public interface GlyphNest
     boolean isVip (Glyph glyph);
 
     /**
-     * Look for a glyph whose box contains the designated point
-     * for the drop layer.
+     * Look for a glyph whose box contains the designated point for the drop layer.
      *
      * @param point the designated point
      * @return the virtual glyph found, or null
@@ -261,12 +255,11 @@ public interface GlyphNest
     Glyph lookupVirtualGlyph (Point point);
 
     /**
-     * Register a (transient) glyph in the graph with its physical
-     * signature, or re-register a known glyph with its updated
-     * signature.
+     * Register a (transient) glyph in the graph with its physical signature, or
+     * re-register a known glyph with its updated signature.
      * <p>
-     * Nota: Make sure to use the returned glyph value (the original) instead of
-     * the initial one passed as parameter
+     * Nota: Make sure to use the returned glyph value (the original) instead of the initial one
+     * passed as parameter
      *
      * @param glyph the glyph to add to the nest
      * @return the original glyph (already existing or brand new)
@@ -281,35 +274,41 @@ public interface GlyphNest
     void removeGlyph (Glyph glyph);
 
     /**
-     * Browse through the provided sections and return a list of
-     * glyph instances, one for each set of connected sections.
+     * Browse through the provided sections and return a list of glyph instances, one
+     * for each set of connected sections.
+     * <p>
+     * <b>BEWARE</b>: This method assumes that all sections involved have their neighboring links
+     * set, hence it is not usable in hLag or vLag before LagWeaver has been run at end of GRID
+     * step.
      * <p>
      * Nota: The method modifies the 'processed' property of each section.
      *
      * @param sections the sections to browse
      * @param layer    the target layer
      * @param register true for registering every glyph created
-     * @param linking  should we link sections back to glyph?
      * @return the list of glyph instances created
      */
     List<Glyph> retrieveGlyphs (Collection<Section> sections,
                                 GlyphLayer layer,
-                                boolean register,
-                                Glyph.Linking linking);
+                                boolean register);
 
     /**
-     * Browse through the provided sections and return a list of glyph instances, one
-     * for each set of connected sections.
-     * All glyphs are registered, no section is linked to glyph.
+     * Browse through the provided isolated sections and return a list of glyph
+     * instances, one for each set of connected sections.
+     * <p>
+     * This method does not use the sections neighboring links, it is thus rather slow but usable
+     * when these links are not yet set.
      * <p>
      * Nota: The method modifies the 'processed' property of each section.
      *
      * @param sections the sections to browse
      * @param layer    the target layer
+     * @param register true for registering every glyph created
      * @return the list of glyph instances created
      */
-    List<Glyph> retrieveGlyphs (Collection<Section> sections,
-                                GlyphLayer layer);
+    List<Glyph> retrieveGlyphsFromIsolatedSections (Collection<Section> sections,
+                                                    GlyphLayer layer,
+                                                    boolean register);
 
     /**
      * Inject dependency on location service, and trigger subscriptions

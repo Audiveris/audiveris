@@ -1106,8 +1106,9 @@ public class StemsBuilder
             private StemInter createStemInter (List<Glyph> items)
             {
                 GlyphNest nest = system.getSheet().getNest();
-                final Glyph stem = (items.size() == 1) ? items.get(0)
-                        : nest.buildGlyph(items, true, Glyph.Linking.NO_LINK);
+                final Glyph stem = (items.size() == 1) ? items.get(0) : nest.buildGlyph(
+                        items,
+                        true);
 
                 if (stem.isVip()) {
                     logger.info("VIP createStemInter for {}", stem);
@@ -1617,11 +1618,7 @@ public class StemsBuilder
 
                 // Aggregate these sections into glyphs & check them
                 GlyphNest nest = system.getSheet().getNest();
-                List<Glyph> chunks = nest.retrieveGlyphs(
-                        sections,
-                        GlyphLayer.DEFAULT,
-                        false,
-                        Glyph.Linking.NO_LINK);
+                List<Glyph> chunks = nest.retrieveGlyphs(sections, GlyphLayer.DEFAULT, false);
 
                 // Remove useless glyphs and put wide glyphs apart
                 List<Glyph> wides = new ArrayList<Glyph>();

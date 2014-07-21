@@ -1182,8 +1182,7 @@ public class SystemInfo
         List<Glyph> newGlyphs = nest.retrieveGlyphs(
                 allSections,
                 GlyphLayer.DEFAULT,
-                false,
-                Glyph.Linking.NO_LINK);
+                false);
 
         // Record them into the system
         glyphs.addAll(newGlyphs);

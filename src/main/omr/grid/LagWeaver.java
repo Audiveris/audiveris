@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -46,6 +49,8 @@ import java.util.ListIterator;
 public class LagWeaver
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LagWeaver.class);
 
@@ -88,25 +93,25 @@ public class LagWeaver
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Related sheet */
+    /** Related sheet. */
     private final Sheet sheet;
 
-    /** Vertical lag */
+    /** Vertical lag. */
     private final Lag vLag;
 
-    /** Horizontal lag */
+    /** Horizontal lag. */
     private final Lag hLag;
 
     /**
-     * Actual points around current vLag section to check to hLag presence
+     * Actual points around current vLag section to check to hLag presence.
      * (relevant only during horiWithVert)
      */
     private final List<Point> pointsAside = new ArrayList<Point>();
 
-    /** Points to check for source sections above in hLag */
+    /** Points to check for source sections above in hLag. */
     private final List<Point> pointsAbove = new ArrayList<Point>();
 
-    /** Points to check for target sections below in hLag */
+    /** Points to check for target sections below in hLag. */
     private final List<Point> pointsBelow = new ArrayList<Point>();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -150,11 +155,10 @@ public class LagWeaver
         watch.start("Hori <-> Vert");
         horiWithVert();
 
-        watch.start("buildGlyphs");
-
-        ///buildGlyphs();
         // The end
-        ///watch.print();
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
     }
 
     //---------------//
@@ -644,5 +648,19 @@ public class LagWeaver
                         }
                     }
                 });
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
     }
 }

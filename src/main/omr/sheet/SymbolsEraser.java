@@ -226,8 +226,7 @@ public class SymbolsEraser
             List<Glyph> glyphs = sheet.getNest().retrieveGlyphs(
                     glyph.getMembers(),
                     GlyphLayer.SYMBOL,
-                    true,
-                    Glyph.Linking.NO_LINK);
+                    true);
 
             systemWeaks.addAll(glyphs);
         }
@@ -269,8 +268,7 @@ public class SymbolsEraser
         List<Glyph> glyphs = sheet.getNest().retrieveGlyphs(
                 sections,
                 GlyphLayer.SYMBOL,
-                true,
-                Glyph.Linking.NO_LINK);
+                true);
 
         for (Glyph glyph : glyphs) {
             systemWeaks.add(glyph);

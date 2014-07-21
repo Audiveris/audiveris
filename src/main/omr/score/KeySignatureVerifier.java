@@ -122,7 +122,7 @@ public class KeySignatureVerifier
         }
 
         GlyphNest nest = systemInfo.getSheet().getNest();
-        Glyph compound = nest.buildGlyph(glyphs, false, Glyph.Linking.NO_LINK);
+        Glyph compound = nest.buildGlyph(glyphs, false);
 
         // Check if a proper key sig appears in the top evaluations
         Evaluation vote = GlyphClassifier.getInstance().rawVote(

@@ -1064,8 +1064,7 @@ public class KeyBuilder
         List<Glyph> glyphs = sheet.getNest().retrieveGlyphs(
                 sections,
                 GlyphLayer.SYMBOL,
-                true, // false, // True for debugging only
-                Glyph.Linking.NO_LINK);
+                true);
         purgeGlyphs(glyphs, rect);
 
         MyAdapter adapter = new MyAdapter(glyphs, targetShapes);

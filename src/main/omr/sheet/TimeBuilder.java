@@ -407,8 +407,7 @@ public class TimeBuilder
         List<Glyph> parts = sheet.getNest().retrieveGlyphs(
                 sections,
                 GlyphLayer.SYMBOL,
-                true, // false, // True for debugging only
-                Glyph.Linking.NO_LINK);
+                true);
 
         // Keep only interesting parts
         purgeParts(parts, rect);

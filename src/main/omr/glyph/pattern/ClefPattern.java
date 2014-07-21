@@ -161,7 +161,7 @@ public class ClefPattern
 
             if (!impacted.isEmpty()) {
                 // Rebuild the larger glyph
-                Glyph larger = nest.buildGlyph(impacted, true, Glyph.Linking.NO_LINK);
+                Glyph larger = nest.buildGlyph(impacted, true);
                 system.registerGlyph(larger);
 
                 if (larger != null) {
@@ -219,7 +219,7 @@ public class ClefPattern
         // Remove potential aliens
         Glyphs.purgeManuals(glyphs);
 
-        Glyph compound = nest.buildGlyph(glyphs, false, Glyph.Linking.NO_LINK);
+        Glyph compound = nest.buildGlyph(glyphs, false);
 
         // Check if a clef appears in the top evaluations
         Evaluation vote = GlyphClassifier.getInstance().vote(
@@ -254,10 +254,7 @@ public class ClefPattern
 
                 logger.debug("Considering {}", g);
 
-                Glyph newCompound = nest.buildGlyph(
-                        Arrays.asList(compound, g),
-                        false,
-                        Glyph.Linking.NO_LINK);
+                Glyph newCompound = nest.buildGlyph(Arrays.asList(compound, g), false);
                 final Evaluation newVote = GlyphClassifier.getInstance().vote(
                         newCompound,
                         system,

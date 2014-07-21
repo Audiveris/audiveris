@@ -35,6 +35,7 @@ import omr.sig.AbstractNoteInter;
 import omr.sig.BarConnectionInter;
 import omr.sig.BarlineInter;
 import omr.sig.BraceInter;
+import omr.sig.BracketConnectionInter;
 import omr.sig.BracketInter;
 import omr.sig.BracketInter.BracketKind;
 import omr.sig.ClefInter;
@@ -51,19 +52,18 @@ import omr.sig.WedgeInter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
-
 import static omr.ui.symbol.Alignment.BOTTOM_CENTER;
+import static omr.ui.symbol.Alignment.BOTTOM_LEFT;
 import static omr.ui.symbol.Alignment.TOP_CENTER;
-
+import static omr.ui.symbol.Alignment.TOP_LEFT;
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.OmrFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
-
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
+import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
-
 import omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -80,11 +80,6 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
 import java.util.ConcurrentModificationException;
-import omr.sig.BracketConnectionInter;
-
-import static omr.ui.symbol.Alignment.BOTTOM_LEFT;
-import static omr.ui.symbol.Alignment.TOP_LEFT;
-import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 
 /**
  * Class {@code SheetPainter} defines for every node in Page hierarchy the rendering of
@@ -95,15 +90,14 @@ import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
  * @author Hervé Bitteur
  */
 public class SheetPainter
-    extends AbstractScoreVisitor
-    implements InterVisitor
+        extends AbstractScoreVisitor
+        implements InterVisitor
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger  logger = LoggerFactory.getLogger(SheetPainter.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetPainter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     /** Graphic context. */
     private final Graphics2D g;
 
@@ -112,13 +106,13 @@ public class SheetPainter
 
     /** Alpha composite for interpretations. */
     private final AlphaComposite composite = AlphaComposite.getInstance(
-        AlphaComposite.SRC_OVER,
-        0.5f);
+            AlphaComposite.SRC_OVER,
+            0.5f);
 
     /** Default full composite. */
     private final AlphaComposite fullComposite = AlphaComposite.getInstance(
-        AlphaComposite.SRC_OVER,
-        1f);
+            AlphaComposite.SRC_OVER,
+            1f);
 
     /** Saved stroke for restoration at the end of the painting. */
     private Stroke oldStroke;
@@ -145,7 +139,6 @@ public class SheetPainter
     private SystemInfo system;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     //--------------//
     // SheetPainter //
     //--------------//
@@ -158,7 +151,7 @@ public class SheetPainter
      *                 as possible to input image
      */
     public SheetPainter (Graphics g,
-                         boolean  enriched)
+                         boolean enriched)
     {
         this.g = (Graphics2D) g;
         this.clip = g.getClipBounds();
@@ -168,7 +161,6 @@ public class SheetPainter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //---------------//
     // visit Measure //
     //---------------//
@@ -200,16 +192,16 @@ public class SheetPainter
             scale = page.getScale();
 
             ledgerStroke = new BasicStroke(
-                sheet.getScale().getMainFore(),
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND);
+                    sheet.getScale().getMainFore(),
+                    BasicStroke.CAP_ROUND,
+                    BasicStroke.JOIN_ROUND);
 
             // Determine staff lines parameters
             int lineThickness = scale.getMainFore();
             lineStroke = new BasicStroke(
-                lineThickness,
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND);
+                    lineThickness,
+                    BasicStroke.CAP_ROUND,
+                    BasicStroke.JOIN_ROUND);
 
             if (enriched) {
                 oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
@@ -337,8 +329,8 @@ public class SheetPainter
             return false;
         } catch (Exception ex) {
             logger.warn(
-                getClass().getSimpleName() + " Error visiting " + systemInfo.idString(),
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + systemInfo.idString(),
+                    ex);
         }
 
         return false;
@@ -358,7 +350,7 @@ public class SheetPainter
 
         ///Glyph glyph = inter.getGlyph();
         ///Point center = (glyph != null) ? glyph.getCentroid() : GeoUtil.centerOf(inter.getBounds());
-        Point       center = GeoUtil.centerOf(inter.getBounds());
+        Point center = GeoUtil.centerOf(inter.getBounds());
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
     }
@@ -389,12 +381,12 @@ public class SheetPainter
     {
         setColor(inter);
 
-        Point     center = GeoUtil.centerOf(inter.getBounds());
+        Point center = GeoUtil.centerOf(inter.getBounds());
         StaffInfo staff = system.getStaffAt(center);
-        double    y = staff.pitchToOrdinate(center.x, inter.getPitch());
+        double y = staff.pitchToOrdinate(center.x, inter.getPitch());
         center.y = (int) Math.rint(y);
 
-        Shape       shape = inter.getShape();
+        Shape shape = inter.getShape();
         ShapeSymbol symbol = Symbols.getSymbol(shape);
 
         if (shape == Shape.SHARP) {
@@ -430,10 +422,10 @@ public class SheetPainter
     {
         setColor(ledger);
         g.setStroke(
-            new BasicStroke(
-                (float) ledger.getGlyph().getMeanThickness(Orientation.HORIZONTAL),
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND));
+                new BasicStroke(
+                        (float) ledger.getGlyph().getMeanThickness(Orientation.HORIZONTAL),
+                        BasicStroke.CAP_ROUND,
+                        BasicStroke.JOIN_ROUND));
 
         ledger.getGlyph().renderLine(g);
         g.setStroke(oldStroke);
@@ -464,7 +456,7 @@ public class SheetPainter
         setColor(brace);
 
         final Rectangle box = brace.getBounds(); ///braceBox(part);
-        final Point     center = GeoUtil.centerOf(box);
+        final Point center = GeoUtil.centerOf(box);
         final Dimension halfDim = new Dimension(box.width, box.height / 2);
         OmrFont.paint(g, musicFont.layout(SYMBOL_BRACE_UPPER_HALF, halfDim), center, BOTTOM_CENTER);
         OmrFont.paint(g, musicFont.layout(SYMBOL_BRACE_LOWER_HALF, halfDim), center, TOP_CENTER);
@@ -531,26 +523,64 @@ public class SheetPainter
     public void visit (BracketInter bracket)
     {
         setColor(bracket);
-        g.fill(bracket.getArea());
 
-        final double ratio = 2.7;
-        final Rectangle   box = bracket.getBounds();
+        // Serif symbol
+        final double widthRatio = 2.7; // Symbol width WRT bar width
+        final double heightRatio = widthRatio * 1.25; // Symbol height WRT bar width
+        final double barRatio = 2.3; // Symbol bar height WRT bar width
+
+        final Rectangle box = bracket.getBounds();
+        final Rectangle glyphBox = bracket.getGlyph().getBounds();
         final BracketKind kind = bracket.getKind();
-        final double      width = bracket.getWidth();
-        final Dimension   dim = new Dimension(
-            (int) Math.rint(ratio * width),
-            (int) Math.rint(ratio * 1.25 * width));
+        final double width = bracket.getWidth();
+        final Dimension dim = new Dimension(
+                (int) Math.rint(widthRatio * width),
+                (int) Math.rint(heightRatio * width));
+
+        Integer top = null;
 
         if ((kind == BracketKind.TOP) || (kind == BracketKind.BOTH)) {
             // Draw upper symbol part
-            final Point left = new Point (box.x, box.y + (int) Math.rint(width));
+            final Point left = new Point(box.x, glyphBox.y + (int) Math.rint(barRatio * width));
             OmrFont.paint(g, musicFont.layout(SYMBOL_BRACKET_UPPER_SERIF, dim), left, BOTTOM_LEFT);
+            top = left.y;
         }
+
+        Integer bottom = null;
 
         if ((kind == BracketKind.BOTTOM) || (kind == BracketKind.BOTH)) {
             // Draw lower symbol part
-            final Point left = new Point(box.x, box.y + box.height -  (int) Math.rint(width));
+            final Point left = new Point(
+                    box.x,
+                    (glyphBox.y + glyphBox.height) - (int) Math.rint(barRatio * width));
             OmrFont.paint(g, musicFont.layout(SYMBOL_BRACKET_LOWER_SERIF, dim), left, TOP_LEFT);
+            bottom = left.y;
+        }
+
+        // Bracket area
+        Rectangle bx = null;
+
+        if (top != null) {
+            bx = bracket.getArea().getBounds();
+            bx = bx.intersection(new Rectangle(bx.x, top, bx.width, bx.height));
+        }
+
+        if (bottom != null) {
+            if (bx == null) {
+                bx = bracket.getArea().getBounds();
+            }
+
+            bx = bx.intersection(new Rectangle(bx.x, bx.y, bx.width, bottom - bx.y));
+        }
+
+        if (bx != null) {
+            g.setClip(clip.intersection(bx));
+        }
+
+        g.fill(bracket.getArea());
+
+        if (bx != null) {
+            g.setClip(clip);
         }
     }
 
@@ -606,8 +636,8 @@ public class SheetPainter
 
                 if (symbol == null) {
                     systemInfo.getScoreSystem().addError(
-                        glyph,
-                        "No symbol for " + glyph.idString());
+                            glyph,
+                            "No symbol for " + glyph.idString());
                 } else {
                     symbol.paintSymbol(g, musicFont, glyph.getAreaCenter(), Alignment.AREA_CENTER);
                 }
@@ -640,7 +670,7 @@ public class SheetPainter
                 grade = inter.getGrade();
             }
 
-            final int   alpha = Math.min(255, Math.max(0, (int) Math.rint(255 * grade)));
+            final int alpha = Math.min(255, Math.max(0, (int) Math.rint(255 * grade)));
             final Color color = new Color(base.getRed(), base.getGreen(), base.getBlue(), alpha);
             g.setColor(color);
         }

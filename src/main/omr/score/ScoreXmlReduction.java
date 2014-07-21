@@ -56,6 +56,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Class {@code ScoreXmlReduction} is the "reduce" part of a MapReduce job for a score,
@@ -170,7 +171,7 @@ public class ScoreXmlReduction
      * @param args the template items to filter relevant files
      */
     public static void main (String... args)
-            throws FileNotFoundException, IOException, JAXBException
+            throws FileNotFoundException, IOException, JAXBException, XMLStreamException
     {
         //        // TODO QUICK & DIRTY HACK!!!!!!!!!!!!!!!!!!!!!!!!
         //        String[] args = new String[] {
@@ -260,7 +261,7 @@ public class ScoreXmlReduction
      * @return the resulting global XML output for the score
      */
     public String reduce ()
-            throws JAXBException, IOException
+            throws JAXBException, IOException, XMLStreamException
     {
         // Preloading of JAXBContext
         watch.start("Preloading JAXB Context");
@@ -507,7 +508,7 @@ public class ScoreXmlReduction
      *                       IOException
      */
     private String buildOutput (ScorePartwise globalPartwise)
-            throws JAXBException, IOException
+            throws JAXBException, IOException, XMLStreamException
     {
         watch.start("Marshalling output");
 

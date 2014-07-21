@@ -67,15 +67,16 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class StaffInfo
-    implements AttachmentHolder
+        implements AttachmentHolder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger                              logger = LoggerFactory.getLogger(
-        StaffInfo.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            StaffInfo.class);
 
     /** To sort by staff id. */
-    public static final Comparator<StaffInfo> byId = new Comparator<StaffInfo>() {
+    public static final Comparator<StaffInfo> byId = new Comparator<StaffInfo>()
+    {
         @Override
         public int compare (StaffInfo o1,
                             StaffInfo o2)
@@ -85,7 +86,8 @@ public class StaffInfo
     };
 
     /** To sort by staff abscissa. */
-    public static final Comparator<StaffInfo> byAbscissa = new Comparator<StaffInfo>() {
+    public static final Comparator<StaffInfo> byAbscissa = new Comparator<StaffInfo>()
+    {
         @Override
         public int compare (StaffInfo o1,
                             StaffInfo o2)
@@ -94,9 +96,7 @@ public class StaffInfo
         }
     };
 
-
     //~ Instance fields ----------------------------------------------------------------------------
-
     /**
      * Area around the staff.
      * The same area strategy applies for staves and for systems:
@@ -163,18 +163,18 @@ public class StaffInfo
     /** Map of ledgers nearby. */
     private final SortedMap<Integer, SortedSet<LedgerInter>> ledgerMap = new TreeMap<Integer, SortedSet<LedgerInter>>();
 
-    /** Sequence of bar lines peaks. */
+    /** Sequence of bar lines peaks kept. */
     private List<BarPeak> barPeaks;
 
-    /** Removed bar lines peaks. */
-    private List<BarPeak> removedBarPeaks;
+    /** Sequence of removed (false bar lines) peaks. */
+    private SortedSet<BarPeak> removedPeaks;
 
     /** Sequence of bar lines. */
     private List<BarlineInter> bars;
 
     /** Side bars, if any. */
-    private Map<HorizontalSide, BarlineInter> sideBars = new EnumMap<HorizontalSide, BarlineInter>(
-        HorizontalSide.class);
+    private final Map<HorizontalSide, BarlineInter> sideBars = new EnumMap<HorizontalSide, BarlineInter>(
+            HorizontalSide.class);
 
     /** Containing system. */
     @Navigable(false)
@@ -187,7 +187,6 @@ public class StaffInfo
     private final AttachmentHolder attachments = new BasicAttachmentHolder();
 
     //~ Constructors -------------------------------------------------------------------------------
-
     //
     //-----------//
     // StaffInfo //
@@ -201,10 +200,10 @@ public class StaffInfo
      * @param specificScale specific scale detected for this staff
      * @param lines         the sequence of contained staff lines
      */
-    public StaffInfo (int                id,
-                      double             left,
-                      double             right,
-                      Scale              specificScale,
+    public StaffInfo (int id,
+                      double left,
+                      double right,
+                      Scale specificScale,
                       List<FilamentLine> lines)
     {
         this.id = id;
@@ -215,14 +214,13 @@ public class StaffInfo
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //
     //---------------//
     // addAttachment //
     //---------------//
     @Override
     public void addAttachment (String id,
-                               Shape  attachment)
+                               Shape attachment)
     {
         attachments.addAttachment(id, attachment);
     }
@@ -237,7 +235,7 @@ public class StaffInfo
      * @param index  the staff-based index for ledger line
      */
     public void addLedger (LedgerInter ledger,
-                           int         index)
+                           int index)
     {
         assert ledger != null : "Cannot add a null ledger";
 
@@ -318,10 +316,10 @@ public class StaffInfo
     public int gapTo (Rectangle rect)
     {
         Point center = GeoUtil.centerOf(rect);
-        int   staffTop = getFirstLine().yAt(center.x);
-        int   staffBot = getLastLine().yAt(center.x);
-        int   glyphTop = rect.y;
-        int   glyphBot = (glyphTop + rect.height) - 1;
+        int staffTop = getFirstLine().yAt(center.x);
+        int staffBot = getLastLine().yAt(center.x);
+        int glyphTop = rect.y;
+        int glyphBot = (glyphTop + rect.height) - 1;
 
         // Check overlap
         int top = Math.max(glyphTop, staffTop);
@@ -437,33 +435,33 @@ public class StaffInfo
     public IndexedLedger getClosestLedger (Point2D point)
     {
         IndexedLedger bestLedger = null;
-        double        top = getFirstLine().yAt(point.getX());
-        double        bottom = getLastLine().yAt(point.getX());
-        double        rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom - top);
+        double top = getFirstLine().yAt(point.getX());
+        double bottom = getLastLine().yAt(point.getX());
+        double rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom - top);
 
         if (Math.abs(rawPitch) <= 5) {
             return null;
         }
 
-        int         interline = specificScale.getInterline();
+        int interline = specificScale.getInterline();
         Rectangle2D searchBox;
 
         if (rawPitch < 0) {
             searchBox = new Rectangle2D.Double(
-                point.getX(),
-                point.getY(),
-                0,
-                top - point.getY() + 1);
+                    point.getX(),
+                    point.getY(),
+                    0,
+                    top - point.getY() + 1);
         } else {
             searchBox = new Rectangle2D.Double(point.getX(), bottom, 0, point.getY() - bottom + 1);
         }
 
         //searchBox.grow(interline, interline);
         searchBox.setRect(
-            searchBox.getX() - interline,
-            searchBox.getY() - interline,
-            searchBox.getWidth() + (2 * interline),
-            searchBox.getHeight() + (2 * interline));
+                searchBox.getX() - interline,
+                searchBox.getY() - interline,
+                searchBox.getWidth() + (2 * interline),
+                searchBox.getHeight() + (2 * interline));
 
         // Browse all staff ledgers
         Set<IndexedLedger> foundLedgers = new HashSet<IndexedLedger>();
@@ -482,7 +480,7 @@ public class StaffInfo
 
             for (IndexedLedger iLedger : foundLedgers) {
                 Point2D center = iLedger.ledger.getGlyph().getAreaCenter();
-                double  dist = Math.abs(center.getY() - point.getY());
+                double dist = Math.abs(center.getY() - point.getY());
 
                 if (dist < bestDist) {
                     bestDist = dist;
@@ -506,7 +504,7 @@ public class StaffInfo
     public FilamentLine getClosestLine (Point2D point)
     {
         double pos = pitchPositionOf(point);
-        int    idx = (int) Math.rint((pos + (lines.size() - 1)) / 2);
+        int idx = (int) Math.rint((pos + (lines.size() - 1)) / 2);
 
         if (idx < 0) {
             idx = 0;
@@ -750,7 +748,7 @@ public class StaffInfo
      * @return the ordinate of staff limit
      */
     public double getLimitAtX (VerticalSide side,
-                               double       x)
+                               double x)
     {
         GeoPath limit = (side == TOP) ? topLimit : bottomLimit;
 
@@ -844,9 +842,9 @@ public class StaffInfo
     {
         Population dys = new Population();
 
-        int        dx = specificScale.getInterline();
-        int        xMin = getAbscissa(LEFT);
-        int        xMax = getAbscissa(RIGHT);
+        int dx = specificScale.getInterline();
+        int xMin = getAbscissa(LEFT);
+        int xMax = getAbscissa(RIGHT);
 
         for (double x = xMin; x <= xMax; x += dx) {
             double prevY = -1;
@@ -864,9 +862,10 @@ public class StaffInfo
         }
 
         double mean = dys.getMeanValue();
-//        logger.info(
-//            String.format("Staff#%d dy:%.2f std:%.2f", id, mean, dys.getStandardDeviation()));
-//
+
+        //        logger.info(
+        //            String.format("Staff#%d dy:%.2f std:%.2f", id, mean, dys.getStandardDeviation()));
+        //
         return mean;
     }
 
@@ -882,7 +881,7 @@ public class StaffInfo
      */
     public NotePosition getNotePosition (Point2D point)
     {
-        double        pitch = pitchPositionOf(point);
+        double pitch = pitchPositionOf(point);
         IndexedLedger bestLedger = null;
 
         // If we are rather far from the staff, try getting help from ledgers
@@ -891,8 +890,8 @@ public class StaffInfo
 
             if (bestLedger != null) {
                 Point2D center = bestLedger.ledger.getGlyph().getAreaCenter();
-                int     ledgerPitch = getLedgerPitchPosition(bestLedger.index);
-                double  deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.getInterline();
+                int ledgerPitch = getLedgerPitchPosition(bestLedger.index);
+                double deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.getInterline();
                 pitch = ledgerPitch + deltaPitch;
             }
         }
@@ -1016,19 +1015,6 @@ public class StaffInfo
         return attachments.removeAttachments(prefix);
     }
 
-    //----------------//
-    // removeBarPeaks //
-    //----------------//
-    public void removeBarPeaks (Collection<BarPeak> toRemove)
-    {
-        if (removedBarPeaks == null) {
-            removedBarPeaks = new ArrayList<BarPeak>();
-        }
-
-        barPeaks.removeAll(toRemove);
-        removedBarPeaks.addAll(toRemove);
-    }
-
     //--------------//
     // removeLedger //
     //--------------//
@@ -1053,6 +1039,19 @@ public class StaffInfo
         logger.debug("Could not find ledger {}", ledger);
 
         return false;
+    }
+
+    //-------------//
+    // removePeaks //
+    //-------------//
+    public void removePeaks (Collection<BarPeak> toRemove)
+    {
+        if (removedPeaks == null) {
+            removedPeaks = new TreeSet<BarPeak>();
+        }
+
+        barPeaks.removeAll(toRemove);
+        removedPeaks.addAll(toRemove);
     }
 
     //--------//
@@ -1104,7 +1103,7 @@ public class StaffInfo
      * @param val  abscissa of staff end
      */
     public void setAbscissa (HorizontalSide side,
-                             int            val)
+                             int val)
     {
         if (side == HorizontalSide.LEFT) {
             left = val;
@@ -1194,7 +1193,7 @@ public class StaffInfo
      * @param limit assigned limit
      */
     public void setLimit (VerticalSide side,
-                          GeoPath      limit)
+                          GeoPath limit)
     {
         logger.debug("staff#{} setLimit {} {}", id, side, limit);
 
@@ -1219,7 +1218,7 @@ public class StaffInfo
      * @param limit assigned limit
      */
     public void setLimit (HorizontalSide side,
-                          GeoPath        limit)
+                          GeoPath limit)
     {
         logger.debug("staff#{} setLimit {} {}", id, side, limit);
 
@@ -1250,7 +1249,7 @@ public class StaffInfo
     // setSideBar //
     //------------//
     public void setSideBar (HorizontalSide side,
-                            BarlineInter   inter)
+                            BarlineInter inter)
     {
         sideBars.put(side, inter);
     }
@@ -1350,7 +1349,6 @@ public class StaffInfo
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //---------------//
     // IndexedLedger //
     //---------------//
@@ -1369,9 +1367,8 @@ public class StaffInfo
         public final int index;
 
         //~ Constructors ---------------------------------------------------------------------------
-
         public IndexedLedger (LedgerInter ledger,
-                              int         index)
+                              int index)
         {
             this.ledger = ledger;
             this.index = index;

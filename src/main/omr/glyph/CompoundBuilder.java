@@ -109,7 +109,7 @@ public class CompoundBuilder
             }
 
             GlyphNest nest = system.getSheet().getNest();
-            Glyph compound = nest.buildGlyph(neighbors, false, Glyph.Linking.NO_LINK);
+            Glyph compound = nest.buildGlyph(neighbors, false);
 
             if (adapter.isCompoundValid(compound)) {
                 // Assign and insert into system & nest environments

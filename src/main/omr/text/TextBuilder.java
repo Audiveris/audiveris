@@ -600,9 +600,9 @@ public class TextBuilder
                                 word,
                                 line,
                                 new WordScanner.ManualScanner(
-                                wordGlyph.getTextValue(),
-                                line.isLyrics(),
-                                word.getChars()));
+                                        wordGlyph.getTextValue(),
+                                        line.isLyrics(),
+                                        word.getChars()));
 
                         // If no subdivision was made, allocate a new TextWord
                         // just to match the new manual value
@@ -664,8 +664,7 @@ public class TextBuilder
             // Launch OCR on the whole line image
             List<Glyph> glyphs = oldLine.getWordGlyphs();
             Glyph compound = (glyphs.size() == 1) ? glyphs.get(0)
-                    : system.registerGlyph(
-                            nest.buildGlyph(glyphs, false, Glyph.Linking.NO_LINK));
+                    : system.registerGlyph(nest.buildGlyph(glyphs, false));
 
             List<TextLine> lines = retrieveOcrLine(compound, language);
 

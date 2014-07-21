@@ -337,7 +337,7 @@ public class StaffProjector
         double grade = impacts.getGrade();
 
         if (grade >= Inter.minGrade) {
-            BarPeak peak = new BarPeak(staff, yTop, yBottom, start, stop, value, chunk, impacts);
+            BarPeak peak = new BarPeak(staff, yTop, yBottom, start, stop, impacts);
 
             return peak;
         }
@@ -631,9 +631,6 @@ public class StaffProjector
                             x,
                             linesEnd);
                     staff.setAbscissa(side, x);
-
-                    // Moreover, a short chunk indicates peak is not a bar line, perhaps a C-clef.
-                    endPeak.setEnd(false); // Not necessary
                 } else {
                     // No significant line chunks, ignore them and stay with peak as the limit
                     final int peakMid = (endPeak.getStart() + endPeak.getStop()) / 2;
@@ -644,7 +641,7 @@ public class StaffProjector
                             peakMid,
                             linesEnd);
                     staff.setAbscissa(side, peakMid);
-                    endPeak.setEnd(true);
+                    endPeak.set(BarPeak.Attribute.STAFF_END);
                 }
             } else {
                 logger.debug(

@@ -27,6 +27,7 @@ import omr.glyph.facets.GlyphComposition;
 import omr.lag.Section;
 import omr.lag.Sections;
 
+import omr.math.GeoUtil;
 import omr.math.Line;
 import omr.math.PointsCollector;
 
@@ -55,10 +56,13 @@ import java.util.List;
  * Class {@code FilamentsFactory} builds filaments (long series of sections) out of a
  * collection of sections.
  * <p>
- * These filaments are meant to represent good candidates for (horizontal) staff lines or (vertical)
- * bar lines.
- * The factory aims at a given orientation, though the collection of input sections may exhibit
- * mixed orientations.
+ * These filaments are meant to represent good candidates for (horizontal) staff lines and ledgers
+ * or (vertical) stems and ending legs, for which lines have to be discovered and built.
+ * For bar lines candidates, a different {@link BarGlyphFactory} class is used because in that
+ * case the bar core rectangle is a very strong guide.
+ * <p>
+ * The factory aims at a given filaments orientation, though the collection of input sections may
+ * exhibit mixed orientations.
  * <p>
  * The factory works in two phases:<ol>
  * <li>The first phase, by default, discovers skeletons lines using the long input sections and
@@ -289,7 +293,7 @@ public class FilamentsFactory
         StopWatch watch = new StopWatch("retrieveLineFilament " + orientation);
 
         try {
-            // Aggregate long sections onto skeleton line
+            // Aggregate long sections that intersect line core onto skeleton line
             watch.start("populateLines");
 
             Glyph fil = populateLine(source, line);
@@ -298,7 +302,7 @@ public class FilamentsFactory
                 return null;
             }
 
-            // Expand with short sections left over
+            // Expand with short sections left over, when they touch already included ones
             watch.start("expandFilaments");
             expandFilaments(Arrays.asList(fil), source);
 
@@ -790,7 +794,7 @@ public class FilamentsFactory
                 final Rectangle filBounds = orientation.oriented(fil.getBounds());
                 filBounds.grow(params.maxCoordGap, params.maxPosGap);
 
-                boolean expanding = true;
+                boolean expanding;
 
                 do {
                     expanding = false;
@@ -918,9 +922,8 @@ public class FilamentsFactory
      * Use the long source sections to stick to the provided skeleton line and return
      * the resulting filament.
      * <p>
-     * Strategy: We use only the long sections that close enough to the target line.
-     * (TODO: perhaps we could incrementally add the other long sections if close to some already
-     * included section)
+     * Strategy: We use only the long sections that intersect line core and are close enough to the
+     * target line.
      *
      * @param source the input sections
      * @param lines  the imposed skeleton lines
@@ -928,60 +931,42 @@ public class FilamentsFactory
     private Glyph populateLine (Collection<Section> source,
                                 Line line)
     {
-        List<DistantSection> longSections = new ArrayList<DistantSection>();
+        Rectangle lineRect = orientation.oriented(line.getBounds());
+        Glyph fil = createFilament(null);
 
         for (Section section : source) {
             section.setProcessed(false);
             section.resetFat(); // ????????????
+            Rectangle sectRect = orientation.oriented(section.getBounds());
 
-            // Limit to main sections
-            if (section.getLength(orientation) < params.minCoreSectionLength) {
+            if (sectRect.width < params.minCoreSectionLength) {
                 if (section.isVip()) {
                     logger.info("Too short {}", section);
                 }
             } else {
-                Point centroid = section.getCentroid();
-                double gap = (orientation == HORIZONTAL) ? (line.yAtXExt(centroid.x) - centroid.y)
-                        : (line.xAtYExt(centroid.y) - centroid.x);
+                int overlap = GeoUtil.xOverlap(lineRect, sectRect);
 
-                longSections.add(new DistantSection(section, Math.abs(gap)));
+                if (overlap <= 0) {
+                    if (section.isVip()) {
+                        logger.info("Not in core {}", section);
+                    }
+                } else {
+                    Point centroid = section.getCentroid();
+                    double gap = (orientation == HORIZONTAL)
+                            ? (line.yAtXExt(centroid.x) - centroid.y)
+                            : (line.xAtYExt(centroid.y) - centroid.x);
+
+                    if (Math.abs(gap) <= params.maxPosGap) {
+                        fil.addSection(section, GlyphComposition.Linking.NO_LINK);
+                        section.setProcessed(true);
+                    }
+                }
             }
         }
 
-        // Sort sections by distance to line
-        Collections.sort(longSections);
-
-        Glyph fil = createFilament(null);
-
-        //        boolean modified;
-        //
-        //        do {
-        //            modified = false;
-        for (Iterator<DistantSection> it = longSections.iterator(); it.hasNext();) {
-            DistantSection dSection = it.next();
-            Section section = dSection.section;
-
-            if (section.isProcessed()) {
-                continue;
-            }
-
-            // Include section if close to the line (TODO: or close to an already included section?)
-            double gap = dSection.dist;
-
-            if (Math.abs(gap) <= params.maxPosGap) {
-                fil.addSection(section, GlyphComposition.Linking.NO_LINK);
-                section.setProcessed(true);
-                it.remove();
-                ///modified = true;
-            } else {
-                break;
-            }
-        }
-
-        //        } while (modified);
         if (!fil.getMembers().isEmpty()) {
             if (constants.registerEachAndEveryGlyph.isSet()) {
-                return nest.registerGlyph(fil); // Not really useful
+                return nest.registerGlyph(fil); // Not really useful, but eases debug
             } else {
                 return fil;
             }

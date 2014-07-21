@@ -12,13 +12,16 @@
 package omr.grid;
 
 import omr.glyph.facets.Glyph;
+import static omr.grid.BarPeak.Attribute.*;
 
 import omr.sig.AbstractVerticalInter;
 import omr.sig.GradeImpacts;
 
 import omr.util.VerticalSide;
+import static omr.util.VerticalSide.*;
 
 import java.awt.Rectangle;
+import java.util.EnumSet;
 
 /**
  * Class {@code BarPeak} records a peak in staff projection, likely to indicate a bar
@@ -27,9 +30,48 @@ import java.awt.Rectangle;
  * @author Hervé Bitteur
  */
 public class BarPeak
+        implements Comparable<BarPeak>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
 
+    /**
+     * All attributes flags that can be assigned to a BarPeak instance.
+     */
+    public static enum Attribute
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        /** This is a thin peak */
+        THIN,
+        /** This is a thick peak */
+        THICK,
+        /** This peak defines staff end abscissa on left or right side */
+        STAFF_END,
+        /** This peak is a top portion of a bracket */
+        BRACKET_TOP,
+        /** This peak is a middle portion of a bracket */
+        BRACKET_MIDDLE,
+        /** This peak is a bottom portion of a bracket */
+        BRACKET_BOTTOM,
+        /** This peak goes beyond staff top line */
+        BEYOND_TOP,
+        /** This peak goes beyond staff bottom line */
+        BEYOND_BOTTOM,
+        /** This peak is a portion of a brace */
+        BRACE,
+        /** This peak is the thick one of a C-Clef */
+        CCLEF_ONE,
+        /** This peak is the thin one of a C-Clef */
+        CCLEF_TWO,
+        /** This peak is part of the tail of a C-Clef */
+        CCLEF_TAIL,
+        /** This peak is aligned (if not connected) with a peak in staff above or below */
+        ALIGNED,
+        /** This peak is not aligned in a multi-staff system */
+        UNALIGNED;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing staff. */
     private final StaffInfo staff;
 
@@ -45,41 +87,17 @@ public class BarPeak
     /** Precise right abscissa. */
     private final int stop;
 
-    /** Cumulated height. */
-    private final int value;
-
-    /** Cumulated chunk pixels. */
-    private final int chunk;
-
     /** Evaluation. */
     private final GradeImpacts impacts;
-
-    /** Thin or thick peak. */
-    private Boolean isThin;
 
     /** Underlying stick. */
     private Glyph glyph;
 
-    /** Does the related glyph ends as a bracket above the staff?. */
-    private boolean isBracketAbove;
-
-    /** Does the related glyph ends as a bracket below the staff?. */
-    private boolean isBracketBelow;
-
-    /** Does this peak correspond to a bracket middle?. */
-    private boolean isBracketMiddle;
-
-    /** Does the related glyph get above the staff?. */
-    private boolean isAbove;
-
-    /** Does the related glyph get below the staff?. */
-    private boolean isBelow;
-
-    /** If this peak accepted as staff end?. */
-    private boolean isEnd;
-
     /** Corresponding bar or bracket inter, if any. */
     private AbstractVerticalInter inter;
+
+    /** Attributes currently set. */
+    private final EnumSet<Attribute> attrs = EnumSet.noneOf(Attribute.class);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -90,8 +108,6 @@ public class BarPeak
      * @param bottom  bottom ordinate
      * @param start   starting abscissa
      * @param stop    stopping abscissa
-     * @param value   count of cumulated pixels
-     * @param chunk   count in excess of standard staff lines
      * @param impacts evaluation details
      */
     public BarPeak (StaffInfo staff,
@@ -99,8 +115,6 @@ public class BarPeak
                     int bottom,
                     int start,
                     int stop,
-                    int value,
-                    int chunk,
                     GradeImpacts impacts)
     {
         this.staff = staff;
@@ -108,12 +122,22 @@ public class BarPeak
         this.bottom = bottom;
         this.start = start;
         this.stop = stop;
-        this.value = value;
-        this.chunk = chunk;
         this.impacts = impacts;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------//
+    // compareTo //
+    //-----------//
+    @Override
+    public int compareTo (BarPeak that)
+    {
+        return Integer.compare(start, that.start);
+    }
+
+    //-----------//
+    // getBottom //
+    //-----------//
     /**
      * @return the bottom
      */
@@ -186,6 +210,9 @@ public class BarPeak
         return staff;
     }
 
+    //----------//
+    // getStart //
+    //----------//
     /**
      * @return the start
      */
@@ -194,6 +221,9 @@ public class BarPeak
         return start;
     }
 
+    //---------//
+    // getStop //
+    //---------//
     /**
      * @return the stop
      */
@@ -202,6 +232,9 @@ public class BarPeak
         return stop;
     }
 
+    //--------//
+    // getTop //
+    //--------//
     /**
      * @return the top
      */
@@ -218,32 +251,20 @@ public class BarPeak
         return stop - start + 1;
     }
 
-    /**
-     * @return the isAbove
-     */
-    public boolean isAbove ()
-    {
-        return isAbove;
-    }
-
-    /**
-     * @return the isBelow
-     */
-    public boolean isBelow ()
-    {
-        return isBelow;
-    }
-
     //----------//
     // isBeyond //
     //----------//
     public boolean isBeyond (VerticalSide side)
     {
-        if (side == VerticalSide.TOP) {
-            return isAbove;
-        } else {
-            return isBelow;
-        }
+        return isSet((side == TOP) ? BEYOND_TOP : BEYOND_BOTTOM);
+    }
+
+    //----------//
+    // isBeyond //
+    //----------//
+    public boolean isBeyond ()
+    {
+        return isSet(BEYOND_TOP) || isSet(BEYOND_BOTTOM);
     }
 
     //-----------//
@@ -252,114 +273,75 @@ public class BarPeak
     /**
      * Report whether this peak is a portion of a bracket.
      *
-     * @return isBracketAbove || isBracketMiddle || isBracketBelow
+     * @return true if bracket top, bottom or middle
      */
     public boolean isBracket ()
     {
-        return isBracketAbove || isBracketMiddle || isBracketBelow;
+        return isSet(BRACKET_TOP) || isSet(BRACKET_MIDDLE) || isSet(BRACKET_BOTTOM);
     }
 
+    //--------------//
+    // isBracketEnd //
+    //--------------//
     /**
-     * Report whether this peak is the top portion of a bracket.
+     * Report whether this peak is the end portion of a bracket on desired side.
      *
-     * @return the isBracketAbove
+     * @param side desired side
+     * @return true if bracket end on desired side
      */
-    public boolean isBracketAbove ()
+    public boolean isBracketEnd (VerticalSide side)
     {
-        return isBracketAbove;
+        return isSet((side == TOP) ? BRACKET_TOP : BRACKET_BOTTOM);
     }
 
+    //-------//
+    // isSet //
+    //-------//
     /**
-     * Report whether this peak is the bottom portion of a bracket.
+     * Check whether the provided attribute is set to this instance.
      *
-     * @return the isBracketBelow
+     * @param attr provided attribute
+     * @return true if set
      */
-    public boolean isBracketBelow ()
+    public final boolean isSet (Attribute attr)
     {
-        return isBracketBelow;
+        return attrs.contains(attr);
     }
 
+    //-------//
+    // isSet //
+    //-------//
     /**
-     * Report whether this peak is a middle portion of a bracket.
+     * Set the provided attribute to this instance.
      *
-     * @return the isBracketMiddle
+     * @param attr provided attribute
      */
-    public boolean isBracketMiddle ()
+    public final void set (Attribute attr)
     {
-        return isBracketMiddle;
+        attrs.add(attr);
     }
 
+    //-----------//
+    // setBeyond //
+    //-----------//
     /**
-     * Report whether this peak defines a staff end.
+     * Set peak as beyond staff height on provided side.
      *
-     * @return the isEnd
+     * @param side provided vertical side
      */
-    public boolean isEnd ()
+    public void setBeyond (VerticalSide side)
     {
-        return isEnd;
+        set((side == TOP) ? BEYOND_TOP : BEYOND_BOTTOM);
     }
 
-    //--------//
-    // isThin //
-    //--------//
     /**
-     * Report whether this peak is considered as THIN (vs THICK).
+     * Set peak as bracket end on provided side.
      *
-     * @return isThin
+     * @param side provided end side
      */
-    public Boolean isThin ()
+    public void setBracketEnd (VerticalSide side)
     {
-        return isThin;
-    }
-
-    /**
-     *
-     */
-    public void setAbove ()
-    {
-        this.isAbove = true;
-    }
-
-    /**
-     *
-     */
-    public void setBelow ()
-    {
-        this.isBelow = true;
-    }
-
-    /**
-     *
-     */
-    public void setBracketAbove ()
-    {
-        this.isBracketAbove = true;
-    }
-
-    /**
-     *
-     */
-    public void setBracketBelow ()
-    {
-        this.isBracketBelow = true;
-    }
-
-    /**
-     *
-     */
-    public void setBracketMiddle ()
-    {
-        this.isBracketMiddle = true;
-    }
-
-    /**
-     * Set this peak as staff end.
-     * 
-     * @param isEnd the isEnd to set
-     */
-    public void setEnd (boolean isEnd)
-    {
-        this.isEnd = isEnd;
+        set((side == TOP) ? BRACKET_TOP : BRACKET_BOTTOM);
     }
 
     //----------//
@@ -381,14 +363,6 @@ public class BarPeak
         this.inter = inter;
     }
 
-    //---------//
-    // setThin //
-    //---------//
-    public void setThin (boolean bool)
-    {
-        isThin = bool;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -397,10 +371,6 @@ public class BarPeak
     {
         StringBuilder sb = new StringBuilder();
         sb.append("BarPeak{");
-
-        if (isThin != null) {
-            sb.append(isThin ? "THIN" : "THICK");
-        }
 
         sb.append("(");
         sb.append(start);
@@ -412,28 +382,8 @@ public class BarPeak
             sb.append(" glyph#").append(glyph.getId());
         }
 
-        if (isEnd) {
-            sb.append(" end");
-        }
-
-        if (isBracketAbove) {
-            sb.append(" bracketTop");
-        }
-
-        if (isAbove) {
-            sb.append(" above");
-        }
-
-        if (isBracketMiddle) {
-            sb.append(" bracketMiddle");
-        }
-
-        if (isBracketBelow) {
-            sb.append(" bracketBottom");
-        }
-
-        if (isBelow) {
-            sb.append(" below");
+        if (!attrs.isEmpty()) {
+            sb.append(" ").append(attrs);
         }
 
         sb.append("}");

@@ -175,8 +175,7 @@ public class SymbolsFilter
         List<Glyph> glyphs = nest.retrieveGlyphs(
                 sections,
                 GlyphLayer.SYMBOL,
-                true,
-                Glyph.Linking.NO_LINK);
+                true);
         logger.debug("Symbol glyphs: {}", glyphs.size());
 
         // Dispatch each glyph to its relevant system(s)

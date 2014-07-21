@@ -409,7 +409,7 @@ public class TimeSignature
 
             SystemInfo systemInfo = getSystem().getInfo();
             GlyphNest nest = systemInfo.getSheet().getNest();
-            Glyph compound = nest.buildGlyph(getGlyphs(), false, Glyph.Linking.NO_LINK);
+            Glyph compound = nest.buildGlyph(getGlyphs(), false);
             compound = systemInfo.registerGlyph(compound);
             compound.setShape(shape, Evaluation.ALGORITHM);
 

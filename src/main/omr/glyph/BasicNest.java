@@ -18,6 +18,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
+import omr.glyph.facets.GlyphComposition.Linking;
 import omr.glyph.ui.ViewParameters;
 
 import omr.lag.Section;
@@ -42,6 +43,9 @@ import omr.sheet.Sheet;
 import omr.util.IntUtil;
 
 import org.bushe.swing.event.EventSubscriber;
+
+import org.jgrapht.alg.ConnectivityInspector;
+import org.jgrapht.graph.SimpleGraph;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,8 +186,7 @@ public class BasicNest
     //------------//
     @Override
     public Glyph buildGlyph (Collection<? extends Glyph> parts,
-                             boolean register,
-                             Glyph.Linking linking)
+                             boolean register)
     {
         // Gather all the sections involved
         Collection<Section> sections = new HashSet<Section>();
@@ -192,7 +195,7 @@ public class BasicNest
             sections.addAll(part.getMembers());
         }
 
-        return buildGlyph(sections, currentLayer, register, linking);
+        return buildGlyph(sections, currentLayer, register, Linking.NO_LINK);
     }
 
     //-----------------//
@@ -422,8 +425,7 @@ public class BasicNest
     @Override
     public List<Glyph> retrieveGlyphs (Collection<Section> sections,
                                        GlyphLayer layer,
-                                       boolean register,
-                                       Glyph.Linking linking)
+                                       boolean register)
     {
         List<Glyph> glyphs = new ArrayList<Glyph>();
 
@@ -438,7 +440,7 @@ public class BasicNest
             if (!section.isProcessed()) {
                 // Let's build a new glyph around this starting section
                 Glyph glyph = new BasicGlyph(scale.getInterline(), layer);
-                considerConnection(glyph, section, sections, linking);
+                considerConnection(glyph, section, sections);
 
                 // Insert this newly built glyph into nest?
                 if (register) {
@@ -452,14 +454,58 @@ public class BasicNest
         return glyphs;
     }
 
-    //----------------//
-    // retrieveGlyphs //
-    //----------------//
+    //------------------------------------//
+    // retrieveGlyphsFromIsolatedSections //
+    //------------------------------------//
+    /**
+     * Since sections links are not assumed to be (fully) set, we use an external
+     * graph of inter-sections relations.
+     *
+     * @param sections collection of (isolated) sections
+     * @param layer    target layer
+     * @param register true for registering in nest
+     * @return the list of created glyph instances
+     */
     @Override
-    public List<Glyph> retrieveGlyphs (Collection<Section> sections,
-                                       GlyphLayer layer)
+    public List<Glyph> retrieveGlyphsFromIsolatedSections (Collection<Section> sections,
+                                                           GlyphLayer layer,
+                                                           boolean register)
     {
-        return retrieveGlyphs(sections, layer, true, Glyph.Linking.NO_LINK);
+        // Build a temporary graph of all sections with "touching" relations
+        List<Section> list = new ArrayList<Section>(sections);
+
+        ///Collections.sort(list, Section.byAbscissa);
+        SimpleGraph<Section, SectionLink> graph = new SimpleGraph<Section, SectionLink>(
+                SectionLink.class);
+
+        // Populate graph with all sections as vertices
+        for (Section section : list) {
+            graph.addVertex(section);
+        }
+
+        // Populate graph with relations
+        for (int i = 0; i < list.size(); i++) {
+            Section one = list.get(i);
+
+            for (Section two : list.subList(i + 1, list.size())) {
+                if (one.touches(two)) {
+                    graph.addEdge(one, two, new SectionLink());
+                }
+            }
+        }
+
+        // Retrieve all the clusters of sections (sets of touching sections)
+        ConnectivityInspector inspector = new ConnectivityInspector(graph);
+        List<Set<Section>> sets = inspector.connectedSets();
+        logger.debug("sets: {}", sets.size());
+
+        List<Glyph> glyphs = new ArrayList<Glyph>();
+
+        for (Set<Section> set : sets) {
+            glyphs.add(buildGlyph(set, layer, register, Linking.NO_LINK));
+        }
+
+        return glyphs;
     }
 
     //-------------//
@@ -559,18 +605,16 @@ public class BasicNest
     // considerConnection //
     //--------------------//
     /**
-     * Consider all sections transitively connected to the provided
-     * section in order to populate the provided glyph.
+     * Consider all sections transitively connected to the provided section in order to
+     * populate the provided glyph.
      *
      * @param glyph    the provided glyph
      * @param section  the section to consider
      * @param sections the collection of sections allowed to be used
-     * @param linking  should we link the sections back to glyph
      */
     private void considerConnection (Glyph glyph,
                                      Section section,
-                                     Collection<Section> sections,
-                                     Glyph.Linking linking)
+                                     Collection<Section> sections)
     {
         // Check whether this section is suitable to expand the glyph
         if (!section.isProcessed()) {
@@ -582,21 +626,21 @@ public class BasicNest
             // Incoming ones
             for (Section source : section.getSources()) {
                 if (sections.contains(source)) {
-                    considerConnection(glyph, source, sections, linking);
+                    considerConnection(glyph, source, sections);
                 }
             }
 
             // Outgoing ones
             for (Section target : section.getTargets()) {
                 if (sections.contains(target)) {
-                    considerConnection(glyph, target, sections, linking);
+                    considerConnection(glyph, target, sections);
                 }
             }
 
             // Sections from other orientation
             for (Section other : section.getOppositeSections()) {
                 if (sections.contains(other)) {
-                    considerConnection(glyph, other, sections, linking);
+                    considerConnection(glyph, other, sections);
                 }
             }
         }
@@ -744,7 +788,7 @@ public class BasicNest
         Set<Glyph> glyphs = glyphSetEvent.getData();
 
         if ((glyphs != null) && (glyphs.size() > 1)) {
-            Glyph compound = buildGlyph(glyphs, false, Glyph.Linking.NO_LINK);
+            Glyph compound = buildGlyph(glyphs, false);
             publish(new GlyphEvent(this, SelectionHint.GLYPH_TRANSIENT, movement, compound));
         }
     }
@@ -829,6 +873,16 @@ public class BasicNest
                 logger.info("VIP glyphs: {}", vipGlyphs);
             }
         }
+    }
+
+    //-------------//
+    // SectionLink //
+    //-------------//
+    /**
+     * Represents a "touching" relationship between two sections.
+     */
+    private static class SectionLink
+    {
     }
 
     //-----------//

@@ -224,8 +224,7 @@ public class SpotsBuilder
         List<Glyph> glyphs = nest.retrieveGlyphs(
                 sections,
                 GlyphLayer.SPOT,
-                true,
-                Glyph.Linking.NO_LINK);
+                true);
 
         return glyphs;
     }

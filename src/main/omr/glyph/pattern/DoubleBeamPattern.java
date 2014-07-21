@@ -84,14 +84,14 @@ public class DoubleBeamPattern
             Set<Glyph> candidates = Glyphs.lookupGlyphs(
                     system.getGlyphs(),
                     new Predicate<Glyph>()
-            {
-                @Override
-                public boolean check (Glyph glyph)
-                {
-                    return (glyph != stem) && (glyph != beam)
-                           && (glyph.getShape() == Shape.BEAM)
-                           && glyph.getBounds().intersects(beamBox);
-                }
+                    {
+                        @Override
+                        public boolean check (Glyph glyph)
+                        {
+                            return (glyph != stem) && (glyph != beam)
+                                   && (glyph.getShape() == Shape.BEAM)
+                                   && glyph.getBounds().intersects(beamBox);
+                        }
                     });
 
             for (Glyph candidate : candidates) {
@@ -100,10 +100,7 @@ public class DoubleBeamPattern
                 }
 
                 GlyphNest nest = system.getSheet().getNest();
-                Glyph compound = nest.buildGlyph(
-                        Arrays.asList(beam, candidate),
-                        false,
-                        Glyph.Linking.NO_LINK);
+                Glyph compound = nest.buildGlyph(Arrays.asList(beam, candidate), false);
                 Evaluation eval = GlyphClassifier.getInstance()
                         .vote(compound, system, Grades.noMinGrade);
 

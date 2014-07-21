@@ -85,13 +85,13 @@ public class FermataDotPattern
             Set<Glyph> candidates = Glyphs.lookupGlyphs(
                     system.getGlyphs(),
                     new Predicate<Glyph>()
-            {
-                @Override
-                public boolean check (Glyph glyph)
-                {
-                    return (glyph != fermata) && glyph.getBounds().intersects(box)
-                           && dots.contains(glyph.getShape());
-                }
+                    {
+                        @Override
+                        public boolean check (Glyph glyph)
+                        {
+                            return (glyph != fermata) && glyph.getBounds().intersects(box)
+                                   && dots.contains(glyph.getShape());
+                        }
                     });
 
             for (Glyph candidate : candidates) {
@@ -100,10 +100,7 @@ public class FermataDotPattern
                 }
 
                 GlyphNest nest = system.getSheet().getNest();
-                Glyph compound = nest.buildGlyph(
-                        Arrays.asList(fermata, candidate),
-                        false,
-                        Glyph.Linking.NO_LINK);
+                Glyph compound = nest.buildGlyph(Arrays.asList(fermata, candidate), false);
                 Evaluation eval = GlyphClassifier.getInstance()
                         .vote(compound, system, Grades.noMinGrade);
 

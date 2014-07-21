@@ -114,7 +114,7 @@ public class GlyphCluster
         if (adapter.isWeightAcceptable(weight)) {
             // Build compound and get acceptable evaluations for the compound
             Glyph compound = (set.size() == 1) ? set.iterator().next()
-                    : adapter.getNest().buildGlyph(set, true, Glyph.Linking.NO_LINK);
+                    : adapter.getNest().buildGlyph(set, true);
 
             // Create all acceptable inters, if any, for the compound
             adapter.evaluateGlyph(compound);
