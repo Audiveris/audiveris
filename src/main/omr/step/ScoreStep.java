@@ -71,8 +71,7 @@ public class ScoreStep
     // doStep //
     //--------//
     /**
-     * Notify the completion to ALL sheets of the merge and not just
-     * the first one.
+     * Notify the completion to ALL sheets of the merge and not just the first one.
      */
     @Override
     public void doStep (Collection<SystemInfo> systems,
@@ -115,7 +114,7 @@ public class ScoreStep
             // - Check all voices timing, assign forward items if needed.
             // - Detect special measures and assign proper measure ids
             // If needed, we can trigger a reprocessing of this page
-            page.accept(new MeasureFixer());
+          //// BINGO BINGO   page.accept(new MeasureFixer());
 
             // Connect slurs across pages
             page.getFirstSystem().connectPageInitialSlurs();

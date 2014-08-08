@@ -28,13 +28,17 @@ import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- * Class {@code Barline} encapsulates a logical bar line, that may be composed of
- * several physical components : repeat dots, thin and thick bars.
+ * Class {@code Barline} represents a logical bar line for a part, that is composed
+ * of several {@link StaffBarline} instances when the part comprises several staves.
+ * <p>
+ * In the case of "back to back" repeat configuration, we use two instances on this class, one
+ * for the backward repeat and one for the forward repeat.
  *
  * @author Hervé Bitteur
  */
@@ -58,11 +62,36 @@ public class Barline
         }
     };
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * Barline style.
+     * Identical to (or subset of) MusicXML BarStyle, to avoid strict dependency on MusicXML.
+     */
+    public static enum Style
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        REGULAR,
+        DOTTED,
+        DASHED,
+        HEAVY,
+        LIGHT_LIGHT,
+        LIGHT_HEAVY,
+        HEAVY_LIGHT,
+        HEAVY_HEAVY,
+        TICK,
+        SHORT,
+        NONE;
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Precise bar line shape */
+    /** Underlying {@link StaffBarline} instances, one per staff in the part. */
+    private final List<StaffBarline> staffBarlines = new ArrayList<StaffBarline>();
+
+    /** Precise bar line shape. */
     private Shape shape;
 
-    /** Signature of this bar line, as inferred from its components */
+    /** Signature of this bar line, as inferred from its components. */
     private String signature;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -89,6 +118,18 @@ public class Barline
         return visitor.visit(this);
     }
 
+    //-----------------//
+    // addStaffBarline //
+    //-----------------//
+    public void addStaffBarline (StaffBarline staffBarline)
+    {
+        if (staffBarline == null) {
+            throw new NullPointerException("Trying to add a null StaffBarline");
+        }
+
+        staffBarlines.add(staffBarline);
+    }
+
     //------------//
     // forceShape //
     //------------//
@@ -108,54 +149,34 @@ public class Barline
     // getLeftX //
     //----------//
     /**
-     * Report the abscissa of the left side of the bar line
+     * Report the center abscissa of the left bar
      *
      * @return abscissa of the left side
      */
     public int getLeftX ()
     {
-        Rectangle box = getBox();
-        int middleY = box.y + (box.height / 2);
-
-        for (Glyph glyph : getGlyphs()) {
-            if (linePredicate.check(glyph)) {
-                int x = glyph.getLine().xAtY(middleY);
-
-                return x;
-            }
+        if (!staffBarlines.isEmpty()) {
+            return staffBarlines.get(0).getLeftX();
+        } else {
+            throw new IllegalStateException("Part Barline with no StaffBarline");
         }
-
-        // No usable stick
-        addError("No usable stick to compute barline abscissa");
-
-        return 0;
     }
 
     //-----------//
     // getRightX //
     //-----------//
     /**
-     * Report the abscissa of the right side of the bar line
+     * Report the center abscissa of the right bar
      *
      * @return abscissa of the right side
      */
     public int getRightX ()
     {
-        int right = 0;
-        Rectangle box = getBox();
-        int middleY = box.y + (box.height / 2);
-
-        for (Glyph glyph : getGlyphs()) {
-            if (glyph.isBar()) {
-                int x = glyph.getLine().xAtY(middleY);
-
-                if (x > right) {
-                    right = x;
-                }
-            }
+        if (!staffBarlines.isEmpty()) {
+            return staffBarlines.get(0).getRightX();
+        } else {
+            throw new IllegalStateException("Part Barline with no StaffBarline");
         }
-
-        return right;
     }
 
     //----------//
@@ -176,28 +197,16 @@ public class Barline
         return shape;
     }
 
-    //----------------//
-    // joinsAllStaves //
-    //----------------//
-    /**
-     * Check whether all staves are physically connected by the sticks of the
-     * barline
-     *
-     * @param staves the collection of staves to check
-     * @return true if the barline touches all staves, false otherwise
-     */
-    public boolean joinsAllStaves (Collection<Staff> staves)
+    //----------//
+    // getStyle //
+    //----------//
+    public Style getStyle ()
     {
-        // We check that the barline box intersects each staff box
-        Rectangle barBox = getBox();
-
-        for (Staff staff : staves) {
-            if (!barBox.intersects(staff.getBox())) {
-                return false;
-            }
+        if (staffBarlines.isEmpty()) {
+            return null;
         }
 
-        return true;
+        return staffBarlines.get(0).getStyle();
     }
 
     //-----------//
@@ -269,6 +278,7 @@ public class Barline
 
         signature = null;
         shape = null;
+        staffBarlines.clear();
     }
 
     //----------//
@@ -286,8 +296,8 @@ public class Barline
         sb.append("{Barline");
 
         try {
-            sb.append(" ").append(getShape()).append(" center=").append(getCenter()).append(
-                    " sig=").append(getSignature()).append(Glyphs.toString(" glyphs", glyphs));
+            sb.append(" ").append(getStyle());
+            sb.append(" x=").append(getRightX());
         } catch (NullPointerException e) {
             sb.append(" INVALID");
         }
@@ -443,11 +453,6 @@ public class Barline
             map.put("KN", Shape.REVERSE_FINAL_BARLINE);
             map.put("ONK", Shape.RIGHT_REPEAT_SIGN);
             map.put("KNO", Shape.LEFT_REPEAT_SIGN);
-
-            map.put("ONKNO", Shape.BACK_TO_BACK_REPEAT_SIGN);
-            map.put("NKNO", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
-            map.put("ONKN", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
-            map.put("NKN", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
         }
 
         //~ Constructors ---------------------------------------------------------------------------

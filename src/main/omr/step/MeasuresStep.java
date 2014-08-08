@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code MeasuresStep} retrieves the measures from the barline glyphs.
+ * Class {@code MeasuresStep} allocates the measures from the relevant bar lines.
  *
  * @author Hervé Bitteur
  */

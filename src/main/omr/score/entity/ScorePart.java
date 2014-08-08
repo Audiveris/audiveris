@@ -37,21 +37,21 @@ public class ScorePart
 
     //~ Instance fields ----------------------------------------------------------------------------
     /**
-     * Distinguished id for this part (the same id is used by the corresponding
-     * SystemPart in each System)
+     * Distinguished id for this part.
+     * (the same id is used by the corresponding SystemPart in each System)
      */
     private int id;
 
-    /** Count of staves */
+    /** Count of staves. */
     private final int staffCount;
 
-    /** Name for this part */
+    /** Name for this part. */
     private String name;
 
-    /** Abbreviation for this part, if any */
+    /** Abbreviation for this part, if any. */
     private String abbreviation;
 
-    /** Instrument MIDI program, if any */
+    /** Instrument MIDI program, if any. */
     private Integer midiProgram;
 
     //~ Constructors -------------------------------------------------------------------------------

@@ -35,6 +35,8 @@ import java.util.List;
 /**
  * Class {@code SystemPart} handles each of the various parts found in
  * one system, since the layout of parts may vary from system to system.
+ * <p>
+ * A part represents one instrument, with one or several staves (ex: piano or harp)
  *
  * @author Hervé Bitteur
  */

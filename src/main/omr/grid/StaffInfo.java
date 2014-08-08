@@ -163,11 +163,11 @@ public class StaffInfo
     /** Map of ledgers nearby. */
     private final SortedMap<Integer, SortedSet<LedgerInter>> ledgerMap = new TreeMap<Integer, SortedSet<LedgerInter>>();
 
-    /** Sequence of bar lines peaks kept. */
-    private List<BarPeak> barPeaks;
+    /** Sequence of brace / bracket / bar lines peaks kept. */
+    private List<StaffPeak> peaks;
 
     /** Sequence of removed (false bar lines) peaks. */
-    private SortedSet<BarPeak> removedPeaks;
+    private SortedSet<StaffPeak> removedPeaks;
 
     /** Sequence of bar lines. */
     private List<BarlineInter> bars;
@@ -390,17 +390,6 @@ public class StaffInfo
     public Map<String, Shape> getAttachments ()
     {
         return attachments.getAttachments();
-    }
-
-    //-------------//
-    // getBarPeaks //
-    //-------------//
-    /**
-     * @return the barPeaks
-     */
-    public List<BarPeak> getBarPeaks ()
-    {
-        return Collections.unmodifiableList(barPeaks);
     }
 
     //---------//
@@ -899,6 +888,17 @@ public class StaffInfo
         return new NotePosition(this, pitch, bestLedger);
     }
 
+    //----------//
+    // getPeaks //
+    //----------//
+    /**
+     * @return the peaks
+     */
+    public List<StaffPeak> getPeaks ()
+    {
+        return Collections.unmodifiableList(peaks);
+    }
+
     //---------------//
     // getScoreStaff //
     //---------------//
@@ -959,6 +959,14 @@ public class StaffInfo
     public Integer getTimeStop ()
     {
         return timeStop;
+    }
+
+    //-----------------//
+    // insertBracePeak //
+    //-----------------//
+    public void insertBracePeak (StaffPeak.Brace bracePeak)
+    {
+        peaks.add(0, bracePeak);
     }
 
     //---------//
@@ -1044,13 +1052,13 @@ public class StaffInfo
     //-------------//
     // removePeaks //
     //-------------//
-    public void removePeaks (Collection<BarPeak> toRemove)
+    public void removePeaks (Collection<? extends StaffPeak> toRemove)
     {
         if (removedPeaks == null) {
-            removedPeaks = new TreeSet<BarPeak>();
+            removedPeaks = new TreeSet<StaffPeak>();
         }
 
-        barPeaks.removeAll(toRemove);
+        peaks.removeAll(toRemove);
         removedPeaks.addAll(toRemove);
     }
 
@@ -1124,11 +1132,11 @@ public class StaffInfo
     // setBarPeaks //
     //-------------//
     /**
-     * @param barPeaks the barPeaks to set
+     * @param peaks the peaks to set
      */
-    public void setBarPeaks (List<BarPeak> barPeaks)
+    public void setBarPeaks (List<StaffPeak> peaks)
     {
-        this.barPeaks = barPeaks;
+        this.peaks = peaks;
     }
 
     //---------//

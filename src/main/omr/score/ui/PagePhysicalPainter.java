@@ -232,82 +232,82 @@ public class PagePhysicalPainter
     @Override
     public boolean visit (Barline barline)
     {
-        if (!barline.getBox().intersects(oldClip)
-            || systemInfo.getSheet().getStaffManager().getStaves().isEmpty()) {
-            return false;
-        }
-
-        g.setColor(defaultColor);
-
-        try {
-            // This drawing is driven by the barline shape
-            Shape shape = barline.getShape();
-            Rectangle box = barline.getBox();
-            Point center = barline.getCenter();
-            SystemPart part = barline.getPart();
-
-            // Top and bottom limits of the barline, using staff lines
-            StaffInfo topStaff = systemInfo.getStaffAt(box.getLocation());
-            LineInfo topLine = topStaff.getFirstLine();
-            StaffInfo botStaff = systemInfo.getStaffAt(new Point(box.x, box.y + box.height));
-            LineInfo botLine = botStaff.getLastLine();
-
-            Skew skew = systemInfo.getSkew();
-
-            if (skew == null) { // Safer
-
-                return false;
-            }
-
-            double slope = skew.getSlope();
-            BasicLine bar = new BasicLine();
-            bar.includePoint(center.x, center.y);
-            bar.includePoint(center.x - (100 * slope), center.y + 100);
-
-            Point2D topCenter = topLine.verticalIntersection(bar);
-            Point2D botCenter = botLine.verticalIntersection(bar);
-
-            if (shape != null) {
-                BarPainter barPainter = BarPainter.getBarPainter(shape);
-                barPainter.draw(g, topCenter, botCenter, part);
-            } else {
-                barline.addError("Barline with no recognized shape");
-            }
-
-            // This drawing is driven by the underlying glyphs
-            //            for (Glyph glyph : barline.getGlyphs()) {
-            //                Shape shape = glyph.getShape();
-            //
-            //                if (glyph.isBar()) {
-            //                    float thickness = (float) glyph.getWeight() / glyph.
-            //                            getLength(
-            //                            Orientation.VERTICAL);
-            //                    g.setStroke(new BasicStroke(thickness));
-            //
-            //                    // Stroke is now OK for thickness but will draw beyond start
-            //                    // and stop points of the bar. So use clipping to fix this.
-            //                    final Rectangle box = glyph.getBounds();
-            //                    box.y = (int) Math.floor(
-            //                            glyph.getStartPoint(Orientation.VERTICAL).getY());
-            //                    box.height = (int) Math.ceil(
-            //                            glyph.getStopPoint(Orientation.VERTICAL).getY())
-            //                            - box.y;
-            //                    g.setClip(oldClip.intersection(box));
-            //
-            //                    glyph.renderLine(g);
-            //
-            //                    g.setClip(oldClip);
-            //                } else if ((shape == REPEAT_DOT) || (shape == DOT_set)) {
-            //                    paint(DOT_set, glyph.getCentroid());
-            //                }
-            //            }
-            ///g.setStroke(defaultStroke);
-        } catch (ConcurrentModificationException ignored) {
-            return false;
-        } catch (Exception ex) {
-            logger.warn(getClass().getSimpleName() + " Error visiting " + barline, ex);
-        }
-
+//        if (!barline.getBox().intersects(oldClip)
+//            || systemInfo.getSheet().getStaffManager().getStaves().isEmpty()) {
+//            return false;
+//        }
+//
+//        g.setColor(defaultColor);
+//
+//        try {
+//            // This drawing is driven by the barline shape
+//            Shape shape = barline.getShape();
+//            Rectangle box = barline.getBox();
+//            Point center = barline.getCenter();
+//            SystemPart part = barline.getPart();
+//
+//            // Top and bottom limits of the barline, using staff lines
+//            StaffInfo topStaff = systemInfo.getStaffAt(box.getLocation());
+//            LineInfo topLine = topStaff.getFirstLine();
+//            StaffInfo botStaff = systemInfo.getStaffAt(new Point(box.x, box.y + box.height));
+//            LineInfo botLine = botStaff.getLastLine();
+//
+//            Skew skew = systemInfo.getSkew();
+//
+//            if (skew == null) { // Safer
+//
+//                return false;
+//            }
+//
+//            double slope = skew.getSlope();
+//            BasicLine bar = new BasicLine();
+//            bar.includePoint(center.x, center.y);
+//            bar.includePoint(center.x - (100 * slope), center.y + 100);
+//
+//            Point2D topCenter = topLine.verticalIntersection(bar);
+//            Point2D botCenter = botLine.verticalIntersection(bar);
+//
+//            if (shape != null) {
+//                BarPainter barPainter = BarPainter.getBarPainter(shape);
+//                barPainter.draw(g, topCenter, botCenter, part);
+//            } else {
+//                barline.addError("Barline with no recognized shape");
+//            }
+//
+//            // This drawing is driven by the underlying glyphs
+//            //            for (Glyph glyph : barline.getGlyphs()) {
+//            //                Shape shape = glyph.getShape();
+//            //
+//            //                if (glyph.isBar()) {
+//            //                    float thickness = (float) glyph.getWeight() / glyph.
+//            //                            getLength(
+//            //                            Orientation.VERTICAL);
+//            //                    g.setStroke(new BasicStroke(thickness));
+//            //
+//            //                    // Stroke is now OK for thickness but will draw beyond start
+//            //                    // and stop points of the bar. So use clipping to fix this.
+//            //                    final Rectangle box = glyph.getBounds();
+//            //                    box.y = (int) Math.floor(
+//            //                            glyph.getStartPoint(Orientation.VERTICAL).getY());
+//            //                    box.height = (int) Math.ceil(
+//            //                            glyph.getStopPoint(Orientation.VERTICAL).getY())
+//            //                            - box.y;
+//            //                    g.setClip(oldClip.intersection(box));
+//            //
+//            //                    glyph.renderLine(g);
+//            //
+//            //                    g.setClip(oldClip);
+//            //                } else if ((shape == REPEAT_DOT) || (shape == DOT_set)) {
+//            //                    paint(DOT_set, glyph.getCentroid());
+//            //                }
+//            //            }
+//            ///g.setStroke(defaultStroke);
+//        } catch (ConcurrentModificationException ignored) {
+//            return false;
+//        } catch (Exception ex) {
+//            logger.warn(getClass().getSimpleName() + " Error visiting " + barline, ex);
+//        }
+//
         return true;
     }
 

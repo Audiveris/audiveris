@@ -575,6 +575,8 @@ public class TimeBuilder
         rect.grow(0, -params.yMargin);
         staff.addAttachment("T" + ((half == NUM) ? "N" : "D"), rect);
 
+        //TODO: Should not try each and every combination of parts
+        // Perhaps take all of them (or the largest ones?) and evaluate the compound
         List<Glyph> parts = getParts(rect);
         HalfAdapter adapter = new HalfAdapter(half, parts);
         adapters.put(half, adapter);

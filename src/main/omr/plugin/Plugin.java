@@ -162,9 +162,10 @@ public class Plugin
     public Void runPlugin (Score score)
     {
         // Make sure we have the export file
+        Stepping.ensureScoreStep(Steps.valueOf(Steps.SCORE), score);
         Stepping.ensureScoreStep(Steps.valueOf(Steps.EXPORT), score);
 
-        final File exportFile = score.getExportFile();
+        final File exportFile = score.getExportFile(false);
 
         if (exportFile == null) {
             logger.warn("Could not get export file");

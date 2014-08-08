@@ -252,7 +252,7 @@ public class ProgramId
     public static final java.lang.String COMPANY_ID = "${CompanyId}";
 
     /** Precise program name: {@value} */
-    public static final java.lang.String NAME = "${name}";
+    public static final java.lang.String NAME = "${Name}";
 
     /** Precise program version: {@value} */
     public static final java.lang.String VERSION = "${version}";

@@ -31,6 +31,7 @@ import com.audiveris.proxymusic.ScorePartwise.Part;
 import com.audiveris.proxymusic.ScorePartwise.Part.Measure;
 import com.audiveris.proxymusic.YesNo;
 import com.audiveris.proxymusic.util.Marshalling;
+import com.audiveris.proxymusic.util.Marshalling.MarshallingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,16 +57,14 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.stream.XMLStreamException;
 
 /**
  * Class {@code ScoreXmlReduction} is the "reduce" part of a MapReduce job for a score,
  * based on the merge of MusicXML page contents.
  * <ol>
- * <li>Any Map task processes a score page and produces the related XML fragment
- * as its output.</li>
- * <li>The Reduce task takes all the XML fragments as input and consolidates
- * them in a global Score output.</li></ol>
+ * <li>Any Map task processes a score page and produces the related XML fragment as its output.</li>
+ * <li>The Reduce task takes all the XML fragments as input and consolidates them in a global Score
+ * output.</li></ol>
  * <p>
  * Typical calling of the feature is as follows:
  * <code>
@@ -82,14 +81,13 @@ import javax.xml.stream.XMLStreamException;
  * <li>In part-list, handling of part-group beside score-part</li>
  * </ul>
  * <p>
- * <b>Test:</b> A main() method is provided only to ease the testing of
- * this class, assuming that the individual pages have already been scanned and
- * their XML fragments are available on disk.
- * It requires 3 arguments: name of the folder to lookup, prefix for
- * matching files, suffix for matching files.
- * It with search the specified folder for matching files, read their content as
- * XML fragments, launch a ScoreXmlReduction instance on this data and finally
- * write the global score in the input folder.
+ * <b>Test:</b> A main() method is provided only to ease the testing of this class, assuming that
+ * the individual pages have already been scanned and their XML fragments are available on disk.
+ * It requires 3 arguments: name of the folder to lookup, prefix for matching files, suffix for
+ * matching files.
+ * It with search the specified folder for matching files, read their content as XML fragments,
+ * launch a ScoreXmlReduction instance on this data and finally write the global score in the input
+ * folder.
  * <p>
  * <b>Relevant MusicXML elements:</b><br/>
  * <img src="doc-files/Part.jpg" />
@@ -171,7 +169,7 @@ public class ScoreXmlReduction
      * @param args the template items to filter relevant files
      */
     public static void main (String... args)
-            throws FileNotFoundException, IOException, JAXBException, XMLStreamException
+            throws MarshallingException, JAXBException, FileNotFoundException, IOException
     {
         //        // TODO QUICK & DIRTY HACK!!!!!!!!!!!!!!!!!!!!!!!!
         //        String[] args = new String[] {
@@ -261,11 +259,11 @@ public class ScoreXmlReduction
      * @return the resulting global XML output for the score
      */
     public String reduce ()
-            throws JAXBException, IOException, XMLStreamException
+            throws MarshallingException, JAXBException
     {
         // Preloading of JAXBContext
         watch.start("Preloading JAXB Context");
-        Marshalling.getContext();
+        Marshalling.getContext(ScorePartwise.class);
 
         // Initialize statuses
         for (Integer page : fragments.keySet()) {
@@ -508,12 +506,12 @@ public class ScoreXmlReduction
      *                       IOException
      */
     private String buildOutput (ScorePartwise globalPartwise)
-            throws JAXBException, IOException, XMLStreamException
+            throws MarshallingException
     {
         watch.start("Marshalling output");
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        Marshalling.marshal(globalPartwise, os, true);
+        Marshalling.marshal(globalPartwise, os, true, 2);
 
         return os.toString();
     }
@@ -872,7 +870,7 @@ public class ScoreXmlReduction
             ByteArrayInputStream is = new ByteArrayInputStream(fragment.getBytes());
 
             try {
-                ScorePartwise partwise = Marshalling.unmarshal(is);
+                ScorePartwise partwise = (ScorePartwise) Marshalling.unmarshal(is);
                 pages.put(pageNumber, partwise);
             } catch (Exception ex) {
                 logger.warn("Could not unmarshall fragment #{} {}", pageNumber, ex);

@@ -33,7 +33,7 @@ public class GCD
     // gcd //
     //-----//
     /**
-     * Report the gcd of an array of int values
+     * Report the gcd of an array of int values.
      *
      * @param vals the array of int values
      * @return the gcd over the int values
@@ -53,7 +53,7 @@ public class GCD
     // gcd //
     //-----//
     /**
-     * Basic gcd computation for 2 int values, assumed to be positive or zero
+     * Basic gcd computation for 2 int values, assumed to be positive or zero.
      *
      * @param m one int value
      * @param n another int value
@@ -73,7 +73,7 @@ public class GCD
     // gcd //
     //-----//
     /**
-     * Report the gcd of a collection of integer values
+     * Report the gcd of a collection of integer values.
      *
      * @param vals the collection of values
      * @return the gcd over the collection
@@ -87,7 +87,7 @@ public class GCD
     // gcd //
     //-----//
     /**
-     * Report the gcd of an array of integer values
+     * Report the gcd of an array of integer values.
      *
      * @param vals the array of integer values
      * @return the gcd over the values
@@ -107,8 +107,7 @@ public class GCD
     // lcm //
     //-----//
     /**
-     * Report the Least Common Multiple of 2 values, assumed to be positive
-     * or zero
+     * Report the Least Common Multiple of 2 values, assumed to be positive or zero.
      *
      * @param m
      * @param n
@@ -132,7 +131,7 @@ public class GCD
     // lcm //
     //-----//
     /**
-     * Report the Least Common Multiple of n values
+     * Report the Least Common Multiple of n values.
      */
     public static int lcm (int... vals)
     {

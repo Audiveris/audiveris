@@ -220,9 +220,11 @@ public class Stepping
             } else {
                 // Insert steps only until last desired mandatory step
                 Step lastMandatory = null;
+                Step scoreStep = Steps.valueOf(Steps.SCORE); // BINGO
 
                 for (Step step : orderedSteps) {
-                    if (step.isMandatory()) {
+                    ///if (step.isMandatory()) {
+                    if (step.isMandatory() && step != scoreStep) {
                         lastMandatory = step;
                     }
                 }

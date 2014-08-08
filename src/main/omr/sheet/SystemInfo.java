@@ -65,6 +65,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
+import omr.grid.PartGroup;
 
 /**
  * Class {@code SystemInfo} gathers information from the original
@@ -148,6 +149,9 @@ public class SystemInfo
 
     /** Parts in this system */
     private final List<PartInfo> parts = new ArrayList<PartInfo>();
+
+    /** PartGroups in this system */
+    private final List<PartGroup> partGroups = new ArrayList<PartGroup>();
 
     /** Related System in Score hierarchy */
     private ScoreSystem scoreSystem;
@@ -787,6 +791,19 @@ public class SystemInfo
     public List<PartInfo> getParts ()
     {
         return parts;
+    }
+
+    //---------------//
+    // getPartGroups //
+    //---------------//
+    /**
+     * Reports the partGroups of this system.
+     *
+     * @return the partGroups (non-null)
+     */
+    public List<PartGroup> getPartGroups ()
+    {
+        return partGroups;
     }
 
     //----------//

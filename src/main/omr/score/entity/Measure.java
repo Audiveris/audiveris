@@ -33,6 +33,8 @@ import java.util.List;
 /**
  * Class {@code Measure} handles a measure of a system part, that is all entities within
  * the same measure time frame, for all staves that compose the system part.
+ * Vertically a measure embraces the part staves (generally one staff, but two staves for piano or
+ * harp instrument).
  * <p>
  * As a ScoreNode, the children of a Measure are : ending Barline, list of
  * TimeSignature(s), list of Clef(s), list of KeySignature(s), list of Chord(s)
@@ -51,7 +53,7 @@ public class Measure
     private static final Logger logger = LoggerFactory.getLogger(Measure.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** To flag dummy barline instances */
+    /** To flag dummy measure instances */
     private boolean dummy;
 
     /** To flag a temporary measure (for playback) */
@@ -63,7 +65,10 @@ public class Measure
     /** Flag for firstHalf measure */
     private boolean firstHalf;
 
-    /** Child: Left-inside bar line, if any */
+    /** Child: Left bar line, if any */
+    private Barline leftBarline;
+
+    /** Child: Inside bar line, if any */
     private Barline insideBarline;
 
     /** Child: Ending bar line, if any */
@@ -1144,6 +1149,14 @@ public class Measure
         return lastTime;
     }
 
+    //----------------//
+    // getLeftBarline //
+    //----------------//
+    public Barline getLeftBarline ()
+    {
+        return leftBarline;
+    }
+
     //----------//
     // getLeftX //
     //----------//
@@ -1429,7 +1442,7 @@ public class Measure
     // getWidth //
     //----------//
     /**
-     * Report the width, in units, of the measure.
+     * Report the width of the measure.
      *
      * @return the measure width, or null in case of dummy measure
      */
@@ -1486,8 +1499,7 @@ public class Measure
     // mergeWithRight //
     //----------------//
     /**
-     * Merge this measure with the content of the following measure on
-     * the right.
+     * Merge this measure with the content of the following measure on the right.
      *
      * @param right the following measure
      */
@@ -1681,6 +1693,14 @@ public class Measure
         implicit = true;
     }
 
+    //----------------//
+    // setLeftBarline //
+    //----------------//
+    public void setLeftBarline (Barline leftBarline)
+    {
+        this.leftBarline = leftBarline;
+    }
+
     //----------//
     // setLeftX //
     //----------//
@@ -1835,14 +1855,14 @@ public class Measure
         if (prevMeasure == null) { // Very first measure in the staff
             leftX = getSystem().getTopLeft().x;
         } else {
-            leftX = prevMeasure.getBarline().getCenter().x;
+            leftX = prevMeasure.getBarline().getRightX();
         }
 
         // End of the measure
         int rightX;
 
         if (barline != null) {
-            rightX = barline.getCenter().x;
+            rightX = barline.getRightX();
         } else {
             // Last measure of a part/system with no ending barline
             ScoreSystem system = getSystem();

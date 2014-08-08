@@ -165,8 +165,10 @@ public class SymbolFactory
             detectAccidNoteRelation(alterInter);
         } else if (Flags.contains(shape)) {
             checkFlagStemRelation(new FlagInter(glyph, shape, grade));
-        } else if ((shape == Shape.BRACE) || (shape == Shape.BRACKET)) {
-            sig.addVertex(new BraceInter(glyph, shape, grade));
+//        } else if (shape == Shape.BRACE) {
+//            sig.addVertex(new BraceInter(glyph,  grade));
+//        } else if ((shape == Shape.BRACE) || (shape == Shape.BRACKET)) {
+//            sig.addVertex(new BraceInter(glyph, shape, grade));
         } else if (PartialTimes.contains(shape)) {
             TimeNumberInter timeNumberInter = TimeNumberInter.create(glyph, shape, grade, staff);
 

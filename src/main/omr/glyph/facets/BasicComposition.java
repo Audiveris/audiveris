@@ -311,4 +311,19 @@ class BasicComposition
 
         that.setPartOf(glyph);
     }
+
+    //---------//
+    // touches //
+    //---------//
+    @Override
+    public boolean touches (Section section)
+    {
+        for (Section member : members) {
+            if (section.touches(member)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

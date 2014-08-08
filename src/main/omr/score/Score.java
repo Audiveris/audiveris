@@ -91,7 +91,7 @@ public class Score
     /** Dominant text language in the score */
     private String language;
 
-    /** Greatest duration divisor */
+    /** Greatest duration divisor. */
     private Integer durationDivisor;
 
     /** ScorePart list for the whole score */
@@ -108,6 +108,9 @@ public class Score
 
     /** Where the MusicXML output is to be stored */
     private File exportFile;
+
+    /** Where the compressed MusicXML output is to be stored */
+    private File exportCompressedFile;
 
     /** Where the script is to be stored */
     private File scriptFile;
@@ -321,8 +324,7 @@ public class Score
     // getDurationDivisor //
     //--------------------//
     /**
-     * Report the common divisor used for this score when
-     * simplifying the durations.
+     * Report the common divisor used for this score when simplifying the durations.
      *
      * @return the computed divisor (GCD), or null if not computable
      */
@@ -341,11 +343,16 @@ public class Score
     /**
      * Report to which file, if any, the score is to be exported.
      *
+     * @param compressed true for compressed file
      * @return the exported xml file, or null
      */
-    public File getExportFile ()
+    public File getExportFile (boolean compressed)
     {
-        return exportFile;
+        if (compressed) {
+            return exportCompressedFile;
+        } else {
+            return exportFile;
+        }
     }
 
     //----------------//
@@ -390,6 +397,18 @@ public class Score
     public String getImagePath ()
     {
         return imageFile.getPath();
+    }
+
+    //-------------//
+    // getLastPage //
+    //-------------//
+    public Page getLastPage ()
+    {
+        if (children.isEmpty()) {
+            return null;
+        } else {
+            return (Page) children.get(children.size() - 1);
+        }
     }
 
     //--------------//
@@ -578,18 +597,6 @@ public class Score
         constants.defaultVolume.setValue(volume);
     }
 
-    //-------------//
-    // getLastPage //
-    //-------------//
-    public Page getLastPage ()
-    {
-        if (children.isEmpty()) {
-            return null;
-        } else {
-            return (Page) children.get(children.size() - 1);
-        }
-    }
-
     //--------------//
     // getPrintFile //
     //--------------//
@@ -754,8 +761,7 @@ public class Score
     // setDurationDivisor //
     //--------------------//
     /**
-     * Remember the common divisor used for this score when
-     * simplifying the durations.
+     * Remember the common divisor used for this score when simplifying the durations.
      *
      * @param durationDivisor the computed divisor (GCD), or null
      */
@@ -771,10 +777,16 @@ public class Score
      * Remember to which file the score is to be exported.
      *
      * @param exportFile the exported xml file
+     * @param compressed true for compressed file
      */
-    public void setExportFile (File exportFile)
+    public void setExportFile (File exportFile,
+                               boolean compressed)
     {
-        this.exportFile = exportFile;
+        if (compressed) {
+            this.exportCompressedFile = exportFile;
+        } else {
+            this.exportFile = exportFile;
+        }
     }
 
     //-------------//
@@ -872,12 +884,11 @@ public class Score
     // simpleDurationOf //
     //------------------//
     /**
-     * Export a duration to its simplest form, based on the greatest
-     * duration divisor of the score.
+     * Export a duration to its simplest form, based on the greatest duration divisor of
+     * the score.
      *
      * @param value the raw duration
-     * @return the simple duration expression, in the param of proper
-     *         divisions
+     * @return the simple duration expression, in the param of proper divisions
      */
     public int simpleDurationOf (Rational value)
     {

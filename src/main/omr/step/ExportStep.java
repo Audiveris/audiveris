@@ -59,6 +59,6 @@ public class ExportStep
                       Sheet sheet)
             throws StepException
     {
-        ScoresManager.getInstance().export(sheet.getScore(), null, null);
+        ScoresManager.getInstance().export(sheet.getScore(), null, null, false);
     }
 }

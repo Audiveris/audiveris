@@ -77,6 +77,8 @@ public class Steps
     public static final String SYMBOL_REDUCTION = "SYMBOL_REDUCTION";
 
     //-- TODO: Current end of mandatory steps --
+    public static final String PARTS = "PARTS";
+
     public static final String MEASURES = "MEASURES";
 
     public static final String PAGES = "PAGES";
@@ -88,7 +90,11 @@ public class Steps
 
     public static final String PRINT = "PRINT";
 
+    public static final String PAGE_EXPORT = "PAGE_EXPORT";
+
     public static final String EXPORT = "EXPORT";
+
+    public static final String EXPORT_COMPRESSED = "EXPORT_COMPRESSED";
 
     public static final String PLUGIN = "PLUGIN";
 
@@ -110,6 +116,8 @@ public class Steps
         addStep(new BinaryStep());
         addStep(new ScaleStep());
         addStep(new GridStep());
+        addStep(new PartsStep());
+        addStep(new MeasuresStep());
         addStep(new DmzStep());
         addStep(new StemSeedsStep());
         addStep(new BeamsStep());
@@ -124,16 +132,17 @@ public class Steps
 
         //        addStep(new TextsStep());
         ///addNoStep(SYMBOLS);
-        //        addStep(new MeasuresStep());
         //        addStep(new PagesStep());
-        addNoStep(SCORE);
-        //        addStep(new ScoreStep());
+        ///addNoStep(SCORE);
+        addStep(new ScoreStep());
 
         // Optional steps, in whatever order
         // ---------------------------------
         addStep(new DeltaStep());
         addStep(new PrintStep());
+        ///addStep(new PageExportStep());
         addStep(new ExportStep());
+        addStep(new ExportCompressedStep());
         addStep(new TestStep());
 
         // Plugin step depends on default plugin
@@ -325,8 +334,8 @@ public class Steps
     // Constant //
     //----------//
     /**
-     * Class {@code Constant} is a subclass of
-     * {@link omr.constant.Constant}, meant to store a {@link Step} value.
+     * Class {@code Constant} is a subclass of {@link omr.constant.Constant}, meant to
+     * store a {@link Step} value.
      */
     public static class Constant
             extends omr.constant.Constant

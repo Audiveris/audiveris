@@ -43,32 +43,26 @@ import java.util.TreeMap;
  * Class {@code PartConnection} is in charge of finding the connections of parts across
  * systems (and pages) so that a part always represents the same instrument all along
  * the score.
- *
  * <p>
  * This work is done across:
  * <ul>
  * <li>The various systems of a page using Audiveris ScoreSystem instances.</li>
  * <li>The various pages of a score using Audiveris Page instances.</li>
- * <li>The various pages of a score using Proxymusic ScorePartwise
- * instances.</li>
+ * <li>The various pages of a score using Proxymusic ScorePartwise instances.</li>
  * </ul>
- * All together, this sums up to three different cases to handle, so we have
- * taken a generic approach, abstracting the different types into Candidates and
- * Results.</p>
- *
+ * All together, this sums up to three different cases to handle, so we have taken a generic
+ * approach, abstracting the different types into Candidates and Results.</p>
  * <p>
- * The strategy used to build Results out of Candidates is based on the
- * following assumptions:
+ * The strategy used to build Results out of Candidates is based on the following assumptions:
  * <ul>
- * <li>For a part of a system to be connected to a part of another system,
- * they must exhibit the same count of staves.</li>
- * <li>Parts cannot be swapped from one system to the other. In other words, we
- * cannot have say partA followed by partB in a system, and partB followed by
- * partA in another system.</li>
- * <li>Additional parts appear at the top of a system, rather than at the
- * bottom. So we process part connections bottom up.</li>
- * <li>When possible, we use the part names (or abbreviations) to help the
- * connection algorithm. (not yet fully implemented).
+ * <li>For a part of a system to be connected to a part of another system, they must exhibit the
+ * same count of staves.</li>
+ * <li>Parts cannot be swapped from one system to the other. In other words, we cannot have say
+ * partA followed by partB in a system, and partB followed by partA in another system.</li>
+ * <li>Additional parts appear at the top of a system, rather than at the bottom. So we process part
+ * connections bottom up.</li>
+ * <li>When possible, we use the part names (or abbreviations) to help the connection algorithm.
+ * (not yet fully implemented).
  * </ul>
  *
  * @author Hervé Bitteur
@@ -81,13 +75,13 @@ public class PartConnection
             PartConnection.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Input data */
+    /** Input data. */
     private final Set<List<Candidate>> sequences;
 
-    /** Record the set of candidates per result */
+    /** Record the set of candidates per result. */
     private final SortedMap<Result, Set<Candidate>> resultMap = new TreeMap<Result, Set<Candidate>>();
 
-    /** Record which result is mapped to which candidate */
+    /** Record which result is mapped to which candidate. */
     private final Map<Candidate, Result> candidateMap = new LinkedHashMap<Candidate, Result>();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -116,11 +110,12 @@ public class PartConnection
     //--------------------//
     /**
      * Convenient method to connect parts across systems of a page.
-     * This method is to be used when processing one page, and simply connecting
-     * the parts of the systems that appear on this page. Here we work with
-     * Audiveris ScoreSystem entities.
+     * <p>
+     * This method is to be used when processing one page, and simply connecting the parts of the
+     * systems that appear on this page. Here we work with Audiveris ScoreSystem entities.
      *
      * @param page the containing page
+     * @return the mapping found
      */
     public static PartConnection connectPageSystems (Page page)
     {
@@ -147,12 +142,13 @@ public class PartConnection
     //-------------------//
     /**
      * Convenient method to connect parts across pages.
+     * <p>
      * This method is to be used when merging the results of several pages.
-     * Here we work with ProxyMusic ScorePartwise entities, since we expect each
-     * page result to be provided via MusicXML.
+     * Here we work with ProxyMusic ScorePartwise entities, since we expect each page result to be
+     * provided via MusicXML.
      *
-     * @param pages the sequence of pages, as (proxymusic) ScorePartwise
-     *              instances
+     * @param pages the sequence of pages, as (proxymusic) ScorePartwise instances
+     * @return the mapping found
      */
     public static PartConnection connectProxyPages (SortedMap<Integer, ScorePartwise> pages)
     {
@@ -184,10 +180,12 @@ public class PartConnection
     //-------------------//
     /**
      * Convenient method to connect parts across pages.
+     * <p>
      * This method is to be used when merging the results of several pages.
      * Here we work directly with Audiveris Page entities
      *
      * @param pages the sequence of pages, as (audiveris) Page instances
+     * @return the mapping found
      */
     public static PartConnection connectScorePages (SortedMap<Integer, Page> pages)
     {
@@ -213,8 +211,8 @@ public class PartConnection
     // getCandidateMap //
     //-----------------//
     /**
-     * Report an unmodifiable view of which resulting part has been assigned
-     * to any given candidate
+     * Report an unmodifiable view of which resulting part has been assigned to any
+     * given candidate
      *
      * @return the candidateMap (candidate -> assigned result)
      */
@@ -240,9 +238,9 @@ public class PartConnection
     // connect //
     //---------//
     /**
-     * The heart of the part connection algorithm, organized to work through
-     * interfaces in order to use the same piece of code, when we connect
-     * systems of one page, or when we connect parts across several pages.
+     * The heart of the part connection algorithm, organized to work through interfaces
+     * in order to use the same piece of code, when we connect systems of one page, or
+     * when we connect parts across several pages.
      */
     private void connect ()
     {
@@ -252,8 +250,7 @@ public class PartConnection
         /** Temporary map, to record the set of candidates per result */
         final Map<Result, Set<Candidate>> rawMap = new HashMap<Result, Set<Candidate>>();
 
-        // Process each sequence of parts in turn
-        // (typically a sequence of parts is a system)
+        // Process each sequence of parts in turn (typically a sequence of parts is a system)
         for (List<Candidate> sequence : sequences) {
             // Current index in results sequence (built in reverse order)
             int resultIndex = -1;
@@ -368,8 +365,8 @@ public class PartConnection
     // Candidate //
     //-----------//
     /**
-     * Interface {@code Candidate} is used to process part candidates,
-     * regardless whether they are provided:
+     * Interface {@code Candidate} is used to process part candidates, regardless whether they are
+     * provided:
      * <ul>
      * <li>as Audiveris {@link omr.score.entity.SystemPart} instances
      * (produced by the scanning of just one page)</li>
@@ -406,11 +403,9 @@ public class PartConnection
     // Result //
     //--------//
     /**
-     * Interface {@code Result} is used to process resulting ScorePart
-     * instances,
-     * regardless whether they are instances of standard Audiveris {@link
-     * ScorePart} or instances of ProxyMusic
-     * {@link com.audiveris.proxymusic.ScorePart}.
+     * Interface {@code Result} is used to process resulting ScorePart instances,
+     * regardless whether they are instances of standard Audiveris {@link ScorePart}
+     * or instances of ProxyMusic {@link com.audiveris.proxymusic.ScorePart}.
      */
     public static interface Result
             extends Comparable<Result>
@@ -501,7 +496,7 @@ public class PartConnection
     // PMScorePartCandidate //
     //----------------------//
     /**
-     * Wrapping class meant for a proxymusic ScorePart instance candidate
+     * Wrapping class meant for a proxymusic ScorePart instance candidate.
      */
     private static class PMScorePartCandidate
             implements Candidate
@@ -649,7 +644,7 @@ public class PartConnection
     // PMScorePartResult //
     //-------------------//
     /**
-     * Wrapping class meant for a proxymusic ScorePart instance result
+     * Wrapping class meant for a proxymusic ScorePart instance result.
      */
     private static class PMScorePartResult
             extends AbstractResult
@@ -745,7 +740,7 @@ public class PartConnection
     // ScorePartCandidate //
     //--------------------//
     /**
-     * Wrapping class meant for a ScorePart instance candidate
+     * Wrapping class meant for a ScorePart instance candidate.
      */
     private static class ScorePartCandidate
             implements Candidate
@@ -831,7 +826,7 @@ public class PartConnection
     // ScorePartResult //
     //-----------------//
     /**
-     * Wrapping class meant for a ScorePart instance result
+     * Wrapping class meant for a ScorePart instance result.
      */
     private static class ScorePartResult
             extends AbstractResult
@@ -902,7 +897,7 @@ public class PartConnection
     // SystemPartCandidate //
     //---------------------//
     /**
-     * Wrapping class meant for a SystemPart instance
+     * Wrapping class meant for a SystemPart instance.
      */
     private static class SystemPartCandidate
             implements Candidate

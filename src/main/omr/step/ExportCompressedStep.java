@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                       B r a c e I n t e r                                      //
+//                             E x p o r t C o m p r e s s e d S t e p                            //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -9,41 +9,48 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sig;
+package omr.step;
 
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.score.ScoresManager;
+
+import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
+import static omr.step.Step.DATA_TAB;
+
+import java.util.Collection;
 
 /**
- * Class {@code BraceInter} represents a brace.
+ * Class {@code ExportCompressedStep} exports the whole score in compressed form.
  *
  * @author Hervé Bitteur
  */
-public class BraceInter
-        extends AbstractInter
+public class ExportCompressedStep
+        extends AbstractStep
 {
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new BraceInter object.
-     *
-     * @param glyph underlying glyph
-     * @param grade evaluation value
+     * Creates a new ExportCompressedStep object.
      */
-    public BraceInter (Glyph glyph,
-                       double grade)
+    public ExportCompressedStep ()
     {
-        super(glyph, null, Shape.BRACE, grade);
+        super(
+                Steps.EXPORT_COMPRESSED,
+                Level.SCORE_LEVEL,
+                Mandatory.OPTIONAL,
+                DATA_TAB,
+                "Export the score to compressed MusicXML file");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
-    //--------//
-    // accept //
-    //--------//
+    //------//
+    // doit //
+    //------//
     @Override
-    public void accept (InterVisitor visitor)
+    public void doit (Collection<SystemInfo> systems,
+                      Sheet sheet)
+            throws StepException
     {
-        visitor.visit(this);
+        ScoresManager.getInstance().export(sheet.getScore(), null, null, true);
     }
 }

@@ -17,17 +17,23 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.grid.OldBarAlignment;
 import omr.grid.StaffInfo;
-import omr.grid.StickIntersection;
 import static omr.run.Orientation.*;
 
 import omr.score.entity.Barline;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
+import omr.score.entity.StaffBarline;
 import omr.score.entity.SystemPart;
 
+import omr.sig.BarGroupRelation;
+import omr.sig.BarlineInter;
+import omr.sig.Inter;
+import omr.sig.Relation;
+import omr.sig.SIGraph;
+
+import omr.util.HorizontalSide;
 import omr.util.Navigable;
 import omr.util.TreeNode;
 
@@ -36,8 +42,11 @@ import net.jcip.annotations.NotThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class {@code MeasuresBuilder} is in charge, at system info level, of building
@@ -118,17 +127,25 @@ public class MeasuresBuilder
 
         allocateMeasures();
 
-        checkMeasures();
+        ///checkMeasures();
     }
 
     //------------------//
     // allocateMeasures //
     //------------------//
     /**
-     * Bar lines are first sorted according to their abscissa, then we
-     * run additional checks on each bar line, since we now know its
-     * enclosing system.
-     * If OK, then we add the corresponding measures in their parts.
+     * Allocate all measures stacks in the system.
+     * <p>
+     * Parts and physical bar lines have been identified within the system.
+     * Each staff has its bar lines attached.
+     * Retrieve proper logical bar lines (perhaps made of horizontal sequences of physical bar
+     * lines) and allocate the measures accordingly.
+     * <p>
+     * A group of 2 physical bar lines, whatever their thickness, gives a single logical bar line.
+     * A group of 3 or 4 physical bar lines (thin | thick | thin) or (thin | thick | thick | thin)
+     * gives two logical bar lines (thin | thick) and (thick | thin).
+     * In the case of 3 verticals, the middle one is "shared" between the two logicals.
+     * In the case of 4 verticals, no line is shared between the two logicals.
      */
     private void allocateMeasures ()
     {
@@ -138,55 +155,106 @@ public class MeasuresBuilder
             part.getMeasures().clear();
         }
 
-        // Create measures out of OldBarAlignment instances
-        List<OldBarAlignment> alignments = system.getBarAlignments();
-        int firstId = system.getFirstStaff().getId();
+        SIGraph sig = system.getSig();
+        List<Inter> allBars = sig.inters(BarlineInter.class);
+        Collections.sort(allBars, Inter.byAbscissa);
 
-        for (OldBarAlignment align : alignments) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(align.toString());
-            }
+        for (TreeNode pn : scoreSystem.getParts()) {
+            SystemPart part = (SystemPart) pn;
 
-            StickIntersection[] inters = align.getIntersections();
-            int ip = 0;
+            // Look at first staff in part
+            StaffInfo staff = part.getFirstStaff().getInfo();
+            List<BarlineInter> bars = staff.getBars();
+            List<List<BarlineInter>> groups = getGroups(bars, sig);
+            Barline leftBarPending = null;
 
-            for (TreeNode node : scoreSystem.getParts()) {
-                SystemPart part = (SystemPart) node;
-                PartInfo partInfo = system.getParts().get(ip++);
-                Measure measure = new Measure(part);
-                Barline barline = new Barline(measure);
+            for (List<BarlineInter> group : groups) {
+                Measure measure = (group.get(0).isStaffEnd(HorizontalSide.LEFT)) ? null
+                        : new Measure(part);
 
-                for (StaffInfo staffInfo : partInfo.getStaves()) {
-                    int is = staffInfo.getId() - firstId;
-                    StickIntersection inter = inters[is];
-
-                    if (inter != null) {
-                        Glyph stick = inter.getStickAncestor();
-                        barline.addGlyph(stick);
-                    } else {
-                        // TODO
-                        logger.warn("No intersection at index {} in {}", is, align);
-                    }
+                if (measure != null && leftBarPending != null) {
+                    measure.setLeftBarline(leftBarPending);
+                    leftBarPending = null;
                 }
 
-                logger.debug(
-                        "S#{} {}" + " - Created measure " + " with {}",
-                        scoreSystem.getId(),
-                        part,
-                        barline);
+                // Logical barline with first 2 bars of the group
+                Barline barline = new Barline(measure);
+                StaffBarline staffBarline = new StaffBarline();
+                barline.addStaffBarline(staffBarline);
+
+                for (int i = 0; i < Math.min(2, group.size()); i++) {
+                    staffBarline.addInter(group.get(i));
+                }
+
+                if (measure == null) {
+                    part.setStartingBarline(barline);
+                }
+
+                if (group.size() > 2) {
+                    // We have a second logical barline with last 2 bars of group
+                    // And it starts a new measure
+                    barline = new Barline(null);
+                    staffBarline = new StaffBarline();
+                    barline.addStaffBarline(staffBarline);
+
+                    for (int i = group.size() - 2; i < group.size(); i++) {
+                        staffBarline.addInter(group.get(i));
+                    }
+
+                    leftBarPending = barline;
+                }
             }
         }
 
-        // Degraded case w/ no bar stick at all!
-        for (TreeNode node : scoreSystem.getParts()) {
-            SystemPart part = (SystemPart) node;
-
-            if (part.getMeasures().isEmpty()) {
-                logger.debug("{} - Creating artificial measure", part);
-
-                Measure measure = new Measure(part);
-            }
-        }
+        //        // Create measures out of OldBarAlignment instances
+        //        List<OldBarAlignment> alignments = system.getBarAlignments();
+        //        int                   firstId = system.getFirstStaff().getId();
+        //
+        //        for (OldBarAlignment align : alignments) {
+        //            if (logger.isDebugEnabled()) {
+        //                logger.debug(align.toString());
+        //            }
+        //
+        //            StickIntersection[] inters = align.getIntersections();
+        //            int                 ip = 0;
+        //
+        //            for (TreeNode node : scoreSystem.getParts()) {
+        //                SystemPart part = (SystemPart) node;
+        //                PartInfo   partInfo = system.getParts().get(ip++);
+        //                Measure    measure = new Measure(part);
+        //                Barline    barline = new Barline(measure);
+        //
+        //                for (StaffInfo staffInfo : partInfo.getStaves()) {
+        //                    int               is = staffInfo.getId() - firstId;
+        //                    StickIntersection inter = inters[is];
+        //
+        //                    if (inter != null) {
+        //                        Glyph stick = inter.getStickAncestor();
+        //                        barline.addGlyph(stick);
+        //                    } else {
+        //                        // TODO
+        //                        logger.warn("No intersection at index {} in {}", is, align);
+        //                    }
+        //                }
+        //
+        //                logger.debug(
+        //                    "S#{} {}" + " - Created measure " + " with {}",
+        //                    scoreSystem.getId(),
+        //                    part,
+        //                    barline);
+        //            }
+        //        }
+        //
+        //        // Degraded case w/ no bar stick at all!
+        //        for (TreeNode node : scoreSystem.getParts()) {
+        //            SystemPart part = (SystemPart) node;
+        //
+        //            if (part.getMeasures().isEmpty()) {
+        //                logger.debug("{} - Creating artificial measure", part);
+        //
+        //                Measure measure = new Measure(part);
+        //            }
+        //        }
     }
 
     //----------------//
@@ -238,21 +306,58 @@ public class MeasuresBuilder
      */
     private void checkMeasures ()
     {
-        // Detect very narrow measures which in fact indicate double bar
-        // lines.
+        // Detect very narrow measures which in fact indicate double bar lines.
         mergeBarlines();
 
-        // First barline may be just the beginning of the staff, so do not
-        // count the very first bar line, which in general defines the
-        // beginning of the staff rather than the end of a measure, but use
-        // it to precisely define the left abscissa of the system and all
-        // its contained staves.
+        /* First barline may be just the beginning of the staff, so do not count the very first bar
+         * line, which in general defines the beginning of the staff rather than the end of a
+         * measure, but use it to precisely define the left abscissa of the system and all its
+         * contained staves. */
         removeStartingMeasure();
 
-        // Similarly, use the very last bar line, which generally ends the
-        // system, to define the right abscissa of the system and its
-        // staves.
+        /* Similarly, use the very last bar line, which generally ends the system, to define the
+         * right abscissa of the system and its staves. */
         checkEndingBar();
+    }
+
+    //-----------//
+    // getGroups //
+    //-----------//
+    private List<List<BarlineInter>> getGroups (List<BarlineInter> bars,
+                                                SIGraph sig)
+    {
+        List<List<BarlineInter>> groups = new ArrayList<List<BarlineInter>>();
+
+        for (int i = 0; i < bars.size(); i++) {
+            BarlineInter b1 = bars.get(i);
+            BarlineInter b2 = bars.get(i);
+
+            for (int j = i + 1; j < bars.size(); j++) {
+                BarlineInter b = bars.get(j);
+                Set<Relation> edges = sig.getAllEdges(b2, b);
+                boolean grouped = false;
+
+                for (Relation rel : edges) {
+                    if (rel instanceof BarGroupRelation) {
+                        grouped = true;
+
+                        break;
+                    }
+                }
+
+                if (grouped) {
+                    b2 = b;
+                } else {
+                    break;
+                }
+            }
+
+            int ib2 = bars.indexOf(b2);
+            groups.add(bars.subList(i, ib2 + 1));
+            i = ib2;
+        }
+
+        return groups;
     }
 
     //---------------//
@@ -397,15 +502,12 @@ public class MeasuresBuilder
                 0.5,
                 "Maximum horizontal shift in bars between staves in a system");
 
-        //
         Scale.Fraction maxDoubleBarDx = new Scale.Fraction(
                 2.0,
                 "Maximum horizontal distance between the two bars of a double bar");
 
-        //
         Scale.Fraction minMeasureWidth = new Scale.Fraction(2.0, "Minimum width for a measure");
 
-        //
         Scale.Fraction maxBarOffset = new Scale.Fraction(
                 1.0,
                 "Vertical offset used to detect that a bar extends past a staff");

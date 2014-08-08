@@ -113,8 +113,8 @@ public class BarGlyphFactory
      * @param absCore the core absolute rectangle
      * @return the retrieved filament, or null
      */
-    public Glyph retrieveBarGlyph (Collection<Section> source,
-                                   Rectangle absCore)
+    public Filament retrieveBarGlyph (Collection<Section> source,
+                                      Rectangle absCore)
     {
         StopWatch watch = new StopWatch("retrieveBarGlyph");
 
@@ -123,7 +123,7 @@ public class BarGlyphFactory
             watch.start("populateCore");
 
             Rectangle core = orientation.oriented(absCore);
-            Glyph fil = populateCore(source, core);
+            Filament fil = populateCore(source, core);
 
             if (fil == null) {
                 return null;
@@ -134,7 +134,7 @@ public class BarGlyphFactory
             expandFilament(fil, core, source);
 
             // (Re)register filament with its (final) signature
-            fil = nest.registerGlyph(fil);
+            fil = (Filament) nest.registerGlyph(fil);
 
             return fil;
         } catch (Exception ex) {
@@ -156,22 +156,12 @@ public class BarGlyphFactory
                               Section section)
     {
         // A section must always touch one of fil current member sections
-        // If this does not increase thickness beyond core, it's OK
-        // Otherwise, this is limited to rather long section only
-        boolean touching = false;
-
-        for (Section member : fil.getMembers()) {
-            if (section.touches(member)) {
-                touching = true;
-
-                break;
-            }
-        }
-
-        if (!touching) {
+        if (!fil.touches(section)) {
             return false;
         }
 
+        // If this does not increase thickness beyond core, it's OK
+        // Otherwise, this is limited to rather long section only
         Rectangle oSct = orientation.oriented(section.getBounds());
 
         if (core.union(oSct).height <= core.height) {
@@ -225,15 +215,10 @@ public class BarGlyphFactory
      * @param source the input sections
      * @param core   the oriented core rectangle
      */
-    private Glyph populateCore (Collection<Section> source,
-                                Rectangle core)
+    private Filament populateCore (Collection<Section> source,
+                                   Rectangle core)
     {
-        double yMid = core.y + (core.height / 2.0);
-        Line line = new BasicLine(
-                Arrays.asList(
-                        new Point2D.Double(core.x, yMid),
-                        new Point2D.Double(core.x + core.width, yMid)));
-        Glyph fil = new Filament(scale, layer);
+        Filament fil = new Filament(scale, layer);
 
         for (Section section : source) {
             section.setProcessed(false);
@@ -256,7 +241,7 @@ public class BarGlyphFactory
 
         if (!fil.getMembers().isEmpty()) {
             if (constants.registerEachAndEveryGlyph.isSet()) {
-                return nest.registerGlyph(fil); // Not really useful, but eases debug
+                return (Filament) nest.registerGlyph(fil); // Not really useful, but eases debug
             } else {
                 return fil;
             }

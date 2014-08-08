@@ -192,7 +192,10 @@ public class ShapeSet
                     RIGHT_REPEAT_SIGN,
                     BACK_TO_BACK_REPEAT_SIGN,
                     THIN_CONNECTION,
-                    THICK_CONNECTION));
+                    THICK_CONNECTION,
+                    BRACE,
+                    BRACKET,
+                    BRACKET_CONNECTION));
 
     public static final ShapeSet Beams = new ShapeSet(
             BEAM,
@@ -256,10 +259,7 @@ public class ShapeSet
                     SEGNO,
                     CODA,
                     BREATH_MARK,
-                    CAESURA,
-                    BRACE,
-                    BRACKET,
-                    BRACKET_CONNECTION));
+                    CAESURA));
 
     public static final ShapeSet Notes = new ShapeSet(
             BREVE,

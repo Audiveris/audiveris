@@ -62,8 +62,8 @@ public class ScoreReductor
         Rational duration;
 
         try {
-            // Special case for whole chords
             if (chord.isWholeDuration()) {
+                // Special case for whole chords
                 duration = chord.getMeasure().getExpectedDuration();
             } else {
                 duration = chord.getDuration();

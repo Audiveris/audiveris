@@ -29,10 +29,10 @@ public class BarAlignment
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Bar peak in the upper staff. */
-    protected final BarPeak topPeak;
+    protected final StaffPeak.Bar topPeak;
 
     /** Bar peak in the lower staff. */
-    protected final BarPeak bottomPeak;
+    protected final StaffPeak.Bar bottomPeak;
 
     /**
      * Abscissa shift in pixels between de-skewed bottom peak and de-skewed top peak.
@@ -51,8 +51,8 @@ public class BarAlignment
      * @param dx         bottomPeak.x - topPeak.x (de-skewed abscissae)
      * @param impacts    the alignment quality
      */
-    public BarAlignment (BarPeak topPeak,
-                         BarPeak bottomPeak,
+    public BarAlignment (StaffPeak.Bar topPeak,
+                         StaffPeak.Bar bottomPeak,
                          double dx,
                          GradeImpacts impacts)
     {
@@ -89,7 +89,7 @@ public class BarAlignment
     //---------//
     // getPeak //
     //---------//
-    public BarPeak getPeak (VerticalSide side)
+    public StaffPeak.Bar getPeak (VerticalSide side)
     {
         if (side == VerticalSide.TOP) {
             return topPeak;

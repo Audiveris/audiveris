@@ -32,13 +32,17 @@ public class ExportTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The file used for export */
+    /** The file used for export. */
     @XmlAttribute
     private String path;
 
-    /** Should we add our signature? */
+    /** Should we add our signature?. */
     @XmlAttribute(name = "inject-signature")
     private Boolean injectSignature;
+
+    /** Should we compress the output?. */
+    @XmlAttribute
+    private boolean compressed;
 
     //~ Constructors -------------------------------------------------------------------------------
     //------------//
@@ -47,11 +51,14 @@ public class ExportTask
     /**
      * Create a task to export the related score entities of a sheet
      *
-     * @param path the full path of the export file
+     * @param path       the full path of the export file
+     * @param compressed true for a compressed output (mxl) rather than uncompressed (xml)
      */
-    public ExportTask (String path)
+    public ExportTask (String path,
+                       boolean compressed)
     {
         this.path = path;
+        this.compressed = compressed;
     }
 
     //------------//
@@ -72,7 +79,8 @@ public class ExportTask
         ScoresManager.getInstance().export(
                 sheet.getScore(),
                 (path != null) ? new File(path) : null,
-                injectSignature);
+                injectSignature,
+                compressed);
     }
 
     //-----------------//
@@ -81,6 +89,6 @@ public class ExportTask
     @Override
     protected String internalsString ()
     {
-        return " export " + path + super.internalsString();
+        return " export " + (compressed ? "compressed " : "") + path + super.internalsString();
     }
 }

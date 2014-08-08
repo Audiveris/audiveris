@@ -94,14 +94,14 @@ public class ShapeBoard
         heights.put(ShapeSet.Alterations, 40);
         heights.put(ShapeSet.Articulations, 60);
         heights.put(ShapeSet.Attributes, 40);
-        heights.put(ShapeSet.Barlines, 100);
+        heights.put(ShapeSet.Barlines, 130);
         heights.put(ShapeSet.Beams, 60);
         heights.put(ShapeSet.Clefs, 140);
         heights.put(ShapeSet.Dynamics, 220);
         heights.put(ShapeSet.Flags, 130);
         heights.put(ShapeSet.Keys, 220);
         heights.put(ShapeSet.NoteHeads, 40);
-        heights.put(ShapeSet.Markers, 120);
+        heights.put(ShapeSet.Markers, 80);
         heights.put(ShapeSet.Notes, 40);
         heights.put(ShapeSet.Ornaments, 80);
         heights.put(ShapeSet.Rests, 120);

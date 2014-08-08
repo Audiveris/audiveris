@@ -12,6 +12,7 @@
 package omr.score;
 
 import omr.glyph.Shape;
+
 import static omr.glyph.Shape.*;
 
 import omr.score.entity.LyricsItem;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.String; // Do not remove this line!
 
 import javax.xml.bind.JAXBElement;
+import omr.score.entity.Barline;
 
 /**
  * Class {@code MusicXML} gathers symbols related to the MusicXML data
@@ -97,37 +99,18 @@ public class MusicXML
     // barStyleOf //
     //------------//
     /**
-     * Report the MusicXML bar style for a recognized Barline shape
+     * Report the MusicXML bar style for a recognized Barline style
      *
-     * @param shape the barline shape
-     * @return the bar style
+     * @param style the Audiveris barline style
+     * @return the MusicXML bar style
      */
-    public static BarStyle barStyleOf (Shape shape)
+    public static BarStyle barStyleOf (Barline.Style style)
     {
-        //      Bar-style contains style information. Choices are
-        //      regular, dotted, dashed, heavy, light-light,
-        //      light-heavy, heavy-light, heavy-heavy, and none.
-        switch (shape) {
-        case THIN_BARLINE:
-        case PART_DEFINING_BARLINE:
-            return BarStyle.REGULAR; //"light" ???
-
-        case DOUBLE_BARLINE:
-            return BarStyle.LIGHT_LIGHT;
-
-        case FINAL_BARLINE:
-        case RIGHT_REPEAT_SIGN:
-            return BarStyle.LIGHT_HEAVY;
-
-        case REVERSE_FINAL_BARLINE:
-        case LEFT_REPEAT_SIGN:
-            return BarStyle.HEAVY_LIGHT;
-
-        case BACK_TO_BACK_REPEAT_SIGN:
-            return BarStyle.HEAVY_HEAVY; //"heavy-heavy"; ???
+        try {
+            return BarStyle.valueOf(style.name());
+        } catch(Exception ex) {
+            throw new IllegalArgumentException("Unknown bar style " + style, ex);
         }
-
-        return BarStyle.NONE; // TO BE CHECKED ???
     }
 
     //-----------------------//

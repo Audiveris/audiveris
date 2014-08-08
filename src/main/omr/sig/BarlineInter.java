@@ -16,6 +16,10 @@ import omr.glyph.facets.Glyph;
 
 import omr.math.Line;
 
+import omr.util.HorizontalSide;
+
+import java.util.EnumSet;
+
 /**
  * Class {@code BarlineInter} represents an interpretation of bar line (thin or thick
  * vertical segment).
@@ -25,8 +29,12 @@ import omr.math.Line;
 public class BarlineInter
         extends AbstractVerticalInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
+    /** Does this bar line define a staff side?. */
+    private final EnumSet<HorizontalSide> staffEnd = EnumSet.noneOf(HorizontalSide.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarlineInter object.
      *
@@ -55,6 +63,21 @@ public class BarlineInter
         visitor.visit(this);
     }
 
+    //------------//
+    // getDetails //
+    //------------//
+    @Override
+    public String getDetails ()
+    {
+        if (isStaffEnd(HorizontalSide.LEFT)) {
+            return super.getDetails() + "/STAFF_LEFT_END";
+        } else if (isStaffEnd(HorizontalSide.RIGHT)) {
+            return super.getDetails() + "/STAFF_RIGHT_END";
+        } else {
+            return super.getDetails();
+        }
+    }
+
     //--------//
     // isGood //
     //--------//
@@ -62,5 +85,21 @@ public class BarlineInter
     public boolean isGood ()
     {
         return getGrade() >= 0.6; // TODO, quick & dirty
+    }
+
+    //------------//
+    // isStaffEnd //
+    //------------//
+    public boolean isStaffEnd (HorizontalSide side)
+    {
+        return staffEnd.contains(side);
+    }
+
+    //-------------//
+    // setStaffEnd //
+    //-------------//
+    public void setStaffEnd (HorizontalSide side)
+    {
+        staffEnd.add(side);
     }
 }

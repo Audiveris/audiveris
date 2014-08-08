@@ -249,6 +249,68 @@ public class ScoreActions
         firePropertyChange(REBUILD_ALLOWED, oldValue, value);
     }
 
+    //----------------------//
+    // storeCompressedScore //
+    //----------------------//
+    /**
+     * Export the currently selected score, using compressed MusicXML format
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = SCORE_AVAILABLE)
+    public Task<Void, Void> storeCompressedScore (ActionEvent e)
+    {
+        final Sheet sheet = SheetsController.getCurrentSheet();
+
+        if (sheet == null) {
+            return null;
+        }
+
+        final File exportFile = sheet.getScore().getExportFile(true);
+
+        if (exportFile != null) {
+            return new StoreScoreTask(sheet, exportFile, true);
+        } else {
+            return storeCompressedScoreAs(e);
+        }
+    }
+
+    //------------------------//
+    // storeCompressedScoreAs //
+    //------------------------//
+    /**
+     * Export the currently selected score, using compressed MusicXML format,
+     * to a user-provided file
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = SCORE_AVAILABLE)
+    public Task<Void, Void> storeCompressedScoreAs (ActionEvent e)
+    {
+        final Sheet sheet = SheetsController.getCurrentSheet();
+
+        if (sheet == null) {
+            return null;
+        }
+
+        // Let the user select a score output file
+        File exportFile = UIUtil.fileChooser(
+                true,
+                null,
+                ScoresManager.getInstance().getDefaultExportFile(null, sheet.getScore(), true),
+                new OmrFileFilter(
+                        "MXL files",
+                        new String[]{ScoresManager.COMPRESSED_SCORE_EXTENSION}));
+
+        if (exportFile != null) {
+            return new StoreScoreTask(sheet, exportFile, true);
+        } else {
+            return null;
+        }
+    }
+
     //------------//
     // storeScore //
     //------------//
@@ -267,10 +329,10 @@ public class ScoreActions
             return null;
         }
 
-        final File exportFile = sheet.getScore().getExportFile();
+        final File exportFile = sheet.getScore().getExportFile(false);
 
         if (exportFile != null) {
-            return new StoreScoreTask(sheet, exportFile);
+            return new StoreScoreTask(sheet, exportFile, false);
         } else {
             return storeScoreAs(e);
         }
@@ -299,11 +361,11 @@ public class ScoreActions
         File exportFile = UIUtil.fileChooser(
                 true,
                 null,
-                ScoresManager.getInstance().getDefaultExportFile(null, sheet.getScore()),
+                ScoresManager.getInstance().getDefaultExportFile(null, sheet.getScore(), false),
                 new OmrFileFilter("XML files", new String[]{ScoresManager.SCORE_EXTENSION}));
 
         if (exportFile != null) {
-            return new StoreScoreTask(sheet, exportFile);
+            return new StoreScoreTask(sheet, exportFile, false);
         } else {
             return null;
         }
@@ -621,13 +683,17 @@ public class ScoreActions
 
         final File exportFile;
 
+        final boolean compressed;
+
         //~ Constructors ---------------------------------------------------------------------------
         public StoreScoreTask (Sheet sheet,
-                               File exportFile)
+                               File exportFile,
+                               boolean compressed)
         {
             this.sheet = sheet;
             this.score = sheet.getScore();
             this.exportFile = exportFile;
+            this.compressed = compressed;
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -635,11 +701,15 @@ public class ScoreActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
-            score.setExportFile(exportFile);
+            score.setExportFile(exportFile, compressed);
             Stepping.ensureScoreStep(Steps.valueOf(Steps.SCORE), score);
 
             if (checkParameters(sheet)) {
-                Stepping.ensureScoreStep(Steps.valueOf(Steps.EXPORT), score);
+                if (compressed) {
+                    Stepping.ensureScoreStep(Steps.valueOf(Steps.EXPORT_COMPRESSED), score);
+                } else {
+                    Stepping.ensureScoreStep(Steps.valueOf(Steps.EXPORT), score);
+                }
             }
 
             return null;

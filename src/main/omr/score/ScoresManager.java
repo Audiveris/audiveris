@@ -58,6 +58,9 @@ public class ScoresManager
     /** The extension used for score output files: {@value} */
     public static final String SCORE_EXTENSION = ".xml";
 
+    /** The extension used for compressed score output files: {@value} */
+    public static final String COMPRESSED_SCORE_EXTENSION = ".mxl";
+
     /** The extension used for score bench files: {@value} */
     public static final String BENCH_EXTENSION = ".bench.properties";
 
@@ -147,52 +150,56 @@ public class ScoresManager
     // export //
     //--------//
     /**
-     * Export a score using the partwise structure of MusicXML to the
-     * default file for the provided score.
+     * Export a score using the partwise structure of MusicXML to the default file for
+     * the provided score.
      *
-     * @param score the score to export
+     * @param score      the score to export
+     * @param compressed true for compressed output (mxl) rather than (xml)
      */
-    public void export (Score score)
+    public void export (Score score,
+                        boolean compressed)
     {
-        export(score, score.getExportFile(), null);
+        export(score, score.getExportFile(compressed), null, compressed);
     }
 
     //--------//
     // export //
     //--------//
     /**
-     * Export a score using the partwise structure of MusicXML to the
-     * provided file.
+     * Export a score using the partwise structure of MusicXML to the provided file.
      *
      * @param score           the score to export
      * @param file            the xml file to write, or null
      * @param injectSignature should we inject our signature?
+     * @param compressed      true for MXL, false for XML
      */
     public void export (Score score,
                         File file,
-                        Boolean injectSignature)
+                        Boolean injectSignature,
+                        boolean compressed)
     {
+        // Determine the precise output file
         if (Main.getExportPath() != null) {
             File path = new File(Main.getExportPath());
 
             if (path.isDirectory()) {
-                file = getActualFile(file, getDefaultExportFile(path, score));
+                file = getActualFile(file, getDefaultExportFile(path, score, compressed));
             } else {
                 file = getActualFile(file, path);
             }
         } else {
-            file = getActualFile(file, getDefaultExportFile(null, score));
+            file = getActualFile(file, getDefaultExportFile(null, score, compressed));
         }
 
         // Actually export the score material
         try {
             ScoreExporter exporter = new ScoreExporter(score);
 
-            if (injectSignature != null) {
-                exporter.export(file, injectSignature);
-            } else {
-                exporter.export(file, constants.defaultInjectSignature.getValue());
-            }
+            exporter.export(
+                    file,
+                    (injectSignature != null) ? injectSignature
+                    : constants.defaultInjectSignature.getValue(),
+                    compressed);
 
             logger.info("Score exported to {}", file);
 
@@ -200,7 +207,7 @@ public class ScoresManager
             constants.defaultExportDirectory.setValue(file.getParent());
 
             // Remember the file in the score itself
-            score.setExportFile(file);
+            score.setExportFile(file, compressed);
         } catch (Exception ex) {
             logger.warn("Error storing score to " + file, ex);
         }
@@ -247,18 +254,21 @@ public class ScoresManager
     /**
      * Report the file to which the score would be written by default.
      *
-     * @param folder the target folder if any
-     * @param score  the score to export
+     * @param folder     the target folder if any
+     * @param score      the score to export
+     * @param compressed true for mxl file
      * @return the default file
      */
     public File getDefaultExportFile (File folder,
-                                      Score score)
+                                      Score score,
+                                      boolean compressed)
     {
-        if (score.getExportFile() != null) {
-            return score.getExportFile();
+        if (score.getExportFile(compressed) != null) {
+            return score.getExportFile(compressed);
         }
 
-        String child = score.getRadix() + SCORE_EXTENSION;
+        String child = score.getRadix()
+                       + (compressed ? COMPRESSED_SCORE_EXTENSION : SCORE_EXTENSION);
 
         if (folder != null) {
             return new File(folder, child);

@@ -122,7 +122,7 @@ public class GridBuilder
 
             // Retrieve the vertical barlines and thus the systems
             watch.start("retrieveBarlines");
-            barsRetriever.retrieveBarlines();
+            barsRetriever.process();
 
             // Complete the staff lines w/ short sections & filaments left over
             watch.start("completeLines");
@@ -138,7 +138,7 @@ public class GridBuilder
                 targetBuilder.buildInfo();
             }
         } catch (Throwable ex) {
-            logger.warn(sheet.getLogPrefix() + "Error in GridBuilder", ex);
+            logger.warn(sheet.getLogPrefix() + "Error in GridBuilder: " + ex, ex);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -164,9 +164,9 @@ public class GridBuilder
         //        logger.info("New {}", Glyphs.toString(newSticks));
         //
         //        try {
-        //            barsRetriever.retrieveBarlines(oldSticks, newSticks);
+        //            barsRetriever.process(oldSticks, newSticks);
         //        } catch (Exception ex) {
-        //            logger.warn("updateBars. retrieveBarlines", ex);
+        //            logger.warn("updateBars. process", ex);
         //        }
         //
         //        barsRetriever.retrieveMeasureBars();

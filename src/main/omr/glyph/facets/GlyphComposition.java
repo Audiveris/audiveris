@@ -163,4 +163,11 @@ public interface GlyphComposition
      * @param that the glyph to swallow
      */
     void stealSections (Glyph that);
+
+    /**
+     * Test whether glyph touches the provided section
+     * @param section provided section
+     * @return true if there is contact
+     */
+    boolean touches (Section section);
 }

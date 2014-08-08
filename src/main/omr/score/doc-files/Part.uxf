@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><umlet_diagram><help_text>//Uncomment the following line to change the fontsize:
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="12.1">
+  <help_text>//Uncomment the following line to change the fontsize:
 //fontsize=14
 
 //Welcome to UMLet!
@@ -10,31 +12,315 @@
 // *Hold down Ctrl key to select multiple elements.
 // *Press c to copy the UML diagram to the system clipboard.
 // * This text will be stored with each diagram. Feel free to use the area for notes.
-</help_text><zoom_level>10</zoom_level><element><type>com.umlet.element.base.Class</type><coordinates><x>70</x><y>160</y><w>160</w><h>80</h></coordinates><panel_attributes>ScorePart
+</help_text>
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>170</x>
+      <y>160</y>
+      <w>160</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>ScorePart
 bg=#ffff55
 --
 String id
 String PartName
-String PartAbbreviation</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>330</x><y>160</y><w>80</w><h>30</h></coordinates><panel_attributes>Part
-bg=#ff5555</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>200</x><y>150</y><w>150</w><h>50</h></coordinates><panel_attributes>lt=&lt;-
-m2=id</panel_attributes><additional_attributes>30;30;130;30</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>330</x><y>240</y><w>80</w><h>30</h></coordinates><panel_attributes>Measure</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>340</x><y>160</y><w>50</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes><additional_attributes>30;30;30;80</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>330</x><y>320</y><w>80</w><h>30</h></coordinates><panel_attributes>Note</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>340</x><y>240</y><w>50</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes><additional_attributes>30;30;30;80</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>170</x><y>380</y><w>110</w><h>50</h></coordinates><panel_attributes>ScoreInstrument
+String PartAbbreviation</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>430</x>
+      <y>160</y>
+      <w>80</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>Part
+bg=#ff5555</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>300</x>
+      <y>150</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m2=id</panel_attributes>
+    <additional_attributes>30;30;130;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>430</x>
+      <y>240</y>
+      <w>80</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>Measure</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>440</x>
+      <y>160</y>
+      <w>50</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
+    <additional_attributes>30;30;30;80</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>430</x>
+      <y>320</y>
+      <w>80</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>Note</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>440</x>
+      <y>240</y>
+      <w>50</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
+    <additional_attributes>30;30;30;80</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>270</x>
+      <y>380</y>
+      <w>110</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>ScoreInstrument
 bg=#ffff55
 --
-String id</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>160</x><y>210</y><w>50</w><h>190</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes><additional_attributes>30;30;30;170</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>10</x><y>380</y><w>110</w><h>100</h></coordinates><panel_attributes>MidiInstrument
+String id</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>260</x>
+      <y>210</y>
+      <w>50</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
+    <additional_attributes>30;30;30;170</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>110</x>
+      <y>380</y>
+      <w>110</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>MidiInstrument
 bg=#ffff55
 --
 channel
 program
 volume
-pan</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>70</x><y>210</y><w>50</w><h>190</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes><additional_attributes>30;30;30;170</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>90</x><y>370</y><w>100</w><h>50</h></coordinates><panel_attributes>lt=&lt;-
-m2=id</panel_attributes><additional_attributes>80;30;30;30</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>340</x><y>320</y><w>50</w><h>90</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>30;70;30;30</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>120</x><y>80</y><w>80</w><h>30</h></coordinates><panel_attributes>PartList
-bg=#ff5555</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>130</x><y>80</y><w>50</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes><additional_attributes>30;30;30;80</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>140</x><y>10</y><w>250</w><h>30</h></coordinates><panel_attributes>ScorePartwise
-bg=#ff5555</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>130</x><y>10</y><w>50</w><h>90</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>30;70;30;30</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>340</x><y>10</y><w>50</w><h>170</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes><additional_attributes>30;30;30;150</additional_attributes></element><element><type>com.umlet.element.custom.Text</type><coordinates><x>430</x><y>160</y><w>380</w><h>80</h></coordinates><panel_attributes>&lt;!ELEMENT score-part (identification?,
+pan</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>170</x>
+      <y>210</y>
+      <w>50</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
+    <additional_attributes>30;30;30;170</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>190</x>
+      <y>370</y>
+      <w>100</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m2=id</panel_attributes>
+    <additional_attributes>80;30;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>440</x>
+      <y>320</y>
+      <w>50</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>30;70;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>30</x>
+      <y>80</y>
+      <w>260</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>PartList
+bg=#ff5555</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>230</x>
+      <y>80</y>
+      <w>50</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
+    <additional_attributes>30;30;30;80</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>140</x>
+      <y>10</y>
+      <w>350</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>ScorePartwise
+bg=#ff5555</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>140</x>
+      <y>10</y>
+      <w>50</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>30;70;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>440</x>
+      <y>10</y>
+      <w>50</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
+    <additional_attributes>30;30;30;150</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.custom.Text</type>
+    <coordinates>
+      <x>530</x>
+      <y>160</y>
+      <w>380</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;!ELEMENT score-part (identification?,
 	part-name, part-name-display?,
 	part-abbreviation?, part-abbreviation-display?, 
 	group*, score-instrument*, midi-device?, midi-instrument*)&gt;
-</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.custom.Text</type><coordinates><x>430</x><y>80</y><w>290</w><h>50</h></coordinates><panel_attributes>&lt;!ELEMENT part-list (part-group*, score-part,
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.custom.Text</type>
+    <coordinates>
+      <x>530</x>
+      <y>80</y>
+      <w>290</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>&lt;!ELEMENT part-list (part-group*, score-part,
 	(part-group | score-part)*)&gt;
-</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>330</x><y>390</y><w>80</w><h>30</h></coordinates><panel_attributes>Instrument
-bg=#ff5555</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>250</x><y>370</y><w>100</w><h>50</h></coordinates><panel_attributes>lt=&lt;-
-m2=id</panel_attributes><additional_attributes>30;30;80;30</additional_attributes></element></umlet_diagram>
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>430</x>
+      <y>390</y>
+      <w>80</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>Instrument
+bg=#ff5555</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>350</x>
+      <y>370</y>
+      <w>100</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m2=id</panel_attributes>
+    <additional_attributes>30;30;80;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>10</x>
+      <y>160</y>
+      <w>100</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>PartGroup
+bg=#ffff55
+--
+number
+name
+abbreviation
+symbol
+barline</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>30</x>
+      <y>80</y>
+      <w>50</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
+    <additional_attributes>30;30;30;80</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>80</x>
+      <y>150</y>
+      <w>110</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;-&gt;</panel_attributes>
+    <additional_attributes>30;30;90;30</additional_attributes>
+  </element>
+</diagram>

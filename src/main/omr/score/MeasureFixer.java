@@ -255,8 +255,7 @@ public class MeasureFixer
     // isEmpty //
     //---------//
     /**
-     * Check for an empty measure: perhaps clef and key sig, but no note
-     * or rest
+     * Check for an empty measure: perhaps clef and key sig, but no note or rest
      *
      * @return true if so
      */
@@ -283,8 +282,7 @@ public class MeasureFixer
     // isRealStart //
     //-------------//
     /**
-     * Check for a measure in second position, while following an empty
-     * measure
+     * Check for a measure in second position, while following an empty measure
      *
      * @return true if so
      */
@@ -299,8 +297,7 @@ public class MeasureFixer
     // isSecondRepeatHalf //
     //--------------------//
     /**
-     * Check for an implicit measure as the second half of a repeat
-     * sequence
+     * Check for an implicit measure as the second half of a repeat sequence
      *
      * @return true if so
      */
@@ -360,8 +357,7 @@ public class MeasureFixer
     // removeMeasures //
     //----------------//
     /**
-     * Remove the vertical measures that correspond to the provided
-     * indices
+     * Remove the vertical measures that correspond to the provided indices
      *
      * @param toRemove sequence of indices to remove, perhaps empty
      * @param system   the containing system

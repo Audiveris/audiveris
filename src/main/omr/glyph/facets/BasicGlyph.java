@@ -989,6 +989,12 @@ public class BasicGlyph
         composition.stealSections(that);
     }
 
+    @Override
+    public boolean touches (Section section)
+    {
+        return composition.touches(section);
+    }
+
     //----------//
     // toString //
     //----------//

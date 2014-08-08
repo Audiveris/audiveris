@@ -27,8 +27,8 @@ import omr.log.LogPane;
 
 import omr.plugin.PluginsManager;
 
+import omr.score.PartwiseBuilder;
 import omr.score.Score;
-import omr.score.ScoreExporter;
 import omr.score.ScoresManager;
 
 import omr.selection.MouseMovement;
@@ -87,16 +87,16 @@ import javax.swing.SwingUtilities;
  * @author Hervé Bitteur
  */
 public class MainGui
-        extends SingleFrameApplication
-        implements EventSubscriber<SheetEvent>, PropertyChangeListener
+    extends SingleFrameApplication
+    implements EventSubscriber<SheetEvent>, PropertyChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
-
-    private static final Logger logger = LoggerFactory.getLogger(MainGui.class);
+    private static final Logger    logger = LoggerFactory.getLogger(MainGui.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     //
     /** Official name of the application. */
     private String appName;
@@ -129,6 +129,7 @@ public class MainGui
     private StepMenu stepMenu;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     //---------//
     // MainGui //
     //---------//
@@ -141,6 +142,7 @@ public class MainGui
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //
     //----------//
     // clearLog //
@@ -165,10 +167,10 @@ public class MainGui
     public boolean displayConfirmation (String message)
     {
         int answer = JOptionPane.showConfirmDialog(
-                frame,
-                message,
-                "Confirm - " + appName,
-                JOptionPane.WARNING_MESSAGE);
+            frame,
+            message,
+            "Confirm - " + appName,
+            JOptionPane.WARNING_MESSAGE);
 
         return answer == JOptionPane.YES_OPTION;
     }
@@ -184,10 +186,10 @@ public class MainGui
     public void displayError (String message)
     {
         JOptionPane.showMessageDialog(
-                frame,
-                message,
-                "Error - " + appName,
-                JOptionPane.ERROR_MESSAGE);
+            frame,
+            message,
+            "Error - " + appName,
+            JOptionPane.ERROR_MESSAGE);
     }
 
     //----------------//
@@ -217,10 +219,10 @@ public class MainGui
     public int displayModelessConfirm (String message)
     {
         return ModelessOptionPane.showModelessConfirmDialog(
-                frame,
-                message,
-                "Confirm - " + appName,
-                JOptionPane.YES_NO_OPTION);
+            frame,
+            message,
+            "Confirm - " + appName,
+            JOptionPane.YES_NO_OPTION);
     }
 
     //----------------//
@@ -234,10 +236,10 @@ public class MainGui
     public void displayWarning (String message)
     {
         JOptionPane.showMessageDialog(
-                frame,
-                message,
-                "Warning - " + appName,
-                JOptionPane.WARNING_MESSAGE);
+            frame,
+            message,
+            "Warning - " + appName,
+            JOptionPane.WARNING_MESSAGE);
     }
 
     //----------//
@@ -361,8 +363,7 @@ public class MainGui
 
             final Sheet sheet = sheetEvent.getData();
             SwingUtilities.invokeLater(
-                    new Runnable()
-                    {
+                new Runnable() {
                         @Override
                         public void run ()
                         {
@@ -378,7 +379,7 @@ public class MainGui
                             sb.append(" - ");
 
                             ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-                                    getClass());
+                                getClass());
                             sb.append(resource.getString("mainFrame.title"));
                             frame.setTitle(sb.toString());
                         }
@@ -399,11 +400,11 @@ public class MainGui
     @Override
     public void propertyChange (PropertyChangeEvent evt)
     {
-        String propertyName = evt.getPropertyName();
+        String  propertyName = evt.getPropertyName();
         Boolean display = (Boolean) evt.getNewValue();
 
         switch (propertyName) {
-        case GuiActions.BOARDS_DISPLAYED:
+        case GuiActions.BOARDS_DISPLAYED :
 
             // Toggle display of boards
             if (display) {
@@ -416,7 +417,7 @@ public class MainGui
 
             break;
 
-        case GuiActions.LOG_DISPLAYED:
+        case GuiActions.LOG_DISPLAYED :
 
             // Toggle display of log
             if (display) {
@@ -427,12 +428,12 @@ public class MainGui
 
             break;
 
-        case GuiActions.ERRORS_DISPLAYED:
+        case GuiActions.ERRORS_DISPLAYED :
 
             // Toggle display of errors
             if (display) {
                 JComponent comp = null;
-                Sheet sheet = sheetsController.getSelectedSheet();
+                Sheet      sheet = sheetsController.getSelectedSheet();
 
                 if (sheet != null) {
                     ErrorsEditor editor = sheet.getErrorsEditor();
@@ -508,7 +509,7 @@ public class MainGui
         // Launch background pre-loading tasks?
         if (constants.preloadCostlyPackages.getValue()) {
             JaiLoader.preload();
-            ScoreExporter.preload();
+            PartwiseBuilder.preload();
         }
     }
 
@@ -576,8 +577,7 @@ public class MainGui
 
         // Define an exit listener
         addExitListener(
-                new ExitListener()
-                {
+            new ExitListener() {
                     @Override
                     public boolean canExit (EventObject e)
                     {
@@ -702,7 +702,7 @@ public class MainGui
         stepMenu = new StepMenu(new SeparableMenu());
 
         // Specific plugin menu
-        JMenu pluginMenu = PluginsManager.getInstance().getMenu(null);
+        JMenu         pluginMenu = PluginsManager.getInstance().getMenu(null);
 
         // For some specific top-level menus
         ActionManager mgr = ActionManager.getInstance();
@@ -752,11 +752,12 @@ public class MainGui
      */
     private boolean needBottomPane ()
     {
-        return GuiActions.getInstance().isLogDisplayed()
-               || GuiActions.getInstance().isErrorsDisplayed();
+        return GuiActions.getInstance().isLogDisplayed() ||
+               GuiActions.getInstance().isErrorsDisplayed();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //
     //------------------//
     // BoardsScrollPane //
@@ -766,7 +767,7 @@ public class MainGui
      * enough room for the boards.
      */
     private class BoardsScrollPane
-            extends JScrollPane
+        extends JScrollPane
     {
         //~ Methods --------------------------------------------------------------------------------
 
@@ -781,12 +782,12 @@ public class MainGui
     // Constants //
     //-----------//
     private static final class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-                true,
-                "Should we preload costly packages in the background?");
+            true,
+            "Should we preload costly packages in the background?");
     }
 }

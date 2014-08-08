@@ -143,8 +143,8 @@ public abstract class AreaUtil
     // verticalParallelogram //
     //-----------------------//
     /**
-     * Create a parallelogram mostly horizontal, where top and bottom
-     * sides are short and horizontal.
+     * Create a parallelogram mostly vertical, where top and bottom sides are short and
+     * horizontal.
      * This is most useful for stems.
      * <p>
      * Nota: the defining points are meant to be the extrema points
