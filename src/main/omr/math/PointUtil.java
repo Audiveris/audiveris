@@ -101,6 +101,13 @@ public abstract class PointUtil
                 p2.getX() + ((dist * (p2.getX() - p1.getX())) / seg),
                 p2.getY() + ((dist * (p2.getY() - p1.getY())) / seg));
     }
+    //---------//
+    // integer //
+    //---------//
+    public static Point integer (Point2D p2d)
+    {
+        return new Point((int) Math.rint(p2d.getX()), (int) Math.rint(p2d.getY()));
+    }
 
     //--------//
     // length //
@@ -144,5 +151,16 @@ public abstract class PointUtil
                                        Point2D p2)
     {
         return new Point2D.Double(p1.getX() - p2.getX(), p1.getY() - p2.getY());
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    public static String toString (Point p)
+    {
+        StringBuilder sb = new StringBuilder("[");
+        sb.append(p.x).append(",").append(p.y).append("]");
+
+        return sb.toString();
     }
 }

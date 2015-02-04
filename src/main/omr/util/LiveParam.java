@@ -13,7 +13,7 @@ package omr.util;
 
 /**
  * Class {@code LiveParam} is a {@link Param} for which we handle the
- * value actually used, to detect when reprocessing must be done.
+ * value actually used, to detect when re-processing must be done.
  *
  * @param <E> type of parameter handled
  *
@@ -25,7 +25,7 @@ public class LiveParam<E>
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Actually used parameter, if any. */
-    protected E actual;
+    private E actual;
 
     //~ Constructors -------------------------------------------------------------------------------
     //
@@ -50,6 +50,17 @@ public class LiveParam<E>
     public boolean needsUpdate ()
     {
         return !getTarget().equals(actual);
+    }
+
+    //-----------//
+    // getActual //
+    //-----------//
+    /**
+     * @return the actual
+     */
+    public E getActual ()
+    {
+        return actual;
     }
 
     //-----------//

@@ -14,7 +14,6 @@ package omr.image;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 
-import omr.image.Template.Key;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,11 +124,11 @@ public class TemplateFactory
         //-------------//
         // getTemplate //
         //-------------//
-        public Template getTemplate (Key key)
+        public Template getTemplate (Shape shape)
         {
-            ShapeDescriptor descriptor = descriptors.get(key.shape);
+            ShapeDescriptor descriptor = descriptors.get(shape);
 
-            return descriptor.getTemplate(key);
+            return descriptor.getTemplate();
         }
 
         //-------------------//

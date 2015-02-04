@@ -17,18 +17,18 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
-import static omr.glyph.Shape.BACK_TO_BACK_REPEAT_SIGN;
-import static omr.glyph.Shape.LEFT_REPEAT_SIGN;
+
 import static omr.glyph.Shape.NOTEHEAD_VOID;
-import static omr.glyph.Shape.RIGHT_REPEAT_SIGN;
 
 import omr.math.Rational;
+
 import static omr.score.MusicXML.*;
+
 import omr.score.entity.Arpeggiate;
 import omr.score.entity.Articulation;
-import omr.score.entity.Barline;
+import omr.score.entity.OldBarline;
 import omr.score.entity.Beam;
-import omr.score.entity.Chord;
+import omr.score.entity.OldChord;
 import omr.score.entity.ChordSymbol;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
@@ -37,7 +37,7 @@ import omr.score.entity.Dynamics;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
 import omr.score.entity.LyricsItem;
-import omr.score.entity.Measure;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.MeasureId;
 import omr.score.entity.Notation;
 import omr.score.entity.Ornament;
@@ -46,18 +46,19 @@ import omr.score.entity.Pedal;
 import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Segno;
-import omr.score.entity.Slot;
+import omr.score.entity.OldSlot;
 import omr.score.entity.Slur;
-import omr.score.entity.Staff;
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldStaff;
+import omr.score.entity.OldSystemPart;
 import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
-import omr.score.entity.Voice;
+import omr.score.entity.OldVoice;
 import omr.score.entity.Wedge;
 import omr.score.midi.MidiAbstractions;
 import omr.score.visitor.AbstractScoreVisitor;
 
+import omr.sheet.Book;
 import omr.sheet.Scale;
 
 import omr.text.FontInfo;
@@ -70,8 +71,6 @@ import com.audiveris.proxymusic.Accidental;
 import com.audiveris.proxymusic.Articulations;
 import com.audiveris.proxymusic.Attributes;
 import com.audiveris.proxymusic.Backup;
-import com.audiveris.proxymusic.BackwardForward;
-import com.audiveris.proxymusic.BarStyle;
 import com.audiveris.proxymusic.Bass;
 import com.audiveris.proxymusic.BassAlter;
 import com.audiveris.proxymusic.BassStep;
@@ -113,7 +112,6 @@ import com.audiveris.proxymusic.PageMargins;
 import com.audiveris.proxymusic.PartList;
 import com.audiveris.proxymusic.PartName;
 import com.audiveris.proxymusic.Pitch;
-import com.audiveris.proxymusic.Repeat;
 import com.audiveris.proxymusic.Rest;
 import com.audiveris.proxymusic.RightLeftMiddle;
 import com.audiveris.proxymusic.Root;
@@ -145,6 +143,7 @@ import com.audiveris.proxymusic.WedgeType;
 import com.audiveris.proxymusic.Work;
 import com.audiveris.proxymusic.YesNo;
 import com.audiveris.proxymusic.util.Marshalling;
+import com.audiveris.proxymusic.util.Source;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,7 +170,8 @@ import javax.xml.bind.JAXBException;
 
 /**
  * Class {@code PartwiseBuilder} builds a ProxyMusic MusicXML {@link ScorePartwise}
- * from an Audiveris {@link Score} instance.
+ * from an Audiveris source, either a full {@link Score} instance or a {@link Page}
+ * instance, if not just a range of systems in a page.
  *
  * @author Hervé Bitteur
  */
@@ -212,11 +212,20 @@ public class PartwiseBuilder
             constants.pageVerticalMargin.getValue());
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The related score. */
-    private final Score score;
-
     /** The ScorePartwise instance to be populated. */
     private final ScorePartwise scorePartwise = new ScorePartwise();
+
+    /** The related score. */
+    private Score score;
+
+    /** The provided page, if any. */
+    private Page page;
+
+    /** First system id in page, if any. */
+    private Integer firstSystemId;
+
+    /** Last system id in page, if any. */
+    private Integer lastSystemId;
 
     /** Current context. */
     private final Current current = new Current();
@@ -227,7 +236,7 @@ public class PartwiseBuilder
     /** Map of Slur numbers, reset for every ScorePart. */
     private final Map<Slur, Integer> slurNumbers = new HashMap<Slur, Integer>();
 
-    /** Map of Tuplet numbers, reset for every Measure. */
+    /** Map of Tuplet numbers, reset for every OldMeasure. */
     private final Map<Tuplet, Integer> tupletNumbers = new HashMap<Tuplet, Integer>();
 
     /** Potential range of selected measures. */
@@ -243,48 +252,105 @@ public class PartwiseBuilder
     /**
      * Create a new PartwiseBuilder object, on a related score instance.
      *
-     * @param score the score to export (cannot be null)
      * @throws InterruptedException
      * @throws ExecutionException
      */
-    public PartwiseBuilder (Score score)
+    private PartwiseBuilder ()
             throws InterruptedException, ExecutionException
     {
-        if (score == null) {
-            throw new IllegalArgumentException("Trying to export a null score");
-        }
-
         // Make sure the JAXB context is ready
         loading.get();
-
-        this.score = score;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // preload //
-    //---------//
-    /**
-     * Empty static method, just to trigger class elaboration.
-     */
-    public static void preload ()
-    {
-    }
-
     //-------//
     // build //
     //-------//
     /**
      * Visit the whole score tree and populate the corresponding ScorePartwise.
      *
+     * @param score the score to export (cannot be null)
      * @return the populated ScorePartwise
+     * @throws InterruptedException
+     * @throws ExecutionException
      */
-    public ScorePartwise build ()
+    public static ScorePartwise build (Score score)
+            throws InterruptedException, ExecutionException
     {
-        // Let visited nodes fill the ScorePartWise proxy
-        score.accept(this);
+        if (score == null) {
+            throw new IllegalArgumentException("Trying to export a null score");
+        }
 
-        return scorePartwise;
+        final PartwiseBuilder builder = new PartwiseBuilder();
+
+        builder.score = score;
+
+        // Let visited nodes fill the ScorePartWise proxy
+        score.accept(builder);
+
+        // Populate the source structure
+        Source source = score.buildSource();
+        source.encode(builder.scorePartwise);
+
+        return builder.scorePartwise;
+    }
+
+    //-------//
+    // build //
+    //-------//
+    /**
+     * Visit a page tree, perhaps just a range of systems in the page, and populate the
+     * corresponding ScorePartwise.
+     *
+     * @param page          the page to export (cannot be null)
+     * @param firstSystemId id of first system in range, if any. Null means first system in page.
+     * @param lastSystemId  id of last system in range, if any. Null means last system in page.
+     * @return the populated ScorePartwise
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    public static ScorePartwise build (Page page,
+                                       Integer firstSystemId,
+                                       Integer lastSystemId)
+            throws InterruptedException, ExecutionException
+    {
+        if (page == null) {
+            throw new IllegalArgumentException("Trying to export a null page");
+        }
+
+        final PartwiseBuilder builder = new PartwiseBuilder();
+
+        builder.page = page;
+        builder.score = page.getScore();
+
+        if ((firstSystemId != null)
+            && ((firstSystemId < 0) || (firstSystemId > page.getLastScoreSystem().getId()))) {
+            throw new IllegalArgumentException("Illegal first system id: " + firstSystemId);
+        } else {
+            builder.firstSystemId = firstSystemId;
+        }
+
+        if ((lastSystemId != null)
+            && ((lastSystemId < 0) || (lastSystemId > page.getLastScoreSystem().getId()))) {
+            throw new IllegalArgumentException("Illegal last system id: " + lastSystemId);
+        } else {
+            builder.lastSystemId = lastSystemId;
+        }
+
+        // Let visited nodes fill the ScorePartWise proxy
+        page.accept(builder);
+
+        return builder.scorePartwise;
+    }
+
+    //---------//
+    // preload //
+    //---------//
+    /**
+     * Empty static method, just to trigger class elaboration. (and thus JAXB context)
+     */
+    public static void preload ()
+    {
     }
 
     //-----------------//
@@ -339,7 +405,7 @@ public class PartwiseBuilder
             JAXBElement<?> element = getArticulationObject(articulation.getShape());
 
             // Staff ?
-            Staff staff = current.note.getStaff();
+            OldStaff staff = current.note.getStaff();
 
             // Placement
             Class<?> classe = element.getDeclaredType();
@@ -348,7 +414,7 @@ public class PartwiseBuilder
             method.invoke(
                     element.getValue(),
                     (articulation.getReferencePoint().y < current.note.getCenter().y)
-                    ? AboveBelow.ABOVE : AboveBelow.BELOW);
+                            ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
             // Default-Y
             method = classe.getMethod("setDefaultY", BigDecimal.class);
@@ -364,10 +430,10 @@ public class PartwiseBuilder
     }
 
     //---------------//
-    // visit Barline //
+    // visit OldBarline //
     //---------------//
     @Override
-    public boolean visit (Barline barline)
+    public boolean visit (OldBarline barline)
     {
         try {
             if (barline == null) {
@@ -377,10 +443,9 @@ public class PartwiseBuilder
             logger.debug("Visiting {}", barline);
 
             //TODO: handle endings if any
+            OldBarline.Style style = barline.getStyle();
 
-            Barline.Style style = barline.getStyle();
-
-            if (style != Barline.Style.REGULAR) {
+            if (style != OldBarline.Style.REGULAR) {
                 try {
                     com.audiveris.proxymusic.Barline pmBarline = factory.createBarline();
                     com.audiveris.proxymusic.BarStyleColor barStyleColor = factory.createBarStyleColor();
@@ -390,19 +455,19 @@ public class PartwiseBuilder
                         // The bar is on right side
                         pmBarline.setLocation(RightLeftMiddle.RIGHT);
 
-                            // Repeat?
-//                            Repeat repeat = factory.createRepeat();
-//                            repeat.setDirection(BackwardForward.BACKWARD);
-//                            pmBarline.setRepeat(repeat);
+                        // Repeat?
+                        //                            Repeat repeat = factory.createRepeat();
+                        //                            repeat.setDirection(BackwardForward.BACKWARD);
+                        //                            pmBarline.setRepeat(repeat);
                     } else {
                         // Inside barline (on left)
                         // Or bar is on left side
                         pmBarline.setLocation(RightLeftMiddle.LEFT);
 
                         // Repeat?
-//                            Repeat repeat = factory.createRepeat();
-//                            repeat.setDirection(BackwardForward.FORWARD);
-//                            pmBarline.setRepeat(repeat);
+                        //                            Repeat repeat = factory.createRepeat();
+                        //                            repeat.setDirection(BackwardForward.FORWARD);
+                        //                            pmBarline.setRepeat(repeat);
                     }
 
                     // Everything is now OK
@@ -423,7 +488,7 @@ public class PartwiseBuilder
     // visit Chord //
     //-------------//
     @Override
-    public boolean visit (Chord chord)
+    public boolean visit (OldChord chord)
     {
         logger.error("Chord objects should not be visited by ScoreExporter");
 
@@ -461,7 +526,7 @@ public class PartwiseBuilder
             Direction direction = factory.createDirection();
 
             // Staff ?
-            Staff staff = current.note.getStaff();
+            OldStaff staff = current.note.getStaff();
             insertStaffId(direction, staff);
 
             com.audiveris.proxymusic.EmptyPrintStyleAlign pmCoda = factory.createEmptyPrintStyleAlign();
@@ -510,13 +575,13 @@ public class PartwiseBuilder
                 pmWords.setValue(content);
 
                 // Staff
-                Staff staff = current.note.getStaff();
+                OldStaff staff = current.note.getStaff();
                 insertStaffId(direction, staff);
 
                 // Placement
                 direction.setPlacement(
                         (words.getReferencePoint().y < current.note.getCenter().y) ? AboveBelow.ABOVE
-                        : AboveBelow.BELOW);
+                                : AboveBelow.BELOW);
 
                 // default-y
                 pmWords.setDefaultY(yOf(words.getReferencePoint(), staff));
@@ -550,7 +615,7 @@ public class PartwiseBuilder
             logger.debug("Visiting {}", symbol);
 
             omr.score.entity.ChordInfo info = symbol.getInfo();
-            Staff staff = current.note.getStaff();
+            OldStaff staff = current.note.getStaff();
             Harmony harmony = factory.createHarmony();
 
             // default-y
@@ -566,7 +631,7 @@ public class PartwiseBuilder
             // Placement
             harmony.setPlacement(
                     (symbol.getReferencePoint().y < current.note.getCenter().y) ? AboveBelow.ABOVE
-                    : AboveBelow.BELOW);
+                            : AboveBelow.BELOW);
 
             // Staff
             insertStaffId(harmony, staff);
@@ -666,7 +731,7 @@ public class PartwiseBuilder
             pmDynamics.getPOrPpOrPpp().add(getDynamicsObject(dynamics.getShape()));
 
             // Staff ?
-            Staff staff = current.note.getStaff();
+            OldStaff staff = current.note.getStaff();
             insertStaffId(direction, staff);
 
             // Placement
@@ -730,7 +795,7 @@ public class PartwiseBuilder
             // Type
             pmFermata.setType(
                     (fermata.getShape() == Shape.FERMATA) ? UprightInverted.UPRIGHT
-                    : UprightInverted.INVERTED);
+                            : UprightInverted.INVERTED);
             // Everything is now OK
             getNotations().getTiedOrSlurOrTuplet().add(pmFermata);
         } catch (Exception ex) {
@@ -772,10 +837,10 @@ public class PartwiseBuilder
     }
 
     //---------------//
-    // visit Measure //
+    // visit OldMeasure //
     //---------------//
     @Override
-    public boolean visit (Measure measure)
+    public boolean visit (OldMeasure measure)
     {
         try {
             logger.debug("Visiting {}", measure);
@@ -793,7 +858,7 @@ public class PartwiseBuilder
             current.measure = measure;
             tupletNumbers.clear();
 
-            // Allocate Measure
+            // Allocate OldMeasure
             current.pmMeasure = factory.createScorePartwisePartMeasure();
             current.pmMeasure.setNumber(measure.getScoreId());
 
@@ -819,7 +884,7 @@ public class PartwiseBuilder
             //            visit(measure.getInsideBarline());
             //
             // Left barline ?
-            Measure prevMeasure = (Measure) measure.getPreviousSibling();
+            OldMeasure prevMeasure = (OldMeasure) measure.getPreviousSibling();
 
             if ((prevMeasure != null) && !prevMeasure.isDummy()) {
                 visit(prevMeasure.getBarline());
@@ -877,7 +942,7 @@ public class PartwiseBuilder
             ClefIterators clefIters = new ClefIterators(measure);
 
             // Insert clefs that occur before first time slot
-            List<Slot> slots = measure.getSlots();
+            List<OldSlot> slots = measure.getSlots();
 
             if (slots.isEmpty()) {
                 clefIters.push(null, null);
@@ -888,7 +953,7 @@ public class PartwiseBuilder
             // Now voice per voice
             Rational timeCounter = Rational.ZERO;
 
-            for (Voice voice : measure.getVoices()) {
+            for (OldVoice voice : measure.getVoices()) {
                 current.voice = voice;
 
                 // Need a backup ?
@@ -899,17 +964,17 @@ public class PartwiseBuilder
 
                 if (voice.isWhole()) {
                     // Delegate to the chord children directly
-                    Chord chord = voice.getWholeChord();
+                    OldChord chord = voice.getWholeChord();
                     clefIters.push(measure.getRightX(), chord.getStaff());
                     chord.acceptChildren(this);
                     timeCounter = measure.getExpectedDuration();
                 } else {
-                    for (Slot slot : measure.getSlots()) {
-                        Voice.VoiceChord info = voice.getSlotInfo(slot);
+                    for (OldSlot slot : measure.getSlots()) {
+                        OldVoice.VoiceChord info = voice.getSlotInfo(slot);
 
                         if ((info != null) && // Skip free slots
-                                (info.getStatus() == Voice.Status.BEGIN)) {
-                            Chord chord = info.getChord();
+                                (info.getStatus() == OldVoice.Status.BEGIN)) {
+                            OldChord chord = info.getChord();
                             clefIters.push(chord.getCenter().x, chord.getStaff());
 
                             // Need a forward before this chord ?
@@ -942,7 +1007,7 @@ public class PartwiseBuilder
             // Clefs that occur after time slots, if any
             clefIters.push(null, null);
 
-            // Right Barline
+            // Right OldBarline
             if (!measure.isDummy()) {
                 visit(measure.getBarline());
             }
@@ -972,7 +1037,7 @@ public class PartwiseBuilder
 
             current.note = note;
 
-            Chord chord = note.getChord();
+            OldChord chord = note.getChord();
 
             // For first note in chord
             if (chord.getNotes().indexOf(note) == 0) {
@@ -989,7 +1054,7 @@ public class PartwiseBuilder
 
             current.pmNote = factory.createNote();
 
-            Staff staff = note.getStaff();
+            OldStaff staff = note.getStaff();
 
             // Chord notation events for first note in chord
             if (chord.getNotes().indexOf(note) == 0) {
@@ -1136,7 +1201,7 @@ public class PartwiseBuilder
                         pmBeam.setValue(BeamValue.BACKWARD_HOOK);
                     }
                 } else {
-                    List<Chord> chords = beam.getChords();
+                    List<OldChord> chords = beam.getChords();
 
                     if (chords.get(0) == chord) {
                         pmBeam.setValue(BeamValue.BEGIN);
@@ -1204,7 +1269,7 @@ public class PartwiseBuilder
             method.invoke(
                     element.getValue(),
                     (ornament.getReferencePoint().y < current.note.getCenter().y) ? AboveBelow.ABOVE
-                    : AboveBelow.BELOW);
+                            : AboveBelow.BELOW);
             // Everything is OK
             // Include in ornaments
             getOrnaments().getTrillMarkOrTurnOrDelayedTurn().add(element);
@@ -1262,7 +1327,7 @@ public class PartwiseBuilder
                     pedal.isStart() ? StartStopChangeContinue.START : StartStopChangeContinue.STOP);
 
             // Staff ?
-            Staff staff = current.note.getStaff();
+            OldStaff staff = current.note.getStaff();
             insertStaffId(direction, staff);
 
             // default-x
@@ -1274,7 +1339,7 @@ public class PartwiseBuilder
             // Placement
             direction.setPlacement(
                     (pedal.getReferencePoint().y < current.note.getCenter().y) ? AboveBelow.ABOVE
-                    : AboveBelow.BELOW);
+                            : AboveBelow.BELOW);
             // Everything is OK
             directionType.setPedal(pmPedal);
             direction.getDirectionType().add(directionType);
@@ -1305,98 +1370,108 @@ public class PartwiseBuilder
 
             // Reset durations for the score
             score.setDurationDivisor(null);
-
-            // No version inserted
-            // Let the marshalling class handle it
-            // Identification
-            Identification identification = factory.createIdentification();
-
-            // Source
-            identification.setSource(score.getImagePath());
-
-            // Encoding
-            Encoding encoding = factory.createEncoding();
-            scorePartwise.setIdentification(identification);
-
-            // [Encoding]/Software
-            encoding.getEncodingDateOrEncoderOrSoftware().add(
-                    factory.createEncodingSoftware("Audiveris" + " " + WellKnowns.TOOL_REF));
-
-            // [Encoding]/EncodingDate
-            // Let the Marshalling class handle it
             //
-            // [Encoding]/Supports
-            for (String feature : new String[]{"new-system", "new-page"}) {
-                Supports supports = factory.createSupports();
-                supports.setAttribute(feature);
-                supports.setElement("print");
-                supports.setType(YesNo.YES);
-                supports.setValue("yes");
+            // No version inserted: Let the marshalling class handle it
+            //
+            {
+                // Identification
+                Identification identification = factory.createIdentification();
+
+                // Source
+                Book book = score.getFirstPage().getSheet().getBook();
+                identification.setSource(book.getImagePath().toString());
+
+                // Encoding
+                Encoding encoding = factory.createEncoding();
+                scorePartwise.setIdentification(identification);
+
+                // [Encoding]/Software
                 encoding.getEncodingDateOrEncoderOrSoftware().add(
-                        factory.createEncodingSupports(supports));
-            }
+                        factory.createEncodingSoftware("Audiveris" + " " + WellKnowns.TOOL_REF));
 
-            identification.setEncoding(encoding);
-
-            // Defaults
-            Defaults defaults = new Defaults();
-
-            // [Defaults]/Scaling (using first page)
-            Page firstPage = score.getFirstPage();
-
-            if (current.scale == null) {
-                current.scale = firstPage.getScale();
-            }
-
-            if (current.scale != null) {
-                Scaling scaling = factory.createScaling();
-                defaults.setScaling(scaling);
-                scaling.setMillimeters(
-                        new BigDecimal(
-                                String.format("%.4f", (current.scale.getInterline() * 25.4 * 4) / 300))); // Assuming 300 DPI
-                scaling.setTenths(new BigDecimal(40));
-
-                // [Defaults]/PageLayout (using first page)
-                if (firstPage.getDimension() != null) {
-                    PageLayout pageLayout = factory.createPageLayout();
-                    defaults.setPageLayout(pageLayout);
-                    pageLayout.setPageHeight(toTenths(firstPage.getDimension().height));
-                    pageLayout.setPageWidth(toTenths(firstPage.getDimension().width));
-
-                    PageMargins pageMargins = factory.createPageMargins();
-                    pageMargins.setType(MarginType.BOTH);
-                    pageMargins.setLeftMargin(pageHorizontalMargin);
-                    pageMargins.setRightMargin(pageHorizontalMargin);
-                    pageMargins.setTopMargin(pageVerticalMargin);
-                    pageMargins.setBottomMargin(pageVerticalMargin);
-                    pageLayout.getPageMargins().add(pageMargins);
+                // [Encoding]/EncodingDate
+                // Let the Marshalling class handle it
+                //
+                // [Encoding]/Supports
+                for (String feature : new String[]{"new-system", "new-page"}) {
+                    Supports supports = factory.createSupports();
+                    supports.setAttribute(feature);
+                    supports.setElement("print");
+                    supports.setType(YesNo.YES);
+                    supports.setValue("yes");
+                    encoding.getEncodingDateOrEncoderOrSoftware().add(
+                            factory.createEncodingSupports(supports));
                 }
+
+                identification.setEncoding(encoding);
             }
 
-            // [Defaults]/LyricFont
-            Font lyricFont = omr.score.entity.Text.getLyricsFont();
-            LyricFont pmLyricFont = factory.createLyricFont();
-            pmLyricFont.setFontFamily(lyricFont.getName());
-            pmLyricFont.setFontSize("" + omr.score.entity.Text.getLyricsFontSize());
+            {
+                // Defaults
+                Defaults defaults = new Defaults();
 
-            if (lyricFont.isItalic()) {
-                pmLyricFont.setFontStyle(FontStyle.ITALIC);
+                // [Defaults]/Scaling (using first page)
+                Page firstPage = score.getFirstPage();
+
+                if (current.scale == null) {
+                    current.scale = firstPage.getScale();
+                }
+
+                if (current.scale != null) {
+                    Scaling scaling = factory.createScaling();
+                    defaults.setScaling(scaling);
+                    scaling.setMillimeters(
+                            new BigDecimal(
+                                    String.format("%.4f", (current.scale.getInterline() * 25.4 * 4) / 300))); // Assuming 300 DPI
+                    scaling.setTenths(new BigDecimal(40));
+
+                    // [Defaults]/PageLayout (using first page)
+                    if (firstPage.getDimension() != null) {
+                        PageLayout pageLayout = factory.createPageLayout();
+                        defaults.setPageLayout(pageLayout);
+                        pageLayout.setPageHeight(toTenths(firstPage.getDimension().height));
+                        pageLayout.setPageWidth(toTenths(firstPage.getDimension().width));
+
+                        PageMargins pageMargins = factory.createPageMargins();
+                        pageMargins.setType(MarginType.BOTH);
+                        pageMargins.setLeftMargin(pageHorizontalMargin);
+                        pageMargins.setRightMargin(pageHorizontalMargin);
+                        pageMargins.setTopMargin(pageVerticalMargin);
+                        pageMargins.setBottomMargin(pageVerticalMargin);
+                        pageLayout.getPageMargins().add(pageMargins);
+                    }
+                }
+
+                // [Defaults]/LyricFont
+                Font lyricFont = omr.score.entity.Text.getLyricsFont();
+                LyricFont pmLyricFont = factory.createLyricFont();
+                pmLyricFont.setFontFamily(lyricFont.getName());
+                pmLyricFont.setFontSize("" + omr.score.entity.Text.getLyricsFontSize());
+
+                if (lyricFont.isItalic()) {
+                    pmLyricFont.setFontStyle(FontStyle.ITALIC);
+                }
+
+                defaults.getLyricFont().add(pmLyricFont);
+                scorePartwise.setDefaults(defaults);
             }
-
-            defaults.getLyricFont().add(pmLyricFont);
-            scorePartwise.setDefaults(defaults);
 
             // PartList & sequence of parts
+            if (score.getPartList() == null) {
+                // Merge the pages (connecting the parts across pages)
+                new ScoreReduction(score).reduce();
+            }
+
             if (score.getPartList() != null) {
                 PartList partList = factory.createPartList();
                 scorePartwise.setPartList(partList);
 
                 // Here we browse the score hierarchy once for each score scorePart
-                isFirst.scorePart = true;
+                isFirst.part = true;
 
                 for (ScorePart p : score.getPartList()) {
                     partList.getPartGroupOrScorePart().add(getScorePart(p));
-                    isFirst.scorePart = false;
+                    isFirst.part = false;
                 }
             }
         } catch (Exception ex) {
@@ -1426,14 +1501,14 @@ public class PartwiseBuilder
             current.system = system;
             isFirst.measure = true;
 
-            SystemPart systemPart = system.getPart(current.scorePart.getId());
+            OldSystemPart systemPart = system.getPart(current.scorePart.getId());
 
             if (systemPart != null) {
                 systemPart.accept(this);
             } else {
                 // Need to build an artificial system scorePart
                 // Or simply delegating to the series of artificial measures
-                SystemPart dummyPart = system.getFirstRealPart()
+                OldSystemPart dummyPart = system.getFirstRealPart()
                         .createDummyPart(current.scorePart.getId());
                 dummyPart.accept(this);
             }
@@ -1464,7 +1539,7 @@ public class PartwiseBuilder
             EmptyPrintStyleAlign empty = factory.createEmptyPrintStyleAlign();
 
             // Staff ?
-            Staff staff = current.note.getStaff();
+            OldStaff staff = current.note.getStaff();
             insertStaffId(direction, staff);
 
             // default-x
@@ -1517,7 +1592,7 @@ public class PartwiseBuilder
             // Note contextual data
             boolean isStart = slur.getLeftNote() == current.note;
             int noteLeft = current.note.getCenterLeft().x;
-            Staff staff = current.note.getStaff();
+            OldStaff staff = current.note.getStaff();
 
             if (slur.isTie()) {
                 // Tie element
@@ -1620,10 +1695,10 @@ public class PartwiseBuilder
     }
 
     //------------------//
-    // visit SystemPart //
+    // visit OldSystemPart //
     //------------------//
     @Override
-    public boolean visit (SystemPart systemPart)
+    public boolean visit (OldSystemPart systemPart)
     {
         try {
             logger.debug("Visiting {}", systemPart);
@@ -1635,7 +1710,7 @@ public class PartwiseBuilder
 
             // Delegate to measures
             for (TreeNode node : systemPart.getMeasures()) {
-                ((Measure) node).accept(this);
+                ((OldMeasure) node).accept(this);
             }
         } catch (Exception ex) {
             logger.warn("Error visiting " + systemPart, ex);
@@ -1795,7 +1870,7 @@ public class PartwiseBuilder
             if (tuplet.getChord() == current.note.getChord()) { // i.e. start
                 pmTuplet.setPlacement(
                         (tuplet.getCenter().y <= current.note.getCenter().y) ? AboveBelow.ABOVE
-                        : AboveBelow.BELOW);
+                                : AboveBelow.BELOW);
             }
 
             // Type
@@ -1845,7 +1920,7 @@ public class PartwiseBuilder
             pmWedge.setSpread(toTenths(wedge.getSpread()));
 
             // Staff ?
-            Staff staff = current.note.getStaff();
+            OldStaff staff = current.note.getStaff();
             insertStaffId(direction, staff);
 
             // Start or stop ?
@@ -1857,7 +1932,7 @@ public class PartwiseBuilder
                 // Placement
                 direction.setPlacement(
                         (wedge.getReferencePoint().y < current.note.getCenter().y) ? AboveBelow.ABOVE
-                        : AboveBelow.BELOW);
+                                : AboveBelow.BELOW);
 
                 // default-y
                 pmWedge.setDefaultY(yOf(wedge.getReferencePoint(), staff));
@@ -1900,6 +1975,38 @@ public class PartwiseBuilder
         return left.getFifths().equals(right.getFifths());
     }
 
+    //--------//
+    // getDen // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
+    //--------//
+    private static java.lang.String getDen (Time time)
+    {
+        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
+            if (elem.getName().getLocalPart().equals("beat-type")) {
+                return elem.getValue();
+            }
+        }
+
+        logger.error("No denominator found in {}", time);
+
+        return "";
+    }
+
+    //--------//
+    // getNum // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
+    //--------//
+    private static java.lang.String getNum (Time time)
+    {
+        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
+            if (elem.getName().getLocalPart().equals("beats")) {
+                return elem.getValue();
+            }
+        }
+
+        logger.error("No numerator found in {}", time);
+
+        return "";
+    }
+
     //-----------//
     // buildClef //
     //-----------//
@@ -1912,8 +2019,7 @@ public class PartwiseBuilder
             pmClef.setNumber(new BigInteger("" + (clef.getStaff().getId())));
         }
 
-        // Line (General computation that could be overridden by more
-        // specific shape test below)
+        // Line (General computation that could be overridden by more specific shape test below)
         pmClef.setLine(new BigInteger("" + (3 - (int) Math.rint(clef.getPitchPosition() / 2.0))));
 
         Shape shape = clef.getShape();
@@ -2015,22 +2121,6 @@ public class PartwiseBuilder
         return current.pmAttributes;
     }
 
-    //--------//
-    // getDen // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
-    //--------//
-    private static java.lang.String getDen (Time time)
-    {
-        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
-            if (elem.getName().getLocalPart().equals("beat-type")) {
-                return elem.getValue();
-            }
-        }
-
-        logger.error("No denominator found in {}", time);
-
-        return "";
-    }
-
     //--------------//
     // getNotations //
     //--------------//
@@ -2049,22 +2139,6 @@ public class PartwiseBuilder
         }
 
         return current.pmNotations;
-    }
-
-    //--------//
-    // getNum // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
-    //--------//
-    private static java.lang.String getNum (Time time)
-    {
-        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
-            if (elem.getName().getLocalPart().equals("beats")) {
-                return elem.getValue();
-            }
-        }
-
-        logger.error("No numerator found in {}", time);
-
-        return "";
     }
 
     //--------------//
@@ -2183,13 +2257,13 @@ public class PartwiseBuilder
     //----------------------//
     // insertCurrentContext //
     //----------------------//
-    private void insertCurrentContext (Measure measure)
+    private void insertCurrentContext (OldMeasure measure)
     {
         // Browse measure, staff per staff
-        SystemPart part = measure.getPart();
+        OldSystemPart part = measure.getPart();
 
         for (TreeNode sn : part.getStaves()) {
-            Staff staff = (Staff) sn;
+            OldStaff staff = (OldStaff) sn;
             int right = measure.getLeftX(); // Right of dummy = Left of current
             int midY = (staff.getTopLeft().y + (staff.getHeight() / 2))
                        - measure.getSystem().getTopLeft().y;
@@ -2222,7 +2296,7 @@ public class PartwiseBuilder
     // insertForward //
     //---------------//
     private void insertForward (Rational delta,
-                                Chord chord)
+                                OldChord chord)
     {
         try {
             Forward forward = factory.createForward();
@@ -2251,7 +2325,7 @@ public class PartwiseBuilder
      */
     @SuppressWarnings("unchecked")
     private void insertStaffId (Object obj,
-                                Staff staff)
+                                OldStaff staff)
     {
         if (current.scorePart.isMultiStaff()) {
             Class<?> classe = obj.getClass();
@@ -2276,7 +2350,7 @@ public class PartwiseBuilder
      * @param measure the measure to check
      * @return true is desired
      */
-    private boolean isDesired (Measure measure)
+    private boolean isDesired (OldMeasure measure)
     {
         return (measureRange == null) || // No range : take all of them
                 (measure.isTemporary()) || // A temporary measure for export
@@ -2399,7 +2473,7 @@ public class PartwiseBuilder
      * @return the upward-oriented ordinate wrt staff top line (in tenths)
      */
     private BigDecimal yOf (double ordinate,
-                            Staff staff)
+                            OldStaff staff)
     {
         return toTenths(staff.getTopLeft().y - ordinate);
     }
@@ -2417,142 +2491,12 @@ public class PartwiseBuilder
      * @return the upward-oriented ordinate wrt staff top line (in tenths)
      */
     private BigDecimal yOf (Point point,
-                            Staff staff)
+                            OldStaff staff)
     {
         return yOf(point.y, staff);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        Constant.Integer pageHorizontalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page horizontal margin");
-
-        Constant.Integer pageVerticalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page vertical margin");
-
-        Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
-                false,
-                "Should we avoid brackets for all tuplets");
-    }
-
-    //---------------//
-    // ClefIterators //
-    //---------------//
-    /**
-     * Class to handle the insertion of clefs in a measure.
-     * If needed, this class could be reused for some attribute other than clef,
-     * such as key signature or time signature (if these attributes can indeed
-     * occur in the middle of a measure. To be checked).
-     */
-    private class ClefIterators
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Containing measure */
-        private final Measure measure;
-
-        /** Staves of the containing part */
-        private final List<TreeNode> staves;
-
-        /** Per staff, iterator on Clefs sorted by abscissa */
-        private final Map<Staff, ListIterator<Clef>> iters;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public ClefIterators (Measure measure)
-        {
-            this.measure = measure;
-
-            staves = measure.getPart().getStaves();
-
-            Map<Staff, List<Clef>> map = new HashMap<Staff, List<Clef>>();
-
-            for (TreeNode tn : measure.getClefList().getChildren()) {
-                Clef clef = (Clef) tn;
-                Staff staff = clef.getStaff();
-                List<Clef> list = map.get(staff);
-
-                if (list == null) {
-                    map.put(staff, list = new ArrayList<Clef>());
-                }
-
-                list.add(clef);
-            }
-
-            iters = new HashMap<Staff, ListIterator<Clef>>();
-
-            for (Map.Entry<Staff, List<Clef>> entry : map.entrySet()) {
-                List<Clef> list = entry.getValue();
-                Collections.sort(
-                        list,
-                        new Comparator<Clef>()
-                        {
-                            @Override
-                            public int compare (Clef o1,
-                                                Clef o2)
-                            {
-                                return Integer.signum(o1.getCenter().x - o2.getCenter().x);
-                            }
-                        });
-                iters.put(entry.getKey(), list.listIterator());
-            }
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        /**
-         * Push as far as possible the relevant clefs iterators,
-         * according to the current abscissa.
-         *
-         * @param abscissa      the abscissa of chord to be exported, if any
-         * @param specificStaff a specific staff, or null for all staves
-         */
-        public void push (Integer abscissa,
-                          Staff specificStaff)
-        {
-            if (abscissa != null) {
-                for (TreeNode node : staves) {
-                    Staff staff = (Staff) node;
-
-                    if ((specificStaff == null) || (staff == specificStaff)) {
-                        final ListIterator<Clef> it = iters.get(staff);
-
-                        // Check pending clef WRT current abscissa
-                        if ((it != null) && it.hasNext()) {
-                            final Clef clef = it.next();
-
-                            if (measure.isDummy()
-                                || measure.isTemporary()
-                                || (clef.getCenter().x <= abscissa)) {
-                                // Consume this clef
-                                clef.accept(PartwiseBuilder.this);
-                            } else {
-                                // Reset iterator
-                                it.previous();
-                            }
-                        }
-                    }
-                }
-            } else {
-                // Flush all iterators
-                for (ListIterator<Clef> it : iters.values()) {
-                    while (it.hasNext()) {
-                        it.next().accept(PartwiseBuilder.this);
-                    }
-                }
-            }
-        }
-    }
-
     //
     //---------//
     // Current //
@@ -2580,12 +2524,12 @@ public class PartwiseBuilder
         // System dependent
         ScoreSystem system;
 
-        // Measure dependent
-        Measure measure;
+        // OldMeasure dependent
+        OldMeasure measure;
 
         com.audiveris.proxymusic.ScorePartwise.Part.Measure pmMeasure;
 
-        Voice voice;
+        OldVoice voice;
 
         // Note dependent
         omr.score.entity.Note note;
@@ -2625,17 +2569,16 @@ public class PartwiseBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** We are writing the first score part of the score */
-        boolean scorePart;
+        /** We are writing the first part of the score */
+        boolean part;
 
         /** We are writing the first page of the score */
-        Boolean page;
+        boolean page;
 
         /** We are writing the first system in the current page */
         boolean system;
 
-        /** We are writing the first measure in current system (in current
-         * scorePart) */
+        /** We are writing the first measure in current system (in current scorePart) */
         boolean measure;
 
         //~ Methods --------------------------------------------------------------------------------
@@ -2644,13 +2587,11 @@ public class PartwiseBuilder
         {
             StringBuilder sb = new StringBuilder();
 
-            if (scorePart) {
-                sb.append(" firstScorePart");
+            if (part) {
+                sb.append(" firstPart");
             }
 
-            if (page == null) {
-                sb.append(" noPage");
-            } else if (page) {
+            if (page) {
                 sb.append(" firstPage");
             }
 
@@ -2666,6 +2607,136 @@ public class PartwiseBuilder
         }
     }
 
+    //---------------//
+    // ClefIterators //
+    //---------------//
+    /**
+     * Class to handle the insertion of clefs in a measure.
+     * If needed, this class could be reused for some attribute other than clef,
+     * such as key signature or time signature (if these attributes can indeed
+     * occur in the middle of a measure. To be checked).
+     */
+    private class ClefIterators
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Containing measure */
+        private final OldMeasure measure;
+
+        /** Staves of the containing part */
+        private final List<TreeNode> staves;
+
+        /** Per staff, iterator on Clefs sorted by abscissa */
+        private final Map<OldStaff, ListIterator<Clef>> iters;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ClefIterators (OldMeasure measure)
+        {
+            this.measure = measure;
+
+            staves = measure.getPart().getStaves();
+
+            Map<OldStaff, List<Clef>> map = new HashMap<OldStaff, List<Clef>>();
+
+            for (TreeNode tn : measure.getClefList().getChildren()) {
+                Clef clef = (Clef) tn;
+                OldStaff staff = clef.getStaff();
+                List<Clef> list = map.get(staff);
+
+                if (list == null) {
+                    map.put(staff, list = new ArrayList<Clef>());
+                }
+
+                list.add(clef);
+            }
+
+            iters = new HashMap<OldStaff, ListIterator<Clef>>();
+
+            for (Map.Entry<OldStaff, List<Clef>> entry : map.entrySet()) {
+                List<Clef> list = entry.getValue();
+                Collections.sort(
+                        list,
+                        new Comparator<Clef>()
+                        {
+                            @Override
+                            public int compare (Clef o1,
+                                                Clef o2)
+                            {
+                                return Integer.signum(o1.getCenter().x - o2.getCenter().x);
+                            }
+                        });
+                iters.put(entry.getKey(), list.listIterator());
+            }
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Push as far as possible the relevant clefs iterators,
+         * according to the current abscissa.
+         *
+         * @param abscissa      the abscissa of chord to be exported, if any
+         * @param specificStaff a specific staff, or null for all staves
+         */
+        public void push (Integer abscissa,
+                          OldStaff specificStaff)
+        {
+            if (abscissa != null) {
+                for (TreeNode node : staves) {
+                    OldStaff staff = (OldStaff) node;
+
+                    if ((specificStaff == null) || (staff == specificStaff)) {
+                        final ListIterator<Clef> it = iters.get(staff);
+
+                        // Check pending clef WRT current abscissa
+                        if ((it != null) && it.hasNext()) {
+                            final Clef clef = it.next();
+
+                            if (measure.isDummy()
+                                || measure.isTemporary()
+                                || (clef.getCenter().x <= abscissa)) {
+                                // Consume this clef
+                                clef.accept(PartwiseBuilder.this);
+                            } else {
+                                // Reset iterator
+                                it.previous();
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Flush all iterators
+                for (ListIterator<Clef> it : iters.values()) {
+                    while (it.hasNext()) {
+                        it.next().accept(PartwiseBuilder.this);
+                    }
+                }
+            }
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        Constant.Integer pageHorizontalMargin = new Constant.Integer(
+                "tenths",
+                80,
+                "Page horizontal margin");
+
+        Constant.Integer pageVerticalMargin = new Constant.Integer(
+                "tenths",
+                80,
+                "Page vertical margin");
+
+        Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
+                false,
+                "Should we avoid brackets for all tuplets");
+    }
+
     //--------------//
     // MeasurePrint //
     //--------------//
@@ -2676,7 +2747,7 @@ public class PartwiseBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Measure measure;
+        private final OldMeasure measure;
 
         private final com.audiveris.proxymusic.Print pmPrint;
 
@@ -2684,7 +2755,7 @@ public class PartwiseBuilder
         private boolean used = false;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public MeasurePrint (Measure measure)
+        public MeasurePrint (OldMeasure measure)
         {
             this.measure = measure;
 
@@ -2761,17 +2832,17 @@ public class PartwiseBuilder
             // StaffLayout for all staves in this scorePart, except 1st system staff
             if (isFirst.measure && !measure.isDummy()) {
                 for (TreeNode sNode : measure.getPart().getStaves()) {
-                    Staff staff = (Staff) sNode;
+                    OldStaff staff = (OldStaff) sNode;
 
-                    if (!isFirst.scorePart || (staff.getId() > 1)) {
+                    if (!isFirst.part || (staff.getId() > 1)) {
                         try {
                             StaffLayout staffLayout = factory.createStaffLayout();
                             staffLayout.setNumber(new BigInteger("" + staff.getId()));
 
-                            Staff prevStaff = (Staff) staff.getPreviousSibling();
+                            OldStaff prevStaff = (OldStaff) staff.getPreviousSibling();
 
                             if (prevStaff == null) {
-                                SystemPart prevPart = (SystemPart) measure.getPart()
+                                OldSystemPart prevPart = (OldSystemPart) measure.getPart()
                                         .getPreviousSibling();
 
                                 if (!prevPart.isDummy()) {
@@ -2803,11 +2874,11 @@ public class PartwiseBuilder
                 getAttributes().getStaffDetails().add(staffDetails);
             }
 
-            // Measure numbering?
+            // OldMeasure numbering?
             if (isFirst.system && isFirst.measure) {
                 com.audiveris.proxymusic.MeasureNumbering pmNumbering = factory.createMeasureNumbering();
 
-                if (isFirst.scorePart) {
+                if (isFirst.part) {
                     pmNumbering.setValue(MeasureNumberingValue.SYSTEM);
                 } else {
                     pmNumbering.setValue(MeasureNumberingValue.NONE);

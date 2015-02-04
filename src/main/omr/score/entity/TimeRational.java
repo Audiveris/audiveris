@@ -13,6 +13,12 @@ package omr.score.entity;
 
 import omr.math.Rational;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -28,13 +34,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "rational")
 public class TimeRational
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** The actual denominator */
+    private static final Logger logger = LoggerFactory.getLogger(TimeRational.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    /** The actual denominator. */
     @XmlAttribute
     public final int den;
 
-    /** The actual numerator */
+    /** The actual numerator. */
     @XmlAttribute
     public final int num;
 
@@ -58,13 +67,67 @@ public class TimeRational
     //--------------//
     // TimeRational //
     //--------------//
-    /** To please JAXB */
+    /** Zero-argument constructor to please JAXB */
     private TimeRational ()
     {
         den = num = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // decode //
+    //--------//
+    /**
+     * Decode a string expected to contain one TimeRational value, formatted as num / den.
+     *
+     * @param str the string to decode
+     * @return the TimeRational value if successful
+     */
+    public static TimeRational decode (String str)
+    {
+        final String[] tokens = str.split("\\s*/\\s*");
+
+        if (tokens.length == 2) {
+            int num = Integer.decode(tokens[0].trim());
+            int den = Integer.decode(tokens[1].trim());
+
+            return new TimeRational(num, den);
+        } else {
+            logger.warn("Illegal rational value: ", str);
+
+            return null;
+        }
+    }
+
+    //-------------//
+    // parseValues //
+    //-------------//
+    /**
+     * Convenient method to parse a string of TimeRational values, separated by commas.
+     *
+     * @param str the string to parse
+     * @return the sequence of TimeRational values decoded
+     */
+    public static List<TimeRational> parseValues (String str)
+    {
+        final List<TimeRational> list = new ArrayList<TimeRational>();
+        final String[] tokens = str.split("\\s*,\\s*");
+
+        for (String token : tokens) {
+            String trimmedToken = token.trim();
+
+            if (!trimmedToken.isEmpty()) {
+                TimeRational val = decode(trimmedToken);
+
+                if (val != null) {
+                    list.add(val);
+                }
+            }
+        }
+
+        return list;
+    }
+
     //--------//
     // equals //
     //--------//
@@ -104,7 +167,6 @@ public class TimeRational
     //----------//
     // toString //
     //----------//
-    /** {@inheritDoc } */
     @Override
     public String toString ()
     {

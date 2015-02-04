@@ -17,7 +17,7 @@ import omr.selection.InterListEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 
-import omr.sig.Inter;
+import omr.sig.inter.Inter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.util.Arrays;
 
 import javax.swing.AbstractAction;
+
 import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**
@@ -73,9 +74,8 @@ public class InterAction
         this.inter = inter;
 
         Shape shape = inter.getShape();
-        putValue(
-                NAME,
-                (text != null) ? text : (inter.toString() + " S:" + inter.getSig().getSystem().getId()));
+        putValue(NAME, (text != null) ? text : inter.toString());
+
         if (shape != null) {
             putValue(SMALL_ICON, shape.getDecoratedSymbol());
         }

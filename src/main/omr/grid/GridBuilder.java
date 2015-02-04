@@ -18,8 +18,9 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.run.RunsTable;
+import omr.run.RunTable;
 
+import omr.sheet.Picture;
 import omr.sheet.Sheet;
 
 import omr.sig.ui.InterBoard;
@@ -80,10 +81,12 @@ public class GridBuilder
         this.sheet = sheet;
 
         barsRetriever = new BarsRetriever(sheet);
-        sheet.addItemRenderer(barsRetriever);
-
         linesRetriever = new LinesRetriever(sheet, barsRetriever);
-        sheet.addItemRenderer(linesRetriever);
+
+        if (constants.showGrid.isSet()) {
+            sheet.addItemRenderer(barsRetriever);
+            sheet.addItemRenderer(linesRetriever);
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -182,17 +185,16 @@ public class GridBuilder
      */
     private void buildAllLags ()
     {
-        final boolean showRuns = constants.showRuns.isSet() && (Main.getGui() != null);
         final StopWatch watch = new StopWatch("buildAllLags");
 
         try {
             // We already have all foreground pixels as vertical runs
-            RunsTable wholeVertTable = sheet.getWholeVerticalTable();
+            RunTable wholeVertTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
 
             // hLag creation
             watch.start("buildHorizontalLag");
 
-            RunsTable longVertTable = linesRetriever.buildHorizontalLag(wholeVertTable, showRuns);
+            RunTable longVertTable = linesRetriever.buildHorizontalLag(wholeVertTable);
 
             // vLag creation
             watch.start("buildVerticalLag");
@@ -225,10 +227,12 @@ public class GridBuilder
                 false,
                 "Should we print out the stop watch?");
 
-        Constant.Boolean showRuns = new Constant.Boolean(false, "Should we show view on runs?");
-
         Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
                 false,
                 "Should we build a dewarped target?");
+
+        Constant.Boolean showGrid = new Constant.Boolean(
+                false,
+                "Should we show the details of grid?");
     }
 }

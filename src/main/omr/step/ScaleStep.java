@@ -14,6 +14,8 @@ package omr.step;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.sheet.Scale;
+import omr.sheet.ScaleBuilder;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.DeltaView;
@@ -56,7 +58,7 @@ public class ScaleStep
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 BINARY_TAB,
-                "Compute general scale");
+                "Compute sheet scale");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -66,7 +68,7 @@ public class ScaleStep
     @Override
     public void displayUI (Sheet sheet)
     {
-        if (constants.showDelta.isSet()) {
+        if (constants.displayDelta.isSet()) {
             // Display delta view
             sheet.getAssembly().addViewTab(
                     Step.DELTA_TAB,
@@ -83,7 +85,11 @@ public class ScaleStep
                       Sheet sheet)
             throws StepException
     {
-        sheet.getScaleBuilder().retrieveScale();
+        Scale scale = new ScaleBuilder(sheet).retrieveScale();
+
+        logger.info("{}{}", sheet.getLogPrefix(), scale);
+        sheet.setScale(scale);
+        sheet.getBench().recordScale(scale);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -95,7 +101,7 @@ public class ScaleStep
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean showDelta = new Constant.Boolean(
+        final Constant.Boolean displayDelta = new Constant.Boolean(
                 false,
                 "Should we display the Delta view?");
     }

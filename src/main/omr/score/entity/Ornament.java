@@ -59,9 +59,9 @@ public class Ornament
      * @param chord   the chord related to the mark
      * @param glyph   the underlying glyph
      */
-    public Ornament (Measure measure,
+    public Ornament (OldMeasure measure,
                      Point point,
-                     Chord chord,
+                     OldChord chord,
                      Glyph glyph)
     {
         super(measure, point, chord, glyph);
@@ -88,7 +88,7 @@ public class Ornament
      * @param point   location for the mark
      */
     public static void populate (Glyph glyph,
-                                 Measure measure,
+                                 OldMeasure measure,
                                  Point point)
     {
         if (glyph.isVip()) {
@@ -96,10 +96,10 @@ public class Ornament
         }
 
         // An Ornament relates to the note below on the same time slot
-        Slot slot = measure.getClosestSlot(point);
+        OldSlot slot = measure.getClosestSlot(point);
 
         if (slot != null) {
-            Chord chord = slot.getChordJustBelow(point);
+            OldChord chord = slot.getChordJustBelow(point);
 
             if (chord != null) {
                 glyph.setTranslation(new Ornament(measure, point, chord, glyph));

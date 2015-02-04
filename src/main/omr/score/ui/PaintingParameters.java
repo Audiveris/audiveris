@@ -342,17 +342,14 @@ public class PaintingParameters
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Should the annotations be painted */
         final Constant.Boolean annotationPainting = new Constant.Boolean(
                 true,
                 "Should the annotations be painted");
 
-        /** Should the slots be painted */
         final Constant.Boolean slotPainting = new Constant.Boolean(
                 true,
                 "Should the slots be painted");
 
-        /** Should the marks be painted */
         final Constant.Boolean markPainting = new Constant.Boolean(
                 true,
                 "Should the marks be painted");

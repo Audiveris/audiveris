@@ -18,7 +18,8 @@ import omr.math.Histogram;
 
 import omr.run.Orientation;
 import omr.run.Run;
-import omr.run.RunsTable;
+import omr.run.RunSequence;
+import omr.run.RunTable;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -78,7 +79,7 @@ public class BasicRoi
     //-----------------//
     @Override
     public Histogram<Integer> getRunHistogram (Orientation projection,
-                                               RunsTable table)
+                                               RunTable table)
     {
         final Orientation tableOrient = table.getOrientation();
         final boolean alongTheRuns = projection == tableOrient;
@@ -92,7 +93,7 @@ public class BasicRoi
         final int maxCoord = (oriInter.x + oriInter.width) - 1;
 
         for (int pos = minPos; pos <= maxPos; pos++) {
-            List<Run> seq = table.getSequence(pos);
+            RunSequence seq = table.getSequence(pos);
 
             for (Run run : seq) {
                 final int cMin = Math.max(minCoord, run.getStart());

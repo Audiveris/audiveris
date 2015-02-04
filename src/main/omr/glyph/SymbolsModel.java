@@ -76,8 +76,8 @@ public class SymbolsModel
      *
      * @param glyphs      the collection of glyphs
      * @param roleInfo    the text role
-     * @param textContent the ascii content
-     * @param grade       the grade wrt this assignment
+     * @param textContent the ASCII content
+     * @param grade       the grade WRT this assignment
      */
     public void assignText (Collection<Glyph> glyphs,
                             TextRoleInfo roleInfo,
@@ -90,7 +90,7 @@ public class SymbolsModel
             final Point centroid = glyph.getCentroid();
 
             for (SystemInfo system : systemManager.getSystemsOf(centroid)) {
-                String language = system.getSheet().getPage().getTextParam().getTarget();
+                String language = system.getSheet().getTextParam().getTarget();
                 TextBuilder textBuilder = system.getTextBuilder();
                 TextWord word = glyph.getTextWord();
                 List<TextLine> lines = new ArrayList<TextLine>();
@@ -99,7 +99,7 @@ public class SymbolsModel
                     word = TextWord.createManualWord(glyph, textContent);
                     glyph.setTextWord(language, word);
 
-                    TextLine line = new TextLine(system, Arrays.asList(word));
+                    TextLine line = new TextLine(Arrays.asList(word));
                     lines = Arrays.asList(line);
                     lines = textBuilder.recomposeLines(lines);
                     system.getSentences().remove(line);
@@ -114,7 +114,7 @@ public class SymbolsModel
                 for (TextLine line : lines) {
                     // For Chord role, we don't spread the role to other words
                     // but rather trigger a line split
-                    if ((roleInfo.role == TextRole.Chord) && (line.getWords().size() > 1)) {
+                    if ((roleInfo.role == TextRole.ChordName) && (line.getWords().size() > 1)) {
                         line.setRole(roleInfo);
 
                         List<TextLine> subLines = textBuilder.recomposeLines(Arrays.asList(line));

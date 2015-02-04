@@ -707,10 +707,10 @@ public class GlyphRegression
         //
         //            break;
         //
-        //        case DECRESCENDO :
-        //            disableMaximum(DECRESCENDO, "weight");
-        //            disableMaximum(DECRESCENDO, "width");
-        //            disableMaximum(DECRESCENDO, "height");
+        //        case DIMINUENDO :
+        //            disableMaximum(DIMINUENDO, "weight");
+        //            disableMaximum(DIMINUENDO, "width");
+        //            disableMaximum(DIMINUENDO, "height");
         //
         //            break;
         //

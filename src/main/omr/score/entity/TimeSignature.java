@@ -59,7 +59,7 @@ public class TimeSignature
             Shape.class);
 
     static {
-        for (Shape s : ShapeSet.FullTimes) {
+        for (Shape s : ShapeSet.WholeTimes) {
             if (s != CUSTOM_TIME) {
                 TimeRational nd = rationalOf(s);
 
@@ -77,7 +77,7 @@ public class TimeSignature
 
     static {
         // Predefined
-        for (Shape s : ShapeSet.FullTimes) {
+        for (Shape s : ShapeSet.WholeTimes) {
             TimeRational nd = rationals.get(s);
 
             if (nd != null) {
@@ -122,8 +122,8 @@ public class TimeSignature
      * @param measure the containing measure
      * @param staff   the related staff
      */
-    public TimeSignature (Measure measure,
-                          Staff staff)
+    public TimeSignature (OldMeasure measure,
+                          OldStaff staff)
     {
         super(measure);
         isDummy = false;
@@ -143,8 +143,8 @@ public class TimeSignature
      * @param staff   the related staff
      * @param other   the other time signature to clone
      */
-    public TimeSignature (Measure measure,
-                          Staff staff,
+    public TimeSignature (OldMeasure measure,
+                          OldStaff staff,
                           TimeSignature other)
     {
         super(measure);
@@ -220,7 +220,7 @@ public class TimeSignature
     //-----------------//
     // createDummyCopy //
     //-----------------//
-    public TimeSignature createDummyCopy (Measure measure,
+    public TimeSignature createDummyCopy (OldMeasure measure,
                                           Point center)
     {
         TimeSignature dummy = new TimeSignature(measure, null);
@@ -436,8 +436,8 @@ public class TimeSignature
      * @return true if population is successful, false otherwise
      */
     public static boolean populate (Glyph glyph,
-                                    Measure measure,
-                                    Staff staff,
+                                    OldMeasure measure,
+                                    OldStaff staff,
                                     Point center)
     {
         // First, some basic tests
@@ -475,8 +475,8 @@ public class TimeSignature
      * @return true if successful
      */
     public static boolean populateFullTime (Glyph glyph,
-                                            Measure measure,
-                                            Staff staff)
+                                            OldMeasure measure,
+                                            OldStaff staff)
     {
         logger.debug("populateFullTime with {}", glyph);
 
@@ -746,8 +746,8 @@ public class TimeSignature
      * @return true if successful
      */
     private static boolean populatePartialTime (Glyph glyph,
-                                                Measure measure,
-                                                Staff staff)
+                                                OldMeasure measure,
+                                                OldStaff staff)
     {
         logger.debug("populatePartialTime with {}", glyph);
 
@@ -795,7 +795,7 @@ public class TimeSignature
             return null; // Safer
         }
 
-        for (Shape s : ShapeSet.FullTimes) {
+        for (Shape s : ShapeSet.WholeTimes) {
             TimeRational nd = rationals.get(s);
 
             if (timeRational.equals(nd)) {
@@ -828,7 +828,7 @@ public class TimeSignature
                 Shape theShape = theGlyph.getShape();
 
                 if (theShape != null) {
-                    if (ShapeSet.FullTimes.contains(theShape)) {
+                    if (ShapeSet.WholeTimes.contains(theShape)) {
                         TimeRational theRational = (theShape == CUSTOM_TIME)
                                 ? theGlyph.getTimeRational() : rationalOf(
                                         theShape);

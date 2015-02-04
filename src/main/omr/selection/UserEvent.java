@@ -15,28 +15,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Interface {@code UserEvent} defines the common behavior of user
- * events that are stored as selections, and handled by the EventBus.
+ * Interface {@code UserEvent} defines the common behavior of user events that are
+ * stored as selections, and handled by the EventBus.
  *
  * <p>
- * All events are subclasses of this abstract class, and managed by proper
- * EventService instances: <ul>
+ * All events are subclasses of this abstract class, and managed by proper EventService instances:
+ * <ul>
  *
- * <li>SheetManager event service: a singleton which handles THE currently
- * selected sheet as {@link SheetEvent}
+ * <li>SheetManager event service: a singleton which handles THE currently selected sheet as
+ * {@link SheetEvent}
  *
- * <li>Sheet event service: each Sheet instance handles events of types
- * {@link LocationEvent} and {@link PixelLevelEvent}
+ * <li>Sheet event service: each Sheet instance handles events of types {@link LocationEvent} and
+ * {@link PixelLevelEvent}
  *
  * <li>Run event service: each RunsTable instance handles {@link RunEvent}
  *
- * <li>Lag event service: each Lag instance handles {@link SectionEvent},
- * {@link SectionIdEvent} and {@link SectionSetEvent} (all are subclasses of
- * {@link LagEvent})
+ * <li>Lag event service: each Lag instance handles {@link SectionEvent}, {@link SectionIdEvent} and
+ * {@link SectionSetEvent} (all are subclasses of {@link LagEvent})
  *
- * <li>Nest event service: each glyph Nest instance handles
- * {@link GlyphEvent}, {@link GlyphIdEvent} and {@link
- * GlyphSetEvent} (all are subclasses of {@link NestEvent})
+ * <li>Nest event service: each glyph Nest instance handles {@link GlyphEvent}, {@link GlyphIdEvent}
+ * and {@link GlyphSetEvent} (all are subclasses of {@link NestEvent})
  *
  * </ul>
  *

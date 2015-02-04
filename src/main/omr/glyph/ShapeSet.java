@@ -12,6 +12,7 @@
 package omr.glyph;
 
 import omr.constant.Constant;
+import omr.constant.ConstantSet;
 import static omr.glyph.Shape.*;
 
 import org.slf4j.Logger;
@@ -44,10 +45,29 @@ public class ShapeSet
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(ShapeSet.class);
 
-    /** Specific single symbol for part of time signature (such as 4) */
+    /** Half time numbers. These shapes are used for upper or lower part of a time signature.
+     */
     public static final List<Shape> PartialTimes = Arrays.asList(
+            TIME_TWO,
+            TIME_THREE,
+            TIME_FOUR,
+            TIME_FIVE,
+            TIME_SIX,
+            TIME_SEVEN,
+            TIME_EIGHT,
+            TIME_NINE,
+            TIME_TWELVE,
+            TIME_SIXTEEN);
+
+    /** Measure counts.
+     * They time-looking shapes may appear right above a staff containing just a long measure rest,
+     * to indicate the number of measures the rest represents.
+     */
+    public static final List<Shape> MeasureCounts = Arrays.asList(
             TIME_ZERO,
             TIME_ONE,
             TIME_TWO,
@@ -61,10 +81,10 @@ public class ShapeSet
             TIME_TWELVE,
             TIME_SIXTEEN);
 
-    /** Specific single-symbol for full time signature */
-    public static final EnumSet<Shape> FullTimes = EnumSet.of(COMMON_TIME, CUT_TIME);
+    /** Specific single-symbol for whole time signature */
+    public static final EnumSet<Shape> WholeTimes = EnumSet.of(COMMON_TIME, CUT_TIME);
 
-    /** Specific multi-symbol for full time signature (such as 4/4 or C) */
+    /** Specific multi-symbol for whole time signature (such as 4/4) */
     public static final EnumSet<Shape> ComboTimes = EnumSet.of(
             TIME_FOUR_FOUR,
             TIME_TWO_TWO,
@@ -134,34 +154,73 @@ public class ShapeSet
             NOTEHEAD_VOID,
             NOTEHEAD_VOID_SMALL);
 
-    /** All small notes. (for cue/grace) */
-    public static final EnumSet<Shape> SmallNotes = EnumSet.of(
-            NOTEHEAD_BLACK_SMALL,
-            NOTEHEAD_VOID_SMALL,
-            WHOLE_NOTE_SMALL);
+    /** All supported small notes. (for cue/grace) */
+    public static final EnumSet<Shape> SmallNotes = EnumSet.noneOf(Shape.class);
+
+    static {
+        if (constants.supportSmallHeadNotes.isSet()) {
+            SmallNotes.add(NOTEHEAD_BLACK_SMALL);
+        }
+
+        if (constants.supportSmallVoidNotes.isSet()) {
+            SmallNotes.add(NOTEHEAD_VOID_SMALL);
+        }
+
+        if (constants.supportSmallWholeNotes.isSet()) {
+            SmallNotes.add(WHOLE_NOTE_SMALL);
+        }
+    }
 
     /** All notes handled by template matching. */
-    public static final EnumSet<Shape> TemplateNotes = EnumSet.of(
-            NOTEHEAD_BLACK,
-            NOTEHEAD_BLACK_SMALL,
-            NOTEHEAD_VOID,
-            NOTEHEAD_VOID_SMALL,
-            WHOLE_NOTE,
-            WHOLE_NOTE_SMALL);
+    public static final EnumSet<Shape> TemplateNotes = EnumSet.noneOf(Shape.class);
+
+    static {
+        TemplateNotes.addAll(Arrays.asList(NOTEHEAD_BLACK, NOTEHEAD_VOID, WHOLE_NOTE));
+
+        if (constants.supportSmallHeadNotes.isSet()) {
+            TemplateNotes.add(NOTEHEAD_BLACK_SMALL);
+        }
+
+        if (constants.supportSmallVoidNotes.isSet()) {
+            TemplateNotes.add(NOTEHEAD_VOID_SMALL);
+        }
+
+        if (constants.supportSmallWholeNotes.isSet()) {
+            TemplateNotes.add(WHOLE_NOTE_SMALL);
+        }
+    }
 
     /** All stem-based notes handled by template matching. */
-    public static final EnumSet<Shape> StemTemplateNotes = EnumSet.of(
-            NOTEHEAD_BLACK,
-            NOTEHEAD_BLACK_SMALL,
-            NOTEHEAD_VOID,
-            NOTEHEAD_VOID_SMALL);
+    public static final EnumSet<Shape> StemTemplateNotes = EnumSet.noneOf(Shape.class);
+
+    static {
+        StemTemplateNotes.addAll(Arrays.asList(NOTEHEAD_BLACK, NOTEHEAD_VOID));
+
+        if (constants.supportSmallHeadNotes.isSet()) {
+            StemTemplateNotes.add(NOTEHEAD_BLACK_SMALL);
+        }
+
+        if (constants.supportSmallVoidNotes.isSet()) {
+            StemTemplateNotes.add(NOTEHEAD_VOID_SMALL);
+        }
+    }
+
+    /** Fermatas. */
+    public static final EnumSet<Shape> Fermatas = EnumSet.of(FERMATA, FERMATA_BELOW);
+
+    /** Core shapes for barlines. */
+    public static final EnumSet<Shape> CoreBarlines = EnumSet.copyOf(
+            Arrays.asList(
+                    Shape.THICK_BARLINE,
+                    Shape.THICK_CONNECTION,
+                    Shape.THIN_BARLINE,
+                    Shape.THIN_CONNECTION));
 
     /**
      * Predefined instances of ShapeSet.
      * Double-check before removing any one of them.
-     * Nota: Do not use EnumSet.range() since this could lead to subtle errors
-     * should Shape enum order be modified. Prefer the use of shapesOf()
-     * which lists precisely all set members.
+     * Nota: Do not use EnumSet.range() since this could lead to subtle errors should Shape enum
+     * order be modified. Prefer the use of shapesOf() which lists precisely all set members.
      */
     public static final ShapeSet Alterations = new ShapeSet(
             SHARP,
@@ -182,20 +241,17 @@ public class ShapeSet
             LEFT_REPEAT_SIGN,
             new Color(0x0000ff),
             shapesOf(
-                    PART_DEFINING_BARLINE,
-                    THIN_BARLINE,
-                    THICK_BARLINE,
-                    DOUBLE_BARLINE,
-                    FINAL_BARLINE,
-                    REVERSE_FINAL_BARLINE,
-                    LEFT_REPEAT_SIGN,
-                    RIGHT_REPEAT_SIGN,
-                    BACK_TO_BACK_REPEAT_SIGN,
-                    THIN_CONNECTION,
-                    THICK_CONNECTION,
-                    BRACE,
-                    BRACKET,
-                    BRACKET_CONNECTION));
+                    CoreBarlines,
+                    shapesOf(
+                            DOUBLE_BARLINE,
+                            FINAL_BARLINE,
+                            REVERSE_FINAL_BARLINE,
+                            LEFT_REPEAT_SIGN,
+                            RIGHT_REPEAT_SIGN,
+                            BACK_TO_BACK_REPEAT_SIGN,
+                            BRACE,
+                            BRACKET,
+                            BRACKET_CONNECTION)));
 
     public static final ShapeSet Beams = new ShapeSet(
             BEAM,
@@ -204,36 +260,29 @@ public class ShapeSet
 
     public static final ShapeSet Clefs = new ShapeSet(
             G_CLEF,
-            new Color(0xcc00cc),
+            new Color(0xff99ff), // new Color(0xcc00cc),
             shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
 
+    /**
+     * <img src="http://0.tqn.com/y/piano/1/U/m/G/-/-/musical-dynamics_MUSIC.png" />
+     * <br/>
+     * see <a href="http://piano.about.com/od/musicaltermssymbols/ss/2Int_SheetMusic_2.htm">Musical
+     * Dynamics</a>
+     */
     public static final ShapeSet Dynamics = new ShapeSet(
             DYNAMICS_F,
             new Color(0x009999),
             shapesOf(
-                    DYNAMICS_CHAR_M,
-                    DYNAMICS_CHAR_R,
-                    DYNAMICS_CHAR_S,
-                    DYNAMICS_CHAR_Z,
-                    DYNAMICS_F,
-                    DYNAMICS_FF,
-                    DYNAMICS_FFF,
-                    DYNAMICS_FP,
-                    DYNAMICS_FZ,
-                    DYNAMICS_MF,
-                    DYNAMICS_MP,
                     DYNAMICS_P,
                     DYNAMICS_PP,
-                    DYNAMICS_PPP,
-                    DYNAMICS_RF,
-                    DYNAMICS_RFZ,
-                    DYNAMICS_SF,
-                    DYNAMICS_SFFZ,
-                    DYNAMICS_SFP,
-                    DYNAMICS_SFPP,
+                    DYNAMICS_MP,
+                    DYNAMICS_F,
+                    DYNAMICS_FF,
+                    DYNAMICS_MF,
+                    DYNAMICS_FP,
                     DYNAMICS_SFZ,
                     CRESCENDO,
-                    DECRESCENDO));
+                    DIMINUENDO));
 
     public static final ShapeSet Flags = new ShapeSet(
             FLAG_1,
@@ -253,13 +302,7 @@ public class ShapeSet
     public static final ShapeSet Markers = new ShapeSet(
             CODA,
             new Color(0x888888),
-            shapesOf(
-                    DAL_SEGNO,
-                    DA_CAPO,
-                    SEGNO,
-                    CODA,
-                    BREATH_MARK,
-                    CAESURA));
+            shapesOf(DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK, CAESURA));
 
     public static final ShapeSet Notes = new ShapeSet(
             BREVE,
@@ -298,7 +341,7 @@ public class ShapeSet
     public static final ShapeSet Times = new ShapeSet(
             TIME_FOUR_FOUR,
             new Color(0xcc3300),
-            shapesOf(PartialTimes, FullTimes, ComboTimes));
+            shapesOf(PartialTimes, WholeTimes, ComboTimes));
 
     public static final ShapeSet Digits = new ShapeSet(
             DIGIT_1,
@@ -308,12 +351,35 @@ public class ShapeSet
                     DIGIT_1,
                     DIGIT_2,
                     DIGIT_3,
-                    DIGIT_4,
-                    DIGIT_5,
-                    DIGIT_6,
-                    DIGIT_7,
-                    DIGIT_8,
-                    DIGIT_9));
+                    DIGIT_4 //                    ,
+            //                    DIGIT_5,
+            //                    DIGIT_6,
+            //                    DIGIT_7,
+            //                    DIGIT_8,
+            //                    DIGIT_9
+            ));
+
+    public static final ShapeSet Pluckings = new ShapeSet(
+            PLUCK_P,
+            new Color(0xcc3388),
+            shapesOf(PLUCK_P, PLUCK_I, PLUCK_M, PLUCK_A));
+
+    public static final ShapeSet Romans = new ShapeSet(
+            ROMAN_V,
+            new Color(0xcc3388),
+            shapesOf(
+                    ROMAN_I,
+                    ROMAN_II,
+                    ROMAN_III,
+                    ROMAN_IV,
+                    ROMAN_V,
+                    ROMAN_VI,
+                    ROMAN_VII,
+                    ROMAN_VIII,
+                    ROMAN_IX,
+                    ROMAN_X,
+                    ROMAN_XI,
+                    ROMAN_XII));
 
     public static final ShapeSet Physicals = new ShapeSet(
             LEDGER,
@@ -832,6 +898,27 @@ public class ShapeSet
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Boolean supportSmallHeadNotes = new Constant.Boolean(
+                true,
+                "Should we support NOTEHEAD_BLACK_SMALL shape?");
+
+        final Constant.Boolean supportSmallVoidNotes = new Constant.Boolean(
+                false,
+                "Should we support NOTEHEAD_VOID_SMALL shape?");
+
+        final Constant.Boolean supportSmallWholeNotes = new Constant.Boolean(
+                false,
+                "Should we support WHOLE_NOTE_SMALL shape?");
+    }
+
     //------//
     // Sets //
     //------//

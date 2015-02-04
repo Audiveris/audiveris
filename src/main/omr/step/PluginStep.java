@@ -15,7 +15,6 @@ import omr.Main;
 
 import omr.plugin.Plugin;
 
-import omr.score.Score;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -24,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import omr.sheet.Book;
 
 /**
  * Class {@code PluginStep} launches the default plugin.
@@ -70,13 +70,13 @@ public class PluginStep
                       Sheet sheet)
             throws StepException
     {
-        Score score = sheet.getScore();
+        Book book = sheet.getBook();
 
         // Interactive or Batch?
         if (Main.getGui() != null) {
-            plugin.getTask(score).execute();
+            plugin.getTask(book).execute();
         } else {
-            plugin.runPlugin(score);
+            plugin.runPlugin(book);
         }
     }
 

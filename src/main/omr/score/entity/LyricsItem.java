@@ -91,8 +91,7 @@ public class LyricsItem
         SINGLE,
         /** Syllable that begins a word */
         BEGIN,
-        /** Syllable at the middle of a
-         * word */
+        /** Syllable at the middle of a word */
         MIDDLE,
         /** Syllable that ends a word */
         END;
@@ -112,10 +111,10 @@ public class LyricsItem
      * The carried text for this item.
      * (only a part of the containing sentence, as opposed to other texts)
      */
-    private String content;
+    private final String content;
 
     /** The exact corresponding word. */
-    private TextWord word;
+    private final TextWord word;
 
     /** Width of the item. */
     private final int width;
@@ -124,7 +123,7 @@ public class LyricsItem
     private final Glyph seed;
 
     /** Mapped note/chord, if any. */
-    private Chord mappedChord;
+    private OldChord mappedChord;
 
     //~ Constructors -------------------------------------------------------------------------------
     //------------//
@@ -134,7 +133,7 @@ public class LyricsItem
      * Creates a new LyricsItem object.
      *
      * @param sentence The containing sentence
-     * @param location The starting point (left side, base line) wrt system
+     * @param location The starting point (left side, base line)
      * @param seed     The glyph that initiated the creation of this lyrics item
      * @param width    The width of the related item
      * @param content  The underlying text for this lyrics item
@@ -298,11 +297,11 @@ public class LyricsItem
         // Left is too far on left, middle is too far on right, we use width/4
         int centerX = getReferencePoint().x + (width / 4);
 
-        SystemPart part = lyricsLine.getPart();
+        OldSystemPart part = lyricsLine.getPart();
         int maxDx = part.getScale().toPixels(constants.maxItemDx);
 
         for (TreeNode mNode : part.getMeasures()) {
-            Measure measure = (Measure) mNode;
+            OldMeasure measure = (OldMeasure) mNode;
 
             // Select only possible measures
             if ((measure.getLeftX() - maxDx) > centerX) {
@@ -315,9 +314,9 @@ public class LyricsItem
 
             // Look for best aligned chord in proper staff
             int bestDx = Integer.MAX_VALUE;
-            Chord bestChord = null;
+            OldChord bestChord = null;
 
-            for (Chord chord : measure.getChordsAbove(getReferencePoint())) {
+            for (OldChord chord : measure.getChordsAbove(getReferencePoint())) {
                 if (chord.getStaff() == lyricsLine.getStaff()) {
                     int dx = Math.abs(chord.getHeadLocation().x - centerX);
 
@@ -375,9 +374,9 @@ public class LyricsItem
         setReferencePoint(new Point(itemBox.x, getSentence().getLocation().y));
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
     protected String internalsString ()
     {

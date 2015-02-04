@@ -53,9 +53,9 @@ public class Arpeggiate
      * @param chord   the chord related to the mark
      * @param glyph   the underlying glyph
      */
-    public Arpeggiate (Measure measure,
+    public Arpeggiate (OldMeasure measure,
                        Point point,
-                       Chord chord,
+                       OldChord chord,
                        Glyph glyph)
     {
         super(measure, point, chord, glyph);
@@ -82,7 +82,7 @@ public class Arpeggiate
      * @param point   location for the mark
      */
     public static void populate (Glyph glyph,
-                                 Measure measure,
+                                 OldMeasure measure,
                                  Point point)
     {
         if (glyph.isVip()) {
@@ -93,7 +93,7 @@ public class Arpeggiate
         // We look on the right
         int dx = measure.getScale().toPixels(constants.areaDx);
         Point shiftedPoint = new Point(point.x + dx, point.y);
-        Slot slot = measure.getClosestSlot(shiftedPoint);
+        OldSlot slot = measure.getClosestSlot(shiftedPoint);
 
         if (slot == null) {
             measure.addError(glyph, "Suspicious arpeggiate without slots");
@@ -105,7 +105,7 @@ public class Arpeggiate
         Rectangle box = glyph.getBounds();
         Point top = new Point(box.x + (box.width / 2), box.y);
         Point bottom = new Point(box.x + (box.width / 2), box.y + box.height);
-        List<Chord> chords = slot.getEmbracedChords(top, bottom);
+        List<OldChord> chords = slot.getEmbracedChords(top, bottom);
 
         if (!chords.isEmpty()) {
             // Allocate an instance with first embraced chord
@@ -114,7 +114,7 @@ public class Arpeggiate
 
             // Add the rest of embraced chords
             for (int i = 1; i < chords.size(); i++) {
-                Chord chord = chords.get(i);
+                OldChord chord = chords.get(i);
                 chord.addNotation(arpeggiate);
             }
         } else {

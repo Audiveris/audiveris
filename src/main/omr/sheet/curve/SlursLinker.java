@@ -18,8 +18,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
-
 import omr.math.GeoPath;
 import omr.math.LineUtil;
 import static omr.math.LineUtil.*;
@@ -27,17 +25,18 @@ import static omr.math.PointUtil.*;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 
-import omr.sig.AbstractNoteInter;
-import omr.sig.HeadStemRelation;
-import omr.sig.Inter;
-import omr.sig.Relation;
 import omr.sig.SIGraph;
-import omr.sig.SlurInter;
-import omr.sig.SlurNoteRelation;
-import omr.sig.StemInter;
+import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.Inter;
+import omr.sig.inter.SlurInter;
+import omr.sig.inter.StemInter;
+import omr.sig.relation.HeadStemRelation;
+import omr.sig.relation.Relation;
+import omr.sig.relation.SlurHeadRelation;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
@@ -379,7 +378,7 @@ public class SlursLinker
                 "Internal abscissa of vertical slur coverage");
 
         final Scale.Fraction coverageVDepth = new Scale.Fraction(
-                2.0,
+                2.5,
                 "Vertical extension of vertical slur coverage");
 
         final Scale.Fraction coverageVDepthSmall = new Scale.Fraction(
@@ -694,8 +693,8 @@ public class SlursLinker
 
                     // Check horizontal gap to end of staff
                     Point slurEnd = info.getEnd(side == LEFT);
-                    StaffInfo staff = system.getStaffAt(slurEnd);
-                    int staffEnd = (side == LEFT) ? staff.getDmzStop() : staff.getAbscissa(
+                    Staff staff = system.getClosestStaff(slurEnd);
+                    int staffEnd = (side == LEFT) ? staff.getHeaderStop() : staff.getAbscissa(
                             side);
 
                     if (abs(slurEnd.x - staffEnd) > params.maxOrphanDx) {
@@ -756,13 +755,13 @@ public class SlursLinker
                 NoteLink link = (side == LEFT) ? leftLink : rightLink;
 
                 if (link != null) {
-                    sig.addEdge(slur, link.note, new SlurNoteRelation(side));
+                    sig.addEdge(slur, link.note, new SlurHeadRelation(side));
                 }
             }
         }
 
         /**
-         * Retrieve the note(s) embraced by the slur side.
+         * Retrieve the head(s) embraced by the slur side.
          *
          * @param slur the provided slur
          * @param side desired side
@@ -786,31 +785,31 @@ public class SlursLinker
                 }
             }
 
-            ///if (info.isHorizontal()) {
-            // Determine the stems related to notes found
-            Set<Inter> relatedStems = stemsOf(found.keySet());
+            if (info.isHorizontal()) {
+                // Determine the stems related to notes found
+                Set<Inter> relatedStems = stemsOf(found.keySet());
 
-            // Look for stems intersected (if not related to any note already found)
-            for (Inter is : stems.get(side)) {
-                if (!relatedStems.contains(is)) {
-                    Glyph glyph = is.getGlyph();
+                // Look for stems intersected (if not related to any note already found)
+                for (Inter is : stems.get(side)) {
+                    if (!relatedStems.contains(is)) {
+                        Glyph glyph = is.getGlyph();
 
-                    if (area.intersects(glyph.getBounds())) {
-                        // Find out the best note on the stem
-                        NoteLink noteLink = pickupStemNote(is, slurEnd, bisUnit);
+                        if (area.intersects(glyph.getBounds())) {
+                            // Find out the best note on the stem
+                            NoteLink noteLink = pickupStemNote(is, slurEnd, bisUnit);
 
-                        if (noteLink != null) {
-                            NoteLink direct = found.get(noteLink.note);
+                            if (noteLink != null) {
+                                NoteLink direct = found.get(noteLink.note);
 
-                            if (direct == null) {
-                                found.put(noteLink.note, noteLink);
+                                if (direct == null) {
+                                    found.put(noteLink.note, noteLink);
+                                }
                             }
                         }
                     }
                 }
             }
 
-            ///}
             return found;
         }
 
@@ -861,13 +860,13 @@ public class SlursLinker
         }
 
         /**
-         * Select the best note designated by the intersected stem.
-         * We select the note which is closest to slur end.
+         * Select the best note head designated by the intersected stem.
+         * We select the note headwhich is closest to slur end.
          *
          * @param stem    the intersected stem
          * @param slurEnd the slur ending point
          * @param bisUnit unity vector pointing to slur center
-         * @return the best note or null
+         * @return the best note heador null
          */
         private NoteLink pickupStemNote (Inter stem,
                                          Point slurEnd,
@@ -877,12 +876,12 @@ public class SlursLinker
             List<NoteLink> links = new ArrayList<NoteLink>();
 
             for (Relation rel : hsRels) {
-                Inter note = (AbstractNoteInter) sig.getEdgeSource(rel);
-                Point center = note.getCenter();
+                Inter head = (AbstractHeadInter) sig.getEdgeSource(rel);
+                Point center = head.getCenter();
 
                 // Check relative position WRT slur end
                 if (dotProduct(subtraction(center, slurEnd), bisUnit) > 0) {
-                    links.add(new NoteLink(slurEnd, note, false));
+                    links.add(new NoteLink(slurEnd, head, false));
                 }
             }
 
@@ -896,18 +895,18 @@ public class SlursLinker
         }
 
         /**
-         * Filter the notes and stems that could be relevant for clump.
+         * Filter the note heads and stems that could be relevant for clump.
          */
         private void preselect (Map<HorizontalSide, Rectangle> bounds)
         {
-            List<Inter> sysNotes = sig.inters(AbstractNoteInter.class);
+            List<Inter> sysHeads = sig.inters(AbstractHeadInter.class);
             List<Inter> sysStems = sig.inters(StemInter.class);
 
             for (HorizontalSide side : HorizontalSide.values()) {
                 Rectangle box = bounds.get(side);
 
                 // Filter via box intersection
-                notes.put(side, sig.intersectedInters(sysNotes, null, box));
+                notes.put(side, sig.intersectedInters(sysHeads, null, box));
                 stems.put(side, sig.intersectedInters(sysStems, null, box));
             }
         }

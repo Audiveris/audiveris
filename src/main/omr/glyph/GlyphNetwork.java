@@ -546,7 +546,7 @@ public class GlyphNetwork
 
         Constant.Integer listEpochs = new Constant.Integer(
                 "Epochs",
-                4000,
+                500,
                 "Number of epochs for training on list of glyphs");
 
         Constant.Integer quorum = new Constant.Integer(

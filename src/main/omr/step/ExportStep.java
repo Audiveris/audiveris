@@ -11,8 +11,10 @@
 // </editor-fold>
 package omr.step;
 
-import omr.score.ScoresManager;
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
 
+import omr.sheet.BookManager;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -22,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code ExportStep} exports the whole score
+ * Class {@code ExportStep} exports the whole book.
  *
  * @author Hervé Bitteur
  */
@@ -30,6 +32,8 @@ public class ExportStep
         extends AbstractStep
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ExportStep.class);
 
@@ -59,6 +63,33 @@ public class ExportStep
                       Sheet sheet)
             throws StepException
     {
-        ScoresManager.getInstance().export(sheet.getScore(), null, null, false);
+        BookManager.getInstance().export(sheet.getBook(), null, null, useCompression());
+    }
+
+    //----------------//
+    // useCompression //
+    //----------------//
+    /**
+     * Report whether we should use compression (to .MXL files) or not (to .XML files).
+     *
+     * @return true for compression
+     */
+    public static boolean useCompression ()
+    {
+        return constants.useCompression.getValue();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Boolean useCompression = new Constant.Boolean(
+                true,
+                "Should we compress the MusicXML output?");
     }
 }

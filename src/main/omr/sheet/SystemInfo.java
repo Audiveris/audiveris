@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                      S y s t e m I n f o                                       //
+//                                         S y s t e m I n f o                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -20,37 +20,32 @@ import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.pattern.PatternsChecker;
-import omr.glyph.pattern.SlurInspector;
 
 import omr.grid.BarInfo;
 import omr.grid.LineInfo;
-import omr.grid.OldBarAlignment;
-import omr.grid.StaffInfo;
-import omr.grid.StaffManager;
+import omr.grid.PartGroup;
 
 import omr.lag.Section;
 
+import omr.score.Score;
 import omr.score.SystemTranslator;
+import omr.score.entity.Page;
+import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
-import omr.score.entity.Staff;
-import omr.score.entity.SystemPart;
+import omr.score.entity.SystemNode;
 
 import omr.sig.SIGraph;
-import omr.sig.SigReducer;
 
 import omr.text.TextBuilder;
 import omr.text.TextLine;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
@@ -65,17 +60,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
-import omr.grid.PartGroup;
 
 /**
- * Class {@code SystemInfo} gathers information from the original
- * picture about a retrieved system.
- * Most of the physical processing is done in parallel at system level, and
- * thus is handled from this SystemInfo object.
+ * Class {@code SystemInfo} gathers information from the original picture about a
+ * retrieved system.
  * <p>
- * Many processing tasks are actually handled by companion classes, but
- * SystemInfo is the interface of choice, with delegation to the proper
- * companion.
+ * Most of the OMR processing is done in parallel at system level.
+ * <p>
+ * This class is named {@code SystemInfo} to avoid name clash with ubiquitous
+ * {@code java.lang.System} class.
  *
  * @author Hervé Bitteur
  */
@@ -98,15 +91,15 @@ public class SystemInfo
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Related sheet */
+    /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
     /** Symbol Interpretation Graph for this system. */
     private final SIGraph sig;
 
-    /** Dedicated measure builder */
-    private final MeasuresBuilder measuresBuilder;
+    /** Assigned page, if any. */
+    private Page page;
 
     /** Dedicated text builder */
     private final TextBuilder textBuilder;
@@ -114,41 +107,20 @@ public class SystemInfo
     /** Dedicated compound builder */
     private final CompoundBuilder compoundBuilder;
 
-    /** Dedicated keys builder */
-    public final BeamsBuilder beamsBuilder;
-
-    /** Dedicated DMZ builder */
-    public final DmzBuilder dmzBuilder;
-
-    /** Dedicated notes builder */
-    public final NotesBuilder notesBuilder;
-
-    /** Dedicated verticals builder */
-    public final VerticalsBuilder verticalsBuilder;
-
-    /** Dedicated stems builder */
-    public final StemsBuilder stemsBuilder;
-
-    /** Dedicated ledgers builder */
-    public final LedgersBuilder ledgersBuilder;
-
-    /** Dedicated SIG processor */
-    public final SigReducer sigReducer;
-
     /** Dedicated glyph inspector */
     private final GlyphInspector glyphInspector;
-
-    /** Dedicated slur inspector */
-    private final SlurInspector slurInspector;
 
     /** Dedicated system translator */
     private final SystemTranslator translator;
 
-    /** Staves of this system */
-    private List<StaffInfo> staves = new ArrayList<StaffInfo>();
+    /** Real staves of this system (no dummy staves included). */
+    private List<Staff> staves = new ArrayList<Staff>();
 
-    /** Parts in this system */
-    private final List<PartInfo> parts = new ArrayList<PartInfo>();
+    /** All parts in this system, including any dummy ones. */
+    private final List<Part> allParts = new ArrayList<Part>();
+
+    /** Measure stacks in this system. */
+    private final List<MeasureStack> stacks = new ArrayList<MeasureStack>();
 
     /** PartGroups in this system */
     private final List<PartGroup> partGroups = new ArrayList<PartGroup>();
@@ -162,27 +134,13 @@ public class SystemInfo
     /** Right system bar, if any */
     private BarInfo rightBar;
 
-    /** Bar alignments for this system */
-    private List<OldBarAlignment> barAlignments;
-
-    ///   HORIZONTALS   ////////////////////////////////////////////////////////
-    /** Horizontal sections, assigned once for all to this system */
+    /** Horizontal sections. */
     private final List<Section> hSections = new ArrayList<Section>();
 
-    private final List<Section> hFullSections = new ArrayList<Section>();
+    private final List<Section> ledgerSections = new ArrayList<Section>();
 
-    /** Unmodifiable view of the horizontal section collection */
-    private final List<Section> hSectionsView = Collections.unmodifiableList(hSections);
-
-    /** Unmodifiable view of the full horizontal section collection */
-    private final List<Section> hFullSectionsView = Collections.unmodifiableList(hFullSections);
-
-    ///   VERTICALS   //////////////////////////////////////////////////////////
-    /** Vertical sections, assigned once for all to this system */
+    /** Vertical sections. */
     private final List<Section> vSections = new ArrayList<Section>();
-
-    /** Unmodifiable view of the vertical section collection */
-    private final Collection<Section> vSectionsView = Collections.unmodifiableCollection(vSections);
 
     /** Collection of (active?) glyphs in this system */
     private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>(Glyph.byAbscissa);
@@ -194,23 +152,21 @@ public class SystemInfo
     private List<Glyph> optionalGlyphs;
 
     /** Set of sentence made of text glyphs */
-    private Set<TextLine> sentences = new LinkedHashSet<TextLine>();
+    private final Set<TextLine> sentences = new LinkedHashSet<TextLine>();
 
     /** Used to assign a unique ID to system sentences */
     private int sentenceCount = 0;
 
-    ////////////////////////////////////////////////////////////////////////////
-    /** Unique Id for this system (in the sheet) */
+    /** Unique Id for this system (in the sheet). */
     private final int id;
 
-    /** Area that encloses all items of this system. */
+    /** Area that encloses all items related to this system. */
     private Area area;
 
     /** Ordinate of bottom of last staff of the system. */
     private int bottom;
 
-    /** Delta ordinate between first line of first staff & first line of
-     * last staff. */
+    /** Delta ordinate between first line of first staff & first line of last staff. */
     private int deltaY;
 
     /** Abscissa of beginning of system. */
@@ -228,6 +184,9 @@ public class SystemInfo
     /** Width of the system. */
     private int width = -1;
 
+    /** Indentation flag. */
+    private boolean indented;
+
     //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // SystemInfo //
@@ -241,7 +200,7 @@ public class SystemInfo
      */
     public SystemInfo (int id,
                        Sheet sheet,
-                       List<StaffInfo> staves)
+                       List<Staff> staves)
     {
         this.id = id;
         this.sheet = sheet;
@@ -249,18 +208,9 @@ public class SystemInfo
         setStaves(staves);
 
         sig = new SIGraph(this);
-        sigReducer = new SigReducer(this, sig);
-        measuresBuilder = new MeasuresBuilder(this);
         textBuilder = new TextBuilder(this);
         compoundBuilder = new CompoundBuilder(this);
-        dmzBuilder = new DmzBuilder(this);
-        beamsBuilder = new BeamsBuilder(this);
-        notesBuilder = new NotesBuilder(this);
-        verticalsBuilder = new VerticalsBuilder(this);
-        stemsBuilder = new StemsBuilder(this);
-        ledgersBuilder = new LedgersBuilder(this);
         glyphInspector = new GlyphInspector(this);
-        slurInspector = new SlurInspector(this);
         translator = new SystemTranslator(this);
     }
 
@@ -269,13 +219,13 @@ public class SystemInfo
     // addPart //
     //---------//
     /**
-     * Add a part (set of staves) in this system.
+     * Add a real or dummy part (set of staves) in this system.
      *
      * @param partInfo the part to add
      */
-    public void addPart (PartInfo partInfo)
+    public void addPart (Part partInfo)
     {
-        parts.add(partInfo);
+        allParts.add(partInfo);
     }
 
     //-----------------------//
@@ -292,43 +242,6 @@ public class SystemInfo
         glyphs.add(glyph);
     }
 
-    //------------------------//
-    // allocateScoreStructure //
-    //------------------------//
-    /**
-     * Build the corresponding ScoreSystem entity with all its
-     * depending Parts and Staves.
-     */
-    public void allocateScoreStructure ()
-    {
-        // Allocate the score system
-        scoreSystem = new ScoreSystem(
-                this,
-                sheet.getPage(),
-                new Point(getLeft(), getTop()),
-                new Dimension(getWidth(), getDeltaY()));
-
-        // Allocate the parts in the system
-        int partId = 0;
-
-        for (PartInfo partInfo : getParts()) {
-            SystemPart part = new SystemPart(scoreSystem, partInfo);
-            part.setId(--partId); // Temporary id
-
-            // Allocate the staves in this part
-            for (StaffInfo staffInfo : partInfo.getStaves()) {
-                LineInfo firstLine = staffInfo.getFirstLine();
-                LineInfo lastLine = staffInfo.getLastLine();
-                new Staff(
-                        staffInfo,
-                        part,
-                        new Point(left, firstLine.yAt(left)),
-                        staffInfo.getAbscissa(RIGHT) - left,
-                        lastLine.yAt(left) - firstLine.yAt(left));
-            }
-        }
-    }
-
     //---------------//
     // buildCompound //
     //---------------//
@@ -338,17 +251,6 @@ public class SystemInfo
                                 CompoundAdapter adapter)
     {
         return compoundBuilder.buildCompound(seed, includeSeed, suitables, adapter);
-    }
-
-    //---------------//
-    // buildMeasures //
-    //---------------//
-    /**
-     * Based on bar lines found, build, check and cleanup score measures.
-     */
-    public void buildMeasures ()
-    {
-        measuresBuilder.buildMeasures();
     }
 
     //-------------//
@@ -375,6 +277,47 @@ public class SystemInfo
     public int compareTo (SystemInfo that)
     {
         return Integer.compare(id, that.id);
+    }
+
+    //-------------------------//
+    // connectPageInitialSlurs //
+    //-------------------------//
+    /**
+     * For this system, retrieve the connections between the (orphan) slurs at the
+     * beginning of this page and the (orphan) slurs at the end of the previous page.
+     */
+    public void connectPageInitialSlurs ()
+    {
+        // Containing page
+        final Page page = getPage();
+
+        // Safer: check we are the very first system in page
+        if (page.getFirstSystem() != this) {
+            throw new IllegalArgumentException(
+                    "connectPageInitialSlurs called for non-first system");
+        }
+
+        // If very first page, we are done
+        Score score = page.getScore();
+
+        if (score.getFirstPage() == page) {
+            return;
+        }
+
+        SystemInfo precedingSystem = page.getPrecedingInScore().getLastSystem();
+
+        if (precedingSystem != null) {
+            // Examine every part in sequence
+            for (int index = 0; index < allParts.size(); index++) {
+                final Part part = allParts.get(index);
+
+                // Find out the proper preceding part (across pages)
+                Part precedingPart = precedingSystem.getAllParts().get(index);
+
+                // Ending orphans in preceding system/part (if such part exists)
+                part.connectSlursWith(precedingPart);
+            }
+        }
     }
 
     //------------//
@@ -438,6 +381,48 @@ public class SystemInfo
         }
     }
 
+    //------------------//
+    // fillMissingParts //
+    //------------------//
+    /**
+     * Check for missing parts in this system, and if needed create dummy parts filled
+     * with whole rests.
+     */
+    public void fillMissingParts ()
+    {
+        boolean insertionDone = false;
+
+        // Check we have all the defined parts in this system
+        for (ScorePart scorePart : getPage().getPartList()) {
+            if (getPartById(scorePart.getId()) == null) {
+                getFirstRealPart().createDummyPart(scorePart.getId());
+                insertionDone = true;
+            }
+        }
+
+        // Ensure dummy measures are correctly positionned within their stack
+        if (insertionDone) {
+            Collections.sort(getAllParts(), Part.byId);
+
+            for (MeasureStack stack : stacks) {
+                stack.sortMeasures();
+            }
+        }
+    }
+
+    //-------------//
+    // getAllParts //
+    //-------------//
+    /**
+     * Reports all the parts of this system, perhaps including dummy ones.
+     *
+     * @return all the parts, real or dummy (non-null)
+     */
+    public List<Part> getAllParts ()
+    {
+        return allParts;
+    }
+
     //---------//
     // getArea //
     //---------//
@@ -467,7 +452,7 @@ public class SystemInfo
     // getBar //
     //--------//
     /**
-     * Report the system barline on the provided side.
+     * Report the system bar-line, if any, on the provided side.
      *
      * @param side proper horizontal side
      * @return the system bar on this side, or null
@@ -479,33 +464,6 @@ public class SystemInfo
         } else {
             return rightBar;
         }
-    }
-
-    //------------------//
-    // getBarAlignments //
-    //------------------//
-    /**
-     * Report the system bar alignments.
-     *
-     * @return the barAlignments
-     */
-    public List<OldBarAlignment> getBarAlignments ()
-    {
-        return barAlignments;
-    }
-
-    //-----------//
-    // getBottom //
-    //-----------//
-    /**
-     * Report the ordinate of the bottom of the system, which is the
-     * ordinate of the last line of the last staff of this system.
-     *
-     * @return the system bottom, in pixels
-     */
-    public int getBottom ()
-    {
-        return bottom;
     }
 
     //-----------//
@@ -523,6 +481,20 @@ public class SystemInfo
         } else {
             return null;
         }
+    }
+
+    //-----------------//
+    // getClosestStaff //
+    //-----------------//
+    /**
+     * Report the closest staff, <b>within</b> the system, from the provided point.
+     *
+     * @param point the provided point
+     * @return the nearest staff, or null if none found
+     */
+    public Staff getClosestStaff (Point2D point)
+    {
+        return StaffManager.getClosestStaff(point, staves);
     }
 
     //--------------------//
@@ -551,6 +523,43 @@ public class SystemInfo
         return deltaY;
     }
 
+    //----------------------//
+    // getFirstMeasureStack //
+    //----------------------//
+    /**
+     * Report the first measure stack in this part.
+     *
+     * @return the first measure stack
+     */
+    public MeasureStack getFirstMeasureStack ()
+    {
+        if (stacks.isEmpty()) {
+            return null;
+        }
+
+        return stacks.get(0);
+    }
+
+    //------------------//
+    // getFirstRealPart //
+    //------------------//
+    /**
+     * Report the first non-dummy part in this system.
+     *
+     * @return the real first part entity
+     * @see #getFirstPart()
+     */
+    public Part getFirstRealPart ()
+    {
+        for (Part part : allParts) {
+            if (!part.isDummy()) {
+                return part;
+            }
+        }
+
+        return null;
+    }
+
     //---------------//
     // getFirstStaff //
     //---------------//
@@ -559,9 +568,35 @@ public class SystemInfo
      *
      * @return the first staff
      */
-    public StaffInfo getFirstStaff ()
+    public Staff getFirstStaff ()
     {
         return staves.get(0);
+    }
+
+    //--------------------//
+    // getFollowingInPage //
+    //--------------------//
+    /**
+     * Report the following system, if any, in current page.
+     *
+     * @return the next system in page, or null
+     */
+    public SystemInfo getFollowingInPage ()
+    {
+        final Page page = getPage();
+
+        if (page == null) {
+            return null;
+        }
+
+        final List<SystemInfo> pageSystems = page.getSystems();
+        final int index = pageSystems.indexOf(this);
+
+        if (index < (pageSystems.size() - 1)) {
+            return pageSystems.get(index + 1);
+        }
+
+        return null;
     }
 
     //-----------//
@@ -578,20 +613,6 @@ public class SystemInfo
         return glyphsView;
     }
 
-    //---------------------------//
-    // getHorizontalFullSections //
-    //---------------------------//
-    /**
-     * Report the (unmodifiable) collection of horizontal full
-     * sections in the system related area.
-     *
-     * @return the area horizontal full sections
-     */
-    public List<Section> getHorizontalFullSections ()
-    {
-        return hFullSectionsView;
-    }
-
     //-----------------------//
     // getHorizontalSections //
     //-----------------------//
@@ -603,7 +624,7 @@ public class SystemInfo
      */
     public List<Section> getHorizontalSections ()
     {
-        return hSectionsView;
+        return Collections.unmodifiableList(hSections);
     }
 
     //-------//
@@ -619,15 +640,76 @@ public class SystemInfo
         return id;
     }
 
+    //----------------//
+    // getIndexInPage //
+    //----------------//
+    public int getIndexInPage ()
+    {
+        return getPage().getSystems().indexOf(this);
+    }
+
+    //---------------------//
+    // getLastMeasureStack //
+    //---------------------//
+    /**
+     * Report the last measure stack in this part.
+     *
+     * @return the last measure stack
+     */
+    public MeasureStack getLastMeasureStack ()
+    {
+        if (stacks.isEmpty()) {
+            return null;
+        }
+
+        return stacks.get(stacks.size() - 1);
+    }
+
+    //-----------------//
+    // getLastRealPart //
+    //-----------------//
+    /**
+     * Report the last non-dummy part in this system.
+     *
+     * @return the last non-dummy part entity
+     */
+    public Part getLastRealPart ()
+    {
+        for (int i = allParts.size() - 1; i >= 0; i--) {
+            Part part = allParts.get(i);
+
+            if (!part.isDummy()) {
+                return part;
+            }
+        }
+
+        return null;
+    }
+
     //--------------//
     // getLastStaff //
     //--------------//
     /**
-     * @return the lastStaff
+     * Report the last (real) staff in this system
+     *
+     * @return the last Staff in system
      */
-    public StaffInfo getLastStaff ()
+    public Staff getLastStaff ()
     {
         return staves.get(staves.size() - 1);
+    }
+
+    //-------------------//
+    // getLedgerSections //
+    //-------------------//
+    /**
+     * Report the (unmodifiable) collection of ledger sections in the system related area.
+     *
+     * @return the area ledger sections
+     */
+    public List<Section> getLedgerSections ()
+    {
+        return Collections.unmodifiableList(ledgerSections);
     }
 
     //---------//
@@ -664,18 +746,12 @@ public class SystemInfo
         return sb.toString();
     }
 
-    //----------------------------------//
-    // getMutableHorizontalFullSections //
-    //----------------------------------//
     /**
-     * Report the (modifiable) collection of horizontal full sections
-     * in the system related area.
-     *
-     * @return the full horizontal sections
+     * @return the measureStacks
      */
-    public Collection<Section> getMutableHorizontalFullSections ()
+    public List<MeasureStack> getMeasureStacks ()
     {
-        return hFullSections;
+        return stacks;
     }
 
     //------------------------------//
@@ -690,6 +766,20 @@ public class SystemInfo
     public Collection<Section> getMutableHorizontalSections ()
     {
         return hSections;
+    }
+
+    //--------------------------//
+    // getMutableLedgerSections //
+    //--------------------------//
+    /**
+     * Report the (modifiable) collection of horizontal ledger sections
+     * in the system related area.
+     *
+     * @return the ledger sections
+     */
+    public Collection<Section> getMutableLedgerSections ()
+    {
+        return ledgerSections;
     }
 
     //----------------------------//
@@ -723,15 +813,15 @@ public class SystemInfo
     // getNoteStaffAt //
     //----------------//
     /**
-     * Given a note, retrieve the proper related staff within the
-     * system, using ledgers if any.
+     * Given a note, retrieve the proper related staff within the system, using ledgers
+     * if any.
      *
      * @param point the center of the provided note entity
      * @return the proper note position (staff & pitch)
      */
     public NotePosition getNoteStaffAt (Point point)
     {
-        StaffInfo staff = getStaffAt(point);
+        Staff staff = getClosestStaff(point);
         NotePosition pos = staff.getNotePosition(point);
 
         logger.debug("{} -> {}", point, pos);
@@ -744,7 +834,7 @@ public class SystemInfo
 
             // Check with the other staff, if any
             int index = staves.indexOf(staff);
-            StaffInfo otherStaff = null;
+            Staff otherStaff = null;
 
             if ((pitch < 0) && (index > 0)) {
                 otherStaff = staves.get(index - 1);
@@ -759,7 +849,7 @@ public class SystemInfo
                     // Delta pitch from closest reference ledger
                     double otherDp = Math.abs(
                             otherPos.getPitchPosition()
-                            - StaffInfo.getLedgerPitchPosition(otherPos.getLedger().index));
+                            - Staff.getLedgerPitchPosition(otherPos.getLedger().index));
 
                     if (otherDp < dp) {
                         logger.debug("   otherPos: {}", pos);
@@ -780,17 +870,61 @@ public class SystemInfo
         return optionalGlyphs;
     }
 
-    //----------//
-    // getParts //
-    //----------//
+    //---------//
+    // getPage //
+    //---------//
     /**
-     * Reports the parts of this system.
+     * Report the containing page, if any defined.
      *
-     * @return the parts (non-null)
+     * @return the containing page or null
      */
-    public List<PartInfo> getParts ()
+    public Page getPage ()
     {
-        return parts;
+        return page;
+    }
+
+    //-------------//
+    // getPartById //
+    //-------------//
+    /**
+     * Report the part with the provided id, if any.
+     *
+     * @param id the id of the desired part
+     * @return the part found or null
+     */
+    public Part getPartById (int id)
+    {
+        for (Part part : allParts) {
+            if (part.getId() == id) {
+                return part;
+            }
+        }
+
+        logger.debug("{} No part with id {} found", this, id);
+
+        return null;
+    }
+
+    //----------------//
+    // getPartByModel //
+    //----------------//
+    /**
+     * Report the system part which implements the provided ScorePart in this system.
+     *
+     * @param scorePart the provided part model
+     * @return the corresponding system part, if any
+     */
+    public Part getPartByModel (ScorePart scorePart)
+    {
+        for (Part part : allParts) {
+            if (part.getScorePart() == scorePart) {
+                return part;
+            }
+        }
+
+        logger.debug("{} No system part for {}", this, scorePart);
+
+        return null;
     }
 
     //---------------//
@@ -804,6 +938,70 @@ public class SystemInfo
     public List<PartGroup> getPartGroups ()
     {
         return partGroups;
+    }
+
+    //-----------//
+    // getPartOf //
+    //-----------//
+    public Part getPartOf (Staff staff)
+    {
+        if (staff == null) {
+            return null;
+        }
+
+        for (Part part : allParts) {
+            if (part.getStaves().contains(staff)) {
+                return part;
+            }
+        }
+
+        return null;
+    }
+
+    //--------------------//
+    // getPrecedingInPage //
+    //--------------------//
+    /**
+     * Report the previous system, if any, in current page.
+     *
+     * @return the previous system in page, or null
+     */
+    public SystemInfo getPrecedingInPage ()
+    {
+        final Page page = getPage();
+
+        if (page == null) {
+            return null;
+        }
+
+        final List<SystemInfo> pageSystems = page.getSystems();
+        final int index = pageSystems.indexOf(this);
+
+        if (index > 0) {
+            return pageSystems.get(index - 1);
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // getRealPartAbove //
+    //------------------//
+    /**
+     * Determine the real part which is above the given point.
+     *
+     * @param point the given point
+     * @return the part above
+     */
+    public Part getRealPartAbove (Point point)
+    {
+        Staff staff = getStaffAbove(point);
+
+        if (staff == null) {
+            return getFirstRealPart();
+        } else {
+            return getPartOf(staff);
+        }
     }
 
     //----------//
@@ -882,41 +1080,46 @@ public class SystemInfo
         return sheet.getSkew();
     }
 
-    //------------------//
-    // getSlurInspector //
-    //------------------//
-    public SlurInspector getSlurInspector ()
-    {
-        return slurInspector;
-    }
-
-    //------------//
-    // getStaffAt //
-    //------------//
+    //---------------//
+    // getStaffAbove //
+    //---------------//
     /**
-     * Retrieve the staff, <b>within</b> the system, whose area
-     * contains the provided point.
+     * Determine the real staff which is just above the given point.
      *
-     * @param point the provided point
-     * @return the "containing" staff
+     * @param point the given point
+     * @return the staff above
      */
-    public StaffInfo getStaffAt (Point2D point)
+    // Plain wrong!
+    @Deprecated
+    public Staff getStaffAbove (Point point)
     {
-        return StaffManager.getStaffAt(point, staves);
+        Staff above = null;
+
+        for (Staff staff : staves) {
+            if (staff.getAreaBounds().getCenterY() <= point.y) {
+                above = staff;
+            } else {
+                break;
+            }
+        }
+
+        return above;
     }
 
     //---------------//
     // getStaffBelow //
     //---------------//
     /**
-     * Determine the staff which is just below the given point.
+     * Determine the real staff which is just below the given point.
      *
      * @param point the given point
      * @return the staff below
      */
-    public StaffInfo getStaffBelow (Point point)
+    // Plain wrong!
+    @Deprecated
+    public Staff getStaffBelow (Point point)
     {
-        for (StaffInfo staff : staves) {
+        for (Staff staff : staves) {
             if (staff.getAreaBounds().getCenterY() > point.y) {
                 return staff;
             }
@@ -925,17 +1128,94 @@ public class SystemInfo
         return null;
     }
 
+    //------------------//
+    // getStaffPosition //
+    //------------------//
+    /**
+     * Report the vertical position of the provided point with respect to the system
+     * real staves.
+     *
+     * @param point the point whose ordinate is to be checked
+     * @return the StaffPosition value
+     */
+    public SystemNode.StaffPosition getStaffPosition (Point2D point)
+    {
+        if (point.getY() < getFirstStaff().getFirstLine().yAt(point.getX())) {
+            return SystemNode.StaffPosition.ABOVE_STAVES;
+        }
+
+        if (point.getY() > getLastStaff().getLastLine().yAt(point.getX())) {
+            return SystemNode.StaffPosition.BELOW_STAVES;
+        }
+
+        return SystemNode.StaffPosition.WITHIN_STAVES;
+    }
+
     //-----------//
     // getStaves //
     //-----------//
     /**
-     * Report the list of staves that compose this system.
+     * Report the list of (real) staves that compose this system.
      *
      * @return the staves
      */
-    public List<StaffInfo> getStaves ()
+    public List<Staff> getStaves ()
     {
         return staves;
+    }
+
+    //-----------------//
+    // getStavesAround //
+    //-----------------//
+    /**
+     * Report the staves just around the provided point.
+     * <p>
+     * If point lies within the core of a staff, just this staff is returned.
+     * Otherwise, the staff just above if any in system is returned as well as the staff just below
+     * if any in system.
+     *
+     * @param point
+     * @return proper sublist of staves
+     */
+    public List<Staff> getStavesAround (Point2D point)
+    {
+        final Staff closest = getClosestStaff(point);
+        final double toTop = closest.getFirstLine().yAt(point.getX()) - point.getY();
+        final double toBottom = closest.getLastLine().yAt(point.getX()) - point.getY();
+
+        int first = staves.indexOf(closest);
+        int last = first;
+
+        if ((toTop * toBottom) <= 0) {
+            // Point is within staff core height, pick up just this staff
+        } else if (toTop > 0) {
+            // Point is above staff, add staff above if any
+            if (first > 0) {
+                first--;
+            }
+        } else {
+            // Point is below staff, add staff below if any
+            if (last < (staves.size() - 1)) {
+                last++;
+            }
+        }
+
+        return staves.subList(first, last + 1);
+    }
+
+    //-------------//
+    // getStavesOf //
+    //-------------//
+    /**
+     * Retrieve the real staves, <b>within</b> the system, whose area contains the
+     * provided point.
+     *
+     * @param point the provided point
+     * @return the list of "containing" staves
+     */
+    public List<Staff> getStavesOf (Point2D point)
+    {
+        return StaffManager.getStavesOf(point, staves, null);
     }
 
     //----------------//
@@ -970,7 +1250,7 @@ public class SystemInfo
      */
     public Collection<Section> getVerticalSections ()
     {
-        return vSectionsView;
+        return Collections.unmodifiableCollection(vSections);
     }
 
     //----------//
@@ -1014,6 +1294,17 @@ public class SystemInfo
                                boolean wide)
     {
         glyphInspector.inspectGlyphs(minGrade, wide);
+    }
+
+    //------------//
+    // isIndented //
+    //------------//
+    /**
+     * @return the indented
+     */
+    public boolean isIndented ()
+    {
+        return indented;
     }
 
     //-----------------------//
@@ -1172,6 +1463,23 @@ public class SystemInfo
         }
     }
 
+    //-----------//
+    // setStaves //
+    //-----------//
+    /**
+     * @param staves the range of staves
+     */
+    public final void setStaves (List<Staff> staves)
+    {
+        this.staves = staves;
+
+        for (Staff staff : staves) {
+            staff.setSystem(this);
+        }
+
+        updateCoordinates();
+    }
+
     //----------------//
     // resetSentences //
     //----------------//
@@ -1196,10 +1504,7 @@ public class SystemInfo
         allSections.addAll(getHorizontalSections());
 
         final GlyphNest nest = sheet.getNest();
-        List<Glyph> newGlyphs = nest.retrieveGlyphs(
-                allSections,
-                GlyphLayer.DEFAULT,
-                false);
+        List<Glyph> newGlyphs = nest.retrieveGlyphs(allSections, GlyphLayer.DEFAULT, false);
 
         // Record them into the system
         glyphs.addAll(newGlyphs);
@@ -1216,20 +1521,6 @@ public class SystemInfo
     public boolean runPatterns ()
     {
         return new PatternsChecker(this).runPatterns();
-    }
-
-    //---------------------//
-    // segmentGlyphOnStems //
-    //---------------------//
-    /**
-     * Process a glyph to retrieve its internal potential stems and
-     * leaves.
-     *
-     * @param glyph the glyph to segment along stems
-     */
-    public void segmentGlyphOnStems (Glyph glyph)
-    {
-        verticalsBuilder.segmentGlyphOnStems(glyph);
     }
 
     //---------//
@@ -1272,17 +1563,15 @@ public class SystemInfo
         }
     }
 
-    //------------------//
-    // setBarAlignments //
-    //------------------//
+    //-------------//
+    // setIndented //
+    //-------------//
     /**
-     * Record the various bar alignments for this system.
-     *
-     * @param barAlignments the barAlignments to set
+     * @param indented the indented to set
      */
-    public void setBarAlignments (List<OldBarAlignment> barAlignments)
+    public void setIndented (boolean indented)
     {
-        this.barAlignments = barAlignments;
+        this.indented = indented;
     }
 
     /**
@@ -1293,53 +1582,12 @@ public class SystemInfo
         this.optionalGlyphs = optionalGlyphs;
     }
 
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * @param staves the range of staves
-     */
-    public final void setStaves (List<StaffInfo> staves)
+    //---------//
+    // setPage //
+    //---------//
+    public void setPage (Page page)
     {
-        this.staves = staves;
-
-        for (StaffInfo staff : staves) {
-            staff.setSystem(this);
-        }
-
-        updateCoordinates();
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Report a readable description.
-     *
-     * @return a description based on staff indices
-     */
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{SystemInfo#").append(id);
-        sb.append(" T").append(getFirstStaff().getId());
-
-        if (staves.size() > 1) {
-            sb.append("..T").append(getLastStaff().getId());
-        }
-
-        if (leftBar != null) {
-            sb.append(" leftBar:").append(leftBar);
-        }
-
-        if (rightBar != null) {
-            sb.append(" rightBar:").append(rightBar);
-        }
-
-        sb.append("}");
-
-        return sb.toString();
+        this.page = page;
     }
 
     //----------------//
@@ -1354,18 +1602,16 @@ public class SystemInfo
         translator.translateFinal();
     }
 
-    //----------//
-    // trimSlur //
-    //----------//
+    //-----------------//
+    // translateSystem //
+    //-----------------//
     /**
-     * Rebuild true Slur from some underlying sections.
-     *
-     * @param slur the spurious slur
-     * @return the extracted slur glyph, if any
+     * Translate the physical Sheet system data into Score system
+     * entities.
      */
-    public Glyph trimSlur (Glyph slur)
+    public void translateSystem ()
     {
-        return slurInspector.trimSlur(slur);
+        translator.translateSystem();
     }
 
     //-------------------//
@@ -1373,11 +1619,11 @@ public class SystemInfo
     //-------------------//
     public final void updateCoordinates ()
     {
-        StaffInfo firstStaff = getFirstStaff();
+        Staff firstStaff = getFirstStaff();
         LineInfo firstLine = firstStaff.getFirstLine();
         Point2D topLeft = firstLine.getEndPoint(LEFT);
 
-        StaffInfo lastStaff = getLastStaff();
+        Staff lastStaff = getLastStaff();
         LineInfo lastLine = lastStaff.getLastLine();
         Point2D botLeft = lastLine.getEndPoint(LEFT);
 
@@ -1385,7 +1631,7 @@ public class SystemInfo
 
         int right = 0;
 
-        for (StaffInfo staff : staves) {
+        for (Staff staff : staves) {
             left = Math.min(left, staff.getAbscissa(LEFT));
             right = Math.max(right, staff.getAbscissa(RIGHT));
         }
@@ -1401,8 +1647,7 @@ public class SystemInfo
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the
-     * system collection.
+     * Convenient method, to build a string with just the IDs of the system collection.
      *
      * @param systems the collection of systems
      * @return the string built
@@ -1425,16 +1670,55 @@ public class SystemInfo
         return sb.toString();
     }
 
-    //-----------------//
-    // translateSystem //
-    //-----------------//
+    //
+    //    //-------------//
+    //    // swapVoiceId //
+    //    //-------------//
+    //    /**
+    //     * Change the id of the provided voice to the provided id
+    //     * (and change the other voice, if any, which owned the provided id).
+    //     *
+    //     * @param voice the voice whose id must be changed
+    //     * @param id    the new id
+    //     */
+    //    public void swapVoiceId (Voice voice,
+    //                             int id)
+    //    {
+    //        for (MeasureStack stack : stacks) {
+    //            stack.swapVoiceId(voice, id);
+    //        }
+    //    }
+    //
+    //----------//
+    // toString //
+    //----------//
     /**
-     * Translate the physical Sheet system data into Score system
-     * entities.
+     * Report a readable description.
+     *
+     * @return a description based on staff indices
      */
-    public void translateSystem ()
+    @Override
+    public String toString ()
     {
-        translator.translateSystem();
+        StringBuilder sb = new StringBuilder();
+        sb.append("{System#").append(id);
+        sb.append(" T").append(getFirstStaff().getId());
+
+        if (staves.size() > 1) {
+            sb.append("..T").append(getLastStaff().getId());
+        }
+
+        if (leftBar != null) {
+            sb.append(" leftBar:").append(leftBar);
+        }
+
+        if (rightBar != null) {
+            sb.append(" rightBar:").append(rightBar);
+        }
+
+        sb.append("}");
+
+        return sb.toString();
     }
 
     //-----------//

@@ -20,9 +20,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
 
 /**
- * Class {@code FileUtil} gathers convenient utility methods for files
+ * Class {@code FileUtil} gathers convenient utility methods for files (and paths).
  *
  * @author Hervé Bitteur
  */
@@ -37,13 +38,13 @@ public abstract class FileUtil
     // copy //
     //------//
     /**
-     * Copy one file to another
+     * Copy one file to another.
      *
      * @param source the file to be read
      * @param target the file to be written
-     *
      * @exception IOException raised if operation fails
      */
+    @Deprecated
     public static void copy (File source,
                              File target)
             throws IOException
@@ -93,16 +94,12 @@ public abstract class FileUtil
     // getExtension //
     //--------------//
     /**
-     * From a file "path/name.ext", return the ".ext" part.
-     *
-     * <P>
-     * <b>Nota</b>, the dot character is part of the extension, since we
+     * From a file "path/name.ext", return the final ".ext" portion.
+     * <p>
+     * <b>Nota</b>: the dot character is part of the extension, since we
      * could have the following cases: <ul>
-     *
      * <li> "path/name.ext" -> ".ext"
-     *
      * <li> "path/name." -> "." (just the dot)
-     *
      * <li> "path/name" -> "" (the empty string) </ul>
      *
      * @param file the File to process
@@ -111,7 +108,35 @@ public abstract class FileUtil
      */
     public static String getExtension (File file)
     {
-        String name = file.getName();
+        return getExtension(file.getName());
+    }
+
+    //--------------//
+    // getExtension //
+    //--------------//
+    /**
+     * From a path "path/name.ext", return the final ".ext" portion.
+     * <p>
+     * <b>Nota</b>: the dot character is part of the extension, since we
+     * could have the following cases: <ul>
+     * <li> "path/name.ext" -> ".ext"
+     * <li> "path/name." -> "." (just the dot)
+     * <li> "path/name" -> "" (the empty string) </ul>
+     *
+     * @param path the File to process
+     *
+     * @return the extension, which may be ""
+     */
+    public static String getExtension (Path path)
+    {
+        return getExtension(path.getFileName().toString());
+    }
+
+    //--------------//
+    // getExtension //
+    //--------------//
+    public static String getExtension (String name)
+    {
         int i = name.lastIndexOf('.');
 
         if (i >= 0) {
@@ -125,15 +150,39 @@ public abstract class FileUtil
     // getNameSansExtension //
     //----------------------//
     /**
-     * From a file "path/name.ext", return the "name"
+     * From a file "path/name.ext", return the "name" portion.
+     * From a file "path/name.ext1.ext2", return the "name.ext1" portion.
      *
-     * @param file
+     * @param file provided abstract path name
      *
-     * @return just the name, w/o path and extension
+     * @return just the name, w/o path and final extension
      */
     public static String getNameSansExtension (File file)
     {
-        String name = file.getName();
+        return sansExtension(file.getName());
+    }
+
+    //----------------------//
+    // getNameSansExtension //
+    //----------------------//
+    /**
+     * From a file "path/name.ext", return the "name" portion.
+     * From a file "path/name.ext1.ext2", return the "name.ext1" portion.
+     *
+     * @param path provided abstract path name
+     *
+     * @return just the name, w/o path and final extension
+     */
+    public static String getNameSansExtension (Path path)
+    {
+        return sansExtension(path.getFileName().toString());
+    }
+
+    //---------------//
+    // sansExtension //
+    //---------------//
+    public static String sansExtension (String name)
+    {
         int i = name.lastIndexOf('.');
 
         if (i >= 0) {

@@ -69,24 +69,7 @@ public class RunBoard
     public RunBoard (Lag lag,
                      boolean expanded)
     {
-        this(lag.getRuns(), expanded);
-    }
-
-    //----------//
-    // RunBoard //
-    //----------//
-    /**
-     * Create a Run Board.
-     *
-     * @param suffix   suffix for this board
-     * @param lag      the lag that encapsulates the runs table
-     * @param expanded true for expanded, false for collapsed
-     */
-    public RunBoard (String suffix,
-                     Lag lag,
-                     boolean expanded)
-    {
-        this(suffix, lag.getRuns(), expanded);
+        this(lag.getRunTable(), expanded);
     }
 
     //----------//
@@ -98,7 +81,7 @@ public class RunBoard
      * @param runsTable the table of runs
      * @param expanded  true for expanded, false for collapsed
      */
-    public RunBoard (RunsTable runsTable,
+    public RunBoard (RunTable runsTable,
                      boolean expanded)
     {
         this("", runsTable, expanded);
@@ -114,7 +97,7 @@ public class RunBoard
      * @param expanded  true for expanded, false for collapsed
      */
     public RunBoard (String suffix,
-                     RunsTable runsTable,
+                     RunTable runsTable,
                      boolean expanded)
     {
         super(

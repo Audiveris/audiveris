@@ -17,9 +17,8 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.score.Score;
-import omr.score.ui.ScoreController;
-
+import omr.sheet.Book;
+import omr.sheet.ui.BookController;
 import omr.sheet.ui.SheetActions;
 
 import omr.ui.util.OmrFileFilter;
@@ -92,7 +91,7 @@ public class ScriptActions
         if (script.isModified() && defaultPrompt.getSpecific()) {
             int answer = JOptionPane.showConfirmDialog(
                     null,
-                    "Save script for score " + script.getScore().getRadix() + "?");
+                    "Save script for book " + script.getBook().getRadix() + "?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 Task<Void, Void> task = getInstance().storeScript(null);
@@ -145,8 +144,8 @@ public class ScriptActions
                 Main.getGui().getFrame(),
                 new File(constants.defaultScriptDirectory.getValue()),
                 new OmrFileFilter(
-                "Score script files",
-                new String[]{ScriptManager.SCRIPT_EXTENSION}));
+                        "Score script files",
+                        new String[]{ScriptManager.SCRIPT_EXTENSION}));
 
         if (file != null) {
             return new LoadScriptTask(file);
@@ -161,16 +160,16 @@ public class ScriptActions
     @Action(enabledProperty = SHEET_AVAILABLE)
     public Task<Void, Void> storeScript (ActionEvent e)
     {
-        final Score score = ScoreController.getCurrentScore();
+        final Book book = BookController.getCurrentBook();
 
-        if (score == null) {
+        if (book == null) {
             return null;
         }
 
-        final File scriptFile = score.getScriptFile();
+        final File scriptFile = book.getScriptFile();
 
         if (scriptFile != null) {
-            return new StoreScriptTask(score.getScript(), scriptFile);
+            return new StoreScriptTask(book.getScript(), scriptFile);
         } else {
             return storeScriptAs(e);
         }
@@ -182,9 +181,9 @@ public class ScriptActions
     @Action(enabledProperty = SHEET_AVAILABLE)
     public Task<Void, Void> storeScriptAs (ActionEvent e)
     {
-        final Score score = ScoreController.getCurrentScore();
+        final Book book = BookController.getCurrentBook();
 
-        if (score == null) {
+        if (book == null) {
             return null;
         }
 
@@ -192,11 +191,11 @@ public class ScriptActions
         File scriptFile = UIUtil.fileChooser(
                 true,
                 Main.getGui().getFrame(),
-                getDefaultScriptFile(score),
+                getDefaultScriptFile(book),
                 new OmrFileFilter("Script files", new String[]{ScriptManager.SCRIPT_EXTENSION}));
 
         if (scriptFile != null) {
-            return new StoreScriptTask(score.getScript(), scriptFile);
+            return new StoreScriptTask(book.getScript(), scriptFile);
         } else {
             return null;
         }
@@ -208,15 +207,15 @@ public class ScriptActions
     /**
      * Report the default file where the script should be written to
      *
-     * @param score the owning score
+     * @param book the containing book
      * @return the default file for saving the script
      */
-    private File getDefaultScriptFile (Score score)
+    private File getDefaultScriptFile (Book book)
     {
-        return (score.getScriptFile() != null) ? score.getScriptFile()
+        return (book.getScriptFile() != null) ? book.getScriptFile()
                 : new File(
                         constants.defaultScriptDirectory.getValue(),
-                        score.getRadix() + ScriptManager.SCRIPT_EXTENSION);
+                        book.getRadix() + ScriptManager.SCRIPT_EXTENSION);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -293,8 +292,8 @@ public class ScriptActions
             // Actually run the script
             logger.info("Running script file {} ...", file);
 
-            try {
-                final Script script = ScriptManager.getInstance().load(new FileInputStream(file));
+            try (FileInputStream is = new FileInputStream(file)) {
+                final Script script = ScriptManager.getInstance().load(is);
 
                 if (logger.isDebugEnabled()) {
                     script.dump();
@@ -305,6 +304,8 @@ public class ScriptActions
                 script.run();
             } catch (FileNotFoundException ex) {
                 logger.warn("Cannot find script file {}", file);
+            } catch (IOException ex) {
+                logger.warn("Error reading script file {}", file);
             }
 
             return null;
@@ -349,13 +350,13 @@ public class ScriptActions
                 omr.script.ScriptManager.getInstance().store(script, fos);
                 logger.info("Script stored as {}", file);
                 constants.defaultScriptDirectory.setValue(file.getParent());
-                script.getScore().setScriptFile(file);
+                script.getBook().setScriptFile(file);
             } catch (FileNotFoundException ex) {
-                logger.warn("Cannot find script file " + file, ex);
+                logger.warn("Cannot find script file " + file + ", " + ex, ex);
             } catch (JAXBException ex) {
-                logger.warn("Cannot marshal script", ex);
+                logger.warn("Cannot marshal script, " + ex, ex);
             } catch (Throwable ex) {
-                logger.warn("Error storing script", ex);
+                logger.warn("Error storing script, " + ex, ex);
             } finally {
                 if (fos != null) {
                     try {

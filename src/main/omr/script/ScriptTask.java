@@ -21,23 +21,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code ScriptTask} is the root class of all possible tasks
- * within a score script.
- *
+ * Class {@code ScriptTask} is the root class of all possible tasks within a book script.
  * <p>
- * The processing of any task is defined by its {@link #core} method. In
- * order to factorize pre and post processing, a subclass may also redefine the
- * {@link #prolog} and {@link #epilog} methods respectively.</p>
- *
+ * The processing of any task is defined by its {@link #core} method. In order to factorize pre- and
+ * post- processing, a subclass may also override the {@link #prolog} and {@link #epilog} methods
+ * respectively.</p>
  * <p>
- * The whole processing of a task is run synchronously by the {@link #run}
- * method, and this is what the calling {@link Script} engine does. To run a
- * task asynchronously, use the {@link #launch} method, and this is what any
- * UI module should do.</p>
- *
+ * The whole processing of a task is run synchronously by the {@link #run} method, and this is what
+ * the calling {@link Script} engine does. To run a task asynchronously, use the {@link #launch}
+ * method, and this is what any UI module should do.</p>
  * <p>
- * Running a task has the side-effect of writing this task in the current
- * score script, unless the task is defined as not recordable.</p>
+ * Running a task has the side-effect of writing this task in the current book script, unless the
+ * task is defined as not recordable.</p>
  *
  * @author Hervé Bitteur
  */
@@ -60,11 +55,12 @@ public abstract class ScriptTask
     // run //
     //-----//
     /**
-     * Run this task synchronously (prolog + core + epilog)
-     * This is meant to be called by the script engine, to ensure that
-     * every task is completed before the next is run.
-     * This method is final, subclasses should define core() and potentially
-     * customize prolog() and epilog().
+     * Run this task synchronously (prolog + core + epilog).
+     * <p>
+     * This is meant to be called by the script engine, to ensure that every task is completed
+     * before the next is run.
+     * This method is final, subclasses should define core() and potentially customize prolog() and
+     * epilog().
      *
      * @param sheet the sheet to run this task against
      * @exception Exception
@@ -78,7 +74,7 @@ public abstract class ScriptTask
 
         // Record the task instance in the current script?
         if (isRecordable()) {
-            sheet.getScore().getScript().addTask(this);
+            sheet.getBook().getScript().addTask(this);
         }
     }
 
@@ -112,8 +108,7 @@ public abstract class ScriptTask
     //--------//
     /**
      * Launch this task asynchronously (prolog + core + epilog).
-     * This is meant to be called by UI code, for maximum responsiveness of the
-     * user interface.
+     * This is meant to be called by UI code, for maximum responsiveness of the user interface.
      *
      * @param sheet the sheet to run this task against
      * @return the launched SAF task
@@ -158,24 +153,25 @@ public abstract class ScriptTask
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{Task");
-        sb.append(internalsString());
+        sb.append(internals());
         sb.append("}");
 
         return sb.toString();
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     /**
      * Return the string of the internals of this class, typically for inclusion
-     * in a toString. The overriding methods should comply with the following
-     * rule: return either a totally empty string, or a string that begins with
-     * a " " followed by some content.
+     * in a toString().
+     * <p>
+     * The overriding methods should comply with the following rule: append either a totally empty
+     * string, or a string that begins with a " " followed by some content.
      *
      * @return the string of internals
      */
-    protected String internalsString ()
+    protected String internals ()
     {
         return "";
     }

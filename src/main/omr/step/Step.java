@@ -18,7 +18,6 @@ import java.util.Collection;
 
 /**
  * Interface {@code Step} describes a sheet processing step.
- *
  * <p>
  * Implementation note: {@code Step} is no longer an enum type, to allow a better decoupling between
  * code parts of the application, since all steps no longer need to be available at the same build
@@ -41,9 +40,15 @@ public interface Step
 
     public static final String DATA_TAB = "Data";
 
+    public static final String BEAM_SPOT_TAB = "BeamSpots";
+
+    public static final String GRAY_SPOT_TAB = "GraySpots";
+
     public static final String LEDGER_TAB = "Ledgers";
 
     public static final String SKELETON_TAB = "Skeleton";
+
+    public static final String TEMPLATE_TAB = "Templates";
 
     //~ Enumerations -------------------------------------------------------------------------------
     /** Defines whether a step is mandatory or optional. */
@@ -61,10 +66,9 @@ public interface Step
     {
         //~ Enumeration constant initializers ------------------------------------------------------
 
-        /** Step makes sense at score level only */
+        /** Step makes sense at book/score level only */
         SCORE_LEVEL,
-        /** The step can be
-         * performed at sheet level */
+        /** The step can be performed at sheet level */
         SHEET_LEVEL;
     }
 

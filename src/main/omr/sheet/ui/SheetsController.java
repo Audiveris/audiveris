@@ -16,13 +16,17 @@ import omr.constant.ConstantSet;
 
 import omr.lag.Lag;
 
-import omr.score.Score;
-import omr.score.entity.Page;
-
 import omr.selection.SelectionService;
 import omr.selection.SheetEvent;
 
+import omr.sheet.Book;
 import omr.sheet.Sheet;
+
+import omr.step.Step;
+import omr.step.Stepping;
+import omr.step.Steps;
+
+import omr.util.OmrExecutors;
 
 import org.bushe.swing.event.EventSubscriber;
 
@@ -31,27 +35,44 @@ import org.jdesktop.application.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.concurrent.Callable;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import omr.ui.Colors;
 
 /**
  * Class {@code SheetsController} is the UI Controller in charge of user interactions
  * with the sheets.
  * <p>
- * Multiple sheets are handled by means of a tabbed pane. For each tab, and
- * thus for each sheet, we have a separate {@link SheetAssembly}. All methods
- * that access these shared entities (tabbedPane, assemblies) are synchronized.
- * </p>
+ * Multiple sheets are handled by means of a tabbed pane. For each tab, and thus for each sheet, we
+ * have a separate {@link SheetAssembly}. All methods that access these shared entities (sheetsPane,
+ * assemblies) are synchronized.
  * <p>
- * This class encapsulates an event service, which publishes the sheet
- * currently selected by a user interface. See {@link #subscribe},
- * {@link #unsubscribe} and {@link #getSelectedSheet}.</p>
+ * The sheetsPane plays with the foreground color of its tabs to indicate current sheet status:
+ * <ul>
+ * <li>LIGHT_GRAY as default color (for a sheet just created and still empty)</li>
+ * <li>ORANGE for a sheet on which early steps, typically LOAD+BINARY, are being processed.</li>
+ * <li>BLACK for a sheet ready.</li>
+ * <li>RED for a sheet where early steps failed (e.g. for lack of memory on very large books).
+ * Selecting the sheet tab again will re-launch those steps.</li>
+ * </ul>
  * <p>
- * This class is meant to be a Singleton</p>
+ * This class encapsulates an event service, which publishes the sheet currently selected by a user
+ * interface. See {@link #subscribe}, {@link #unsubscribe} and {@link #getSelectedSheet}.
+ * <p>
+ * This class is meant to be a Singleton.
  *
  * @author Hervé Bitteur
  */
@@ -65,44 +86,72 @@ public class SheetsController
     private static final Logger logger = LoggerFactory.getLogger(
             SheetsController.class);
 
-    /** Events that can be published on sheet service */
+    /** Events that can be published on sheet service. */
     private static final Class<?>[] eventsWritten = new Class<?>[]{SheetEvent.class};
 
-    /** The single instance of this class */
+    /** The single instance of this class. */
     private static volatile SheetsController INSTANCE;
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Ordered sequence of sheet assemblies */
+    /** Ordered sequence of sheet assemblies. */
     private final ArrayList<SheetAssembly> assemblies;
 
-    /** The concrete tabbed pane, one tab per sheet */
-    private final JTabbedPane tabbedPane;
+    /** The concrete tabbed pane, one tab per sheet. */
+    private final JTabbedPane sheetsPane;
 
-    /**
-     * The global event service dedicated to publication of the
-     * currently selected sheet.
-     */
+    /** The global event service which publishes the currently selected sheet. */
     private final SelectionService sheetService = new SelectionService(
             getClass().getSimpleName(),
             eventsWritten);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // SheetsController //
-    //------------------//
     /**
      * Create the SheetsController singleton.
      */
     private SheetsController ()
     {
-        tabbedPane = new JTabbedPane();
+        sheetsPane = new JTabbedPane();
         assemblies = new ArrayList<SheetAssembly>();
 
         // Listener on sheet tab operations
-        tabbedPane.addChangeListener(this);
+        sheetsPane.addChangeListener(this);
+        sheetsPane.setForeground(Color.LIGHT_GRAY);
+
+        // Key binding
+        bindKeys();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // addAssembly //
+    //-------------//
+    /**
+     * Add the provided sheet assembly.
+     *
+     * @param assembly the sheet assembly to add to tabbed pane
+     */
+    public synchronized void addAssembly (SheetAssembly assembly)
+    {
+        Sheet sheet = assembly.getSheet();
+        logger.debug("addAssembly for {}", sheet);
+
+        // Initial zoom ratio
+        assembly.setZoomRatio(constants.initialZoomRatio.getValue());
+
+        // Make sure the assembly is part of the tabbed pane
+        int sheetIndex = sheetsPane.indexOfComponent(assembly.getComponent());
+
+        if (sheetIndex == -1) {
+            // Insert in tabbed pane
+            assemblies.add(assembly);
+            sheetsPane.addTab(
+                    defineTitleFor(sheet),
+                    null,
+                    assembly.getComponent(),
+                    sheet.getBook().getImagePath().toString());
+        }
+    }
+
     //----------------//
     // callAboutSheet //
     //----------------//
@@ -115,41 +164,6 @@ public class SheetsController
     public void callAboutSheet (Sheet sheet)
     {
         sheetService.publish(new SheetEvent(this, null, null, sheet));
-    }
-
-    //----------------//
-    // createAssembly //
-    //----------------//
-    /**
-     * Create the assembly that relates to the specified sheet.
-     *
-     * @param sheet the sheet to be viewed (sheet cannot be null).
-     * @return the created assembly
-     */
-    public synchronized SheetAssembly createAssembly (Sheet sheet)
-    {
-        logger.debug("createAssembly {}", sheet.getId());
-
-        // Create the assembly on this sheet
-        SheetAssembly assembly = new SheetAssembly(sheet);
-
-        // Initial zoom ratio
-        assembly.setZoomRatio(constants.initialZoomRatio.getValue());
-
-        // Make sure the assembly is part of the tabbed pane
-        int sheetIndex = tabbedPane.indexOfComponent(assembly.getComponent());
-
-        if (sheetIndex == -1) {
-            logger.debug("Adding assembly for sheet {}", sheet.getId());
-
-            // Insert in tabbed pane
-            assemblies.add(assembly);
-
-            JComponent comp = assembly.getComponent();
-            tabbedPane.addTab(defineTitleFor(sheet), null, comp, sheet.getScore().getImagePath());
-        }
-
-        return assembly;
     }
 
     //-------------------//
@@ -203,15 +217,14 @@ public class SheetsController
      */
     public JComponent getComponent ()
     {
-        return tabbedPane;
+        return sheetsPane;
     }
 
     //-----------------//
     // getCurrentSheet //
     //-----------------//
     /**
-     * A convenient static method to directly report the currently
-     * selected sheet, if any.
+     * Convenient static method to directly report the currently selected sheet, if any.
      *
      * @return the selected sheet, or null
      */
@@ -241,8 +254,7 @@ public class SheetsController
     // getSelectedSheet //
     //------------------//
     /**
-     * Convenient method to directly access currently selected sheet,
-     * if any.
+     * Convenient method to directly access the currently selected sheet, if any.
      *
      * @return the selected sheet, which may be null (if no sheet is selected)
      */
@@ -251,6 +263,27 @@ public class SheetsController
         SheetEvent sheetEvent = (SheetEvent) sheetService.getLastEvent(SheetEvent.class);
 
         return (sheetEvent != null) ? sheetEvent.getData() : null;
+    }
+
+    //---------//
+    // markTab //
+    //---------//
+    /**
+     * Set the sheet tab using provided foreground color
+     *
+     * @param sheet sheet at hand
+     * @param color color for sheet tab
+     */
+    public void markTab (Sheet sheet,
+                         Color color)
+    {
+        logger.debug("mark {} in {}", sheet, color);
+
+        int sheetIndex = sheetsPane.indexOfComponent(sheet.getAssembly().getComponent());
+
+        if (sheetIndex != -1) {
+            sheetsPane.setForegroundAt(sheetIndex, color);
+        }
     }
 
     //----------------//
@@ -264,7 +297,7 @@ public class SheetsController
     public synchronized void removeAssembly (Sheet sheet)
     {
         SheetAssembly assembly = sheet.getAssembly();
-        int sheetIndex = tabbedPane.indexOfComponent(assembly.getComponent());
+        int sheetIndex = sheetsPane.indexOfComponent(assembly.getComponent());
 
         if (sheetIndex != -1) {
             logger.debug("Removing assembly {}", sheet);
@@ -278,20 +311,19 @@ public class SheetsController
             assemblies.remove(sheetIndex);
 
             // Remove from tabs
-            tabbedPane.remove(sheetIndex);
+            sheetsPane.remove(sheetIndex);
 
-            Score score = sheet.getScore();
+            Book book = sheet.getBook();
 
             // Make sure the first sheet of a multipage score is OK
-            // We need to modify the tab label for the score (new) first tab
-            if (!score.getPages().isEmpty()) {
-                Page firstPage = (Page) score.getPages().get(0);
-                Sheet firstSheet = firstPage.getSheet();
-                int firstIndex = tabbedPane.indexOfComponent(
+            // We need to modify the tab label for the book (new) first tab
+            if (!book.getSheets().isEmpty()) {
+                Sheet firstSheet = book.getFirstSheet();
+                int firstIndex = sheetsPane.indexOfComponent(
                         firstSheet.getAssembly().getComponent());
 
                 if (firstIndex != -1) {
-                    tabbedPane.setTitleAt(firstIndex, defineTitleFor(firstSheet));
+                    sheetsPane.setTitleAt(firstIndex, defineTitleFor(firstSheet));
                 }
             }
         }
@@ -307,19 +339,17 @@ public class SheetsController
      */
     public synchronized void showAssembly (Sheet sheet)
     {
-        logger.debug("showAssembly {}", sheet.getId());
+        logger.debug("showAssembly for {}", sheet);
 
-        if (sheet != null) {
-            SheetAssembly assembly = sheet.getAssembly();
+        SheetAssembly assembly = sheet.getAssembly();
 
-            // Make sure the assembly is part of the tabbed pane
-            int sheetIndex = tabbedPane.indexOfComponent(assembly.getComponent());
+        // Make sure the assembly is part of the tabbed pane
+        int sheetIndex = sheetsPane.indexOfComponent(assembly.getComponent());
 
-            if (sheetIndex != -1) {
-                tabbedPane.setSelectedIndex(sheetIndex);
-            } else {
-                logger.warn("No tab found for {}", sheet);
-            }
+        if (sheetIndex != -1) {
+            sheetsPane.setSelectedIndex(sheetIndex);
+        } else {
+            logger.warn("No tab found for {}", sheet);
         }
     }
 
@@ -330,16 +360,14 @@ public class SheetsController
      * This method is called whenever the sheet selection is modified,
      * whether programmatically (by means of {@link #showAssembly})
      * or by user action (manual selection of the sheet tab).
-     *
      * <p>
-     * Set the state (enabled or disabled) of all menu items that depend on
-     * status of current sheet.
+     * Set the state (enabled or disabled) of all menu items that depend on status of current sheet.
      */
     @Override
     public synchronized void stateChanged (ChangeEvent e)
     {
-        if (e.getSource() == tabbedPane) {
-            final int sheetIndex = tabbedPane.getSelectedIndex();
+        if (e.getSource() == sheetsPane) {
+            final int sheetIndex = sheetsPane.getSelectedIndex();
 
             // User has selected a new sheet tab?
             if (sheetIndex != -1) {
@@ -377,11 +405,92 @@ public class SheetsController
     /**
      * Un-subscribe to the sheet event service (for the SheetEvent class).
      *
-     * @param subscriber the entity to unsubscribe
+     * @param subscriber the entity to un-subscribe
      */
     public void unsubscribe (EventSubscriber<SheetEvent> subscriber)
     {
         sheetService.unsubscribe(SheetEvent.class, subscriber);
+    }
+
+    //----------//
+    // bindKeys //
+    //----------//
+    /**
+     * Bind a kew keyboard events to actions among assemblies.
+     */
+    private void bindKeys ()
+    {
+        final InputMap inputMap = sheetsPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        final ActionMap actionMap = sheetsPane.getActionMap();
+
+        inputMap.put(KeyStroke.getKeyStroke("PAGE_UP"), "PageUpAction");
+        actionMap.put("PageUpAction", new PageUpAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("PAGE_DOWN"), "PageDownAction");
+        actionMap.put("PageDownAction", new PageDownAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("control HOME"), "CtrlHomeAction");
+        actionMap.put("CtrlHomeAction", new CtrlHomeAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("control END"), "CtrlEndAction");
+        actionMap.put("CtrlEndAction", new CtrlEndAction());
+    }
+
+    //------------------//
+    // checkSheetStatus //
+    //------------------//
+    /**
+     * Check whether the selected sheet is "visible" and, if not so, launch the proper
+     * early steps on the sheet.
+     *
+     * @param sheet      the sheet at hand
+     * @param sheetIndex the corresponding tab index in sheetsPane
+     */
+    private void checkSheetStatus (final Sheet sheet,
+                                   final int sheetIndex)
+    {
+        logger.debug("checkSheetStatus for {}", sheet);
+
+        Step currentStep = sheet.getCurrentStep();
+
+        if (currentStep == null) {
+            final Step earlyStep = Steps.valueOf(constants.earlyStep.getValue());
+
+            if ((earlyStep != null) && !sheet.isDone(earlyStep)) {
+                // Process sheet asynchronously
+                Callable<Void> task = new Callable<Void>()
+                {
+                    @Override
+                    public Void call ()
+                            throws Exception
+                    {
+                        boolean ok = Stepping.processSheet(Collections.singleton(earlyStep), sheet);
+                        markTab(sheet, ok ? Color.BLACK : Color.RED);
+
+                        return null;
+                    }
+
+                    @Override
+                    public String toString ()
+                    {
+                        return earlyStep + " for " + sheet;
+                    }
+                };
+
+                logger.debug("launching {}", task);
+                sheetsPane.setForegroundAt(sheetIndex, Colors.SHEET_BUSY);
+
+                if (SwingUtilities.isEventDispatchThread()) {
+                    OmrExecutors.getCachedLowExecutor().submit(task);
+                } else {
+                    try {
+                        task.call();
+                    } catch (Exception ex) {
+                        logger.warn("Error in synchronous call to " + task, ex);
+                    }
+                }
+            }
+        }
     }
 
     //----------------//
@@ -395,21 +504,20 @@ public class SheetsController
      */
     private String defineTitleFor (Sheet sheet)
     {
-        Page page = sheet.getPage();
-        Score score = page.getScore();
-        int index = page.getIndex();
+        Book book = sheet.getBook();
+        int index = sheet.getIndex();
 
-        if (score.isMultiPage()) {
-            if (page == score.getFirstPage()) {
-                return score.getRadix() + "#" + index;
+        if (book.isMultiSheet()) {
+            if (sheet.getIndex() == 1) {
+                return book.getRadix() + "#" + index;
             } else {
                 return "#" + index;
             }
         } else {
             if (index != 1) {
-                return score.getRadix() + "#" + index;
+                return book.getRadix() + "#" + index;
             } else {
-                return score.getRadix();
+                return book.getRadix();
             }
         }
     }
@@ -418,7 +526,7 @@ public class SheetsController
     // sheetTabSelected //
     //------------------//
     /**
-     * Run when a sheetTab has been selected in the tabbedPane.
+     * Run when a sheetTab has been selected in the sheetsPane.
      *
      * @param sheetIndex the index of the tab
      */
@@ -428,11 +536,16 @@ public class SheetsController
         SheetAssembly assembly = assemblies.get(sheetIndex);
         Sheet sheet = assembly.getSheet();
 
-        // Tell everyone about the new selected sheet
-        callAboutSheet(sheet);
+        if (!sheet.getBook().isClosing()) {
+            // Check whether we should run early steps on the sheet
+            checkSheetStatus(sheet, sheetIndex);
 
-        // Tell the selected assembly that it now has the focus...
-        assembly.assemblySelected();
+            // Tell everyone about the new selected sheet
+            callAboutSheet(sheet);
+
+            // Tell the selected assembly that it now has the focus...
+            assembly.assemblySelected();
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -444,8 +557,89 @@ public class SheetsController
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Ratio initialZoomRatio = new Constant.Ratio(
+        final Constant.String earlyStep = new Constant.String(
+                "BINARY",
+                "Early step triggered when an empty sheet tab is selected ");
+
+        final Constant.Ratio initialZoomRatio = new Constant.Ratio(
                 0.5,
                 "Initial zoom ratio for displayed sheet pictures");
+    }
+
+    //---------------//
+    // CtrlEndAction //
+    //---------------//
+    private class CtrlEndAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            int count = sheetsPane.getComponentCount();
+
+            if (count > 0) {
+                sheetsPane.setSelectedIndex(count - 1);
+            }
+        }
+    }
+
+    //----------------//
+    // CtrlHomeAction //
+    //----------------//
+    private class CtrlHomeAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            int count = sheetsPane.getComponentCount();
+
+            if (count > 0) {
+                sheetsPane.setSelectedIndex(0);
+            }
+        }
+    }
+
+    //----------------//
+    // PageDownAction //
+    //----------------//
+    private class PageDownAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            int index = sheetsPane.getSelectedIndex();
+            int count = sheetsPane.getComponentCount();
+
+            if (index < (count - 1)) {
+                sheetsPane.setSelectedIndex(index + 1);
+            }
+        }
+    }
+
+    //--------------//
+    // PageUpAction //
+    //--------------//
+    private class PageUpAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            int index = sheetsPane.getSelectedIndex();
+
+            if (index > 0) {
+                sheetsPane.setSelectedIndex(index - 1);
+            }
+        }
     }
 }

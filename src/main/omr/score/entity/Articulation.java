@@ -70,9 +70,9 @@ public class Articulation
      * @param chord   the chord related to the mark
      * @param glyph   the underlying glyph
      */
-    public Articulation (Measure measure,
+    public Articulation (OldMeasure measure,
                          Point point,
-                         Chord chord,
+                         OldChord chord,
                          Glyph glyph)
     {
         super(measure, point, chord, glyph);
@@ -90,7 +90,7 @@ public class Articulation
      * @param point   location for the mark
      */
     public static void populate (Glyph glyph,
-                                 Measure measure,
+                                 OldMeasure measure,
                                  Point point)
     {
         if (glyph.isVip()) {
@@ -98,7 +98,7 @@ public class Articulation
         }
 
         // An Articulation relates to the note below or above on the same time slot
-        Chord chord = measure.getEventChord(point);
+        OldChord chord = measure.getEventChord(point);
 
         if (chord != null) {
             // Check vertical distance between chord and articulation

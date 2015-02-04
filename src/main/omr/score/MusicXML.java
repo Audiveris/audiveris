@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.String; // Do not remove this line!
 
 import javax.xml.bind.JAXBElement;
-import omr.score.entity.Barline;
+import omr.score.entity.OldBarline;
 
 /**
  * Class {@code MusicXML} gathers symbols related to the MusicXML data
@@ -99,12 +99,12 @@ public class MusicXML
     // barStyleOf //
     //------------//
     /**
-     * Report the MusicXML bar style for a recognized Barline style
+     * Report the MusicXML bar style for a recognized OldBarline style
      *
      * @param style the Audiveris barline style
      * @return the MusicXML bar style
      */
-    public static BarStyle barStyleOf (Barline.Style style)
+    public static BarStyle barStyleOf (OldBarline.Style style)
     {
         try {
             return BarStyle.valueOf(style.name());
@@ -178,9 +178,9 @@ public class MusicXML
         case DYNAMICS_FF:
             return factory.createDynamicsFf(empty);
 
-        case DYNAMICS_FFF:
-            return factory.createDynamicsFff(empty);
-
+//        case DYNAMICS_FFF:
+//            return factory.createDynamicsFff(empty);
+//
         //        case DYNAMICS_FFFF :
         //            return factory.createDynamicsFfff(empty);
         //
@@ -191,9 +191,9 @@ public class MusicXML
         //            return factory.createDynamicsFfffff(empty);
         case DYNAMICS_FP:
             return factory.createDynamicsFp(empty);
-
-        case DYNAMICS_FZ:
-            return factory.createDynamicsFz(empty);
+//
+//        case DYNAMICS_FZ:
+//            return factory.createDynamicsFz(empty);
 
         case DYNAMICS_MF:
             return factory.createDynamicsMf(empty);
@@ -206,10 +206,10 @@ public class MusicXML
 
         case DYNAMICS_PP:
             return factory.createDynamicsPp(empty);
-
-        case DYNAMICS_PPP:
-            return factory.createDynamicsPpp(empty);
-
+//
+//        case DYNAMICS_PPP:
+//            return factory.createDynamicsPpp(empty);
+//
         //        case DYNAMICS_PPPP :
         //            return factory.createDynamicsPppp(empty);
         //
@@ -218,24 +218,24 @@ public class MusicXML
         //
         //        case DYNAMICS_PPPPPP :
         //            return factory.createDynamicsPppppp(empty);
-        case DYNAMICS_RF:
-            return factory.createDynamicsRf(empty);
-
-        case DYNAMICS_RFZ:
-            return factory.createDynamicsRfz(empty);
-
-        case DYNAMICS_SF:
-            return factory.createDynamicsSf(empty);
-
-        case DYNAMICS_SFFZ:
-            return factory.createDynamicsSffz(empty);
-
-        case DYNAMICS_SFP:
-            return factory.createDynamicsSfp(empty);
-
-        case DYNAMICS_SFPP:
-            return factory.createDynamicsSfpp(empty);
-
+//        case DYNAMICS_RF:
+//            return factory.createDynamicsRf(empty);
+//
+//        case DYNAMICS_RFZ:
+//            return factory.createDynamicsRfz(empty);
+//
+//        case DYNAMICS_SF:
+//            return factory.createDynamicsSf(empty);
+//
+//        case DYNAMICS_SFFZ:
+//            return factory.createDynamicsSffz(empty);
+//
+//        case DYNAMICS_SFP:
+//            return factory.createDynamicsSfp(empty);
+//
+//        case DYNAMICS_SFPP:
+//            return factory.createDynamicsSfpp(empty);
+//
         case DYNAMICS_SFZ:
             return factory.createDynamicsSfz(empty);
         }

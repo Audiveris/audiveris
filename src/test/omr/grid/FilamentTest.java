@@ -446,7 +446,7 @@ public class FilamentTest
     {
         Filament fil = createNakedInstance();
         final int level = 127;
-        Run r1 = new Run(260, 5, level);
+        Run r1 = new Run(260, 5);
         Section s = lag.createSection(35, r1);
         fil.addSection(s);
 
@@ -457,7 +457,7 @@ public class FilamentTest
     {
         Filament fil = createNakedInstance();
         final int level = 127;
-        Run r1 = new Run(227, 35, level);
+        Run r1 = new Run(227, 35);
         Section s = lag.createSection(37, r1);
         fil.addSection(s);
 
@@ -468,9 +468,9 @@ public class FilamentTest
     {
         Filament fil = createNakedInstance();
         final int level = 127;
-        Run r1 = new Run(200, 5, level);
+        Run r1 = new Run(200, 5);
         Section s = lag.createSection(34, r1);
-        Run r2 = new Run(198, 10, level);
+        Run r2 = new Run(198, 10);
         s.append(r2);
         fil.addSection(s);
 
@@ -487,9 +487,9 @@ public class FilamentTest
     private Section createSectionOne ()
     {
         final int level = 127;
-        Run r1 = new Run(100, 10, level);
+        Run r1 = new Run(100, 10);
         Section s = lag.createSection(25, r1);
-        Run r2 = new Run(100, 20, level);
+        Run r2 = new Run(100, 20);
         s.append(r2);
 
         //s.dumpOf();
@@ -499,12 +499,12 @@ public class FilamentTest
     private Section createSectionThree ()
     {
         final int level = 127;
-        Run r1 = new Run(160, 10, level);
+        Run r1 = new Run(160, 10);
         Section s = lag.createSection(27, r1);
-        Run r2 = new Run(160, 12, level);
+        Run r2 = new Run(160, 12);
         s.append(r2);
 
-        Run r3 = new Run(160, 5, level);
+        Run r3 = new Run(160, 5);
         s.append(r3);
 
         //s.dumpOf();
@@ -514,12 +514,12 @@ public class FilamentTest
     private Section createSectionTwo ()
     {
         final int level = 127;
-        Run r1 = new Run(130, 20, level);
+        Run r1 = new Run(130, 20);
         Section s = lag.createSection(30, r1);
-        Run r2 = new Run(131, 20, level);
+        Run r2 = new Run(131, 20);
         s.append(r2);
 
-        Run r3 = new Run(132, 20, level);
+        Run r3 = new Run(132, 20);
         s.append(r3);
 
         //s.dumpOf();

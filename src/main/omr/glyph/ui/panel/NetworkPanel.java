@@ -212,7 +212,7 @@ class NetworkPanel
             snap = true;
 
             // Belt & suspenders: make a copy on disk!
-            glyphNetwork.marshal();
+            ///glyphNetwork.marshal();
         }
 
         final boolean snapTaken = snap;

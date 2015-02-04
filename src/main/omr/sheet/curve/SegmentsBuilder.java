@@ -23,8 +23,8 @@ import omr.math.LineUtil;
 import omr.sheet.Scale;
 
 import omr.sig.GradeImpacts;
-import omr.sig.Inter;
-import omr.sig.SegmentInter;
+import omr.sig.inter.Inter;
+import omr.sig.inter.SegmentInter;
 
 import omr.ui.util.UIUtil;
 

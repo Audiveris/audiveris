@@ -74,8 +74,8 @@ public class Clef
      * @param pitchPosition pitch position
      * @param glyph         underlying glyph, if any
      */
-    public Clef (Measure measure,
-                 Staff staff,
+    public Clef (OldMeasure measure,
+                 OldStaff staff,
                  Shape shape,
                  Point center,
                  int pitchPosition,
@@ -105,8 +105,8 @@ public class Clef
      * @param staff   the assigned staff
      * @param other   the existing clef to clone
      */
-    public Clef (Measure measure,
-                 Staff staff,
+    public Clef (OldMeasure measure,
+                 OldStaff staff,
                  Clef other)
     {
         this(measure, staff, other.getShape(), other.getCenter(), other.getPitchPosition(), null);
@@ -149,8 +149,8 @@ public class Clef
      * @return true if Clef was successfully created
      */
     public static boolean populate (Glyph glyph,
-                                    Measure measure,
-                                    Staff staff,
+                                    OldMeasure measure,
+                                    OldStaff staff,
                                     Point center)
     {
         Shape shape = glyph.getShape();

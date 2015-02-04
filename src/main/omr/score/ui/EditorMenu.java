@@ -15,20 +15,20 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolMenu;
 import omr.glyph.ui.SymbolsController;
 
-import omr.grid.StaffInfo;
-import omr.grid.StaffManager;
+import omr.grid.StaffProjector;
 
 import omr.math.GeoUtil;
 
-import omr.score.entity.Chord;
-import omr.score.entity.Measure;
-import omr.score.entity.Note;
-import omr.score.entity.Slot;
 
+import omr.sheet.HeaderBuilder;
 import omr.sheet.Sheet;
+import omr.sheet.Slot;
+import omr.sheet.Staff;
+import omr.sheet.StaffManager;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.ExtractionMenu;
 
+import omr.sig.inter.ChordInter;
 import omr.sig.ui.GlyphMenu;
 import omr.sig.ui.InterMenu;
 
@@ -49,6 +49,8 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import omr.sheet.MeasureStack;
+import omr.sig.inter.AbstractNoteInter;
 
 /**
  * Class {@code EditorMenu} defines the pop-up menu which is linked to the current
@@ -59,24 +61,26 @@ import javax.swing.JMenuItem;
  * @author Hervé Bitteur
  */
 public class EditorMenu
-        extends PageMenu
+    extends PageMenu
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(EditorMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Glyph submenu. */
     private final SymbolMenu symbolMenu;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create the editor page menu.
      *
      * @param sheet      the related sheet
      * @param symbolMenu already allocated symbol menu
      */
-    public EditorMenu (Sheet sheet,
+    public EditorMenu (Sheet      sheet,
                        SymbolMenu symbolMenu)
     {
         super(sheet);
@@ -85,6 +89,7 @@ public class EditorMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------------//
     // updateMenu //
     //------------//
@@ -119,6 +124,9 @@ public class EditorMenu
         addMenu(new ExtractionMenu(sheet));
     }
 
+    //----------------//
+    // getCurrentSlot //
+    //----------------//
     private Slot getCurrentSlot (Point point)
     {
         List<SystemInfo> systems = sheet.getSystems();
@@ -131,6 +139,7 @@ public class EditorMenu
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // ChordMenu //
     //-----------//
@@ -138,14 +147,15 @@ public class EditorMenu
      * Dump the chords that translate the selected glyphs.
      */
     private class ChordMenu
-            extends LocationDependentMenu
+        extends LocationDependentMenu
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Selected chords. */
-        private final Set<Chord> selectedChords = new HashSet<Chord>();
+        private final Set<ChordInter> selectedChords = new HashSet<ChordInter>();
 
         //~ Constructors ---------------------------------------------------------------------------
+
         public ChordMenu ()
         {
             super("Chord");
@@ -153,37 +163,38 @@ public class EditorMenu
         }
 
         //~ Methods --------------------------------------------------------------------------------
+
         @Override
         public void updateUserLocation (Rectangle rect)
         {
             SymbolsController controller = sheet.getSymbolsController();
-            Set<Glyph> glyphs = controller.getNest().getSelectedGlyphSet();
+            Set<Glyph>        glyphs = controller.getNest().getSelectedGlyphSet();
             selectedChords.clear();
             setText("");
 
             if (glyphs != null) {
                 for (Glyph glyph : glyphs) {
                     for (Object obj : glyph.getTranslations()) {
-                        if (obj instanceof Note) {
-                            Note note = (Note) obj;
-                            Chord chord = note.getChord();
+                        if (obj instanceof AbstractNoteInter) {
+                            AbstractNoteInter       note = (AbstractNoteInter) obj;
+                            ChordInter chord = note.getChord();
 
                             if (chord != null) {
                                 selectedChords.add(chord);
                             }
-                        } else if (obj instanceof Chord) {
-                            selectedChords.add((Chord) obj);
+                        } else if (obj instanceof ChordInter) {
+                            selectedChords.add((ChordInter) obj);
                         }
                     }
                 }
 
                 if (!selectedChords.isEmpty()) {
-                    List<Chord> chordList = new ArrayList<Chord>(selectedChords);
-                    Collections.sort(chordList, Chord.byAbscissa);
+                    List<ChordInter> chordList = new ArrayList<ChordInter>(selectedChords);
+                    Collections.sort(chordList, ChordInter.byAbscissa);
 
                     StringBuilder sb = new StringBuilder();
 
-                    for (Chord chord : chordList) {
+                    for (ChordInter chord : chordList) {
                         if (sb.length() > 0) {
                             sb.append(", ");
                         }
@@ -200,11 +211,12 @@ public class EditorMenu
         }
 
         //~ Inner Classes --------------------------------------------------------------------------
+
         /**
          * Dump the current chord(s)
          */
         private class DumpAction
-                extends AbstractAction
+            extends AbstractAction
         {
             //~ Constructors -----------------------------------------------------------------------
 
@@ -215,11 +227,12 @@ public class EditorMenu
             }
 
             //~ Methods ----------------------------------------------------------------------------
+
             @Override
             public void actionPerformed (ActionEvent e)
             {
                 // Dump the selected chords
-                for (Chord chord : selectedChords) {
+                for (ChordInter chord : selectedChords) {
                     logger.info(chord.toString());
                 }
             }
@@ -230,14 +243,15 @@ public class EditorMenu
     // MeasureMenu //
     //-------------//
     private class MeasureMenu
-            extends LocationDependentMenu
+        extends LocationDependentMenu
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Selected measure. */
-        private Measure measure;
+        private MeasureStack stack;
 
         //~ Constructors ---------------------------------------------------------------------------
+
         public MeasureMenu ()
         {
             super("Measure");
@@ -245,30 +259,32 @@ public class EditorMenu
         }
 
         //~ Methods --------------------------------------------------------------------------------
+
         @Override
         public void updateUserLocation (Rectangle rect)
         {
             Slot slot = getCurrentSlot(GeoUtil.centerOf(rect));
 
             if (slot != null) {
-                measure = slot.getMeasure();
+                stack = slot.getMeasureStack();
             } else {
-                measure = null;
+                stack = null;
             }
 
-            setVisible(measure != null);
+            setVisible(stack != null);
 
-            if (measure != null) {
-                setText("Measure #" + measure.getScoreId() + " ...");
+            if (stack != null) {
+                setText("Measure #" + stack.getScoreId() + " ...");
             }
         }
 
         //~ Inner Classes --------------------------------------------------------------------------
+
         /**
          * Dump the current measure
          */
         private class DumpAction
-                extends AbstractAction
+            extends AbstractAction
         {
             //~ Constructors -----------------------------------------------------------------------
 
@@ -279,10 +295,11 @@ public class EditorMenu
             }
 
             //~ Methods ----------------------------------------------------------------------------
+
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                measure.printVoices(null);
+                stack.printVoices(null);
             }
         }
     }
@@ -291,7 +308,7 @@ public class EditorMenu
     // SlotMenu //
     //----------//
     private class SlotMenu
-            extends LocationDependentMenu
+        extends LocationDependentMenu
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -299,6 +316,7 @@ public class EditorMenu
         private Slot slot;
 
         //~ Constructors ---------------------------------------------------------------------------
+
         public SlotMenu ()
         {
             super("Slot");
@@ -307,6 +325,7 @@ public class EditorMenu
         }
 
         //~ Methods --------------------------------------------------------------------------------
+
         @Override
         public void updateUserLocation (Rectangle rect)
         {
@@ -326,11 +345,12 @@ public class EditorMenu
         }
 
         //~ Inner Classes --------------------------------------------------------------------------
+
         /**
          * Dump the chords of the current slot
          */
         private class DumpSlotChordsAction
-                extends AbstractAction
+            extends AbstractAction
         {
             //~ Constructors -----------------------------------------------------------------------
 
@@ -341,6 +361,7 @@ public class EditorMenu
             }
 
             //~ Methods ----------------------------------------------------------------------------
+
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -352,7 +373,7 @@ public class EditorMenu
          * Dump the voices of the current slot
          */
         private class DumpVoicesAction
-                extends AbstractAction
+            extends AbstractAction
         {
             //~ Constructors -----------------------------------------------------------------------
 
@@ -363,6 +384,7 @@ public class EditorMenu
             }
 
             //~ Methods ----------------------------------------------------------------------------
+
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -375,13 +397,14 @@ public class EditorMenu
     // StaffMenu //
     //-----------//
     private class StaffMenu
-            extends LocationDependentMenu
+        extends LocationDependentMenu
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private StaffInfo staff;
+        private Staff staff;
 
         //~ Constructors ---------------------------------------------------------------------------
+
         /**
          * Create the staff menu
          */
@@ -389,15 +412,16 @@ public class EditorMenu
         {
             super("Staff");
             add(new JMenuItem(new PlotAction()));
-            add(new JMenuItem(new PlotDmzAction()));
+            add(new JMenuItem(new PlotHeaderAction()));
         }
 
         //~ Methods --------------------------------------------------------------------------------
+
         @Override
         public void updateUserLocation (Rectangle rect)
         {
             StaffManager staffManager = sheet.getStaffManager();
-            staff = staffManager.getStaffAt(GeoUtil.centerOf(rect));
+            staff = staffManager.getClosestStaff(GeoUtil.centerOf(rect));
             setVisible(staff != null);
 
             if (staff != null) {
@@ -406,11 +430,12 @@ public class EditorMenu
         }
 
         //~ Inner Classes --------------------------------------------------------------------------
+
         /**
          * Plot the x-axis projection of the current staff.
          */
         private class PlotAction
-                extends AbstractAction
+            extends AbstractAction
         {
             //~ Constructors -----------------------------------------------------------------------
 
@@ -421,33 +446,37 @@ public class EditorMenu
             }
 
             //~ Methods ----------------------------------------------------------------------------
+
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                sheet.getGridBuilder().barsRetriever.plot(staff);
+                new StaffProjector(sheet, staff).plot();
             }
         }
+
         /**
-         * Plot the x-axis projection of the current staff DMZ.
+         * Plot the x-axis projection of the current staff header.
          */
-        private class PlotDmzAction
-                extends AbstractAction
+        private class PlotHeaderAction
+            extends AbstractAction
         {
             //~ Constructors -----------------------------------------------------------------------
 
-            public PlotDmzAction ()
+            public PlotHeaderAction ()
             {
-                putValue(NAME, "DMZ projection");
-                putValue(SHORT_DESCRIPTION, "Display staff DMZ horizontal projection");
+                putValue(NAME, "Header projection");
+                putValue(SHORT_DESCRIPTION, "Display staff header horizontal projection");
             }
 
             //~ Methods ----------------------------------------------------------------------------
+
             @Override
             public void actionPerformed (ActionEvent e)
             {
                 for (SystemInfo system : sheet.getSystems()) {
                     if (system.getStaves().contains(staff)) {
-                        system.dmzBuilder.plot(staff);
+                        new HeaderBuilder(system).plot(staff);
+
                         return;
                     }
                 }

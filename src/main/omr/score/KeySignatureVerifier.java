@@ -21,16 +21,16 @@ import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
+import omr.sheet.Staff;
 
 import omr.math.GeoUtil;
 
-import omr.score.entity.Barline;
+import omr.score.entity.OldBarline;
 import omr.score.entity.KeySignature;
-import omr.score.entity.Measure;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.ScoreSystem;
-import omr.score.entity.Staff;
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldStaff;
+import omr.score.entity.OldSystemPart;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
@@ -168,17 +168,17 @@ public class KeySignatureVerifier
     //--------------//
     // getMeasureOf //
     //--------------//
-    private Measure getMeasureOf (int staffIndex,
+    private OldMeasure getMeasureOf (int staffIndex,
                                   int measureIndex)
     {
         int staffOffset = 0;
 
         for (TreeNode node : system.getParts()) {
-            SystemPart part = (SystemPart) node;
+            OldSystemPart part = (OldSystemPart) node;
             staffOffset += part.getStaves().size();
 
             if (staffIndex < staffOffset) {
-                return (Measure) part.getMeasures().get(measureIndex);
+                return (OldMeasure) part.getMeasures().get(measureIndex);
             }
         }
 
@@ -204,8 +204,8 @@ public class KeySignatureVerifier
                 continue;
             }
 
-            Staff staff = staffOf(iStaff);
-            StaffInfo staffInfo = staff.getInfo();
+            OldStaff staff = staffOf(iStaff);
+            Staff staffInfo = staff.getInfo();
 
             logger.debug(
                     "{} Forcing key signature to {}",
@@ -223,11 +223,11 @@ public class KeySignatureVerifier
                 inner.grow((bestBox.width / 2), (staffInfo.getHeight() / 2));
 
                 // Draw the box, for visual debug
-                SystemPart part = system.getPartAt(GeoUtil.centerOf(inner));
-                Barline barline = part.getStartingBarline();
+                OldSystemPart part = system.getPartAt(GeoUtil.centerOf(inner));
+                OldBarline barline = part.getStartingBarline();
 
                 if (barline != null) {
-                    Glyph line = Glyphs.firstOf(barline.getGlyphs(), Barline.linePredicate);
+                    Glyph line = Glyphs.firstOf(barline.getGlyphs(), OldBarline.linePredicate);
 
                     if (line != null) {
                         line.addAttachment("k" + staff.getId(), inner);
@@ -244,7 +244,7 @@ public class KeySignatureVerifier
                         ks.getParent().getChildren().remove(ks);
                     }
 
-                    Measure measure = getMeasureOf(iStaff, iMeasure);
+                    OldMeasure measure = getMeasureOf(iStaff, iMeasure);
                     ks = new KeySignature(measure, staff);
                     ks.addGlyph(compound);
                 }
@@ -260,17 +260,17 @@ public class KeySignatureVerifier
     //---------//
     // staffOf //
     //---------//
-    private Staff staffOf (int systemStaffIndex)
+    private OldStaff staffOf (int systemStaffIndex)
     {
         int staffOffset = 0;
 
         for (TreeNode node : system.getParts()) {
-            SystemPart part = (SystemPart) node;
+            OldSystemPart part = (OldSystemPart) node;
             int partStaffNb = part.getStaves().size();
             staffOffset += partStaffNb;
 
             if (systemStaffIndex < staffOffset) {
-                return (Staff) part.getStaves().get((partStaffNb + systemStaffIndex) - staffOffset);
+                return (OldStaff) part.getStaves().get((partStaffNb + systemStaffIndex) - staffOffset);
             }
         }
 
@@ -290,8 +290,8 @@ public class KeySignatureVerifier
         boolean keyFound = false;
 
         for (TreeNode node : system.getParts()) {
-            SystemPart part = (SystemPart) node;
-            Measure measure = (Measure) part.getMeasures().get(im);
+            OldSystemPart part = (OldSystemPart) node;
+            OldMeasure measure = (OldMeasure) part.getMeasures().get(im);
 
             for (TreeNode ksnode : measure.getKeySignatures()) {
                 KeySignature ks = (KeySignature) ksnode;

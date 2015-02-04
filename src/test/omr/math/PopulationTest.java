@@ -13,7 +13,6 @@ package omr.math;
 
 //import org.testng.annotations.*;
 import omr.util.BaseTestCase;
-
 import static junit.framework.Assert.*;
 
 /**
@@ -89,13 +88,12 @@ public class PopulationTest
         assertEquals("Check mean value.", 7d, p.getMeanValue());
 
         double v = p.getVariance();
-        assertEquals("Check variance of 2 values.", 1d, p.getVariance());
+        //assertEquals("Check variance of 2 values.", 1d, v); // Biased
+        assertEquals("Check variance of 2 values.", 2d, v); // Unbiased
 
         double sd = p.getStandardDeviation();
-        assertNears(
-                "Check standard deviation of 2 values.",
-                Math.sqrt(1d),
-                p.getStandardDeviation());
+        ///assertNears("Check standard deviation of 2 values.", Math.sqrt(1d), sd); // Biased
+        assertNears("Check standard deviation of 2 values.", Math.sqrt(2d), sd); // Unbiased
     }
 
     //-------------//
@@ -115,10 +113,12 @@ public class PopulationTest
         assertEquals("Check mean value.", 7d, p.getMeanValue());
 
         double v = p.getVariance();
-        assertEquals("Check variance of 4 values.", 2.5, p.getVariance());
+        //assertEquals("Check variance of 4 values.", 2.5, p.getVariance()); // Biased
+        assertEquals("Check variance of 4 values.", 3.33, p.getVariance(), 0.01); // Unbiased
 
         double sd = p.getStandardDeviation();
-        assertNears("Check standard deviation of 4 values.", Math.sqrt(2.5), sd);
+        //assertEquals("Check standard deviation of 4 values.", Math.sqrt(2.5), sd, 0.01); // Biased
+        assertEquals("Check standard deviation of 4 values.", Math.sqrt(3.33), sd, 0.01); // Unbiased
     }
 
     //---------------//

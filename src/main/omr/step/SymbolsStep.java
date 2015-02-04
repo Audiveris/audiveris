@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.step;
 
+import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolsEditor;
 
 import omr.selection.GlyphEvent;
@@ -20,21 +21,26 @@ import omr.sheet.Sheet;
 import omr.sheet.SymbolFactory;
 import omr.sheet.SymbolsBuilder;
 import omr.sheet.SymbolsFilter;
-import omr.sheet.SymbolsLinker;
 import omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import omr.sheet.ChordsBuilder;
 
 /**
  * Class {@code SymbolsStep} retrieves fixed-shape symbols.
+ * <p>
+ * This accounts for rests, flags, dots, tuplets, alterations, ...
  *
  * @author Hervé Bitteur
  */
 public class SymbolsStep
-        extends AbstractSystemStep
+        extends AbstractSystemStep<SymbolsStep.Context>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -83,27 +89,49 @@ public class SymbolsStep
     // doSystem //
     //----------//
     @Override
-    public void doSystem (SystemInfo system)
+    public void doSystem (SystemInfo system,
+                          Context context)
             throws StepException
     {
         SymbolFactory factory = new SymbolFactory(system);
-        new SymbolsBuilder(system, factory).buildSymbols();
-        new SymbolsLinker(system, factory).linkSymbols();
+
+        // Retrieve symbols inters
+        new SymbolsBuilder(system, factory).buildSymbols(context.optionalsMap);
+
+        // Retrieve relations between symbols inters
+        factory.linkSymbols();
+
+        // Allocate rest-based chords
+        new ChordsBuilder(system).buildRestChords();
     }
 
     //----------//
     // doProlog //
     //----------//
-    /**
-     * {@inheritDoc}
-     * Prepare image without staff lines, with all good inters erased and with all weak
-     * inters saved as optional symbol parts.
-     */
     @Override
-    protected void doProlog (Collection<SystemInfo> systems,
-                             Sheet sheet)
+    protected Context doProlog (Collection<SystemInfo> systems,
+                                Sheet sheet)
             throws StepException
     {
-        new SymbolsFilter(sheet).process();
+        /**
+         * Prepare image without staff lines, with all good inters erased and with all
+         * weak inters saved as optional symbol parts.
+         */
+        Context context = new Context();
+        new SymbolsFilter(sheet).process(context.optionalsMap);
+
+        return context;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Context //
+    //---------//
+    public static class Context
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Map of optional (weak) glyphs per system. */
+        public final Map<SystemInfo, List<Glyph>> optionalsMap = new TreeMap<SystemInfo, List<Glyph>>();
     }
 }

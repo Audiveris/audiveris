@@ -16,19 +16,18 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphLayer;
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
-import omr.grid.StaffManager;
-
 import omr.lag.Lags;
 import omr.lag.Section;
 
 import omr.math.GeoPath;
 import omr.math.ReversePathIterator;
 
-import omr.step.StepException;
+import omr.score.Score;
+import omr.score.entity.Page;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
+import omr.util.Navigable;
 import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
 
@@ -40,6 +39,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,6 +49,9 @@ import java.util.List;
 /**
  * Class {@code SystemManager} handles physical information about all the systems of a
  * given sheet.
+ * <p>
+ * Note that systems of the same sheet may belong to separate pages (this is the case when a new
+ * movement is detected, thanks to system indentation).
  * <p>
  * A key question is to dispatch entities (sections, glyph instances) to relevant system(s).
  * It is important to restrict the amount of entities to be searched when processing a given system.
@@ -76,10 +79,11 @@ public class SystemManager
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Sheet retrieved systems. */
-    private final List<SystemInfo> systems;
+    private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
 
     //~ Constructors -------------------------------------------------------------------------------
     //---------------//
@@ -93,8 +97,6 @@ public class SystemManager
     public SystemManager (Sheet sheet)
     {
         this.sheet = sheet;
-
-        systems = sheet.getSystems();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -157,30 +159,43 @@ public class SystemManager
         }
     }
 
-    //--------------------------------//
-    // dispatchHorizontalHugeSections //
-    //--------------------------------//
+    //------------------------//
+    // dispatchLedgerSections //
+    //------------------------//
     /**
-     * Dispatch the various horizontal huge sections among systems.
+     * Dispatch the various horizontal ledger sections among systems.
      */
-    public void dispatchHorizontalHugeSections ()
+    public void dispatchLedgerSections ()
     {
         // Clear systems containers
         for (SystemInfo system : systems) {
-            system.getMutableHorizontalFullSections().clear();
+            system.getMutableLedgerSections().clear();
         }
 
         // Now dispatch the lag huge sections among the systems
         List<SystemInfo> relevants = new ArrayList<SystemInfo>();
 
-        for (Section section : sheet.getLag(Lags.FULL_HLAG).getSections()) {
+        for (Section section : sheet.getLag(Lags.LEDGER_LAG).getSections()) {
             getSystemsOf(section.getCentroid(), relevants);
 
             for (SystemInfo system : relevants) {
                 // Link system O-> section
-                system.getMutableHorizontalFullSections().add(section);
+                system.getMutableLedgerSections().add(section);
             }
         }
+    }
+
+    //------------//
+    // getSystems //
+    //------------//
+    /**
+     * Report an unmodifiable view on current systems.
+     *
+     * @return a view on systems list
+     */
+    public List<SystemInfo> getSystems ()
+    {
+        return Collections.unmodifiableList(systems);
     }
 
     //--------------//
@@ -206,7 +221,7 @@ public class SystemManager
      * @param point the provided pixel point
      * @return the containing systems info, perhaps empty but not null
      */
-    public List<SystemInfo> getSystemsOf (Point point)
+    public List<SystemInfo> getSystemsOf (Point2D point)
     {
         return getSystemsOf(point, null);
     }
@@ -221,7 +236,7 @@ public class SystemManager
      * @param found (output) list to be populated (allocated if null)
      * @return the containing systems info, perhaps empty but not null
      */
-    public List<SystemInfo> getSystemsOf (Point point,
+    public List<SystemInfo> getSystemsOf (Point2D point,
                                           List<SystemInfo> found)
     {
         if (found != null) {
@@ -271,6 +286,41 @@ public class SystemManager
         return found;
     }
 
+    //------------------//
+    // getSystemsString //
+    //------------------//
+    /**
+     * Report the string of sheet systems with their staves
+     *
+     * @return string of systems
+     */
+    public String getSystemsString ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (SystemInfo system : systems) {
+            if (sb.length() > 0) {
+                sb.append(" ");
+            }
+
+            sb.append("#").append(system.getId()).append("[");
+
+            List<Staff> staves = system.getStaves();
+
+            for (int i = 0; i < staves.size(); i++) {
+                if (i != 0) {
+                    sb.append(", ");
+                }
+
+                sb.append(staves.get(i).getId());
+            }
+
+            sb.append("]");
+        }
+
+        return sb.toString();
+    }
+
     //-----------------//
     // populateSystems //
     //-----------------//
@@ -280,14 +330,7 @@ public class SystemManager
      * @throws omr.step.StepException
      */
     public void populateSystems ()
-            throws StepException
     {
-        // Create score counterparts of systems & parts
-        allocateScoreStructure();
-
-        // Report number of systems retrieved
-        reportResults();
-
         // Compute systems areas
         for (SystemInfo system : sheet.getSystems()) {
             system.updateCoordinates();
@@ -298,7 +341,7 @@ public class SystemManager
         StaffManager staffManager = sheet.getStaffManager();
 
         for (SystemInfo system : sheet.getSystems()) {
-            for (StaffInfo staff : system.getStaves()) {
+            for (Staff staff : system.getStaves()) {
                 //TODO: is this useful?
                 staffManager.computeStaffArea(staff);
             }
@@ -306,23 +349,122 @@ public class SystemManager
 
         // Dispatch sections & glyphs per system
         dispatchSystemEntities();
+
+        // Allocate one (or several) page instances for the sheet
+        allocatePages();
+
+        // Report layout results
+        reportResults();
     }
 
-    //------------------------//
-    // allocateScoreStructure //
-    //------------------------//
+    //------------//
+    // setSystems //
+    //------------//
     /**
-     * For each SystemInfo, build the corresponding System entity
-     * with all its depending Parts and Staves.
+     * Assign the whole sequence of systems
+     *
+     * @param systems the (new) systems
      */
-    private void allocateScoreStructure ()
-            throws StepException
+    public void setSystems (Collection<SystemInfo> systems)
     {
-        // Clear Score -> Systems
-        sheet.getPage().resetSystems();
+        if (this.systems != systems) {
+            this.systems.clear();
+            this.systems.addAll(systems);
+        }
+    }
+
+    //---------------//
+    // allocatePages //
+    //---------------//
+    /**
+     * Allocate page(s) for the sheet, as well as contained systems & parts.
+     * <p>
+     * Detect if an indented system starts a new movement (and thus a new score).
+     */
+    private void allocatePages ()
+    {
+        final Book book = sheet.getBook();
+        Score score = book.getLastScore();
+        Page page = null;
+
+        // Look at left indentation of (deskewed) systems
+        checkIndentations();
+
+        // Allocate systems per page
+        for (SystemInfo system : systems) {
+            if (system.isIndented()) {
+                // We have a movement start
+                if (page == null) {
+                    // Sheet start
+                    if (score.getLastPage() != null) {
+                        // Score break
+                        book.addScore(score = new Score());
+                    }
+
+                    sheet.addPage(page = new Page(score, sheet, null));
+                    score.addPage(page);
+                } else {
+                    // Sheet middle => Score break
+                    // Finish current page
+                    page.setLastSystemId(system.getId() - 1);
+                    page.setSystems(systems);
+
+                    // Start a new page (in a new score)
+                    book.addScore(score = new Score());
+                    sheet.addPage(page = new Page(score, sheet, system.getId()));
+                    score.addPage(page);
+                }
+            } else if (page == null) {
+                // Start first page in sheet
+                sheet.addPage(page = new Page(score, sheet, null));
+                score.addPage(page);
+            }
+
+            system.setPage(page);
+        }
+
+        if (page != null) {
+            page.setSystems(systems);
+        }
+    }
+
+    //-------------------//
+    // checkIndentations //
+    //-------------------//
+    /**
+     * Check all (deskewed) systems for indentation that would signal a new movement.
+     */
+    private void checkIndentations ()
+    {
+        Skew skew = sheet.getSkew();
+        double minShift = sheet.getScale().toPixels(constants.minShift);
 
         for (SystemInfo system : systems) {
-            system.allocateScoreStructure(); // ScoreSystem, Parts & Staves
+            // For side by side systems, only the leftmost one is concerned
+            if (system.getAreaEnd(LEFT) != 0) {
+                continue;
+            }
+
+            Point2D ul = skew.deskewed(new Point(system.getLeft(), system.getTop()));
+
+            for (VerticalSide side : VerticalSide.values()) {
+                List<SystemInfo> others = vertNeighbors(system, side);
+
+                if (!others.isEmpty()) {
+                    SystemInfo other = others.get(0);
+                    Point2D ulOther = skew.deskewed(new Point(other.getLeft(), other.getTop()));
+
+                    if ((ul.getX() - ulOther.getX()) >= minShift) {
+                        system.setIndented(true);
+                        logger.info(
+                                "{}Indentation detected for system#{}",
+                                sheet.getLogPrefix(),
+                                system.getId());
+
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -469,7 +611,7 @@ public class SystemManager
             return null;
         }
 
-        List<StaffInfo> staffList = new ArrayList<StaffInfo>();
+        List<Staff> staffList = new ArrayList<Staff>();
 
         for (SystemInfo system : list) {
             staffList.add((side == TOP) ? system.getFirstStaff() : system.getLastStaff());
@@ -513,48 +655,61 @@ public class SystemManager
     //---------------//
     private void reportResults ()
     {
-        StringBuilder sb = new StringBuilder();
-        int partNb = 0;
+        int pageNb = sheet.getPages().size();
 
-        for (SystemInfo system : sheet.getSystems()) {
-            partNb = Math.max(partNb, system.getParts().size());
+        if (pageNb > 1) {
+            logger.info("{}{} pages found in sheet", sheet.getLogPrefix(), pageNb);
         }
 
-        int sysNb = systems.size();
+        for (Page page : sheet.getPages()) {
+            StringBuilder sb = new StringBuilder();
 
-        if (partNb > 0) {
-            sb.append(partNb).append(" part");
-
-            if (partNb > 1) {
-                sb.append("s");
+            if (pageNb > 1) {
+                sb.append("Page #").append(1 + sheet.getPages().indexOf(page)).append(": ");
             }
-        } else {
-            sb.append("no part found");
-        }
 
-        sheet.getBench().recordPartCount(partNb);
+            int partNb = 0;
 
-        if (sysNb > 0) {
-            sb.append(" along ").append(sysNb).append(" system");
-
-            if (sysNb > 1) {
-                sb.append("s");
+            for (SystemInfo system : systems) {
+                partNb = Math.max(partNb, system.getAllParts().size());
             }
-        } else {
-            sb.append(", no system found");
+
+            if (partNb > 0) {
+                sb.append(partNb).append(" part");
+
+                if (partNb > 1) {
+                    sb.append("s");
+                }
+            } else {
+                sb.append("no part found");
+            }
+
+            sheet.getBench().recordPartCount(partNb);
+
+            int sysNb = page.getSystems().size();
+
+            if (sysNb > 0) {
+                sb.append(" along ").append(sysNb).append(" system");
+
+                if (sysNb > 1) {
+                    sb.append("s");
+                }
+            } else {
+                sb.append(", no system found");
+            }
+
+            sheet.getBench().recordSystemCount(sysNb);
+
+            logger.info("{}{}", sheet.getLogPrefix(), sb);
         }
-
-        sheet.getBench().recordSystemCount(sysNb);
-
-        logger.info("{}{}", sheet.getLogPrefix(), sb);
     }
 
     //---------------//
     // vertNeighbors //
     //---------------//
     /**
-     * Report the systems, if any, which are located immediately on the
-     * desired vertical side of the current one.
+     * Report the systems, if any, which are located immediately on the desired vertical
+     * side of the current one.
      *
      * @param current current system
      * @param side    desired vertical side
@@ -613,8 +768,8 @@ public class SystemManager
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.Fraction yellowZoneHalfHeight = new Scale.Fraction(
-                0.1,
-                "Half height of inter-system yellow zone");
+        Scale.Fraction minShift = new Scale.Fraction(
+                4.0,
+                "Minimum shift to detect a system indentation");
     }
 }

@@ -61,7 +61,7 @@ public abstract class Glyphs
 
     private static final Logger logger = LoggerFactory.getLogger(Glyphs.class);
 
-    /** Predicate to check for a manual shape */
+    /** Predicate to check for a manual shape. */
     public static final Predicate<Glyph> manualPredicate = new Predicate<Glyph>()
     {
         @Override
@@ -71,7 +71,7 @@ public abstract class Glyphs
         }
     };
 
-    /** Predicate to check for a bar-line shape */
+    /** Predicate to check for a bar-line shape. */
     public static final Predicate<Glyph> barPredicate = new Predicate<Glyph>()
     {
         @Override
@@ -114,14 +114,12 @@ public abstract class Glyphs
         // Populate edges (glyph to glyph distances) when applicable
         for (int i = 0; i < sortedGlyphs.size(); i++) {
             final Glyph glyph = sortedGlyphs.get(i);
-
-            // Choose appropriate maxGap depending on whether glyph is in DMZ or not
-            GlyphDistances glyphDistances = null; // Glyph-centered distance table
             final int gapInt = (int) Math.ceil(maxGap);
             final Rectangle fatBox = glyph.getBounds();
             fatBox.grow(gapInt, gapInt);
 
             final int xBreak = fatBox.x + fatBox.width; // Glyphs are sorted by abscissa
+            GlyphDistances glyphDistances = null; // Glyph-centered distance table
 
             for (Glyph other : sortedGlyphs.subList(i + 1, sortedGlyphs.size())) {
                 Rectangle otherBox = other.getBounds();
@@ -172,9 +170,9 @@ public abstract class Glyphs
         };
     }
 
-    //--------------//
+    //-----------------//
     // containedGlyphs //
-    //--------------//
+    //-----------------//
     /**
      * Look up in a collection of glyph instances for <b>all</b> glyph
      * instances contained in a provided rectangle.

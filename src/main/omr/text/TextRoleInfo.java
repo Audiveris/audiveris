@@ -43,8 +43,8 @@ public class TextRoleInfo
     /**
      * Creates a new TextRoleInfo object.
      *
-     * @param role        DOCUMENT ME!
-     * @param creatorType DOCUMENT ME!
+     * @param role        Role of text
+     * @param creatorType Precision about creation
      */
     public TextRoleInfo (TextRole role,
                          CreatorType creatorType)
@@ -53,26 +53,33 @@ public class TextRoleInfo
         this.creatorType = creatorType;
     }
 
-    //--------------//
     /**
      * Creates a new TextRoleInfo object.
      *
-     * @param role DOCUMENT ME!
+     * @param role Role of text
      */
     public TextRoleInfo (TextRole role)
     {
         this(role, null);
     }
 
-    //--------------//
-    // TextRoleInfo // For JAXB only.
-    //--------------//
+    /**
+     * Meant for JAXB.
+     */
     private TextRoleInfo ()
     {
         this(null, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // isIdentical //
+    //-------------//
+    public boolean isIdentical (TextRoleInfo that)
+    {
+        return (this.role == that.role) && (this.creatorType == that.creatorType);
+    }
+
     //----------//
     // toString //
     //----------//
@@ -81,7 +88,7 @@ public class TextRoleInfo
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(" role:").append(role);
+        sb.append(role);
 
         if (creatorType != null) {
             sb.append("/").append(creatorType);

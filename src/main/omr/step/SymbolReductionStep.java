@@ -14,6 +14,7 @@ package omr.step;
 import omr.sheet.SystemInfo;
 
 import omr.sig.SIGraph.ReductionMode;
+import omr.sig.SigReducer;
 import static omr.step.Step.DATA_TAB;
 
 /**
@@ -23,7 +24,7 @@ import static omr.step.Step.DATA_TAB;
  * @author Hervé Bitteur
  */
 public class SymbolReductionStep
-        extends AbstractSystemStep
+        extends AbstractSystemStep<Void>
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -45,10 +46,10 @@ public class SymbolReductionStep
     // doSystem //
     //----------//
     @Override
-    public void doSystem (SystemInfo system)
+    public void doSystem (SystemInfo system,
+                          Void context)
             throws StepException
     {
-        //system.sigReducer.reduce(ReductionMode.RELAXED);
-        system.sigReducer.reduce(ReductionMode.STRICT);
+        new SigReducer(system).reduce(ReductionMode.STRICT, false);
     }
 }

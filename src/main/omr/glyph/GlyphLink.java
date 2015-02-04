@@ -21,6 +21,9 @@ public interface GlyphLink
 {
     //~ Inner Classes ------------------------------------------------------------------------------
 
+    /**
+     * Neighborhood relationship.
+     */
     public static class Nearby
             implements GlyphLink
     {

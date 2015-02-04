@@ -22,6 +22,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -82,9 +84,6 @@ import java.util.TreeSet;
  * provided directory. Otherwise, all bench data, whatever its related score,
  * will be written to the provided single file.</dd>
  *
- * <dt> <strike><b>-midi (DIRNAME | FILENAME)</b></strike> </dt>
- * <dd> <strike>to define an output path to MIDI file (or directory). Same note as for -bench.</strike></dd>
- *
  * <dt> <b>-print (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
  * path to PDF file (or directory). Same note as for -bench.</dd>
  *
@@ -122,7 +121,7 @@ public class CLI
     {
         //~ Enumeration constant initializers ------------------------------------------------------
 
-        HELP("Prints help about application arguments and stops", Card.NONE, null),
+        HELP("Prints help about application arguments then stops", Card.NONE, null),
         BATCH("Specifies to run with no graphic user interface", Card.NONE, null),
         STEP("Defines a series of target steps", Card.MULTIPLE, "(STEPNAME|@STEPLIST)+"),
         OPTION(
@@ -437,21 +436,17 @@ public class CLI
                     break;
 
                 case BENCH:
-                    params.benchPath = token;
+                    params.benchPath = Paths.get(token);
 
                     break;
 
                 case EXPORT:
-                    params.exportPath = token;
+                    params.exportPath = Paths.get(token);
 
                     break;
 
-                //                case MIDI :
-                //                    params.midiPath = token;
-                //
-                //                    break;
                 case PRINT:
-                    params.printPath = token;
+                    params.printPath = Paths.get(token);
 
                     break;
 
@@ -564,23 +559,33 @@ public class CLI
                     String.format(
                             "%n  %-36s %s",
                             String.format(
-                            " [-%s%s]",
-                            command.toString().toLowerCase(Locale.ENGLISH),
-                            ((command.params != null) ? (" " + command.params) : "")),
+                                    " [-%s%s]",
+                                    command.toString().toLowerCase(),
+                                    ((command.params != null) ? (" " + command.params) : "")),
                             command.description));
         }
 
-        // Print all allowed step names
-        buf.append("\n\nKnown step names are in order").append(" (non case-sensitive):");
+        // Print all mandatory steps
+        buf.append("\n\nMandatory steps are in order (non case-sensitive):");
 
         for (Step step : Steps.values()) {
-            buf.append(
-                    String.format(
-                            "%n   %-11s : %s",
-                            step.toString().toUpperCase(),
-                            step.getDescription()));
+            if (step.isMandatory()) {
+                buf.append(
+                        String.format("%n   %-16s : %s", step.toString(), step.getDescription()));
+            }
         }
 
+        // Print all optional steps
+        buf.append("\n\nOptional steps are (non case-sensitive):");
+
+        for (Step step : Steps.values()) {
+            if (!step.isMandatory()) {
+                buf.append(
+                        String.format("%n   %-16s : %s", step.toString(), step.getDescription()));
+            }
+        }
+
+        buf.append("\n");
         logger.info(buf.toString());
     }
 
@@ -614,19 +619,14 @@ public class CLI
         /** The set of page ids to load */
         SortedSet<Integer> pages = null;
 
-        /** Where log data is to be saved */
-        ///String logPath = null;
         /** Where bench data is to be saved */
-        String benchPath = null;
+        Path benchPath = null;
 
         /** Where exported score data (MusicXML) is to be saved */
-        String exportPath = null;
-
-        /** Where MIDI data is to be saved */
-        String midiPath = null;
+        Path exportPath = null;
 
         /** Where printed score (PDF) is to be saved */
-        String printPath = null;
+        Path printPath = null;
 
         //~ Constructors ---------------------------------------------------------------------------
         private Parameters ()
@@ -649,10 +649,6 @@ public class CLI
             if (printPath != null) {
                 desiredSteps.add(Steps.valueOf(Steps.PRINT));
             }
-
-            //            if (midiPath != null) {
-            //                desiredSteps.add(Steps.valueOf(Steps.MIDI));
-            //            }
         }
     }
 }

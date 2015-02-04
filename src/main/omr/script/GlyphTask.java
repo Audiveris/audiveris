@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
  * or remain to be created (as in {@link InsertTask})</p>
  *
  * <h4>Glyphs and sections in a script:<br/>
- * <img src="doc-files/script.jpg"/>
+ * <img src="doc-files/script.png"/>
  * </h4>
  *
  * @author Hervé Bitteur
@@ -182,13 +182,13 @@ public abstract class GlyphTask
      */
     protected abstract void retrieveGlyphs ();
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internals());
 
         if (glyphs != null) {
             sb.append(" ").append(Glyphs.toString(glyphs));

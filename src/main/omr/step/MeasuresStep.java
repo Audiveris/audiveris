@@ -11,8 +11,9 @@
 // </editor-fold>
 package omr.step;
 
-import omr.score.MeasureBasicNumberer;
+import omr.score.entity.Page;
 
+import omr.sheet.MeasuresBuilder;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -27,18 +28,15 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class MeasuresStep
-        extends AbstractSystemStep
+        extends AbstractSystemStep<Void>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MeasuresStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // MeasuresStep //
-    //--------------//
     /**
-     * Creates a new MeasuresStep object.
+     * Creates a new {@code MeasuresStep} object.
      */
     public MeasuresStep ()
     {
@@ -47,7 +45,7 @@ public class MeasuresStep
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 DATA_TAB,
-                "Retrieve measures from bar sticks");
+                "Retrieve measures from bar lines");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -55,11 +53,11 @@ public class MeasuresStep
     // doSystem //
     //----------//
     @Override
-    public void doSystem (SystemInfo system)
+    public void doSystem (SystemInfo system,
+                          Void context)
             throws StepException
     {
-        clearSystemErrors(system);
-        system.buildMeasures(); // For Measures
+        new MeasuresBuilder(system).buildMeasures();
     }
 
     //----------//
@@ -67,13 +65,14 @@ public class MeasuresStep
     //----------//
     @Override
     protected void doEpilog (Collection<SystemInfo> systems,
-                             Sheet sheet)
+                             Sheet sheet,
+                             Void context)
             throws StepException
     {
         // Assign basic measure ids
-        sheet.getPage().accept(new MeasureBasicNumberer());
-
-        // Log the number of measures per system
-        sheet.getPage().dumpMeasureCounts();
+        for (Page page : sheet.getPages()) {
+            page.numberMeasures();
+            page.dumpMeasureCounts();
+        }
     }
 }

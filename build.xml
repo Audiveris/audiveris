@@ -394,17 +394,17 @@ Implementation-Version: ${version.revision}
             <path>
                 <fileset dir="${src.dir}" includes="**/*.uxf">
                     <depend targetdir="${src.dir}">
-                        <mapper from="*.uxf" to="*.jpg" type="glob"/>
+                        <mapper from="*.uxf" to="*.png" type="glob"/>
                     </depend>
                 </fileset>
                 <fileset dir="${material.dir}" includes="**/*.uxf">
                     <depend targetdir="${material.dir}">
-                        <mapper from="*.uxf" to="*.jpg" type="glob"/>
+                        <mapper from="*.uxf" to="*.png" type="glob"/>
                     </depend>
                 </fileset>
             </path>
             <sequential>
-                <for list="jpg,pdf" param="format">
+                <for list="png,pdf" param="format">
                     <sequential>
                         <echo><![CDATA[Umlet format=@{format} file=@{file}]]></echo>
                         <java classname="com.baselet.control.Main" classpathref="tools.classpath" fork="true">

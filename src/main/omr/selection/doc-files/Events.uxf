@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="11.3">
+<diagram program="umlet" version="12.1">
   <help_text>//Uncomment the following line to change the fontsize:
 //fontsize=14
 
@@ -444,7 +444,7 @@ r1=publish</panel_attributes>
       <h>90</h>
     </coordinates>
     <panel_attributes> 
-'RunsTable
+'RunTable
 'RunService
 '2 inst / sheet
 bg=pink</panel_attributes>
@@ -555,5 +555,80 @@ bg=#FFFFAAA</panel_attributes>
     <panel_attributes>lt=&lt;()
 </panel_attributes>
     <additional_attributes>30;90;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.custom.Component</type>
+    <coordinates>
+      <x>1000</x>
+      <y>420</y>
+      <w>130</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes> 
+'RunsTable
+'RunService
+'2 inst / sheet
+bg=pink</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>240</x>
+      <y>210</y>
+      <w>90</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>InterIdEvent
+bg=#FFFFAAA</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>310</x>
+      <y>280</y>
+      <w>90</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>InterListEvent
+bg=#FFFFAAA</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>1020</x>
+      <y>90</y>
+      <w>70</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>/SigEvent/
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>540</x>
+      <y>280</y>
+      <w>110</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>GlyphPileEvent
+bg=#FFFFAAA</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>560</x>
+      <y>310</y>
+      <w>110</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>GlyphLayerEvent
+bg=#FFFFAAA</panel_attributes>
+    <additional_attributes/>
   </element>
 </diagram>

@@ -15,9 +15,9 @@ import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
 
-import omr.score.Score;
-
 import omr.script.ScriptManager;
+
+import omr.sheet.Book;
 
 import omr.step.ProcessingCancellationException;
 import omr.step.Stepping;
@@ -36,6 +36,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -201,7 +204,7 @@ public class Main
      *
      * @return the CLI bench path, or null
      */
-    public static String getBenchPath ()
+    public static Path getBenchPath ()
     {
         return parameters.benchPath;
     }
@@ -231,7 +234,7 @@ public class Main
      *
      * @return the CLI export path, or null
      */
-    public static String getExportPath ()
+    public static Path getExportPath ()
     {
         return parameters.exportPath;
     }
@@ -248,9 +251,9 @@ public class Main
     {
         List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
-        // Launch desired step on each score in parallel
+        // Launch desired step on each book
         for (final String name : parameters.inputNames) {
-            final File file = new File(name);
+            final Path path = Paths.get(name);
 
             tasks.add(
                     new Callable<Void>()
@@ -267,17 +270,17 @@ public class Main
                                         (parameters.pages != null) ? ("pages " + parameters.pages) : "");
                             }
 
-                            if (file.exists()) {
-                                final Score score = new Score(file);
+                            if (Files.exists(path)) {
+                                final Book book = new Book(path);
 
                                 try {
-                                    Stepping.processScore(
+                                    Stepping.processBook(
                                             parameters.desiredSteps,
                                             parameters.pages,
-                                            score);
+                                            book);
                                 } catch (ProcessingCancellationException pce) {
-                                    logger.warn("Cancelled " + score, pce);
-                                    score.getBench().recordCancellation();
+                                    logger.warn("Cancelled " + book, pce);
+                                    book.getBench().recordCancellation();
                                     throw pce;
                                 } catch (Throwable ex) {
                                     logger.warn("Exception occurred", ex);
@@ -285,13 +288,13 @@ public class Main
                                 } finally {
                                     // Close (when in batch mode only)
                                     if (gui == null) {
-                                        score.close();
+                                        book.close();
                                     }
 
                                     return null;
                                 }
                             } else {
-                                String msg = "Could not find file " + file.getCanonicalPath();
+                                String msg = "Could not find file " + path;
                                 logger.warn(msg);
                                 throw new RuntimeException(msg);
                             }
@@ -300,7 +303,7 @@ public class Main
                         @Override
                         public String toString ()
                         {
-                            return "Input " + file;
+                            return "Input " + path;
                         }
                     });
         }
@@ -319,19 +322,6 @@ public class Main
     public static MainGui getGui ()
     {
         return gui;
-    }
-
-    //-------------//
-    // getMidiPath //
-    //-------------//
-    /**
-     * Report the midi path if present on the CLI
-     *
-     * @return the CLI midi path, or null
-     */
-    public static String getMidiPath ()
-    {
-        return parameters.midiPath;
     }
 
     //-------------//
@@ -355,7 +345,7 @@ public class Main
      *
      * @return the CLI print path, or null
      */
-    public static String getPrintPath ()
+    public static Path getPrintPath ()
     {
         return parameters.printPath;
     }
@@ -590,15 +580,4 @@ public class Main
                 60, //300,
                 "Process time-out, specified in seconds");
     }
-
-    //
-    //    private static class FileCallable
-    //        implements Callable
-    //    {
-    //    }
-    //
-    //    private static class ScriptCallable
-    //        implements Callable
-    //    {
-    //    }
 }

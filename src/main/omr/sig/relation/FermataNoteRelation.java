@@ -1,0 +1,62 @@
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              F e r m a t a N o t e R e l a t i o n                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
+// </editor-fold>
+package omr.sig.relation;
+
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
+/**
+ * Class {@code FermataNoteRelation} represents the relation between a fermata and
+ * a chord note member.
+ *
+ * @author Hervé Bitteur
+ */
+public class FermataNoteRelation
+        extends BasicSupport
+{
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
+
+    //~ Methods ------------------------------------------------------------------------------------
+    @Override
+    public String getName ()
+    {
+        return "Fermata-Note";
+    }
+
+    @Override
+    protected double getSourceCoeff ()
+    {
+        return 0; // No support for fermata (since done via chord in FermataChordRelation)
+    }
+
+    @Override
+    protected double getTargetCoeff ()
+    {
+        return constants.noteSupportCoeff.getValue();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Ratio noteSupportCoeff = new Constant.Ratio(
+                2,
+                "Supporting coeff for (target) note");
+    }
+}

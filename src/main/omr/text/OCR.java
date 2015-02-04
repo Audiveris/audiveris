@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.text;
 
-import omr.sheet.SystemInfo;
+import omr.sheet.Scale;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -34,8 +34,7 @@ public interface OCR
 
         /** Automatic discovery of multi block layout */
         MULTI_BLOCK,
-        /** No layout
-         * processing, a single block is assumed */
+        /** No layout processing, a single block is assumed */
         SINGLE_BLOCK;
     }
 
@@ -50,30 +49,30 @@ public interface OCR
 
     /**
      * Report whether the OCR engine is available.
+     *
+     * @return true if OCR is OK
      */
     boolean isAvailable ();
 
     /**
-     * Launch the recognition of the provided image, whose language is
-     * specified.
+     * Launch the recognition of the provided image, whose language is specified.
      *
+     * @param scale        global sheet scale
      * @param image        the provided image
-     * @param topLeft      absolute coordinates of the image top left corner
+     * @param topLeft      absolute coordinates of the image top left corner, or null
      * @param languageCode language specification or null
      * @param layoutMode   how the image layout should be analyzed
-     * @param system       the containing system
-     * @param label        an optional label related to the image, null
-     *                     otherwise. This is meant for keeping track of the
-     *                     temporary image files.
+     * @param label        an optional label related to the image, null otherwise.
+     *                     This is meant for keeping track of the temporary image files.
      * @return a list of TextLine instances, or null.
-     *         The coordinates of any returned TextLine are absolute coordinates
-     *         thanks to the topLeft parameter.
+     *         The coordinates of any returned TextLine are absolute coordinates thanks to the topLeft
+     *         parameter.
      */
-    List<TextLine> recognize (BufferedImage image,
+    List<TextLine> recognize (Scale scale,
+                              BufferedImage image,
                               Point topLeft,
                               String languageCode,
                               LayoutMode layoutMode,
-                              SystemInfo system,
                               String label);
 
     //~ Inner Classes ------------------------------------------------------------------------------

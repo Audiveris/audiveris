@@ -11,132 +11,53 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
-
-import omr.grid.StaffInfo;
-
-import omr.math.GeoUtil;
-
-import omr.run.Orientation;
-
-import omr.score.entity.Measure;
-import omr.score.entity.Page;
-import omr.score.entity.ScoreSystem;
-import omr.score.entity.SystemPart;
-import omr.score.visitor.AbstractScoreVisitor;
-
-import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
-import omr.sig.AbstractBeamInter;
-import omr.sig.AbstractNoteInter;
-import omr.sig.BarConnectionInter;
-import omr.sig.BarlineInter;
-import omr.sig.BraceInter;
-import omr.sig.BracketConnectionInter;
-import omr.sig.BracketInter;
-import omr.sig.BracketInter.BracketKind;
-import omr.sig.ClefInter;
-import omr.sig.EndingInter;
-import omr.sig.Inter;
-import omr.sig.InterVisitor;
-import omr.sig.KeyAlterInter;
-import omr.sig.LedgerInter;
-import omr.sig.SIGraph;
-import omr.sig.SlurInter;
-import omr.sig.StemInter;
-import omr.sig.TimeInter;
-import omr.sig.WedgeInter;
+import omr.sig.ui.SigPainter;
 
-import omr.ui.Colors;
-import omr.ui.symbol.Alignment;
-import static omr.ui.symbol.Alignment.BOTTOM_CENTER;
-import static omr.ui.symbol.Alignment.BOTTOM_LEFT;
-import static omr.ui.symbol.Alignment.TOP_CENTER;
-import static omr.ui.symbol.Alignment.TOP_LEFT;
-import omr.ui.symbol.MusicFont;
-import omr.ui.symbol.OmrFont;
-import omr.ui.symbol.ShapeSymbol;
-import omr.ui.symbol.Symbols;
-import static omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
-import static omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
-import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
-import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
 import omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Stroke;
-import java.awt.geom.CubicCurve2D;
 import java.util.ConcurrentModificationException;
 
 /**
- * Class {@code SheetPainter} defines for every node in Page hierarchy the rendering of
- * related sections (with preset colors) in the dedicated <b>Sheet</b> display.
+ * Class {@code SheetPainter} provides a basis to paint sheet content.
  * <p>
- * Nota: It has been extended to deal with rendering of initial sheet elements.
+ * It is specialized in:<ul>
+ * <li>{@link SheetGradedPainter} which displays all SIG inters with opacity derived from each inter
+ * grade value.</li>
+ * <li>{@link SheetResultPainter} which displays the resulting score (SIG remaining inters,
+ * measures, time slots, etc).</li>
+ * </ul>
+ * The bulk of painting is delegated to an internal {@link SigPainter} instance.
  *
  * @author Hervé Bitteur
  */
-public class SheetPainter
-        extends AbstractScoreVisitor
-        implements InterVisitor
+public abstract class SheetPainter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SheetPainter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /** Sheet. */
+    protected final Sheet sheet;
+
     /** Graphic context. */
-    private final Graphics2D g;
+    protected final Graphics2D g;
 
     /** Clip rectangle. */
-    private final Rectangle clip;
+    protected final Rectangle clip;
 
-    /** Alpha composite for interpretations. */
-    private final AlphaComposite composite = AlphaComposite.getInstance(
-            AlphaComposite.SRC_OVER,
-            0.5f);
-
-    /** Default full composite. */
-    private final AlphaComposite fullComposite = AlphaComposite.getInstance(
-            AlphaComposite.SRC_OVER,
-            1f);
-
-    /** Saved stroke for restoration at the end of the painting. */
-    private Stroke oldStroke;
-
-    /** Are we drawing enriched data?. */
-    private final boolean enriched;
-
-    /** Music font properly scaled. */
-    private MusicFont musicFont;
-
-    /** Global scale. */
-    private Scale scale;
-
-    /** Stroke for staff lines. */
-    private Stroke lineStroke;
-
-    /** Stroke for ledgers. */
-    private Stroke ledgerStroke;
-
-    /** Stroke for stems. */
-    private final Stroke stemStroke;
-
-    /** Current system. */
-    private SystemInfo system;
+    /** Painter for Inter instances. */
+    protected SigPainter sigPainter;
 
     //~ Constructors -------------------------------------------------------------------------------
     //--------------//
@@ -145,534 +66,65 @@ public class SheetPainter
     /**
      * Creates a new SheetPainter object.
      *
-     * @param g        Graphic context
-     * @param enriched flag to enrich display with attachments,
-     *                 colors, etc. Use false for a display as close
-     *                 as possible to input image
+     * @param sheet the sheet to paint
+     * @param g     Graphic context
      */
-    public SheetPainter (Graphics g,
-                         boolean enriched)
+    public SheetPainter (Sheet sheet,
+                         Graphics g)
     {
+        this.sheet = sheet;
         this.g = (Graphics2D) g;
-        this.clip = g.getClipBounds();
-        this.enriched = enriched;
 
-        stemStroke = new BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+        clip = g.getClipBounds();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------------//
-    // visit Measure //
-    //---------------//
-    @Override
-    public boolean visit (Measure measure)
-    {
-        try {
-            // Render the measure ending barline
-            if (measure.getBarline() != null) {
-                measure.getBarline().renderLine(g);
-            }
-        } catch (ConcurrentModificationException ignored) {
-        } catch (Exception ex) {
-            logger.warn(getClass().getSimpleName() + " Error visiting " + measure, ex);
-        }
-
-        // Nothing lower than measure
-        return false;
-    }
-
-    //------------//
-    // visit Page //
-    //------------//
-    @Override
-    public boolean visit (Page page)
-    {
-        try {
-            Sheet sheet = page.getSheet();
-            scale = page.getScale();
-
-            ledgerStroke = new BasicStroke(
-                    sheet.getScale().getMainFore(),
-                    BasicStroke.CAP_ROUND,
-                    BasicStroke.JOIN_ROUND);
-
-            // Determine staff lines parameters
-            int lineThickness = scale.getMainFore();
-            lineStroke = new BasicStroke(
-                    lineThickness,
-                    BasicStroke.CAP_ROUND,
-                    BasicStroke.JOIN_ROUND);
-
-            if (enriched) {
-                oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-            } else {
-                oldStroke = g.getStroke();
-                g.setStroke(lineStroke);
-            }
-
-            // Use specific color
-            g.setColor(Color.BLACK);
-
-            if (!page.getSystems().isEmpty()) {
-                // Small protection about changing data...
-                if (sheet.getScale() == null) {
-                    return false;
-                }
-
-                // Determine proper font
-                musicFont = MusicFont.getFont(sheet.getInterline());
-
-                // Normal (full) rendering of the score
-                page.acceptChildren(this);
-            } else {
-                // Render what we have got so far
-                sheet.getStaffManager().render(g);
-            }
-        } catch (ConcurrentModificationException ignored) {
-        } catch (Exception ex) {
-            logger.warn(getClass().getSimpleName() + " Error visiting " + page, ex);
-        } finally {
-            g.setStroke(oldStroke);
-        }
-
-        return false;
-    }
-
-    //------------------//
-    // visit SystemPart //
-    //------------------//
-    @Override
-    public boolean visit (SystemPart part)
-    {
-        try {
-            // Render the part starting barline, if any
-            if (part.getStartingBarline() != null) {
-                part.getStartingBarline().renderLine(g);
-            }
-        } catch (ConcurrentModificationException ignored) {
-        } catch (Exception ex) {
-            logger.warn(getClass().getSimpleName() + " Error visiting " + part, ex);
-        }
-
-        return true;
-    }
-
-    //--------------//
-    // visit System //
-    //--------------//
-    @Override
-    public boolean visit (ScoreSystem system)
-    {
-        try {
-            if (system == null) {
-                return false;
-            }
-
-            return visit(system.getInfo());
-        } catch (ConcurrentModificationException ignored) {
-            return false;
-        } catch (Exception ex) {
-            logger.warn(getClass().getSimpleName() + " Error visiting " + system, ex);
-
-            return false;
-        }
-    }
-
-    //------------------//
-    // visit SystemInfo //
-    //------------------//
-    public boolean visit (SystemInfo systemInfo)
-    {
-        try {
-            this.system = systemInfo;
-
-            Rectangle bounds = systemInfo.getBounds();
-
-            if (bounds == null) {
-                return false;
-            }
-
-            // Check that this system is visible
-            if (bounds.intersects(clip)) {
-                g.setColor(Color.BLACK); // Useful???
-
-                if (enriched) {
-                    //                    // System boundary
-                    //                    systemInfo.getBoundary()
-                    //                            .render(g, editableBoundaries);
-
-                    // Staff lines attachments
-                    for (StaffInfo staff : systemInfo.getStaves()) {
-                        staff.renderAttachments(g);
-                    }
-
-                    // For inter drawing with composite
-                    ///                    g.setComposite(composite);
-                }
-
-                // All interpretations for this system
-                SIGraph sig = systemInfo.getSig();
-
-                for (Inter inter : sig.vertexSet()) {
-                    if (clip.intersects(inter.getBounds())) {
-                        inter.accept(this);
-                    }
-                }
-
-                ///                g.setComposite(fullComposite);
-                // Virtual glyphs (should be in SIG?)
-                paintVirtualGlyphs(systemInfo);
-
-                return true;
-            }
-        } catch (ConcurrentModificationException ignored) {
-            return false;
-        } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + systemInfo.idString(),
-                    ex);
-        }
-
-        return false;
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (Inter inter)
-    {
-        if (inter.getShape() == null) {
-            return;
-        }
-
-        setColor(inter);
-
-        ///Glyph glyph = inter.getGlyph();
-        ///Point center = (glyph != null) ? glyph.getCentroid() : GeoUtil.centerOf(inter.getBounds());
-        Point center = GeoUtil.centerOf(inter.getBounds());
-        ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
-        symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (ClefInter clef)
-    {
-        visit((Inter) clef);
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (TimeInter time)
-    {
-        visit((Inter) time);
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (KeyAlterInter inter)
-    {
-        setColor(inter);
-
-        Point center = GeoUtil.centerOf(inter.getBounds());
-        StaffInfo staff = system.getStaffAt(center);
-        double y = staff.pitchToOrdinate(center.x, inter.getPitch());
-        center.y = (int) Math.rint(y);
-
-        Shape shape = inter.getShape();
-        ShapeSymbol symbol = Symbols.getSymbol(shape);
-
-        if (shape == Shape.SHARP) {
-            symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
-        } else {
-            Dimension dim = symbol.getDimension(musicFont);
-            center.y += dim.width;
-            symbol.paintSymbol(g, musicFont, center, Alignment.BOTTOM_CENTER);
-        }
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (StemInter stem)
-    {
-        setColor(stem);
-
-        //TODO: use proper stem thickness! (see ledger)
-        g.setStroke(stemStroke);
-
-        stem.getGlyph().renderLine(g);
-
-        g.setStroke(oldStroke);
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (LedgerInter ledger)
-    {
-        setColor(ledger);
-        g.setStroke(
-                new BasicStroke(
-                        (float) ledger.getGlyph().getMeanThickness(Orientation.HORIZONTAL),
-                        BasicStroke.CAP_ROUND,
-                        BasicStroke.JOIN_ROUND));
-
-        ledger.getGlyph().renderLine(g);
-        g.setStroke(oldStroke);
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (SlurInter slur)
-    {
-        CubicCurve2D curve = slur.getInfo().getCurve();
-
-        if (curve != null) {
-            setColor(slur);
-            g.setStroke(lineStroke);
-            g.draw(curve);
-            g.setStroke(oldStroke);
-        }
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (BraceInter brace)
-    {
-        setColor(brace);
-
-        final Rectangle box = brace.getBounds(); ///braceBox(part);
-        final Point center = GeoUtil.centerOf(box);
-        final Dimension halfDim = new Dimension(box.width, box.height / 2);
-        OmrFont.paint(g, musicFont.layout(SYMBOL_BRACE_UPPER_HALF, halfDim), center, BOTTOM_CENTER);
-        OmrFont.paint(g, musicFont.layout(SYMBOL_BRACE_LOWER_HALF, halfDim), center, TOP_CENTER);
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (EndingInter ending)
-    {
-        setColor(ending);
-        g.setStroke(lineStroke);
-        g.draw(ending.getLine());
-
-        if (ending.getLeftLeg() != null) {
-            g.draw(ending.getLeftLeg());
-        }
-
-        if (ending.getRightLeg() != null) {
-            g.draw(ending.getRightLeg());
-        }
-
-        g.setStroke(oldStroke);
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (WedgeInter wedge)
-    {
-        setColor(wedge);
-        g.setStroke(lineStroke);
-        g.draw(wedge.getLine1());
-        g.draw(wedge.getLine2());
-        g.setStroke(oldStroke);
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (AbstractBeamInter beam)
-    {
-        setColor(beam);
-        g.fill(beam.getArea());
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (BarlineInter barline)
-    {
-        setColor(barline);
-        g.fill(barline.getArea());
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (BracketInter bracket)
-    {
-        setColor(bracket);
-
-        // Serif symbol
-        final double widthRatio = 2.7; // Symbol width WRT bar width
-        final double heightRatio = widthRatio * 1.25; // Symbol height WRT bar width
-        final double barRatio = 2.3; // Symbol bar height WRT bar width
-
-        final Rectangle box = bracket.getBounds();
-        final Rectangle glyphBox = bracket.getGlyph().getBounds();
-        final BracketKind kind = bracket.getKind();
-        final double width = bracket.getWidth();
-        final Dimension dim = new Dimension(
-                (int) Math.rint(widthRatio * width),
-                (int) Math.rint(heightRatio * width));
-
-        Integer top = null;
-
-        if ((kind == BracketKind.TOP) || (kind == BracketKind.BOTH)) {
-            // Draw upper symbol part
-            final Point left = new Point(box.x, glyphBox.y + (int) Math.rint(barRatio * width));
-            OmrFont.paint(g, musicFont.layout(SYMBOL_BRACKET_UPPER_SERIF, dim), left, BOTTOM_LEFT);
-            top = left.y;
-        }
-
-        Integer bottom = null;
-
-        if ((kind == BracketKind.BOTTOM) || (kind == BracketKind.BOTH)) {
-            // Draw lower symbol part
-            final Point left = new Point(
-                    box.x,
-                    (glyphBox.y + glyphBox.height) - (int) Math.rint(barRatio * width));
-            OmrFont.paint(g, musicFont.layout(SYMBOL_BRACKET_LOWER_SERIF, dim), left, TOP_LEFT);
-            bottom = left.y;
-        }
-
-        // Bracket area
-        Rectangle bx = null;
-
-        if (top != null) {
-            bx = bracket.getArea().getBounds();
-            bx = bx.intersection(new Rectangle(bx.x, top, bx.width, bx.height));
-        }
-
-        if (bottom != null) {
-            if (bx == null) {
-                bx = bracket.getArea().getBounds();
-            }
-
-            bx = bx.intersection(new Rectangle(bx.x, bx.y, bx.width, bottom - bx.y));
-        }
-
-        if (bx != null) {
-            g.setClip(clip.intersection(bx));
-        }
-
-        g.fill(bracket.getArea());
-
-        if (bx != null) {
-            g.setClip(clip);
-        }
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (BarConnectionInter connection)
-    {
-        setColor(connection);
-        g.fill(connection.getArea());
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (BracketConnectionInter connection)
-    {
-        setColor(connection);
-        g.fill(connection.getArea());
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (AbstractNoteInter note)
-    {
-        // Consider it as a plain inter
-        visit((Inter) note);
-    }
-
-    //--------------------//
-    // paintVirtualGlyphs //
-    //--------------------//
+    //---------//
+    // process //
+    //---------//
     /**
-     * Paint the virtual glyphs on the sheet view
+     * Paint the sheet.
      *
-     * @param systemInfo the containing system
      */
-    private void paintVirtualGlyphs (SystemInfo systemInfo)
+    public void process ()
     {
-        Color oldColor = g.getColor();
+        sigPainter = getSigPainter();
 
-        if (enriched) {
-            g.setColor(Colors.ENTITY_VIRTUAL);
-        }
+        if (!sheet.getSystems().isEmpty()) {
+            for (SystemInfo system : sheet.getSystems()) {
+                // Check whether this system is visible
+                Rectangle bounds = system.getBounds();
 
-        for (Glyph glyph : systemInfo.getGlyphs()) {
-            if (glyph.isVirtual()) {
-                ShapeSymbol symbol = Symbols.getSymbol(glyph.getShape());
-
-                if (symbol == null) {
-                    systemInfo.getScoreSystem().addError(
-                            glyph,
-                            "No symbol for " + glyph.idString());
-                } else {
-                    symbol.paintSymbol(g, musicFont, glyph.getAreaCenter(), Alignment.AREA_CENTER);
+                if ((bounds != null) && ((clip == null) || bounds.intersects(clip))) {
+                    processSystem(system);
                 }
             }
         }
-
-        g.setColor(oldColor);
     }
 
-    //----------//
-    // setColor //
-    //----------//
-    /**
-     * Use color that depends on shape with an alpha value that
-     * depends on interpretation grade.
-     *
-     * @param inter the interpretation to colorize
-     */
-    private void setColor (Inter inter)
+    //---------------//
+    // getSigPainter //
+    //---------------//
+    protected abstract SigPainter getSigPainter ();
+
+    //---------------//
+    // processSystem //
+    //---------------//
+    protected void processSystem (SystemInfo system)
     {
-        if (enriched) {
-            // Shape base color
-            final Color base = inter.getShape().getColor();
+        try {
+            // Staff lines attachments
+            UIUtil.setAbsoluteStroke(g, 1.0f);
 
-            // Alpha value based on grade: 0..1 -> 0..255
-            // Prefer contextual grade when available
-            Double grade = inter.getContextualGrade();
-
-            if (grade == null) {
-                grade = inter.getGrade();
+            for (Staff staff : system.getStaves()) {
+                staff.renderAttachments(g);
             }
 
-            final int alpha = Math.min(255, Math.max(0, (int) Math.rint(255 * grade)));
-            final Color color = new Color(base.getRed(), base.getGreen(), base.getBlue(), alpha);
-            g.setColor(color);
+            // All interpretations for this system
+            sigPainter.process(system.getSig());
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            logger.warn("Cannot paint " + system.idString(), ex);
         }
     }
 }

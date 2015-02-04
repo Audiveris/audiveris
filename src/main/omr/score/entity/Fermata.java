@@ -45,9 +45,9 @@ public class Fermata
      * @param chord   the chord related to the mark
      * @param glyph   the underlying glyph
      */
-    public Fermata (Measure measure,
+    public Fermata (OldMeasure measure,
                     Point point,
-                    Chord chord,
+                    OldChord chord,
                     Glyph glyph)
     {
         super(measure, point, chord, glyph);
@@ -74,7 +74,7 @@ public class Fermata
      * @param point   location for the mark
      */
     public static void populate (Glyph glyph,
-                                 Measure measure,
+                                 OldMeasure measure,
                                  Point point)
     {
         if (glyph.isVip()) {
@@ -87,7 +87,7 @@ public class Fermata
         //
         // TODO: Fermata is said to apply to barline as well, but this feature
         // is not yet implemented.
-        Chord chord;
+        OldChord chord;
 
         if (glyph.getShape() == Shape.FERMATA) {
             // Look for a chord below

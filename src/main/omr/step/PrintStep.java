@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.score.ScoresManager;
+import omr.sheet.BookManager;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -59,6 +59,6 @@ public class PrintStep
                       Sheet sheet)
             throws StepException
     {
-        ScoresManager.getInstance().writePhysicalPdf(sheet.getScore(), null);
+        BookManager.getInstance().writePhysicalPdf(sheet.getBook(), null);
     }
 }

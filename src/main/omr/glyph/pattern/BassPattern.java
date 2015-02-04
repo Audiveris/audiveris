@@ -21,9 +21,8 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
-
 import omr.sheet.Scale;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
@@ -85,7 +84,7 @@ public class BassPattern
             }
 
             int topX = top.getCentroid().x;
-            StaffInfo topStaff = system.getStaffAt(top.getCentroid());
+            Staff topStaff = system.getClosestStaff(top.getCentroid());
 
             // Look for bottom dot right underneath, and in the same staff
             for (Glyph bot : system.getGlyphs()) {
@@ -98,7 +97,7 @@ public class BassPattern
                     continue;
                 }
 
-                if (system.getStaffAt(bot.getCentroid()) != topStaff) {
+                if (system.getClosestStaff(bot.getCentroid()) != topStaff) {
                     continue;
                 }
 

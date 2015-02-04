@@ -17,6 +17,8 @@ import omr.score.entity.ChordInfo;
 
 import omr.ui.symbol.TextFont;
 
+import omr.util.Navigable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +67,7 @@ public class TextWord
     //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Containing TextLine. */
+    @Navigable(false)
     private TextLine textLine;
 
     /** Detected font attributes. */
@@ -88,8 +91,7 @@ public class TextWord
     // TextWord //
     //----------//
     /**
-     * Creates a new TextWord object, built from its contained TextChar
-     * instances.
+     * Creates a new TextWord object, built from its contained TextChar instances.
      *
      * @param baseline   word baseline
      * @param value      UTF-8 content for this word
@@ -139,18 +141,16 @@ public class TextWord
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //
     //------------------//
     // createManualWord //
     //------------------//
     /**
-     * Create a TextWord instance manually, out of a given glyph and
-     * value.
-     * TODO: Perhaps we could improve the baseline, according to the precise
-     * string value provided.
+     * Create a TextWord instance manually, out of a given glyph and value.
+     * TODO: Perhaps we could improve the baseline, according to the precise string value provided.
      *
      * @param glyph the underlying glyph
      * @param value the provided string value
+     * @return the TextWord created
      */
     public static TextWord createManualWord (Glyph glyph,
                                              String value)
@@ -216,6 +216,45 @@ public class TextWord
         chars.add(ch);
     }
 
+    //------------//
+    // checkValue //
+    //------------//
+    /**
+     * Make sure word value is consistent with its sequence of chars values.
+     */
+    public void checkValue ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (TextChar ch : chars) {
+            sb.append(ch.getValue());
+        }
+
+        String sbValue = sb.toString();
+
+        if (!getInternalValue().equals(sbValue)) {
+            logger.debug(
+                    "Word at {} updated from ''{}'' to ''{}''",
+                    getBounds(),
+                    getInternalValue(),
+                    sbValue);
+            setValue(sbValue);
+        }
+    }
+
+    //------//
+    // copy //
+    //------//
+    /**
+     * Make a copy of this TextLine, that will share the same TextChar instances.
+     *
+     * @return a shallow copy
+     */
+    public TextWord copy ()
+    {
+        return new TextWord(getBaseline(), getValue(), fontInfo, getConfidence(), chars, null);
+    }
+
     //----------//
     // getChars //
     //----------//
@@ -277,8 +316,7 @@ public class TextWord
     }
 
     /**
-     * Report the length of this word value, expressed in a number of
-     * chars.
+     * Report the length of this word value, expressed in a number of chars.
      *
      * @return the length of the manual value of the associated glyph if any,
      *         otherwise the length of the internal value.
@@ -292,13 +330,11 @@ public class TextWord
     // getPreciseFontSize //
     //--------------------//
     /**
-     * Report the best computed font size for this word, likely to
-     * precisely match the word bounds.
-     *
+     * Report the best computed font size for this word, likely to precisely match the
+     * word bounds.
      * <p>
-     * The size appears to be a bit larger than OCR detected side, by a
-     * factor in the range 1.1 - 1.2. TODO: To be improved, using font
-     * attributes for better font selection</p>
+     * The size appears to be a bit larger than OCR detected side, by a factor in the range 1.1 -
+     * 1.2. TODO: To be improved, using font attributes for better font selection</p>
      *
      * @return the computed font size
      */
@@ -328,8 +364,7 @@ public class TextWord
     // getValue //
     //----------//
     /**
-     * Overridden to use glyph manual value if any, and fall back using
-     * initial value otherwise.
+     * Overridden to use glyph manual value if any or fall back using initial value.
      *
      * @return the value to be used
      */
@@ -410,8 +445,7 @@ public class TextWord
     //-----------//
     /**
      * Apply a translation to this word.
-     * This applies to internal data (bounds, baseline) and is forwarded to
-     * contained TextChar instances.
+     * This applies to internal data (bounds, baseline) and is forwarded to contained TextChar's.
      *
      * @param dx abscissa translation
      * @param dy ordinate translation
@@ -429,52 +463,24 @@ public class TextWord
         }
 
         // Piggy-back processing: Check word value WRT chars values
+        //TODO: NO! NO! NO! NO! NO! NO! NO! NO! NO! NO! NO! NO! NO! NO! NO! NO! NO! NO! NO! NO!
         checkValue();
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
-    /**
-     * {@inheritDoc }
-     */
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internals());
 
         sb.append(" ").append(getFontInfo());
 
-        if (getGlyph() != null) {
-            sb.append(" ").append(getGlyph().idString());
+        if (glyph != null) {
+            sb.append(" ").append(glyph.idString());
         }
 
         return sb.toString();
-    }
-
-    //------------//
-    // checkValue //
-    //------------//
-    /**
-     * Make sure word value is consistent with sequence of chars values.
-     */
-    private void checkValue ()
-    {
-        StringBuilder sb = new StringBuilder();
-
-        for (TextChar ch : chars) {
-            sb.append(ch.getValue());
-        }
-
-        String sbValue = sb.toString();
-
-        if (!getInternalValue().equals(sbValue)) {
-            logger.debug(
-                    "Word at {} updated from ''{}'' to ''{}''",
-                    getBounds(),
-                    getInternalValue(),
-                    sbValue);
-            setValue(sbValue);
-        }
     }
 }

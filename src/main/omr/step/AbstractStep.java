@@ -35,25 +35,25 @@ public abstract class AbstractStep
     private static final Logger logger = LoggerFactory.getLogger(AbstractStep.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Step name */
+    /** Step name. */
     protected final String name;
 
-    /** Score level only, or sheet level possible? */
+    /** Score level only, or sheet level possible?. */
     protected final Level level;
 
-    /** Is the step mandatory? */
+    /** Is the step mandatory?. */
     protected final Mandatory mandatory;
 
-    /** Related short label */
+    /** Related short label. */
     protected final String label;
 
-    /** Description of the step */
+    /** Description of the step. */
     protected final String description;
 
     //~ Constructors -------------------------------------------------------------------------------
     //
     /**
-     * Creates a new AbstractStep object.
+     * Creates a new {@code AbstractStep} object.
      *
      * @param name        the step name
      * @param level       score level only or sheet level
@@ -86,7 +86,6 @@ public abstract class AbstractStep
         }
     }
 
-    //
     //-----------//
     // displayUI //
     //-----------//
@@ -118,6 +117,8 @@ public abstract class AbstractStep
 
             done(sheet); // Full completion
             logger.debug("{}Finished {}", sheet.getLogPrefix(), this);
+        } catch (Throwable ex) {
+            logger.warn("doStep error in " + this, ex);
         } finally {
             // Make sure we reset the sheet "current" step, always.
             if (sheet != null) {

@@ -106,7 +106,7 @@ public abstract class MeasureId
      * @param scoreBasedId the score-based id to search for
      * @return the measure found, or null if not found
      */
-    public static Measure retrieveMeasure (Score score,
+    public static OldMeasure retrieveMeasure (Score score,
                                            ScoreBased scoreBasedId)
     {
         int scoreValue = scoreBasedId.value;
@@ -118,13 +118,13 @@ public abstract class MeasureId
             int pageIdOffset = score.getMeasureIdOffset(page);
             int pageValue = scoreValue - pageIdOffset;
 
-            for (TreeNode sn : page.getSystems()) {
+            for (TreeNode sn : page.getScoreSystems()) {
                 ScoreSystem system = (ScoreSystem) sn;
-                SystemPart part = system.getFirstPart();
+                OldSystemPart part = system.getFirstPart();
 
                 if (pageValue <= part.getLastMeasure().getIdValue()) {
                     for (TreeNode mn : part.getMeasures()) {
-                        Measure measure = (Measure) mn;
+                        OldMeasure measure = (OldMeasure) mn;
 
                         if ((pageValue == measure.getIdValue())
                             && strId.equals(measure.getScoreId())) {
@@ -142,8 +142,7 @@ public abstract class MeasureId
     // retrievePage //
     //--------------//
     /**
-     * Report the page that contains the measure with provided score-based id
-     * value
+     * Report the page that contains the measure with provided score-based id value
      *
      * @param score             the score at hand
      * @param scoreBasedIdValue the numeric value of score-based measure id
@@ -152,7 +151,7 @@ public abstract class MeasureId
     public static Page retrievePage (Score score,
                                      int scoreBasedIdValue)
     {
-        for (ListIterator<TreeNode> pageIt = score.getPages().listIterator(score.getPages().size());
+        for (ListIterator<TreeNode> pageIt = score.getScorePages().listIterator(score.getScorePages().size());
                 pageIt.hasPrevious();) {
             Page page = (Page) pageIt.previous();
 
@@ -276,7 +275,7 @@ public abstract class MeasureId
          */
         public int getFirstIndex ()
         {
-            Measure measure = retrieveMeasure(score, firstId);
+            OldMeasure measure = retrieveMeasure(score, firstId);
 
             return measure.getPageId().getScoreIndex();
         }
@@ -333,10 +332,10 @@ public abstract class MeasureId
         //~ Instance fields ------------------------------------------------------------------------
 
         /** The related measure */
-        protected final Measure measure;
+        protected final OldMeasure measure;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public PageBased (Measure measure,
+        public PageBased (OldMeasure measure,
                           int value,
                           boolean secondHalf)
         {
@@ -344,7 +343,7 @@ public abstract class MeasureId
             this.measure = measure;
         }
 
-        public PageBased (Measure measure,
+        public PageBased (OldMeasure measure,
                           PageBased other)
         {
             this(measure, other.value, other.secondHalf);
@@ -381,9 +380,9 @@ public abstract class MeasureId
             Score score = page.getScore();
             int offset = score.getMeasureOffset(page);
 
-            for (TreeNode sn : page.getSystems()) {
+            for (TreeNode sn : page.getScoreSystems()) {
                 ScoreSystem system = (ScoreSystem) sn;
-                SystemPart part = system.getFirstPart();
+                OldSystemPart part = system.getFirstPart();
                 int measureCount = part.getMeasures().size();
 
                 if (value < (offset + measureCount)) {

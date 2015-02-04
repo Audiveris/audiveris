@@ -26,11 +26,14 @@ import omr.image.PixelSource;
 
 import omr.lag.Lags;
 
+import omr.run.RunTable;
+
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionService;
 
+import omr.util.Navigable;
 import omr.util.StopWatch;
 
 import ij.process.ByteProcessor;
@@ -47,8 +50,8 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
-import java.util.EnumMap;
-import java.util.Map;
+import java.lang.ref.WeakReference;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.media.jai.JAI;
 
@@ -73,7 +76,7 @@ import javax.media.jai.JAI;
  * not yet premultiplied.
  *
  * <h4>Overview of transforms:<br/>
- * <img src="../image/doc-files/transforms.jpg"/>
+ * <img src="../image/doc-files/transforms.png"/>
  * </h4>
  *
  * @author Hervé Bitteur
@@ -90,7 +93,7 @@ public class Picture
 
     //~ Enumerations -------------------------------------------------------------------------------
     /**
-     * The set of handled sources, to be extended as needed.
+     * The set of handled sources.
      */
     public static enum SourceKey
     {
@@ -98,41 +101,50 @@ public class Picture
 
         /** The initial gray-level source. */
         INITIAL,
-        /** The binarized black &
-         * white source. */
+        /** The binarized (black & white) source. */
         BINARY,
         /** The Gaussian-filtered source. */
         GAUSSIAN,
         /** The Median-filtered source. */
         MEDIAN,
-        /** The source with staff
-         * lines removed. */
-        STAFF_LINE_FREE;
+        /** The source with staff lines removed. */
+        NO_STAFF;
+    }
+
+    /**
+     * The set of handled tables.
+     */
+    public static enum TableKey
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        BINARY,
+        NOTE_SPOTS;
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related sheet. */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Image dimension. */
     private final Dimension dimension;
 
     /**
-     * Service object where gray level of pixel is to be written to
-     * when so asked for by the onEvent() method.
+     * Service object where gray level of pixel is to be written to when so asked for
+     * by the onEvent() method.
      */
     private final SelectionService levelService;
 
     /** Map of all handled sources. */
-    private final Map<SourceKey, ByteProcessor> sources = new EnumMap<SourceKey, ByteProcessor>(
-            SourceKey.class);
+    private final ConcurrentHashMap<SourceKey, WeakReference<ByteProcessor>> sources = new ConcurrentHashMap<SourceKey, WeakReference<ByteProcessor>>();
+
+    /** Map of all handled tables. */
+    private final ConcurrentHashMap<TableKey, RunTable> tables = new ConcurrentHashMap<TableKey, RunTable>();
 
     /** The initial (gray-level) image. */
     private BufferedImage initialImage;
-
-    /** The initial (gray-level) source. (for onEvent only) */
-    private ByteProcessor initialSource;
 
     //~ Constructors -------------------------------------------------------------------------------
     //
@@ -156,15 +168,24 @@ public class Picture
         this.levelService = levelService;
 
         // Make sure format, colors, etc are OK for us
-        ImageUtil.printInfo(image, "Original image");
+        ///ImageUtil.printInfo(image, "Original image");
         image = checkImage(image);
         dimension = new Dimension(image.getWidth(), image.getHeight());
 
         // Remember the initial image
         initialImage = image;
+        logger.debug("InitialImage {}", image);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    // For debug only
+    public void checkSources ()
+    {
+        for (SourceKey key : SourceKey.values()) {
+            logger.info(String.format("%15s ref:%s", key, getStrongRef(key)));
+        }
+    }
+
     //---------------//
     // disposeSource //
     //---------------//
@@ -173,19 +194,21 @@ public class Picture
         // Nullify cached data, if needed
         if (key == SourceKey.INITIAL) {
             initialImage = null;
-            initialSource = null;
-            logger.debug("{} source disposed.", key);
-
-            return;
         }
 
-        ByteProcessor src = sources.get(key);
+        sources.remove(key);
+    }
 
-        if (src != null) {
-            synchronized (sources) {
-                sources.put(key, null);
-                logger.debug("{} source disposed.", key);
-            }
+    //--------------//
+    // disposeTable //
+    //--------------//
+    public void disposeTable (TableKey key)
+    {
+        RunTable table = tables.get(key);
+
+        if (table != null) {
+            tables.put(key, null);
+            logger.debug("{} table disposed.", key);
         }
     }
 
@@ -268,7 +291,7 @@ public class Picture
             watch.start("Filter " + src.getWidth() + "x" + src.getHeight());
 
             final int radius = constants.gaussianRadius.getValue();
-            logger.info(
+            logger.debug(
                     "{}Image blurred with gaussian kernel radius: {}",
                     sheet.getLogPrefix(),
                     radius);
@@ -317,6 +340,34 @@ public class Picture
         return dimension.height;
     }
 
+    //----------//
+    // getImage //
+    //----------//
+    /**
+     * Report the sheet image, or a sub-image of it if rectangle area is specified.
+     * <p>
+     * We use the initial image if it is still available.
+     * Otherwise we use the binary source.
+     *
+     * @param rect rectangular area desired, null for whole image
+     * @return the (sub) image
+     */
+    public BufferedImage getImage (Rectangle rect)
+    {
+        BufferedImage img = initialImage;
+
+        if (img == null) {
+            ByteProcessor buffer = getSource(SourceKey.BINARY);
+            img = buffer.getBufferedImage();
+        }
+
+        if (rect == null) {
+            return img;
+        } else {
+            return img.getSubimage(rect.x, rect.y, rect.width, rect.height);
+        }
+    }
+
     //-----------------//
     // getInitialImage //
     //-----------------//
@@ -329,44 +380,34 @@ public class Picture
         return initialImage;
     }
 
-    //-----------------//
-    // getInitialImage //
-    //-----------------//
-    /**
-     * Report the initial image, or a subimage of it if rectangle area is specified.
-     *
-     * @param rect rectangular area desired, null for whole image
-     * @return the (sub) image
-     */
-    public BufferedImage getInitialImage (Rectangle rect)
-    {
-        if (rect == null) {
-            return initialImage;
-        } else {
-            return initialImage.getSubimage(rect.x, rect.y, rect.width, rect.height);
-        }
-    }
-
     //------------------//
     // getInitialSource //
     //------------------//
     /** Report the initial source.
      *
+     * @param img the initial image
      * @return the initial source
      */
-    public ByteProcessor getInitialSource ()
+    public ByteProcessor getInitialSource (BufferedImage img)
     {
-        if (initialImage.getType() != BufferedImage.TYPE_BYTE_GRAY) {
-            StopWatch watch = new StopWatch("ToGray");
-            watch.start("convertToByteProcessor");
+        if (img != null) {
+            if (img.getType() != BufferedImage.TYPE_BYTE_GRAY) {
+                StopWatch watch = new StopWatch("ToGray");
+                watch.start("convertToByteProcessor");
 
-            ColorProcessor cp = new ColorProcessor(initialImage);
-            ByteProcessor bp = cp.convertToByteProcessor();
-            watch.print();
+                ColorProcessor cp = new ColorProcessor(img);
+                ByteProcessor bp = cp.convertToByteProcessor();
 
-            return bp;
+                if (constants.printWatch.isSet()) {
+                    watch.print();
+                }
+
+                return bp;
+            } else {
+                return new ByteProcessor(img);
+            }
         } else {
-            return new ByteProcessor(initialImage);
+            return null;
         }
     }
 
@@ -383,61 +424,96 @@ public class Picture
         return "Picture";
     }
 
-    //----------//
+    //-----------//
     // getSource //
-    //----------//
+    //-----------//
     /**
-     * Report the desired image, creating it if necessary.
+     * Report the desired source.
+     * If the source is not yet cached, build the source and store it in cache via weak reference.
      *
-     * @param key the key of desired image
-     * @return the image ready to use
+     * @param key the key of desired source
+     * @return the source ready to use
      */
     public ByteProcessor getSource (SourceKey key)
     {
-        // Initial source is special, because it's a BufferedImage which needs
-        // a dedicated wrapper for each user.
-        if (key == SourceKey.INITIAL) {
-            return getInitialSource();
-        }
-
-        ByteProcessor src = sources.get(key);
+        ByteProcessor src = getStrongRef(key);
 
         if (src == null) {
-            synchronized (sources) {
-                src = sources.get(key);
+            switch (key) {
+            case INITIAL:
+                src = getInitialSource(initialImage);
 
-                if (src == null) {
-                    switch (key) {
-                    case BINARY:
-                        src = binarized(getInitialSource());
+                break;
 
-                        break;
+            case BINARY:
 
-                    case GAUSSIAN:
-                        src = gaussianFiltered(getSource(SourceKey.MEDIAN));
+                // Built from binary run table, if available
+                RunTable table = getTable(TableKey.BINARY);
 
-                        break;
+                if (table != null) {
+                    src = table.getBuffer();
 
-                    case MEDIAN:
-                        src = medianFiltered(getSource(SourceKey.BINARY));
+                    //                        try {
+                    //                            JAXBContext jaxbContext = JAXBContext.newInstance(RunTable.class);
+                    //                            Marshaller m = jaxbContext.createMarshaller();
+                    //                            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+                    //                            m.marshal(table, new FileOutputStream(new File("data/temp/binary.xml")));
+                    //                        } catch (Exception ex) {
+                    //                        }
+                } else if (initialImage != null) {
+                    // Built via binarization of initial source
+                    src = binarized(getSource(SourceKey.INITIAL));
+                } else {
+                    logger.warn("Cannot provide BINARY source");
 
-                        break;
-
-                    case STAFF_LINE_FREE:
-                        src = Lags.buildBuffer(
-                                dimension,
-                                sheet.getLag(Lags.HLAG),
-                                sheet.getLag(Lags.VLAG));
-
-                        break;
-                    }
-
-                    sources.put(key, src);
+                    return null;
                 }
+
+                break;
+
+            case GAUSSIAN:
+                // Built from median
+                src = gaussianFiltered(getSource(SourceKey.MEDIAN));
+
+                break;
+
+            case MEDIAN:
+                // Built from no_staff, with short horizontal runs (stems) removed
+                src = medianFiltered(getSource(SourceKey.NO_STAFF));
+
+                break;
+
+            case NO_STAFF:
+                // Built from complementary horizontal & vertical lags
+                src = Lags.buildBuffer(dimension, sheet.getLag(Lags.HLAG), sheet.getLag(Lags.VLAG));
+
+                break;
+            }
+
+            if (src != null) {
+                // Store in cache
+                sources.put(key, new WeakReference(src));
+                logger.debug("{} source built as {}", key, src);
             }
         }
 
         return src;
+    }
+
+    //----------//
+    // getTable //
+    //----------//
+    /**
+     * Report the desired table.
+     *
+     * @param key key of desired table
+     * @return the table found, if any, null otherwise
+     */
+    public RunTable getTable (TableKey key)
+    {
+        RunTable table = tables.get(key);
+
+        return table;
     }
 
     //----------//
@@ -452,6 +528,32 @@ public class Picture
     public int getWidth ()
     {
         return dimension.width;
+    }
+
+    //----------------//
+    // medianFiltered //
+    //----------------//
+    public ByteProcessor medianFiltered (ByteProcessor src)
+    {
+        StopWatch watch = new StopWatch("Median");
+
+        try {
+            watch.start("Filter " + src.getWidth() + "x" + src.getHeight());
+
+            final int radius = constants.medianRadius.getValue();
+            logger.debug(
+                    "{}Image filtered with median kernel radius: {}",
+                    sheet.getLogPrefix(),
+                    radius);
+
+            MedianGrayFilter medianFilter = new MedianGrayFilter(radius);
+
+            return medianFilter.filter(src);
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
     }
 
     //---------//
@@ -471,10 +573,6 @@ public class Picture
             return;
         }
 
-        if (initialSource == null) {
-            initialSource = getInitialSource();
-        }
-
         try {
             // Ignore RELEASING
             if (event.movement == MouseMovement.RELEASING) {
@@ -491,7 +589,11 @@ public class Picture
 
                 // Check that we are not pointing outside the image
                 if ((pt.x >= 0) && (pt.x < getWidth()) && (pt.y >= 0) && (pt.y < getHeight())) {
-                    level = initialSource.get(pt.x, pt.y);
+                    ByteProcessor src = getSource(SourceKey.INITIAL);
+
+                    if (src != null) {
+                        level = src.get(pt.x, pt.y);
+                    }
                 }
             }
 
@@ -501,12 +603,45 @@ public class Picture
         }
     }
 
+    //-------------//
+    // removeTable //
+    //-------------//
+    /**
+     * Remove a table.
+     *
+     * @param key table key
+     */
+    public void removeTable (TableKey key)
+    {
+        tables.remove(key);
+    }
+
     //-------------------------------//
     // setDefaultExtractionDirectory //
     //-------------------------------//
     public static void setDefaultExtractionDirectory (String dir)
     {
         constants.defaultExtractionDirectory.setValue(dir);
+    }
+
+    //----------//
+    // setTable //
+    //----------//
+    /**
+     * Register a table.
+     *
+     * @param key   table key
+     * @param table table to register
+     */
+    public void setTable (TableKey key,
+                          RunTable table)
+    {
+        tables.put(key, table);
+
+        switch (key) {
+        case BINARY:
+            disposeSource(SourceKey.BINARY);
+        }
     }
 
     //----------//
@@ -563,9 +698,9 @@ public class Picture
     //-----------//
     private ByteProcessor binarized (ByteProcessor src)
     {
-        FilterDescriptor desc = sheet.getPage().getFilterParam().getTarget();
+        FilterDescriptor desc = sheet.getFilterParam().getTarget();
         logger.info("{}{} {}", sheet.getLogPrefix(), "Binarization", desc);
-        sheet.getPage().getFilterParam().setActual(desc);
+        sheet.getFilterParam().setActual(desc);
 
         PixelFilter filter = desc.getFilter(src);
 
@@ -600,30 +735,26 @@ public class Picture
         return img;
     }
 
-    //----------------//
-    // medianFiltered //
-    //----------------//
-    private ByteProcessor medianFiltered (ByteProcessor src)
+    //--------------//
+    // getStrongRef //
+    //--------------//
+    /**
+     * Report the actual (strong) reference, if any, of a weak source reference.
+     *
+     * @param key the source key
+     * @return the strong reference, if any
+     */
+    private ByteProcessor getStrongRef (SourceKey key)
     {
-        StopWatch watch = new StopWatch("Median");
+        // Check if key is referenced
+        WeakReference<ByteProcessor> ref = sources.get(key);
 
-        try {
-            watch.start("Filter " + src.getWidth() + "x" + src.getHeight());
-
-            final int radius = constants.medianRadius.getValue();
-            logger.info(
-                    "{}Image filtered with median kernel radius: {}",
-                    sheet.getLogPrefix(),
-                    radius);
-
-            MedianGrayFilter medianFilter = new MedianGrayFilter(radius);
-
-            return medianFilter.filter(src);
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
+        if (ref != null) {
+            // Actual reference may be null or not (depending on garbage collection)
+            return ref.get();
         }
+
+        return null;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -637,7 +768,7 @@ public class Picture
 
         Constant.Boolean printWatch = new Constant.Boolean(
                 false,
-                "Should we print out the stop watch?");
+                "Should we print out the stop watch(es)?");
 
         Constant.Boolean useMaxChannelInColorToGray = new Constant.Boolean(
                 true,

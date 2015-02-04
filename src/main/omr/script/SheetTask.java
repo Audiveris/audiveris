@@ -25,9 +25,9 @@ public abstract class SheetTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Page index */
-    @XmlAttribute(name = "page")
-    protected Integer page;
+    /** Sheet index */
+    @XmlAttribute(name = "sheet")
+    protected Integer index;
 
     /** The related sheet */
     protected Sheet sheet;
@@ -38,10 +38,12 @@ public abstract class SheetTask
     //-----------//
     /**
      * Creates a new SheetTask object.
+     *
+     * @param sheet the related sheet
      */
     protected SheetTask (Sheet sheet)
     {
-        page = sheet.getPage().getIndex();
+        index = sheet.getIndex();
     }
 
     //-----------//
@@ -53,29 +55,29 @@ public abstract class SheetTask
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // getPageIndex //
-    //--------------//
+    //---------------//
+    // getSheetIndex //
+    //---------------//
     /**
-     * Report the id of the page/sheet if any
+     * Report the id of the index/sheet if any
      *
      * @return the sheet index (counted from 1) or null if none
      */
-    public Integer getPageIndex ()
+    public Integer getSheetIndex ()
     {
-        return page;
+        return index;
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internals());
 
-        if (page != null) {
-            sb.append(" page#").append(page);
+        if (index != null) {
+            sb.append(" page#").append(index);
         }
 
         return sb.toString();

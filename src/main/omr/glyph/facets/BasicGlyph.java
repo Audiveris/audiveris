@@ -36,7 +36,7 @@ import omr.score.entity.TimeRational;
 
 import omr.sheet.Scale;
 
-import omr.sig.Inter;
+import omr.sig.inter.Inter;
 
 import omr.text.BasicContent;
 import omr.text.TextRoleInfo;
@@ -697,9 +697,9 @@ public class BasicGlyph
     }
 
     @Override
-    public boolean intersects (Rectangle rectangle)
+    public boolean intersects (java.awt.Shape shape)
     {
-        return geometry.intersects(rectangle);
+        return geometry.intersects(shape);
     }
 
     @Override
@@ -989,12 +989,6 @@ public class BasicGlyph
         composition.stealSections(that);
     }
 
-    @Override
-    public boolean touches (Section section)
-    {
-        return composition.touches(section);
-    }
-
     //----------//
     // toString //
     //----------//
@@ -1010,6 +1004,18 @@ public class BasicGlyph
         sb.append("}");
 
         return sb.toString();
+    }
+
+    @Override
+    public boolean touches (Glyph that)
+    {
+        return environment.touches(that);
+    }
+
+    @Override
+    public boolean touches (Section section)
+    {
+        return composition.touches(section);
     }
 
     @Override

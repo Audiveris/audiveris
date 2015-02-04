@@ -16,7 +16,7 @@ import omr.score.PartConnection.Result;
 import omr.score.entity.Page;
 import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldSystemPart;
 
 import omr.util.TreeNode;
 
@@ -36,27 +36,25 @@ import java.util.TreeMap;
  * Class {@code ScoreReduction} is the "reduce" part of a MapReduce job for a score,
  * based on the merge of Audiveris Page instances.
  * <ol>
- * <li>Any Map task processes a score page and produces the related
- * XML fragment as its output.</li>
- * <li>The Reduce task takes all the XML fragments as input and
- * consolidates them in a global Score output.</li></ol>
+ * <li>Any Map task processes a score page and produces the related XML fragment as its output.</li>
+ * <li>The Reduce task takes all the XML fragments as input and consolidates them in a global Score
+ * output.</li></ol>
  * <p>
  * Typical calling of the feature is as follows:
  * <code>
  * <pre>
- * Map&lt;Integer, String&gt; fragments = ...;
- * ScoreReduction reduction = new ScoreReduction(fragments);
- * String output = reduction.reduce();
- * Map&lt;Integer, Status&gt; statuses = reduction.getStatuses();
+ *      Map&lt;Integer, String&gt; fragments = ...;
+ *      ScoreReduction reduction = new ScoreReduction(fragments);
+ *      String output = reduction.reduce();
+ *      Map&lt;Integer, Status&gt; statuses = reduction.getStatuses();
  * </pre>
  * </code>
  * </p>
  *
- * <p>
  * <b>Features not yet implemented:</b> <ul>
  * <li>Connection of slurs between pages</li>
  * <li>In part-list, handling of part-group beside score-part</li>
- * </ul></p>
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -86,9 +84,9 @@ public class ScoreReduction
     {
         this.score = score;
 
-        for (TreeNode pn : score.getPages()) {
+        for (TreeNode pn : score.getScorePages()) {
             Page page = (Page) pn;
-            pages.put(page.getIndex(), page);
+            pages.put(page.getSheet().getIndex(), page);
         }
     }
 
@@ -101,10 +99,6 @@ public class ScoreReduction
      */
     public void reduce ()
     {
-        if (score.getPages().isEmpty()) {
-            return;
-        }
-
         /* Connect parts across the pages */
         connection = PartConnection.connectScorePages(pages);
 
@@ -124,8 +118,8 @@ public class ScoreReduction
     // addPartList //
     //-------------//
     /**
-     * Build the part-list as the sequence of Result/ScorePart
-     * instances, and map each of them to a Part.
+     * Build the part-list as the sequence of Result/ScorePart instances, and map each
+     * of them to a Part.
      */
     private void addPartList ()
     {
@@ -139,22 +133,22 @@ public class ScoreReduction
 
         // Need map: pagePart instance -> set of related systemPart instances
         // (Since we only have the reverse link)
-        Map<ScorePart, List<SystemPart>> page2syst = new LinkedHashMap<ScorePart, List<SystemPart>>();
+        Map<ScorePart, List<OldSystemPart>> page2syst = new LinkedHashMap<ScorePart, List<OldSystemPart>>();
 
-        for (TreeNode pn : score.getPages()) {
+        for (TreeNode pn : score.getScorePages()) {
             Page page = (Page) pn;
 
-            for (TreeNode sn : page.getSystems()) {
+            for (TreeNode sn : page.getScoreSystems()) {
                 ScoreSystem system = (ScoreSystem) sn;
 
                 for (TreeNode n : system.getParts()) {
-                    SystemPart systPart = (SystemPart) n;
+                    OldSystemPart systPart = (OldSystemPart) n;
 
                     ScorePart pagePart = systPart.getScorePart();
-                    List<SystemPart> cousins = page2syst.get(pagePart);
+                    List<OldSystemPart> cousins = page2syst.get(pagePart);
 
                     if (cousins == null) {
-                        cousins = new ArrayList<SystemPart>();
+                        cousins = new ArrayList<OldSystemPart>();
                         page2syst.put(pagePart, cousins);
                     }
 
@@ -174,7 +168,7 @@ public class ScoreReduction
                 pagePart.setId(newId);
 
                 // Update all related (system) part id
-                for (SystemPart systPart : page2syst.get(pagePart)) {
+                for (OldSystemPart systPart : page2syst.get(pagePart)) {
                     systPart.setId(newId);
                 }
             }

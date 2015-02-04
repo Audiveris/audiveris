@@ -15,8 +15,7 @@ import java.util.Arrays;
 
 /**
  * Class {@code InjectionSolver} handles the injection of a collection of elements
- * (called domain) into another collection of elements (called range, or codomain).
- *
+ * (called domain) into another collection of elements (called range, or co-domain).
  * <p>
  * It finds a mapping that minimizes the global mapping distance, given the individual distance for
  * each domain/range elements pair. This implementation uses brute force, and thus should be used
@@ -73,11 +72,10 @@ public class InjectionSolver
     // solve //
     //-------//
     /**
-     * Report (one of) the mapping(s) for which the global distance is
-     * minimum.
+     * Report (one of) the mapping(s) for which the global distance is minimum.
      *
-     * @return an array parallel to the domain collection, which for each
-     *         (domain) element gives the mapped range element
+     * @return an array parallel to the domain collection, which for each (domain) element gives the
+     *         mapped range element
      */
     public int[] solve ()
     {
@@ -137,16 +135,15 @@ public class InjectionSolver
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
     /**
-     * Interface {@code Distance} provides the measurement for
-     * individual mapping costs.
+     * Interface {@code Distance} provides the measurement for individual mapping costs.
      */
     public static interface Distance
     {
         //~ Methods --------------------------------------------------------------------------------
 
         /**
-         * Report the distance when mapping element 'id' of domain to
-         * element 'ir' of range
+         * Report the distance when mapping element 'id' of domain to element 'ir' of
+         * range
          *
          * @param id index of domain element
          * @param ir index of range element

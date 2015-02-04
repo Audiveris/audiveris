@@ -21,7 +21,7 @@ import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.FilamentsFactory;
-import omr.grid.StaffInfo;
+import omr.sheet.Staff;
 
 import omr.lag.Section;
 import omr.lag.Sections;
@@ -30,20 +30,23 @@ import omr.math.GeoOrder;
 import omr.math.LineUtil;
 
 import omr.run.Orientation;
+
 import static omr.run.Orientation.VERTICAL;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.sig.BarlineInter;
-import omr.sig.EndingBarRelation;
-import omr.sig.EndingInter;
+import omr.sig.inter.BarlineInter;
+import omr.sig.relation.EndingBarRelation;
+import omr.sig.inter.EndingInter;
 import omr.sig.GradeImpacts;
-import omr.sig.Inter;
+import omr.sig.inter.Inter;
 import omr.sig.SIGraph;
-import omr.sig.SegmentInter;
+import omr.sig.inter.SegmentInter;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -125,7 +128,8 @@ public class EndingsBuilder
      * We simply have to make sure that the lookup area is wide enough.
      * <p>
      * An ending which starts a staff may have its left side after the clef and key signature, which
-     * means far after the starting bar line. Perhaps we should consider the staff DMZ in such case.
+     * means far after the starting bar line. Perhaps we should consider the staff header in such
+     * case.
      *
      * @param seg        the horizontal segment
      * @param reverse    which side is at stake
@@ -135,7 +139,7 @@ public class EndingsBuilder
      */
     private BarlineInter lookupBar (SegmentInfo seg,
                                     boolean reverse,
-                                    StaffInfo staff,
+                                    Staff staff,
                                     List<Inter> systemBars)
     {
         Point end = seg.getEnd(reverse);
@@ -168,7 +172,7 @@ public class EndingsBuilder
      */
     private Glyph lookupLeg (SegmentInfo seg,
                              boolean reverse,
-                             StaffInfo staff)
+                             Staff staff)
     {
         Point end = seg.getEnd(reverse);
         Rectangle box = new Rectangle(end);
@@ -187,7 +191,7 @@ public class EndingsBuilder
 
         // Adjust factory parameters
         factory.setMaxThickness(
-                (int) Math.ceil(sheet.getMainStem() * constants.stemRatio.getValue()));
+                (int) Math.ceil(sheet.getMaxStem() * constants.stemRatio.getValue()));
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
         factory.setMaxOverlapSpace(constants.maxOverlapSpace);
         factory.setMaxCoordGap(constants.maxCoordGap);
@@ -260,7 +264,7 @@ public class EndingsBuilder
             SIGraph sig = system.getSig();
 
             // Consider the staff just below the segment
-            StaffInfo staff = system.getStaffBelow(leftEnd);
+            Staff staff = system.getStaffBelow(leftEnd);
 
             if (staff == null) {
                 continue;
@@ -275,7 +279,7 @@ public class EndingsBuilder
                 continue;
             }
 
-            // Left bar (or DMZ)
+            // Left bar (or header)
             BarlineInter leftBar = lookupBar(seg, true, staff, systemBars);
 
             if (leftBar == null) {

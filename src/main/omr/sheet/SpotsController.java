@@ -22,10 +22,9 @@ import omr.glyph.ui.SymbolGlyphBoard;
 
 import omr.lag.Lag;
 
-import omr.selection.MouseMovement;
-import omr.selection.UserEvent;
-
 import omr.sheet.ui.PixelBoard;
+
+import omr.step.Step;
 
 import omr.ui.BoardsPane;
 import omr.ui.view.ScrollView;
@@ -102,8 +101,7 @@ public class SpotsController
         // Specific rubber display
         view = new MyView(getNest(), Arrays.asList(lags));
 
-        sheet.getAssembly().addViewTab(
-                "Spots",
+        sheet.getAssembly().addViewTab(Step.BEAM_SPOT_TAB,
                 new ScrollView(view),
                 new BoardsPane(new PixelBoard(sheet), new SymbolGlyphBoard(this, true, true)));
     }
@@ -128,66 +126,6 @@ public class SpotsController
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        //---------//
-        // onEvent //
-        //---------//
-        /**
-         * Call-back triggered from selection objects.
-         *
-         * @param event the notified event
-         */
-        @Override
-        public void onEvent (UserEvent event)
-        {
-            try {
-                // Ignore RELEASING
-                if (event.movement == MouseMovement.RELEASING) {
-                    return;
-                }
-
-                // Keep normal view behavior (rubber, etc...)
-                super.onEvent(event);
-
-                //
-                //                // Additional tasks
-                //                if (event instanceof LocationEvent) {
-                //                    LocationEvent sheetLocation = (LocationEvent) event;
-                //
-                //                    if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
-                //                        Rectangle rect = sheetLocation.getData();
-                //
-                //                        if ((rect != null) &&
-                //                            (rect.width == 0) &&
-                //                            (rect.height == 0)) {
-                //                            // Look for pointed glyph
-                //                            logger.info("Rect: {}", rect);
-                //
-                //                            //                            int index = glyphLookup(rect);
-                //                            //                            navigator.setIndex(index, sheetLocation.hint);
-                //                        }
-                //                    }
-                //                } else if (event instanceof GlyphEvent) {
-                //                    GlyphEvent glyphEvent = (GlyphEvent) event;
-                //
-                //                    if (glyphEvent.hint == GLYPH_INIT) {
-                //                        Glyph glyph = glyphEvent.getData();
-                //
-                //                        // Display glyph contour
-                //                        if (glyph != null) {
-                //                            locationService.publish(
-                //                                new LocationEvent(
-                //                                    this,
-                //                                    glyphEvent.hint,
-                //                                    null,
-                //                                    glyph.getBounds()));
-                //                        }
-                //                    }
-                //                }
-            } catch (Exception ex) {
-                logger.warn(getClass().getName() + " onEvent error", ex);
-            }
-        }
-
         //-------------//
         // renderItems //
         //-------------//

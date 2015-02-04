@@ -48,7 +48,7 @@ import javax.xml.bind.JAXBException;
  * Class {@code AbstractEvaluationEngine} is an abstract implementation for any
  * evaluation engine.
  * <p>
- * <img src="doc-files/GlyphEvaluator.jpg" />
+ * <img src="doc-files/GlyphEvaluator.png" />
  *
  * @author Hervé Bitteur
  */
@@ -409,7 +409,7 @@ public abstract class AbstractEvaluationEngine
                         JOptionPane.showMessageDialog(null, msg);
                     } else {
                         // Tell the user we are not using the default
-                        logger.info("{} unmarshalled from {}", getName(), file);
+                        logger.debug("{} unmarshalled from {}", getName(), file);
 
                         return obj;
                     }

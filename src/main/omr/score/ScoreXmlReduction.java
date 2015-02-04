@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.score;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.score.PartConnection.Candidate;
 import omr.score.PartConnection.Result;
 
@@ -90,13 +93,15 @@ import javax.xml.bind.JAXBException;
  * folder.
  * <p>
  * <b>Relevant MusicXML elements:</b><br/>
- * <img src="doc-files/Part.jpg" />
+ * <img src="doc-files/Part.png" />
  *
  * @author Hervé Bitteur
  */
 public class ScoreXmlReduction
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ScoreXmlReduction.class);
 
@@ -145,9 +150,8 @@ public class ScoreXmlReduction
     /**
      * Creates a new ScoreXmlReduction object.
      *
-     * @param fragments a map of XML fragments, one entry per page, the key
-     *                  being the page number and the value being the MusicXML fragment produced
-     *                  from the page.
+     * @param fragments a map of XML fragments, one entry per page, the key being the page number
+     *                  and the value being the MusicXML fragment produced from the page.
      */
     public ScoreXmlReduction (Map<Integer, String> fragments)
     {
@@ -161,10 +165,9 @@ public class ScoreXmlReduction
     // main //
     //------//
     /**
-     * Pseudo-main test method, just to allocate an instance of
-     * ScoreXmlReduction,
-     * launch the reduce() method, and print the results. The resulting score
-     * in written to a global.xml file in the same folder as the input pieces.
+     * Pseudo-main test method, just to allocate an instance of ScoreXmlReduction,
+     * launch the reduce() method, and print the results.
+     * The resulting score is written to a global.xml file in the same folder as the input pieces.
      *
      * @param args the template items to filter relevant files
      */
@@ -220,7 +223,9 @@ public class ScoreXmlReduction
         fos.close();
         logger.info("Output written to {}", file);
 
-        watch.print();
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
 
         // Final statuses
         System.out.println("\nProcessing results:");
@@ -249,12 +254,13 @@ public class ScoreXmlReduction
     //--------//
     /**
      * Build a score output as the smart concatenation of the fragments produced
-     * from each page. The fragments are a map of XML fragments, the map key
-     * being the page number in the containing score. They are provided to the
-     * ScoreXmlReduction constructor.
+     * from each page.
      * <p>
-     * The final processing status for each fragment is made available
-     * through the {@link #getStatuses()} method.</p>
+     * The fragments are a map of XML fragments, the map key being the page number in the containing
+     * score. They are provided to the ScoreXmlReduction constructor.
+     * <p>
+     * The final processing status for each fragment is made available through the
+     * {@link #getStatuses()} method.
      *
      * @return the resulting global XML output for the score
      */
@@ -288,8 +294,8 @@ public class ScoreXmlReduction
     // addHeader //
     //-----------//
     /**
-     * Create the header of the global partwise, by replicating information
-     * form first page header
+     * Create the header of the global partwise, by replicating information from first
+     * page header
      *
      * @param global the global partwise to update
      * @param pages  the individual page partwise instances
@@ -352,8 +358,8 @@ public class ScoreXmlReduction
     // addPartList //
     //-------------//
     /**
-     * Build the part-list as the sequence of Result/ScorePart instances, and
-     * map each of them to a Part.
+     * Build the part-list as the sequence of Result/ScorePart instances, and map each
+     * of them to a Part.
      * Create list2part, newParts, newInsts
      */
     private void addPartList (ScorePartwise global)
@@ -422,8 +428,9 @@ public class ScoreXmlReduction
     // addPartsData //
     //--------------//
     /**
-     * Populate all part elements
-     * Page after page, append to each part the proper measures of the page
+     * Populate all part elements.
+     * <p>
+     * Page after page, append to each part the proper measures of the page.
      *
      * @param pages the individual page partwise instances
      */
@@ -501,9 +508,7 @@ public class ScoreXmlReduction
      *
      * @param globalPartwise the global partwise we have built
      * @return the marshalled string
-     * @throws JAXBException
-     *                       throws
-     *                       IOException
+     * @throws MarshallingException
      */
     private String buildOutput (ScorePartwise globalPartwise)
             throws MarshallingException
@@ -520,7 +525,7 @@ public class ScoreXmlReduction
     // dumpResultMapping //
     //-------------------//
     /**
-     * Debug: List details of all candidates per result
+     * Debug: List details of all candidates per result.
      */
     private void dumpResultMapping ()
     {
@@ -549,7 +554,7 @@ public class ScoreXmlReduction
     // fillResults //
     //-------------//
     /**
-     * We fill results with data copied from the candidates
+     * We fill results with data copied from the candidates.
      */
     private void fillResults ()
     {
@@ -623,8 +628,8 @@ public class ScoreXmlReduction
     // getPrint //
     //----------//
     /**
-     * Retrieve the Print element in the object list, even if we need to create
-     * a new one and insert it to the list
+     * Retrieve the Print element in the object list, even if we need to create a new
+     * one and insert it to the list.
      *
      * @param noteOrBackupOrForward the list to search (and update)
      * @return the print element (old or brand new)
@@ -665,8 +670,7 @@ public class ScoreXmlReduction
     // merge //
     //-------//
     /**
-     * This is the heart of reduction task, consolidating the outputs of
-     * individual pages
+     * This is the heart of reduction task, consolidating the outputs of individual pages.
      *
      * @param pages the individual pages, indexed by their page number
      * @return the resulting global score partwise
@@ -729,7 +733,7 @@ public class ScoreXmlReduction
     // readFiles //
     //-----------//
     /**
-     * Simply read the files raw content into strings in memory
+     * Simply read the files raw content into strings in memory.
      *
      * @param files the collection of files to read
      * @return the collection of raw XML fragments
@@ -828,13 +832,11 @@ public class ScoreXmlReduction
     // unmarshallPages //
     //-----------------//
     /**
-     * Retrieve individual page partwise instances, by unmarshalling MusicXML
-     * data from the page string fragments
+     * Retrieve individual page partwise instances, by unmarshalling MusicXML data from
+     * the page string fragments
      *
-     * @param pageFragments the sequence of input fragments (one string per
-     *                      page)
-     * @return the related sequence of partwise instances (one instance per
-     *         page)
+     * @param pageFragments the sequence of input fragments (one string per page)
+     * @return the related sequence of ScorePartwise instances (one instance per page)
      * @throws JAXBException
      */
     private SortedMap<Integer, ScorePartwise> unmarshallPages (Map<Integer, String> pageFragments)
@@ -882,12 +884,25 @@ public class ScoreXmlReduction
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+    }
+
     //------------------//
     // MyFilenameFilter //
     //------------------//
     /**
-     * Specific file filter to retrieve file names that match the filter
-     * prefix + <some_number> + suffix
+     * Specific file filter to retrieve file names that match the filter prefix +
+     * some_number + suffix.
      */
     private static class MyFilenameFilter
             implements FilenameFilter

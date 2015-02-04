@@ -14,9 +14,9 @@ package omr.score.visitor;
 import omr.score.Score;
 import omr.score.entity.Arpeggiate;
 import omr.score.entity.Articulation;
-import omr.score.entity.Barline;
+import omr.score.entity.OldBarline;
 import omr.score.entity.Beam;
-import omr.score.entity.Chord;
+import omr.score.entity.OldChord;
 import omr.score.entity.ChordSymbol;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
@@ -24,7 +24,7 @@ import omr.score.entity.DirectionStatement;
 import omr.score.entity.Dynamics;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
-import omr.score.entity.Measure;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.MeasureElement;
 import omr.score.entity.MeasureNode;
 import omr.score.entity.Note;
@@ -36,8 +36,8 @@ import omr.score.entity.ScoreNode;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Segno;
 import omr.score.entity.Slur;
-import omr.score.entity.Staff;
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldStaff;
+import omr.score.entity.OldSystemPart;
 import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
@@ -69,11 +69,11 @@ public interface ScoreVisitor
 
     boolean visit (Arpeggiate node);
 
-    boolean visit (Barline node);
+    boolean visit (OldBarline node);
 
     boolean visit (Beam node);
 
-    boolean visit (Chord node);
+    boolean visit (OldChord node);
 
     boolean visit (ChordSymbol node);
 
@@ -89,7 +89,7 @@ public interface ScoreVisitor
 
     boolean visit (KeySignature node);
 
-    boolean visit (Measure node);
+    boolean visit (OldMeasure node);
 
     boolean visit (MeasureElement node);
 
@@ -113,11 +113,11 @@ public interface ScoreVisitor
 
     boolean visit (Slur node);
 
-    boolean visit (Staff node);
+    boolean visit (OldStaff node);
 
     boolean visit (ScoreSystem node);
 
-    boolean visit (SystemPart node);
+    boolean visit (OldSystemPart node);
 
     boolean visit (Text node);
 

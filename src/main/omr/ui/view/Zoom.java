@@ -314,6 +314,7 @@ public class Zoom
         logger.debug("setSlider");
 
         if (slider != null) {
+            slider.setFocusable(false);
             slider.setDoubleValue(ratio);
 
             slider.addChangeListener(

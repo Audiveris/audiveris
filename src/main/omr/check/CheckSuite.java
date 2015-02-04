@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.check;
 
-import omr.sig.Inter;
+import omr.sig.inter.Inter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +47,9 @@ public class CheckSuite<C extends Checkable>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger  logger = LoggerFactory.getLogger(CheckSuite.class);
+    private static final Logger logger = LoggerFactory.getLogger(CheckSuite.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     /** Name of this suite. */
     protected final String name;
 
@@ -70,7 +69,6 @@ public class CheckSuite<C extends Checkable>
     private double totalWeight = 0.0d;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     //------------//
     // CheckSuite //
     //------------//
@@ -104,7 +102,6 @@ public class CheckSuite<C extends Checkable>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //-----//
     // add //
     //-----//
@@ -114,7 +111,7 @@ public class CheckSuite<C extends Checkable>
      * @param weight the weight of this check in the suite
      * @param check  the check to add to the suite
      */
-    public void add (double   weight,
+    public void add (double weight,
                      Check<C> check)
     {
         checks.add(check);
@@ -169,13 +166,13 @@ public class CheckSuite<C extends Checkable>
 
         for (Check<C> check : checks) {
             sb.append(
-                String.format(
-                    "%4.1f      %-19s  %5b  % 6.2f    % 6.2f \n",
-                    weights.get(index++),
-                    check.getName(),
-                    check.isCovariant(),
-                    check.getLow(),
-                    check.getHigh()));
+                    String.format(
+                            "%4.1f      %-19s  %5b  % 6.2f    % 6.2f \n",
+                            weights.get(index++),
+                            check.getName(),
+                            check.isCovariant(),
+                            check.getLow(),
+                            check.getHigh()));
         }
 
         logger.info(sb.toString());
@@ -219,7 +216,7 @@ public class CheckSuite<C extends Checkable>
      */
     public SuiteImpacts getImpacts (C checkable)
     {
-        final SuiteImpacts<C> impacts = new SuiteImpacts<C>(this, checkable);
+        final SuiteImpacts impacts = SuiteImpacts.newInstance(this, checkable);
         pass(checkable, impacts);
 
         return impacts;
@@ -289,18 +286,18 @@ public class CheckSuite<C extends Checkable>
      * @param impacts   the suite impacts if any, to record detailed results
      * @return the computed grade.
      */
-    public double pass (C            checkable,
+    public double pass (C checkable,
                         SuiteImpacts impacts)
     {
         final CheckResult result = new CheckResult();
-        double            grade = 1d;
-        int               index = 0;
+        double grade = 1d;
+        int index = 0;
 
         for (Check<C> check : checks) {
             check.pass(checkable, result, true);
 
             if (impacts != null) {
-                impacts.setValue(index, result.value);
+                ///impacts.setValue(index, result.value);
                 impacts.setImpact(index, result.grade);
             }
 

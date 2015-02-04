@@ -40,7 +40,7 @@ import java.util.List;
  * <b>Nota</b>: There is exactly one Text entity per sentence, except for lyrics items for which we
  * build one {@code LyricsItem} (subclass of Text) for each textual glyph.
  * The reason is that, except for lyrics, only the full sentence is meaningful: for example "Ludwig
- * van Beethoven" is meaningful as a Creator Text, but the various words "Ludwig", "van",
+ * van Beethoven" is meaningful as a Creator Text, but the individual words "Ludwig", "van",
  * "Beethoven" are not.
  * For lyrics, since we can have very long sentences, and since the positioning of every syllable
  * must be done with precision, we handle one LyricsItem Text entity per isolated word.</p>
@@ -49,7 +49,7 @@ import java.util.List;
  * baseline or font) for the whole sentence.</p>
  *
  * <h4>Synoptic of Text Translation:<br/>
- * <img src="doc-files/TextTranslation.jpg"/>
+ * <img src="doc-files/TextTranslation.png"/>
  * </h4>
  *
  * @author Hervé Bitteur
@@ -84,8 +84,8 @@ public abstract class Text
     // Text //
     //------//
     /**
-     * Creates a new Text object, with a specific location, different
-     * from the sentence location.
+     * Creates a new Text object, with a specific location, different from the sentence
+     * location.
      *
      * @param sentence the larger sentence
      * @param location specific location
@@ -133,8 +133,7 @@ public abstract class Text
     // populate //
     //----------//
     /**
-     * Allocate the proper score entity (or entities) that correspond
-     * to this textual sentence.
+     * Allocate the proper score entity (or entities) that correspond to this sentence.
      * This word or sequence of words may be:
      * <ul>
      * <li>a Direction</li>
@@ -143,16 +142,16 @@ public abstract class Text
      * <li>a Creator</li>
      * <li>a Copyright</li>
      * <li>one or several LyricsItem entities</li>
-     * <li>a Chord Statement</li>
+     * <li>a Chord name</li>
      * </ul>
      *
      * @param sentence the whole sentence
-     * @param location its starting reference wrt containing system
+     * @param location its starting reference
      */
     public static void populate (TextLine sentence,
                                  Point location)
     {
-        final SystemPart systemPart = sentence.getSystemPart();
+        final OldSystemPart systemPart = sentence.getSystemPart();
         final TextRoleInfo roleInfo = sentence.getRole();
         final TextRole role = roleInfo.role;
 
@@ -200,7 +199,7 @@ public abstract class Text
 
         case Direction:
 
-            Measure measure = systemPart.getMeasureAt(location);
+            OldMeasure measure = systemPart.getMeasureAt(location);
             sentence.setGlyphsTranslation(
                     new DirectionStatement(
                             measure,
@@ -215,7 +214,7 @@ public abstract class Text
 
             break;
 
-        case Name:
+        case PartName:
             sentence.setGlyphsTranslation(new NameText(sentence));
 
             break;
@@ -230,7 +229,7 @@ public abstract class Text
 
             break;
 
-        case Chord:
+        case ChordName:
             measure = systemPart.getMeasureAt(location);
             sentence.setGlyphsTranslation(
                     new ChordSymbol(
@@ -320,9 +319,6 @@ public abstract class Text
     //----------//
     // toString //
     //----------//
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String toString ()
     {
@@ -358,9 +354,9 @@ public abstract class Text
         setReferencePoint(sentence.getLocation());
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     /**
      * Return the string of the internals of this class, for inclusion
      * in a toString().

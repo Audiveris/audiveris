@@ -88,24 +88,21 @@ import javax.swing.event.MouseInputAdapter;
  * @author Hervé Bitteur
  */
 public class Rubber
-        extends MouseInputAdapter
+    extends MouseInputAdapter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
-
-    private static final Logger logger = LoggerFactory.getLogger(Rubber.class);
-
-    private static AtomicInteger globalId = new AtomicInteger(0);
+    private static final Logger    logger = LoggerFactory.getLogger(Rubber.class);
+    private static AtomicInteger   globalId = new AtomicInteger(0);
 
     /** To handle zoom through mouse wheel */
     private static final double base = 2;
-
-    private static final double intervals = 5;
-
-    private static final double factor = Math.pow(base, 1d / intervals);
+    private static final double    intervals = 5;
+    private static final double    factor = Math.pow(base, 1d / intervals);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** View from which the rubber will receive physical mouse events */
     protected JComponent component;
 
@@ -128,6 +125,7 @@ public class Rubber
     private final int id;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     //--------//
     // Rubber //
     //--------//
@@ -166,7 +164,7 @@ public class Rubber
      * @param zoom      the zoom entity to handle the display zoom
      */
     public Rubber (JComponent component,
-                   Zoom zoom)
+                   Zoom       zoom)
     {
         id = globalId.addAndGet(1);
         connectComponent(component);
@@ -174,6 +172,7 @@ public class Rubber
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------------------//
     // connectComponent //
     //------------------//
@@ -272,13 +271,12 @@ public class Rubber
         if (isDragWanted(e)) {
             final Rectangle vr = component.getVisibleRect();
             vr.setBounds(
-                    (vr.x + rawRect.x) - e.getX(),
-                    (vr.y + rawRect.y) - e.getY(),
-                    vr.width,
-                    vr.height);
+                (vr.x + rawRect.x) - e.getX(),
+                (vr.y + rawRect.y) - e.getY(),
+                vr.width,
+                vr.height);
             SwingUtilities.invokeLater(
-                    new Runnable()
-                    {
+                new Runnable() {
                         @Override
                         public void run ()
                         {
@@ -418,7 +416,7 @@ public class Rubber
 
             while (container != null) {
                 if (container instanceof JComponent) {
-                    JComponent comp = (JComponent) container;
+                    JComponent           comp = (JComponent) container;
                     MouseWheelListener[] listeners = comp.getMouseWheelListeners();
 
                     if (listeners.length > 0) {
@@ -451,7 +449,7 @@ public class Rubber
         if (rect != null) {
             Graphics2D g = (Graphics2D) unscaledGraphics.create();
 
-            Rectangle r = new Rectangle(rect);
+            Rectangle  r = new Rectangle(rect);
 
             if (zoom != null) {
                 zoom.scale(r);
@@ -466,8 +464,8 @@ public class Rubber
             // Draw horizontal & vertical rules (point or rectangle)
             g.setColor(Colors.RUBBER_RULE);
 
-            int x = scaled(rect.x + (rect.width / 2));
-            int y = scaled(rect.y + (rect.height / 2));
+            int   x = scaled(rect.x + (rect.width / 2));
+            int   y = scaled(rect.y + (rect.height / 2));
             float pixelSize = scaled(1);
 
             if (pixelSize < 1) {
@@ -481,7 +479,7 @@ public class Rubber
             Stroke s = new BasicStroke(pixelSize);
             g.setStroke(s);
 
-            if (constants.displayCross.getValue()) {
+            if (constants.showCross.getValue()) {
                 // Draw just a small cross
                 int legLength = constants.crossLegLength.getValue();
                 g.drawLine(x, y - legLength, x, y + legLength); // Vertical
@@ -590,16 +588,16 @@ public class Rubber
     {
         if (rect == null) {
             rect = new Rectangle(
-                    unscaled(rawRect.x),
-                    unscaled(rawRect.y),
-                    unscaled(rawRect.width),
-                    unscaled(rawRect.height));
+                unscaled(rawRect.x),
+                unscaled(rawRect.y),
+                unscaled(rawRect.width),
+                unscaled(rawRect.height));
         } else {
             rect.setBounds(
-                    unscaled(rawRect.x),
-                    unscaled(rawRect.y),
-                    unscaled(rawRect.width),
-                    unscaled(rawRect.height));
+                unscaled(rawRect.x),
+                unscaled(rawRect.y),
+                unscaled(rawRect.width),
+                unscaled(rawRect.height));
         }
 
         // The x & y are the original coordinates when mouse began
@@ -724,21 +722,21 @@ public class Rubber
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean displayCross = new Constant.Boolean(
-                true,
-                "Should we display just a cross for rubber (or whole lines)");
-
+        Constant.Boolean showCross = new Constant.Boolean(
+            true,
+            "Should we show just a cross for rubber (or whole lines)");
         Constant.Integer crossLegLength = new Constant.Integer(
-                "Pixels",
-                100,
-                "Length for each leg of the rubber cross");
+            "Pixels",
+            100,
+            "Length for each leg of the rubber cross");
     }
 }

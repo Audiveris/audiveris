@@ -25,11 +25,8 @@ public class PixelLevelEvent
     private final Integer pixelLevel;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // PixelLevelEvent //
-    //-----------------//
     /**
-     * Creates a new PixelLevelEvent object.
+     * Creates a new {@code PixelLevelEvent} object.
      *
      * @param source     the entity that created this event
      * @param hint       hint about event origin

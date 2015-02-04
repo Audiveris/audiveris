@@ -41,9 +41,11 @@ import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -77,7 +79,7 @@ public class SheetAssembly
     private final EventService locationService;
 
     /** The concrete UI component. */
-    private Panel component = new Panel();
+    private final Panel component = new Panel();
 
     /** To manually control the zoom ratio. */
     private final LogSlider slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 5, 0);
@@ -142,9 +144,7 @@ public class SheetAssembly
     {
         JScrollPane pane = getPane(title);
 
-        if (pane == null) {
-            logger.warn("Unknown tab {}", title);
-        } else {
+        if (pane != null) {
             ViewTab viewTab = tabs.get(pane);
             ///logger.warn("Adding " + board + " to " + title);
             viewTab.boardsPane.addBoard(board);
@@ -290,6 +290,27 @@ public class SheetAssembly
         return sheet;
     }
 
+    //-----------//
+    // renameTab //
+    //-----------//
+    /**
+     * Change the name of a tab.
+     *
+     * @param oldName old tab name
+     * @param newName new tab name
+     */
+    public void renameTab (String oldName,
+                           String newName)
+    {
+        for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
+            if (viewsPane.getTitleAt(i).equals(oldName)) {
+                viewsPane.setTitleAt(i, newName);
+
+                return;
+            }
+        }
+    }
+
     //---------------//
     // selectViewTab //
     //---------------//
@@ -310,8 +331,6 @@ public class SheetAssembly
                 return;
             }
         }
-
-        // Currently, there is no view tab displayed for this step
     }
 
     //--------------//
@@ -370,6 +389,15 @@ public class SheetAssembly
         component.setNoInsets();
         component.add(slider, BorderLayout.WEST);
         component.add(viewsPane, BorderLayout.CENTER);
+
+        // Avoid slider to react on (and consume) page up/down keys or arrow keys
+        InputMap inputMap = slider.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        inputMap.put(KeyStroke.getKeyStroke("PAGE_UP"), "none");
+        inputMap.put(KeyStroke.getKeyStroke("PAGE_DOWN"), "none");
+        inputMap.put(KeyStroke.getKeyStroke("LEFT"), "none");
+        inputMap.put(KeyStroke.getKeyStroke("RIGHT"), "none");
+        inputMap.put(KeyStroke.getKeyStroke("UP"), "none");
+        inputMap.put(KeyStroke.getKeyStroke("DOWN"), "none");
     }
 
     //---------------//

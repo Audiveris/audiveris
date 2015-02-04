@@ -99,7 +99,7 @@ public abstract class LogUtil
         consoleAppender.setName("CONSOLE");
         consoleAppender.setContext(loggerContext);
         consoleEncoder.setContext(loggerContext);
-        consoleEncoder.setPattern("%-5level %caller{1} - %msg%ex%n");
+        consoleEncoder.setPattern("%-5level %caller{1} - %msg%n%ex");
         consoleEncoder.start();
         consoleAppender.setEncoder(consoleEncoder);
         consoleAppender.start();

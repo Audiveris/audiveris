@@ -111,7 +111,7 @@ public class Grades
                 0.80,
                 "Minimum grade for a validation");
 
-        Evaluation.Grade symbolMinGrade = new Evaluation.Grade(0.1, "Minimum grade for a symbol");
+        Evaluation.Grade symbolMinGrade = new Evaluation.Grade(0.15, "Minimum grade for a symbol");
 
         Evaluation.Grade patternsMinGrade = new Evaluation.Grade(
                 0.67,

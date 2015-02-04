@@ -38,21 +38,21 @@ public class Rational
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** The zero rational instance */
+    /** The zero rational instance. */
     public static final Rational ZERO = new Rational(0, 1);
 
-    /** The one rational instance */
+    /** The one rational instance. */
     public static final Rational ONE = new Rational(1, 1);
 
-    /** Max rational value */
+    /** Max rational value. */
     public static final Rational MAX_VALUE = new Rational(Integer.MAX_VALUE, 1);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Final denominator value */
+    /** Final denominator value. */
     @XmlAttribute
     public final int den;
 
-    /** Final numerator value */
+    /** Final numerator value. */
     @XmlAttribute
     public final int num;
 
@@ -147,7 +147,7 @@ public class Rational
      * Comparison
      *
      * @param that the other rational instance
-     * @return -1,0,1 if this <,==,> that respectively
+     * @return -1, 0, 1 if this &lt;, ==, &gt; that respectively
      */
     @Override
     public int compareTo (Rational that)
@@ -169,8 +169,6 @@ public class Rational
         } else {
             return Integer.signum(a - b);
         }
-
-        ///return Integer.signum((this.num * that.den) - (this.den * that.num));
     }
 
     //---------//
@@ -223,7 +221,6 @@ public class Rational
     //----------//
     // hashCode //
     //----------//
-    /** {@inheritDoc } */
     @Override
     public int hashCode ()
     {
@@ -251,7 +248,7 @@ public class Rational
     // minus //
     //-------//
     /**
-     * Substraction
+     * Subtraction
      *
      * @param that the other rational instance
      * @return this - that
@@ -265,9 +262,9 @@ public class Rational
     // minus //
     //-------//
     /**
-     * Substraction
+     * Subtraction
      *
-     * @param that the integer to substract
+     * @param that the integer to subtract
      * @return this - that
      */
     public Rational minus (int that)
@@ -363,7 +360,6 @@ public class Rational
     //----------//
     // toString //
     //----------//
-    /** {@inheritDoc } */
     @Override
     public String toString ()
     {

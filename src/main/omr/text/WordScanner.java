@@ -14,6 +14,7 @@ package omr.text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Rectangle;
 import java.util.List;
 
 /**
@@ -29,25 +30,29 @@ public abstract class WordScanner
     private static final Logger logger = LoggerFactory.getLogger(WordScanner.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    private final boolean bySyllable;
-
-    /** The content string */
+    /** The content string. */
     private final String content;
 
-    /** The current index in the content string */
-    private int strIndex = -1;
+    /** Split by syllable. */
+    private final boolean bySyllable;
 
-    /** Precise description of each (non blank) character */
+    /** Maximum abscissa gap between two consecutive chars. */
+    private final int maxCharGap;
+
+    /** Precise description of each (non blank) character. */
     private final List<TextChar> chars;
 
-    /** Current word and its positions in chars sequence */
+    /** The current index in the content string. */
+    private int strIndex = -1;
+
+    /** Current word and its positions in chars sequence. */
     private String currentWord = null;
 
     private int currentWordStart = 0;
 
     private int currentWordStop = 0;
 
-    /** Next word and its positions in chars sequence */
+    /** Next word and its positions in chars sequence. */
     private String nextWord = null;
 
     private int nextWordStart = -1;
@@ -61,15 +66,19 @@ public abstract class WordScanner
     /**
      * Creates a new WordScanner object.
      *
-     * @param content the string value to scan
-     * @param chars   the sequence of chars descriptors
+     * @param content    the string value to scan
+     * @param bySyllable to split by syllable
+     * @param maxCharGap maximum abscissa gap between two consecutive chars
+     * @param chars      the sequence of chars descriptors
      */
-    public WordScanner (String content,
-                        boolean bySyllable,
-                        List<TextChar> chars)
+    protected WordScanner (String content,
+                           boolean bySyllable,
+                           int maxCharGap,
+                           List<TextChar> chars)
     {
         this.content = content;
         this.bySyllable = bySyllable;
+        this.maxCharGap = maxCharGap;
         this.chars = chars;
     }
 
@@ -79,8 +88,7 @@ public abstract class WordScanner
     // getWordChars //
     //--------------//
     /**
-     * Report the sequence of TextChar instances that correspond to
-     * the current word.
+     * Report the sequence of TextChar instances that correspond to the current word.
      *
      * @return the word sequence of TextChar's
      */
@@ -123,13 +131,24 @@ public abstract class WordScanner
         return currentWord;
     }
 
+    //--------------//
+    // stringToDesc //
+    //--------------//
+    /**
+     * Knowing the char strIndex in string content, determine the related position
+     * in the sequence of TextChar instances.
+     *
+     * @param strIndex strIndex in content
+     * @return position in sequence of TextChar instances
+     */
+    protected abstract int stringToDesc (int strIndex);
+
     //-------------//
     // getNextWord //
     //-------------//
     /**
      * Retrieve positions for the next word, whose content is returned.
-     * The related TextChar instances can now be retrieved through their range
-     * [getWordStart() .. getWordStop()].
+     * The related TextChar instances can then be retrieved through {@link #getWordChars()}.
      *
      * @return the next word content
      */
@@ -163,6 +182,17 @@ public abstract class WordScanner
                 // Standard word character
                 if (WordSb.length() == 0) {
                     nextWordStart = charPos;
+                } else {
+                    // Check abscissa gap with previous character
+                    Rectangle prevCharBox = chars.get(charPos - 1).getBounds();
+                    Rectangle charBox = chars.get(charPos).getBounds();
+                    int xGap = charBox.x - (prevCharBox.x + prevCharBox.width);
+
+                    if (xGap > maxCharGap) {
+                        strIndex--; // To get back to this index, next time
+
+                        return WordSb.toString();
+                    }
                 }
 
                 nextWordStop = charPos;
@@ -189,26 +219,13 @@ public abstract class WordScanner
         nextWord = getNextWord();
     }
 
-    //--------------//
-    // stringToDesc //
-    //--------------//
-    /**
-     * Knowing the char strIndex in string content, determine the
-     * related position in the sequence of TextChar instances
-     *
-     * @param strIndex strIndex in contant
-     * @return position in sequence of TextChar instances
-     */
-    protected abstract int stringToDesc (int strIndex);
-
     //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // ManualScanner //
     //---------------//
     /**
-     * Class {@code ManualScanner} is a specific scanner using manual
-     * text content, whose length may be different from the sequence of
-     * TextChar instances.
+     * Class {@code ManualScanner} is a specific scanner using manual text content,
+     * whose length may be different from the sequence of TextChar instances.
      */
     public static class ManualScanner
             extends WordScanner
@@ -222,14 +239,17 @@ public abstract class WordScanner
         /**
          * Creates a new ManualScanner object.
          *
-         * @param content the string value to scan
-         * @param chars   the sequence of chars descriptors
+         * @param content    the string value to scan
+         * @param bySyllable true for split by syllable
+         * @param maxCharGap maximum abscissa gap between two consecutive chars
+         * @param chars      the sequence of chars descriptors
          */
         public ManualScanner (String content,
                               boolean bySyllable,
+                              int maxCharGap,
                               List<TextChar> chars)
         {
-            super(content, bySyllable, chars);
+            super(content, bySyllable, maxCharGap, chars);
 
             ratio = chars.size() / (double) content.length();
 
@@ -238,12 +258,10 @@ public abstract class WordScanner
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        /**
-         * Compute charPos proportionally to strIndex.
-         */
         @Override
         protected int stringToDesc (int strIndex)
         {
+            // Compute charPos proportionally to strIndex
             return (int) Math.rint(strIndex * ratio);
         }
     }
@@ -252,8 +270,8 @@ public abstract class WordScanner
     // OcrScanner //
     //------------//
     /**
-     * Class {@code OcrScanner} is a basic scanner for which
-     * the sequence of TextChar's is parallel to String content.
+     * Class {@code OcrScanner} is a basic scanner for which the sequence of TextChar's
+     * is parallel to String content.
      *
      * @author Hervé Bitteur
      */
@@ -265,26 +283,27 @@ public abstract class WordScanner
         /**
          * Creates a new OcrScanner object.
          *
-         * @param content the string value to scan
-         * @param chars   the sequence of chars descriptors
+         * @param content    the string value to scan
+         * @param bySyllable for split by syllable
+         * @param maxCharGap maximum abscissa gap between two consecutive chars
+         * @param chars      the sequence of chars descriptors
          */
         public OcrScanner (String content,
                            boolean bySyllable,
+                           int maxCharGap,
                            List<TextChar> chars)
         {
-            super(content, bySyllable, chars);
+            super(content, bySyllable, maxCharGap, chars);
 
             lookAhead();
             logger.debug("OcrScanner on ''{}''", content);
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        /**
-         * CharPos and strIndex are always equal.
-         */
         @Override
         protected int stringToDesc (int strIndex)
         {
+            // CharPos and strIndex are always equal
             return strIndex;
         }
     }

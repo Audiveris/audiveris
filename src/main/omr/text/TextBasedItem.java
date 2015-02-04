@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                    O c r B a s e d I t e m                                     //
+//                                   T e x t B a s e d I t e m                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -199,16 +199,16 @@ public abstract class TextBasedItem
         }
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internals());
 
         if (getConfidence() != null) {
-            sb.append(" conf:").append(getConfidence());
+            sb.append(" conf:").append(String.format("%.2f", getConfidence()));
         }
 
         if (getBaseline() != null) {

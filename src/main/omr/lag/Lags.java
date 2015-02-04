@@ -31,8 +31,8 @@ public class Lags
     /** Vertical (partial) lag. It complements hLag. */
     public static final String VLAG = "vLag";
 
-    /** Horizontal out-of-staves lag. (for ledgers and endings) */
-    public static final String FULL_HLAG = "fullHLag";
+    /** Horizontal out-of-staves lag. (for ledgers) */
+    public static final String LEDGER_LAG = "ledgerLag";
 
     /** Spot lag. (for beams) */
     public static final String SPOT_LAG = "spotLag";

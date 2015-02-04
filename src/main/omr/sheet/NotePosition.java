@@ -11,8 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.grid.StaffInfo;
-import omr.grid.StaffInfo.IndexedLedger;
+import omr.sheet.Staff.IndexedLedger;
 
 /**
  * Class {@code NotePosition} handles the precise position of a note-like entity,
@@ -25,7 +24,7 @@ public class NotePosition
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** The related staff. */
-    private final StaffInfo staff;
+    private final Staff staff;
 
     /** The precise pitch position wrt the staff. */
     private final double pitchPosition;
@@ -44,7 +43,7 @@ public class NotePosition
      * @param pitchPosition the precise pitch position
      * @param indexedLedger the closest ledger if any
      */
-    public NotePosition (StaffInfo staff,
+    public NotePosition (Staff staff,
                          double pitchPosition,
                          IndexedLedger indexedLedger)
     {
@@ -82,7 +81,7 @@ public class NotePosition
     /**
      * @return the staff
      */
-    public StaffInfo getStaff ()
+    public Staff getStaff ()
     {
         return staff;
     }

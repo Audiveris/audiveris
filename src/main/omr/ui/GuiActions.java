@@ -653,7 +653,7 @@ public class GuiActions
                 "Should the log window be displayed");
 
         final Constant.Boolean errorsDisplayed = new Constant.Boolean(
-                true,
+                false,
                 "Should the errors window be displayed");
     }
 

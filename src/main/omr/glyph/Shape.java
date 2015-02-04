@@ -26,31 +26,35 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class {@code Shape} defines the comprehensive list of glyph shapes.
- * <p>
- * It is organized according to the Unicode Standard 4.0, with a few addition for convenience only.
+ * Enum {@code Shape} defines the comprehensive enumeration of glyph shapes.
  * <p>
  * The enumeration begins with physical shapes (which are the only ones usable for training) and
- * ends with the logical shapes. The method {@link #isTrainable()} can be used to disambiguate
- * between physical and logical shapes.
+ * ends with additional (logical) shapes. The method {@link #isTrainable()} can be used to
+ * disambiguate between physical and logical shapes.
  * <p>
  * <b>Nota</b>: All the physical shapes <b>MUST</b> have different characteristics for the training
  * to work correctly.
- * The ART evaluator uses moments that are invariant to translation, scaling
- * and rotation (and to symmetry as well).
- * Shapes that exhibit some symmetry (like FERMATA vs FERMATA_BELOW) would be considered as the same
- * shape by the ART evaluator.
- * Therefore, the strategy is to define a single shape (FERMATA_set) for the evaluator, leaving the
- * final disambiguation between FERMATA_BELOW and FERMATA to tests performed beyond the ART
- * evaluator.
- * FERMATA_set belongs to the physical shapes, while FERMATA_BELOW and FERMATA belong to the logical
- * shapes.
- * All shapes whose name ends with "_set" are in this case.
- * <p>
- * TODO: Perhaps we could simply combine the ART moments and some of the GEO moments (at least n11,
- * n12, n21), plus perhaps aspect, for a more comprehensive set of features but a simpler approach.
- * <p>
- * As far as possible, a symbol should be generated for every shape.
+ * The same physical shape can lead to different logical shapes according to the context.
+ * Two physical shapes are in this case (their name ends with "<i>_set</i>" to make this clear):
+ * <ul>
+ * <li>Physical DOT_set: only the context can disambiguate between:
+ * <ul>
+ * <li>an augmentation dot (first or second dot),
+ * <li>a part of a repeat sign (upper or lower dot),
+ * <li>a staccato sign,
+ * <li>a part of fermata sign,
+ * <li>a dot of an ending indication,
+ * <li>a simple text dot.
+ * </ul>
+ * </li>
+ * <li>Physical HW_REST_set: depending on the precise pitch position within the staff, it can mean
+ * different logicals:
+ * <ul>
+ * <li>HALF_REST</li>
+ * <li>WHOLE_REST</li>
+ * </ul>
+ * </ul>
+ * As far as possible, a display symbol should be generated for every shape.
  * <p>
  * A shape may have a related "decorated" symbol. For example the BREVE_REST is similar to a black
  * rectangle which is used for training / recognition and the related symbol is used for drawing in
@@ -79,25 +83,23 @@ public enum Shape
     //
     // Bars --------------------------------------------------------------------
     //
-    DAL_SEGNO("Repeat from the sign"),
-    DA_CAPO("Repeat from the beginning"),
+    DAL_SEGNO("D.S.: Repeat from the sign"),
+    DA_CAPO("D.C.: Repeat from the beginning"),
     SEGNO("Sign"),
     CODA("Closing section"),
     BREATH_MARK("Breath Mark"),
     CAESURA("Caesura"),
-    BRACE("Brace"),
-    BRACKET("Bracket"),
     FERMATA("Fermata"),
     FERMATA_BELOW("Fermata Below"),
 
     //
     // Clefs -------------------------------------------------------------------
     //
-    G_CLEF("Treble Clef", new Color(0xff99ff)),
-    G_CLEF_SMALL("Small Treble Clef", new Color(0xff99ff)),
-    G_CLEF_8VA("Treble Clef Ottava Alta", new Color(0xff99ff)),
-    G_CLEF_8VB("Treble Clef Ottava Bassa", new Color(0xff99ff)),
-    C_CLEF("Ut Clef", new Color(0xff99ff)),
+    G_CLEF("Treble Clef"),
+    G_CLEF_SMALL("Small Treble Clef"),
+    G_CLEF_8VA("Treble Clef Ottava Alta"),
+    G_CLEF_8VB("Treble Clef Ottava Bassa"),
+    C_CLEF("Ut Clef"),
     F_CLEF("Bass Clef"),
     F_CLEF_SMALL("Small Bass Clef"),
     F_CLEF_8VA("Bass Clef Ottava Alta"),
@@ -115,18 +117,18 @@ public enum Shape
     //
     // Time --------------------------------------------------------------------
     //
-    TIME_ZERO("Digit 0"),
-    TIME_ONE("Digit 1"),
-    TIME_TWO("Digit 2"),
-    TIME_THREE("Digit 3"),
-    TIME_FOUR("Digit 4"),
-    TIME_FIVE("Digit 5"),
-    TIME_SIX("Digit 6"),
-    TIME_SEVEN("Digit 7"),
-    TIME_EIGHT("Digit 8"),
-    TIME_NINE("Digit 9"),
-    TIME_TWELVE("Number 12"),
-    TIME_SIXTEEN("Number 16"),
+    TIME_ZERO("Time digit 0"),
+    TIME_ONE("Time digit 1"),
+    TIME_TWO("Time digit 2"),
+    TIME_THREE("Time digit 3"),
+    TIME_FOUR("Time digit 4"),
+    TIME_FIVE("Time digit 5"),
+    TIME_SIX("Time digit 6"),
+    TIME_SEVEN("Time digit 7"),
+    TIME_EIGHT("Time digit 8"),
+    TIME_NINE("Time digit 9"),
+    TIME_TWELVE("Time number 12"),
+    TIME_SIXTEEN("Time number 16"),
     COMMON_TIME("Alpha = 4/4", new Color(0xcc6600)),
     CUT_TIME("Semi-Alpha = 2/2"),
     OTTAVA_ALTA("8 va", new Color(0xcc66ff)),
@@ -174,26 +176,26 @@ public enum Shape
     //
     // Dynamics ----------------------------------------------------------------
     //
-    DYNAMICS_CHAR_M("m character"),
-    DYNAMICS_CHAR_R("r character"),
-    DYNAMICS_CHAR_S("c character"),
-    DYNAMICS_CHAR_Z("z character"),
-    DYNAMICS_F("Forte"),
-    DYNAMICS_FF("Fortissimo"),
-    DYNAMICS_FFF("Fortississimo"),
-    DYNAMICS_FP("FortePiano"),
-    DYNAMICS_FZ("Forzando"),
-    DYNAMICS_MF("Mezzo forte"),
-    DYNAMICS_MP("Mezzo piano"),
+    //    DYNAMICS_CHAR_M("m character"),
+    //    DYNAMICS_CHAR_R("r character"),
+    //    DYNAMICS_CHAR_S("c character"),
+    //    DYNAMICS_CHAR_Z("z character"),
+    //    DYNAMICS_FFF("Fortississimo"),
+    //    DYNAMICS_FZ("Forzando"),
+    //    DYNAMICS_PPP("Pianississimo"),
+    //    DYNAMICS_RF,
+    //    DYNAMICS_RFZ("Rinforzando"),
+    //    DYNAMICS_SF,
+    //    DYNAMICS_SFFZ,
+    //    DYNAMICS_SFP("Subito fortepiano"),
+    //    DYNAMICS_SFPP,
     DYNAMICS_P("Piano"),
     DYNAMICS_PP("Pianissimo"),
-    DYNAMICS_PPP("Pianississimo"),
-    DYNAMICS_RF,
-    DYNAMICS_RFZ("Rinforzando"),
-    DYNAMICS_SF,
-    DYNAMICS_SFFZ,
-    DYNAMICS_SFP("Subito fortepiano"),
-    DYNAMICS_SFPP,
+    DYNAMICS_MP("Mezzo piano"),
+    DYNAMICS_F("Forte"),
+    DYNAMICS_FF("Fortissimo"),
+    DYNAMICS_MF("Mezzo forte"),
+    DYNAMICS_FP("FortePiano"),
     DYNAMICS_SFZ("Sforzando"),
 
     //
@@ -224,43 +226,66 @@ public enum Shape
     DIGIT_2("Digit 2"),
     DIGIT_3("Digit 3"),
     DIGIT_4("Digit 4"),
-    DIGIT_5("Digit 5"),
-    DIGIT_6("Digit 6"),
-    DIGIT_7("Digit 7"),
-    DIGIT_8("Digit 8"),
-    DIGIT_9("Digit 9"),
+
+    //    DIGIT_5("Digit 5"),
+    //    DIGIT_6("Digit 6"),
+    //    DIGIT_7("Digit 7"),
+    //    DIGIT_8("Digit 8"),
+    //    DIGIT_9("Digit 9"),
+    //
+    // Roman numerals ----------------------------------------------------------
+    //
+    ROMAN_I("Roman number 1"),
+    ROMAN_II("Roman number 2"),
+    ROMAN_III("Roman number 3"),
+    ROMAN_IV("Roman number 4"),
+    ROMAN_V("Roman number 5"),
+    ROMAN_VI("Roman number 6"),
+    ROMAN_VII("Roman number 7"),
+    ROMAN_VIII("Roman number 8"),
+    ROMAN_IX("Roman number 9"),
+    ROMAN_X("Roman number 10"),
+    ROMAN_XI("Roman number 11"),
+    ROMAN_XII("Roman number 12"),
+
+    //
+    // Plucking ----------------------------------------------------------------
+    //
+    PLUCK_P("Plucking pouce/pulgar/thumb"),
+    PLUCK_I("Plucking index/indicio/index"),
+    PLUCK_M("Plucking majeur/medio/middle"),
+    PLUCK_A("Plucking annulaire/anular/ring"),
 
     //
     // Miscellaneous -----------------------------------------------------------
     //
-    CHARACTER("Any letter"),
     TEXT("Sequence of letters & spaces", new Color(0x9999ff)),
     CLUTTER("Pure clutter", new Color(0x999900)),
-
     //
     // =============================================================================================
     // This is the end of physical shapes.
     // Next shapes are logical shapes, that CANNOT be inferred only from their physical characteristics.
     // =============================================================================================
     //
+    CHARACTER("Any letter"),
     //
     // Shapes from shape sets --------------------------------------------------
     //
     REPEAT_DOT("Repeat dot", DOT_set, new Color(0x0000ff)),
     AUGMENTATION_DOT("Augmentation Dot", DOT_set),
+    FERMATA_DOT("Fermata Dot", DOT_set),
     STACCATO("Staccato dot", DOT_set),
+    //
     WHOLE_REST("Rest for whole measure", HW_REST_set),
     HALF_REST("Rest for a 1/2", HW_REST_set),
-    CRESCENDO("Crescendo"),
-    DECRESCENDO("Decrescendo"),
 
     //
     // Noteheads ---------------------------------------------------------------
     //
-    NOTEHEAD_VOID("Hollow node head for halves", new Color(0xff9966)),
-    NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue", new Color(0xff4400)),
     NOTEHEAD_BLACK("Filled node head for quarters and less", new Color(0xffcc00)),
     NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue", new Color(0xff4400)),
+    NOTEHEAD_VOID("Hollow node head for halves", new Color(0xff9966)),
+    NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue", new Color(0xff4400)),
 
     //
     // Notes -------------------------------------------------------------------
@@ -276,7 +301,6 @@ public enum Shape
     BEAM_HOOK("Hook of a beam attached on one stem"),
     BEAM_HOOK_SMALL("Small hook of a beam for cue notes"),
     SLUR("Slur tying notes", new Color(0xff4444)),
-
     //
     // Key signatures ----------------------------------------------------------
     //
@@ -296,7 +320,6 @@ public enum Shape
     //
     // Bars --------------------------------------------------------------------
     //
-    PART_DEFINING_BARLINE("Bar line that defines a part"),
     THIN_BARLINE("Thin bar line"),
     THIN_CONNECTION("Connection between thin barlines"),
     THICK_BARLINE("Thick bar line"),
@@ -310,8 +333,15 @@ public enum Shape
     BACK_TO_BACK_REPEAT_SIGN("Repeat dots + Thin / Thick / Thin + REPEAT_DOTS"),
     ENDING("Alternate ending", new Color(0x993300)),
     //
+    // Wedges ------------------------------------------------------------------
+    //
+    CRESCENDO("Crescendo"),
+    DIMINUENDO("Diminuendo"),
+    //
     // Miscellaneous
     //
+    BRACE("Brace"),
+    BRACKET("Bracket"),
     REPEAT_DOT_PAIR("Pair of repeat dots"),
     NOISE("Too small stuff", new Color(0xcccccc)),
     STAFF_LINE("Staff Line", new Color(0xffffcc)),
@@ -320,6 +350,7 @@ public enum Shape
     ENDING_HORIZONTAL("Horizontal part of ending"),
     ENDING_VERTICAL("Vertical part of ending"),
     SEGMENT("Wedge or ending segment"),
+
     //
     // Stems
     //
@@ -345,7 +376,8 @@ public enum Shape
     TIME_SIX_EIGHT("Rational 6/8"),
     CUSTOM_TIME("Time signature defined by user"),
     NO_LEGAL_TIME("No Legal Time Shape"),
-    BEAM_SPOT("Beam-oriented spot", new Color(0xaaaaaa));
+    BEAM_SPOT("Beam-oriented spot", new Color(0xaaaaaa)),
+    NOTE_SPOT("Note-oriented spot", new Color(0xbbbbbb));
 
     //
     // =============================================================================================
@@ -461,6 +493,19 @@ public enum Shape
     public boolean isMeasureRest ()
     {
         return (this == WHOLE_REST) || (this == BREVE_REST) || (this == LONG_REST);
+    }
+
+    //--------//
+    // isRest //
+    //--------//
+    /**
+     * Check whether the shape is a rest.
+     *
+     * @return true if rest
+     */
+    public boolean isRest ()
+    {
+        return ShapeSet.Rests.contains(this);
     }
 
     //--------------//

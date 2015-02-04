@@ -24,10 +24,9 @@ import omr.math.IntegerHistogram;
 
 import omr.run.Orientation;
 import omr.run.Run;
-import omr.run.RunsTable;
-import omr.run.RunsTableFactory;
-
-import omr.score.Score;
+import omr.run.RunSequence;
+import omr.run.RunTable;
+import omr.run.RunTableFactory;
 
 import omr.sheet.Picture.SourceKey;
 import omr.sheet.ui.SheetsController;
@@ -44,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
 
@@ -160,10 +160,15 @@ public class ScaleBuilder
      */
     public void displayChart ()
     {
+        if (vertHistoKeeper == null) {
+            try {
+                retrieveScale();
+            } catch (StepException ignored) {
+            }
+        }
+
         if (vertHistoKeeper != null) {
             vertHistoKeeper.writePlot();
-        } else {
-            logger.info("No scale data available yet");
         }
     }
 
@@ -176,39 +181,21 @@ public class ScaleBuilder
      * picture as a music page and store the results as a {@link Scale}
      * instance in the related sheet.
      *
+     * @return scale data for the sheet
      * @throws StepException if processing must stop for this sheet.
      */
-    public void retrieveScale ()
+    public Scale retrieveScale ()
             throws StepException
     {
-        StopWatch watch = new StopWatch("Scale builder for " + sheet.getPage().getId());
+        StopWatch watch = new StopWatch("Scale builder for " + sheet.getId());
 
         try {
             Picture picture = sheet.getPicture();
 
-            // Retrieve the whole table of foreground runs
-            ByteProcessor binaryBuffer = picture.getSource(Picture.SourceKey.BINARY);
-
-            watch.start("Global vertical lag");
-
-            RunsTableFactory vertFactory = new RunsTableFactory(
-                    Orientation.VERTICAL,
-                    binaryBuffer,
-                    0);
-            RunsTable wholeVertTable = vertFactory.createTable("vertBinary");
-            sheet.setWholeVerticalTable(wholeVertTable);
-            vertFactory = null; // To allow garbage collection ASAP
-
-            // Note: from that point on, we could simply discard the sheet picture
-            // and save memory, since wholeVertTable contains all foreground pixels.
-            // For the time being, it is kept alive for display purpose, and to
-            // allow the dewarping of the initial picture.
-            if (constants.disposeImage.isSet()) {
-                picture.disposeSource(SourceKey.INITIAL); // To discard image
-            }
-
             // Build the two histograms
             watch.start("Vertical histograms");
+
+            RunTable wholeVertTable = picture.getTable(Picture.TableKey.BINARY);
             vertHistoKeeper = new VertHistoKeeper(picture.getHeight() - 1);
             vertHistoKeeper.buildHistograms(
                     wholeVertTable,
@@ -225,15 +212,11 @@ public class ScaleBuilder
             checkResolution();
 
             // Here, we keep going on with scale data
-            scale = new Scale(
+            return new Scale(
                     computeLine(),
                     computeInterline(),
                     computeBeam(),
                     computeSecondInterline());
-
-            logger.info("{}{}", sheet.getLogPrefix(), scale);
-            sheet.setScale(scale);
-            sheet.getBench().recordScale(scale);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -387,7 +370,7 @@ public class ScaleBuilder
     {
         logger.warn(msg.replaceAll(LINE_SEPARATOR, " "));
 
-        Score score = sheet.getScore();
+        Book book = sheet.getBook();
 
         if (Main.getGui() != null) {
             // Make sheet visible to the user
@@ -397,7 +380,7 @@ public class ScaleBuilder
         if ((Main.getGui() == null)
             || (Main.getGui()
                 .displayModelessConfirm(msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
-            if (score.isMultiPage()) {
+            if (book.isMultiSheet()) {
                 sheet.remove(false);
                 throw new StepException("Sheet removed");
             } else {
@@ -425,7 +408,7 @@ public class ScaleBuilder
 
         // Pair peak
         bothPeak = bothHisto.getPeak(quorumRatio, bothSpreadRatio, 0);
-        
+
         // Background peak
         backPeak = backHisto.getPeak(quorumRatio, backSpreadRatio, 0);
 
@@ -539,7 +522,7 @@ public class ScaleBuilder
                 "Maximum ratio between second and first background peak");
 
         final Constant.Boolean disposeImage = new Constant.Boolean(
-                false,
+                true,
                 "Should we dispose of original image once binarized?");
 
         final Constant.Ratio beamAsBackRatio = new Constant.Ratio(
@@ -606,7 +589,7 @@ public class ScaleBuilder
                     bothSpreadRatio,
                     quorumRatio);
             new HistogramPlotter(sheet, "vertical black", fore, foreHisto, forePeak, null, upper).plot(
-                    new Point(0, 0),
+                    new Point(20, 20),
                     xLabel,
                     foreSpreadRatio,
                     quorumRatio);
@@ -623,7 +606,7 @@ public class ScaleBuilder
         //-----------------//
         // buildHistograms //
         //-----------------//
-        private void buildHistograms (RunsTable wholeVertTable,
+        private void buildHistograms (RunTable wholeVertTable,
                                       int width,
                                       int height)
         {
@@ -632,7 +615,7 @@ public class ScaleBuilder
             final int maxFore = height / 16;
 
             for (int x = 0; x < width; x++) {
-                List<Run> runSeq = wholeVertTable.getSequence(x); // All vertical foreground runs
+                RunSequence runSeq = wholeVertTable.getSequence(x); // All vertical foreground runs
                 int yLast = 0; // Ordinate of first pixel not yet processed
                 int lastBackLength = 0; // Length of last valid background run
                 int lastForeLength = 0; // Length of last valid foreground run

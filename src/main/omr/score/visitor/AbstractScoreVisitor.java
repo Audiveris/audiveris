@@ -14,9 +14,9 @@ package omr.score.visitor;
 import omr.score.Score;
 import omr.score.entity.Arpeggiate;
 import omr.score.entity.Articulation;
-import omr.score.entity.Barline;
+import omr.score.entity.OldBarline;
 import omr.score.entity.Beam;
-import omr.score.entity.Chord;
+import omr.score.entity.OldChord;
 import omr.score.entity.ChordSymbol;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
@@ -24,7 +24,7 @@ import omr.score.entity.DirectionStatement;
 import omr.score.entity.Dynamics;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
-import omr.score.entity.Measure;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.MeasureElement;
 import omr.score.entity.MeasureNode;
 import omr.score.entity.Note;
@@ -36,8 +36,8 @@ import omr.score.entity.ScoreNode;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Segno;
 import omr.score.entity.Slur;
-import omr.score.entity.Staff;
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldStaff;
+import omr.score.entity.OldSystemPart;
 import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
@@ -86,10 +86,10 @@ public class AbstractScoreVisitor
     }
 
     //---------------//
-    // visit Barline //
+    // visit OldBarline //
     //---------------//
     @Override
-    public boolean visit (Barline barline)
+    public boolean visit (OldBarline barline)
     {
         return true;
     }
@@ -107,7 +107,7 @@ public class AbstractScoreVisitor
     // visit Chord //
     //-------------//
     @Override
-    public boolean visit (Chord chord)
+    public boolean visit (OldChord chord)
     {
         return true;
     }
@@ -176,10 +176,10 @@ public class AbstractScoreVisitor
     }
 
     //---------------//
-    // visit Measure //
+    // visit OldMeasure //
     //---------------//
     @Override
-    public boolean visit (Measure measure)
+    public boolean visit (OldMeasure measure)
     {
         return true;
     }
@@ -287,7 +287,7 @@ public class AbstractScoreVisitor
     // visit Staff //
     //-------------//
     @Override
-    public boolean visit (Staff staff)
+    public boolean visit (OldStaff staff)
     {
         return true;
     }
@@ -302,10 +302,10 @@ public class AbstractScoreVisitor
     }
 
     //------------------//
-    // visit SystemPart //
+    // visit OldSystemPart //
     //------------------//
     @Override
-    public boolean visit (SystemPart systemPart)
+    public boolean visit (OldSystemPart systemPart)
     {
         return true;
     }

@@ -265,7 +265,7 @@ public class FilamentsFactory
 
             return null;
         } finally {
-            if (constants.printWatch.getValue()) {
+            if (constants.printWatch.isSet()) {
                 watch.print();
             }
         }
@@ -313,7 +313,7 @@ public class FilamentsFactory
 
             return null;
         } finally {
-            if (constants.printWatch.getValue()) {
+            if (constants.printWatch.isSet()) {
                 watch.print();
             }
         }

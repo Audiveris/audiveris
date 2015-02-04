@@ -29,9 +29,11 @@ import java.util.concurrent.Callable;
  * Abstract class {@code AbstractSystemStep} is a basis for any step working on the
  * sheet systems, perhaps in parallel.
  *
+ * @param <C> context type
+ *
  * @author Hervé Bitteur
  */
-public abstract class AbstractSystemStep
+public abstract class AbstractSystemStep<C>
         extends AbstractStep
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -78,10 +80,12 @@ public abstract class AbstractSystemStep
      * Actually perform the step on the given system. This method must be
      * actually defined for any concrete system step.
      *
-     * @param system the system to process
+     * @param system  the system to process
+     * @param context the sheet context
      * @throws StepException raised if processing failed
      */
-    public abstract void doSystem (SystemInfo system)
+    public abstract void doSystem (SystemInfo system,
+                                   C context)
             throws StepException;
 
     //-------------------//
@@ -108,10 +112,12 @@ public abstract class AbstractSystemStep
      *
      * @param systems the systems which have been updated
      * @param sheet   the containing sheet
+     * @param context the sheet context
      * @throws StepException raised if processing failed
      */
     protected void doEpilog (Collection<SystemInfo> systems,
-                             Sheet sheet)
+                             Sheet sheet,
+                             C context)
             throws StepException
     {
         // Empty by default
@@ -121,18 +127,20 @@ public abstract class AbstractSystemStep
     // doProlog //
     //----------//
     /**
-     * Do preliminary common work before all systems processings are
+     * Do preliminary common work before all systems processing are
      * launched in parallel.
      *
      * @param systems the systems which will be updated
      * @param sheet   the containing sheet
+     * @return the created sheet context
      * @throws StepException raised if processing failed
      */
-    protected void doProlog (Collection<SystemInfo> systems,
-                             Sheet sheet)
+    protected C doProlog (Collection<SystemInfo> systems,
+                          Sheet sheet)
             throws StepException
     {
         // Empty by default
+        return null;
     }
 
     //------//
@@ -152,13 +160,13 @@ public abstract class AbstractSystemStep
             throws StepException
     {
         // Preliminary actions
-        doProlog(systems, sheet);
+        final C context = doProlog(systems, sheet);
 
         // Processing system per system
-        doitPerSystem(systems, sheet);
+        doitPerSystem(systems, sheet, context);
 
         // Final actions
-        doEpilog(systems, sheet);
+        doEpilog(systems, sheet, context);
     }
 
     //---------------//
@@ -171,7 +179,8 @@ public abstract class AbstractSystemStep
      * @param sheet   the containing sheet
      */
     private void doitPerSystem (Collection<SystemInfo> systems,
-                                final Sheet sheet)
+                                final Sheet sheet,
+                                final C context)
     {
         try {
             Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
@@ -180,8 +189,7 @@ public abstract class AbstractSystemStep
                 systems = sheet.getSystems();
             }
 
-            for (SystemInfo info : systems) {
-                final SystemInfo system = info;
+            for (final SystemInfo system : systems) {
                 tasks.add(
                         new Callable<Void>()
                         {
@@ -195,12 +203,9 @@ public abstract class AbstractSystemStep
                                             AbstractSystemStep.this,
                                             system.idString());
 
-                                    doSystem(system);
+                                    doSystem(system, context);
                                 } catch (Exception ex) {
-                                    logger.warn(
-                                            sheet.getLogPrefix() + "Interrupt on " + system.idString()
-                                            + " (" + ex + ") ",
-                                            ex);
+                                    logger.warn(system.getLogPrefix() + ex, ex);
                                 }
 
                                 return null;

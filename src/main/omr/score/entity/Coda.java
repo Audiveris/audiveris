@@ -44,9 +44,9 @@ public class Coda
      * @param chord   the chord related to the mark, if any
      * @param glyph   the underlying glyph
      */
-    public Coda (Measure measure,
+    public Coda (OldMeasure measure,
                  Point point,
-                 Chord chord,
+                 OldChord chord,
                  Glyph glyph)
     {
         super(measure, point, chord, glyph);
@@ -73,14 +73,14 @@ public class Coda
      * @param point   location for the mark
      */
     public static void populate (Glyph glyph,
-                                 Measure measure,
+                                 OldMeasure measure,
                                  Point point)
     {
         if (glyph.isVip()) {
             logger.info("Coda. populate {}", glyph.idString());
         }
 
-        Slot slot = measure.getClosestSlot(point);
+        OldSlot slot = measure.getClosestSlot(point);
         glyph.setTranslation(new Coda(measure, point, slot.getChordJustBelow(point), glyph));
     }
 }

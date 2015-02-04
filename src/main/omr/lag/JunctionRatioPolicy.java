@@ -29,6 +29,8 @@ public class JunctionRatioPolicy
 
     private static final Constants constants = new Constants();
 
+    public static JunctionRatioPolicy DEFAULT = new JunctionRatioPolicy();
+
     //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Maximum value acceptable for length ratio.

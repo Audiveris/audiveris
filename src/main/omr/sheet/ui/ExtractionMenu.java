@@ -13,8 +13,6 @@ package omr.sheet.ui;
 
 import omr.Main;
 
-import omr.score.entity.Page;
-
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
 
@@ -30,16 +28,17 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import static javax.swing.Action.NAME;
 import static javax.swing.Action.SHORT_DESCRIPTION;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code ExtractionMenu}
+ * Class {@code ExtractionMenu} allows to save the current sheet image, or a rectangular
+ * portion of it, to disk, usually for later analysis.
  *
  * @author Hervé Bitteur
  */
@@ -54,7 +53,6 @@ public class ExtractionMenu
     /** Underlying sheet. */
     private final Sheet sheet;
 
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the extraction menu
@@ -65,42 +63,39 @@ public class ExtractionMenu
     {
         super("Extraction ...");
         this.sheet = sheet;
-        add(new JMenuItem(new WholeAction()));
-        add(new JMenuItem(new AreaAction()));
+
+        add(new JMenuItem(new WholeAction())); // Save the whole sheet
+        add(new JMenuItem(new AreaAction())); // Save just a rectangle of sheet
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //------//
     // save //
     //------//
     private void save (BufferedImage img)
+            throws IOException
     {
         // Let the user select an output file
-        Page page = sheet.getPage();
         File file = UIUtil.fileChooser(
                 true,
                 Main.getGui().getFrame(),
-                new File(Picture.getDefaultExtractionDirectory(), page.getId() + "-ext.png"),
+                new File(Picture.getDefaultExtractionDirectory(), sheet.getId() + "-ext.png"),
                 new OmrFileFilter(".png images", new String[]{".png"}));
 
         if (file == null) {
             return;
         }
 
-        try {
-            File folder = new File(file.getParent());
+        File folder = new File(file.getParent());
 
-            if (folder.mkdirs()) {
-                logger.info("Creating folder {}", folder);
-            }
-
-            ImageIO.write(img, "png", file);
-            Picture.setDefaultExtractionDirectory(file.getParent());
-            logger.info("Extraction stored as {}", file);
-        } catch (Exception ex) {
-            logger.warn("Error storing extraction", ex);
+        if (folder.mkdirs()) {
+            logger.info("Creating folder {}", folder);
         }
+
+        ImageIO.write(img, "png", file);
+
+        Picture.setDefaultExtractionDirectory(file.getParent());
+        logger.info("Extraction stored as {}", file);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -108,7 +103,7 @@ public class ExtractionMenu
     // AreaAction //
     //------------//
     /**
-     * Save the current area to disk.
+     * Save the current area image to disk.
      */
     private class AreaAction
             extends AbstractAction
@@ -123,7 +118,6 @@ public class ExtractionMenu
         public AreaAction ()
         {
             putValue(SHORT_DESCRIPTION, "Save the selected area to disk");
-            ///putValue(NAME, "No area selected"); // By default
             setEnabled(false); // By default
         }
 
@@ -131,8 +125,12 @@ public class ExtractionMenu
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            // Extract the area selected from initial image
-            save(sheet.getPicture().getInitialImage(area));
+            try {
+                // Extract the area selected from initial image
+                save(sheet.getPicture().getImage(area));
+            } catch (Exception ex) {
+                logger.warn("Error in area extraction, " + ex, ex);
+            }
         }
 
         @Override
@@ -147,7 +145,6 @@ public class ExtractionMenu
 
             setEnabled(area != null);
 
-            ///setVisible(area != null);
             if (area != null) {
                 putValue(NAME, String.format("Area %dx%d ...", area.width, area.height));
             } else {
@@ -160,7 +157,7 @@ public class ExtractionMenu
     // WholeAction //
     //-------------//
     /**
-     * Save the whole page to disk.
+     * Save the whole sheet image to disk.
      */
     private class WholeAction
             extends AbstractAction
@@ -169,16 +166,20 @@ public class ExtractionMenu
 
         public WholeAction ()
         {
-            putValue(NAME, "Whole page");
-            putValue(SHORT_DESCRIPTION, "Save the whole page to disk");
+            putValue(NAME, "Whole sheet");
+            putValue(SHORT_DESCRIPTION, "Save the whole sheet to disk");
         }
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            // Extract the whole initial image
-            save(sheet.getPicture().getInitialImage());
+            try {
+                // Extract the whole initial image
+                save(sheet.getPicture().getImage(null));
+            } catch (Exception ex) {
+                logger.warn("Error in sheet extraction, " + ex, ex);
+            }
         }
     }
 }

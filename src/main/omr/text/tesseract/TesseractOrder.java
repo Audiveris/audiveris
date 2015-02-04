@@ -13,7 +13,7 @@ package omr.text.tesseract;
 
 import omr.WellKnowns;
 
-import omr.sheet.SystemInfo;
+import omr.sheet.Sheet;
 
 import omr.text.FontInfo;
 import omr.text.TextChar;
@@ -64,15 +64,12 @@ public class TesseractOrder
     static {
         IIORegistry registry = IIORegistry.getDefaultInstance();
         registry.registerServiceProvider(
-                new com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriterSpi());
+            new com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriterSpi());
         registry.registerServiceProvider(
-                new com.sun.media.imageioimpl.plugins.tiff.TIFFImageReaderSpi());
+            new com.sun.media.imageioimpl.plugins.tiff.TIFFImageReaderSpi());
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
-    /** Containing system. */
-    private final SystemInfo system;
 
     /** Serial number for this order. */
     private final int serial;
@@ -93,9 +90,10 @@ public class TesseractOrder
     private TessBaseAPI api;
 
     /** The image being processed. */
-    private PIX image;
+    private final PIX image;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     //
     //----------------//
     // TesseractOrder //
@@ -103,8 +101,7 @@ public class TesseractOrder
     /**
      * Creates a new TesseractOrder object.
      *
-     * @param system        The containing system
-     * @param label         A debugging label (such as glyph id)
+     * @param label         A debugging label (such as sheet name or glyph id)
      * @param serial        A unique id for this order instance
      * @param keepImage     True to keep a disk copy of the image
      * @param lang          The language specification
@@ -115,16 +112,14 @@ public class TesseractOrder
      * @throws IOException          When temporary Tiff buffer failed
      * @throws RuntimeException     When PIX image failed
      */
-    public TesseractOrder (SystemInfo system,
-                           String label,
-                           int serial,
-                           boolean keepImage,
-                           String lang,
+    public TesseractOrder (String           label,
+                           int              serial,
+                           boolean          keepImage,
+                           String           lang,
                            SegmentationMode segMode,
-                           BufferedImage bufferedImage)
-            throws UnsatisfiedLinkError, IOException
+                           BufferedImage    bufferedImage)
+        throws UnsatisfiedLinkError, IOException
     {
-        this.system = system;
         this.label = label;
         this.serial = serial;
         this.keepImage = keepImage;
@@ -142,6 +137,7 @@ public class TesseractOrder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //
     //---------//
     // process //
@@ -165,6 +161,7 @@ public class TesseractOrder
 
             // Set API image
             api.SetImage(image);
+
             // Perform layout analysis according to segmentation mode
             api.SetPageSegMode(segMode);
             api.AnalyseLayout();
@@ -193,8 +190,7 @@ public class TesseractOrder
     // finish //
     //--------//
     /**
-     * A convenient way to cleanup Tesseract resources while ending
-     * the current processing
+     * Convenient way to cleanup Tesseract resources while ending the current processing
      *
      * @param lines the lines found, if any
      * @return the lines found, if nay
@@ -218,21 +214,21 @@ public class TesseractOrder
     /**
      * Map Tesseract3 font attributes to our own FontInfo class.
      *
-     * @param att Font attributes out of OCR, perhap null
+     * @param att Font attributes out of OCR, perhaps null
      * @return our FontInfo structure, or null
      */
     private FontInfo getFont (TessBridge.FontAttributes att)
     {
         if (att != null) {
             return new FontInfo(
-                    att.isBold,
-                    att.isItalic,
-                    att.isUnderlined,
-                    att.isMonospace,
-                    att.isSerif,
-                    att.isSmallcaps,
-                    att.pointsize,
-                    att.fontName);
+                att.isBold,
+                att.isItalic,
+                att.isUnderlined,
+                att.isMonospace,
+                att.isSerif,
+                att.isSmallcaps,
+                att.pointsize,
+                att.fontName);
         } else {
             return null;
         }
@@ -243,19 +239,17 @@ public class TesseractOrder
     //----------//
     /**
      * Build the hierarchy of TextLine / TextWord / TextChar instances
-     * out of the results of OCR recognition
+     * out of the raw results of OCR recognition
      *
      * @return the sequence of lines
      */
     private List<TextLine> getLines ()
     {
-        final int maxDashWidth = system.getScoreSystem().getScale().getInterline();
-
         ResultIterator it = api.GetIterator();
 
-        List<TextLine> lines = new ArrayList<TextLine>(); // Lines built so far
-        TextLine line = null; // Line being built
-        TextWord word = null; // Word being built
+        List<TextLine> lines = new ArrayList<TextLine>(); // All lines built so far
+        TextLine       line = null; // The line being built
+        TextWord       word = null; // The word being built
 
         try {
             do {
@@ -266,7 +260,7 @@ public class TesseractOrder
 
                 // Start of line?
                 if (it.IsAtBeginningOf(Level.TEXTLINE)) {
-                    line = new TextLine(system);
+                    line = new TextLine();
                     logger.debug("{} {}", label, line);
                     lines.add(line);
                 }
@@ -282,12 +276,12 @@ public class TesseractOrder
                     }
 
                     word = new TextWord(
-                            it.BoundingBox(Level.WORD),
-                            it.GetUTF8Text(Level.WORD),
-                            it.Baseline(Level.WORD),
-                            (double) it.Confidence(Level.WORD),
-                            fontInfo,
-                            line);
+                        it.BoundingBox(Level.WORD),
+                        it.GetUTF8Text(Level.WORD),
+                        it.Baseline(Level.WORD),
+                        it.Confidence(Level.WORD)/ 100.0,
+                        fontInfo,
+                        line);
                     logger.debug("    {}", word);
                     line.appendWord(word);
 
@@ -303,17 +297,8 @@ public class TesseractOrder
                 }
 
                 // Char/symbol to be processed
-                // Fix long "—" vs short "-"
-                String charValue = it.GetUTF8Text(Level.SYMBOL);
-                Rectangle charBox = it.BoundingBox(Level.SYMBOL);
-
-                if (charValue.equals("—") && (charBox.width <= maxDashWidth)) {
-                    charValue = "-";
-
-                    // Containing word value will be updated later
-                }
-
-                word.addChar(new TextChar(charBox, charValue));
+                word.addChar(
+                    new TextChar(it.BoundingBox(Level.SYMBOL), it.GetUTF8Text(Level.SYMBOL)));
             } while (it.Next(Level.SYMBOL));
 
             return lines;
@@ -338,7 +323,7 @@ public class TesseractOrder
      * @return a buffer in TIFF format
      */
     private ByteBuffer toTiffBuffer (BufferedImage image)
-            throws IOException
+        throws IOException
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -348,14 +333,15 @@ public class TesseractOrder
             writer.setOutput(ios);
             writer.write(image);
         }
+
         ByteBuffer buf = ByteBuffer.allocate(baos.size());
-        byte[] bytes = baos.toByteArray();
+        byte[]     bytes = baos.toByteArray();
         buf.put(bytes);
 
         // Should we keep a local copy of this buffer on disk?
         if (keepImage) {
             String name = String.format("%03d-", serial) + ((label != null) ? label : "");
-            File file = new File(WellKnowns.TEMP_FOLDER, name + ".tif");
+            File   file = new File(WellKnowns.TEMP_FOLDER, name + ".tif");
 
             // Make sure the TEMP directory exists
             if (!WellKnowns.TEMP_FOLDER.exists()) {

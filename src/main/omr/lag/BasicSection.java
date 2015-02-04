@@ -146,19 +146,6 @@ public class BasicSection
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------------//
-    // addOppositeSection //
-    //--------------------//
-    @Override
-    public void addOppositeSection (Section otherSection)
-    {
-        if (oppositeSections == null) {
-            oppositeSections = new HashSet<Section>();
-        }
-
-        oppositeSections.add(otherSection);
-    }
-
     //---------------//
     // allocateTable //
     //---------------//
@@ -180,12 +167,59 @@ public class BasicSection
         return table;
     }
 
+    //----------------//
+    // drawingOfTable //
+    //----------------//
+    /**
+     * Printout the filled drawing table
+     *
+     * @param table the filled table
+     * @param box   the table limits in the image
+     */
+    public static String drawingOfTable (char[][] table,
+                                         Rectangle box)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%n"));
+
+        sb.append(String.format("xMin=%d, xMax=%d%n", box.x, (box.x + box.width) - 1));
+        sb.append(String.format("yMin=%d, yMax=%d%n", box.y, (box.y + box.height) - 1));
+
+        for (int iy = 0; iy < table.length; iy++) {
+            sb.append(String.format("%d:", iy + box.y));
+
+            char[] line = table[iy];
+
+            for (int ix = 0; ix < line.length; ix++) {
+                sb.append(line[ix]);
+            }
+
+            sb.append(String.format("%n"));
+        }
+
+        return sb.toString();
+    }
+
+    //--------------------//
+    // addOppositeSection //
+    //--------------------//
+    @Override
+    public void addOppositeSection (Section otherSection)
+    {
+        if (oppositeSections == null) {
+            oppositeSections = new HashSet<Section>();
+        }
+
+        oppositeSections.add(otherSection);
+    }
+
     //--------//
     // append //
     //--------//
     @Override
     public void append (Run run)
     {
+        run = new Run(run);
         runs.add(run);
         addRun(run);
 
@@ -400,39 +434,6 @@ public class BasicSection
         char[][] table = allocateTable(box);
         fillTable(table, box);
         drawingOfTable(table, box);
-    }
-
-    //----------------//
-    // drawingOfTable //
-    //----------------//
-    /**
-     * Printout the filled drawing table
-     *
-     * @param table the filled table
-     * @param box   the table limits in the image
-     */
-    public static String drawingOfTable (char[][] table,
-                                         Rectangle box)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%n"));
-
-        sb.append(String.format("xMin=%d, xMax=%d%n", box.x, (box.x + box.width) - 1));
-        sb.append(String.format("yMin=%d, yMax=%d%n", box.y, (box.y + box.height) - 1));
-
-        for (int iy = 0; iy < table.length; iy++) {
-            sb.append(String.format("%d:", iy + box.y));
-
-            char[] line = table[iy];
-
-            for (int ix = 0; ix < line.length; ix++) {
-                sb.append(line[ix]);
-            }
-
-            sb.append(String.format("%n"));
-        }
-
-        return sb.toString();
     }
 
     //-----------//
@@ -984,7 +985,7 @@ public class BasicSection
     // intersects //
     //------------//
     @Override
-    public boolean intersects (Section that)
+    public boolean intersects (java.awt.Shape shape)
     {
         int pos = getFirstPos();
 
@@ -994,7 +995,7 @@ public class BasicSection
                     ? new Rectangle(start, pos, run.getLength(), 1)
                     : new Rectangle(pos, start, 1, run.getLength());
 
-            if (that.intersects(runBox)) {
+            if (shape.intersects(runBox)) {
                 return true;
             }
 
@@ -1002,6 +1003,15 @@ public class BasicSection
         }
 
         return false;
+    }
+
+    //------------//
+    // intersects //
+    //------------//
+    @Override
+    public boolean intersects (Section that)
+    {
+        return intersects(that.getPolygon());
     }
 
     //-------//
@@ -1127,6 +1137,7 @@ public class BasicSection
     @Override
     public void prepend (Run run)
     {
+        run = new Run(run);
         logger.debug("Prepending {} to {}", run, this);
 
         firstPos--;
@@ -1491,9 +1502,6 @@ public class BasicSection
         // Invalidate cached data
         invalidateCache();
 
-        // Link back from run to section
-        run.setSection(this);
-
         // Compute contribution of this run
         computeRunContribution(run);
     }
@@ -1584,7 +1592,7 @@ public class BasicSection
     // Adapter //
     //---------//
     /**
-     * Meant for JAXB handling of Section interface
+     * Meant for JAXB handling of Section interface.
      */
     public static class Adapter
             extends XmlAdapter<BasicSection, Section>

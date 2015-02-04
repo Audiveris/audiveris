@@ -15,10 +15,7 @@ import omr.image.AdaptiveDescriptor;
 import omr.image.FilterDescriptor;
 import omr.image.GlobalDescriptor;
 
-import omr.score.Score;
-import omr.score.entity.Page;
-import omr.score.entity.ScorePart;
-
+import omr.sheet.Book;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -27,8 +24,6 @@ import omr.step.Stepping;
 import omr.step.Steps;
 
 import omr.util.LiveParam;
-import omr.util.Param;
-import omr.util.TreeNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +51,7 @@ public class ParametersTask
     private String language;
 
     /** Tempo value. */
+    //TODO: Really handle tempo information?
     @XmlElement(name = "tempo")
     private Integer tempo;
 
@@ -70,9 +66,9 @@ public class ParametersTask
     @XmlElement(name = "part")
     private List<PartData> parts = new ArrayList<PartData>();
 
-    /** Specific page parameters. */
-    @XmlElement(name = "page")
-    private List<PageParameters> pages = new ArrayList<PageParameters>();
+    /** Specific sheet parameters. */
+    @XmlElement(name = "sheet")
+    private List<SheetParameters> sheets = new ArrayList<SheetParameters>();
 
     //~ Constructors -------------------------------------------------------------------------------
     //
@@ -114,63 +110,61 @@ public class ParametersTask
     public void core (Sheet sheet)
             throws Exception
     {
-        Score score = sheet.getScore();
+        Book book = sheet.getBook();
         StringBuilder sb = new StringBuilder();
 
         // Score Binarization
         if (filterDescriptor != null) {
-            if (score.getFilterParam().setSpecific(filterDescriptor)) {
+            if (book.getFilterParam().setSpecific(filterDescriptor)) {
                 sb.append(" filter:").append(filterDescriptor);
             }
         }
 
         // Score Language
         if (language != null) {
-            if (score.getTextParam().setSpecific(language)) {
+            if (book.getTextParam().setSpecific(language)) {
                 sb.append(" language:").append(language);
             }
         }
 
-        // Score Tempo
-        if (tempo != null) {
-            if (score.getTempoParam().setSpecific(tempo)) {
-                sb.append(" tempo:").append(tempo);
-            }
-        }
-
-        // Score Parts
-        for (int i = 0; i < parts.size(); i++) {
-            try {
-                ScorePart scorePart = score.getPartList().get(i);
-                PartData data = parts.get(i);
-
-                // Part name
-                scorePart.setName(data.name);
-
-                // Part midi program
-                scorePart.setMidiProgram(data.program);
-            } catch (Exception ex) {
-                logger.warn("Error in script Parameters part#" + (i + 1), ex);
-            }
-        }
-
-        // Pages
-        for (PageParameters params : pages) {
-            Page page = score.getPage(params.index);
+        //
+        //        // Score Tempo
+        //        if (tempo != null) {
+        //            if (book.getTempoParam().setSpecific(tempo)) {
+        //                sb.append(" tempo:").append(tempo);
+        //            }
+        //        }
+        //
+        //        // Score Parts
+        //        for (int i = 0; i < parts.size(); i++) {
+        //            try {
+        //                ScorePart scorePart = book.getPartList().get(i);
+        //                PartData data = parts.get(i);
+        //
+        //                // Part name
+        //                scorePart.setName(data.name);
+        //
+        //                // Part midi program
+        //                scorePart.setMidiProgram(data.program);
+        //            } catch (Exception ex) {
+        //                logger.warn("Error in script Parameters part#" + (i + 1), ex);
+        //            }
+        //        }
+        // Sheets
+        for (SheetParameters params : sheets) {
+            Sheet sh = book.getSheet(params.index);
             sb.append(" {page:").append(params.index);
 
             // Page Binarization
             if (params.filterDescriptor != null) {
-                if (page.getFilterParam().setSpecific(params.filterDescriptor)) {
+                if (sh.getFilterParam().setSpecific(params.filterDescriptor)) {
                     sb.append(" filter:").append(params.filterDescriptor);
                 }
             }
 
             // Page Language
             if (params.language != null) {
-                Param<String> context = page.getTextParam();
-
-                if (page.getTextParam().setSpecific(params.language)) {
+                if (sh.getTextParam().setSpecific(params.language)) {
                     sb.append(" language:").append(params.language);
                 }
             }
@@ -179,7 +173,7 @@ public class ParametersTask
         }
 
         if (sb.length() > 0) {
-            logger.info("{}parameters{}", score.getLogPrefix(), sb);
+            logger.info("{}parameters{}", book.getLogPrefix(), sb);
         }
     }
 
@@ -201,21 +195,18 @@ public class ParametersTask
 
         Step latestStep = Stepping.getLatestMandatoryStep(sheet);
 
-        for (TreeNode pn : new ArrayList<TreeNode>(sheet.getScore().getPages())) {
-            final Page page = (Page) pn;
+        for (Sheet sh : sheet.getBook().getSheets()) {
             Step from = null;
 
             // Language
             if (Steps.compare(latestStep, textsStep) >= 0) {
-                LiveParam<String> param = page.getTextParam();
+                LiveParam<String> param = sh.getTextParam();
 
                 if (param.needsUpdate()) {
-                    logger.debug("Page {} needs TEXT with {}", page.getId(), param.getTarget());
+                    logger.debug("Page {} needs TEXT with {}", sh.getId(), param.getTarget());
 
                     // Convert the text items as much as possible
-                    final Sheet theSheet = page.getSheet();
-
-                    for (SystemInfo system : theSheet.getSystems()) {
+                    for (SystemInfo system : sh.getSystems()) {
                         system.getTextBuilder().switchLanguageTexts();
                     }
 
@@ -226,10 +217,10 @@ public class ParametersTask
 
             // Binarization
             if (Steps.compare(latestStep, binaryStep) >= 0) {
-                LiveParam<FilterDescriptor> param = page.getFilterParam();
+                LiveParam<FilterDescriptor> param = sh.getFilterParam();
 
                 if (param.needsUpdate()) {
-                    logger.debug("Page {} needs BINARY with {}", page.getId(), param.getTarget());
+                    logger.debug("Page {} needs BINARY with {}", sh.getId(), param.getTarget());
                     //  Reprocess this page from BINARY step
                     from = binaryStep;
                 }
@@ -253,13 +244,13 @@ public class ParametersTask
      * Set binarization filter at proper scope level.
      *
      * @param filterDescriptor the filter to use for pixels binarization
-     * @param page             not null for page setting
+     * @param sheet            not null for sheet setting
      */
     public void setFilter (FilterDescriptor filterDescriptor,
-                           Page page)
+                           Sheet sheet)
     {
-        if (page != null) {
-            getParams(page).filterDescriptor = filterDescriptor;
+        if (sheet != null) {
+            getParams(sheet).filterDescriptor = filterDescriptor;
         } else {
             this.filterDescriptor = filterDescriptor;
         }
@@ -272,13 +263,13 @@ public class ParametersTask
      * Set language at proper scope level.
      *
      * @param language the language code to set
-     * @param page     not null for page setting
+     * @param sheet    not null for sheet setting
      */
     public void setLanguage (String language,
-                             Page page)
+                             Sheet sheet)
     {
-        if (page != null) {
-            getParams(page).language = language;
+        if (sheet != null) {
+            getParams(sheet).language = language;
         } else {
             this.language = language;
         }
@@ -297,13 +288,14 @@ public class ParametersTask
         this.tempo = tempo;
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(" parameters");
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(" parameters");
 
         if (filterDescriptor != null) {
             sb.append(" filter:").append(filterDescriptor);
@@ -317,94 +309,41 @@ public class ParametersTask
             sb.append(" ").append(data);
         }
 
-        for (PageParameters params : pages) {
+        for (SheetParameters params : sheets) {
             sb.append(" ").append(params);
         }
 
-        return sb.toString() + super.internalsString();
+        return sb.toString() + super.internals();
     }
 
     //-----------//
     // getParams //
     //-----------//
     /**
-     * [May create] and report the parameters for the provided page.
+     * [May create and] report the parameters for the provided sheet.
      *
-     * @param page the provided page
+     * @param sheet the provided sheet
      * @return the page parameters
      */
-    private PageParameters getParams (Page page)
+    private SheetParameters getParams (Sheet sheet)
     {
-        int index = page.getIndex();
+        int index = sheet.getIndex();
 
-        for (PageParameters params : pages) {
+        for (SheetParameters params : sheets) {
             if (params.index == index) {
                 return params;
             }
         }
 
         // Not found, create one
-        PageParameters params = new PageParameters();
+        SheetParameters params = new SheetParameters();
         params.index = index;
-        pages.add(params);
+        sheets.add(params);
 
         return params;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //----------------//
-    // PageParameters //
-    //----------------//
-    /**
-     * Parameters for a page.
-     */
-    public static class PageParameters
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Page unique index. */
-        @XmlAttribute(name = "index")
-        private int index;
-
-        /** Language code. */
-        @XmlElement(name = "language")
-        private String language;
-
-        /** Pixel filter. */
-        @XmlElements({
-            @XmlElement(name = "global-filter", type = GlobalDescriptor.class),
-            @XmlElement(name = "adaptive-filter", type = AdaptiveDescriptor.class)
-        })
-        private FilterDescriptor filterDescriptor;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        //
-        /** No-arg constructor needed by JAXB */
-        public PageParameters ()
-        {
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder("{page#");
-            sb.append(index);
-
-            if (filterDescriptor != null) {
-                sb.append(" filter:").append(filterDescriptor);
-            }
-
-            if (language != null) {
-                sb.append(" language:").append(language);
-            }
-
-            sb.append("}");
-
-            return sb.toString();
-        }
-    }
-
     //----------//
     // PartData //
     //----------//
@@ -439,6 +378,59 @@ public class ParametersTask
         public String toString ()
         {
             return "{name:" + name + " program:" + program + "}";
+        }
+    }
+
+    //-----------------//
+    // SheetParameters //
+    //-----------------//
+    /**
+     * Parameters for a sheet.
+     */
+    public static class SheetParameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Sheet unique index. */
+        @XmlAttribute(name = "index")
+        private int index;
+
+        /** Language code. */
+        @XmlElement(name = "language")
+        private String language;
+
+        /** Pixel filter. */
+        @XmlElements({
+            @XmlElement(name = "global-filter", type = GlobalDescriptor.class),
+            @XmlElement(name = "adaptive-filter", type = AdaptiveDescriptor.class)
+        })
+        private FilterDescriptor filterDescriptor;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        //
+        /** No-arg constructor needed by JAXB */
+        public SheetParameters ()
+        {
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("{sheet#");
+            sb.append(index);
+
+            if (filterDescriptor != null) {
+                sb.append(" filter:").append(filterDescriptor);
+            }
+
+            if (language != null) {
+                sb.append(" language:").append(language);
+            }
+
+            sb.append("}");
+
+            return sb.toString();
         }
     }
 }

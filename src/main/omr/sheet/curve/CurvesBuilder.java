@@ -16,6 +16,7 @@ import omr.Main;
 import omr.constant.ConstantSet;
 
 import omr.grid.FilamentLine;
+
 import static omr.image.PixelSource.BACKGROUND;
 
 import omr.math.AreaUtil;
@@ -27,10 +28,10 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
+
 import static omr.sheet.curve.Skeleton.*;
 
-import omr.sig.Inter;
-
+import omr.sig.inter.Inter;
 import omr.ui.util.ItemRenderer;
 
 import omr.util.Navigable;
@@ -557,6 +558,7 @@ public abstract class CurvesBuilder
      *
      * @param curve    the curve to extend
      * @param pastArcs collection of arcs already browsed
+     * @param clump    (output) the clump to populate with candidates (on top of current curve)
      */
     private void extend (Curve curve,
                          Collection<Arc> pastArcs,

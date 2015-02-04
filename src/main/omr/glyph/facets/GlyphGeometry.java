@@ -171,13 +171,12 @@ interface GlyphGeometry
     int getWeight ();
 
     /**
-     * Check whether the glyph intersect the provided absolute
-     * rectangle.
+     * Check whether the glyph intersect the provided shape.
      *
-     * @param rectangle the provided absolute rectangle
+     * @param shape the provided shape
      * @return true if intersection is not empty, false otherwise
      */
-    boolean intersects (Rectangle rectangle);
+    boolean intersects (java.awt.Shape shape);
 
     /**
      * Remember an approximating circle.
@@ -187,8 +186,7 @@ interface GlyphGeometry
     void setCircle (Circle circle);
 
     /**
-     * Force the glyph contour box (when start and stop points are
-     * forced).
+     * Force the glyph contour box (when start and stop points are forced).
      *
      * @param contourBox the forced contour box
      */

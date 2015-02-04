@@ -43,7 +43,7 @@ import javax.xml.bind.annotation.XmlElement;
  * the ids of the member sections of the related glyphs.</p>
  *
  * <h4>Glyphs and sections in a script:<br/>
- * <img src="doc-files/script.jpg"/>
+ * <img src="doc-files/script.png"/>
  * </h4>
  *
  * @author Hervé Bitteur

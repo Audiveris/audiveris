@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.run;
 
-import omr.lag.Section;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -29,16 +27,13 @@ public class Run
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Number of pixels. */
-    @XmlAttribute
-    private int length;
-
     /** Abscissa (for horizontal) / ordinate (for vertical) of first pixel. */
     @XmlAttribute
     private int start;
 
-    /** Containing section, if any. */
-    private Section section;
+    /** Number of pixels. */
+    @XmlAttribute
+    private int length;
 
     //~ Constructors -------------------------------------------------------------------------------
     //-----//
@@ -51,8 +46,7 @@ public class Run
      * @param length the length of the run in pixels
      */
     public Run (int start,
-                int length,
-                int level)
+                int length)
     {
         this.start = start;
         this.length = length;
@@ -61,10 +55,24 @@ public class Run
     //-----//
     // Run //
     //-----//
+    /**
+     * Creates a new {@code Run} object from an existing one.
+     *
+     * @param that the run to copy
+     */
+    public Run (Run that)
+    {
+        this.start = that.start;
+        this.length = that.length;
+    }
+
+    //-----//
+    // Run //
+    //-----//
     /** Meant for XML unmarshalling only */
     private Run ()
     {
-        this(0, 0, 0);
+        this(0, 0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -79,19 +87,6 @@ public class Run
     public final int getLength ()
     {
         return length;
-    }
-
-    //------------//
-    // getSection //
-    //------------//
-    /**
-     * Report the section that contains this run
-     *
-     * @return the containing section, or null if none
-     */
-    public Section getSection ()
-    {
-        return section;
     }
 
     //----------//
@@ -120,26 +115,6 @@ public class Run
     public final int getStop ()
     {
         return (start + length) - 1;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * The {@code toString} method is used to get a readable image of the
-     * run.
-     *
-     * @return a {@code String} value
-     */
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder(80);
-        sb.append("{Run ");
-        sb.append(start).append("/").append(length);
-        sb.append("}");
-
-        return sb.toString();
     }
 
     //-----------//
@@ -186,17 +161,18 @@ public class Run
         return (this.start == that.start) && (this.length == that.length);
     }
 
-    //------------//
-    // setSection //
-    //------------//
-    /**
-     * Records the containing section
-     *
-     * @param section the section to set
-     */
-    public void setSection (Section section)
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
     {
-        this.section = section;
+        StringBuilder sb = new StringBuilder(80);
+        sb.append("{Run ");
+        sb.append(start).append("/").append(length);
+        sb.append("}");
+
+        return sb.toString();
     }
 
     /**

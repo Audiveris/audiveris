@@ -48,7 +48,7 @@ public abstract class PartNode
     protected final SortedSet<Glyph> glyphs = Glyphs.sortedSet();
 
     /** Related staff, if relevant */
-    private Staff staff;
+    private OldStaff staff;
 
     /** Reference point */
     private Point referencePoint;
@@ -126,11 +126,11 @@ public abstract class PartNode
      *
      * @return the containing part entity
      */
-    public SystemPart getPart ()
+    public OldSystemPart getPart ()
     {
         for (TreeNode c = this; c != null; c = c.getParent()) {
-            if (c instanceof SystemPart) {
-                return (SystemPart) c;
+            if (c instanceof OldSystemPart) {
+                return (OldSystemPart) c;
             }
         }
 
@@ -165,7 +165,7 @@ public abstract class PartNode
      *
      * @return the related staff, or null
      */
-    public Staff getStaff ()
+    public OldStaff getStaff ()
     {
         return staff;
     }
@@ -205,7 +205,7 @@ public abstract class PartNode
      *
      * @param staff the related staff
      */
-    public void setStaff (Staff staff)
+    public void setStaff (OldStaff staff)
     {
         this.staff = staff;
     }

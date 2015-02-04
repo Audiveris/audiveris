@@ -60,10 +60,11 @@ public class PatternsChecker
             // Refresh ...
             new RefreshPattern(system, false), new DoubleBeamPattern(system),
             new FermataDotPattern(system), new FlagPattern(system),
-            new FortePattern(system), new HiddenSlurPattern(system),
-            new SplitPattern(system), new LedgerPattern(system), new AlterPattern(
-            system), new StemPattern(system), system.getSlurInspector(), new BassPattern(system),
-            new ClefPattern(system), new TimePattern(system),
+            new FortePattern(system), ///new HiddenSlurPattern(system),
+            new SplitPattern(system),
+            ///new LedgerPattern(system),
+            new AlterPattern(system), new StemPattern(system), ///system.getSlurInspector(),
+            new BassPattern(system), new ClefPattern(system), new TimePattern(system),
             // Refresh ...
             new RefreshPattern(system, true),
             //

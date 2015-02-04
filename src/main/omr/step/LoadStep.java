@@ -11,10 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.image.ImageLoader;
-
-import omr.score.Score;
-
+import omr.sheet.Book;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -22,17 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.Collection;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
- * Class {@code LoadStep} reloads the image for a sheet, from a provided image file.
- * <p>
- * This is simply a RE-loading, triggered by the user. The initial loading is always done in
- * {@link Score#createPages(SortedSet)}.</p>
+ * Class {@code LoadStep} loads the image for a sheet, from a provided image file.
  *
  * @author Hervé Bitteur
  */
@@ -54,7 +44,7 @@ public class LoadStep
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 Step.PICTURE_TAB,
-                "Reload the sheet picture");
+                "Load the sheet picture");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -66,16 +56,13 @@ public class LoadStep
                       Sheet sheet)
             throws StepException
     {
-        final Score score = sheet.getScore();
-        final File imageFile = score.getImageFile();
-        final int index = sheet.getPage().getIndex();
-        final SortedSet<Integer> set = new TreeSet<Integer>();
-        set.add(index);
+        final Book book = sheet.getBook();
+        final int index = sheet.getIndex();
 
-        SortedMap<Integer, BufferedImage> images = ImageLoader.loadImages(imageFile, set);
+        BufferedImage image = book.readImage(index);
 
-        if (images != null) {
-            sheet.setImage(images.get(index));
+        if (image != null) {
+            sheet.setImage(image);
         }
     }
 }

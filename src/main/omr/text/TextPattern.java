@@ -105,14 +105,14 @@ public class TextPattern
     // checkModifiedValue //
     //--------------------//
     /**
-     * Check a TextLine for a modified (manual) value and align the
-     * internal structure accordingly.
+     * Check a TextLine for a modified (manual) value and align the internal structure
+     * accordingly.
      *
      * @param line the TextLine to check and update if needed
      */
     private void checkModifiedValue (TextLine line)
     {
-        String language = system.getSheet().getPage().getTextParam().getTarget();
+        String language = system.getSheet().getTextParam().getTarget();
         boolean altered = false;
         List<Section> lineSections = new ArrayList<Section>();
 
@@ -149,14 +149,13 @@ public class TextPattern
     // checkOrphanGlyphs //
     //-------------------//
     /**
-     * Look for orphan text glyphs and create the proper TextLine
-     * structure.
-     * Strategy: create a TextLine for each of these orphan glyphs then
-     * look for potential merge with other TextLine instances.
+     * Look for orphan text glyphs and create the proper TextLine structure.
+     * Strategy: create a TextLine for each of these orphan glyphs then look for potential merge
+     * with other TextLine instances.
      */
     private void checkOrphanGlyphs ()
     {
-        String language = system.getSheet().getPage().getTextParam().getTarget();
+        String language = system.getSheet().getTextParam().getTarget();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (!isOrphan(glyph)) {
@@ -168,7 +167,7 @@ public class TextPattern
                 TextWord word = TextWord.createManualWord(glyph, glyph.getManualValue());
                 glyph.setTextWord(language, word);
 
-                TextLine line = new TextLine(system, Arrays.asList(word));
+                TextLine line = new TextLine(Arrays.asList(word));
                 List<TextLine> lines = Arrays.asList(line);
                 lines = textBuilder.recomposeLines(lines);
                 system.getSentences().addAll(lines);

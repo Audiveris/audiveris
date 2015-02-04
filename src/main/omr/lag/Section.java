@@ -365,8 +365,7 @@ public interface Section
     public Line getOrientedLine ();
 
     /**
-     * Create an iterator along the absolute polygon that represents
-     * the section contour.
+     * Create an iterator along the absolute polygon that represents the section contour.
      *
      * @return an iterator on the underlying polygon
      */
@@ -554,13 +553,20 @@ public interface Section
     public void translate (Point vector);
 
     /**
-     * Predicate to check whether the given absolute rectangle is
-     * intersected by the section.
+     * Check whether this section intersects the provided absolute rectangle.
      *
      * @param rectangle absolute rectangle
      * @return true if intersection is not empty
      */
     boolean intersects (Rectangle rectangle);
+
+    /**
+     * Check whether this section intersects the provided shape.
+     *
+     * @param shape the shape to intersect
+     * @return true if intersection is not empty
+     */
+    boolean intersects (java.awt.Shape shape);
 
     /**
      * Check whether this section intersects that other section.

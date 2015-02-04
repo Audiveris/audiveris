@@ -16,6 +16,7 @@ import omr.run.Orientation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.Collection;
@@ -85,6 +86,30 @@ public class Sections
         }
 
         return found;
+    }
+
+    //-------------------//
+    // containingSection //
+    //-------------------//
+    /**
+     * Report the first section that contains the provided point.
+     *
+     * @param x        abscissa of provided point
+     * @param y        ordinate of provided point
+     * @param sections the collection of sections to browse
+     * @return the section found or null
+     */
+    public static Section containingSection (int x,
+                                             int y,
+                                             Collection<? extends Section> sections)
+    {
+        for (Section section : sections) {
+            if (section.contains(x, y)) {
+                return section;
+            }
+        }
+
+        return null;
     }
 
     //-----------//

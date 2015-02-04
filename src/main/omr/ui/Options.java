@@ -33,7 +33,9 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.Box;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -56,22 +58,25 @@ public class Options
     private static final Logger logger = LoggerFactory.getLogger(Options.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The interface window */
-    private JFrame frame;
+    /** The interface window. */
+    private final JFrame frame;
 
-    /** The underlying tree/table of all units */
+    /** The underlying tree/table of all units. */
     private UnitTreeTable unitTreeTable;
 
-    /** Field for search entry */
+    /** Field for search entry. */
     private JTextField searchField;
 
-    /** Current string being searched */
+    /** Label for search message. */
+    private final JLabel msgLabel = new JLabel("");
+
+    /** Current string being searched. */
     private String searchString = "";
 
-    /** The relevant rows */
+    /** The relevant rows. */
     private List<Integer> rows = Collections.emptyList();
 
-    /** Current user position in the relevant rows */
+    /** Current user position in the relevant rows. */
     private Integer rowIndex;
 
     /** Dump */
@@ -110,6 +115,16 @@ public class Options
         }
     };
 
+    /** Find */
+    private final AbstractAction find = new AbstractAction()
+    {
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            searchField.requestFocus();
+        }
+    };
+
     /** Back */
     private final AbstractAction backSearch = new AbstractAction()
     {
@@ -117,15 +132,20 @@ public class Options
         public void actionPerformed (ActionEvent e)
         {
             setSelection();
+            msgLabel.setText("");
 
             if (!rows.isEmpty()) {
-                if ((rowIndex != null) && (rowIndex > 0)) {
-                    rowIndex--;
-                } else {
+                if (rowIndex == null) {
                     rowIndex = rows.size() - 1;
+                    unitTreeTable.scrollRowToVisible(rows.get(rowIndex));
+                } else if (rowIndex > 0) {
+                    rowIndex--;
+                    unitTreeTable.scrollRowToVisible(rows.get(rowIndex));
+                } else {
+                    msgLabel.setText("not found");
                 }
-
-                unitTreeTable.scrollRowToVisible(rows.get(rowIndex));
+            } else {
+                msgLabel.setText("not found");
             }
         }
     };
@@ -137,15 +157,20 @@ public class Options
         public void actionPerformed (ActionEvent e)
         {
             setSelection();
+            msgLabel.setText("");
 
             if (!rows.isEmpty()) {
-                if ((rowIndex != null) && (rowIndex < (rows.size() - 1))) {
-                    rowIndex++;
-                } else {
+                if (rowIndex == null) {
                     rowIndex = 0;
+                    unitTreeTable.scrollRowToVisible(rows.get(rowIndex));
+                } else if (rowIndex < (rows.size() - 1)) {
+                    rowIndex++;
+                    unitTreeTable.scrollRowToVisible(rows.get(rowIndex));
+                } else {
+                    msgLabel.setText("not found");
                 }
-
-                unitTreeTable.scrollRowToVisible(rows.get(rowIndex));
+            } else {
+                msgLabel.setText("not found");
             }
         }
     };
@@ -165,10 +190,15 @@ public class Options
         frame = new JFrame();
         frame.setName("optionsFrame");
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        frame.getContentPane().setLayout(new BorderLayout());
+
+        JComponent framePane = (JComponent) frame.getContentPane();
+        framePane.setLayout(new BorderLayout());
+
+        InputMap inputMap = framePane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        ActionMap actionMap = framePane.getActionMap();
 
         JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
-        frame.add(toolBar, BorderLayout.NORTH);
+        framePane.add(toolBar, BorderLayout.NORTH);
 
         // Dump button
         JButton dumpButton = new JButton(dumping);
@@ -194,6 +224,8 @@ public class Options
         JButton backButton = new JButton(backSearch);
         backButton.setName("optionsBackButton");
         toolBar.add(backButton);
+        inputMap.put(KeyStroke.getKeyStroke("shift F3"), "backSearch");
+        actionMap.put("backSearch", backSearch);
 
         // Search entry
         searchField = new JTextField();
@@ -201,22 +233,27 @@ public class Options
         searchField.setName("optionsSearchField");
         searchField.setHorizontalAlignment(JTextField.LEFT);
         toolBar.add(searchField);
+        inputMap.put(KeyStroke.getKeyStroke("ctrl F"), "find");
+        actionMap.put("find", find);
 
         // Forward button
         JButton forwardButton = new JButton(forwardSearch);
         forwardButton.setName("optionsForwardButton");
         toolBar.add(forwardButton);
 
+        // Some space, message field
+        toolBar.add(Box.createHorizontalStrut(10));
+        toolBar.add(msgLabel);
+
         // TreeTable
         UnitModel unitModel = new UnitModel();
         unitTreeTable = new UnitTreeTable(unitModel);
-        frame.add(new JScrollPane(unitTreeTable), BorderLayout.CENTER);
+        framePane.add(new JScrollPane(unitTreeTable), BorderLayout.CENTER);
 
         // Needed to process user input when RETURN/ENTER is pressed
-        toolBar.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                KeyStroke.getKeyStroke("ENTER"),
-                "EnterAction");
-        toolBar.getActionMap().put("EnterAction", forwardSearch);
+        inputMap.put(KeyStroke.getKeyStroke("ENTER"), "forwardSearch");
+        inputMap.put(KeyStroke.getKeyStroke("F3"), "forwardSearch");
+        actionMap.put("forwardSearch", forwardSearch);
 
         // Resources injection
         ResourceMap resource = Application.getInstance().getContext().getResourceMap(getClass());

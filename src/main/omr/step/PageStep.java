@@ -1,0 +1,83 @@
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         P a g e S t e p                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
+// </editor-fold>
+package omr.step;
+
+import omr.score.PageReduction;
+import omr.score.entity.Page;
+
+import omr.sheet.PageVoiceFixer;
+import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+
+/**
+ * Class {@code PageStep} handles connections between systems in a page.
+ * <ul>
+ * <li>Physical system Part instances are abstracted into logical ScorePart instances.
+ * For systems where a given ScorePart has no representative Part, a corresponding dummy Part is
+ * inserted (with its proper staves and minimal measures).</li>
+ * <li>Slurs are connected across systems.</li>
+ * <li>Tied voices.</li>
+ * <li>Refined lyric syllables (?) </li>
+ * </ul>
+ *
+ * @author Hervé Bitteur
+ */
+public class PageStep
+        extends AbstractStep
+{
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(PageStep.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code PageStep} object.
+     */
+    public PageStep ()
+    {
+        super(
+                Steps.PAGE,
+                Level.SHEET_LEVEL,
+                Mandatory.MANDATORY,
+                DATA_TAB,
+                "Connect systems within page");
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    @Override
+    protected void doit (Collection<SystemInfo> systems,
+                         Sheet sheet)
+            throws StepException
+    {
+        for (Page page : sheet.getPages()) {
+            // Connect parts across systems in the page
+            new PageReduction(page).reduce();
+
+            // Insert dummy parts where needed
+            for (SystemInfo system : page.getSystems()) {
+                system.fillMissingParts();
+
+                //                system.connectSystemInitialSlurs();
+                //                system.connectTiedVoices();
+                //                system.refineLyricSyllables();
+            }
+
+            // Refine voices ids (and thus colors) across all systems of the page
+            ///new PageVoiceFixer(page).refine();
+        }
+    }
+}

@@ -60,7 +60,7 @@ public class LedgerPattern
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Companion in charge of building ledgers */
-    private final LedgersBuilder builder;
+    ///private final LedgersBuilder builder;
 
     /** Scale-dependent parameters */
     final int interChunkDx;
@@ -79,7 +79,7 @@ public class LedgerPattern
     public LedgerPattern (SystemInfo system)
     {
         super("Ledger", system);
-        builder = system.ledgersBuilder;
+        ///builder = system.ledgersBuilder;
         interChunkDx = scale.toPixels(constants.interChunkDx);
         interChunkDy = scale.toPixels(constants.interChunkDy);
     }

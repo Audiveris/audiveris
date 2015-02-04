@@ -31,26 +31,26 @@ import omr.lag.Section;
 import omr.math.GeoOrder;
 import omr.math.GeoUtil;
 import omr.math.LineUtil;
+import omr.math.Population;
 
 import omr.run.Orientation;
 import static omr.run.Orientation.*;
 import omr.run.Run;
 
-import omr.sig.AbstractBeamInter;
-import omr.sig.AbstractNoteInter;
-import omr.sig.BeamPortion;
-import omr.sig.BeamStemRelation;
-import omr.sig.Exclusion.Cause;
-import omr.sig.FullBeamInter;
 import omr.sig.GradeImpacts;
-import omr.sig.HeadStemRelation;
-import omr.sig.Inter;
-import omr.sig.Relation;
 import omr.sig.SIGraph;
-import omr.sig.StemInter;
-import omr.sig.StemPortion;
-import static omr.sig.StemPortion.*;
-import omr.sig.WholeInter;
+import omr.sig.inter.AbstractBeamInter;
+import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.FullBeamInter;
+import omr.sig.inter.Inter;
+import omr.sig.inter.StemInter;
+import omr.sig.relation.BeamPortion;
+import omr.sig.relation.BeamStemRelation;
+import omr.sig.relation.Exclusion.Cause;
+import omr.sig.relation.HeadStemRelation;
+import omr.sig.relation.Relation;
+import omr.sig.relation.StemPortion;
+import static omr.sig.relation.StemPortion.*;
 
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
@@ -155,14 +155,13 @@ public class StemsBuilder
     /** Vertical seeds for this system. */
     private List<Glyph> systemSeeds;
 
-    /** Heads (void & black) for this system. */
-    private List<Inter> systemHeads;
-
     /** Beams and beam hooks for this system. */
     private List<Inter> systemBeams;
 
     /** Stems interpretations for this system. */
     private List<Inter> systemStems;
+
+    private VerticalsBuilder verticalsBuilder;
 
     //~ Constructors -------------------------------------------------------------------------------
     //
@@ -207,6 +206,10 @@ public class StemsBuilder
                               Inter stem,
                               List<Inter> beams)
     {
+        if (params == null) {
+            params = new Parameters(system, scale);
+        }
+
         new HeadLinker(head).linkCueCorner(corner, beams, (StemInter) stem);
     }
 
@@ -251,6 +254,8 @@ public class StemsBuilder
             params = new Parameters(system, scale);
         }
 
+        verticalsBuilder = new VerticalsBuilder(system);
+
         StopWatch watch = new StopWatch("StemsBuilder S#" + system.getId());
         watch.start("collections");
         // The sorted stem seeds for this system
@@ -261,7 +266,7 @@ public class StemsBuilder
         Collections.sort(systemBeams, Inter.byAbscissa);
 
         // The sorted head interpretations for this system
-        systemHeads = sig.inters(ShapeSet.StemTemplateNotes);
+        final List<Inter> systemHeads = sig.inters(ShapeSet.StemTemplateNotes);
         Collections.sort(systemHeads, Inter.byAbscissa);
 
         // First phase, look around heads for stems (and beams if any)
@@ -398,7 +403,7 @@ public class StemsBuilder
         }
 
         // List of non-conflicting stems ensembles
-        List<List<Inter>> partners = sig.getPartners(null, allStems);
+        List<List<Inter>> partners = sig.getPartitions(null, allStems);
         ShareChecker checker = null;
 
         for (List<Inter> ensemble : partners) {
@@ -447,39 +452,9 @@ public class StemsBuilder
                 }
             }
 
-            performStemNoteExclusions(stems);
+            ///performStemNoteExclusions(stems);
         } finally {
             logger.debug("S#{} stems: {} exclusions: {}", system.getId(), size, count);
-        }
-    }
-
-    //---------------------------//
-    // performStemNoteExclusions //
-    //---------------------------//
-    private void performStemNoteExclusions (List<Inter> stems)
-    {
-        List<Inter> notes = sig.inters(
-                ShapeSet.shapesOf(ShapeSet.NoteHeads.getShapes(), ShapeSet.Notes.getShapes()));
-
-        for (Inter inter : stems) {
-            StemInter stem = (StemInter) inter;
-
-            NoteLoop:
-            for (Inter note : notes) {
-                if (note.overlaps(stem)) {
-                    // Is there a support connection?
-                    if (!(note instanceof WholeInter)) {
-                        for (Relation rel : sig.getAllEdges(note, stem)) {
-                            if (rel instanceof HeadStemRelation) {
-                                continue NoteLoop;
-                            }
-                        }
-                    }
-
-                    sig.insertExclusion(note, stem, Cause.OVERLAP);
-                    logger.debug("Overlap between {} & {}", note, stem);
-                }
-            }
         }
     }
 
@@ -518,7 +493,8 @@ public class StemsBuilder
                 "Minimum vertical distance between head and beam");
 
         final Scale.Fraction maxInterBeamGap = new Scale.Fraction(
-                1.0,
+                1.0, // TODO: A bit too large! Cf Dichterliebe sheet#1 (1592,555)
+                // We could measure actual gaps out of BEAMS step
                 "Maximum vertical gap between two consecutive beams of the same group");
 
         final Scale.Fraction minBeamStemsGap = new Scale.Fraction(
@@ -572,13 +548,13 @@ public class StemsBuilder
 
         final int minHeadBeamDistance;
 
-        final int maxInterBeamGap;
-
         final int minBeamStemsGap;
 
         final double maxSeedJitter;
 
         final double maxSectionJitter;
+
+        final int maxInterBeamGap;
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
@@ -589,22 +565,30 @@ public class StemsBuilder
         public Parameters (SystemInfo system,
                            Scale scale)
         {
-            final int stemThickness = system.getSheet().getMainStem();
+            final int stemThickness = system.getSheet().getMaxStem();
             slopeMargin = constants.slopeMargin.getValue();
             maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum());
             maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum());
             maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum());
             vicinityMargin = scale.toPixels(constants.vicinityMargin);
             maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum());
-            maxYGap = system.verticalsBuilder.getMaxYGap();
+            maxYGap = scale.toPixels(VerticalsBuilder.getMaxYGap());
             maxStemThickness = system.getSheet().getMaxStem();
             minHeadSectionContribution = scale.toPixels(constants.minHeadSectionContribution);
             minStemExtension = scale.toPixels(constants.minStemExtension);
             minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
-            maxInterBeamGap = scale.toPixels(constants.maxInterBeamGap);
             minBeamStemsGap = scale.toPixels(constants.minBeamStemsGap);
             maxSeedJitter = constants.maxSeedJitter.getValue() * stemThickness;
             maxSectionJitter = constants.maxSectionJitter.getValue() * stemThickness;
+
+            Population beamGaps = system.getSheet().getBeamGaps();
+
+            if (beamGaps.getCardinality() > 1) {
+                maxInterBeamGap = (int) Math.ceil(
+                        beamGaps.getMeanValue() + (2 * beamGaps.getStandardDeviation()));
+            } else {
+                maxInterBeamGap = scale.toPixels(constants.maxInterBeamGap);
+            }
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);
@@ -812,15 +796,16 @@ public class StemsBuilder
                         GeoOrder.BY_ABSCISSA,
                         area);
 
-                List<AbstractBeamInter> beams = new ArrayList<AbstractBeamInter>();
-                int groupStart = lookupBeams(beams, beamCandidates);
+                // Look for suitable beam groups
+                List<List<AbstractBeamInter>> beamGroups = lookupBeamGroups(beamCandidates);
 
-                // If we have a good beam, stop at the beginning of beam group
-                // using the good beam for the target point
-                if (groupStart != -1) {
-                    targetPt = getTargetPt(getLimit(beams.get(groupStart)));
-                }
-
+                //TODO: Adjust targetPt ??????????????????????????????????
+                //                // If we have a good beam, stop at the beginning of beam group
+                //                // using the good beam anchor as target point
+                //                if (groupStart != -1) {
+                //                    targetPt = getTargetPt(getLimit(beams.get(groupStart)));
+                //                }
+                //
                 Line2D line = new Line2D.Double(refPt, targetPt);
                 head.addAttachment("t" + corner.getId(), line);
 
@@ -858,8 +843,8 @@ public class StemsBuilder
                 List<StemInter> stems = includeItems(items, refY, fatHeadSection.value);
 
                 // Beam - Stem connection(s)?
-                if (!beams.isEmpty() && !stems.isEmpty()) {
-                    linkBeamsAndStems(beams, groupStart, stems);
+                if (!beamGroups.isEmpty() && !stems.isEmpty()) {
+                    linkBeamsAndStems(beamGroups, stems);
                 }
             }
 
@@ -870,9 +855,8 @@ public class StemsBuilder
                                  StemInter stem)
             {
                 // Look for beams in the corner
-                List<AbstractBeamInter> beams = new ArrayList<AbstractBeamInter>();
-                int groupStart = lookupBeams(beams, candidates);
-                linkBeamsAndStems(beams, groupStart, Collections.singletonList(stem));
+                List<List<AbstractBeamInter>> beamGroups = lookupBeamGroups(candidates);
+                linkBeamsAndStems(beamGroups, Collections.singletonList(stem));
             }
 
             //-------//
@@ -934,25 +918,23 @@ public class StemsBuilder
             /**
              * (Try to) connect beam and stem.
              *
-             * @param beam      the beam or hook interpretation
-             * @param stemInter the stem interpretation
+             * @param beam the beam or hook interpretation
+             * @param stem the stem interpretation
              * @return the beam stem relation if successful, null otherwise
              */
             private BeamStemRelation connectBeamStem (AbstractBeamInter beam,
-                                                      StemInter stemInter)
+                                                      StemInter stem)
             {
-                if (beam.isVip() && stemInter.isVip()) {
-                    logger.info("VIP connectBeamStem {} & {}", beam, stemInter);
+                if (beam.isVip() && stem.isVip()) {
+                    logger.info("VIP connectBeamStem {} & {}", beam, stem);
                 }
 
                 // Relation beam -> stem (if not yet present)
-                BeamStemRelation bRel = (BeamStemRelation) sig.getRelation(
-                        beam,
-                        stemInter,
-                        BeamStemRelation.class);
+                BeamStemRelation bRel;
+                bRel = (BeamStemRelation) sig.getRelation(beam, stem, BeamStemRelation.class);
 
                 if (bRel == null) {
-                    final Glyph stemGlyph = stemInter.getGlyph();
+                    final Glyph stemGlyph = stem.getGlyph();
                     final Line2D beamLimit = getLimit(beam);
                     bRel = new BeamStemRelation();
 
@@ -996,7 +978,7 @@ public class StemsBuilder
                     bRel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
                     if (bRel.getGrade() >= bRel.getMinGrade()) {
-                        sig.addEdge(beam, stemInter, bRel);
+                        sig.addEdge(beam, stem, bRel);
                         logger.debug("{} {} {}", head, corner, bRel);
                     } else {
                         bRel = null;
@@ -1074,6 +1056,12 @@ public class StemsBuilder
                                         (yDir > 0) ? headBox.y : ((headBox.y + headBox.height) - 1)));
                         sig.addEdge(head, stemInter, hRel);
 
+                        if (stemInter.getStaff() == null) {
+                            stemInter.setStaff(head.getStaff());
+                        } else if (stemInter.getStaff() != head.getStaff()) {
+                            logger.warn("Different staves for {} & {}", head, stemInter);
+                        }
+
                         if (stemInter.isVip()) {
                             logger.info("VIP {} {} {} to {}", head, corner, hRel, stemInter);
                         }
@@ -1118,7 +1106,7 @@ public class StemsBuilder
                 StemInter stemInter = (StemInter) sig.getInter(stem, StemInter.class);
 
                 if (stemInter == null) {
-                    GradeImpacts impacts = system.verticalsBuilder.checkStem(stem);
+                    GradeImpacts impacts = verticalsBuilder.checkStem(stem);
                     double grade = impacts.getGrade();
 
                     if (grade >= StemInter.getMinGrade()) {
@@ -1262,7 +1250,7 @@ public class StemsBuilder
              */
             private Point2D getReferencePoint ()
             {
-                AbstractNoteInter note = (AbstractNoteInter) head;
+                AbstractHeadInter note = (AbstractHeadInter) head;
                 ShapeDescriptor desc = note.getDescriptor();
                 Anchor anchor = corner.stemAnchor();
                 Point offset = desc.getOffset(anchor);
@@ -1475,65 +1463,55 @@ public class StemsBuilder
             //-------------------//
             // linkBeamsAndStems //
             //-------------------//
-            private void linkBeamsAndStems (List<AbstractBeamInter> beams,
-                                            int groupStart,
+            /**
+             * Try to build links between the provided beams and the provided stems.
+             *
+             * @param beamGroups groups of beam candidates
+             * @param stems      stem candidates
+             */
+            private void linkBeamsAndStems (List<List<AbstractBeamInter>> beamGroups,
                                             List<StemInter> stems)
             {
-                for (int i = 0; i < beams.size(); i++) {
-                    AbstractBeamInter beam = beams.get(i);
+                for (List<AbstractBeamInter> group : beamGroups) {
+                    AbstractBeamInter firstBeam = group.get(0);
 
                     for (StemInter stem : stems) {
-                        BeamStemRelation rel = connectBeamStem(beam, stem);
+                        // Try to connect first beam & stem
+                        BeamStemRelation rel = connectBeamStem(firstBeam, stem);
 
-                        if (rel == null) {
-                            continue;
-                        }
+                        if (rel != null) {
+                            // Extend stem connection till end of current beam group, if relevant
+                            if (firstBeam.isGood() && (group.size() > 1)) {
+                                for (AbstractBeamInter next : group.subList(1, group.size())) {
+                                    if (sig.getRelation(next, stem, BeamStemRelation.class) == null) {
+                                        BeamStemRelation r = new BeamStemRelation();
+                                        r.setBeamPortion(rel.getBeamPortion());
 
-                        if ((i == groupStart) && (groupStart < (beams.size() - 1))) {
-                            // Extend stem connection till end of beam group
-                            for (AbstractBeamInter next : beams.subList(
-                                    groupStart + 1,
-                                    beams.size())) {
-                                BeamStemRelation r = (BeamStemRelation) sig.getRelation(
-                                        next,
-                                        stem,
-                                        BeamStemRelation.class);
-
-                                if (r == null) {
-                                    r = new BeamStemRelation();
-                                    r.setBeamPortion(rel.getBeamPortion());
-
-                                    Point2D crossPt = crossing(stem.getGlyph(), beam);
-                                    r.setAnchorPoint(
-                                            new Point2D.Double(
-                                                    crossPt.getX(),
-                                                    crossPt.getY() + (yDir * (beam.getHeight() - 1))));
-                                    r.setGrade(rel.getGrade());
-                                    sig.addEdge(next, stem, r);
+                                        Point2D crossPt = crossing(stem.getGlyph(), next);
+                                        r.setAnchorPoint(
+                                                new Point2D.Double(
+                                                        crossPt.getX(),
+                                                        crossPt.getY() + (yDir * (next.getHeight() - 1))));
+                                        r.setGrade(rel.getGrade());
+                                        sig.addEdge(next, stem, r);
+                                    }
                                 }
                             }
                         }
                     }
-
-                    if (i == groupStart) {
-                        break;
-                    }
                 }
             }
 
-            //-------------//
-            // lookupBeams //
-            //-------------//
+            //------------------//
+            // lookupBeamGroups //
+            //------------------//
             /**
-             * Look for beam interpretations in the lookup area.
-             * We stop at (group of) first good beam interpretation, if any.
+             * Look for (groups of) beam interpretations in the lookup area.
              *
-             * @param beams      (output) list to be populated, ordered by distance from head
-             * @param candidates (input) collection of candidate beams
-             * @return index of first good beam in the beams list
+             * @param candidates provided collection of candidate beams
+             * @return the list of groups, ordered by distance from head
              */
-            private int lookupBeams (List<AbstractBeamInter> beams,
-                                     List<Inter> candidates)
+            private List<List<AbstractBeamInter>> lookupBeamGroups (List<Inter> candidates)
             {
                 // Reject beam candidates which are not in corner direction
                 // (this can happen because of beam bounding rectangle)
@@ -1563,13 +1541,16 @@ public class StemsBuilder
                             }
                         });
 
-                // Build the list of beams
-                AbstractBeamInter goodBeam = null;
+                // Build the list of (groups of) beams
+                List<List<AbstractBeamInter>> groups = new ArrayList<List<AbstractBeamInter>>();
+                List<AbstractBeamInter> group = null;
+                AbstractBeamInter prevBeam = null;
+                boolean groupIsGood = false;
 
                 for (Inter inter : candidates) {
                     AbstractBeamInter beam = (AbstractBeamInter) inter;
 
-                    if (goodBeam == null) {
+                    if (groups.isEmpty()) {
                         // Check if beam is far enough from head
                         final Point2D beamPt = getTargetPt(getLimit(beam));
                         final double distToBeam = yDir * (beamPt.getY() - refPt.getY());
@@ -1577,30 +1558,105 @@ public class StemsBuilder
                         if (distToBeam < params.minHeadBeamDistance) {
                             continue;
                         }
-
-                        beams.add(beam);
-
-                        // Truncate at first good encountered beam, if any, taken with its group.
-                        // Nota: We could shrink the lu area accordingly, however we impose area
-                        // containment for stem sections, so let's stay with the system limit.
-                        if (beam.isGood()) {
-                            goodBeam = beam;
-                        }
-                    } else {
-                        // We are within good beam group, check end of it
-                        AbstractBeamInter lastBeam = beams.get(beams.size() - 1);
-
-                        if (areGroupCompatible(lastBeam, beam)) {
-                            beams.add(beam);
-                        } else {
-                            break;
-                        }
                     }
+
+                    if (groupIsGood && areGroupCompatible(prevBeam, beam)) {
+                        // Grow the current good group
+                        group.add(beam);
+                    } else {
+                        // Start a brand new group
+                        groups.add(group = new ArrayList<AbstractBeamInter>());
+                        group.add(beam);
+                        groupIsGood = beam.isGood();
+                    }
+
+                    prevBeam = beam;
                 }
 
-                return beams.indexOf(goodBeam);
+                return groups;
             }
 
+            //
+            //            //-------------//
+            //            // lookupBeams //
+            //            //-------------//
+            //            /**
+            //             * Look for beam interpretations in the lookup area.
+            //             * We stop at (group of) first good beam interpretation, if any.
+            //             *
+            //             * @param beams      (output) list to be populated, ordered by distance from head
+            //             * @param candidates (input) collection of candidate beams
+            //             * @return index of first good beam in the beams list
+            //             */
+            //            private int lookupBeams (List<AbstractBeamInter> beams,
+            //                                     List<Inter> candidates)
+            //            {
+            //                // Reject beam candidates which are not in corner direction
+            //                // (this can happen because of beam bounding rectangle)
+            //                for (Iterator<Inter> it = candidates.iterator(); it.hasNext();) {
+            //                    AbstractBeamInter b = (AbstractBeamInter) it.next();
+            //
+            //                    if ((yDir * (getTargetPt(getLimit(b)).getY() - refPt.getY())) <= 0) {
+            //                        it.remove();
+            //                    }
+            //                }
+            //
+            //                // Sort candidates by distance from head
+            //                Collections.sort(
+            //                        candidates,
+            //                        new Comparator<Inter>()
+            //                        {
+            //                            @Override
+            //                            public int compare (Inter i1,
+            //                                                Inter i2)
+            //                            {
+            //                                AbstractBeamInter b1 = (AbstractBeamInter) i1;
+            //                                AbstractBeamInter b2 = (AbstractBeamInter) i2;
+            //
+            //                                return Double.compare(
+            //                                        yDir * (getTargetPt(getLimit(b1)).getY() - refPt.getY()),
+            //                                        yDir * (getTargetPt(getLimit(b2)).getY() - refPt.getY()));
+            //                            }
+            //                        });
+            //
+            //                // Build the list of beams
+            //                AbstractBeamInter goodBeam = null;
+            //
+            //                for (Inter inter : candidates) {
+            //                    AbstractBeamInter beam = (AbstractBeamInter) inter;
+            //
+            //                    if (goodBeam == null) {
+            //                        // Check if beam is far enough from head
+            //                        final Point2D beamPt = getTargetPt(getLimit(beam));
+            //                        final double distToBeam = yDir * (beamPt.getY() - refPt.getY());
+            //
+            //                        if (distToBeam < params.minHeadBeamDistance) {
+            //                            continue;
+            //                        }
+            //
+            //                        beams.add(beam);
+            //
+            //                        // Truncate at first good encountered beam, if any, taken with its group.
+            //                        // Nota: We could shrink the lu area accordingly, however we impose area
+            //                        // containment for stem sections, so let's stay with the system limit.
+            //                        if (beam.isGood()) {
+            //                            goodBeam = beam;
+            //                        }
+            //                    } else {
+            //                        // We are within good beam group, check end of it
+            //                        AbstractBeamInter lastBeam = beams.get(beams.size() - 1);
+            //
+            //                        if (areGroupCompatible(lastBeam, beam)) {
+            //                            beams.add(beam);
+            //                        } else {
+            //                            break;
+            //                        }
+            //                    }
+            //                }
+            //
+            //                return beams.indexOf(goodBeam);
+            //            }
+            //
             //--------------//
             // lookupChunks //
             //--------------//
@@ -1680,9 +1736,9 @@ public class StemsBuilder
                 final List<Section> sections = new ArrayList<Section>();
                 final List<Section> headSections = new ArrayList<Section>();
 
-                // Widen head box with typical stem width
+                // Widen head box with max stem width
                 final Rectangle wideHeadBox = head.getBounds();
-                wideHeadBox.grow(system.getSheet().getMainStem(), 0);
+                wideHeadBox.grow(system.getSheet().getMaxStem(), 0);
 
                 // Browse both vertical and horizontal sections in the system
                 for (Collection<Section> collection : Arrays.asList(

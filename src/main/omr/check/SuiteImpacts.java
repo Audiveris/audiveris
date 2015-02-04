@@ -11,8 +11,7 @@
 // </editor-fold>
 package omr.check;
 
-import omr.sig.AbstractImpacts;
-import omr.sig.Grades;
+import omr.sig.BasicImpacts;
 
 import java.util.List;
 
@@ -20,128 +19,91 @@ import java.util.List;
  * Class {@code SuiteImpacts} is a GradeImpacts implementation based on an underlying
  * CheckSuite.
  *
- * @param <C> precise Checkable type
- *
  * @author Hervé Bitteur
  */
-public class SuiteImpacts<C extends Checkable>
-        extends AbstractImpacts
+public class SuiteImpacts
+        extends BasicImpacts
 {
-    //~ Instance fields ----------------------------------------------------------------------------
-
-    /** The underlying suite of check instances. */
-    private final CheckSuite<C> suite;
-
-    /** The checked object. */
-    private final Checkable checkable;
-
-    /** Individual check values. */
-    private final double[] values;
-
-    /** Individual check impacts. */
-    private final double[] impacts;
-
-    /** Resulting suite grade. */
-    private double grade;
-
+    private final String suiteName;
     //~ Constructors -------------------------------------------------------------------------------
+
     //--------------//
     // SuiteImpacts //
     //--------------//
     /**
      * Creates a new SuiteImpacts object.
      *
-     * @param suite     the underlying check suite
-     * @param checkable the checkable entity
+     * @param names   array of names
+     * @param weights array of weights
      */
-    public SuiteImpacts (CheckSuite<C> suite,
-                         C checkable)
+    protected SuiteImpacts (String[] names,
+                            double[] weights,
+                            String suiteName)
     {
-        this.suite = suite;
-        this.checkable = checkable;
-
-        final int size = suite.getChecks().size();
-        values = new double[size];
-        impacts = new double[size];
+        super(names, weights);
+        this.suiteName = suiteName;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // newInstance //
+    //-------------//
+    /**
+     * Create a SuiteImpacts instance from a check suite and a checkable entity.
+     *
+     * @param <C>       Precise Checkable subtype
+     * @param suite     the check suite to run on entity
+     * @param checkable the checkable entity
+     * @return the populated SuiteImpacts instance
+     */
+    public static <C extends Checkable> SuiteImpacts newInstance (CheckSuite<C> suite,
+                                                                  C checkable)
+    {
+        final List<Check<C>> checks = suite.getChecks();
+        final int nb = checks.size();
+
+        // Build names & weights
+        String[] names = new String[nb];
+        double[] weights = new double[nb];
+
+        for (int i = 0; i < nb; i++) {
+            Check check = checks.get(i);
+            names[i] = check.getName();
+            weights[i] = suite.getWeights().get(i);
+        }
+
+        SuiteImpacts impacts = new SuiteImpacts(names, weights, suite.getName());
+
+        // Populate impacts with check results on checkable entity
+        suite.pass(checkable, impacts);
+
+        return impacts;
+    }
+
     //---------//
     // getDump //
     //---------//
     public String getDump ()
     {
-        final List<Check<C>> checks = suite.getChecks();
-        final StringBuilder sb = new StringBuilder();
-        sb.append(suite.getName()).append(" ").append(checkable);
-
-        for (int i = 0; i < checks.size(); i++) {
-            Check<C> check = checks.get(i);
-            sb.append(" ").append(check.getName()).append(":").append(
-                    String.format("%.2f", values[i]));
-        }
-
-        sb.append(
-                String.format(
-                        " => %.2f (min %.2f, good %.2f)",
-                        grade,
-                        suite.getMinThreshold(),
-                        suite.getGoodThreshold()));
-
-        return sb.toString();
-    }
-
-    //----------//
-    // getGrade //
-    //----------//
-    @Override
-    public double getGrade ()
-    {
-        return grade;
-    }
-
-    //-----------//
-    // getImpact //
-    //-----------//
-    @Override
-    public double getImpact (int index)
-    {
-        return impacts[index];
-    }
-
-    //----------------//
-    // getImpactCount //
-    //----------------//
-    @Override
-    public int getImpactCount ()
-    {
-        return impacts.length;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    @Override
-    public String getName (int index)
-    {
-        return suite.getChecks().get(index).getName();
-    }
-
-    //----------//
-    // getValue //
-    //----------//
-    public double getValue (int index)
-    {
-        return values[index];
-    }
-
-    //-----------//
-    // getWeight //
-    //-----------//
-    @Override
-    public double getWeight (int index)
-    {
-        return suite.getWeights().get(index);
+        //        final List<Check<C>> checks = suite.getChecks();
+        //        final StringBuilder sb = new StringBuilder();
+        //        sb.append(suite.getName()).append(" ").append(checkable);
+        //
+        //        for (int i = 0; i < checks.size(); i++) {
+        //            Check<C> check = checks.get(i);
+        //            sb.append(" ").append(check.getName()).append(":").append(
+        //                    String.format("%.2f", values[i]));
+        //        }
+        //
+        //        sb.append(
+        //                String.format(
+        //                        " => %.2f (min %.2f, good %.2f)",
+        //                        grade,
+        //                        suite.getMinThreshold(),
+        //                        suite.getGoodThreshold()));
+        //
+        //        return sb.toString();
+        return null;
     }
 
     //----------//
@@ -150,23 +112,5 @@ public class SuiteImpacts<C extends Checkable>
     public void setGrade (double grade)
     {
         this.grade = grade;
-    }
-
-    //-----------//
-    // setImpact //
-    //-----------//
-    public void setImpact (int index,
-                           double impact)
-    {
-        impacts[index] = Grades.clamp(impact);
-    }
-
-    //----------//
-    // setValue //
-    //----------//
-    public void setValue (int index,
-                          double value)
-    {
-        values[index] = value;
     }
 }

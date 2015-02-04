@@ -11,17 +11,22 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.sheet.Staff;
 import omr.glyph.facets.Glyph;
+
 import static omr.grid.StaffPeak.Attribute.*;
 
-import omr.sig.AbstractVerticalInter;
-import omr.sig.BraceInter;
+import omr.sig.inter.AbstractVerticalInter;
+import omr.sig.inter.BraceInter;
 import omr.sig.GradeImpacts;
-import omr.sig.Inter;
+import omr.sig.inter.Inter;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.LEFT;
+
 import omr.util.VerticalSide;
+
 import static omr.util.VerticalSide.TOP;
 
 import java.awt.Rectangle;
@@ -84,7 +89,7 @@ public abstract class StaffPeak
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Containing staff. */
-    protected final StaffInfo staff;
+    protected final Staff staff;
 
     /** Line ordinate at top. */
     protected final int top;
@@ -117,7 +122,7 @@ public abstract class StaffPeak
      * @param start  starting abscissa
      * @param stop   stopping abscissa
      */
-    public StaffPeak (StaffInfo staff,
+    public StaffPeak (Staff staff,
                       int top,
                       int bottom,
                       int start,
@@ -199,7 +204,7 @@ public abstract class StaffPeak
     /**
      * @return the staff
      */
-    public StaffInfo getStaff ()
+    public Staff getStaff ()
     {
         return staff;
     }
@@ -444,7 +449,7 @@ public abstract class StaffPeak
          * @param stop    stopping abscissa
          * @param impacts evaluation details
          */
-        public Bar (StaffInfo staff,
+        public Bar (Staff staff,
                     int top,
                     int bottom,
                     int start,
@@ -523,7 +528,7 @@ public abstract class StaffPeak
          * @param start  starting abscissa
          * @param stop   stopping abscissa
          */
-        public Brace (StaffInfo staff,
+        public Brace (Staff staff,
                       int top,
                       int bottom,
                       int start,

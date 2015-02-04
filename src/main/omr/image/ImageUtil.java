@@ -62,8 +62,8 @@ public abstract class ImageUtil
     // maxRgbToGray //
     //--------------//
     /**
-     * Take an RGB image and always select the maximum pixel value
-     * among R,G & B bands to provide the output gray value.
+     * Take an RGB image and always select the maximum pixel value among R,G & B bands
+     * to provide the output gray value.
      *
      * @param image input image with 3 bands RGB
      * @return a gray image
@@ -103,9 +103,8 @@ public abstract class ImageUtil
     // maxRgbaToGray //
     //---------------//
     /**
-     * Take an RGBA image and, ignoring the alpha value, always select
-     * the maximum pixel value among R,G & B bands to provide the
-     * output gray value.
+     * Take an RGBA image and, ignoring the alpha value, always select the maximum pixel
+     * value among R,G & B bands to provide the output gray value.
      *
      * @param rgba input image with 3 bands RGB and 1 Alpha channel
      * @return a gray image
@@ -119,8 +118,7 @@ public abstract class ImageUtil
     // printInfo //
     //-----------//
     /**
-     * Convenient method to print some characteristics of the provided
-     * image.
+     * Convenient method to print some characteristics of the provided image.
      *
      * @param img   the image to query
      * @param title a title to be printed, or null
@@ -130,24 +128,20 @@ public abstract class ImageUtil
     {
         int type = img.getType();
         ColorModel colorModel = img.getColorModel();
-        boolean hasAlpha = colorModel.hasAlpha();
-        boolean isAlphaPre = colorModel.isAlphaPremultiplied();
         logger.info(
-                "{} type:({}={}) cm:({}) hasAlpha:{} isAlphaPre:{}",
+                "{} type:({}={}) cm:({})",
                 (title != null) ? title : "",
                 type,
                 typeOf(type),
-                colorModel,
-                hasAlpha,
-                isAlphaPre);
+                colorModel);
     }
 
     //-----------//
     // rgbToGray //
     //-----------//
     /**
-     * Take an RGB image and combine the R,G & B bands according to
-     * standard luminance value to provide the output gray value.
+     * Take an RGB image and combine the R,G & B bands according to standard luminance
+     * value to provide the output gray value.
      *
      * @param rgb input image with 3 bands RGB
      * @return a gray image
@@ -169,8 +163,7 @@ public abstract class ImageUtil
     // rgbaToGray //
     //------------//
     /**
-     * Take an RBGA image and provide an output gray image, using
-     * standard luminance.
+     * Take an RBGA image and provide an output gray image, using standard luminance.
      * This method assumes that the bands were premultiplied.
      *
      * @param rgba input RGBA image
@@ -185,8 +178,7 @@ public abstract class ImageUtil
     // rgbaToRgb //
     //-----------//
     /**
-     * Take an RBGA image and provide an output with the alpha channel
-     * removed.
+     * Take an RBGA image and provide an output with the alpha channel removed.
      * This method assumes that the bands were premultiplied.
      *
      * @param rgba input RGBA image
@@ -203,8 +195,7 @@ public abstract class ImageUtil
     // saveOnDisk //
     //------------//
     /**
-     * Convenient method to save a BufferedImage to disk
-     * (in application temp area)
+     * Convenient method to save a BufferedImage to disk (in application temp area)
      *
      * @param image the image to save
      * @param name  file name, without extension

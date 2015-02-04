@@ -21,6 +21,13 @@ public interface GradeImpacts
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
+     * Report a string about impacts details
+     *
+     * @return string of details
+     */
+    String getDump ();
+
+    /**
      * Retrieve a global grade value from detailed impacts.
      *
      * @return the computed grade in range 0 .. 1

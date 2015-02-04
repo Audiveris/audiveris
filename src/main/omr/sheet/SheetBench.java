@@ -43,8 +43,8 @@ public class SheetBench
     /** The prefix to use for this sheet. */
     private final String sheetPrefix;
 
-    /** The related score. */
-    private final Score score;
+    /** The related book. */
+    private final Book book;
 
     /** Time stamp when this instance was created. */
     private final long startTime = System.currentTimeMillis();
@@ -65,10 +65,10 @@ public class SheetBench
     {
         this.sheet = sheet;
 
-        sheetPrefix = String.format("p%02d.", sheet.getPage().getIndex());
-        score = sheet.getScore();
+        sheetPrefix = String.format("p%02d.", sheet.getIndex());
+        book = sheet.getBook();
 
-        addProp("image", score.getImagePath() + "#" + sheet.getPage().getIndex());
+        addProp("image", book.getImagePath() + "#" + sheet.getIndex());
 
         flushBench();
     }
@@ -140,6 +140,15 @@ public class SheetBench
         ///addProp("scale.mainStem", scale.getMainStem());
     }
 
+    //-----------------//
+    // recordStemScale //
+    //-----------------//
+    public void recordStemScale (StemScale stemScale)
+    {
+        addProp("stemScale.mainThickness", stemScale.getMainThickness());
+        addProp("stemScale.maxThickness", stemScale.getMaxThickness());
+    }
+
     //------------//
     // recordSkew //
     //------------//
@@ -187,7 +196,7 @@ public class SheetBench
     protected final void addProp (String radix,
                                   String value)
     {
-        score.getBench().addProp(sheetPrefix + radix, value);
+        book.getBench().addProp(sheetPrefix + radix, value);
     }
 
     //------------//
@@ -199,6 +208,6 @@ public class SheetBench
     @Override
     protected final void flushBench ()
     {
-        score.getBench().flushBench();
+        book.getBench().flushBench();
     }
 }

@@ -29,13 +29,10 @@ import java.util.regex.Pattern;
  * Class {@code ChordInfo} is a formatted piece of text that
  * describes a chord symbol such as F#m7, A(9) or BMaj7/D#.
  * This class is organized according to the target MusicXML harmony element.
- *
  * <p>
  * TODO: Add support for degree subtract (besides add and alter) </p>
- *
  * <p>
  * TODO: Add support for classical functions (besides root)</p>
- *
  * <p>
  * TODO: Add support for French steps: Do, Ré, Mi, etc.</p>
  *

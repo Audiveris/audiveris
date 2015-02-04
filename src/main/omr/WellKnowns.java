@@ -29,12 +29,12 @@ import java.util.Locale;
 import java.util.jar.JarFile;
 
 /**
- * Class {@code WellKnowns} gathers top public static final data to be
- * shared within Audiveris application.
+ * Class {@code WellKnowns} gathers top public static final data to be shared within
+ * Audiveris application.
  *
  * <p>
- * Note that a few initial operations are performed here, because they need
- * to take place before any other class is loaded.
+ * Note that a few initial operations are performed here, because they need to take place before any
+ * other class is loaded.
  *
  * @author Hervé Bitteur
  */

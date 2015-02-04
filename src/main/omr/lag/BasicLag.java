@@ -17,7 +17,7 @@ import omr.graph.BasicDigraph;
 
 import omr.run.Orientation;
 import omr.run.Run;
-import omr.run.RunsTable;
+import omr.run.RunTable;
 
 import omr.selection.LagEvent;
 import omr.selection.LocationEvent;
@@ -60,25 +60,22 @@ public class BasicLag
     /** Events read on location service */
     public static final Class[] locEventsRead = new Class<?>[]{LocationEvent.class};
 
-    /** Events read on run service */
-    public static final Class[] runEventsRead = new Class<?>[]{RunEvent.class};
-
     /** Events read on section service */
     public static final Class[] sctEventsRead = new Class<?>[]{
         SectionIdEvent.class, SectionEvent.class
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Orientation of the lag */
+    /** Orientation of the lag. */
     private final Orientation orientation;
 
-    /** Underlying runs table */
-    private RunsTable runsTable;
+    /** Underlying runs table. */
+    private RunTable runTable;
 
-    /** Location service */
+    /** Location service. */
     private SelectionService locationService;
 
-    /** Hosted section service */
+    /** Hosted section service. */
     protected final SelectionService lagService;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -94,39 +91,25 @@ public class BasicLag
     public BasicLag (String name,
                      Orientation orientation)
     {
-        this(name, BasicSection.class, orientation);
-    }
-
-    //----------//
-    // BasicLag //
-    //----------//
-    /**
-     * Constructor with specified orientation and section class
-     *
-     * @param name        the distinguished name for this instance
-     * @param orientation the desired orientation of the lag
-     */
-    public BasicLag (String name,
-                     Class<? extends Section> sectionClass,
-                     Orientation orientation)
-    {
-        super(name, sectionClass);
+        super(name, BasicSection.class);
         this.orientation = orientation;
         lagService = new SelectionService(name, Lag.eventsWritten);
+        logger.debug("Created lag {}", name);
+
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // addRuns //
-    //---------//
+    //-------------//
+    // addRunTable //
+    //-------------//
     @Override
-    public void addRuns (RunsTable runsTable)
+    public void addRunTable (RunTable runTable)
     {
-        if (this.runsTable == null) {
-            this.runsTable = runsTable.copy();
+        if (this.runTable == null) {
+            this.runTable = runTable;
         } else {
             // Add runs into the existing table
-            this.runsTable.include(runsTable);
+            this.runTable.include(runTable);
         }
     }
 
@@ -148,6 +131,25 @@ public class BasicLag
         return section;
     }
 
+    //-------------//
+    // cutServices //
+    //-------------//
+    @Override
+    public void cutServices ()
+    {
+        if (runTable != null) {
+            runTable.cutLocationService(locationService);
+        }
+
+        for (Class<?> eventClass : locEventsRead) {
+            locationService.unsubscribe(eventClass, this);
+        }
+
+        for (Class<?> eventClass : sctEventsRead) {
+            lagService.unsubscribe(eventClass, this);
+        }
+    }
+
     //----------------//
     // getOrientation //
     //----------------//
@@ -164,16 +166,44 @@ public class BasicLag
     public final Run getRunAt (int x,
                                int y)
     {
-        return runsTable.getRunAt(x, y);
+        return runTable.getRunAt(x, y);
     }
 
-    //---------//
-    // getRuns //
-    //---------//
+    //---------------//
+    // getRunService //
+    //---------------//
     @Override
-    public RunsTable getRuns ()
+    public SelectionService getRunService ()
     {
-        return runsTable;
+        return runTable.getRunService();
+    }
+
+    //-------------//
+    // getRunTable //
+    //-------------//
+    @Override
+    public RunTable getRunTable ()
+    {
+        return runTable;
+    }
+
+    //--------------//
+    // getSectionAt //
+    //--------------//
+    @Override
+    public Section getSectionAt (int x,
+                                 int y)
+    {
+        return Sections.containingSection(x, y, getSections());
+    }
+
+    //-------------------//
+    // getSectionService //
+    //-------------------//
+    @Override
+    public SelectionService getSectionService ()
+    {
+        return lagService;
     }
 
     //-------------//
@@ -192,47 +222,6 @@ public class BasicLag
     public Set<Section> containedSections (Rectangle rect)
     {
         return Sections.containedSections(rect, getSections());
-    }
-
-    //-------------//
-    // cutServices //
-    //-------------//
-    @Override
-    public void cutServices ()
-    {
-        if (runsTable != null) {
-            runsTable.cutLocationService(locationService);
-
-            for (Class<?> eventClass : runEventsRead) {
-                getRunService().unsubscribe(eventClass, this);
-            }
-        }
-
-        for (Class<?> eventClass : locEventsRead) {
-            locationService.unsubscribe(eventClass, this);
-        }
-
-        for (Class<?> eventClass : sctEventsRead) {
-            lagService.unsubscribe(eventClass, this);
-        }
-    }
-
-    //---------------//
-    // getRunService //
-    //---------------//
-    @Override
-    public SelectionService getRunService ()
-    {
-        return runsTable.getRunService();
-    }
-
-    //-------------------//
-    // getSectionService //
-    //-------------------//
-    @Override
-    public SelectionService getSectionService ()
-    {
-        return lagService;
     }
 
     //--------------------//
@@ -291,9 +280,6 @@ public class BasicLag
             if (event instanceof LocationEvent) {
                 // Location => lassoed Section(s)
                 handleEvent((LocationEvent) event);
-            } else if (event instanceof RunEvent) {
-                // Run => Section
-                handleEvent((RunEvent) event);
             } else if (event instanceof SectionIdEvent) {
                 // Section ID => Section
                 handleEvent((SectionIdEvent) event);
@@ -323,13 +309,13 @@ public class BasicLag
     // publish //
     //---------//
     /**
-     * Publish a RunEvent on RunsTable service
+     * Publish a RunEvent on RunTable service
      *
      * @param event the event to publish
      */
     public void publish (RunEvent event)
     {
-        // Delegate to RunsTable
+        // Delegate to RunTable
         getRunService().publish(event);
     }
 
@@ -367,7 +353,7 @@ public class BasicLag
             int pos = section.getFirstPos();
 
             for (Run run : section.getRuns()) {
-                runsTable.removeRun(pos++, run);
+                runTable.removeRun(pos++, run);
             }
         }
 
@@ -379,12 +365,12 @@ public class BasicLag
     // setRuns //
     //---------//
     @Override
-    public void setRuns (RunsTable runsTable)
+    public void setRuns (RunTable runsTable)
     {
-        if (this.runsTable != null) {
+        if (this.runTable != null) {
             throw new RuntimeException("Attempt to overwrite lag runs table");
         } else {
-            this.runsTable = runsTable;
+            this.runTable = runsTable;
         }
     }
 
@@ -396,12 +382,8 @@ public class BasicLag
     {
         this.locationService = locationService;
 
-        if (runsTable != null) {
-            runsTable.setLocationService(locationService);
-
-            for (Class<?> eventClass : runEventsRead) {
-                getRunService().subscribeStrongly(eventClass, this);
-            }
+        if (runTable != null) {
+            runTable.setLocationService(locationService);
         }
 
         for (Class<?> eventClass : locEventsRead) {
@@ -465,36 +447,12 @@ public class BasicLag
 
                 // Publish whole SectionSet
                 publish(new SectionSetEvent(this, hint, movement, sectionsFound));
+            } else {
+                // Just a point, look for containing section
+                Section section = getSectionAt(rect.x, rect.y);
+                publish(new SectionEvent(this, hint, movement, section));
             }
         }
-    }
-
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Interest in Run => Section
-     *
-     * @param run
-     */
-    private void handleEvent (RunEvent runEvent)
-    {
-        logger.debug("Lag. run:{}", runEvent);
-
-        // Lookup for Section linked to this Run
-        // Search and forward section info
-        Run run = runEvent.getData();
-
-        SelectionHint hint = runEvent.hint;
-        MouseMovement movement = runEvent.movement;
-
-        if (!hint.isLocation() && !hint.isContext()) {
-            return;
-        }
-
-        // Publish Section information
-        Section section = (run != null) ? run.getSection() : null;
-        publish(new SectionEvent(this, hint, movement, section));
     }
 
     //-------------//

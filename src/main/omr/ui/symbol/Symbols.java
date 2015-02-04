@@ -149,11 +149,11 @@ public class Symbols
         dec.put(BRACE, new BraceSymbol(false));
         dec.put(BRACKET, new BracketSymbol(false));
         dec.put(BREVE_REST, new RestSymbol(BREVE_REST, true, 227));
-        dec.put(CHARACTER, new TextSymbol(CHARACTER, "a"));
+        dec.put(CHARACTER, new TextSymbol(CHARACTER, "x"));
         dec.put(CLUTTER, new TextSymbol(CLUTTER, "?"));
         dec.put(STEM, new StemSymbol());
         dec.put(CRESCENDO, new CrescendoSymbol(false, CRESCENDO));
-        dec.put(DECRESCENDO, new DecrescendoSymbol(false, DECRESCENDO));
+        dec.put(DIMINUENDO, new DecrescendoSymbol(false, DIMINUENDO));
         dec.put(ENDING, new EndingSymbol());
         dec.put(HALF_REST, new RestSymbol(HALF_REST, true, 238));
         dec.put(LEDGER, new LedgerSymbol(true));
@@ -176,9 +176,9 @@ public class Symbols
         // Instances to be defined first, because others depend on them
         map(DYNAMICS_F, 102);
         map(DYNAMICS_FF, 196);
-        map(DYNAMICS_FFF, 236);
-        map(DYNAMICS_FZ, 90);
-        map(DYNAMICS_SF, 83);
+//        map(DYNAMICS_FFF, 236);
+//        map(DYNAMICS_FZ, 90);
+//        map(DYNAMICS_SF, 83);
         map(NOTEHEAD_BLACK, 207);
         small(NOTEHEAD_BLACK_SMALL, 207);
         map(TIME_ZERO, 48);
@@ -193,6 +193,7 @@ public class Symbols
         // Other instances, in any order
         map(DOT_set, 46);
         map(AUGMENTATION_DOT, 46);
+        map(FERMATA_DOT, 46);
         map(STACCATO, 46);
         map(REPEAT_DOT, 46);
 
@@ -226,10 +227,10 @@ public class Symbols
         sym.put(DOUBLE_BARLINE, new DoubleBarlineSymbol(false));
         sym.put(DOUBLE_FLAT, new FlatSymbol(DOUBLE_FLAT, 186));
         map(DOUBLE_SHARP, 220);
-        map(DYNAMICS_CHAR_M, 189);
-        map(DYNAMICS_CHAR_R, 243);
-        map(DYNAMICS_CHAR_S, 115);
-        map(DYNAMICS_CHAR_Z, 122);
+//        map(DYNAMICS_CHAR_M, 189);
+//        map(DYNAMICS_CHAR_R, 243);
+//        map(DYNAMICS_CHAR_S, 115);
+//        map(DYNAMICS_CHAR_Z, 122);
         //        slanted(DYNAMICS_FFFF, 236, 102);
         //        slanted(DYNAMICS_FFFFF, 236, 196);
         //        slanted(DYNAMICS_FFFFFF, 236, 236);
@@ -238,15 +239,15 @@ public class Symbols
         map(DYNAMICS_MP, 80);
         map(DYNAMICS_P, 112);
         map(DYNAMICS_PP, 185);
-        map(DYNAMICS_PPP, 184);
+//        map(DYNAMICS_PPP, 184);
         //        slanted(DYNAMICS_PPPP, 184, 112);
         //        slanted(DYNAMICS_PPPPP, 184, 185);
         //        slanted(DYNAMICS_PPPPPP, 184, 184);
-        slanted(DYNAMICS_RF, 243, 102);
-        slanted(DYNAMICS_RFZ, 243, 102, 122);
-        slanted(DYNAMICS_SFFZ, 83, 90);
-        slanted(DYNAMICS_SFP, 83, 112);
-        slanted(DYNAMICS_SFPP, 83, 185);
+//        slanted(DYNAMICS_RF, 243, 102);
+//        slanted(DYNAMICS_RFZ, 243, 102, 122);
+//        slanted(DYNAMICS_SFFZ, 83, 90);
+//        slanted(DYNAMICS_SFP, 83, 112);
+//        slanted(DYNAMICS_SFPP, 83, 185);
         slanted(DYNAMICS_SFZ, 83, 122);
 
         //        map(ENDING_HORIZONTAL);
@@ -357,11 +358,31 @@ public class Symbols
         sym.put(DIGIT_2, new TextSymbol(DIGIT_2, "2"));
         sym.put(DIGIT_3, new TextSymbol(DIGIT_3, "3"));
         sym.put(DIGIT_4, new TextSymbol(DIGIT_4, "4"));
-        sym.put(DIGIT_5, new TextSymbol(DIGIT_5, "5"));
-        sym.put(DIGIT_6, new TextSymbol(DIGIT_6, "6"));
-        sym.put(DIGIT_7, new TextSymbol(DIGIT_7, "7"));
-        sym.put(DIGIT_8, new TextSymbol(DIGIT_8, "8"));
-        sym.put(DIGIT_9, new TextSymbol(DIGIT_9, "9"));
+//        sym.put(DIGIT_5, new TextSymbol(DIGIT_5, "5"));
+//        sym.put(DIGIT_6, new TextSymbol(DIGIT_6, "6"));
+//        sym.put(DIGIT_7, new TextSymbol(DIGIT_7, "7"));
+//        sym.put(DIGIT_8, new TextSymbol(DIGIT_8, "8"));
+//        sym.put(DIGIT_9, new TextSymbol(DIGIT_9, "9"));
+//
+        // Romans
+        sym.put(ROMAN_I, new TextSymbol(ROMAN_I, "I"));
+        sym.put(ROMAN_II, new TextSymbol(ROMAN_II, "II"));
+        sym.put(ROMAN_III, new TextSymbol(ROMAN_III, "III"));
+        sym.put(ROMAN_IV, new TextSymbol(ROMAN_IV, "IV"));
+        sym.put(ROMAN_V, new TextSymbol(ROMAN_V, "V"));
+        sym.put(ROMAN_VI, new TextSymbol(ROMAN_VI, "VI"));
+        sym.put(ROMAN_VII, new TextSymbol(ROMAN_VII, "VII"));
+        sym.put(ROMAN_VIII, new TextSymbol(ROMAN_VIII, "VIII"));
+        sym.put(ROMAN_IX, new TextSymbol(ROMAN_IX, "IX"));
+        sym.put(ROMAN_X, new TextSymbol(ROMAN_X, "X"));
+        sym.put(ROMAN_XI, new TextSymbol(ROMAN_XI, "XI"));
+        sym.put(ROMAN_XII, new TextSymbol(ROMAN_XII, "XII"));
+
+        // Plucking
+        sym.put(PLUCK_P, new TextSymbol(PLUCK_P, "p"));
+        sym.put(PLUCK_I, new TextSymbol(PLUCK_I, "i"));
+        sym.put(PLUCK_M, new TextSymbol(PLUCK_M, "m"));
+        sym.put(PLUCK_A, new TextSymbol(PLUCK_A, "a"));
     }
 
     //- Convenient methods -----------------------------------------------------

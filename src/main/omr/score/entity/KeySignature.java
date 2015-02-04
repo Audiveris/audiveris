@@ -130,8 +130,8 @@ public class KeySignature
      * @param measure the containing measure
      * @param staff   the related staff
      */
-    public KeySignature (Measure measure,
-                         Staff staff)
+    public KeySignature (OldMeasure measure,
+                         OldStaff staff)
     {
         super(measure);
         setStaff(staff);
@@ -150,8 +150,8 @@ public class KeySignature
      * @param staff   the related staff
      * @param other   the key sig to clone
      */
-    public KeySignature (Measure measure,
-                         Staff staff,
+    public KeySignature (OldMeasure measure,
+                         OldStaff staff,
                          KeySignature other)
     {
         super(measure);
@@ -180,7 +180,7 @@ public class KeySignature
     //-----------------//
     // createDummyCopy //
     //-----------------//
-    public KeySignature createDummyCopy (Measure measure,
+    public KeySignature createDummyCopy (OldMeasure measure,
                                          Point center)
     {
         KeySignature dummy = new KeySignature(measure, null);
@@ -493,8 +493,8 @@ public class KeySignature
      * @return true if population is successful, false otherwise
      */
     public static boolean populate (Glyph glyph,
-                                    Measure measure,
-                                    Staff staff,
+                                    OldMeasure measure,
+                                    OldStaff staff,
                                     Point center)
     {
         logger.debug("Populating keysig for {}", glyph);
@@ -648,7 +648,7 @@ public class KeySignature
      */
     private static boolean checkPitchPosition (Glyph glyph,
                                                Point center,
-                                               Staff staff,
+                                               OldStaff staff,
                                                Clef clef)
     {
         Shape glyphShape = glyph.getShape();
@@ -685,7 +685,7 @@ public class KeySignature
      */
     private static boolean checkPosition (Glyph glyph,
                                           Point center,
-                                          Staff staff,
+                                          OldStaff staff,
                                           double[] positions,
                                           int index,
                                           Clef clef)

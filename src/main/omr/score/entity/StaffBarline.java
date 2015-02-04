@@ -12,28 +12,36 @@
 package omr.score.entity;
 
 import omr.glyph.Shape;
-import static omr.score.entity.Barline.Style.*;
 
-import omr.sig.BarlineInter;
-import omr.sig.Inter;
-import omr.sig.RepeatDotInter;
+import omr.math.PointUtil;
 
+import omr.sheet.PartBarline;
+import omr.sheet.PartBarline.Style;
+import static omr.sheet.PartBarline.Style.*;
+
+import omr.sig.inter.BarlineInter;
+import omr.sig.inter.Inter;
+import omr.sig.inter.RepeatDotInter;
+
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code StaffBarline} represents a logical barline for one staff.
+ * Class {@code StaffBarline} represents a logical bar-line for one staff only.
  * <p>
- * Such logical barline may be composed of several Inters instances of {@link RepeatDotInter} and
- * {@link BarlineInter} classes.
+ * Such logical bar-line may be composed of a horizontal sequence of Inter instances of
+ * {@link RepeatDotInter} and {@link BarlineInter} classes.
  * <p>
- * A {@link Barline} is a logical barline for one part, that is made of one {@code StaffBarline}
- * for each staff in the part.
+ * A {@link PartBarline} is a logical bar-line for one part, that is made of one
+ * {@code StaffBarline} for each staff in the part.
  * <p>
- * Reference abscissa (Michael Good): the best approximation that's application-independent would
- * probably be to use the center of the barline. In back-to-back barlines that would be the center
- * of the thick barline. For double barlines like light-light or light-heavy this would be the
- * center of the rightmost barline.
+ * Reference abscissa (quoting Michael Good): the best approximation that's application-independent
+ * would probably be to use the center of the barline. In back-to-back barlines that would be the
+ * center of the thick barline. For double barlines like light-light or light-heavy this would be
+ * the center of the rightmost barline.
  *
  * @author Hervé Bitteur
  */
@@ -42,7 +50,15 @@ public class StaffBarline
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Abscissa-ordered sequence of physical components. */
-    private SortedSet<Inter> items = new TreeSet<Inter>(Inter.byFullAbscissa);
+    private final SortedSet<Inter> items = new TreeSet<Inter>(Inter.byFullAbscissa);
+
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code StaffBarline} object.
+     */
+    public StaffBarline ()
+    {
+    }
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
@@ -56,13 +72,65 @@ public class StaffBarline
     }
 
     /**
-     * Insert a barline inter as part of the logical barline.
+     * Insert a bar-line inter as part of the logical barline.
      *
-     * @param inter the barline inter to insert
+     * @param inter the bar-line inter to insert
      */
     public void addInter (BarlineInter inter)
     {
         items.add(inter);
+    }
+
+    //---------//
+    // getBars //
+    //---------//
+    public List<BarlineInter> getBars ()
+    {
+        List<BarlineInter> bars = new ArrayList<BarlineInter>();
+
+        for (Inter inter : items) {
+            if (inter instanceof BarlineInter) {
+                bars.add((BarlineInter) inter);
+            }
+        }
+
+        return bars;
+    }
+
+    //-----------//
+    // getCenter //
+    //-----------//
+    public Point getCenter ()
+    {
+        switch (getStyle()) {
+        case REGULAR:
+        case HEAVY:
+        case HEAVY_LIGHT:
+            return getLeftBar().getCenter();
+
+        case LIGHT_LIGHT:
+        case LIGHT_HEAVY:
+        case HEAVY_HEAVY:
+            return getRightBar().getCenter();
+
+        case NONE:
+        default:
+            return null;
+        }
+    }
+
+    //------------//
+    // getLeftBar //
+    //------------//
+    public BarlineInter getLeftBar ()
+    {
+        for (Inter inter : items) {
+            if (inter instanceof BarlineInter) {
+                return (BarlineInter) inter;
+            }
+        }
+
+        return null;
     }
 
     //----------//
@@ -75,13 +143,29 @@ public class StaffBarline
      */
     public int getLeftX ()
     {
-        for (Inter inter : items) {
-            if (inter instanceof BarlineInter) {
-                return inter.getCenter().x;
-            }
+        final BarlineInter leftBar = getLeftBar();
+
+        if (leftBar != null) {
+            return leftBar.getCenter().x;
         }
 
         throw new IllegalStateException("No abscissa computable for " + this);
+    }
+
+    //-------------//
+    // getRightBar //
+    //-------------//
+    public BarlineInter getRightBar ()
+    {
+        Inter last = null;
+
+        for (Inter inter : items) {
+            if (inter instanceof BarlineInter) {
+                last = inter;
+            }
+        }
+
+        return (BarlineInter) last;
     }
 
     //-----------//
@@ -94,43 +178,92 @@ public class StaffBarline
      */
     public int getRightX ()
     {
-        Integer x = null;
+        final BarlineInter rightBar = getRightBar();
 
-        for (Inter inter : items) {
-            if (inter instanceof BarlineInter) {
-                x = inter.getCenter().x;
-            }
+        if (rightBar != null) {
+            return rightBar.getCenter().x;
         }
 
-        if (x != null) {
-            return x;
-        } else {
-            throw new IllegalStateException("No abscissa computable for " + this);
-        }
+        throw new IllegalStateException("No abscissa computable for " + this);
     }
 
     //----------//
     // getStyle //
     //----------//
-    public Barline.Style getStyle ()
+    public PartBarline.Style getStyle ()
     {
-        switch (items.size()) {
+        switch (getBarCount()) {
         case 0:
             return NONE;
 
         case 1:
-            return (items.first().getShape() == Shape.THIN_BARLINE) ? REGULAR : HEAVY;
+            return (getLeftBar().getShape() == Shape.THIN_BARLINE) ? REGULAR : HEAVY;
 
         case 2: {
-            if (items.first().getShape() == Shape.THIN_BARLINE) {
-                return (items.last().getShape() == Shape.THIN_BARLINE) ? LIGHT_LIGHT : LIGHT_HEAVY;
+            if (getLeftBar().getShape() == Shape.THIN_BARLINE) {
+                return (getRightBar().getShape() == Shape.THIN_BARLINE) ? LIGHT_LIGHT : LIGHT_HEAVY;
             } else {
-                return (items.last().getShape() == Shape.THIN_BARLINE) ? HEAVY_LIGHT : HEAVY_HEAVY;
+                return (getRightBar().getShape() == Shape.THIN_BARLINE) ? HEAVY_LIGHT : HEAVY_HEAVY;
             }
         }
 
         default:
             return null;
         }
+    }
+
+    //---------------//
+    // hasDotsOnLeft //
+    //---------------//
+    public boolean hasDotsOnLeft ()
+    {
+        final Point center = getCenter();
+
+        for (Inter inter : items) {
+            if (inter instanceof RepeatDotInter && (inter.getCenter().x < center.x)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //---------------//
+    // isRightRepeat //
+    //---------------//
+    public boolean isRightRepeat ()
+    {
+        return (getStyle() == LIGHT_HEAVY) && hasDotsOnLeft();
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder("{StaffBarline");
+        Style style = getStyle();
+        sb.append(" ").append(style);
+        sb.append(" ").append(PointUtil.toString(getCenter()));
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    //-------------//
+    // getBarCount //
+    //-------------//
+    private int getBarCount ()
+    {
+        int count = 0;
+
+        for (Inter inter : items) {
+            if (inter instanceof BarlineInter) {
+                count++;
+            }
+        }
+
+        return count;
     }
 }

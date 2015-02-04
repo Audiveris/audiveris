@@ -40,8 +40,7 @@ public interface LUT
     boolean contains (double radius);
 
     /**
-     * Check whether the provided coordinates lies within the LUT
-     * range ([0, SIZE[).
+     * Check whether the provided coordinates lies within the LUT range ([0, SIZE[).
      *
      * @param x provided abscissa
      * @param y provided ordinate
@@ -65,8 +64,8 @@ public interface LUT
     int getSize ();
 
     /**
-     * Report the value for precise point (px,yy) by interpolation
-     * of values defined for integer coordinates.
+     * Report the value for precise point (px,yy) by interpolation of values defined
+     * for integer coordinates.
      *
      * @param px precise abscissa
      * @param py precise ordinate

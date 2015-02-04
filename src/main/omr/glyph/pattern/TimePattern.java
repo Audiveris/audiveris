@@ -20,9 +20,8 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
-
 import omr.sheet.Scale;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
@@ -65,7 +64,7 @@ public class TimePattern
 
         params = new Parameters(system.getSheet().getScale());
 
-        adapter = new TimeSigAdapter(system, Grades.timeMinGrade, ShapeSet.FullTimes);
+        adapter = new TimeSigAdapter(system, Grades.timeMinGrade, ShapeSet.WholeTimes);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -170,7 +169,7 @@ public class TimePattern
         {
             // Define the core box to intersect time glyph(s)
             Point center = seed.getAreaCenter();
-            StaffInfo staff = system.getStaffAt(center);
+            Staff staff = system.getClosestStaff(center);
 
             Rectangle rect = seed.getBounds();
 

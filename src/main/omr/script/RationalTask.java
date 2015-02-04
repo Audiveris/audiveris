@@ -79,13 +79,13 @@ public class RationalTask
                 Evaluation.MANUAL);
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internals());
         sb.append(" rational");
 
         if (timeRational != null) {

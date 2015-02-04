@@ -127,7 +127,7 @@ public class Note
     private Integer octave;
 
     /** Tie / slurs */
-    private Set<Slur> slurs = new HashSet<>();
+    private final Set<Slur> slurs = new HashSet<>();
 
     /** Lyrics syllables (in different lines) */
     private SortedSet<LyricsItem> syllables;
@@ -141,7 +141,7 @@ public class Note
      * @param chord the containing chord
      * @param glyph the underlying glyph
      */
-    public Note (Chord chord,
+    public Note (OldChord chord,
                  Glyph glyph)
     {
         this(
@@ -162,7 +162,7 @@ public class Note
      * @param chord the chord to host the newly created note
      * @param other the note to clone
      */
-    public Note (Chord chord,
+    public Note (OldChord chord,
                  Note other)
     {
         super(chord);
@@ -199,8 +199,8 @@ public class Note
      * @param pitchPosition the pitchPosition
      * @param center        the center (Point) of the note
      */
-    private Note (Staff staff,
-                  Chord chord,
+    private Note (OldStaff staff,
+                  OldChord chord,
                   Shape shape,
                   double pitchPosition,
                   Point center)
@@ -248,7 +248,7 @@ public class Note
      * @param packCard  the number of notes in the pack
      * @param packIndex the zero-based index of this note in the pack
      */
-    private Note (Chord chord,
+    private Note (OldChord chord,
                   Glyph glyph,
                   Point center,
                   int packCard,
@@ -324,7 +324,7 @@ public class Note
      * @param assigned   (input/output) the set of note indices assigned so far
      * @param completing true if all unassigned notes must be assigned now
      */
-    public static void createPack (Chord chord,
+    public static void createPack (OldChord chord,
                                    Glyph glyph,
                                    Set<Integer> assigned,
                                    boolean completing)
@@ -390,7 +390,7 @@ public class Note
     public List<Line2D> getTranslationLinks (Glyph glyph)
     {
         if (getGlyphs().contains(glyph)) {
-            Chord chord = getChord();
+            OldChord chord = getChord();
             if (chord != null) {
                 Point from = glyph.getLocation();
                 Glyph stem = chord.getStem();
@@ -448,8 +448,8 @@ public class Note
     //-----------------//
     // createWholeRest //
     //-----------------//
-    public static Note createWholeRest (Staff staff,
-                                        Chord chord,
+    public static Note createWholeRest (OldStaff staff,
+                                        OldChord chord,
                                         Point center)
     {
         return new Note(staff, chord, Shape.WHOLE_REST, -1.5, center);
@@ -467,7 +467,7 @@ public class Note
      * @param accidCenter the center of the glyph
      */
     public static void populateAccidental (Glyph glyph,
-                                           Measure measure,
+                                           OldMeasure measure,
                                            final Point accidCenter)
     {
         if (glyph.isVip()) {
@@ -487,7 +487,7 @@ public class Note
                 maxDx - minDx, 2 * maxDy);
         glyph.addAttachment("#", rect);
         for (TreeNode node : measure.getChords()) {
-            final Chord chord = (Chord) node;
+            final OldChord chord = (OldChord) node;
             for (TreeNode n : chord.getNotes()) {
                 final Note note = (Note) n;
                 if (!note.isRest() && rect.contains(note.getCenterLeft())) {
@@ -624,15 +624,15 @@ public class Note
             }
 
             // Look for previous accidental with same note step in the measure
-            List<Slot> slots = getMeasure().getSlots();
+            List<OldSlot> slots = getMeasure().getSlots();
 
             boolean started = false;
-            for (ListIterator<Slot> it = slots.listIterator(slots.size());
+            for (ListIterator<OldSlot> it = slots.listIterator(slots.size());
                     it.hasPrevious();) {
-                Slot slot = it.previous();
+                OldSlot slot = it.previous();
 
                 // Inspect all notes of all chords
-                for (Chord chord : slot.getChords()) {
+                for (OldChord chord : slot.getChords()) {
                     for (TreeNode node : chord.getNotes()) {
                         Note note = (Note) node;
 
@@ -759,9 +759,9 @@ public class Note
      *
      * @return the containing chord (cannot be null)
      */
-    public Chord getChord ()
+    public OldChord getChord ()
     {
-        return (Chord) getParent();
+        return (OldChord) getParent();
     }
 
     //-----------------//
@@ -872,8 +872,7 @@ public class Note
     /**
      * Report the duration of this note, based purely on its shape and
      * the number of beams or flags.
-     * This does not take into account the potential augmentation dots, nor
-     * tuplets.
+     * This does not take into account the potential augmentation dots, nor tuplets.
      * The purpose of this method is to find out the name of the note
      * ("eighth" versus "quarter" for example)
      *
@@ -1037,7 +1036,7 @@ public class Note
      *
      * @param chord the new hosting chord
      */
-    public void moveTo (Chord chord)
+    public void moveTo (OldChord chord)
     {
         getParent().getChildren().remove(this);
         chord.addChild(this);

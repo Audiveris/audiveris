@@ -101,11 +101,11 @@ public abstract class MeasureNode
      *
      * @return the containing measure entity
      */
-    public Measure getMeasure ()
+    public OldMeasure getMeasure ()
     {
         for (TreeNode c = this; c != null; c = c.getParent()) {
-            if (c instanceof Measure) {
-                return (Measure) c;
+            if (c instanceof OldMeasure) {
+                return (OldMeasure) c;
             }
         }
 

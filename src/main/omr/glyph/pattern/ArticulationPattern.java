@@ -19,10 +19,9 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
-
 import omr.sheet.NotePosition;
 import omr.sheet.Scale;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
@@ -81,30 +80,29 @@ public class ArticulationPattern
 
             Point center = glyph.getAreaCenter();
             NotePosition pos = system.getNoteStaffAt(center);
-            StaffInfo staff = pos.getStaff();
+            Staff staff = pos.getStaff();
             Rectangle box = glyph.getBounds();
 
             // Extend height till end of staff area
-            double topLimit = staff.getLimitAtX(VerticalSide.TOP, center.x);
-            double botLimit = staff.getLimitAtX(VerticalSide.BOTTOM, center.x);
-            box.y = (int) Math.rint(topLimit);
-            box.height = (int) Math.rint(botLimit) - box.y;
+            Rectangle staffBounds = staff.getArea().getBounds();
+            box.y = staffBounds.y;
+            box.height = staffBounds.height;
             box.grow(xMargin, 0);
 
             List<Glyph> glyphs = system.lookupIntersectedGlyphs(box, glyph);
             boolean hasNote = Glyphs.contains(
                     glyphs,
                     new Predicate<Glyph>()
-            {
-                @Override
-                public boolean check (Glyph entity)
-                {
-                    Shape shape = entity.getShape();
+                    {
+                        @Override
+                        public boolean check (Glyph entity)
+                        {
+                            Shape shape = entity.getShape();
 
-                    return ShapeSet.NoteHeads.contains(shape)
-                           || ShapeSet.Notes.contains(shape)
-                           || ShapeSet.Rests.contains(shape);
-                }
+                            return ShapeSet.NoteHeads.contains(shape)
+                                   || ShapeSet.Notes.contains(shape)
+                                   || ShapeSet.Rests.contains(shape);
+                        }
                     });
 
             if (!hasNote) {

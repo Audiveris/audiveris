@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="4901" interline="20" shape="CLUTTER">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-0.35996838823773186</pitch-position>
+    <section first-pos="374" orientation="VERTICAL" id="688">
+        <run start="460" length="2"/>
+    </section>
+    <section first-pos="375" orientation="VERTICAL" id="701">
+        <run start="457" length="12"/>
+    </section>
+    <section first-pos="376" orientation="VERTICAL" id="705">
+        <run start="463" length="6"/>
+    </section>
+    <section first-pos="377" orientation="VERTICAL" id="708">
+        <run start="466" length="3"/>
+    </section>
+    <section first-pos="378" orientation="VERTICAL" id="710">
+        <run start="467" length="2"/>
+    </section>
+    <section first-pos="379" orientation="VERTICAL" id="719">
+        <run start="467" length="1"/>
+    </section>
+    <section first-pos="380" orientation="VERTICAL" id="724">
+        <run start="467" length="2"/>
+    </section>
+    <section first-pos="381" orientation="VERTICAL" id="730">
+        <run start="468" length="1"/>
+        <run start="468" length="1"/>
+        <run start="468" length="1"/>
+        <run start="468" length="1"/>
+        <run start="468" length="1"/>
+        <run start="468" length="1"/>
+        <run start="468" length="1"/>
+        <run start="468" length="1"/>
+        <run start="468" length="1"/>
+        <run start="468" length="1"/>
+    </section>
+</glyph>

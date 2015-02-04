@@ -24,6 +24,7 @@ import static omr.util.HorizontalSide.*;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -36,7 +37,7 @@ import java.util.Map;
  * @author Hervé Bitteur
  */
 public class FilamentLine
-    implements LineInfo
+        implements LineInfo
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -45,10 +46,9 @@ public class FilamentLine
 
     /** Imposed ending points, if any. */
     private Map<HorizontalSide, Point2D> endPoints = new EnumMap<HorizontalSide, Point2D>(
-        HorizontalSide.class);
+            HorizontalSide.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-
     //--------------//
     // FilamentLine //
     //--------------//
@@ -63,7 +63,6 @@ public class FilamentLine
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //-----//
     // add //
     //-----//
@@ -217,17 +216,6 @@ public class FilamentLine
     //--------//
     // render //
     //--------//
-    public void render (Graphics2D g,
-                        int        left,
-                        int        right)
-    {
-        // Ignore left and right
-        render(g);
-    }
-
-    //--------//
-    // render //
-    //--------//
     @Override
     public void render (Graphics2D g)
     {
@@ -285,10 +273,10 @@ public class FilamentLine
 
         // First, get a rough intersection
         Point2D pt = LineUtil.intersection(
-            getEndPoint(LEFT),
-            getEndPoint(RIGHT),
-            startPoint,
-            stopPoint);
+                getEndPoint(LEFT),
+                getEndPoint(RIGHT),
+                startPoint,
+                stopPoint);
 
         // Second, get a precise ordinate
         double y = yAt(pt.getX());

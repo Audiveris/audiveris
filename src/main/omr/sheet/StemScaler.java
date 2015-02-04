@@ -23,10 +23,11 @@ import omr.math.IntegerHistogram;
 
 import omr.run.Orientation;
 import omr.run.Run;
-import omr.run.RunsTable;
-import omr.run.RunsTableFactory;
+import omr.run.RunSequence;
+import omr.run.RunTable;
+import omr.run.RunTableFactory;
 
-import omr.sig.Inter;
+import omr.sig.inter.Inter;
 import omr.sig.SIGraph;
 
 import omr.util.StopWatch;
@@ -101,6 +102,10 @@ public class StemScaler
      */
     public void displayChart ()
     {
+        if (histoKeeper == null) {
+            retrieveStem();
+        }
+
         if (histoKeeper != null) {
             histoKeeper.writePlot();
         } else {
@@ -113,10 +118,12 @@ public class StemScaler
     //--------------//
     /**
      * Retrieve the global stem thickness for the sheet.
+     *
+     * @return the stem scale data
      */
-    public void retrieveStem ()
+    public StemScale retrieveStem ()
     {
-        StopWatch watch = new StopWatch("Stem scaler for " + sheet.getPage().getId());
+        StopWatch watch = new StopWatch("Stem scaler for " + sheet.getId());
 
         try {
             // Use a buffer with bar lines and connections removed
@@ -128,11 +135,12 @@ public class StemScaler
             // Look at histogram for stem thickness
             watch.start("stem retrieval");
 
-            RunsTableFactory runFactory = new RunsTableFactory(Orientation.HORIZONTAL, buffer, 0);
-            RunsTable horiTable = runFactory.createTable("horiRuns");
+            RunTableFactory runFactory = new RunTableFactory(Orientation.HORIZONTAL);
+            RunTable horiTable = runFactory.createTable("horiRuns", buffer);
             histoKeeper = new HistoKeeper(picture.getWidth() - 1);
             histoKeeper.buildHistograms(horiTable, picture.getHeight());
-            computeStem();
+
+            return computeStem();
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -143,9 +151,10 @@ public class StemScaler
     //-------------//
     // computeStem //
     //-------------//
-    private void computeStem ()
+    private StemScale computeStem ()
     {
         peak = histo.getPeak(quorumRatio, spreadRatio, 0);
+
         final int mainStem;
         final int maxStem;
 
@@ -160,9 +169,7 @@ public class StemScaler
             logger.info("{}No stem peak found, computing defaults", sheet.getLogPrefix());
         }
 
-        sheet.setMainStem((int) Math.rint(peak.getKey().best));
-        sheet.setMaxStem((int) Math.rint(peak.getKey().second));
-        logger.info("{}Stem main: {}, max: {}", sheet.getLogPrefix(), mainStem, maxStem);
+        return new StemScale(mainStem, maxStem);
     }
 
     //-----------//
@@ -171,9 +178,9 @@ public class StemScaler
     private ByteProcessor getBuffer ()
     {
         Picture picture = sheet.getPicture();
-        ByteProcessor buf = picture.getSource(Picture.SourceKey.STAFF_LINE_FREE);
+        ByteProcessor buf = picture.getSource(Picture.SourceKey.NO_STAFF);
         BufferedImage img = buf.getBufferedImage();
-        StemsEraser eraser = new StemsEraser(buf, img.createGraphics(), sheet);
+        StemsCleaner eraser = new StemsCleaner(buf, img.createGraphics(), sheet);
         eraser.eraseShapes(
                 Arrays.asList(
                         Shape.THICK_BARLINE,
@@ -181,11 +188,11 @@ public class StemScaler
                         Shape.THIN_BARLINE,
                         Shape.THIN_CONNECTION));
         buf = new ByteProcessor(img);
-        buf.threshold(127);
+        buf.threshold(127); // Binarize
 
         // Keep a copy on disk?
         if (constants.keepStemImage.isSet()) {
-            ImageUtil.saveOnDisk(img, sheet.getPage().getId() + ".stem");
+            ImageUtil.saveOnDisk(img, sheet.getId() + ".stem");
         }
 
         return buf;
@@ -227,13 +234,13 @@ public class StemScaler
                 false,
                 "Should we store stem images on disk?");
 
-        final Constant.Boolean useDmz = new Constant.Boolean(
+        final Constant.Boolean useHeader = new Constant.Boolean(
                 true,
-                "Should we erase the DMZ at system start");
+                "Should we erase the header at system start");
 
         final Scale.Fraction systemVerticalMargin = new Scale.Fraction(
                 2.0,
-                "Margin erased above & below system DMZ area");
+                "Margin erased above & below system header area");
 
         final Constant.Ratio quorumRatio = new Constant.Ratio(
                 0.1,
@@ -295,11 +302,11 @@ public class StemScaler
         //-----------------//
         // buildHistograms //
         //-----------------//
-        private void buildHistograms (RunsTable horiTable,
+        private void buildHistograms (RunTable horiTable,
                                       int height)
         {
             for (int y = 0; y < height; y++) {
-                List<Run> runSeq = horiTable.getSequence(y);
+                RunSequence runSeq = horiTable.getSequence(y);
 
                 for (Run run : runSeq) {
                     // Process this foreground run
@@ -334,17 +341,17 @@ public class StemScaler
         }
     }
 
-    //-------------//
-    // StemsEraser //
-    //-------------//
-    private class StemsEraser
-            extends PageEraser
+    //--------------//
+    // StemsCleaner //
+    //--------------//
+    private class StemsCleaner
+            extends PageCleaner
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public StemsEraser (ByteProcessor buffer,
-                           Graphics2D g,
-                           Sheet sheet)
+        public StemsCleaner (ByteProcessor buffer,
+                             Graphics2D g,
+                             Sheet sheet)
         {
             super(buffer, g, sheet);
         }
@@ -377,17 +384,11 @@ public class StemScaler
                     inter.accept(this);
                 }
 
-                // Erase system DMZ?
-                if (constants.useDmz.isSet()) {
-                    eraseSystemDmz(system, constants.systemVerticalMargin);
+                // Erase system header?
+                if (constants.useHeader.isSet()) {
+                    eraseSystemHeader(system, constants.systemVerticalMargin);
                 }
             }
-        }
-
-        @Override
-        protected boolean canHide (Inter inter)
-        {
-            return inter.isGood();
         }
     }
 }

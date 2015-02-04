@@ -32,9 +32,9 @@ public abstract class TextItem
 
     //~ Constructors -------------------------------------------------------------------------------
     //
-    //---------//
+    //----------//
     // TextItem //
-    //---------//
+    //----------//
     /**
      * Creates a new TextItem object.
      *
@@ -106,13 +106,11 @@ public abstract class TextItem
         return value;
     }
 
-    //
-    //
     //-----------//
     // setBounds //
     //-----------//
     /**
-     * Set a new bounding box of the item..
+     * Set a new bounding box of the item.
      *
      * @param bounds the new bounding box
      */
@@ -130,7 +128,7 @@ public abstract class TextItem
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
         ///sb.append('@').append(Integer.toHexString(hashCode()));
-        sb.append(internalsString());
+        sb.append(internals());
 
         sb.append("}");
 
@@ -172,10 +170,15 @@ public abstract class TextItem
         return sb.toString();
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
-    protected String internalsString ()
+    //-----------//
+    // internals //
+    //-----------//
+    /**
+     * Report a textual description of object internals
+     *
+     * @return string of internals
+     */
+    protected String internals ()
     {
         StringBuilder sb = new StringBuilder();
 

@@ -19,7 +19,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code ScorePart} defines a part at score level.
- * It is instantiated in each System by a SystemPart.
+ * <p>
+ * TODO: rename this class as PartModel? or PartDescriptor?
+ * It is instantiated in each SystemInfo by a Part.
  * <p>
  * There is an intermediate ScorePart instance at Page level, which records the merge of system
  * parts at page level, and which is then used when merging the part information from pages to

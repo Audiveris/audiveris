@@ -73,7 +73,7 @@ public class LyricsLine
      *
      * @param systemPart the containing system part
      */
-    public LyricsLine (SystemPart systemPart)
+    public LyricsLine (OldSystemPart systemPart)
     {
         super(systemPart);
     }
@@ -89,7 +89,7 @@ public class LyricsLine
      * @param part the containing system part
      */
     public static void populate (LyricsItem item,
-                                 SystemPart part)
+                                 OldSystemPart part)
     {
         logger.debug("LyricsLine. populate  with {}", item);
 
@@ -124,7 +124,7 @@ public class LyricsLine
         LyricsLine nextLine = null;
 
         // Check existence of similar line in following system part
-        SystemPart nextPart = getPart().getFollowing();
+        OldSystemPart nextPart = getPart().getFollowing();
 
         if (nextPart != null) {
             // Retrieve the same lyrics line in the next (system) part
@@ -155,7 +155,7 @@ public class LyricsLine
     public LyricsLine getPrecedingLine ()
     {
         // Check existence of similar line in preceding system part
-        SystemPart part = getPart();
+        OldSystemPart part = getPart();
 
         if ((part != null) && (part.getLyrics().size() >= id)) {
             return (LyricsLine) part.getLyrics().get(id - 1);

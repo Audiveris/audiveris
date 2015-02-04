@@ -48,7 +48,7 @@ public class BracketSymbol
      */
     public BracketSymbol (boolean isIcon)
     {
-        super(isIcon, Shape.BRACE, false);
+        super(isIcon, Shape.BRACKET, false);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

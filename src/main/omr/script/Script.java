@@ -11,19 +11,15 @@
 // </editor-fold>
 package omr.script;
 
-import omr.score.Score;
-import omr.score.entity.Page;
-
+import omr.sheet.Book;
 import omr.sheet.Sheet;
 
 import omr.step.ProcessingCancellationException;
 
-import omr.util.TreeNode;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -38,10 +34,10 @@ import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Script} handles a complete script applied to a score.
+ * Class {@code Script} handles a complete script applied to a book.
  * <p>
  * A script is a sequence of {@link ScriptTask} instances tasks that are recorded as the user
- * interacts with the score data.
+ * interacts with the book data.
  * <p>
  * A script can be stored and reloaded/replayed.
  *
@@ -57,18 +53,22 @@ public class Script
             Script.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Score to which the script is applied. */
-    private Score score;
+    /** Book to which the script is applied. */
+    private Book book;
 
-    /** Full path to the Score image file. */
+    /** Full path to the Book image file. */
     @XmlAttribute(name = "file")
-    private final String scorePath;
+    private final String filePath;
 
-    /** Collection of 1-based page ids explicitly included, if any. */
-    // To get all page numbers, space-separated, in a single element:
+    /** Sheet offset of the book WRT full work. */
+    @XmlAttribute(name = "offset")
+    private int offset;
+
+    /** Collection of 1-based sheet ids explicitly included, if any. */
+    // To get all sheet numbers, space-separated, in a single element:
     @XmlList
-    @XmlElement(name = "pages")
-    private SortedSet<Integer> pages; // = new TreeSet<>();
+    @XmlElement(name = "sheets")
+    private SortedSet<Integer> sheets;
 
     /** Sequence of tasks that compose the script. */
     @XmlElements({
@@ -98,19 +98,20 @@ public class Script
     /**
      * Create a script.
      *
-     * @param score the related score
+     * @param book the related book
      */
-    public Script (Score score)
+    public Script (Book book)
     {
-        this.score = score;
-        scorePath = score.getImagePath();
+        this.book = book;
 
-        // Store page ids
-        pages = new TreeSet<Integer>();
+        filePath = book.getImagePath().toString();
+        offset = book.getOffset();
 
-        for (TreeNode pn : score.getPages()) {
-            Page page = (Page) pn;
-            pages.add(page.getIndex());
+        // Store sheet ids
+        sheets = new TreeSet<Integer>();
+
+        for (Sheet sheet : book.getSheets()) {
+            sheets.add(sheet.getIndex());
         }
     }
 
@@ -120,7 +121,7 @@ public class Script
     /** No-arg constructor for JAXB */
     private Script ()
     {
-        scorePath = null;
+        filePath = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -149,8 +150,8 @@ public class Script
     {
         logger.info(toString());
 
-        if ((pages != null) && !pages.isEmpty()) {
-            logger.info("Included pages: {}", pages);
+        if ((sheets != null) && !sheets.isEmpty()) {
+            logger.info("Included sheets: {}", sheets);
         }
 
         for (ScriptTask task : tasks) {
@@ -158,24 +159,32 @@ public class Script
         }
     }
 
-    //----------//
-    // getScore //
-    //----------//
+    //---------//
+    // getBook //
+    //---------//
     /**
-     * Report the score this script is linked to.
+     * Report the book this script is linked to.
      *
-     * @return the score concerned
+     * @return the book concerned
      */
-    public Score getScore ()
+    public Book getBook ()
     {
-        return score;
+        return book;
+    }
+
+    /**
+     * @return the offset
+     */
+    public int getOffset ()
+    {
+        return offset;
     }
 
     //------------//
     // isModified //
     //------------//
     /**
-     * Has the script been modified (wrt its backup on disk)?
+     * Has the script been modified (WRT its backup on disk)?
      *
      * @return the modified
      */
@@ -188,49 +197,44 @@ public class Script
     // run //
     //-----//
     /**
-     * This methods runs sequentially and synchronously the various
-     * tasks of the script.
-     * It is up to the caller to run this method in a separate thread if so
-     * desired.
+     * This methods runs sequentially and synchronously the various tasks of the script.
+     * It is up to the caller to run this method in a separate thread if so desired.
      */
     public void run ()
     {
-        logger.debug(
-                "Running {}{}",
-                this,
-                (score != null) ? (" on score " + score.getRadix()) : "");
+        logger.debug("Running {}{}", this, (book != null) ? (" on book " + book.getRadix()) : "");
 
-        // Make score concrete (with its pages/sheets)
-        if (score == null) {
-            if (scorePath == null) {
-                logger.warn("No score defined in script");
+        // Make book concrete (with its sheets)
+        if (book == null) {
+            if (filePath == null) {
+                logger.warn("No book defined in script");
 
                 return;
             }
 
-            score = new Score(new File(scorePath));
-            score.createPages(pages);
+            book = new Book(Paths.get(filePath));
+            book.setOffset(offset);
+            book.createSheets(sheets); // This loads all specified sheets indices
         }
 
         // Run the tasks in sequence
         try {
             for (ScriptTask task : tasks) {
-                Page page;
+                final Sheet sheet;
 
                 if (task instanceof SheetTask) {
-                    Integer pageIndex = ((SheetTask) task).getPageIndex();
-                    page = score.getPage(pageIndex);
+                    Integer sheetIndex = ((SheetTask) task).getSheetIndex();
+                    sheet = book.getSheet(sheetIndex);
 
-                    if (page == null) {
-                        logger.warn("Script error. No page for index {}", pageIndex);
+                    if (sheet == null) {
+                        logger.warn("Script error. No sheet for index {}", sheetIndex);
 
                         continue;
                     }
                 } else {
-                    page = score.getFirstPage();
+                    sheet = book.getFirstSheet();
                 }
 
-                Sheet sheet = page.getSheet();
                 logger.debug("Running {} on {}", task, sheet);
 
                 try {
@@ -244,15 +248,23 @@ public class Script
                 }
             }
 
-            logger.debug("All tasks run on {}", score);
+            logger.debug("All tasks run on {}", book);
         } catch (ProcessingCancellationException pce) {
             throw pce;
         } catch (Exception ex) {
             logger.warn("Script aborted", ex);
         } finally {
             // Flag the (active) script as up-to-date
-            score.getScript().setModified(false);
+            book.getScript().setModified(false);
         }
+    }
+
+    /**
+     * @param offset the offset to set
+     */
+    public void setOffset (int offset)
+    {
+        this.offset = offset;
     }
 
     //----------//
@@ -268,14 +280,14 @@ public class Script
             sb.append(" modified");
         }
 
-        if (scorePath != null) {
-            sb.append(" ").append(scorePath);
-        } else if (score != null) {
-            sb.append(" ").append(score.getRadix());
+        if (filePath != null) {
+            sb.append(" ").append(filePath);
+        } else if (book != null) {
+            sb.append(" ").append(book.getRadix());
         }
 
-        if ((pages != null) && !pages.isEmpty()) {
-            sb.append(" pages:").append(pages);
+        if ((sheets != null) && !sheets.isEmpty()) {
+            sb.append(" pages:").append(sheets);
         }
 
         if (tasks != null) {
@@ -291,7 +303,7 @@ public class Script
     // setModified //
     //-------------//
     /**
-     * Flag the script as modified (wrt disk)
+     * Flag the script as modified (WRT disk)
      *
      * @param modified the modified to set
      */

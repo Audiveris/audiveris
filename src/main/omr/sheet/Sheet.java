@@ -20,19 +20,12 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolsController;
 import omr.glyph.ui.SymbolsEditor;
 
-import omr.grid.GridBuilder;
-import omr.grid.StaffManager;
-
-import omr.image.DistanceTable;
+import omr.image.FilterDescriptor;
 import omr.image.ImageFormatException;
 
 import omr.lag.Lag;
 import omr.lag.Lags;
 
-import omr.run.RunsTable;
-
-import omr.score.Score;
-import omr.score.ScoresManager;
 import omr.score.entity.Page;
 import omr.score.entity.SystemNode;
 
@@ -48,13 +41,12 @@ import omr.selection.UserEvent;
 import omr.sheet.ui.BinarizationBoard;
 import omr.sheet.ui.PictureView;
 import omr.sheet.ui.PixelBoard;
-import omr.sheet.ui.RunsViewer;
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.SheetsController;
 
-import omr.sig.Inter;
 import omr.sig.SIGraph;
 import omr.sig.SigManager;
+import omr.sig.inter.Inter;
 
 import omr.step.Step;
 import omr.step.StepException;
@@ -64,7 +56,9 @@ import omr.step.Steps;
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
 import omr.ui.util.ItemRenderer;
-import omr.ui.util.WeakItemRenderer;
+
+import omr.util.LiveParam;
+import omr.util.Navigable;
 
 import org.bushe.swing.event.EventSubscriber;
 
@@ -78,17 +72,20 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import omr.math.Population;
 
 /**
- * Class {@code Sheet} is the central hub for Sheet processing, keeping pointers to all
- * processing related to the image, and to their results.
+ * Class {@code Sheet} corresponds to an image in book image file.
+ * <p>
+ * If a movement break occurs in the middle of a sheet, this sheet will contain several pages, but
+ * in most cases there is one (score) {@link Page} instance per sheet instance.
  *
  * @author Hervé Bitteur
  */
@@ -112,12 +109,18 @@ public class Sheet
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
-    /** Corresponding page. */
-    private final Page page;
+    /** Containing book. */
+    @Navigable(false)
+    private final Book book;
 
-    /** Containing score. */
-    private final Score score;
+    /** Index of sheet, counted from 1, in the image file. */
+    private final int index;
+
+    /** Sheet ID. */
+    private final String id;
+
+    /** Corresponding page(s). Some sheets may relate to several pages. */
+    private final List<Page> pages = new ArrayList<Page>();
 
     /**
      * Selections for this sheet.
@@ -134,22 +137,16 @@ public class Sheet
     /** Related errors editor, if any. */
     private final ErrorsEditor errorsEditor;
 
-    /** Retrieved systems. */
-    private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
-
     /** SIG manager for all systems. */
     private final SigManager sigManager = new SigManager();
-
-    /** Global sheet SIG. */
-    private final SIGraph sheetSig;
 
     //-- resettable members ----------------------------------------------------
     //
     /** The related picture */
     private Picture picture;
 
-    /** All steps already done on this sheet */
-    private Set<Step> doneSteps = new HashSet<Step>();
+    /** All steps already done on this sheet. */
+    private final Set<Step> doneSteps = new LinkedHashSet<Step>();
 
     /** The step being done on this sheet */
     private Step currentStep;
@@ -157,17 +154,8 @@ public class Sheet
     /** Global scale for this sheet */
     private Scale scale;
 
-    /** Most frequent stem thickness. */
-    private int mainStem;
-
-    /** Largest stem thickness. */
-    private int maxStem;
-
-    /** Table of all vertical (foreground) runs. */
-    private RunsTable wholeVerticalTable;
-
-    /** Image of distances to foreground. */
-    private DistanceTable distanceImage;
+    /** Global stem scale for this sheet */
+    private StemScale stemScale;
 
     /** Initial skew value */
     private Skew skew;
@@ -178,25 +166,16 @@ public class Sheet
     /** Global glyph nest */
     private GlyphNest nest;
 
+    /** Global measure of beam gaps within groups. */
+    private Population beamGaps;
+
     // Companion processors
     //
-    /** Scale */
-    private ScaleBuilder scaleBuilder;
-
-    /** Stem */
-    private StemScaler stemScaler;
-
-    /** Spots */
-    private SpotsBuilder spotsBuilder;
-
     /** Staves */
     private final StaffManager staffManager;
 
-    /** Grid */
-    private GridBuilder gridBuilder;
-
     /** Systems management. */
-    private volatile SystemManager systemManager;
+    private SystemManager systemManager;
 
     /** Specific builder dealing with glyphs */
     private volatile SymbolsController symbolsController;
@@ -213,31 +192,41 @@ public class Sheet
     /** Registered item renderers, if any */
     private final Set<ItemRenderer> itemRenderers = new HashSet<ItemRenderer>();
 
-    /** Display of runs tables. */
-    private final RunsViewer runsViewer;
+    /** Param for pixel filter. */
+    private final LiveParam<FilterDescriptor> filterContext;
+
+    /** Param for text language. */
+    private final LiveParam<String> textContext;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
     //-------//
     // Sheet //
     //-------//
     /**
-     * Create a new {@code Sheet} instance, based on a couple made of
-     * an image (the original pixel input) and a page (the score
-     * entities output).
+     * Create a new {@code Sheet} instance within a book.
      *
-     * @param page  the related score page
-     * @param image the already loaded image
+     * @param book  the containing book instance
+     * @param index index (counted from 1) of sheet in book
+     * @param image the already loaded image, if any
      * @throws omr.step.StepException
      */
-    public Sheet (Page page,
+    public Sheet (Book book,
+                  int index,
                   BufferedImage image)
             throws StepException
     {
-        this.page = page;
-        this.score = page.getScore();
+        this.book = book;
+        this.index = index;
 
-        sheetSig = new SIGraph(this);
+        if (book.isMultiSheet()) {
+            id = book.getRadix() + "#" + index;
+        } else {
+            id = book.getRadix();
+        }
+
+        staffManager = new StaffManager(this);
+        systemManager = new SystemManager(this);
+        bench = new SheetBench(this);
 
         locationService = new SelectionService("sheet", allowedEvents);
 
@@ -245,72 +234,29 @@ public class Sheet
             locationService.subscribeStrongly(eventClass, this);
         }
 
-        staffManager = new StaffManager(this);
-        bench = new SheetBench(this);
+        if (image != null) {
+            setImage(image);
+        }
+
+        filterContext = new LiveParam<FilterDescriptor>(book.getFilterParam());
+        textContext = new LiveParam<String>(book.getTextParam());
+
+        addItemRenderer(staffManager);
+
+        logger.debug("Created {}", this);
 
         // Update UI information if so needed
         if (Main.getGui() != null) {
             errorsEditor = new ErrorsEditor(this);
-            assembly = Main.getGui().sheetsController.createAssembly(this);
+            // Create the assembly on this sheet
+            Main.getGui().sheetsController.addAssembly(assembly = new SheetAssembly(this));
         } else {
             errorsEditor = null;
             assembly = null;
         }
-
-        setImage(image);
-
-        runsViewer = (Main.getGui() != null) ? new RunsViewer(this) : null;
-
-        logger.debug("Created {}", this);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------//
-    // done //
-    //------//
-    /**
-     * Remember that the provided step has been completed on the sheet.
-     *
-     * @param step the provided step
-     */
-    public final void done (Step step)
-    {
-        if (step.isMandatory()) {
-            doneSteps.add(step);
-        }
-    }
-
-    //----------//
-    // setImage //
-    //----------//
-    public final void setImage (BufferedImage image)
-            throws StepException
-    {
-        // Reset most of members
-        reset(Steps.valueOf(Steps.LOAD));
-
-        try {
-            picture = new Picture(this, image, locationService);
-            setPicture(picture);
-            getBench().recordImageDimension(picture.getWidth(), picture.getHeight());
-
-            done(Steps.valueOf(Steps.LOAD));
-        } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " + getScore().getImagePath() + "\n"
-                         + ex.getMessage();
-
-            if (Main.getGui() != null) {
-                Main.getGui().displayWarning(msg);
-            } else {
-                logger.warn(msg);
-            }
-
-            throw new StepException(ex);
-        } catch (Throwable ex) {
-            logger.warn("Error loading image", ex);
-        }
-    }
-
     //----------//
     // addError //
     //----------//
@@ -340,7 +286,16 @@ public class Sheet
      */
     public void addItemRenderer (ItemRenderer renderer)
     {
-        itemRenderers.add(new WeakItemRenderer(renderer));
+        ///itemRenderers.add(new WeakItemRenderer(renderer));
+        itemRenderers.add(renderer);
+    }
+
+    //---------//
+    // addPage //
+    //---------//
+    public void addPage (Page page)
+    {
+        pages.add(page);
     }
 
     //------------//
@@ -369,13 +324,19 @@ public class Sheet
         }
     }
 
-    //---------------------//
-    // createSystemManager //
-    //---------------------//
-    public void createSystemManager ()
+    //------//
+    // done //
+    //------//
+    /**
+     * Remember that the provided step has been completed on the sheet.
+     *
+     * @param step the provided step
+     */
+    public final void done (Step step)
     {
-        page.resetSystems();
-        systemManager = new SystemManager(this);
+        if (step.isMandatory()) {
+            doneSteps.add(step);
+        }
     }
 
     //-----------------//
@@ -423,6 +384,22 @@ public class Sheet
         return assembly;
     }
 
+    /**
+     * @return the beamGaps
+     */
+    public Population getBeamGaps ()
+    {
+        return beamGaps;
+    }
+
+    /**
+     * @param beamGaps the beamGaps to set
+     */
+    public void setBeamGaps (Population beamGaps)
+    {
+        this.beamGaps = beamGaps;
+    }
+
     //----------//
     // getBench //
     //----------//
@@ -434,6 +411,33 @@ public class Sheet
     public SheetBench getBench ()
     {
         return bench;
+    }
+
+    //
+    //    //----------//
+    //    // getScore //
+    //    //----------//
+    //    /**
+    //     * Return the eventual Score that gathers in a score the information
+    //     * retrieved from this sheet.
+    //     *
+    //     * @return the related score, or null if not available
+    //     */
+    //    public Score getScore ()
+    //    {
+    //        return score;
+    //    }
+    //---------//
+    // getBook //
+    //---------//
+    /**
+     * Report the containing book.
+     *
+     * @return containing book
+     */
+    public Book getBook ()
+    {
+        return book;
     }
 
     //----------------//
@@ -462,19 +466,6 @@ public class Sheet
         return picture.getDimension();
     }
 
-    //------------------//
-    // getDistanceImage //
-    //------------------//
-    /**
-     * Get access to the distance transform image
-     *
-     * @return the image of distances (to foreground)
-     */
-    public DistanceTable getDistanceImage ()
-    {
-        return distanceImage;
-    }
-
     //-----------------//
     // getErrorsEditor //
     //-----------------//
@@ -484,18 +475,11 @@ public class Sheet
     }
 
     //----------------//
-    // getGridBuilder //
+    // getFilterParam //
     //----------------//
-    /**
-     * @return the gridBuilder
-     */
-    public GridBuilder getGridBuilder ()
+    public LiveParam<FilterDescriptor> getFilterParam ()
     {
-        if (gridBuilder == null) {
-            gridBuilder = new GridBuilder(this);
-        }
-
-        return gridBuilder;
+        return filterContext;
     }
 
     //-----------//
@@ -516,7 +500,18 @@ public class Sheet
     //-------//
     public String getId ()
     {
-        return page.getId();
+        return id;
+    }
+
+    //----------//
+    // getIndex //
+    //----------//
+    /**
+     * @return the sheet index in containing book
+     */
+    public int getIndex ()
+    {
+        return index;
     }
 
     //--------------//
@@ -559,6 +554,23 @@ public class Sheet
         return lagMap.get(key);
     }
 
+    //-------------//
+    // getLastPage //
+    //-------------//
+    /**
+     * Report the last page of the sheet, if any.
+     *
+     * @return the last page or null
+     */
+    public Page getLastPage ()
+    {
+        if (pages.isEmpty()) {
+            return null;
+        }
+
+        return pages.get(pages.size() - 1);
+    }
+
     //--------------------//
     // getLocationService //
     //--------------------//
@@ -582,11 +594,11 @@ public class Sheet
      */
     public String getLogPrefix ()
     {
-        if (ScoresManager.isMultiScore()) {
+        if (BookManager.isMultiBook()) {
             return "[" + getId() + "] ";
         } else {
-            if (score.isMultiPage()) {
-                return "[#" + page.getIndex() + "] ";
+            if (book.isMultiSheet()) {
+                return "[#" + getIndex() + "] ";
             } else {
                 return "";
             }
@@ -614,7 +626,7 @@ public class Sheet
      */
     public int getMainStem ()
     {
-        return mainStem;
+        return stemScale.getMainThickness();
     }
 
     //------------//
@@ -625,7 +637,7 @@ public class Sheet
      */
     public int getMaxStem ()
     {
-        return maxStem;
+        return stemScale.getMaxThickness();
     }
 
     //---------//
@@ -641,15 +653,17 @@ public class Sheet
         return nest;
     }
 
-    //---------//
-    // getPage //
-    //---------//
+    //----------//
+    // getPages //
+    //----------//
     /**
-     * @return the page
+     * Report the collections of pages found in this sheet (generally just one).
+     *
+     * @return the list of page(s)
      */
-    public Page getPage ()
+    public List<Page> getPages ()
     {
-        return page;
+        return pages;
     }
 
     //------------//
@@ -662,15 +676,17 @@ public class Sheet
      */
     public Picture getPicture ()
     {
-        return picture;
-    }
+        if (picture == null) {
+            BufferedImage img = book.readImage(index);
 
-    //---------------//
-    // getRunsViewer //
-    //---------------//
-    public RunsViewer getRunsViewer ()
-    {
-        return runsViewer;
+            try {
+                setImage(img);
+            } catch (StepException ex) {
+                logger.warn("Error setting image id " + index, ex);
+            }
+        }
+
+        return picture;
     }
 
     //----------//
@@ -687,49 +703,6 @@ public class Sheet
         return scale;
     }
 
-    //-----------------//
-    // getScaleBuilder //
-    //-----------------//
-    /**
-     * @return the scaleBuilder
-     */
-    public ScaleBuilder getScaleBuilder ()
-    {
-        if (scaleBuilder == null) {
-            scaleBuilder = new ScaleBuilder(this);
-        }
-
-        return scaleBuilder;
-    }
-
-    //----------//
-    // getScore //
-    //----------//
-    /**
-     * Return the eventual Score that gathers in a score the information
-     * retrieved from this sheet.
-     *
-     * @return the related score, or null if not available
-     */
-    public Score getScore ()
-    {
-        return score;
-    }
-
-    //----------------------//
-    // getSelectedInterList //
-    //----------------------//
-    /**
-     * Report the currently selected list of interpretations if any
-     *
-     * @return the current list or null
-     */
-    @SuppressWarnings("unchecked")
-    public List<Inter> getSelectedInterList ()
-    {
-        return (List<Inter>) locationService.getSelection(InterListEvent.class);
-    }
-
     //---------------//
     // getSheetDelta //
     //---------------//
@@ -739,14 +712,6 @@ public class Sheet
     public SheetDiff getSheetDelta ()
     {
         return sheetDelta;
-    }
-
-    //-------------//
-    // getSheetSig //
-    //-------------//
-    public SIGraph getSheetSig ()
-    {
-        return sheetSig;
     }
 
     //---------------//
@@ -775,47 +740,6 @@ public class Sheet
         return skew;
     }
 
-    //-----------------//
-    // getSpotsBuilder //
-    //-----------------//
-    /**
-     * @return the spotsBuilder
-     */
-    public SpotsBuilder getSpotsBuilder ()
-    {
-        if (spotsBuilder == null) {
-            spotsBuilder = new SpotsBuilder(this);
-        }
-
-        return spotsBuilder;
-    }
-
-    //-----------------//
-    // getStaffManager //
-    //-----------------//
-    /**
-     * @return the staffManager
-     */
-    public StaffManager getStaffManager ()
-    {
-        return staffManager;
-    }
-
-    //---------------//
-    // getStemScaler //
-    //---------------//
-    /**
-     * @return the stemScaler
-     */
-    public StemScaler getStemScaler ()
-    {
-        if (stemScaler == null) {
-            stemScaler = new StemScaler(this);
-        }
-
-        return stemScaler;
-    }
-
     //----------------------//
     // getSymbolsController //
     //----------------------//
@@ -834,33 +758,6 @@ public class Sheet
     }
 
     //------------------//
-    // getSymbolsEditor //
-    //------------------//
-    /**
-     * Give access to the UI dealing with symbol recognition
-     *
-     * @return the symbols symbolsEditor
-     */
-    public SymbolsEditor getSymbolsEditor ()
-    {
-        return symbolsEditor;
-    }
-
-    //---------------//
-    // getSystemById //
-    //---------------//
-    /**
-     * Report the system info for which id is provided
-     *
-     * @param id id of desired system
-     * @return the desired system info
-     */
-    public SystemInfo getSystemById (int id)
-    {
-        return systems.get(id - 1);
-    }
-
-    //------------------//
     // getSystemManager //
     //------------------//
     /**
@@ -873,43 +770,12 @@ public class Sheet
         return systemManager;
     }
 
-    //------------//
-    // getSystems //
-    //------------//
-    /**
-     * Report an unmodifiable view on current systems.
-     *
-     * @return a view on systems list
-     */
-    public List<SystemInfo> getSystems ()
+    //--------------//
+    // getTextParam //
+    //--------------//
+    public LiveParam<String> getTextParam ()
     {
-        return Collections.unmodifiableList(systems);
-    }
-
-    //-----------------------//
-    // getWholeVerticalTable //
-    //-----------------------//
-    /**
-     * Get access to the whole table of vertical runs.
-     *
-     * @return the wholeVerticalTable
-     */
-    public RunsTable getWholeVerticalTable ()
-    {
-        return wholeVerticalTable;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Report the picture width in pixels
-     *
-     * @return the picture width
-     */
-    public int getWidth ()
-    {
-        return picture.getWidth();
+        return textContext;
     }
 
     //--------//
@@ -924,19 +790,6 @@ public class Sheet
     public boolean isDone (Step step)
     {
         return doneSteps.contains(step);
-    }
-
-    //--------------//
-    // isOnPatterns //
-    //--------------//
-    /**
-     * Check whether current step is SYMBOLS.
-     *
-     * @return true if on SYMBOLS
-     */
-    public boolean isOnPatterns ()
-    {
-        return Stepping.getLatestStep(this) == Steps.valueOf(Steps.SYMBOLS);
     }
 
     //---------//
@@ -961,37 +814,12 @@ public class Sheet
                 // InterId => inter
                 handleEvent((InterIdEvent) event);
             }
+        } catch (ConcurrentModificationException cme) {
+            // This can happen because of processing being done on SIG...
+            // So, just abort the current UI stuff
+            throw cme;
         } catch (Throwable ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
-    //--------//
-    // remove //
-    //--------//
-    /**
-     * Remove this sheet from the containing score
-     */
-    public void remove (boolean closing)
-    {
-        logger.debug("remove sheet {} closing:{}", this, closing);
-
-        // Close the related page
-        getScore().remove(page);
-
-        // Close related UI assembly if any
-        if (assembly != null) {
-            SheetsController.getInstance().removeAssembly(this);
-            assembly.close();
-        }
-
-        // If no sheet is left, force score closing
-        if (!closing) {
-            if (!score.getPages().isEmpty()) {
-                logger.info("{}Removed page #{}", page.getScore().getLogPrefix(), page.getIndex());
-            } else {
-                score.close();
-            }
+            logger.warn(getClass().getSimpleName() + " onEvent error " + ex, ex);
         }
     }
 
@@ -1010,6 +838,158 @@ public class Sheet
         }
     }
 
+    //----------------//
+    // setCurrentStep //
+    //----------------//
+    /**
+     * This records the starting of a step.
+     *
+     * @param step the starting step
+     */
+    public void setCurrentStep (Step step)
+    {
+        currentStep = step;
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    public final void setImage (BufferedImage image)
+            throws StepException
+    {
+        // Reset most of members
+        reset(Steps.valueOf(Steps.LOAD));
+
+        try {
+            picture = new Picture(this, image, locationService);
+            setPicture(picture);
+            getBench().recordImageDimension(picture.getWidth(), picture.getHeight());
+
+            done(Steps.valueOf(Steps.LOAD));
+        } catch (ImageFormatException ex) {
+            String msg = "Unsupported image format in file " + getBook().getImagePath() + "\n"
+                         + ex.getMessage();
+
+            if (Main.getGui() != null) {
+                Main.getGui().displayWarning(msg);
+            } else {
+                logger.warn(msg);
+            }
+
+            throw new StepException(ex);
+        } catch (Throwable ex) {
+            logger.warn("Error loading image", ex);
+        }
+    }
+
+    //----------------------//
+    // getSelectedInterList //
+    //----------------------//
+    /**
+     * Report the currently selected list of interpretations if any
+     *
+     * @return the current list or null
+     */
+    @SuppressWarnings("unchecked")
+    public List<Inter> getSelectedInterList ()
+    {
+        return (List<Inter>) locationService.getSelection(InterListEvent.class);
+    }
+
+    //-----------------//
+    // getStaffManager //
+    //-----------------//
+    /**
+     * @return the staffManager
+     */
+    public StaffManager getStaffManager ()
+    {
+        return staffManager;
+    }
+
+    //------------------//
+    // getSymbolsEditor //
+    //------------------//
+    /**
+     * Give access to the UI dealing with symbol recognition
+     *
+     * @return the symbols symbolsEditor
+     */
+    public SymbolsEditor getSymbolsEditor ()
+    {
+        return symbolsEditor;
+    }
+
+    //------------//
+    // getSystems //
+    //------------//
+    /**
+     * Report an unmodifiable view on current systems.
+     *
+     * @return a view on systems list
+     */
+    public List<SystemInfo> getSystems ()
+    {
+        return systemManager.getSystems();
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the picture width in pixels
+     *
+     * @return the picture width
+     */
+    public int getWidth ()
+    {
+        return picture.getWidth();
+    }
+
+    //--------------//
+    // isOnPatterns //
+    //--------------//
+    /**
+     * Check whether current step is SYMBOLS.
+     *
+     * @return true if on SYMBOLS
+     */
+    public boolean isOnPatterns ()
+    {
+        return Stepping.getLatestStep(this) == Steps.valueOf(Steps.SYMBOLS);
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove this sheet from the containing book.
+     *
+     * @param closing
+     */
+    public void remove (boolean closing)
+    {
+        logger.debug("remove sheet {} closing:{}", this, closing);
+
+        // Close the related page
+        book.removeSheet(this);
+
+        // Close related UI assembly if any
+        if (assembly != null) {
+            SheetsController.getInstance().removeAssembly(this);
+            assembly.close();
+        }
+
+        // If no sheet is left, force book closing
+        if (!closing) {
+            if (!book.getSheets().isEmpty()) {
+                logger.info("{}Removed sheet #{}", book.getLogPrefix(), index);
+            } else {
+                book.close();
+            }
+        }
+    }
+
     //-------//
     // reset //
     //-------//
@@ -1023,15 +1003,13 @@ public class Sheet
         switch (step.getName()) {
         case Steps.LOAD:
             picture = null;
-            doneSteps = new HashSet<Step>();
+            doneSteps.clear();
             currentStep = null;
 
         // Fall-through!
         case Steps.BINARY:
         case Steps.SCALE:
-            scaleBuilder = null;
             scale = null;
-            wholeVerticalTable = null;
 
         // Fall-through!
         case Steps.GRID:
@@ -1046,17 +1024,13 @@ public class Sheet
             setLag(Lags.HLAG, null);
             setLag(Lags.VLAG, null);
 
-            systems.clear();
-            gridBuilder = null;
-
             staffManager.reset();
-            systemManager = null;
             symbolsController = null;
             symbolsEditor = null;
 
         // Fall-through!
         case Steps.LEDGERS:
-            setLag(Lags.FULL_HLAG, null);
+            setLag(Lags.LEDGER_LAG, null);
 
         // Fall-through!
         case Steps.BEAMS:
@@ -1064,35 +1038,6 @@ public class Sheet
 
         default:
         }
-    }
-
-    //----------------//
-    // setCurrentStep //
-    //----------------//
-    /**
-     * This records the starting of a step.
-     *
-     * @param step the starting step
-     */
-    public void setCurrentStep (Step step)
-    {
-        currentStep = step;
-    }
-
-    //------------------//
-    // setDistanceImage //
-    //------------------//
-    /**
-     * Remember the distance transform image
-     *
-     * @param distanceImage the image of distances (to foreground)
-     */
-    public void setDistanceImage (DistanceTable distanceImage)
-    {
-        this.distanceImage = distanceImage;
-
-        // Save this distance image on disk for visual check
-        //TableUtil.store(getId() + ".dist", distanceImage);
     }
 
     //--------//
@@ -1139,14 +1084,11 @@ public class Sheet
     /**
      * Link scale information to this sheet
      *
-     * @param scale the computed (or read from score file) scale
-     * @throws StepException
+     * @param scale the computed sheet global scale
      */
     public void setScale (Scale scale)
-            throws StepException
     {
         this.scale = scale;
-        page.setScale(scale);
     }
 
     //---------------//
@@ -1173,33 +1115,15 @@ public class Sheet
         this.skew = skew;
     }
 
-    //------------//
-    // setSystems //
-    //------------//
+    //--------------//
+    // setStemScale //
+    //--------------//
     /**
-     * Assign the whole sequence of systems
-     *
-     * @param systems the (new) systems
+     * @param stemScale the stem scaling data
      */
-    public void setSystems (Collection<SystemInfo> systems)
+    public void setStemScale (StemScale stemScale)
     {
-        if (this.systems != systems) {
-            this.systems.clear();
-            this.systems.addAll(systems);
-        }
-    }
-
-    //-----------------------//
-    // setWholeVerticalTable //
-    //-----------------------//
-    /**
-     * Remember the whole table of vertical runs.
-     *
-     * @param wholeVerticalTable the wholeVerticalTable to set
-     */
-    public void setWholeVerticalTable (RunsTable wholeVerticalTable)
-    {
-        this.wholeVerticalTable = wholeVerticalTable;
+        this.stemScale = stemScale;
     }
 
     //----------//
@@ -1208,29 +1132,7 @@ public class Sheet
     @Override
     public String toString ()
     {
-        return "{Sheet " + page.getId() + "}";
-    }
-
-    //-------------//
-    // setMainStem //
-    //-------------//
-    /**
-     * @param mainStem the main Stem to set
-     */
-    void setMainStem (int mainStem)
-    {
-        this.mainStem = mainStem;
-    }
-
-    //------------//
-    // setMaxStem //
-    //------------//
-    /**
-     * @param maxStem the maximum Stem to set
-     */
-    void setMaxStem (int maxStem)
-    {
-        this.maxStem = maxStem;
+        return "{Sheet " + id + "}";
     }
 
     //-------------//
@@ -1251,7 +1153,7 @@ public class Sheet
             return;
         }
 
-        if ((rect == null) || (systemManager == null)) {
+        if (rect == null) {
             return;
         }
 
@@ -1312,9 +1214,9 @@ public class Sheet
     {
         SelectionHint hint = interIdEvent.hint;
         MouseMovement movement = interIdEvent.movement;
-        int id = interIdEvent.getData();
+        int interId = interIdEvent.getData();
 
-        Inter inter = sigManager.getInter(id);
+        Inter inter = sigManager.getInter(interId);
         locationService.publish(
                 new InterListEvent(this, hint, movement, (inter != null) ? Arrays.asList(inter) : null));
     }

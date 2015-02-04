@@ -267,7 +267,7 @@ public class BasicContent
     }
 
     //-----------------//
-    // internalsString //
+    // internals //
     //-----------------//
     protected String internalsString ()
     {

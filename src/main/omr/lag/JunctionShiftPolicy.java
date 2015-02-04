@@ -36,8 +36,7 @@ public class JunctionShiftPolicy
     /**
      * Creates an instance of policy based on shift of runs.
      *
-     * @param maxShift the maximum possible shift between two
-     *                 consecutive rows
+     * @param maxShift the maximum possible shift between two consecutive rows
      */
     public JunctionShiftPolicy (int maxShift)
     {
@@ -49,9 +48,8 @@ public class JunctionShiftPolicy
     // consistentRun //
     //---------------//
     /**
-     * Check whether the Run is consistent with the provided Section,
-     * according to this junction policy, based on run position and
-     * last section run position.
+     * Check whether the Run is consistent with the provided Section, according to this
+     * junction policy, based on run position and last section run position.
      *
      * @param run     the Run candidate
      * @param section the potentially hosting Section

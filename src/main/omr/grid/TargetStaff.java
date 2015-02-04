@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.sheet.Staff;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class TargetStaff
     //~ Instance fields --------------------------------------------------------
 
     /** Initial raw information */
-    public final StaffInfo info;
+    public final Staff info;
 
     /** Id for debug */
     public final int id;
@@ -48,7 +49,7 @@ public class TargetStaff
      * @param info initial raw information
      * @param top  Ordinate of top in containing page
      */
-    public TargetStaff (StaffInfo info,
+    public TargetStaff (Staff info,
                         double top,
                         TargetSystem system)
     {

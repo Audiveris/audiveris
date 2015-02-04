@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.sig.Inter;
-import omr.sig.Relation;
+import omr.sig.inter.Inter;
+import omr.sig.relation.Relation;
 import omr.sig.SIGraph;
 
 import org.slf4j.Logger;

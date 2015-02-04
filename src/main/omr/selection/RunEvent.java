@@ -27,9 +27,6 @@ public class RunEvent
     private final Run run;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // RunEvent //
-    //----------//
     /**
      * Creates a new RunEvent object.
      *

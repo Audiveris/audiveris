@@ -52,16 +52,16 @@ public class Wedge
      * @param chord   a related chord if any
      * @param glyph   the underlying glyph
      */
-    public Wedge (Measure measure,
+    public Wedge (OldMeasure measure,
                   boolean start,
                   Point point,
-                  Chord chord,
+                  OldChord chord,
                   Glyph glyph)
     {
         super(measure, start, point, chord, glyph);
 
         // Spread
-        if ((start && (getShape() == Shape.DECRESCENDO))
+        if ((start && (getShape() == Shape.DIMINUENDO))
             || (!start && (getShape() == Shape.CRESCENDO))) {
             spread = glyph.getBounds().height;
         } else {
@@ -81,14 +81,14 @@ public class Wedge
      * @param startingPoint   location for left point
      */
     public static void populate (Glyph glyph,
-                                 Measure startingMeasure,
+                                 OldMeasure startingMeasure,
                                  Point startingPoint)
     {
         if (glyph.isVip()) {
             logger.info("Wedge. populate {}", glyph.idString());
         }
 
-        SystemPart part = startingMeasure.getPart();
+        OldSystemPart part = startingMeasure.getPart();
         Rectangle box = glyph.getBounds();
 
         // Start
@@ -102,7 +102,7 @@ public class Wedge
 
         // Stop
         Point endingPoint = new Point(box.x + box.width, box.y + (box.height / 2));
-        Measure endingMeasure = part.getMeasureAt(endingPoint);
+        OldMeasure endingMeasure = part.getMeasureAt(endingPoint);
         glyph.addTranslation(
                 new Wedge(
                         endingMeasure,

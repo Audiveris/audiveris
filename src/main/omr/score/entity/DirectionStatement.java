@@ -31,8 +31,8 @@ public class DirectionStatement
     private static final Logger logger = LoggerFactory.getLogger(DirectionStatement.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The underlying text */
-    private Text.DirectionText text;
+    /** The underlying text. */
+    private final Text.DirectionText text;
 
     //~ Constructors -------------------------------------------------------------------------------
     //--------------------//
@@ -46,9 +46,9 @@ public class DirectionStatement
      * @param chord          the chord related to the mark, if any
      * @param text           the sentence text
      */
-    public DirectionStatement (Measure measure,
+    public DirectionStatement (OldMeasure measure,
                                Point referencePoint,
-                               Chord chord,
+                               OldChord chord,
                                Text.DirectionText text)
     {
         super(measure, referencePoint, chord, text.getSentence().getFirstWord().getGlyph());
@@ -83,7 +83,7 @@ public class DirectionStatement
     }
 
     //-----------------//
-    // internalsString //
+    // internals //
     //-----------------//
     @Override
     protected String internalsString ()

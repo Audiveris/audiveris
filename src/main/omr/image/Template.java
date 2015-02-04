@@ -19,6 +19,9 @@ import omr.glyph.Shape;
 import omr.math.GeoUtil;
 import omr.math.TableUtil;
 
+import omr.ui.symbol.MusicFont;
+import omr.ui.symbol.TemplateSymbol;
+
 import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
@@ -27,29 +30,25 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 /**
  * Class {@code Template} implements a template to be used for matching evaluation on a
  * distance transform image.
  * <p>
- * There are several topics to consider in a template specification (see {@link Key} class):<dl>
+ * There are several topics to consider in a template specification:<dl>
  * <dt><b>Base shape</b></dt>
- * <dd>Supported shapes are NOTEHEAD_BLACK, NOTEHEAD_VOID and WHOLE_NOTE and their small (cue)
- * counterparts</dd>
- * <dt><b>Lines</b></dt>
- * <dd>Staff lines and/or ledgers can cross the symbol in the middle, so regions for top or bottom
- * lines are disabled for template matching. </dd>
- * <dt><b>Stems</b></dt>
- * <dd>Experience has shown that stem presence or absence is not reliable, so potential stem regions
- * are disabled for template matching.</dd>
+ * <dd>Supported shapes are NOTEHEAD_BLACK, NOTEHEAD_VOID and WHOLE_NOTE and possibly their small
+ * (cue) counterparts</dd>
  * <dt><b>Size</b></dt>
  * <dd>Either standard size or small size (for cues and grace notes).</dd>
+ * <dt><b>Lines & Stems</b></dt>
+ * <dd>These regions will be neutralized in the distance table, hence the templates don't have to
+ * cope with them.</dd>
  * </dl>
  *
  * @author Hervé Bitteur
@@ -67,11 +66,17 @@ public class Template
     public static final double smallRatio = constants.smallRatio.getValue();
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Template key. */
-    private final Key key;
+    /** Template shape. */
+    private final Shape shape;
+
+    /** Scaling factor. */
+    private final int interline;
+
+    /** Underlying symbol. */
+    private final TemplateSymbol symbol;
 
     /** Collection of key points defined for this template. */
-    private final Collection<PixelDistance> keyPoints;
+    private final List<PixelDistance> keyPoints;
 
     /** Template width. (perhaps larger than the symbol width) */
     private final int width;
@@ -96,23 +101,28 @@ public class Template
     /**
      * Creates a new Template object with a provided set of points.
      *
-     * @param key          the template specification key
-     * @param width        template width
-     * @param height       template height
-     * @param symbolBounds bounds of symbol within template
-     * @param keyPoints    the set of defining points
+     * @param shape     the template specified shape
+     * @param interline scaling factor
+     * @param symbol    underlying symbol
+     * @param width     template width
+     * @param height    template height
+     * @param keyPoints the set of defining points
      */
-    public Template (Key key,
+    public Template (Shape shape,
+                     int interline,
+                     TemplateSymbol symbol,
                      int width,
                      int height,
-                     Rectangle symbolBounds,
                      List<PixelDistance> keyPoints)
     {
-        this.key = key;
+        this.shape = shape;
+        this.interline = interline;
+        this.symbol = symbol;
         this.keyPoints = new ArrayList<PixelDistance>(keyPoints);
         this.width = width;
         this.height = height;
-        this.symbolBounds = new Rectangle(symbolBounds);
+
+        symbolBounds = new Rectangle(symbol.getSymbolBounds(MusicFont.getFont(interline)));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -148,7 +158,7 @@ public class Template
             vals[pix.x][pix.y] = (int) Math.rint(pix.d);
         }
 
-        System.out.println("Template " + key + ":");
+        System.out.println("Template " + shape + ":");
 
         final String yFormat = TableUtil.printAbscissae(width, height, 3);
 
@@ -177,12 +187,12 @@ public class Template
     // evaluate //
     //----------//
     /**
-     * Evaluate this template at location (x,y) in provided distanceImage.
+     * Evaluate this template at location (x,y) in provided distances table.
      *
      * @param x         location abscissa
      * @param y         location ordinate
      * @param anchor    the anchor kind to use for (x,y), null for upper left
-     * @param distances the distance transform image to search
+     * @param distances the distance table to search
      * @return the quadratic average distance computed on all key positions
      */
     public double evaluate (int x,
@@ -190,17 +200,7 @@ public class Template
                             Anchor anchor,
                             DistanceTable distances)
     {
-        // Offsets to apply to location?
-        if (anchor != null) {
-            Point offset = getOffset(anchor);
-
-            if (offset != null) {
-                x -= offset.x;
-                y -= offset.y;
-            } else {
-                logger.error("No {} anchor defined for {} template", anchor, key);
-            }
-        }
+        final Point ul = upperLeft(x, y, anchor);
 
         // Loop through template key positions and read related distance.
         // Compute the mean value on all distances read
@@ -209,24 +209,28 @@ public class Template
         final double foreWeight = constants.foreWeight.getValue();
         final double backWeight = constants.backWeight.getValue();
         double weights = 0; // Sum of weights
-        double total = 0; // Sum of square weighted distances
+        double total = 0; // Sum of weighted square distances
 
         for (PixelDistance pix : keyPoints) {
-            int nx = x + pix.x;
-            int ny = y + pix.y;
+            int nx = ul.x + pix.x;
+            int ny = ul.y + pix.y;
 
             // Ignore tested point if located out of image
             if ((nx >= 0) && (nx < imgWidth) && (ny >= 0) && (ny < imgHeight)) {
-                double weight = (pix.d > 0) ? backWeight : foreWeight;
-                double dist = weight * (distances.getValue(nx, ny) - pix.d);
-                total += (dist * dist);
-                weights += weight;
+                int tableDist = distances.getValue(nx, ny);
+
+                // Ignore neutralized locations in distance table
+                if (tableDist != ChamferDistance.VALUE_UNKNOWN) {
+                    double weight = (pix.d > 0) ? backWeight : foreWeight;
+                    weights += weight;
+
+                    double dist = tableDist - pix.d;
+                    total += (weight * (dist * dist)); // Square
+                }
             }
         }
 
-        double res = Math.sqrt(total) / (weights * distances.getNormalizer());
-
-        return res;
+        return Math.sqrt(total / weights) / distances.getNormalizer();
     }
 
     //-----------------//
@@ -357,17 +361,23 @@ public class Template
         return height;
     }
 
-    //--------//
-    // getKey //
-    //--------//
-    /**
-     * Report the specification key of the template.
-     *
-     * @return the template specification key
-     */
-    public Key getKey ()
+    //--------------//
+    // getInterline //
+    //--------------//
+    public int getInterline ()
     {
-        return key;
+        return interline;
+    }
+
+    //--------------//
+    // getKeyPoints //
+    //--------------//
+    /**
+     * @return the keyPoints
+     */
+    public List<PixelDistance> getKeyPoints ()
+    {
+        return Collections.unmodifiableList(keyPoints);
     }
 
     //-----------//
@@ -379,10 +389,34 @@ public class Template
         Point offset = offsets.get(anchor);
 
         if (offset == null) {
-            logger.error("No offset defined for anchor {} in template {}", anchor, key);
+            logger.error("No offset defined for anchor {} in template {}", anchor, shape);
         }
 
         return offset;
+    }
+
+    //----------//
+    // getShape //
+    //----------//
+    /**
+     * Report the specified shape of the template.
+     *
+     * @return the template shape
+     */
+    public Shape getShape ()
+    {
+        return shape;
+    }
+
+    //-----------//
+    // getSymbol //
+    //-----------//
+    /**
+     * @return the symbol
+     */
+    public TemplateSymbol getSymbol ()
+    {
+        return symbol;
     }
 
     //-----------------//
@@ -438,7 +472,7 @@ public class Template
     {
         StringBuilder sb = new StringBuilder("{Template");
 
-        sb.append(" ").append(key);
+        sb.append(" ").append(shape);
 
         sb.append(" w:").append(width).append(",h:").append(height);
 
@@ -458,73 +492,29 @@ public class Template
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----//
-    // Key //
-    //-----//
-    /**
-     * Key to define all template specifications.
-     */
-    public static class Key
+    //-----------//
+    // upperLeft //
+    //-----------//
+    private Point upperLeft (int x,
+                             int y,
+                             Anchor anchor)
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        // Offsets to apply to location?
+        if (anchor != null) {
+            Point offset = getOffset(anchor);
 
-        public final Shape shape;
-
-        /** Middle hasLine or not. */
-        public final boolean hasLine;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Key (Shape shape,
-                    boolean line)
-        {
-            this.shape = shape;
-            this.hasLine = line;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public boolean equals (Object obj)
-        {
-            if (!(obj instanceof Key)) {
-                return false;
+            if (offset != null) {
+                x -= offset.x;
+                y -= offset.y;
             } else {
-                Key that = (Key) obj;
-
-                return (shape == that.shape) && (hasLine == that.hasLine);
+                logger.error("No {} anchor defined for {} template", anchor, shape);
             }
         }
 
-        @Override
-        public int hashCode ()
-        {
-            int hash = 7;
-            hash = (37 * hash) + Objects.hashCode(this.shape);
-            hash = (37 * hash) + (this.hasLine ? 1 : 0);
-
-            return hash;
-        }
-
-        /**
-         * Key is formatted as shape[-hasLine].
-         *
-         * @return unique key name
-         */
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.append(shape);
-
-            if (hasLine) {
-                sb.append("-LINE");
-            }
-
-            return sb.toString();
-        }
+        return new Point(x, y);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -538,11 +528,11 @@ public class Template
                 "Global ratio applied to small (cue/grace) templates");
 
         final Constant.Ratio foreWeight = new Constant.Ratio(
-                1.0,
+                2.0,
                 "Weight assigned to template foreground pixels");
 
         final Constant.Ratio backWeight = new Constant.Ratio(
-                2.0,
+                1.0,
                 "Weight assigned to template background pixels");
     }
 }

@@ -11,8 +11,9 @@
 // </editor-fold>
 package omr.sig.ui;
 
-import omr.sig.Inter;
+import omr.sig.inter.Inter;
 import omr.sig.SigManager;
+
 import static omr.ui.field.SpinnerUtil.NO_VALUE;
 
 import org.slf4j.Logger;

@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Class {@code ScoreSystem} encapsulates a system in a score.
  * <p>
- * A system contains only one kind of direct children : SystemPart instances
+ A system contains only one kind of direct children : OldSystemPart instances
  *
  * @author Hervé Bitteur
  */
@@ -108,7 +108,7 @@ public class ScoreSystem
         // Safer: check we are the very first system in page
         if (getChildIndex() != 0) {
             throw new IllegalArgumentException(
-                    "connectSlursAcrossPages called for non-first system");
+                    "connectPageInitialSlurs called for non-first system");
         }
 
         // If very first page, we are done
@@ -116,15 +116,15 @@ public class ScoreSystem
             return;
         }
 
-        ScoreSystem precedingSystem = getPage().getPrecedingInScore().getLastSystem();
+        ScoreSystem precedingSystem = getPage().getPrecedingInScore().getLastScoreSystem();
 
         if (precedingSystem != null) {
             // Examine every part in sequence
             for (TreeNode pNode : getParts()) {
-                SystemPart part = (SystemPart) pNode;
+                OldSystemPart part = (OldSystemPart) pNode;
 
                 // Find out the proper preceding part (across pages)
-                SystemPart precedingPart = precedingSystem.getPart(part.getId());
+                OldSystemPart precedingPart = precedingSystem.getPart(part.getId());
 
                 // Ending orphans in preceding system/part (if such part exists)
                 part.connectSlursWith(precedingPart);
@@ -145,7 +145,7 @@ public class ScoreSystem
         if (getPreviousSibling() != null) {
             // Examine every part in sequence
             for (TreeNode pNode : getParts()) {
-                SystemPart part = (SystemPart) pNode;
+                OldSystemPart part = (OldSystemPart) pNode;
                 // Ending orphans in preceding system/part (if such part exists)
                 part.connectSlursWith(part.getPrecedingInPage());
             }
@@ -162,7 +162,7 @@ public class ScoreSystem
     public void connectTiedVoices ()
     {
         for (TreeNode node : getParts()) {
-            SystemPart part = (SystemPart) node;
+            OldSystemPart part = (OldSystemPart) node;
             part.connectTiedVoices();
         }
     }
@@ -180,7 +180,7 @@ public class ScoreSystem
         for (ScorePart scorePart : getPage().getPartList()) {
             if (getPart(scorePart.getId()) == null) {
                 getFirstRealPart().createDummyPart(scorePart.getId());
-                Collections.sort(getParts(), SystemPart.idComparator);
+                Collections.sort(getParts(), OldSystemPart.idComparator);
             }
         }
     }
@@ -216,9 +216,9 @@ public class ScoreSystem
      * @return the first part entity
      * @see #getFirstRealPart()
      */
-    public SystemPart getFirstPart ()
+    public OldSystemPart getFirstPart ()
     {
-        return (SystemPart) getParts().get(0);
+        return (OldSystemPart) getParts().get(0);
     }
 
     //------------------//
@@ -230,10 +230,10 @@ public class ScoreSystem
      * @return the real first part entity
      * @see #getFirstPart()
      */
-    public SystemPart getFirstRealPart ()
+    public OldSystemPart getFirstRealPart ()
     {
         for (TreeNode node : getParts()) {
-            SystemPart part = (SystemPart) node;
+            OldSystemPart part = (OldSystemPart) node;
 
             if (!part.isDummy()) {
                 return part;
@@ -273,9 +273,9 @@ public class ScoreSystem
      *
      * @return the last part entity
      */
-    public SystemPart getLastPart ()
+    public OldSystemPart getLastPart ()
     {
-        return (SystemPart) getParts().get(getParts().size() - 1);
+        return (OldSystemPart) getParts().get(getParts().size() - 1);
     }
 
     //---------//
@@ -287,10 +287,10 @@ public class ScoreSystem
      * @param id the id of the desired part
      * @return the part found or null
      */
-    public SystemPart getPart (int id)
+    public OldSystemPart getPart (int id)
     {
         for (TreeNode node : getParts()) {
-            SystemPart part = (SystemPart) node;
+            OldSystemPart part = (OldSystemPart) node;
 
             if (part.getId() == id) {
                 return part;
@@ -311,9 +311,9 @@ public class ScoreSystem
      * @param point the given point
      * @return the part above
      */
-    public SystemPart getPartAbove (Point point)
+    public OldSystemPart getPartAbove (Point point)
     {
-        Staff staff = getStaffAbove(point);
+        OldStaff staff = getStaffAbove(point);
 
         if (staff == null) {
             return getFirstRealPart();
@@ -331,9 +331,9 @@ public class ScoreSystem
      * @param point the given point
      * @return the containing part
      */
-    public SystemPart getPartAt (Point point)
+    public OldSystemPart getPartAt (Point point)
     {
-        Staff staff = getStaffAt(point);
+        OldStaff staff = getStaffAt(point);
 
         if (staff == null) {
             return getFirstPart();
@@ -364,16 +364,16 @@ public class ScoreSystem
      * @param sysPt the given point
      * @return the staff above
      */
-    public Staff getStaffAbove (Point sysPt)
+    public OldStaff getStaffAbove (Point sysPt)
     {
-        Staff best = null;
+        OldStaff best = null;
 
         for (TreeNode node : getParts()) {
-            SystemPart part = (SystemPart) node;
+            OldSystemPart part = (OldSystemPart) node;
 
             if (!part.isDummy()) {
                 for (TreeNode n : part.getStaves()) {
-                    Staff staff = (Staff) n;
+                    OldStaff staff = (OldStaff) n;
 
                     if (staff.getCenter().y < sysPt.y) {
                         best = staff;
@@ -394,17 +394,17 @@ public class ScoreSystem
      * @param sysPt the given point
      * @return the closest staff
      */
-    public Staff getStaffAt (Point sysPt)
+    public OldStaff getStaffAt (Point sysPt)
     {
         int bestDy = Integer.MAX_VALUE;
-        Staff best = null;
+        OldStaff best = null;
 
         for (TreeNode node : getParts()) {
-            SystemPart part = (SystemPart) node;
+            OldSystemPart part = (OldSystemPart) node;
 
             if (!part.isDummy()) {
                 for (TreeNode n : part.getStaves()) {
-                    Staff staff = (Staff) n;
+                    OldStaff staff = (OldStaff) n;
                     int dy = Math.abs(sysPt.y - staff.getCenter().y);
 
                     if (dy < bestDy) {
@@ -427,13 +427,13 @@ public class ScoreSystem
      * @param sysPt the given system point
      * @return the staff below
      */
-    public Staff getStaffBelow (Point sysPt)
+    public OldStaff getStaffBelow (Point sysPt)
     {
         for (TreeNode node : getParts()) {
-            SystemPart part = (SystemPart) node;
+            OldSystemPart part = (OldSystemPart) node;
 
             for (TreeNode n : part.getStaves()) {
-                Staff staff = (Staff) n;
+                OldStaff staff = (OldStaff) n;
 
                 if (staff.getCenter().y > sysPt.y) {
                     return staff;
@@ -456,13 +456,13 @@ public class ScoreSystem
      */
     public StaffPosition getStaffPosition (Point point)
     {
-        Staff firstStaff = getFirstRealPart().getFirstStaff();
+        OldStaff firstStaff = getFirstRealPart().getFirstStaff();
 
         if (point.y < firstStaff.getTopLeft().y) {
             return StaffPosition.ABOVE_STAVES;
         }
 
-        Staff lastStaff = getLastPart().getLastStaff();
+        OldStaff lastStaff = getLastPart().getLastStaff();
 
         if (point.y > (lastStaff.getTopLeft().y + lastStaff.getHeight())) {
             return StaffPosition.BELOW_STAVES;
@@ -483,10 +483,10 @@ public class ScoreSystem
      * @param point the provided point
      * @return the preferred staff
      */
-    public Staff getTextStaff (TextRole role,
+    public OldStaff getTextStaff (TextRole role,
                                Point point)
     {
-        Staff staff = null;
+        OldStaff staff = null;
 
         if ((role == TextRole.Direction) || (role == TextRole.Lyrics)) {
             staff = getStaffAbove(point);
@@ -535,7 +535,7 @@ public class ScoreSystem
     public void refineLyricSyllables ()
     {
         for (TreeNode node : getParts()) {
-            SystemPart part = (SystemPart) node;
+            OldSystemPart part = (OldSystemPart) node;
             part.refineLyricSyllables();
         }
     }

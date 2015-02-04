@@ -40,7 +40,7 @@ public class CurvesStep
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 DATA_TAB,
-                "Retrieve all curves");
+                "Retrieve slurs, wedges & endings");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

@@ -123,6 +123,18 @@ public class Colors
     /** Warping points */
     public static final Color WARP_POINT = Color.red;
 
+    /** Color for busy sheet tab */
+    public static final Color SHEET_BUSY = Color.orange; //new Color(200, 128, 0);
+
+    /** Color for zero distance (on foreground target) */
+    public static final Color DISTANCE_TARGET = Color.PINK;
+
+    /** Color for unknown distance (neutralized locations) */
+    public static final Color DISTANCE_UNKNOWN = Color.GREEN;
+
+    /** Color for standard distance */
+    public static final Color DISTANCE_STANDARD = Color.BLUE;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated.

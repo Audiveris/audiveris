@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.sig.ui;
 
-import omr.sig.Inter;
-import omr.sig.Relation;
+import omr.sig.inter.Inter;
+import omr.sig.relation.Relation;
 
 import omr.ui.util.AbstractMouseListener;
 

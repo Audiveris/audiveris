@@ -38,6 +38,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -175,27 +177,21 @@ public class GlyphRepository
     }
 
     //-------------//
-    // shapeNameOf //
+    // getInstance //
     //-------------//
     /**
-     * Report the shape name of a gName.
+     * Report the single instance of this class, after creating it if
+     * needed.
      *
-     * @param gName glyph name, using format "folder/name.number.xml" or
-     *              "folder/name.xml"
-     * @return the 'name' part of the format
+     * @return the single instance
      */
-    public static String shapeNameOf (String gName)
+    public static GlyphRepository getInstance ()
     {
-        int slash = gName.indexOf('/');
-        String nameWithExt = gName.substring(slash + 1);
-
-        int firstDot = nameWithExt.indexOf('.');
-
-        if (firstDot != -1) {
-            return nameWithExt.substring(0, firstDot);
-        } else {
-            return nameWithExt;
+        if (INSTANCE == null) {
+            INSTANCE = new GlyphRepository();
         }
+
+        return INSTANCE;
     }
 
     //-------------//
@@ -296,24 +292,6 @@ public class GlyphRepository
 
             return new ArrayList<File>();
         }
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this class, after creating it if
-     * needed.
-     *
-     * @return the single instance
-     */
-    public static GlyphRepository getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new GlyphRepository();
-        }
-
-        return INSTANCE;
     }
 
     //----------------------//
@@ -533,6 +511,30 @@ public class GlyphRepository
         coreBase = base;
     }
 
+    //-------------//
+    // shapeNameOf //
+    //-------------//
+    /**
+     * Report the shape name of a gName.
+     *
+     * @param gName glyph name, using format "folder/name.number.xml" or
+     *              "folder/name.xml"
+     * @return the 'name' part of the format
+     */
+    public static String shapeNameOf (String gName)
+    {
+        int slash = gName.indexOf('/');
+        String nameWithExt = gName.substring(slash + 1);
+
+        int firstDot = nameWithExt.indexOf('.');
+
+        if (firstDot != -1) {
+            return nameWithExt.substring(0, firstDot);
+        } else {
+            return nameWithExt;
+        }
+    }
+
     //---------//
     // shapeOf //
     //---------//
@@ -585,7 +587,11 @@ public class GlyphRepository
                 if (isIcon) {
                     target.createNewFile();
                 } else {
-                    FileUtil.copy(source, target);
+                    ///FileUtil.copy(source, target);
+                    Files.copy(
+                            source.toPath(),
+                            target.toPath(),
+                            StandardCopyOption.REPLACE_EXISTING);
                 }
 
                 copyNb++;

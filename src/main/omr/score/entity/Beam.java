@@ -46,7 +46,7 @@ import java.util.SortedSet;
  * It can degenerate to just a single beam hook.
  *
  * <div style="float: right;">
- * <img src="doc-files/Beam.jpg" alt="diagram">
+ * <img src="doc-files/Beam.png" alt="diagram">
  * </div>
  *
  * @author Hervé Bitteur
@@ -70,10 +70,10 @@ public class Beam
     private final int id;
 
     /** The containing beam group. */
-    private BeamGroup group;
+    private OldBeamGroup group;
 
     /** Chords that are linked by this beam. */
-    private List<Chord> chords = new ArrayList<Chord>();
+    private List<OldChord> chords = new ArrayList<OldChord>();
 
     /** Line equation for the beam. */
     private Line line;
@@ -87,7 +87,7 @@ public class Beam
      *
      * @param measure the enclosing measure
      */
-    private Beam (Measure measure)
+    private Beam (OldMeasure measure)
     {
         super(measure);
 
@@ -114,7 +114,7 @@ public class Beam
      */
     public static Beam populate (Point left,
                                  Point right,
-                                 Measure measure)
+                                 OldMeasure measure)
     {
         ///logger.info("Populating " + glyph);
         Beam beam = null;
@@ -170,7 +170,7 @@ public class Beam
      *
      * @param chord the linked chord
      */
-    public void addChord (Chord chord)
+    public void addChord (OldChord chord)
     {
         if (!chords.contains(chord)) {
             chords.add(chord);
@@ -189,18 +189,18 @@ public class Beam
         if (chords.isEmpty()) {
             addError("No chords connected to " + this);
         } else {
-            Collections.sort(chords, Chord.byAbscissa);
+            Collections.sort(chords, OldChord.byAbscissa);
 
-            Chord first = chords.get(0);
-            Chord last = chords.get(chords.size() - 1);
+            OldChord first = chords.get(0);
+            OldChord last = chords.get(chords.size() - 1);
             boolean started = false;
 
             // Add interleaved chords if any, plus relevant chords of the group
-            SortedSet<Chord> adds = Chord.lookupInterleavedChords(first, last);
+            SortedSet<OldChord> adds = OldChord.lookupInterleavedChords(first, last);
             adds.add(first);
             adds.add(last);
 
-            for (Chord chord : adds) {
+            for (OldChord chord : adds) {
                 if (chord == first) {
                     started = true;
                 }
@@ -221,16 +221,16 @@ public class Beam
     // determineGroup //
     //----------------//
     /**
-     * Determine which BeamGroup this beam is part of.
-     * The BeamGroup is either reused (if one of its beams has a linked chord
+     * Determine which OldBeamGroup this beam is part of.
+     * The OldBeamGroup is either reused (if one of its beams has a linked chord
      * in common with this beam) or created from scratch otherwise
      */
     public void determineGroup ()
     {
         // Check if this beam should belong to an existing group
-        for (BeamGroup group : getMeasure().getBeamGroups()) {
+        for (OldBeamGroup group : getMeasure().getBeamGroups()) {
             for (Beam beam : group.getBeams()) {
-                for (Chord chord : beam.getChords()) {
+                for (OldChord chord : beam.getChords()) {
                     if (this.chords.contains(chord)) {
                         // We have a chord in common with this beam, so we are
                         // part of the same group
@@ -244,7 +244,7 @@ public class Beam
         }
 
         // No compatible group found, let's build a new one
-        switchToGroup(new BeamGroup(getMeasure()));
+        switchToGroup(new OldBeamGroup(getMeasure()));
 
         logger.debug("{} Created new {} for {}", getContextString(), getGroup(), this);
     }
@@ -269,7 +269,7 @@ public class Beam
      *
      * @return the linked chords
      */
-    public List<Chord> getChords ()
+    public List<OldChord> getChords ()
     {
         return Collections.unmodifiableList(chords);
     }
@@ -311,7 +311,7 @@ public class Beam
      *
      * @return the containing group, if already set, or null
      */
-    public BeamGroup getGroup ()
+    public OldBeamGroup getGroup ()
     {
         return group;
     }
@@ -438,7 +438,7 @@ public class Beam
      *
      * @param chord the chord to remove
      */
-    public void removeChord (Chord chord)
+    public void removeChord (OldChord chord)
     {
         chords.remove(chord);
     }
@@ -477,12 +477,12 @@ public class Beam
     // switchToGroup //
     //---------------//
     /**
-     * Move this beam to a BeamGroup, by setting the link both ways
+     * Move this beam to a OldBeamGroup, by setting the link both ways
      * between this beam and the containing group.
      *
      * @param group the (new) containing beam group
      */
-    public void switchToGroup (BeamGroup group)
+    public void switchToGroup (OldBeamGroup group)
     {
         logger.debug("Switching {} from {} to {}", this, this.group, group);
 
@@ -623,10 +623,10 @@ public class Beam
             Glyph stem = item.getStem(side);
 
             if (stem != null) {
-                List<Chord> sideChords = Chord.getStemChords(getMeasure(), stem);
+                List<OldChord> sideChords = OldChord.getStemChords(getMeasure(), stem);
 
                 if (!sideChords.isEmpty()) {
-                    for (Chord chord : sideChords) {
+                    for (OldChord chord : sideChords) {
                         addChord(chord);
                         chord.addBeam(this);
                     }

@@ -11,7 +11,11 @@
 // </editor-fold>
 package omr.sheet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 
 /**
@@ -21,8 +25,11 @@ import java.awt.geom.Point2D;
  */
 public class Skew
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(Skew.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Skew slope as measured */
     private final double slope;
 
@@ -85,11 +92,10 @@ public class Skew
     // deskewed //
     //----------//
     /**
-     * Apply rotation OPPOSITE to the measured global angle and use the
-     * new sheet origin.
+     * Apply rotation OPPOSITE to the measured global angle and use the new sheet origin.
      *
      * @param point the initial (skewed) point
-     * @return the deskewed point
+     * @return the de-skewed point
      */
     public Point2D deskewed (Point2D point)
     {
@@ -140,6 +146,27 @@ public class Skew
     public double getSlope ()
     {
         return slope;
+    }
+
+    //--------//
+    // skewed //
+    //--------//
+    /**
+     * Apply inverse of deskewed
+     *
+     * @param point the initial (deskewed) point
+     * @return the skewed point
+     */
+    public Point2D skewed (Point2D point)
+    {
+        try {
+            return at.inverseTransform(point, null);
+        } catch (NoninvertibleTransformException ex) {
+            // Should never occur
+            logger.error("NoninvertibleTransformException in Skew");
+
+            return null;
+        }
     }
 
     //----------//

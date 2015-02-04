@@ -25,22 +25,25 @@ import omr.lag.ui.SectionBoard;
 
 import omr.run.RunBoard;
 
-import omr.score.entity.Slot;
 import omr.score.ui.EditorMenu;
-import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
 
 import omr.selection.MouseMovement;
-import omr.selection.NestEvent;
 import omr.selection.SectionSetEvent;
 import static omr.selection.SelectionHint.*;
 import omr.selection.UserEvent;
 
+import omr.sheet.Measure;
+import omr.sheet.Part;
 import omr.sheet.Sheet;
+import omr.sheet.Slot;
+import omr.sheet.Staff;
+import omr.sheet.SystemInfo;
 import omr.sheet.ui.PixelBoard;
-import omr.sheet.ui.SheetPainter;
+import omr.sheet.ui.SheetGradedPainter;
+import omr.sheet.ui.SheetResultPainter;
 
-import omr.sig.Inter;
+import omr.sig.inter.Inter;
 
 import omr.step.Step;
 
@@ -86,9 +89,6 @@ public class SymbolsEditor
     private static final Logger logger = LoggerFactory.getLogger(SymbolsEditor.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Related instance of symbols controller. */
-    private final SymbolsController symbolsController;
-
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -98,7 +98,7 @@ public class SymbolsEditor
     /** Related nest view. */
     private final MyView view;
 
-    /** Popup menu related to page selection. */
+    /** Pop-up menu related to page selection. */
     private final EditorMenu pageMenu;
 
     /** The entity used for display focus. */
@@ -112,14 +112,13 @@ public class SymbolsEditor
      * Create a view in the sheet assembly tabs, dedicated to the
      * display and handling of glyphs.
      *
-     * @param sheet             the sheet whose glyphs are considered
+     * @param sheet             the sheet whose glyph instances are considered
      * @param symbolsController the symbols controller for this sheet
      */
     public SymbolsEditor (Sheet sheet,
                           SymbolsController symbolsController)
     {
         this.sheet = sheet;
-        this.symbolsController = symbolsController;
 
         GlyphNest nest = symbolsController.getNest();
 
@@ -130,12 +129,12 @@ public class SymbolsEditor
                 sheet,
                 symbolsController,
                 new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                view.repaint();
-            }
+                {
+                    @Override
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        view.repaint();
+                    }
                 },
                 false);
 
@@ -166,28 +165,29 @@ public class SymbolsEditor
     //-----------//
     /**
      * Retrieve the measure slot closest to the provided point.
+     * <p>
+     * This search is meant for user interface, so we can pick up the part which is vertically
+     * closest to point ordinate (then choose measure and finally slot using closest abscissa).
      *
      * @param point the provided point
      * @return the related slot, or null
      */
     public Slot getSlotAt (Point point)
     {
-        //        List<SystemInfo> systems = sheet.getSystems();
-        //
-        //        if (systems != null) {
-        //            SystemInfo systemInfo = sheet.getSystemOf(point);
-        //
-        //            if (systemInfo != null) {
-        //                ScoreSystem system = systemInfo.getScoreSystem();
-        //
-        //                SystemPart part = system.getPartAt(point);
-        //                Measure measure = part.getMeasureAt(point);
-        //
-        //                if (measure != null) {
-        //                    return measure.getClosestSlot(point);
-        //                }
-        //            }
-        //        }
+        final Staff staff = sheet.getStaffManager().getClosestStaff(point);
+
+        if (staff != null) {
+            final Part part = staff.getPart();
+
+            if (part != null) {
+                final Measure measure = part.getMeasureAt(point);
+
+                if (measure != null) {
+                    return measure.getStack().getClosestSlot(point);
+                }
+            }
+        }
+
         return null;
     }
 
@@ -225,8 +225,8 @@ public class SymbolsEditor
     // refresh //
     //---------//
     /**
-     * Refresh the UI display (reset the model values of all spinners,
-     * update the colors of the glyphs).
+     * Refresh the UI display (resetRhythm the model values of all spinners,
+ update the colors of the glyphs).
      */
     public void refresh ()
     {
@@ -334,20 +334,21 @@ public class SymbolsEditor
             this.highlightedSlot = slot;
 
             repaint(); // To erase previous highlight
-
+            //
             //            // Make the measure visible
             //            // Safer
-            //            if ((measure == null) || (slot == null)) {
-            //
+            //            if ( (slot == null) ||(slot.getMeasure() == null)) {
             //                return;
             //            }
             //
-            //            ScoreSystem system = measure.getSystem();
+            //            Measure measure = slot.getMeasure();
+            //            SystemInfo system = measure.getPart().getSystem();
             //            Dimension dimension = system.getDimension();
-            //            Rectangle systemBox = new Rectangle(system.getTopLeft().x,
-            //                    system.getTopLeft().y, dimension.width,
-            //                    dimension.height
-            //                    + system.getLastPart().getLastStaff().getHeight());
+            //            Rectangle systemBox = new Rectangle(
+            //                    system.getTopLeft().x,
+            //                    system.getTopLeft().y,
+            //                    dimension.width,
+            //                    dimension.height + system.getLastPart().getLastStaff().getHeight());
             //
             //            // Make the measure rectangle visible
             //            Rectangle rect = measure.getBox();
@@ -448,14 +449,6 @@ public class SymbolsEditor
             renderItems(g);
         }
 
-        //---------//
-        // publish //
-        //---------//
-        protected void publish (NestEvent event)
-        {
-            nest.getGlyphService().publish(event);
-        }
-
         //-------------//
         // renderItems //
         //-------------//
@@ -470,7 +463,8 @@ public class SymbolsEditor
 
             if (painting.isInputPainting()) {
                 // Render all sheet physical info known so far
-                sheet.getPage().accept(new SheetPainter(g, true));
+                g.setColor(Color.BLACK);
+                new SheetGradedPainter(sheet, g).process();
 
                 // Normal display of selected items
                 super.renderItems(g);
@@ -487,17 +481,17 @@ public class SymbolsEditor
             }
 
             if (painting.isOutputPainting()) {
-                boolean mixed = painting.isInputPainting();
-
                 // Render the recognized score entities
+                boolean mixed = painting.isInputPainting();
                 g.setColor(mixed ? Colors.MUSIC_SYMBOLS : Colors.MUSIC_ALONE);
 
-                PagePhysicalPainter painter = new PagePhysicalPainter(
+                SheetResultPainter painter = new SheetResultPainter(
+                        sheet,
                         g,
                         mixed ? false : painting.isVoicePainting(),
                         false,
                         painting.isAnnotationPainting());
-                sheet.getPage().accept(painter);
+                painter.process();
                 g.setColor(oldColor);
 
                 // The slot being played, if any

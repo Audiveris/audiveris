@@ -69,7 +69,7 @@ public abstract class CurveGap
      * Compute the gap vector based on foreground pixels found in gap area.
      *
      * @param buf the binary buffer
-     * @return the populated gap vector
+     * @return the populated gap vector (in which a 1 value indicates a black pixel)
      */
     public int[] computeVector (ByteProcessor buf)
     {

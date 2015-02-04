@@ -26,23 +26,20 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
-
 import omr.lag.BasicLag;
-import omr.lag.JunctionRatioPolicy;
+import omr.lag.JunctionAllPolicy;
 import omr.lag.Lag;
 import omr.lag.Section;
-import omr.lag.SectionsBuilder;
+import omr.lag.SectionFactory;
+import static omr.run.Orientation.VERTICAL;
+import omr.run.RunTable;
+import omr.run.RunTableFactory;
 
-import omr.math.GeoUtil;
-
-import omr.run.Orientation;
-
-import omr.sig.ClefInter;
-import omr.sig.ClefInter.ClefKind;
-import omr.sig.Exclusion;
-import omr.sig.Inter;
 import omr.sig.SIGraph;
+import omr.sig.inter.ClefInter;
+import omr.sig.inter.ClefInter.ClefKind;
+import omr.sig.inter.Inter;
+import omr.sig.relation.Exclusion;
 
 import omr.ui.symbol.Symbol;
 import omr.ui.symbol.Symbols;
@@ -61,6 +58,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
@@ -86,7 +84,7 @@ public class ClefBuilder
 
     /**
      * All possible clef symbols at beginning of staff: all but small clefs.
-     * Octave bass clefs are extremely <a
+     * Octave bass clefs are reported to be extremely <a
      * href="http://en.wikipedia.org/wiki/Clef#Octave_clefs">rare</a>.
      */
     private static final EnumSet<Shape> clefShapes = EnumSet.of(
@@ -99,7 +97,10 @@ public class ClefBuilder
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated staff to analyze. */
-    private final StaffInfo staff;
+    private final Staff staff;
+
+    /** Clef range info. */
+    private final StaffHeader.Range range;
 
     /** The containing system. */
     @Navigable(false)
@@ -121,34 +122,29 @@ public class ClefBuilder
     /** Shape classifier to use. */
     private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
 
-    /** Precise beginning abscissa of measure. */
-    private final int measureStart;
-
-    /** Estimated ending abscissa of cumuls. */
-    private final int cumulEnd;
-
-    /** Lag for glyph sections. */
-    private final Lag lag = new BasicLag("clef", Orientation.VERTICAL);
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ClefBuilder object.
      *
-     * @param staff        the underlying staff
-     * @param measureStart precise beginning abscissa of measure (generally right after bar line).
+     * @param staff the underlying staff
      */
-    public ClefBuilder (StaffInfo staff,
-                        int measureStart)
+    public ClefBuilder (Staff staff)
     {
         this.staff = staff;
-        this.measureStart = measureStart;
 
         system = staff.getSystem();
         sig = system.getSig();
         sheet = system.getSheet();
         scale = sheet.getScale();
         params = new Parameters(scale);
-        cumulEnd = measureStart + params.maxClefEnd;
+
+        final StaffHeader header = staff.getHeader();
+
+        if (header.clefRange != null) {
+            range = header.clefRange;
+        } else {
+            header.clefRange = (range = new StaffHeader.Range());
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -162,7 +158,7 @@ public class ClefBuilder
     {
         List<Glyph> parts = getParts();
 
-        MyAdapter adapter = new MyAdapter(parts);
+        ClefAdapter adapter = new ClefAdapter(parts);
         new GlyphCluster(adapter).decompose();
         logger.debug(
                 "Staff#{} clef parts:{} trials:{}",
@@ -177,7 +173,7 @@ public class ClefBuilder
             for (Entry<ClefKind, ClefInter> entry : adapter.bestMap.entrySet()) {
                 ///sheet.getNest().registerGlyph(adapter.bestGlyph);
                 ClefInter inter = entry.getValue();
-                inter.increase(0.2); //TODO boost these DMZ clefs
+                inter.increase(0.2); //TODO boost these StaffHeader clefs
                 inters.add(inter);
 
                 // Unerased staff line chunks may shift the symbol in abscissa,
@@ -192,6 +188,7 @@ public class ClefBuilder
                 logger.debug("Centroid translation dx:{} dy:{}", dx, dy);
                 clefBox.translate(dx, 0);
                 inter.setBounds(clefBox);
+                inter.setStaff(staff);
 
                 int gid = inter.getGlyph().getId();
                 sig.addVertex(inter);
@@ -206,8 +203,31 @@ public class ClefBuilder
         }
     }
 
+    //----------------//
+    // setBrowseStart //
+    //----------------//
+    /**
+     * Set the start abscissa for browsing.
+     *
+     * @param browseStart precise browse beginning abscissa (generally right after left bar line).
+     */
+    public void setBrowseStart (int browseStart)
+    {
+        range.browseStart = browseStart;
+        range.browseStop = browseStart + params.maxClefEnd;
+    }
+
     //----------//
-    // getParts //
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "ClefBuilder#" + staff.getId();
+    }
+
+    //----------//
+    // getAllParts //
     //----------//
     /**
      * Retrieve all glyph instances that could be part of clef.
@@ -219,33 +239,31 @@ public class ClefBuilder
         // Rectangular ROI (within sheet image)
         int areaTop = Math.max(
                 0,
-                staff.getFirstLine().yAt(measureStart) - (3 * scale.getInterline()));
+                staff.getFirstLine().yAt(range.browseStart) - (3 * scale.getInterline()));
         int areaBottom = Math.min(
                 sheet.getHeight() - 1,
-                staff.getLastLine().yAt(measureStart) + (3 * scale.getInterline()));
+                staff.getLastLine().yAt(range.browseStart) + (3 * scale.getInterline()));
         Rectangle rect = new Rectangle(
-                measureStart,
+                range.browseStart,
                 areaTop,
-                cumulEnd - measureStart,
+                range.browseStop - range.browseStart,
                 areaBottom - areaTop + 1);
         rect.grow(-params.beltMargin, 0);
         staff.addAttachment("C", rect);
 
         // Grab pixels out of staff-free source
-        ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.STAFF_LINE_FREE);
+        ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
         ByteProcessor buf = new ByteProcessor(rect.width, rect.height);
         buf.copyBits(source, -rect.x, -rect.y, Blitter.COPY);
 
         // Extract parts
-        SectionsBuilder builder = new SectionsBuilder(lag, new JunctionRatioPolicy());
-        List<Section> sections = builder.createSections(buf, rect.getLocation());
-        List<Glyph> parts = sheet.getNest().retrieveGlyphs(
-                sections,
-                GlyphLayer.SYMBOL,
-                true);
+        SectionFactory sectionFactory = new SectionFactory(VERTICAL, JunctionAllPolicy.INSTANCE);
+        List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
+        List<Glyph> parts = sheet.getNest().retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
 
         // Keep only interesting parts
         purgeParts(parts, rect);
+        logger.debug("Clef sections: {} parts: {}", sections.size(), parts.size());
 
         return parts;
     }
@@ -284,6 +302,34 @@ public class ClefBuilder
         }
     }
 
+    //------------//
+    // selectClef //
+    //------------//
+    /**
+     * Make the final selection of best clef for this staff header.
+     */
+    private void selectClef ()
+    {
+        // All clef candidates for this staff (which means just the header)
+        List<Inter> clefs = sig.inters(staff, ClefInter.class);
+
+        if (!clefs.isEmpty()) {
+            for (Inter clef : clefs) {
+                sig.computeContextualGrade(clef, false);
+            }
+
+            Collections.sort(clefs, Inter.byReverseContextualGrade);
+
+            // Pickup the first one as header clef
+            staff.getHeader().clef = (ClefInter) clefs.get(0);
+
+            // Delete the other candidates
+            for (Inter other : clefs.subList(1, clefs.size())) {
+                other.delete();
+            }
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Column //
@@ -297,21 +343,14 @@ public class ClefBuilder
 
         private final SystemInfo system;
 
-        private final Sheet sheet;
-
-        /** Scale-dependent parameters. */
-        private final Parameters params;
-
         /** Map of clef builders. (one per staff) */
-        private final Map<StaffInfo, ClefBuilder> builders = new TreeMap<StaffInfo, ClefBuilder>(
-                StaffInfo.byId);
+        private final Map<Staff, ClefBuilder> builders = new TreeMap<Staff, ClefBuilder>(
+                Staff.byId);
 
         //~ Constructors ---------------------------------------------------------------------------
         public Column (SystemInfo system)
         {
             this.system = system;
-            sheet = system.getSheet();
-            params = new Parameters(sheet.getScale());
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -319,80 +358,90 @@ public class ClefBuilder
         // retrieveClefs //
         //---------------//
         /**
-         * Retrieve the column of staves clefs.
+         * Retrieve the column of staves candidate clefs.
          *
          * @return the ending abscissa offset of clefs column WRT measure start
          */
         public int retrieveClefs ()
         {
-            // Retrieve DMZ clefs
+            // Retrieve staff Header clefs
             int maxClefOffset = 0;
 
-            for (StaffInfo staff : system.getStaves()) {
-                int measureStart = staff.getDmzStart();
+            for (Staff staff : system.getStaves()) {
+                int measureStart = staff.getHeaderStart();
 
                 // Retrieve staff clef
-                ClefBuilder builder = new ClefBuilder(staff, measureStart);
+                ClefBuilder builder = new ClefBuilder(staff);
+                builder.setBrowseStart(measureStart);
                 builders.put(staff, builder);
                 builder.findClef();
                 maxClefOffset = Math.max(maxClefOffset, staff.getClefStop() - measureStart);
             }
 
-            // Push DMZ
+            // Push StaffHeader
             return maxClefOffset;
+        }
+
+        //-------------//
+        // selectClefs //
+        //-------------//
+        /**
+         * Make final clef selection for each staff.
+         */
+        public void selectClefs ()
+        {
+            for (ClefBuilder builder : builders.values()) {
+                builder.selectClef();
+            }
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //------------//
+    // Parameters //
+    //------------//
+    private static class Parameters
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction maxClefEnd = new Scale.Fraction(
-                4.5,
-                "Maximum x distance from measure start to end of clef");
+        final int maxClefEnd;
 
-        final Scale.Fraction beltMargin = new Scale.Fraction(
-                0.15,
-                "White margin within raw rectangle");
+        final int beltMargin;
 
-        final Scale.Fraction xCoreMargin = new Scale.Fraction(
-                0.4,
-                "Horizontal margin around core rectangle");
+        final int xCoreMargin;
 
-        final Scale.Fraction yCoreMargin = new Scale.Fraction(
-                0.5,
-                "Vertical margin around core rectangle");
+        final int yCoreMargin;
 
-        final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(
-                0.01,
-                "Minimum weight for a glyph part");
+        final int minPartWeight;
 
-        final Scale.Fraction maxPartGap = new Scale.Fraction(
-                1.0,
-                "Maximum distance between two parts of a single clef symbol");
+        final double maxPartGap;
 
-        final Scale.Fraction maxGlyphHeight = new Scale.Fraction(
-                8.0,
-                "Maximum height for clef glyph");
+        final double maxGlyphHeight;
 
-        final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
-                0.3,
-                "Minimum weight for clef glyph");
+        final int minGlyphWeight;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Parameters (Scale scale)
+        {
+            maxClefEnd = scale.toPixels(constants.maxClefEnd);
+            beltMargin = scale.toPixels(constants.beltMargin);
+            xCoreMargin = scale.toPixels(constants.xCoreMargin);
+            yCoreMargin = scale.toPixels(constants.yCoreMargin);
+            minPartWeight = scale.toPixels(constants.minPartWeight);
+            maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
+            maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
+            minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
+        }
     }
 
-    //-----------//
-    // MyAdapter //
-    //-----------//
+    //-------------//
+    // ClefAdapter //
+    //-------------//
     /**
-     * Handles the integration between glyph clustering class and key-sig environment.
+     * Handles the integration between glyph clustering class and clef environment.
      * <p>
      * For each clef kind, we keep the best result found if any.
      */
-    private class MyAdapter
+    private class ClefAdapter
             implements GlyphCluster.Adapter
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -407,7 +456,7 @@ public class ClefBuilder
         private int trials = 0;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public MyAdapter (List<Glyph> parts)
+        public ClefAdapter (List<Glyph> parts)
         {
             graph = Glyphs.buildLinks(parts, params.maxPartGap);
         }
@@ -467,40 +516,44 @@ public class ClefBuilder
         }
     }
 
-    //------------//
-    // Parameters //
-    //------------//
-    private static class Parameters
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final int maxClefEnd;
+        final Scale.Fraction maxClefEnd = new Scale.Fraction(
+                4.5,
+                "Maximum x distance from measure start to end of clef");
 
-        final int beltMargin;
+        final Scale.Fraction beltMargin = new Scale.Fraction(
+                0.15,
+                "White margin within raw rectangle");
 
-        final int xCoreMargin;
+        final Scale.Fraction xCoreMargin = new Scale.Fraction(
+                0.4,
+                "Horizontal margin around core rectangle");
 
-        final int yCoreMargin;
+        final Scale.Fraction yCoreMargin = new Scale.Fraction(
+                0.5,
+                "Vertical margin around core rectangle");
 
-        final int minPartWeight;
+        final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(
+                0.01,
+                "Minimum weight for a glyph part");
 
-        final double maxPartGap;
+        final Scale.Fraction maxPartGap = new Scale.Fraction(
+                1.0,
+                "Maximum distance between two parts of a single clef symbol");
 
-        final double maxGlyphHeight;
+        final Scale.Fraction maxGlyphHeight = new Scale.Fraction(
+                8.0,
+                "Maximum height for clef glyph");
 
-        final int minGlyphWeight;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
-        {
-            maxClefEnd = scale.toPixels(constants.maxClefEnd);
-            beltMargin = scale.toPixels(constants.beltMargin);
-            xCoreMargin = scale.toPixels(constants.xCoreMargin);
-            yCoreMargin = scale.toPixels(constants.yCoreMargin);
-            minPartWeight = scale.toPixels(constants.minPartWeight);
-            maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
-            maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
-            minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
-        }
+        final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
+                0.3,
+                "Minimum weight for clef glyph");
     }
 }

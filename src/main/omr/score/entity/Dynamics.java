@@ -48,29 +48,29 @@ public class Dynamics
     private static final Map<Shape, String> sigs = new HashMap<Shape, String>();
 
     static {
-        // Additional characters : m, r, s & z
-        sigs.put(Shape.DYNAMICS_CHAR_M, "m");
-        sigs.put(Shape.DYNAMICS_CHAR_R, "r");
-        sigs.put(Shape.DYNAMICS_CHAR_S, "s");
-        sigs.put(Shape.DYNAMICS_CHAR_Z, "z");
+//        // Additional characters : m, r, s & z
+//        sigs.put(Shape.DYNAMICS_CHAR_M, "m");
+//        sigs.put(Shape.DYNAMICS_CHAR_R, "r");
+//        sigs.put(Shape.DYNAMICS_CHAR_S, "s");
+//        sigs.put(Shape.DYNAMICS_CHAR_Z, "z");
         //
         // True dynamics symbols
         sigs.put(Shape.DYNAMICS_F, "f");
         sigs.put(Shape.DYNAMICS_FF, "ff");
-        sigs.put(Shape.DYNAMICS_FFF, "fff");
+//        sigs.put(Shape.DYNAMICS_FFF, "fff");
         sigs.put(Shape.DYNAMICS_FP, "fp");
-        sigs.put(Shape.DYNAMICS_FZ, "fz");
+//        sigs.put(Shape.DYNAMICS_FZ, "fz");
         sigs.put(Shape.DYNAMICS_MF, "mf");
         sigs.put(Shape.DYNAMICS_MP, "mp");
         sigs.put(Shape.DYNAMICS_P, "p");
         sigs.put(Shape.DYNAMICS_PP, "pp");
-        sigs.put(Shape.DYNAMICS_PPP, "ppp");
-        sigs.put(Shape.DYNAMICS_RF, "rf");
-        sigs.put(Shape.DYNAMICS_RFZ, "rfz");
-        sigs.put(Shape.DYNAMICS_SF, "sf");
-        sigs.put(Shape.DYNAMICS_SFFZ, "sffz");
-        sigs.put(Shape.DYNAMICS_SFP, "sfp");
-        sigs.put(Shape.DYNAMICS_SFPP, "sfpp");
+//        sigs.put(Shape.DYNAMICS_PPP, "ppp");
+//        sigs.put(Shape.DYNAMICS_RF, "rf");
+//        sigs.put(Shape.DYNAMICS_RFZ, "rfz");
+//        sigs.put(Shape.DYNAMICS_SF, "sf");
+//        sigs.put(Shape.DYNAMICS_SFFZ, "sffz");
+//        sigs.put(Shape.DYNAMICS_SFP, "sfp");
+//        sigs.put(Shape.DYNAMICS_SFPP, "sfpp");
         sigs.put(Shape.DYNAMICS_SFZ, "sfz");
     }
 
@@ -80,20 +80,20 @@ public class Dynamics
     static {
         shapes.put("f", Shape.DYNAMICS_F);
         shapes.put("ff", Shape.DYNAMICS_FF);
-        shapes.put("fff", Shape.DYNAMICS_FFF);
+//        shapes.put("fff", Shape.DYNAMICS_FFF);
         shapes.put("fp", Shape.DYNAMICS_FP);
-        shapes.put("fz", Shape.DYNAMICS_FZ);
+//        shapes.put("fz", Shape.DYNAMICS_FZ);
         shapes.put("mf", Shape.DYNAMICS_MF);
         shapes.put("mp", Shape.DYNAMICS_MP);
         shapes.put("p", Shape.DYNAMICS_P);
         shapes.put("pp", Shape.DYNAMICS_PP);
-        shapes.put("ppp", Shape.DYNAMICS_PPP);
-        shapes.put("rf", Shape.DYNAMICS_RF);
-        shapes.put("rfz", Shape.DYNAMICS_RFZ);
-        shapes.put("sf", Shape.DYNAMICS_SF);
-        shapes.put("sffz", Shape.DYNAMICS_SFFZ);
-        shapes.put("sfp", Shape.DYNAMICS_SFP);
-        shapes.put("sfpp", Shape.DYNAMICS_SFPP);
+//        shapes.put("ppp", Shape.DYNAMICS_PPP);
+//        shapes.put("rf", Shape.DYNAMICS_RF);
+//        shapes.put("rfz", Shape.DYNAMICS_RFZ);
+//        shapes.put("sf", Shape.DYNAMICS_SF);
+//        shapes.put("sffz", Shape.DYNAMICS_SFFZ);
+//        shapes.put("sfp", Shape.DYNAMICS_SFP);
+//        shapes.put("sfpp", Shape.DYNAMICS_SFPP);
         shapes.put("sfz", Shape.DYNAMICS_SFZ);
     }
 
@@ -101,7 +101,7 @@ public class Dynamics
     private static final Map<Shape, Integer> sounds = new HashMap<Shape, Integer>();
 
     static {
-        sounds.put(Shape.DYNAMICS_FFF, 144);
+//        sounds.put(Shape.DYNAMICS_FFF, 144);
         sounds.put(Shape.DYNAMICS_FF, 122);
         sounds.put(Shape.DYNAMICS_F, 100);
         sounds.put(Shape.DYNAMICS_MF, 89);
@@ -111,7 +111,7 @@ public class Dynamics
         sounds.put(Shape.DYNAMICS_MP, 67);
         sounds.put(Shape.DYNAMICS_P, 56);
         sounds.put(Shape.DYNAMICS_PP, 45);
-        sounds.put(Shape.DYNAMICS_PPP, 34);
+//        sounds.put(Shape.DYNAMICS_PPP, 34);
 
         //        sounds.put(Shape.DYNAMICS_FP, "fp");
         //        sounds.put(Shape.DYNAMICS_FZ, "fz");
@@ -136,9 +136,9 @@ public class Dynamics
      * @param chord   the chord related to the mark
      * @param glyph   the underlying glyph
      */
-    public Dynamics (Measure measure,
+    public Dynamics (OldMeasure measure,
                      Point point,
-                     Chord chord,
+                     OldChord chord,
                      Glyph glyph)
     {
         super(measure, true, point, chord, glyph);
@@ -174,7 +174,7 @@ public class Dynamics
      * @param point   location for the mark
      */
     public static void populate (Glyph glyph,
-                                 Measure measure,
+                                 OldMeasure measure,
                                  Point point)
     {
         if (glyph.isVip()) {

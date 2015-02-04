@@ -40,10 +40,10 @@ public class FortePattern
     private static final Logger logger = LoggerFactory.getLogger(FortePattern.class);
 
     /** Pre-forte shapes */
-    public static final EnumSet<Shape> forteNeighbors = EnumSet.of(
-            Shape.DYNAMICS_CHAR_M,
-            Shape.DYNAMICS_CHAR_R,
-            Shape.DYNAMICS_CHAR_S);
+//    public static final EnumSet<Shape> forteNeighbors = EnumSet.of(
+//            Shape.DYNAMICS_CHAR_M,
+//            Shape.DYNAMICS_CHAR_R,
+//            Shape.DYNAMICS_CHAR_S);
 
     //~ Constructors -------------------------------------------------------------------------------
     //--------------//
@@ -68,20 +68,20 @@ public class FortePattern
     {
         int nb = 0;
 
-        for (Glyph forte : system.getGlyphs()) {
-            // Focus on forte shaped glyphs
-            if (forte.getShape() == Shape.DYNAMICS_F) {
-                Glyph compound = system.buildCompound(
-                        forte,
-                        false,
-                        system.getGlyphs(),
-                        new ForteAdapter(system, Grades.forteMinGrade, forteNeighbors));
-
-                if (compound != null) {
-                    nb++;
-                }
-            }
-        }
+//        for (Glyph forte : system.getGlyphs()) {
+//            // Focus on forte shaped glyphs
+//            if (forte.getShape() == Shape.DYNAMICS_F) {
+//                Glyph compound = system.buildCompound(
+//                        forte,
+//                        false,
+//                        system.getGlyphs(),
+//                        new ForteAdapter(system, Grades.forteMinGrade, forteNeighbors));
+//
+//                if (compound != null) {
+//                    nb++;
+//                }
+//            }
+//        }
 
         return nb;
     }

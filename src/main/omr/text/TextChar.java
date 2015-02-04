@@ -38,4 +38,11 @@ public class TextChar
     {
         super(bounds, value);
     }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    @Override
+    public void setValue (String value)
+    {
+        super.setValue(value);
+    }
 }

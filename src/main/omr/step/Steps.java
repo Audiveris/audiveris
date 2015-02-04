@@ -12,16 +12,12 @@
 package omr.step;
 
 import omr.plugin.Plugin;
-import omr.plugin.PluginsManager;
-
-import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
+import omr.plugin.PluginManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -33,7 +29,7 @@ import java.util.TreeSet;
 /**
  * Class {@code Steps} handles the (ordered) set of all defined steps
  * <p>
- * <img src="doc-files/Activities.jpg" />
+ * <img src="doc-files/Activities.png" />
  *
  * @author Hervé Bitteur
  */
@@ -44,6 +40,7 @@ public class Steps
     private static final Logger logger = LoggerFactory.getLogger(Steps.class);
 
     // Mandatory step names
+    // --------------------
     public static final String LOAD = "LOAD";
 
     public static final String BINARY = "BINARY";
@@ -52,7 +49,7 @@ public class Steps
 
     public static final String GRID = "GRID";
 
-    public static final String DMZ = "DMZ";
+    public static final String HEADERS = "HEADERS";
 
     public static final String STEM_SEEDS = "STEM_SEEDS";
 
@@ -60,7 +57,7 @@ public class Steps
 
     public static final String LEDGERS = "LEDGERS";
 
-    public static final String NOTES = "NOTES";
+    public static final String HEADS = "HEADS";
 
     public static final String STEMS = "STEMS";
 
@@ -68,24 +65,26 @@ public class Steps
 
     public static final String CUE_BEAMS = "CUE_BEAMS";
 
+    public static final String TEXTS = "TEXTS";
+
     public static final String CURVES = "CURVES";
 
-    public static final String TEXTS = "TEXTS";
+    public static final String CHORDS = "CHORDS";
 
     public static final String SYMBOLS = "SYMBOLS";
 
-    public static final String SYMBOL_REDUCTION = "SYMBOL_REDUCTION";
-
-    //-- TODO: Current end of mandatory steps --
-    public static final String PARTS = "PARTS";
-
     public static final String MEASURES = "MEASURES";
 
-    public static final String PAGES = "PAGES";
+    public static final String RHYTHM = "RHYTHM";
+
+    public static final String SYMBOL_REDUCTION = "SYMBOL_REDUCTION";
+
+    public static final String PAGE = "PAGE";
 
     public static final String SCORE = "SCORE";
 
     // Optional step names
+    // -------------------
     public static final String DELTA = "DELTA";
 
     public static final String PRINT = "PRINT";
@@ -94,66 +93,62 @@ public class Steps
 
     public static final String EXPORT = "EXPORT";
 
-    public static final String EXPORT_COMPRESSED = "EXPORT_COMPRESSED";
+    public static final String EXPORT_SHEET = "EXPORT_SHEET";
 
     public static final String PLUGIN = "PLUGIN";
 
     public static final String TEST = "TEST";
 
-    /** Ordered sequence of steps */
+    /** Ordered sequence of steps. */
     private static final List<Step> steps = new ArrayList<Step>();
 
-    /** Dummy step placeholder. */
-    private static final Step NO_STEP = new NoStep();
-
-    /** Map of defined steps */
+    /** Map (Name --> Step) of steps. */
     private static final Map<String, Step> stepMap = new HashMap<String, Step>();
 
     static {
-        // Mandatory steps in proper order
+        /** This is where the sequence of steps is actually defined. */
+
+        // 1/ Mandatory steps in proper order
+        // ----------------------------------
+        addStep(new LoadStep()); // Sheet (gray) picture
+        addStep(new BinaryStep()); // Binarized image
+        addStep(new ScaleStep()); // Sheet scale (line thickness, interline, beam thickness)
+        addStep(new GridStep()); // Staff lines, bar-lines, systems & parts
+        addStep(new HeadersStep()); // Clef, Key & Time signature in system headers
+        addStep(new StemSeedsStep()); // Vertical seeds for stems
+        addStep(new BeamsStep()); // Beams detection
+        addStep(new LedgersStep()); // Ledgers detection
+        addStep(new HeadsStep()); // Note heads detection
+        addStep(new StemsStep()); // Stems connected to heads and beams
+        addStep(new ReductionStep()); // Reduction of conflicting interpretations
+        addStep(new CueBeamsStep()); // Cue beams detection
+        addStep(new TextsStep()); // OCR for textual items
+        addStep(new CurvesStep()); // Slurs, wedges, endings
+        addStep(new ChordsStep()); // Head-based chords (including mirror heads & stems)
+        addStep(new SymbolsStep()); // Rests, dots, fermata, etc. Rest-based chords.
+        addStep(new MeasuresStep()); // Raw measures from grouped bar-lines
+        addStep(new RhythmStep()); // Tuplets, slots, time sigs inference, measure adjustments
+        addStep(new SymbolReductionStep()); // Final interpretations filtering
+        addStep(new PageStep()); // Connections between systems in page (parts, slurs, voices)
+        addStep(new ScoreStep()); // Connections between pages in score (parts, slurs, voices)
+
+        // 2/ Optional steps, in any order
         // -------------------------------
-        addStep(new LoadStep());
-        addStep(new BinaryStep());
-        addStep(new ScaleStep());
-        addStep(new GridStep());
-        addStep(new PartsStep());
-        addStep(new MeasuresStep());
-        addStep(new DmzStep());
-        addStep(new StemSeedsStep());
-        addStep(new BeamsStep());
-        addStep(new LedgersStep());
-        addStep(new NotesStep());
-        addStep(new StemsStep());
-        addStep(new ReductionStep());
-        addStep(new CueBeamsStep());
-        addStep(new CurvesStep());
-        addStep(new SymbolsStep());
-        addStep(new SymbolReductionStep());
-
-        //        addStep(new TextsStep());
-        ///addNoStep(SYMBOLS);
-        //        addStep(new PagesStep());
-        ///addNoStep(SCORE);
-        addStep(new ScoreStep());
-
-        // Optional steps, in whatever order
-        // ---------------------------------
         addStep(new DeltaStep());
         addStep(new PrintStep());
-        ///addStep(new PageExportStep());
+        addStep(new ExportSheetStep());
         addStep(new ExportStep());
-        addStep(new ExportCompressedStep());
         addStep(new TestStep());
 
         // Plugin step depends on default plugin
-        Plugin plugin = PluginsManager.getInstance().getDefaultPlugin();
+        Plugin plugin = PluginManager.getInstance().getDefaultPlugin();
 
         if (plugin != null) {
             addStep(new PluginStep(plugin));
         }
     }
 
-    /** Compare steps WRT their position in the sequence of defined steps */
+    /** Compare steps according to their position in the sequence of defined steps. */
     public static final Comparator<Step> comparator = new Comparator<Step>()
     {
         @Override
@@ -165,8 +160,11 @@ public class Steps
     };
 
     //--------------------------------------------------------------------------
-    /** First step */
+    /** First step. */
     public static final Step FIRST_STEP = steps.get(0);
+
+    /** Last step. */
+    public static final Step LAST_STEP = valueOf(SCORE);
 
     //~ Constructors -------------------------------------------------------------------------------
     //-------//
@@ -181,11 +179,11 @@ public class Steps
     // compare //
     //---------//
     /**
-     * Compare two steps wrt their position in steps sequence
+     * Compare two steps according to their position in steps sequence
      *
      * @param left  one step
      * @param right other step
-     * @return -1,0,+1
+     * @return -1, 0, +1
      */
     public static int compare (Step left,
                                Step right)
@@ -232,7 +230,7 @@ public class Steps
     // next //
     //------//
     /**
-     * Report the step right after the provided one
+     * Report the step just after the provided one
      *
      * @return the following step, or null if none
      */
@@ -257,7 +255,7 @@ public class Steps
     // previous //
     //----------//
     /**
-     * Report the step right before the provided one
+     * Report the step just before the provided one
      *
      * @return the preceding step, or null if none
      */
@@ -280,20 +278,20 @@ public class Steps
     // range //
     //-------//
     /**
-     * Report the range of steps from 'left' to 'right' inclusive
+     * Report the range of steps from 'first' to 'last' inclusive
      *
-     * @param left  the first step of the range
-     * @param right the last step of the range
-     * @return the step sequence (which is empty if left > right)
+     * @param first the first step of the range
+     * @param last  the last step of the range
+     * @return the step sequence (which is empty if first > last)
      */
-    static SortedSet<Step> range (Step left,
-                                  Step right)
+    static SortedSet<Step> range (Step first,
+                                  Step last)
     {
         List<Step> stepList = new ArrayList<Step>();
         boolean started = false;
 
         for (Step step : steps) {
-            if (step == left) {
+            if (step == first) {
                 started = true;
             }
 
@@ -301,7 +299,7 @@ public class Steps
                 stepList.add(step);
             }
 
-            if (step == right) {
+            if (step == last) {
                 break;
             }
         }
@@ -310,14 +308,6 @@ public class Steps
         sorted.addAll(stepList);
 
         return sorted;
-    }
-
-    //-----------//
-    // addNoStep //
-    //-----------//
-    private static void addNoStep (String name)
-    {
-        stepMap.put(name, NO_STEP);
     }
 
     //---------//
@@ -385,29 +375,6 @@ public class Steps
         protected Step decode (java.lang.String str)
         {
             return valueOf(str);
-        }
-    }
-
-    //--------//
-    // NoStep //
-    //--------//
-    private static class NoStep
-            extends AbstractStep
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public NoStep ()
-        {
-            super(null, null, null, null, null);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected void doit (Collection<SystemInfo> systems,
-                             Sheet sheet)
-                throws StepException
-        {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }

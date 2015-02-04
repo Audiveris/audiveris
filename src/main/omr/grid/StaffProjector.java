@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.sheet.Staff;
 import omr.constant.ConstantSet;
 
 import omr.math.AreaUtil;
@@ -22,12 +23,14 @@ import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
-import omr.sig.BarlineInter;
+import omr.sig.inter.BarlineInter;
 import omr.sig.GradeImpacts;
-import omr.sig.Inter;
+import omr.sig.inter.Inter;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 
 import ij.process.ByteProcessor;
@@ -117,7 +120,7 @@ public class StaffProjector
     private final Parameters params;
 
     /** Staff to analyze. */
-    private final StaffInfo staff;
+    private final Staff staff;
 
     /** Pixel source. */
     private final ByteProcessor pixelFilter;
@@ -143,7 +146,7 @@ public class StaffProjector
      * @param staff staff to analyze
      */
     public StaffProjector (Sheet sheet,
-                           StaffInfo staff)
+                           Staff staff)
     {
         this.sheet = sheet;
         this.staff = staff;
@@ -204,7 +207,7 @@ public class StaffProjector
     /**
      * @return the staff
      */
-    public StaffInfo getStaff ()
+    public Staff getStaff ()
     {
         return staff;
     }

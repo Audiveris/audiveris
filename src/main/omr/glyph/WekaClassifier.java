@@ -13,6 +13,9 @@ package omr.glyph;
 
 import omr.WellKnowns;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.facets.Glyph;
 
 import omr.util.StopWatch;
@@ -48,6 +51,8 @@ public class WekaClassifier
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(WekaClassifier.class);
 
     /** The singleton. */
@@ -73,7 +78,10 @@ public class WekaClassifier
         classifier = new weka.classifiers.bayes.NaiveBayes();
         ///classifier = new weka.classifiers.trees.J48();
         loadData();
-        watch.print();
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
 
         ///dump();
     }
@@ -246,6 +254,7 @@ public class WekaClassifier
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //    //------------------------//
     //    // MyNaiveBayesUpdateable //
     //    //------------------------//
@@ -383,4 +392,16 @@ public class WekaClassifier
     //            return probs;
     //        }
     //    }
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+    }
 }

@@ -25,11 +25,10 @@ import omr.image.jai.JaiLoader;
 
 import omr.log.LogPane;
 
-import omr.plugin.PluginsManager;
+import omr.plugin.PluginManager;
 
 import omr.score.PartwiseBuilder;
-import omr.score.Score;
-import omr.score.ScoresManager;
+import omr.sheet.BookManager;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
@@ -79,6 +78,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
+import omr.sheet.Book;
 
 /**
  * Class {@code MainGui} is the Java User Interface, the main class for displaying a
@@ -107,7 +107,7 @@ public class MainGui
     /** The related concrete frame. */
     private JFrame frame;
 
-    /** Bottom pane split betwen the logPane and the errorsPane. */
+    /** Bottom pane split between the logPane and the errorsPane. */
     private JSplitPane bottomPane;
 
     /** Log pane, which displays logging info. */
@@ -370,9 +370,9 @@ public class MainGui
                             final StringBuilder sb = new StringBuilder();
 
                             if (sheet != null) {
-                                Score score = sheet.getScore();
+                                Book book = sheet.getBook();
                                 // Frame title tells score name
-                                sb.append(score.getImageFile().getName());
+                                sb.append(book.getRadix());
                             }
 
                             // Update frame title
@@ -523,7 +523,7 @@ public class MainGui
         logger.debug("MainGui. 3/ready");
 
         // Set exit listener
-        addExitListener(ScoresManager.getInstance().getExitListener());
+        addExitListener(BookManager.getInstance().getExitListener());
 
         // Weakly listen to GUI Actions parameters
         PropertyChangeListener weak = new WeakPropertyChangeListener(this);
@@ -615,15 +615,15 @@ public class MainGui
          * | | sheetController . . . . . . . . . . . .| . . . . . . . . ||
          * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
          * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * |v| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * |e| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * |r| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * |t| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * |S| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * |p| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * |l| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+         * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+         * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+         * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+         * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+         * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+         * |m| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+         * |a| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
          * |i| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * |t| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+         * |n| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
          * |P+=====================+==================+ . . . . . . . . ||
          * |a| logPane . . . . . . | errors . . . . . | . . . . . . . . ||
          * |n| . . . . . . . . . . |. . . . . . . . . | . . . . . . . . ||
@@ -646,7 +646,7 @@ public class MainGui
         // mainPane =  sheetsController / bottomPane
         mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sheetsController.getComponent(), null);
         mainPane.setBorder(null);
-        mainPane.setDividerSize(1);
+        mainPane.setOneTouchExpandable(true);
         mainPane.setResizeWeight(0.9d); // Give bulk space to upper part
 
         // horiSplitPane = mainPane | boards
@@ -702,7 +702,7 @@ public class MainGui
         stepMenu = new StepMenu(new SeparableMenu());
 
         // Specific plugin menu
-        JMenu         pluginMenu = PluginsManager.getInstance().getMenu(null);
+        JMenu         pluginMenu = PluginManager.getInstance().getMenu(null);
 
         // For some specific top-level menus
         ActionManager mgr = ActionManager.getInstance();

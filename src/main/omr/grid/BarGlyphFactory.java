@@ -142,7 +142,7 @@ public class BarGlyphFactory
 
             return null;
         } finally {
-            if (constants.printWatch.getValue()) {
+            if (constants.printWatch.isSet()) {
                 watch.print();
             }
         }

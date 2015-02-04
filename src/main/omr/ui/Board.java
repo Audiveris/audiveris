@@ -35,30 +35,27 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
- * Class {@code Board} defines the common properties of any user board
- * such as PixelBoard, SectionBoard, and the like.
+ * Class {@code Board} defines the common properties of any user board such as
+ * PixelBoard, SectionBoard, and the like.
  * <p>
- * Each board has a standard header composed of a title, a horizontal
- * separator and perhaps a dump button.
- * The board body is handled by the subclass.</p>
+ * Each board has a standard header composed of a title, a horizontal separator and optionally a
+ * dump button. The board body is handled by the subclass.</p>
  * <p>
- * Any board can be (de)selected in its containing {@link BoardsPane}.
- * This can be done programmatically using {@link #setSelected(boolean)}
- * and manually (via a right-click in the BoardsPane).</p>
+ * Any board can be (de)selected in its containing {@link BoardsPane}. This can be done
+ * programmatically using {@link #setSelected(boolean)} and manually (via a right-click in the
+ * BoardsPane).</p>
  * <p>
- * Only selected boards can be seen in the BoardsPane display. A selected
- * board can be made currently (in)visible, programmatically using
- * {@link #setVisible(boolean)}.
+ * Only selected boards can be seen in the BoardsPane display. A selected board can be made
+ * currently (in)visible programmatically using {@link #setVisible(boolean)}.
  * Typically, {@link omr.check.CheckBoard}'s are visible only when they carry
  * glyph information.</p>
  * <p>
- * By default, any board can have a related SelectionService, used for
- * subscribe (input) and publish (output). When {@link #connect} is called, the
- * board instance is subscribed to its SelectionService for a specific
- * collection of event classes. Similarly, {@link #disconnect} unsubscribes the
- * Board instance from the same event classes.</p>
+ * By default, any board can have a related SelectionService, used for subscribe (input) and publish
+ * (output). When {@link #connect} is called, the board instance is subscribed to its
+ * SelectionService for a specific collection of event classes. Similarly, {@link #disconnect}
+ * un-subscribes the Board instance from the same event classes.</p>
  * <p>
- * This is still an abstract class, since the onEvent() method must be
+ * This {@code Board} class is still an abstract class, since the onEvent() method must be
  * provided by every subclass.</p>
  *
  * @author Hervé Bitteur
@@ -73,6 +70,8 @@ public abstract class Board
     // Predefined boards names with preferred display positions
     public static final Desc PIXEL = new Desc("Pixel", 100);
 
+    public static final Desc BINARIZATION = new Desc("Binarization", 150);
+
     public static final Desc RUN = new Desc("Run", 200);
 
     public static final Desc SECTION = new Desc("Section", 250);
@@ -83,6 +82,8 @@ public abstract class Board
 
     public static final Desc INTER = new Desc("Inter", 550);
 
+    public static final Desc TEMPLATE = new Desc("Template", 575);
+
     public static final Desc FOCUS = new Desc("Focus", 600);
 
     public static final Desc EVAL = new Desc("Eval", 700);
@@ -92,39 +93,36 @@ public abstract class Board
     public static final Desc CHECK = new Desc("Check", 900);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The board instance name */
+    /** The board instance name. */
     private final String name;
 
-    /** The hosting BoardsPane, if any */
+    /** The hosting BoardsPane, if any. */
     private BoardsPane parent;
 
-    /** The board header */
+    /** The board header. */
     private final Header header;
 
-    /** The body part of the component */
+    /** The body part of the component. */
     private final Panel body = new Panel();
 
-    /** The swing component of the board instance */
+    /** The swing component of the board instance. */
     private final Panel component = new Panel();
 
-    /** The event service this board interacts with */
+    /** The event service this board interacts with. */
     private final SelectionService selectionService;
 
-    /** The collection of event classes to be observed */
+    /** The collection of event classes to be observed. */
     private final Class<?>[] eventsRead;
 
-    /** The preferred position in BoardsPane sequence */
+    /** The preferred position in BoardsPane sequence. */
     private final int position;
 
-    /** Board is selected? */
+    /** Board is selected?. */
     private boolean selected;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------//
-    // Board //
-    //-------//
     /**
-     * Create a board.
+     * Create a board from a pre-defined descriptor (name + position).
      *
      * @param desc             the board descriptor
      * @param selectionService the related selection service for input & output
@@ -141,11 +139,8 @@ public abstract class Board
         this(desc.name, desc.position, selectionService, eventList, withDump, selected);
     }
 
-    //-------//
-    // Board //
-    //-------//
     /**
-     * Create a board.
+     * Create a board, with (dynamic) name and position.
      *
      * @param name             a name assigned to the board
      * @param position         the preferred position within BoardsPane display
@@ -397,10 +392,10 @@ public abstract class Board
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Default name for this board */
+        /** Default name for this board. */
         public final String name;
 
-        /** Preferred position within its containing BoardsPane */
+        /** Preferred position within its containing BoardsPane. */
         public final int position;
 
         //~ Constructors ---------------------------------------------------------------------------

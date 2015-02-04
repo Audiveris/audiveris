@@ -28,7 +28,7 @@ public abstract class BasicImpacts
 
     private final double[] impacts;
 
-    private double grade = -1;
+    protected double grade = -1;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -51,6 +51,14 @@ public abstract class BasicImpacts
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    @Override
+    public String getDump ()
+    {
+        final StringBuilder sb = new StringBuilder();
+
+        return sb.toString();
+    }
+
     @Override
     public double getGrade ()
     {
@@ -85,8 +93,8 @@ public abstract class BasicImpacts
         return weights[index];
     }
 
-    protected void setImpact (int index,
-                              double impact)
+    public void setImpact (int index,
+                           double impact)
     {
         impacts[index] = Grades.clamp(impact);
     }

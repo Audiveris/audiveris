@@ -13,17 +13,15 @@ package omr.step;
 
 import omr.WellKnowns;
 
-import omr.score.Score;
 import omr.score.entity.Page;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.sig.BracketInter;
-import omr.sig.Inter;
+import omr.sig.inter.BracketInter;
+import omr.sig.inter.Inter;
 import omr.sig.SIGraph;
 
-import omr.util.TreeNode;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -34,6 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import omr.sheet.Book;
 
 /**
  * Class {@code TestStep} is an attempt to add a pseudo step for specific tests.
@@ -64,11 +63,9 @@ public class TestStep
                          Sheet aSheet)
             throws StepException
     {
-        final Score score = aSheet.getScore();
+        final Book book = aSheet.getBook();
 
-        for (TreeNode pNode : score.getPages()) {
-            Page page = (Page) pNode;
-            Sheet sheet = page.getSheet();
+        for (Sheet sheet : book.getSheets()) {
             boolean sheetStarted = false;
 
             for (SystemInfo system : sheet.getSystems()) {

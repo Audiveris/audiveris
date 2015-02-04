@@ -26,6 +26,7 @@ import omr.run.Orientation;
 import omr.run.Run;
 
 import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
 import omr.util.StopWatch;
@@ -34,10 +35,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.PathIterator;
 import static java.awt.geom.PathIterator.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -54,7 +57,7 @@ public class LagWeaver
 
     private static final Logger logger = LoggerFactory.getLogger(LagWeaver.class);
 
-    /** Table dx/dy -> Heading */
+    /** Table dx/dy -> Heading. */
     private static final Heading[][] headings = {
         {null, Heading.NORTH, null},
         {Heading.WEST, null, Heading.EAST},
@@ -143,11 +146,14 @@ public class LagWeaver
         watch.start("purge hLag");
 
         List<Section> staffLinesSections = removeStaffLineSections(hLag);
-
         logger.debug(
                 "{}StaffLine sections removed: {}",
                 sheet.getLogPrefix(),
                 staffLinesSections.size());
+
+        // Populate systems
+        watch.start("populate systems");
+        sheet.getSystemManager().populateSystems();
 
         watch.start("Hori <-> Hori");
         horiWithHori();
@@ -197,16 +203,30 @@ public class LagWeaver
     private void checkPointsAbove (Section lSect)
     {
         boolean added = false;
+        Section cachedSection = null;
+
+        // Determine relevant systems
+        Rectangle bounds = lSect.getBounds();
+        bounds.grow(0, 1);
+
+        List<SystemInfo> relevants = sheet.getSystemManager().containingSystems(bounds, null);
 
         for (Point pt : pointsAbove) {
-            Run run = hLag.getRunAt(pt.x, pt.y);
+            if ((hLag.getRunAt(pt.x, pt.y) == null)
+                || ((cachedSection != null) && cachedSection.contains(pt.x, pt.y))) {
+                continue;
+            }
 
-            if (run != null) {
-                Section hSect = run.getSection();
+            for (SystemInfo system : relevants) {
+                Collection<Section> hSections = system.getHorizontalSections();
+                Section hSect = Sections.containingSection(pt.x, pt.y, hSections);
+                cachedSection = hSect;
 
                 if (hSect != null) {
                     hSect.addTarget(lSect);
                     added = true;
+
+                    break;
                 }
             }
         }
@@ -226,17 +246,31 @@ public class LagWeaver
     private void checkPointsAside (Section vSect)
     {
         boolean added = false;
+        Section cachedSection = null;
+
+        // Determine relevant systems
+        Rectangle bounds = vSect.getBounds();
+        bounds.grow(1, 0);
+
+        List<SystemInfo> relevants = sheet.getSystemManager().containingSystems(bounds, null);
 
         for (Point pt : pointsAside) {
-            Run run = hLag.getRunAt(pt.x, pt.y);
+            if ((hLag.getRunAt(pt.x, pt.y) == null)
+                || ((cachedSection != null) && cachedSection.contains(pt.x, pt.y))) {
+                continue;
+            }
 
-            if (run != null) {
-                Section hSect = run.getSection();
+            for (SystemInfo system : relevants) {
+                Collection<Section> hSections = system.getHorizontalSections();
+                Section hSect = Sections.containingSection(pt.x, pt.y, hSections);
+                cachedSection = hSect;
 
                 if (hSect != null) {
                     vSect.addOppositeSection(hSect);
                     hSect.addOppositeSection(vSect);
                     added = true;
+
+                    break;
                 }
             }
         }
@@ -256,16 +290,30 @@ public class LagWeaver
     private void checkPointsBelow (Section lSect)
     {
         boolean added = false;
+        Section cachedSection = null;
+
+        // Determine relevant systems
+        Rectangle bounds = lSect.getBounds();
+        bounds.grow(0, 1);
+
+        List<SystemInfo> relevants = sheet.getSystemManager().containingSystems(bounds, null);
 
         for (Point pt : pointsBelow) {
-            Run run = hLag.getRunAt(pt.x, pt.y);
+            if ((hLag.getRunAt(pt.x, pt.y) == null)
+                || ((cachedSection != null) && cachedSection.contains(pt.x, pt.y))) {
+                continue;
+            }
 
-            if (run != null) {
-                Section hSect = run.getSection();
+            for (SystemInfo system : relevants) {
+                Collection<Section> hSections = system.getHorizontalSections();
+                Section hSect = Sections.containingSection(pt.x, pt.y, hSections);
+                cachedSection = hSect;
 
                 if (hSect != null) {
                     lSect.addTarget(hSect);
                     added = true;
+
+                    break;
                 }
             }
         }
@@ -616,7 +664,7 @@ public class LagWeaver
     //-------------------------//
     private List<Section> removeStaffLineSections (Lag hLag)
     {
-        return hLag.purgeSections(
+        List<Section> removedSections = hLag.purgeSections(
                 new Predicate<Section>()
                 {
                     @Override
@@ -648,6 +696,14 @@ public class LagWeaver
                         }
                     }
                 });
+
+        // Remove the underlying runs from runtable
+        for (Section section : removedSections)
+        {
+
+        }
+
+        return removedSections;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

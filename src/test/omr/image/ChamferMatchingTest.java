@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class ChamferMatchingTest
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final String[] imageRows = new String[]{
         "                                    ",
@@ -83,7 +83,7 @@ public class ChamferMatchingTest
         "       XXXXXXXXX      "
     };
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of matchAll method, of class DistanceMatching.
      */
@@ -92,23 +92,18 @@ public class ChamferMatchingTest
     {
         System.out.println("match");
 
-        Template template = TemplateFactory.getInstance()
-                .getCatalog(14)
-                .getTemplate(
-                        new Template.Key(Shape.NOTEHEAD_BLACK, false));
+        Template template = TemplateFactory.getInstance().getCatalog(14)
+                .getTemplate(Shape.NOTEHEAD_BLACK);
         template.dump();
 
         ByteProcessor image = createImage(imageRows);
         TableUtil.dump("Image:", image);
 
-        DistanceTable distances = new ChamferDistance.Short().computeToFore(
-                image);
+        DistanceTable distances = new ChamferDistance.Short().computeToFore(image);
         TableUtil.dump("Distances:", distances);
 
         DistanceMatching instance = new DistanceMatching(distances);
-        List<PixelDistance> locs = instance.matchAll(
-                template,
-                Double.MAX_VALUE);
+        List<PixelDistance> locs = instance.matchAll(template, Double.MAX_VALUE);
 
         ///assertArrayEquals(expResult, result);
         printBest(locs);

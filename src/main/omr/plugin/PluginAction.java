@@ -11,8 +11,9 @@
 // </editor-fold>
 package omr.plugin;
 
-import omr.score.Score;
-import omr.score.ui.ScoreController;
+import omr.sheet.ui.BookController;
+
+import omr.sheet.Book;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,10 +62,10 @@ class PluginAction
     @Override
     public void actionPerformed (ActionEvent e)
     {
-        final Score score = ScoreController.getCurrentScore();
+        final Book book = BookController.getCurrentBook();
 
-        if (score != null) {
-            plugin.getTask(score).execute();
+        if (book != null) {
+            plugin.getTask(book).execute();
         }
     }
 }

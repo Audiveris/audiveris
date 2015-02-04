@@ -303,15 +303,6 @@ class BasicEnvironment
         }
     }
 
-    //--------------//
-    // isWithLedger //
-    //--------------//
-    @Override
-    public boolean isWithLedger ()
-    {
-        return withLedger;
-    }
-
     //------------//
     // intersects //
     //------------//
@@ -363,6 +354,15 @@ class BasicEnvironment
         return false;
     }
 
+    //--------------//
+    // isWithLedger //
+    //--------------//
+    @Override
+    public boolean isWithLedger ()
+    {
+        return withLedger;
+    }
+
     //------------------//
     // setPitchPosition //
     //------------------//
@@ -402,5 +402,47 @@ class BasicEnvironment
     public void setWithLedger (boolean withLedger)
     {
         this.withLedger = withLedger;
+    }
+
+    //---------//
+    // touches //
+    //---------//
+    @Override
+    public boolean touches (Glyph that)
+    {
+        // Very rough test
+        final Rectangle thisBox = glyph.getBounds();
+        final Rectangle thatFatBox = that.getBounds();
+        thatFatBox.grow(1, 1);
+
+        if (!thisBox.intersects(thatFatBox)) {
+            return false;
+        }
+
+        // Use only the sections of that glyph that do intersect this (enlarged) glyph box
+        thisBox.grow(1, 1);
+
+        final List<Section> thatSections = new ArrayList<Section>();
+
+        for (Section section : that.getMembers()) {
+            if (section.intersects(thisBox)) {
+                thatSections.add(section);
+            }
+        }
+
+        // More precise tests
+        for (Section section : glyph.getMembers()) {
+            if (!section.intersects(thatFatBox)) {
+                continue;
+            }
+
+            for (Section thatSection : thatSections) {
+                if (section.touches(thatSection)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

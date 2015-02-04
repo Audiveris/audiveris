@@ -8,7 +8,7 @@
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <!--            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
-            <pattern>%-5level %caller{1} - %msg%ex%n</pattern>
+            <pattern>%-5level %caller{1} - %msg%n%ex</pattern>
             <!--            <pattern>%-5level %msg%n %ex</pattern>-->
         </encoder>
     </appender>
@@ -42,6 +42,17 @@
     </root>
     
     <!-- Define DEBUG loggers here below: -->
+<!--    <logger name="omr.score.DurationRetriever" level="DEBUG"/>-->
+<!--    <logger name="omr.text.tesseract.TesseractOrder" level="DEBUG"/>-->
+<!--    <logger name="omr.image.ImageLoading" level="DEBUG"/>-->
+<!--    <logger name="omr.score.PartwiseBuilder" level="DEBUG"/>-->
+<!--    <logger name="omr.grid.LineFilamentAlignment" level="DEBUG"/>-->
+<!--    <logger name="omr.grid.StaffProjector" level="DEBUG"/>-->
+<!--    <logger name="omr.grid.BarsRetriever" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.CktBuilder" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.ClefBuilder" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.KeyBuilder" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.TimeBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.sig.SIGraph" level="DEBUG"/>-->
 <!--    <logger name="omr.step.Stepping" level="DEBUG"/>-->
 <!--    <logger name="omr.check.CheckSuite" level="DEBUG"/>-->
@@ -52,6 +63,8 @@
 <!--    <logger name="omr.sheet.HorizontalsBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.selection.SelectionService" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.picture.Ghostscript" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.ui.SheetAssembly" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.ui.SheetsController" level="DEBUG"/>-->
 <!--    <logger name="omr.step.Stepping" level="DEBUG"/>-->
 <!--    <logger name="omr.script.Script" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.picture.PictureLoader" level="DEBUG"/>-->

@@ -11,11 +11,10 @@
 // </editor-fold>
 package omr.script;
 
-import omr.score.ScoresManager;
-
+import omr.sheet.BookManager;
 import omr.sheet.Sheet;
 
-import java.io.File;
+import java.nio.file.Paths;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -37,8 +36,8 @@ public class ExportTask
     private String path;
 
     /** Should we add our signature?. */
-    @XmlAttribute(name = "inject-signature")
-    private Boolean injectSignature;
+    @XmlAttribute(name = "signed")
+    private Boolean signed;
 
     /** Should we compress the output?. */
     @XmlAttribute
@@ -51,7 +50,7 @@ public class ExportTask
     /**
      * Create a task to export the related score entities of a sheet
      *
-     * @param path       the full path of the export file
+     * @param path       the path sans extension to the export file
      * @param compressed true for a compressed output (mxl) rather than uncompressed (xml)
      */
     public ExportTask (String path,
@@ -76,19 +75,28 @@ public class ExportTask
     @Override
     public void core (Sheet sheet)
     {
-        ScoresManager.getInstance().export(
-                sheet.getScore(),
-                (path != null) ? new File(path) : null,
-                injectSignature,
+        BookManager.getInstance().export(
+                sheet.getBook(),
+                (path != null) ? Paths.get(path) : null,
+                signed,
                 compressed);
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        return " export " + (compressed ? "compressed " : "") + path + super.internalsString();
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(" export");
+
+        if (compressed) {
+            sb.append(" compressed");
+        }
+
+        sb.append(" ").append(path);
+
+        return sb.toString();
     }
 }

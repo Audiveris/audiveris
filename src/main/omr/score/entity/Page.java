@@ -11,30 +11,30 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.image.FilterDescriptor;
-
 import omr.score.Score;
 import omr.score.visitor.ScoreVisitor;
 
+import omr.sheet.Measure;
+import omr.sheet.MeasureStack;
+import omr.sheet.Part;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 
-import omr.step.StepException;
-
-import omr.util.LiveParam;
+import omr.util.Navigable;
 import omr.util.TreeNode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
-import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
  * Class {@code Page} represents a page in the score hierarchy, and corresponds to a
- * {@link Sheet} with its specific scale, skew, dimension, etc.
- * Page instances compose a {@link Score}.
+ * (part of) {@link Sheet}.
+ * <p>
+ * One or several Page instances compose a {@link Score}.
  *
  * @author Hervé Bitteur
  */
@@ -46,17 +46,15 @@ public class Page
     private static final Logger logger = LoggerFactory.getLogger(Page.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Index of page, counted from 1, in the image file. */
-    private final int index;
+    /** Containing (physical) sheet. */
+    private final Sheet sheet;
+
+    /** Containing (logical) score. */
+    @Navigable(false)
+    private final Score score;
 
     /** Page ID. */
-    private final String id;
-
-    /** Related sheet. */
-    private Sheet sheet;
-
-    /** Page global scale. */
-    private Scale scale;
+    private String id;
 
     /** ScorePart list for the page. */
     private List<ScorePart> partList;
@@ -67,11 +65,14 @@ public class Page
     /** Progression of measure id within this page. */
     private Integer deltaMeasureId;
 
-    /** Param for pixel filter. */
-    private final LiveParam<FilterDescriptor> filterContext;
+    /** Id of first system in sheet, if any. */
+    private Integer firstSystemId;
 
-    /** Param for text language. */
-    private final LiveParam<String> textContext;
+    /** Id of last system in sheet, if any. */
+    private Integer lastSystemId;
+
+    /** (Sub)list of systems, within sheet systems. */
+    private List<SystemInfo> systems;
 
     //~ Constructors -------------------------------------------------------------------------------
     //------//
@@ -80,28 +81,22 @@ public class Page
     /**
      * Creates a new Page object.
      *
-     * @param score the containing score
-     * @param index page initial index in the containing image file, counted
-     *              from 1.
+     * @param score         the containing score
+     * @param sheet         the containing sheet
+     * @param firstSystemId id of first system in sheet, if any
      */
     public Page (Score score,
-                 int index,
-                 BufferedImage image)
-            throws StepException
+                 Sheet sheet,
+                 Integer firstSystemId)
     {
-        super(score);
-        this.index = index;
+        super(null);
 
-        if (score.isMultiPage()) {
-            id = score.getRadix() + "#" + index;
-        } else {
-            id = score.getRadix();
-        }
+        this.sheet = sheet;
+        this.score = score;
+        this.firstSystemId = firstSystemId;
 
-        filterContext = new LiveParam<FilterDescriptor>(score.getFilterParam());
-        textContext = new LiveParam<String>(score.getTextParam());
-
-        sheet = new Sheet(this, image);
+        // Define id
+        computeId();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -124,9 +119,8 @@ public class Page
     {
         int count = 0;
 
-        for (TreeNode sn : getSystems()) {
-            ScoreSystem system = (ScoreSystem) sn;
-            count += system.getFirstPart().getMeasures().size();
+        for (SystemInfo system : systems) {
+            count += system.getLastRealPart().getMeasures().size();
         }
 
         measureCount = count;
@@ -143,15 +137,14 @@ public class Page
         int count = 0;
         StringBuilder sb = new StringBuilder();
 
-        for (TreeNode node : getSystems()) {
-            ScoreSystem sys = (ScoreSystem) node;
-            SystemPart part = sys.getLastPart();
+        for (SystemInfo sys : systems) {
+            Part part = sys.getLastRealPart();
 
             if (sb.length() > 0) {
                 sb.append(", ");
             }
 
-            sb.append(part.getMeasures().size()).append(" in ").append(sys.getInfo().idString());
+            sb.append(part.getMeasures().size()).append(" in ").append(sys.idString());
             count += part.getMeasures().size();
         }
 
@@ -195,11 +188,16 @@ public class Page
     }
 
     //----------------//
-    // getFilterParam //
+    // getFirstScoreSystem //
     //----------------//
-    public LiveParam<FilterDescriptor> getFilterParam ()
+    @Deprecated
+    public ScoreSystem getFirstScoreSystem ()
     {
-        return filterContext;
+        if (children.isEmpty()) {
+            return null;
+        } else {
+            return (ScoreSystem) children.get(0);
+        }
     }
 
     //----------------//
@@ -210,13 +208,21 @@ public class Page
      *
      * @return the first system
      */
-    public ScoreSystem getFirstSystem ()
+    public SystemInfo getFirstSystem ()
     {
-        if (children.isEmpty()) {
+        if (systems.isEmpty()) {
             return null;
-        } else {
-            return (ScoreSystem) children.get(0);
         }
+
+        return systems.get(0);
+    }
+
+    /**
+     * @return the firstSystemId
+     */
+    public Integer getFirstSystemId ()
+    {
+        return firstSystemId;
     }
 
     //-------//
@@ -230,15 +236,17 @@ public class Page
         return id;
     }
 
-    //----------//
-    // getIndex //
-    //----------//
-    /**
-     * @return the page index
-     */
-    public int getIndex ()
+    //---------------//
+    // getLastScoreSystem //
+    //---------------//
+    @Deprecated
+    public ScoreSystem getLastScoreSystem ()
     {
-        return index;
+        if (children.isEmpty()) {
+            return null;
+        } else {
+            return (ScoreSystem) children.get(children.size() - 1);
+        }
     }
 
     //---------------//
@@ -249,13 +257,21 @@ public class Page
      *
      * @return the last system
      */
-    public ScoreSystem getLastSystem ()
+    public SystemInfo getLastSystem ()
     {
-        if (children.isEmpty()) {
+        if (systems.isEmpty()) {
             return null;
-        } else {
-            return (ScoreSystem) children.get(children.size() - 1);
         }
+
+        return systems.get(systems.size() - 1);
+    }
+
+    /**
+     * @return the lastSystemId
+     */
+    public Integer getLastSystemId ()
+    {
+        return lastSystemId;
     }
 
     //--------------------//
@@ -269,7 +285,7 @@ public class Page
      */
     public int getMeanStaffHeight ()
     {
-        return (Score.LINE_NB - 1) * scale.getInterline();
+        return (Score.LINE_NB - 1) * getScale().getInterline();
     }
 
     //-----------------//
@@ -308,7 +324,19 @@ public class Page
      */
     public Page getPrecedingInScore ()
     {
-        return (Page) getPreviousSibling();
+        ///return (Page) getPreviousSibling();
+        Score score = getScore();
+
+        if (score != null) {
+            List<Page> pages = score.getPages();
+            int index = pages.indexOf(this);
+
+            if (index > 0) {
+                return pages.get(index - 1);
+            }
+        }
+
+        return null;
     }
 
     //----------//
@@ -322,7 +350,25 @@ public class Page
     @Override
     public Scale getScale ()
     {
-        return scale;
+        return sheet.getScale();
+    }
+
+    //----------//
+    // getScore //
+    //----------//
+    @Override
+    public Score getScore ()
+    {
+        return score;
+    }
+
+    //------------//
+    // getScoreSystems //
+    //------------//
+    @Deprecated
+    public List<TreeNode> getScoreSystems ()
+    {
+        return getChildren();
     }
 
     //----------//
@@ -338,51 +384,61 @@ public class Page
         return sheet;
     }
 
-    //---------------//
-    // getSystemById //
-    //---------------//
-    /**
-     * Report the system for which id is provided.
-     *
-     * @param id id of desired system
-     * @return the desired system
-     */
-    public ScoreSystem getSystemById (int id)
-    {
-        return (ScoreSystem) getSystems().get(id - 1);
-    }
-
     //------------//
     // getSystems //
     //------------//
     /**
-     * Report the collection of systems in that score.
+     * Report the sequence of systems in that page.
      *
-     * @return the systems
+     * @return the list of systems
      */
-    public List<TreeNode> getSystems ()
+    public List<SystemInfo> getSystems ()
     {
-        return getChildren();
+        return systems;
+    }
+
+    //----------------//
+    // numberMeasures //
+    //----------------//
+    /**
+     * Assign a very basic sequential id to each contained stack & measure.
+     */
+    public void numberMeasures ()
+    {
+        int systemOffset = 0;
+
+        for (SystemInfo system : systems) {
+            List<MeasureStack> stacks = system.getMeasureStacks();
+
+            for (int im = 0; im < stacks.size(); im++) {
+                int mid = systemOffset + im + 1;
+                MeasureStack stack = stacks.get(im);
+                stack.setIdValue(mid);
+
+                for (Measure measure : stack.getMeasures()) {
+                    measure.setIdValue(mid);
+                }
+            }
+
+            systemOffset += system.getMeasureStacks().size();
+        }
+
+        // Very temporary raw values
+        setDeltaMeasureId(systemOffset);
+        computeMeasureCount();
     }
 
     //--------------//
-    // getTextParam //
-    //--------------//
-    public LiveParam<String> getTextParam ()
-    {
-        return textContext;
-    }
-
-    //--------------//
-    // resetSystems //
+    // resetScoreSystems //
     //--------------//
     /**
      * Reset the systems collection of a score entity.
      */
-    public void resetSystems ()
+    @Deprecated
+    public void resetScoreSystems ()
     {
         // Discard systems
-        getSystems().clear();
+        getScoreSystems().clear();
 
         // Discard partlists
         if (partList != null) {
@@ -403,6 +459,30 @@ public class Page
         this.deltaMeasureId = deltaMeasureId;
     }
 
+    //------------------//
+    // setFirstSystemId //
+    //------------------//
+    /**
+     * @param firstSystemId the firstSystemId to set
+     */
+    public void setFirstSystemId (Integer firstSystemId)
+    {
+        this.firstSystemId = firstSystemId;
+        computeId();
+    }
+
+    //-----------------//
+    // setLastSystemId //
+    //-----------------//
+    /**
+     * @param lastSystemId the lastSystemId to set
+     */
+    public void setLastSystemId (Integer lastSystemId)
+    {
+        this.lastSystemId = lastSystemId;
+        computeId();
+    }
+
     //-------------//
     // setPartList //
     //-------------//
@@ -416,30 +496,21 @@ public class Page
         this.partList = partList;
     }
 
-    //----------//
-    // setScale //
-    //----------//
+    //------------//
+    // setSystems //
+    //------------//
     /**
-     * Assign proper scale for this page.
+     * Using IDs of first and last page systems if any, register the proper (sub-)list
+     * of systems.
      *
-     * @param scale the general scale for the page
+     * @param sheetSystems the sheet whole list of systems
      */
-    public void setScale (Scale scale)
+    public void setSystems (List<SystemInfo> sheetSystems)
     {
-        this.scale = scale;
-    }
-
-    //----------//
-    // setSheet //
-    //----------//
-    /**
-     * Register the name of the corresponding sheet entity.
-     *
-     * @param sheet the related sheet entity
-     */
-    public void setSheet (Sheet sheet)
-    {
-        this.sheet = sheet;
+        // Define proper indices
+        int first = (firstSystemId != null) ? (firstSystemId - 1) : 0;
+        int last = (lastSystemId != null) ? (lastSystemId - 1) : (sheetSystems.size() - 1);
+        systems = sheetSystems.subList(first, last + 1);
     }
 
     //----------//
@@ -449,5 +520,26 @@ public class Page
     public String toString ()
     {
         return "{Page " + id + "}";
+    }
+
+    //-----------//
+    // computeId //
+    //-----------//
+    /**
+     * Build the ID string for this page.
+     */
+    private void computeId ()
+    {
+        StringBuilder sb = new StringBuilder(sheet.getId());
+
+        if (firstSystemId != null) {
+            sb.append("-F").append(firstSystemId);
+        }
+
+        if (lastSystemId != null) {
+            sb.append("-L").append(lastSystemId);
+        }
+
+        id = sb.toString();
     }
 }

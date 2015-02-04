@@ -14,23 +14,20 @@ package omr.ui.symbol;
 import omr.glyph.Shape;
 
 import omr.image.Template;
-import omr.image.Template.Key;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code TemplateSymbol} defines a symbol meant only for template matching.
  * <p>
- * TODO: Symbol must depend on interline of course, PLUS line thickness and perhaps stem thickness
- * as well.
- * This implies that a set of templates will likely be defined per page (interline, line, stem).
- * Beware, ledgers are often a bit thicker than staff lines.
+ * <b>BEWARE:</b>Don't use it for simple display, use a ShapeSymbol of proper shape instead.
  *
  * @author Hervé Bitteur
  */
@@ -45,7 +42,7 @@ public class TemplateSymbol
             Template.smallRatio);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    protected final Key key;
+    protected final Shape shape;
 
     protected final boolean isSmall;
 
@@ -53,15 +50,15 @@ public class TemplateSymbol
     /**
      * Creates a new TemplateSymbol object.
      *
-     * @param key   specification key for the template
+     * @param shape shape for the template
      * @param codes the codes for MusicFont characters
      */
-    public TemplateSymbol (Key key,
+    public TemplateSymbol (Shape shape,
                            int... codes)
     {
         super(false, codes);
-        this.key = key;
-        isSmall = key.shape.isSmall();
+        this.shape = shape;
+        isSmall = shape.isSmall();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -82,21 +79,24 @@ public class TemplateSymbol
         final MyParams p = new MyParams();
         final int interline = font.getFontInterline();
 
+        final TextLayout stdLayout = layout(font);
+        final int stdWidth = (int) Math.ceil(stdLayout.getBounds().getWidth());
+
         if (isSmall) {
             p.layout = font.layout(getString(), smallAt);
-            p.stem = interline * 0.10f;
         } else {
-            p.layout = layout(font);
-            p.stem = interline * 0.15f;
+            p.layout = stdLayout;
         }
-
-        p.line = interline * 0.2f;
 
         final Rectangle2D r = p.layout.getBounds();
         final int symWidth = (int) Math.ceil(r.getWidth());
         final int symHeight = (int) Math.ceil(r.getHeight());
-        p.rect = new Rectangle(symWidth, isSmall ? interline : symHeight);
-        p.symbolRect = new Rectangle(0, (interline - symHeight) / 2, symWidth, symHeight);
+        p.rect = new Rectangle(isSmall ? stdWidth : symWidth, isSmall ? interline : symHeight);
+        p.symbolRect = new Rectangle(
+                (int) Math.rint((stdLayout.getBounds().getWidth() - symWidth) / 2),
+                (int) Math.rint((stdLayout.getBounds().getHeight() - symHeight) / 2),
+                symWidth,
+                symHeight);
 
         return p;
     }
@@ -114,36 +114,13 @@ public class TemplateSymbol
 
         // Background
         g.setColor(Color.RED);
-
-        if ((key.shape == Shape.WHOLE_NOTE_SMALL) || (key.shape == Shape.WHOLE_NOTE)) {
-            // No room for stem, use the full symbol width
-            g.fill(
-                    new Rectangle2D.Float(
-                            p.rect.x,
-                            p.rect.y + (p.line / 2),
-                            p.rect.width,
-                            p.rect.height - p.line));
-        } else {
-            // Room for stem on left and right sides of symbol
-            g.fill(
-                    new Rectangle2D.Float(
-                            p.rect.x + (p.stem / 2),
-                            p.rect.y + (p.line / 2),
-                            p.rect.width - p.stem,
-                            p.rect.height - p.line));
-        }
-
-        g.setColor(Color.BLACK);
+        g.fill(p.rect);
 
         // Naked symbol
+        g.setColor(Color.BLACK);
+
         Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         MusicFont.paint(g, p.layout, loc, AREA_CENTER);
-
-        // Middle line?
-        if (key.hasLine) {
-            loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
-            g.fill(new Rectangle2D.Float(loc.x, loc.y - (p.line / 2), p.rect.width, p.line));
-        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -155,10 +132,6 @@ public class TemplateSymbol
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Rectangle symbolRect; // Bounds for symbol inside image
-
-        float line; // Thickness of a ledger or staff line
-
-        float stem; // Thickness of a stem
+        Rectangle symbolRect; // Bounds for symbol inside template image
     }
 }

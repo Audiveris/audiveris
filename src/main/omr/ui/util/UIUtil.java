@@ -264,7 +264,7 @@ public abstract class UIUtil
     //-------------------//
     /**
      * Whatever the current scaling of a graphic context, set the stroke
-     * to theesired absolute width, and return the saved stroke for
+     * to the desired absolute width, and return the saved stroke for
      * later restore.
      *
      * @param g     the current graphics context

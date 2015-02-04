@@ -19,7 +19,7 @@ import java.util.Collection;
  *
  * @author Hervé Bitteur
  */
-public class GCD
+public abstract class GCD
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -132,6 +132,9 @@ public class GCD
     //-----//
     /**
      * Report the Least Common Multiple of n values.
+     *
+     * @param vals an array of integers
+     * @return the lcm of these integers
      */
     public static int lcm (int... vals)
     {

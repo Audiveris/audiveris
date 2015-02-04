@@ -13,8 +13,6 @@ package omr.plugin;
 
 import omr.WellKnowns;
 
-import omr.score.Score;
-
 import omr.step.Stepping;
 import omr.step.Steps;
 
@@ -27,12 +25,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.List;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import omr.sheet.Book;
+import omr.sheet.BookManager;
 
 /**
  * Class {@code Plugin} describes a plugin instance, encapsulating the relationship
@@ -83,6 +84,7 @@ public class Plugin
      * Creates a new Plugin object.
      *
      * @param file related javascript file
+     * @throws JavascriptUnavailableException
      */
     public Plugin (File file)
             throws JavascriptUnavailableException
@@ -132,11 +134,11 @@ public class Plugin
     /**
      * Report the asynchronous plugin task on provided score.
      *
-     * @param score the score to process through this plugin
+     * @param book the book to process through this plugin
      */
-    public Task<Void, Void> getTask (Score score)
+    public Task<Void, Void> getTask (Book book)
     {
-        return new PluginTask(score);
+        return new PluginTask(book);
     }
 
     //----------//
@@ -159,16 +161,16 @@ public class Plugin
     //-----------//
     // runPlugin //
     //-----------//
-    public Void runPlugin (Score score)
+    public Void runPlugin (Book book)
     {
         // Make sure we have the export file
-        Stepping.ensureScoreStep(Steps.valueOf(Steps.SCORE), score);
-        Stepping.ensureScoreStep(Steps.valueOf(Steps.EXPORT), score);
+        Stepping.ensureBookStep(Steps.valueOf(Steps.SCORE), book);
+        Stepping.ensureBookStep(Steps.valueOf(Steps.EXPORT), book);
 
-        final File exportFile = score.getExportFile(false);
+        final Path exportPath = book.getExportPath();
 
-        if (exportFile == null) {
-            logger.warn("Could not get export file");
+        if (exportPath == null) {
+            logger.warn("Could not get export path");
 
             return null;
         }
@@ -177,10 +179,10 @@ public class Plugin
         List<String> args;
 
         try {
-            logger.debug("{} doInBackground on {}", Plugin.this, exportFile);
+            logger.debug("{} doInBackground on {}", Plugin.this, exportPath);
 
             Invocable inv = (Invocable) engine;
-            Object obj = inv.invokeFunction("pluginCli", exportFile.getAbsolutePath());
+            Object obj = inv.invokeFunction("pluginCli", exportPath + BookManager.COMPRESSED_SCORE_EXTENSION);
 
             if (obj instanceof List) {
                 args = (List<String>) obj; // Unchecked by compiler
@@ -196,7 +198,7 @@ public class Plugin
         }
 
         // Spawn the command
-        logger.info("Launching {} on {}", getTitle(), score.getRadix());
+        logger.info("Launching {} on {}", getTitle(), book.getRadix());
 
         ProcessBuilder pb = new ProcessBuilder(args);
         pb = pb.redirectErrorStream(true);
@@ -285,19 +287,19 @@ public class Plugin
     //------------//
     /**
      * Handles the processing defined by the underlying javascript.
-     * The lifecycle of this instance is limited to the duration of the task.
+     * The life-cycle of this instance is limited to the duration of the task.
      */
     private class PluginTask
             extends BasicTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Score score;
+        private final Book book;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public PluginTask (Score score)
+        public PluginTask (Book book)
         {
-            this.score = score;
+            this.book = book;
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -306,7 +308,7 @@ public class Plugin
         protected Void doInBackground ()
                 throws InterruptedException
         {
-            return Plugin.this.runPlugin(score);
+            return Plugin.this.runPlugin(book);
         }
     }
 }

@@ -19,13 +19,16 @@ import omr.step.Stepping;
 import omr.step.Steps;
 
 import java.util.Collections;
+import java.util.Locale;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code StepTask} performs a step on a whole score.
+ * Class {@code StepTask} performs a step on a whole book.
  *
  * @author Hervé Bitteur
  */
@@ -68,25 +71,29 @@ public class StepTask
     public void core (final Sheet sheet)
             throws StepException
     {
-        Stepping.processScore(Collections.singleton(step), null, sheet.getScore());
+        Stepping.processBook(Collections.singleton(step), null, sheet.getBook());
+        ///Stepping.processSheet(Collections.singleton(step), sheet);
+        logger.info("End of step {}", step);
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        return " step " + step + super.internalsString();
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(" step ").append(step);
+
+        return sb.toString();
     }
 
     //--------------//
     // isRecordable //
     //--------------//
     /**
-     * This is an implementation trick, because of a "chicken and egg
-     * problem" to allow to run the LOAD step while the sheet does not exist
-     * yet!
+     * This is an implementation trick, because of a "chicken and egg" problem to allow
+     * to run the LOAD step while the sheet does not exist yet!
      *
      * @return false!
      */
@@ -97,19 +104,21 @@ public class StepTask
     }
 
     //---------//
-    // getStep // Meant for JAXB
+    // getStep //
     //---------//
+    @PreDestroy // Don't remove this method, invoked by JAXB through reflection
     private String getStep ()
     {
         return step.getName();
     }
 
     //---------//
-    // setStep // Meant for JAXB
+    // setStep //
     //---------//
+    @PostConstruct // Don't remove this method, invoked by JAXB through reflection
     @XmlAttribute(name = "name")
     private void setStep (String name)
     {
-        step = Steps.valueOf(name.toUpperCase());
+        step = Steps.valueOf(name.toUpperCase(Locale.ENGLISH));
     }
 }

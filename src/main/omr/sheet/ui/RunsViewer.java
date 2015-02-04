@@ -12,8 +12,8 @@
 package omr.sheet.ui;
 
 import omr.run.RunBoard;
-import omr.run.RunsTable;
-import omr.run.RunsTableView;
+import omr.run.RunTable;
+import omr.run.RunTableView;
 
 import omr.sheet.Sheet;
 
@@ -25,7 +25,7 @@ import java.awt.Graphics2D;
 
 /**
  * Class {@code RunsViewer} handles the display of instance(s) of
- * {@link RunsTable} in the assembly of the related sheet.
+ * {@link RunTable} in the assembly of the related sheet.
  *
  * @author Hervé Bitteur
  */
@@ -61,7 +61,7 @@ public class RunsViewer
      *
      * @param table the runs to display
      */
-    public void display (RunsTable table)
+    public void display (RunTable table)
     {
         RubberPanel view = new MyRunsTableView(table);
         view.setName(table.getName());
@@ -85,11 +85,11 @@ public class RunsViewer
      * on top of the runs.
      */
     private class MyRunsTableView
-        extends RunsTableView
+        extends RunTableView
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public MyRunsTableView (RunsTable table)
+        public MyRunsTableView (RunTable table)
         {
             super(table, sheet.getLocationService());
         }

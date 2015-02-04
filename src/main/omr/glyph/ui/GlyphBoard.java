@@ -182,8 +182,7 @@ public class GlyphBoard
         dump.setEnabled(false);
         getDeassignAction().setEnabled(false);
 
-        // Force a constant height for the shapeIcon field, despite the
-        // variation in size of the icon
+        // Force a constant height for the shapeIcon field, despite variation in size of the icon
         Dimension dim = new Dimension(
                 constants.shapeIconWidth.getValue(),
                 constants.shapeIconHeight.getValue());
@@ -284,8 +283,7 @@ public class GlyphBoard
     /**
      * CallBack triggered by a change in one of the spinners.
      *
-     * @param e the change event, this allows to retrieve the originating
-     *          spinner
+     * @param e the change event, this allows to retrieve the originating spinner
      */
     @Override
     public void stateChanged (ChangeEvent e)

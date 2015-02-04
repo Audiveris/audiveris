@@ -13,7 +13,6 @@ package omr.sheet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
 
 import omr.math.Line;
 
@@ -52,7 +51,7 @@ public abstract class Dash
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related staff */
-    private StaffInfo staff;
+    private Staff staff;
 
     /** Approximating line */
     private Line line;
@@ -74,7 +73,7 @@ public abstract class Dash
      * @param staff the nearby staff
      */
     public Dash (Glyph stick,
-                 StaffInfo staff)
+                 Staff staff)
     {
         this.stick = stick;
         this.staff = staff;
@@ -125,7 +124,7 @@ public abstract class Dash
      *
      * @return the related staff
      */
-    public StaffInfo getStaff ()
+    public Staff getStaff ()
     {
         return staff;
     }

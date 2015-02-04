@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sig;
 
+import omr.sig.inter.Inter;
+
 /**
  * Class {@code AbstractImpacts} is an abstract implementation of {@link GradeImpacts}
  * interface.

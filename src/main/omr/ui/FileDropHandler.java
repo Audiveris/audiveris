@@ -13,9 +13,9 @@ package omr.ui;
 
 import omr.constant.ConstantSet;
 
-import omr.score.Score;
-
 import omr.script.ScriptManager;
+
+import omr.sheet.Book;
 
 import omr.step.Step;
 import omr.step.Stepping;
@@ -59,9 +59,6 @@ public class FileDropHandler
     //-----------//
     // canImport //
     //-----------//
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean canImport (TransferSupport support)
     {
@@ -92,9 +89,6 @@ public class FileDropHandler
     //------------//
     // importData //
     //------------//
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean importData (TransferSupport support)
     {
@@ -141,7 +135,7 @@ public class FileDropHandler
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Steps.Constant defaultStep = new Steps.Constant(
-                Steps.valueOf(Steps.LOAD),
+                Steps.valueOf(Steps.BINARY),
                 "Default step launched when an image file is dropped");
     }
 
@@ -198,16 +192,10 @@ public class FileDropHandler
         protected Void doInBackground ()
                 throws Exception
         {
-            logger.info("Dropping image file {}", file);
+            logger.info("Dropping book file {}", file);
 
-            Score score = new Score(file);
-            final Step loadStep = Steps.valueOf(Steps.LOAD);
-
-            if (target.equals(loadStep)) {
-                Stepping.processScore(Collections.EMPTY_SET, null, score);
-            } else {
-                Stepping.processScore(Collections.singleton(target), null, score);
-            }
+            final Book book = new Book(file.toPath());
+            Stepping.processBook(Collections.singleton(target), null, book);
 
             return null;
         }

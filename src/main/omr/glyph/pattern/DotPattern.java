@@ -95,7 +95,7 @@ public class DotPattern
     public int runPattern ()
     {
         int    nb = 0;
-        String language = system.getSheet().getPage().getTextParam().getTarget();
+        String language = system.getSheet().getTextParam().getTarget();
 
         for (Glyph glyph : getQuestionableDots()) {
             // Check alignment with a TextLine

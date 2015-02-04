@@ -25,22 +25,26 @@ import omr.lag.JunctionRatioPolicy;
 import omr.lag.Lag;
 import omr.lag.Lags;
 import omr.lag.Section;
-import omr.lag.SectionsBuilder;
+import omr.lag.SectionFactory;
 
 import omr.math.LineUtil;
 import omr.math.NaturalSpline;
 import omr.math.Population;
 
 import omr.run.Orientation;
+
 import static omr.run.Orientation.*;
+
 import omr.run.Run;
-import omr.run.RunsTable;
-import omr.run.RunsTableFactory;
+import omr.run.RunTable;
+import omr.run.RunTableFactory;
 
 import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
+import omr.sheet.Staff;
+import omr.sheet.StaffManager;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.RunsViewer;
 
@@ -49,7 +53,9 @@ import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.IntUtil;
 import omr.util.Navigable;
 import omr.util.Predicate;
@@ -132,7 +138,7 @@ public class LinesRetriever
     final BarsRetriever barsRetriever;
 
     /** Too-short horizontal runs */
-    private RunsTable shortHoriTable;
+    private RunTable shortHoriTable;
 
     /** Binary buffer. */
     private ByteProcessor binaryBuffer;
@@ -164,17 +170,17 @@ public class LinesRetriever
     // buildHorizontalLag //
     //--------------------//
     /**
-     * Build the underlying horizontal lag, and first populate it with
-     * only the long horizontal sections.
+     * Build the underlying horizontal lag, and first populate it with only the long
+     * horizontal sections.
      * Short horizontal sections will be added later (via {@link #createShortSections()})
      *
      * @param wholeVertTable the provided table of all (vertical) runs
-     * @param showRuns       (debug) true to create intermediate views on runs
-     * @return the vertical runs too long to be part of any staff line
+     * @return the table of long vertical runs (a side effect of building the long horizontal ones)
      */
-    public RunsTable buildHorizontalLag (RunsTable wholeVertTable,
-                                         boolean showRuns)
+    public RunTable buildHorizontalLag (RunTable wholeVertTable)
     {
+        final RunsViewer runsViewer = (constants.displayRuns.isSet() && (Main.getGui() != null))
+                ? new RunsViewer(sheet) : null;
         hLag = new BasicLag(Lags.HLAG, Orientation.HORIZONTAL);
 
         // Create filament factory
@@ -187,13 +193,14 @@ public class LinesRetriever
         factory.dump("LinesRetriever factory");
 
         // To record the purged vertical runs
-        RunsTable longVertTable = new RunsTable(
+        RunTable longVertTable = new RunTable(
                 "long-vert",
                 VERTICAL,
-                new Dimension(sheet.getWidth(), sheet.getHeight()));
+                sheet.getWidth(),
+                sheet.getHeight());
 
         // Remove runs whose height is larger than line thickness
-        RunsTable shortVertTable = wholeVertTable.copy("short-vert").purge(
+        RunTable shortVertTable = wholeVertTable.copy("short-vert").purge(
                 new Predicate<Run>()
                 {
                     @Override
@@ -204,23 +211,25 @@ public class LinesRetriever
                 },
                 longVertTable);
 
-        if (showRuns) {
-            RunsViewer runsViewer = sheet.getRunsViewer();
+        if (runsViewer != null) {
             runsViewer.display(longVertTable);
             runsViewer.display(shortVertTable);
         }
 
         // Build table of long horizontal runs
-        RunsTable wholeHoriTable = new RunsTableFactory(HORIZONTAL, shortVertTable.getBuffer(), 0).createTable(
-                "whole-hori");
+        RunTableFactory runFactory = new RunTableFactory(HORIZONTAL);
+        RunTable wholeHoriTable = runFactory.createTable(
+                "whole-hori",
+                shortVertTable.getBuffer());
 
         // To record the purged horizontal runs
-        shortHoriTable = new RunsTable(
+        shortHoriTable = new RunTable(
                 "short-hori",
                 HORIZONTAL,
-                new Dimension(sheet.getWidth(), sheet.getHeight()));
+                sheet.getWidth(),
+                sheet.getHeight());
 
-        RunsTable longHoriTable = wholeHoriTable.copy("long-hori").purge(
+        RunTable longHoriTable = wholeHoriTable.copy("long-hori").purge(
                 new Predicate<Run>()
                 {
                     @Override
@@ -231,16 +240,15 @@ public class LinesRetriever
                 },
                 shortHoriTable);
 
-        if (showRuns) {
-            RunsViewer runsViewer = sheet.getRunsViewer();
+        if (runsViewer != null) {
             runsViewer.display(shortHoriTable);
-            runsViewer.display(longHoriTable);
+            runsViewer.display(longHoriTable.copy("long-hori-snapshot"));
         }
 
         // Populate the horizontal hLag with the long horizontal runs
         // (short horizontal runs will be added later via createShortSections())
-        SectionsBuilder sectionsBuilder = new SectionsBuilder(hLag, new JunctionRatioPolicy());
-        sectionsBuilder.createSections(longHoriTable, true);
+        SectionFactory sectionsBuilder = new SectionFactory(hLag, new JunctionRatioPolicy());
+        sectionsBuilder.createSections(longHoriTable, null, true);
 
         sheet.setLag(Lags.HLAG, hLag);
 
@@ -307,13 +315,13 @@ public class LinesRetriever
             watch.start("dispatchShortSections");
             dispatchShortSections(thickSections, thinSections);
 
-            // First, consider thick sections and update geometry
+            // First, consider thick sections
             watch.start("include " + thickSections.size() + " thick stickers");
             includeSections(thickSections, true);
 
-            // Second, consider thin sections w/o updating the geometry
+            // Second, consider thin sections
             watch.start("include " + thinSections.size() + " thin stickers");
-            includeSections(thinSections, false);
+            includeSections(thinSections, true);
 
             // Polish staff lines (TODO: to be improved)
             watch.start("polishCurvatures");
@@ -323,7 +331,7 @@ public class LinesRetriever
             watch.start("fillHoles");
             fillHoles();
         } finally {
-            if (constants.printWatch.getValue()) {
+            if (constants.printWatch.isSet()) {
                 watch.print();
             }
         }
@@ -344,10 +352,10 @@ public class LinesRetriever
 
         // Complete the horizontal hLag with the short sections
         // (it already contains all the other (long) horizontal sections)
-        SectionsBuilder sectionsBuilder = new SectionsBuilder(
+        SectionFactory sectionsBuilder = new SectionFactory(
                 hLag,
                 new JunctionRatioPolicy(params.maxLengthRatioShort));
-        List<Section> shortSections = sectionsBuilder.createSections(shortHoriTable, true);
+        List<Section> shortSections = sectionsBuilder.createSections(shortHoriTable, null, true);
 
         setVipSections();
 
@@ -455,7 +463,7 @@ public class LinesRetriever
             watch.start("retrieveGlobalSlope");
             globalSlope = retrieveGlobalSlope();
             sheet.setSkew(new Skew(globalSlope, sheet));
-            logger.info("{}Global slope: {}", sheet.getLogPrefix(), (float) globalSlope);
+            logger.info("{}Sheet slope: {}", sheet.getLogPrefix(), (float) globalSlope);
 
             // Retrieve regular patterns of filaments and pack them into clusters
             clustersRetriever = new ClustersRetriever(
@@ -494,7 +502,7 @@ public class LinesRetriever
             watch.start("BuildStaves");
             buildStaves();
         } finally {
-            if (constants.printWatch.getValue()) {
+            if (constants.printWatch.isSet()) {
                 watch.print();
             }
         }
@@ -541,7 +549,7 @@ public class LinesRetriever
                 right = Math.max(right, line.getEndPoint(RIGHT).getX());
             }
 
-            StaffInfo staff = new StaffInfo(
+            Staff staff = new Staff(
                     ++staffId,
                     left,
                     right,
@@ -707,7 +715,7 @@ public class LinesRetriever
      */
     private void defineEndPoints ()
     {
-        for (StaffInfo staff : staffManager.getStaves()) {
+        for (Staff staff : staffManager.getStaves()) {
             double meanDy = staff.getMeanInterline();
 
             Map<HorizontalSide, List<Point2D>> endMap = new EnumMap<HorizontalSide, List<Point2D>>(
@@ -761,7 +769,7 @@ public class LinesRetriever
      */
     private void fillHoles ()
     {
-        for (StaffInfo staff : staffManager.getStaves()) {
+        for (Staff staff : staffManager.getStaves()) {
             logger.debug("{}", staff);
 
             // Insert line intermediate points, if so needed
@@ -794,7 +802,7 @@ public class LinesRetriever
      */
     @Deprecated
     private Point2D getLineEnding (SystemInfo system,
-                                   StaffInfo staff,
+                                   Staff staff,
                                    LineInfo line,
                                    HorizontalSide side)
     {
@@ -823,7 +831,7 @@ public class LinesRetriever
             // Systems may be side by side, so restart from top
             int iMin = 0;
 
-            for (StaffInfo staff : system.getStaves()) {
+            for (Staff staff : system.getStaves()) {
                 for (FilamentLine line : staff.getLines()) {
                     LineFilament filament = line.fil;
                     Rectangle lineBox = filament.getBounds();
@@ -891,7 +899,7 @@ public class LinesRetriever
             // Because of possible side by side systems, we must restart from top
             int iMin = 0;
 
-            for (StaffInfo staff : system.getStaves()) {
+            for (Staff staff : system.getStaves()) {
                 for (FilamentLine line : staff.getLines()) {
                     /*
                      * Inclusion on the fly would imply recomputation of filament at each section
@@ -957,7 +965,7 @@ public class LinesRetriever
     //------------------//
     private void polishCurvatures ()
     {
-        for (StaffInfo staff : staffManager.getStaves()) {
+        for (Staff staff : staffManager.getStaves()) {
             for (FilamentLine line : staff.getLines()) {
                 line.fil.polishCurvature();
             }
@@ -1020,7 +1028,7 @@ public class LinesRetriever
      * @param side  left or right side
      * @return the sequence of end points, from top to bottom
      */
-    private List<Point2D> retrieveEndPoints (StaffInfo staff,
+    private List<Point2D> retrieveEndPoints (Staff staff,
                                              double meanDy,
                                              HorizontalSide side)
     {
@@ -1223,13 +1231,17 @@ public class LinesRetriever
 
         // Constants for display
         // ---------------------
+        Constant.Boolean displayRuns = new Constant.Boolean(
+                false,
+                "Should we display all images on runs?");
+
         final Constant.Boolean showHorizontalLines = new Constant.Boolean(
                 true,
-                "Should we display the horizontal lines?");
+                "Should we show the horizontal grid lines?");
 
         final Scale.Fraction tangentLg = new Scale.Fraction(
                 1,
-                "Typical length to display tangents at ending points");
+                "Typical length to show tangents at ending points");
 
         final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -1247,7 +1259,7 @@ public class LinesRetriever
         // -----------------------
         final Constant.String horizontalVipSections = new Constant.String(
                 "",
-                "(Debug) Comma-separated list of VIP horizontal sections");
+                "(Debug) Comma-separated values of VIP horizontal sections IDs");
     }
 
     //------------//

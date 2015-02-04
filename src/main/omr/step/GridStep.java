@@ -11,12 +11,25 @@
 // </editor-fold>
 package omr.step;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.ui.SymbolsEditor;
 
+import omr.grid.GridBuilder;
 import omr.grid.LagWeaver;
 
+import omr.sheet.Picture;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.ImageView;
+import omr.sheet.ui.PixelBoard;
+import omr.sheet.ui.ScrollImageView;
+
+import omr.ui.BoardsPane;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
@@ -29,8 +42,13 @@ import java.util.Collection;
 public class GridStep
         extends AbstractStep
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(GridStep.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // GridStep //
     //----------//
@@ -44,7 +62,7 @@ public class GridStep
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 DATA_TAB,
-                "Retrieve the grid of all systems");
+                "Retrieve the grid of sheet systems");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -59,6 +77,16 @@ public class GridStep
         if (editor != null) {
             editor.refresh();
         }
+
+        if (constants.displayNoStaff.isSet()) {
+            sheet.getAssembly().addViewTab(
+                    "NoStaff",
+                    new ScrollImageView(
+                            sheet,
+                            new ImageView(
+                                    sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF).getBufferedImage())),
+                    new BoardsPane(new PixelBoard(sheet)));
+        }
     }
 
     //------//
@@ -70,14 +98,24 @@ public class GridStep
             throws StepException
     {
         sheet.createNest();
-        sheet.getGridBuilder().buildInfo();
+        new GridBuilder(sheet).buildInfo();
 
         // Purge sections & runs of staff lines from hLag
         // Cross-connect vertical & remaining horizontal sections
         new LagWeaver(sheet).buildInfo();
+    }
 
-        // Populate systems
-        sheet.createSystemManager();
-        sheet.getSystemManager().populateSystems();
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Boolean displayNoStaff = new Constant.Boolean(
+                false,
+                "Should we display the staff-free image?");
     }
 }

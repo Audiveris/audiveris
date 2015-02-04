@@ -14,6 +14,8 @@ package omr.sig;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.sig.inter.Inter;
+
 import omr.util.IntUtil;
 
 import org.slf4j.Logger;
@@ -121,6 +123,6 @@ public class SigManager
 
         Constant.String vipInters = new Constant.String(
                 "",
-                "(Debug) Comma-separated list of VIP inters");
+                "(Debug) Comma-separated values of VIP inters IDs");
     }
 }

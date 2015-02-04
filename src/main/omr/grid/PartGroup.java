@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.sheet.Staff;
+
 /**
  * Class {@code PartGroup} describes a group of parts.
  *
@@ -39,10 +41,10 @@ public class PartGroup
     private final boolean barline;
 
     /** First staff in group. */
-    private final StaffInfo firstStaff;
+    private final Staff firstStaff;
 
     /** Last staff in group. */
-    private StaffInfo lastStaff;
+    private Staff lastStaff;
 
     /** Name. */
     private String name;
@@ -62,7 +64,7 @@ public class PartGroup
     public PartGroup (int number,
                       Symbol symbol,
                       boolean barline,
-                      StaffInfo firstStaff)
+                      Staff firstStaff)
     {
         this.number = number;
         this.symbol = symbol;
@@ -84,7 +86,7 @@ public class PartGroup
     /**
      * @return the firstStaff
      */
-    public StaffInfo getFirstStaff ()
+    public Staff getFirstStaff ()
     {
         return firstStaff;
     }
@@ -92,7 +94,7 @@ public class PartGroup
     /**
      * @return the lastStaff
      */
-    public StaffInfo getLastStaff ()
+    public Staff getLastStaff ()
     {
         return lastStaff;
     }
@@ -140,7 +142,7 @@ public class PartGroup
     /**
      * @param lastStaff the lastStaff to set
      */
-    public void setLastStaff (StaffInfo lastStaff)
+    public void setLastStaff (Staff lastStaff)
     {
         this.lastStaff = lastStaff;
     }

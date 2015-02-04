@@ -15,7 +15,7 @@ import omr.graph.Digraph;
 
 import omr.run.Oriented;
 import omr.run.Run;
-import omr.run.RunsTable;
+import omr.run.RunTable;
 
 import omr.selection.SectionEvent;
 import omr.selection.SectionIdEvent;
@@ -33,7 +33,7 @@ import java.util.Set;
  * Interface {@code Lag} defines a graph of {@link Section} instances (sets of
  * contiguous runs with compatible lengths), linked by Junctions when there is no more
  * contiguous run or when the compatibility is no longer met.
- *
+ * <p>
  * Sections are thus vertices of the graph, while junctions are directed edges between sections. All
  * the sections (and runs) have the same orientation shared by the lag.
  * <p>
@@ -43,7 +43,7 @@ import java.util.Set;
  * ways to retrieve the last selected section, sectionId or sectionSet from the lag selection
  * service.
  * <p>
- * Run selection is provided by a separate selection service hosted by the underlying RunsTable
+ * Run selection is provided by a separate selection service hosted by the underlying RunTable
  * instance. For convenience, one can use the method {@link #getRunService()} to get access to this
  * run service.
  *
@@ -64,9 +64,9 @@ public interface Lag
     /**
      * Include the content of runs table to the lag.
      *
-     * @param runsTable the populated runs
+     * @param runTable the related table of runs
      */
-    void addRuns (RunsTable runsTable);
+    void addRunTable (RunTable runTable);
 
     /**
      * Lookup for lag sections that are <b>contained</b> in the
@@ -111,11 +111,21 @@ public interface Lag
     SelectionService getRunService ();
 
     /**
-     * Report the underlying runs table.
+     * Report the underlying runs table, if any.
      *
-     * @return the table of runs
+     * @return the table of runs or null
      */
-    RunsTable getRuns ();
+    RunTable getRunTable ();
+
+    /**
+     * Report the section found at given coordinates, if any.
+     *
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return the section found, or null otherwise
+     */
+    Section getSectionAt (int x,
+                          int y);
 
     /**
      * Report the section selection service.
@@ -171,7 +181,7 @@ public interface Lag
      *
      * @param runsTable the populated runs
      */
-    void setRuns (RunsTable runsTable);
+    void setRuns (RunTable runsTable);
 
     /**
      * Inject dependency about other services for lag.

@@ -26,9 +26,9 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.sig.GradeImpacts;
-import omr.sig.Inter;
-import omr.sig.SegmentInter;
-import omr.sig.WedgeInter;
+import omr.sig.inter.Inter;
+import omr.sig.inter.SegmentInter;
+import omr.sig.inter.WedgeInter;
 
 import omr.util.Navigable;
 
@@ -186,7 +186,7 @@ public class WedgesBuilder
         Rectangle box = new Rectangle(s1.getBounds());
         box.add(s2.getBounds());
 
-        Shape shape = rev ? Shape.CRESCENDO : Shape.DECRESCENDO;
+        Shape shape = rev ? Shape.CRESCENDO : Shape.DIMINUENDO;
 
         // Determine precise closed ends
         Line2D l1 = new Line2D.Double(

@@ -21,6 +21,10 @@ import omr.image.TemplateFactory;
 
 import omr.score.ui.ScoreDependent;
 
+import omr.sheet.Picture;
+import omr.sheet.Sheet;
+import omr.sheet.ui.SheetsController;
+
 import org.jdesktop.application.Action;
 
 import org.slf4j.Logger;
@@ -48,6 +52,28 @@ public class Debug
     private static final Logger logger = LoggerFactory.getLogger(Debug.class);
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------//
+    // checkSources //
+    //--------------//
+    /**
+     * Check which sources are still in Picture cache.
+     *
+     * @param e unused
+     */
+    @Action
+    public void checkSources (ActionEvent e)
+    {
+        Sheet sheet = SheetsController.getCurrentSheet();
+
+        if (sheet != null) {
+            Picture picture = sheet.getPicture();
+
+            if (picture != null) {
+                picture.checkSources();
+            }
+        }
+    }
+
     //    //------------------//
     //    // injectChordNames //
     //    //------------------//

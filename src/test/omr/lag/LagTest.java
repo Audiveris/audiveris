@@ -15,9 +15,10 @@ import omr.math.Histogram;
 
 import omr.run.Orientation;
 import omr.run.Run;
-import omr.run.RunsTable;
+import omr.run.RunTable;
 
 import omr.util.BaseTestCase;
+
 import static junit.framework.Assert.*;
 
 import java.awt.Dimension;
@@ -38,27 +39,27 @@ public class LagTest
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    // Lags and RunsTable instances
+    // Lags and RunTable instances
     Lag vLag;
 
-    RunsTable vTable;
+    RunTable vTable;
 
     Lag hLag;
 
-    RunsTable hTable;
+    RunTable hTable;
 
     //~ Methods ------------------------------------------------------------------------------------
     //    /**
-    //     * Test of addRuns method, of class Lag.
+    //     * Test of addRunTable method, of class Lag.
     //     */
     //    @Test
     //    public void testAddRuns ()
     //    {
-    //        System.out.println("addRuns");
+    //        System.out.println("addRunTable");
     //
-    //        RunsTable runsTable = null;
+    //        RunTable runsTable = null;
     //        Lag       instance = new LagImpl();
-    //        instance.addRuns(runsTable);
+    //        instance.addRunTable(runsTable);
     //        fail("The test case is a prototype.");
     //    }
     //    /**
@@ -204,16 +205,16 @@ public class LagTest
     //    }
     //
     //    /**
-    //     * Test of getRuns method, of class Lag.
+    //     * Test of getRunTable method, of class Lag.
     //     */
     //    @Test
     //    public void testGetRuns ()
     //    {
-    //        System.out.println("getRuns");
+    //        System.out.println("getRunTable");
     //
     //        Lag       instance = new LagImpl();
-    //        RunsTable expResult = null;
-    //        RunsTable result = instance.getRuns();
+    //        RunTable expResult = null;
+    //        RunTable result = instance.getRunTable();
     //        assertEquals(expResult, result);
     //        fail("The test case is a prototype.");
     //    }
@@ -237,11 +238,11 @@ public class LagTest
     //-----------------//
     public void testGetSections ()
     {
-        Section s2 = vLag.createSection(180, new Run(100, 10, 127));
-        s2.append(new Run(101, 20, 127));
+        Section s2 = vLag.createSection(180, new Run(100, 10));
+        s2.append(new Run(101, 20));
 
-        Section s3 = vLag.createSection(180, new Run(100, 10, 127));
-        s3.append(new Run(101, 20, 127));
+        Section s3 = vLag.createSection(180, new Run(100, 10));
+        s3.append(new Run(101, 20));
 
         List<Section> sections = new ArrayList<Section>();
         sections.add(s2);
@@ -297,8 +298,8 @@ public class LagTest
     public void testHSection ()
     {
         // Test of horizontal section
-        Section s1 = hLag.createSection(180, new Run(100, 10, 127));
-        s1.append(new Run(101, 20, 127));
+        Section s1 = hLag.createSection(180, new Run(100, 10));
+        s1.append(new Run(101, 20));
         hLag.dump(null);
         dump("s1 dump:", s1);
         commonAssertions(s1);
@@ -330,12 +331,12 @@ public class LagTest
     //-----------------------------------//
     public void testLookupIntersectedSectionsHori ()
     {
-        Section s2 = hLag.createSection(180, new Run(100, 10, 127));
-        s2.append(new Run(101, 20, 127));
+        Section s2 = hLag.createSection(180, new Run(100, 10));
+        s2.append(new Run(101, 20));
 
-        Section s3 = hLag.createSection(200, new Run(150, 10, 127));
-        s3.append(new Run(161, 20, 127));
-        s3.append(new Run(170, 15, 127));
+        Section s3 = hLag.createSection(200, new Run(150, 10));
+        s3.append(new Run(161, 20));
+        s3.append(new Run(170, 15));
 
         Set<Section> founds = null;
 
@@ -354,12 +355,12 @@ public class LagTest
     //------------------------//
     public void testLookupSectionsHori ()
     {
-        Section s2 = hLag.createSection(180, new Run(100, 10, 127));
-        s2.append(new Run(101, 20, 127));
+        Section s2 = hLag.createSection(180, new Run(100, 10));
+        s2.append(new Run(101, 20));
 
-        Section s3 = hLag.createSection(200, new Run(150, 10, 127));
-        s3.append(new Run(161, 20, 127));
-        s3.append(new Run(170, 15, 127));
+        Section s3 = hLag.createSection(200, new Run(150, 10));
+        s3.append(new Run(161, 20));
+        s3.append(new Run(170, 15));
 
         Set<Section> founds = null;
 
@@ -378,12 +379,12 @@ public class LagTest
     //------------------------//
     public void testLookupSectionsVert ()
     {
-        Section s2 = vLag.createSection(180, new Run(100, 10, 127));
-        s2.append(new Run(101, 20, 127));
+        Section s2 = vLag.createSection(180, new Run(100, 10));
+        s2.append(new Run(101, 20));
 
-        Section s3 = vLag.createSection(200, new Run(150, 10, 127));
-        s3.append(new Run(161, 20, 127));
-        s3.append(new Run(170, 15, 127));
+        Section s3 = vLag.createSection(200, new Run(150, 10));
+        s3.append(new Run(161, 20));
+        s3.append(new Run(170, 15));
 
         Set<Section> founds = null;
 
@@ -421,7 +422,7 @@ public class LagTest
     //    {
     //        System.out.println("setRuns");
     //
-    //        RunsTable runsTable = null;
+    //        RunTable runsTable = null;
     //        Lag       instance = new LagImpl();
     //        instance.setRuns(runsTable);
     //        fail("The test case is a prototype.");
@@ -481,8 +482,8 @@ public class LagTest
 
         Roi roi = new BasicRoi(new Rectangle(0, 0, 6, 7));
 
-        String expV = "{Histogram 1-5 size:5 [1:5 2:3 3:2 4:1 5:6]}";
-        String expH = "{Histogram 0-6 size:7 [0:1 1:4 2:4 3:2 4:2 5:2 6:2]}";
+        String expV = "{Histogram 1-5 size:5 [1=5 2=3 3=2 4=1 5=6]}";
+        String expH = "{Histogram 0-6 size:7 [0=1 1=4 2=4 3=2 4=2 5=2 6=2]}";
 
         Histogram<Integer> histoVS = roi.getSectionHistogram(
                 Orientation.VERTICAL,
@@ -511,15 +512,15 @@ public class LagTest
     public void testVSection ()
     {
         // Test of vertical sections
-        Section s2 = vLag.createSection(180, new Run(100, 10, 127));
-        s2.append(new Run(101, 20, 127));
+        Section s2 = vLag.createSection(180, new Run(100, 10));
+        s2.append(new Run(101, 20));
         vLag.dump(null);
         dump("s2 dump:", s2);
         commonAssertions(s2);
         assertEquals("Bad ContourBox", s2.getBounds(), new Rectangle(180, 100, 2, 21));
 
-        Section s3 = vLag.createSection(180, new Run(100, 10, 127));
-        s3.append(new Run(101, 20, 127));
+        Section s3 = vLag.createSection(180, new Run(100, 10));
+        s3.append(new Run(101, 20));
 
         // And an edge between 2 sections (of the same lag)
         s2.addTarget(s3);
@@ -552,11 +553,11 @@ public class LagTest
     protected void setUp ()
     {
         vLag = new BasicLag("My Vertical Lag", Orientation.VERTICAL);
-        vTable = new RunsTable("Vert Runs", Orientation.VERTICAL, new Dimension(100, 200)); // Absolute
+        vTable = new RunTable("Vert Runs", Orientation.VERTICAL, 100, 200); // Absolute
         vLag.setRuns(vTable);
 
         hLag = new BasicLag("My Horizontal Lag", Orientation.HORIZONTAL);
-        hTable = new RunsTable("Hori Runs", Orientation.HORIZONTAL, new Dimension(100, 200)); // Absolute
+        hTable = new RunTable("Hori Runs", Orientation.HORIZONTAL, 100, 200); // Absolute
         hLag.setRuns(hTable);
     }
 
@@ -603,12 +604,12 @@ public class LagTest
     //-----------//
     // createRun //
     //-----------//
-    private Run createRun (RunsTable table,
+    private Run createRun (RunTable table,
                            int alignment,
                            int start,
                            int length)
     {
-        Run run = new Run(start, length, 127);
+        Run run = new Run(start, length);
 
         table.getSequence(alignment).add(run);
 

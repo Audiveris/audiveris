@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.step;
 
+import omr.sheet.LedgersBuilder;
 import omr.sheet.LedgersFilter;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -24,7 +25,7 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class LedgersStep
-        extends AbstractSystemStep
+        extends AbstractSystemStep<Void>
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -52,17 +53,18 @@ public class LedgersStep
     public void displayUI (Sheet sheet)
     {
         // Add ledger checkboard
-        sheet.getSystems().get(0).ledgersBuilder.addCheckBoard();
+        new LedgersBuilder(sheet.getSystems().get(0)).addCheckBoard();
     }
 
     //----------//
     // doSystem //
     //----------//
     @Override
-    public void doSystem (SystemInfo system)
+    public void doSystem (SystemInfo system,
+                          Void context)
             throws StepException
     {
-        system.ledgersBuilder.buildLedgers();
+        new LedgersBuilder(system).buildLedgers();
     }
 
     //----------//
@@ -72,12 +74,16 @@ public class LedgersStep
      * {@inheritDoc}
      * <p>
      * Retrieve horizontal sticks for ledger candidates.
+     * <p>
+     * These candidate sticks are dispatched to their relevant system(s)
      */
     @Override
-    protected void doProlog (Collection<SystemInfo> systems,
+    protected Void doProlog (Collection<SystemInfo> systems,
                              Sheet sheet)
             throws StepException
     {
         new LedgersFilter(sheet).process();
+
+        return null;
     }
 }

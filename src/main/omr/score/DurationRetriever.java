@@ -13,50 +13,37 @@ package omr.score;
 
 import omr.math.Rational;
 
-import omr.score.entity.Chord;
-import omr.score.entity.Measure;
-import omr.score.entity.MeasureId.PageBased;
 import omr.score.entity.Page;
-import omr.score.entity.ScoreSystem;
-import omr.score.entity.Slot;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
-import omr.score.visitor.AbstractScoreVisitor;
 
-import omr.util.TreeNode;
+import omr.sheet.MeasureStack;
+import omr.sheet.SystemInfo;
+import omr.sheet.Voice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
- * Class {@code DurationRetriever} can visit a page hierarchy to compute
+ * Class {@code DurationRetriever} can process a page hierarchy to compute
  * the actual duration of every measure
  *
  * @author Hervé Bitteur
  */
 public class DurationRetriever
-        extends AbstractScoreVisitor
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            DurationRetriever.class);
+    private static final Logger logger = LoggerFactory.getLogger(DurationRetriever.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
-    /** Map of Measure id -> Measure duration, whatever the containing part */
-    private final Map<PageBased, Rational> measureDurations = new HashMap<PageBased, Rational>();
-
-    /** Pass number, since we need 2 passes per system */
-    private int pass = 1;
+    /** Map of Measure id -> Measure duration, whatever the containing part. */
+    private final Map<Integer, Rational> measureDurations = new TreeMap<Integer, Rational>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //-------------------//
-    // DurationRetriever //
-    //-------------------//
     /**
      * Creates a new DurationRetriever object.
      */
@@ -65,124 +52,119 @@ public class DurationRetriever
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //
+    //--------------//
+    // process Page //
+    //--------------//
+    /**
+     * Page hierarchy entry point
+     *
+     * @param page the page for which measure durations are to be computed
+     */
+    public void process (Page page)
+    {
+        // Delegate to system
+        for (SystemInfo system : page.getSystems()) {
+            visit(system);
+        }
+    }
+
     //---------------//
-    // visit Measure //
+    // process Score //
     //---------------//
-    @Override
-    public boolean visit (Measure measure)
+    /**
+     * Score hierarchy entry point, to delegate to all pages
+     *
+     * @param score the score to process
+     */
+    public void process (Score score)
+    {
+        for (Page page : score.getPages()) {
+            DurationRetriever.this.process(page);
+        }
+    }
+
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Visit the measure stack.
+     *
+     * @param stack measure stack to process
+     */
+    public void process (MeasureStack stack)
     {
         try {
-            logger.debug("Visiting Part#{} {}", measure.getPart().getId(), measure);
-
-            Rational measureDur = Rational.ZERO;
-
-            // Whole/multi rests are handled outside of slots
-            for (Slot slot : measure.getSlots()) {
-                if (slot.getStartTime() != null) {
-                    for (Chord chord : slot.getChords()) {
-                        Rational chordEnd = slot.getStartTime().plus(chord.getDuration());
-
-                        if (chordEnd.compareTo(measureDur) > 0) {
-                            measureDur = chordEnd;
-                        }
-                    }
-                }
+            if (stack.getPageId().equals("18")) {
+                logger.debug("Visiting {}", stack);
             }
+
+            Rational measureDur = stack.getCurrentDuration();
 
             if (!measureDur.equals(Rational.ZERO)) {
                 // Make sure the measure duration is not bigger than limit
-                if (measureDur.compareTo(measure.getExpectedDuration()) <= 0) {
-                    measure.setActualDuration(measureDur);
+                if (measureDur.compareTo(stack.getExpectedDuration()) <= 0) {
+                    stack.setActualDuration(measureDur);
                 } else {
-                    measure.setActualDuration(measure.getExpectedDuration());
+                    stack.setActualDuration(stack.getExpectedDuration());
                 }
 
-                measureDurations.put(measure.getPageId(), measureDur);
-                logger.debug("{}: {}", measure.getPageId(), measureDur);
-            } else if (!measure.getWholeChords().isEmpty()) {
-                if (pass > 1) {
-                    Rational dur = measureDurations.get(measure.getPageId());
+                measureDurations.put(stack.getIdValue(), measureDur);
+                logger.info("{}: {}", stack.getPageId(), measureDur);
+            } else if (!stack.getWholeRestChords().isEmpty()) {
+                Rational dur = measureDurations.get(stack.getIdValue());
 
-                    if (dur != null) {
-                        measure.setActualDuration(dur);
-                    } else {
-                        measure.setActualDuration(measure.getExpectedDuration());
+                if (dur != null) {
+                    stack.setActualDuration(dur);
+                } else {
+                    stack.setActualDuration(stack.getExpectedDuration());
+                }
+            }
+
+            stack.printVoices(null);
+            logger.info(
+                    "Stack#{} actualDuration: {} currentDuration: {}",
+                    stack.getPageId(),
+                    stack.getActualDuration(),
+                    measureDur);
+
+            for (Voice voice : stack.getVoices()) {
+                Rational voiceDur = voice.getDuration();
+                logger.info("{} ends at {}", voice, voiceDur);
+
+                if (voiceDur != null) {
+                    if (voiceDur.compareTo(stack.getActualDuration()) > 0) {
+                        logger.warn("{} Excess detected in {}", stack, voice);
+                    } else if (voiceDur.compareTo(stack.getActualDuration()) < 0) {
+                        // If voice made of rests, delete it
+                        if (voice.isOnlyRest()) {
+                            logger.warn("{} Abnormal rest-only {}", stack, voice);
+                        }
                     }
                 }
             }
         } catch (InvalidTimeSignature ex) {
         } catch (Exception ex) {
-            logger.warn(getClass().getSimpleName() + " Error visiting " + measure, ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + stack, ex);
         }
-
-        return false; // Dead end, we don't go deeper than measure level
-    }
-
-    //------------//
-    // visit Page //
-    //------------//
-    /**
-     * Page hierarchy entry point
-     *
-     * @param page the page for which measure durations are to be computed
-     * @return false, since no further processing is required after this node
-     */
-    @Override
-    public boolean visit (Page page)
-    {
-        // Delegate to children
-        page.acceptChildren(this);
-
-        return false; // No default browsing this way
-    }
-
-    //-------------//
-    // visit Score //
-    //-------------//
-    /**
-     * Score hierarchy entry point, to delegate to all pages
-     *
-     * @param score the score to process
-     * @return false, since no further processing is required after this node
-     */
-    @Override
-    public boolean visit (Score score)
-    {
-        for (TreeNode pn : score.getPages()) {
-            Page page = (Page) pn;
-            page.accept(this);
-        }
-
-        return false; // No browsing
     }
 
     //--------------//
-    // visit System //
+    // process System //
     //--------------//
     /**
-     * System processing. The rest of processing is directly delegated to the
-     * measures
+     * System processing. The rest of processing is directly delegated to the measures
      *
-     * @param system visit the system to export
-     * @return false
+     * @param system process the system to export
      */
-    @Override
-    public boolean visit (ScoreSystem system)
+    private void visit (SystemInfo system)
     {
         logger.debug("Visiting {}", system);
 
-        // 2 passes are needed, to get the actual duration of whole notes
-        // Since the measure duration may be specified in another system part
-        for (pass = 1; pass <= 2; pass++) {
-            logger.debug("Pass #{}", pass);
-
-            // Browse the (SystemParts and the) Measures
-            system.acceptChildren(this);
-
-            logger.debug("Durations:{}", measureDurations);
+        // Browse the measure stacks
+        for (MeasureStack stack : system.getMeasureStacks()) {
+            process(stack);
         }
 
-        return false; // No default browsing this way
+        logger.debug("Durations:{}", measureDurations);
     }
 }

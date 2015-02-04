@@ -11,12 +11,14 @@
 // </editor-fold>
 package omr.sheet.ui;
 
+import omr.run.RunTable;
+
 import omr.score.ui.PageMenu;
-import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
 
 import omr.selection.MouseMovement;
 
+import omr.sheet.Picture;
 import omr.sheet.Sheet;
 
 import omr.ui.Colors;
@@ -33,6 +35,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -132,14 +135,25 @@ public class PictureView
         {
             Color oldColor = g.getColor();
 
-            // Anti-aliasing ON
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            // Anti-aliasing OFF
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
             PaintingParameters painting = PaintingParameters.getInstance();
 
             // Render the picture image
             if (painting.isInputPainting()) {
-                g.drawRenderedImage(sheet.getPicture().getInitialImage(), null);
+                Picture picture = sheet.getPicture();
+                BufferedImage initial = picture.getInitialImage();
+
+                if (initial != null) {
+                    g.drawRenderedImage(initial, null);
+                } else {
+                    RunTable table = picture.getTable(Picture.TableKey.BINARY);
+
+                    if (table != null) {
+                        table.render(g);
+                    }
+                }
             } else {
                 // Use a white background
                 Rectangle rect = g.getClipBounds();
@@ -152,19 +166,20 @@ public class PictureView
 
             // Render the recognized score entities?
             if (painting.isOutputPainting()) {
-                // Draw sort of system brackets
-                //                if (sheet.getTargetBuilder() != null) {
-                //                    sheet.getTargetBuilder()
-                //                            .renderSystems(g); // TODO: Temporary
-                //                }
-                boolean mixed = painting.isInputPainting();
+                final boolean mixed = painting.isInputPainting();
                 g.setColor(mixed ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE);
-                sheet.getPage().accept(
-                        new PagePhysicalPainter(
-                                g,
-                                mixed ? false : painting.isVoicePainting(),
-                                true,
-                                false));
+
+                //                final PagePhysicalPainter painter = new PagePhysicalPainter(
+                //                        g,
+                //                        mixed ? false : painting.isVoicePainting(),
+                //                        true,
+                //                        false);
+                //
+                //                for (Page page : sheet.getPages()) {
+                //                    page.accept(painter);
+                //                }
+                final boolean coloredVoices = mixed ? false : painting.isVoicePainting();
+                new SheetResultPainter(sheet, g, coloredVoices, true, false).process();
             }
 
             g.setColor(oldColor);

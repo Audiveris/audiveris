@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.step;
 
+import omr.sheet.BeamsBuilder;
 import omr.sheet.SystemInfo;
 
 /**
@@ -20,7 +21,7 @@ import omr.sheet.SystemInfo;
  * @author Hervé Bitteur
  */
 public class CueBeamsStep
-        extends AbstractSystemStep
+        extends AbstractSystemStep<Void>
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -45,9 +46,10 @@ public class CueBeamsStep
     // doSystem //
     //----------//
     @Override
-    public void doSystem (SystemInfo system)
+    public void doSystem (SystemInfo system,
+                          Void context)
             throws StepException
     {
-        system.beamsBuilder.buildCueBeams(); // -> Cue beams
+        new BeamsBuilder(system, null).buildCueBeams(); // -> Cue beams
     }
 }

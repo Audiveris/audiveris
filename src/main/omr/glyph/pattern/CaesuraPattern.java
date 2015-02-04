@@ -14,9 +14,9 @@ package omr.glyph.pattern;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.Measure;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.ScoreSystem;
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldSystemPart;
 
 import omr.sheet.SystemInfo;
 
@@ -68,8 +68,8 @@ public class CaesuraPattern
             }
 
             Point center = glyph.getAreaCenter();
-            SystemPart part = scoreSystem.getPartAt(center);
-            Measure measure = part.getMeasureAt(center);
+            OldSystemPart part = scoreSystem.getPartAt(center);
+            OldMeasure measure = part.getMeasureAt(center);
 
             if (!measure.getChords().isEmpty()) {
                 if (glyph.isVip() || logger.isDebugEnabled()) {

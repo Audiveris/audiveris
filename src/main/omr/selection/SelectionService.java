@@ -14,8 +14,6 @@ package omr.selection;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.BasicNest;
-
 import org.bushe.swing.event.EventSubscriber;
 import org.bushe.swing.event.ThreadSafeEventService;
 
@@ -25,8 +23,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Class {@code SelectionService} is an OMR customized version of an
- * EventService as provided by the EventBus framework.
+ * Class {@code SelectionService} is an OMR customized version of an EventService as
+ * provided by the EventBus framework.
  *
  * @author Hervé Bitteur
  */
@@ -40,10 +38,10 @@ public class SelectionService
     private static final Logger logger = LoggerFactory.getLogger(SelectionService.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Name of this service */
+    /** Name of this service. */
     private final String name;
 
-    /** Allowed events */
+    /** Allowed events. */
     private final Class[] allowedEvents;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -62,8 +60,7 @@ public class SelectionService
         this.name = name;
         this.allowedEvents = allowedEvents;
 
-        // This cache is needed to be able to retrieve the last publication of
-        // any event class
+        // This cache is needed to be able to retrieve the last publication of any event class
         setDefaultCacheSizePerClassOrTopic(1);
     }
 

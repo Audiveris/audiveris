@@ -169,9 +169,8 @@ public class SectionBoard
                     @Override
                     public void stateChanged (ChangeEvent e)
                     {
-                        // Make sure this new Id value is due to user
-                        // action on an Id spinner, and not the mere update
-                        // of section fields (which include this id).
+                        // Make sure this new Id value is due to user action on an Id spinner,
+                        // and not to the mere update of section fields (which include this id).
                         if (!updating) {
                             Integer sectionId = (Integer) id.getValue();
                             logger.debug("sectionId={} for {}", sectionId, lag);
@@ -290,9 +289,8 @@ public class SectionBoard
             emptyFields(getBody());
 
             if (section == null) {
-                // If the user is currently using the Id spinner, make sure we
-                // display the right Id value in the spinner, even if there is
-                // no corresponding section
+                // If the user is currently using the Id spinner, make sure we display the right Id
+                // value in the spinner, even if there is no corresponding section
                 if (idSelecting) {
                     id.setValue(sectionId);
                 } else {

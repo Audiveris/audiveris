@@ -20,9 +20,15 @@ import org.slf4j.LoggerFactory;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
 
 /**
  * Class {@code ScrollView} contains a JScrollPane, which provides a comprehensive
@@ -46,10 +52,10 @@ public class ScrollView
     private static final Logger logger = LoggerFactory.getLogger(ScrollView.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Current view inside the scrolled pane */
+    /** Current view inside the scrolled pane. */
     protected RubberPanel view;
 
-    // The concrete UI component
+    /** The concrete UI component. */
     private final JScrollPane component = new JScrollPane();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -58,16 +64,21 @@ public class ScrollView
     //------------//
     /**
      * Create a bare view pane.
-     * Other related entities, such as view, pixel monitor or zoom, can be
-     * added later programmatically via setXXX() methods).
+     * Other related entities, such as view, pixel monitor or zoom, can be added later
+     * programmatically via setXXX() methods).
      * <p>
-     * The increment related to mouse wheel movement can be adapted via the
-     * unitIncrement class constant.
+     * The increment related to mouse wheel movement can be adapted via the 'unitIncrement' class
+     * constant.
      */
     public ScrollView ()
     {
         JScrollBar vertical = component.getVerticalScrollBar();
         vertical.setUnitIncrement(constants.unitIncrement.getValue());
+
+        JScrollBar horizontal = component.getHorizontalScrollBar();
+        horizontal.setUnitIncrement(constants.unitIncrement.getValue());
+
+        bindKeys(component);
     }
 
     //------------//
@@ -164,8 +175,7 @@ public class ScrollView
     // getRubberFocus //
     //----------------//
     /**
-     * Retrieve the coordinates of what is currently the focus point of
-     * the display.
+     * Retrieve the coordinates of what is currently the focus point of the display.
      * Typically, this is the center of the rubber rectangle.
      *
      * @return the focus point, or null if the view is null
@@ -195,9 +205,8 @@ public class ScrollView
     // getRubberSelection //
     //--------------------//
     /**
-     * Retrieve a copy of the rubber rectangle, or a zero-height,
-     * zero-width rectangle at {@code getRubberFocus()} if the rubber
-     * rectangle does not exist.
+     * Retrieve a copy of the rubber rectangle, or a zero-height, zero-width rectangle
+     * at {@code getRubberFocus()} if the rubber rectangle does not exist.
      *
      * @return the rubber selection, or null if the view is null
      */
@@ -268,6 +277,43 @@ public class ScrollView
         }
     }
 
+    //----------//
+    // bindKeys //
+    //----------//
+    private void bindKeys (JComponent component)
+    {
+        InputMap inputMap;
+        //        inputMap = component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        //        inputMap = component.getInputMap(JComponent.WHEN_FOCUSED); // Default
+        inputMap = component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+        ActionMap actionMap = component.getActionMap();
+
+        inputMap.put(KeyStroke.getKeyStroke("UP"), "UpAction");
+        actionMap.put("UpAction", new UpAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("DOWN"), "DownAction");
+        actionMap.put("DownAction", new DownAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("shift UP"), "ShiftUpAction");
+        actionMap.put("ShiftUpAction", new ShiftUpAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("shift DOWN"), "ShiftDownAction");
+        actionMap.put("ShiftDownAction", new ShiftDownAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("LEFT"), "LeftAction");
+        actionMap.put("LeftAction", new LeftAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("RIGHT"), "RightAction");
+        actionMap.put("RightAction", new RightAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("shift LEFT"), "ShiftLeftAction");
+        actionMap.put("ShiftLeftAction", new ShiftLeftAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("shift RIGHT"), "ShiftRightAction");
+        actionMap.put("ShiftRightAction", new ShiftRightAction());
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -281,5 +327,109 @@ public class ScrollView
                 "Pixels",
                 20,
                 "Size of mouse wheel increment for ScrollView");
+    }
+
+    private class DownAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final JScrollBar vertical = component.getVerticalScrollBar();
+            vertical.setValue(vertical.getValue() + vertical.getUnitIncrement());
+        }
+    }
+
+    private class LeftAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final JScrollBar horizontal = component.getHorizontalScrollBar();
+            horizontal.setValue(horizontal.getValue() - horizontal.getUnitIncrement());
+        }
+    }
+
+    private class RightAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final JScrollBar horizontal = component.getHorizontalScrollBar();
+            horizontal.setValue(horizontal.getValue() + horizontal.getUnitIncrement());
+        }
+    }
+
+    private class ShiftDownAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final JScrollBar vertical = component.getVerticalScrollBar();
+            vertical.setValue(vertical.getValue() + 1);
+        }
+    }
+
+    private class ShiftLeftAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final JScrollBar horizontal = component.getHorizontalScrollBar();
+            horizontal.setValue(horizontal.getValue() - 1);
+        }
+    }
+
+    private class ShiftRightAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final JScrollBar horizontal = component.getHorizontalScrollBar();
+            horizontal.setValue(horizontal.getValue() + 1);
+        }
+    }
+
+    private class ShiftUpAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final JScrollBar vertical = component.getVerticalScrollBar();
+            vertical.setValue(vertical.getValue() - 1);
+        }
+    }
+
+    private class UpAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final JScrollBar vertical = component.getVerticalScrollBar();
+            vertical.setValue(vertical.getValue() - vertical.getUnitIncrement());
+        }
     }
 }

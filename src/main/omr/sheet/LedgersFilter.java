@@ -16,22 +16,25 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.grid.StaffInfo;
-import omr.grid.StaffManager;
-
 import omr.lag.BasicLag;
 import omr.lag.JunctionShiftPolicy;
 import omr.lag.Lag;
 import omr.lag.Lags;
 import omr.lag.Section;
-import omr.lag.SectionsBuilder;
+import omr.lag.SectionFactory;
 
 import omr.run.Orientation;
 import static omr.run.Orientation.HORIZONTAL;
-import omr.run.RunsTable;
-import omr.run.RunsTableFactory;
+import omr.run.RunTable;
+import omr.run.RunTableFactory;
+
+import omr.sheet.ui.LagController;
+
+import omr.step.Step;
 
 import omr.util.IntUtil;
+
+import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +90,7 @@ public class LedgersFilter
     // process //
     //---------//
     /**
-     * Start from binary image and build the runs and sections that could make ledgers.
+     * Start from NO_STAFF image and build the runs and sections that could make ledgers.
      */
     public void process ()
     {
@@ -96,42 +99,44 @@ public class LedgersFilter
                 constants.minDistanceFromStaff);
         final int minRunLength = scale.toPixels(constants.minRunLength);
         final StaffManager staffManager = sheet.getStaffManager();
-        final RunsTableFactory.Filter filter = new RunsTableFactory.Filter()
+        final RunTableFactory.Filter filter = new RunTableFactory.LengthFilter(minRunLength)
         {
             @Override
             public boolean check (int x,
                                   int y,
                                   int length)
             {
-                // Check that the run stands outside of staves.
-                Point center = new Point(x + (length / 2), y);
-                StaffInfo staff = staffManager.getStaffAt(center);
+                // Check run length
+                if (super.check(x, y, length)) {
+                    // Check also that the run stands outside of staves cores.
+                    Point center = new Point(x + (length / 2), y);
+                    Staff staff = staffManager.getClosestStaff(center);
 
-                return staff.distanceTo(center) >= minDistanceFromStaff;
+                    return staff.distanceTo(center) >= minDistanceFromStaff;
+                }
+
+                return false;
             }
         };
 
-        final RunsTable hugeHoriTable = new RunsTableFactory(
-                HORIZONTAL,
-                sheet.getPicture().getSource(Picture.SourceKey.STAFF_LINE_FREE),
-                minRunLength).createTable("huge-hori", filter);
-
-        final Lag lag = new BasicLag("hHugeLag", Orientation.HORIZONTAL);
+        final RunTableFactory runFactory = new RunTableFactory(HORIZONTAL, filter);
+        final ByteProcessor buffer = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
+        final RunTable ledgerTable = runFactory.createTable("ledger", buffer);
+        final Lag lag = new BasicLag(Lags.LEDGER_LAG, Orientation.HORIZONTAL);
         final int maxShift = scale.toPixels(constants.maxRunShift);
-        final SectionsBuilder sectionsBuilder = new SectionsBuilder(
+        final SectionFactory sectionsBuilder = new SectionFactory(
                 lag,
                 new JunctionShiftPolicy(maxShift));
 
-        sectionsBuilder.createSections(hugeHoriTable, true);
+        sectionsBuilder.createSections(ledgerTable, null, true);
         setVipSections(lag);
 
-        sheet.setLag(Lags.FULL_HLAG, lag);
-        sheet.getSystemManager().dispatchHorizontalHugeSections();
+        sheet.setLag(Lags.LEDGER_LAG, lag);
+        sheet.getSystemManager().dispatchLedgerSections();
 
-        if (Main.getGui() != null) {
+        if ((Main.getGui() != null) && constants.displayLedgers.isSet()) {
             // Display a view on this lag
-            HoriController horiController = new HoriController(sheet, lag);
-            horiController.refresh();
+            new LagController(sheet, lag, Step.LEDGER_TAB).refresh();
         }
     }
 
@@ -160,6 +165,10 @@ public class LedgersFilter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        final Constant.Boolean displayLedgers = new Constant.Boolean(
+                false,
+                "Should we display the view on ledgers?");
+
         final Scale.Fraction minDistanceFromStaff = new Scale.Fraction(
                 0.25,
                 "Minimum vertical distance from nearest staff");
@@ -174,6 +183,6 @@ public class LedgersFilter
 
         final Constant.String ledgerVipSections = new Constant.String(
                 "",
-                "(Debug) Comma-separated list of VIP ledger sections");
+                "(Debug) Comma-separated values of VIP ledger sections IDs");
     }
 }

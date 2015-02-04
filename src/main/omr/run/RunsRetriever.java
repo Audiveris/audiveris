@@ -56,8 +56,7 @@ public class RunsRetriever
      *
      * @param orientation the desired orientation
      * @param adapter     an adapter to provide pixel access as well as specific
-     *                    call-back actions when a run (either foreground or
-     *                    background) has just been read.
+     *                    call-back action when a foreground run has just been read.
      */
     public RunsRetriever (Orientation orientation,
                           Adapter adapter)
@@ -85,7 +84,6 @@ public class RunsRetriever
         final int pMax = (rect.y + rect.height) - 1;
 
         rowBasedRetrieval(pMin, pMax, cMin, cMax);
-        adapter.terminate();
     }
 
     //-----------------//
@@ -94,50 +92,44 @@ public class RunsRetriever
     /**
      * Process the pixels in position 'p' between coordinates 'cMin' and 'cMax'
      *
-     * @param p    the position in the pixels array (x for vertical)
+     * @param pos  the position in the pixels array (x for vertical)
      * @param cMin the starting coordinate (y for vertical)
      * @param cMax the ending coordinate
      */
-    private void processPosition (int p,
+    private void processPosition (int pos,
                                   int cMin,
                                   int cMax)
     {
+        /** Buffer of runs for current position. */
+        final List<Run> posRuns = new ArrayList<Run>();
+
         // Current run is FOREGROUND or BACKGROUND
         boolean isFore = false;
 
         // Current length of the run in progress
         int length = 0;
 
-        // Current cumulated gray level for the run in progress
-        int cumul = 0;
-
         // Browse other dimension
         for (int c = cMin; c <= cMax; c++) {
-            final int level = adapter.getLevel(c, p);
-
             ///logger.info("p:" + p + " c:" + c + " level:" + level);
-            if (adapter.isFore(c, p)) {
+            if (adapter.isFore(c, pos)) {
                 // We are on a foreground pixel
                 if (isFore) {
                     // Append to the foreground run in progress
                     length++;
-                    cumul += level;
                 } else {
-                    // End the previous background run if any
-                    if (length > 0) {
-                        adapter.backRun(c, p, length);
-                    }
-
                     // Initialize values for the starting foreground run
                     isFore = true;
                     length = 1;
-                    cumul = level;
                 }
             } else {
                 // We are on a background pixel
                 if (isFore) {
                     // End the previous foreground run
-                    adapter.foreRun(c, p, length, cumul);
+                    if (adapter.foreRun(c, pos, length)) {
+                        // Bufferize the runs
+                        posRuns.add(new Run(c - cMin - length, length));
+                    }
 
                     // Initialize values for the starting background run
                     isFore = false;
@@ -151,10 +143,14 @@ public class RunsRetriever
 
         // Process end of last run in this position
         if (isFore) {
-            adapter.foreRun(cMax + 1, p, length, cumul);
-        } else {
-            adapter.backRun(cMax + 1, p, length);
+            if (adapter.foreRun((cMax + 1) - cMin, pos, length)) {
+                // Bufferize the runs
+                posRuns.add(new Run((cMax + 1) - cMin - length, length));
+            }
         }
+
+        // Forward the buffer of runs
+        adapter.endPosition(pos, posRuns);
     }
 
     //-------------------//
@@ -217,66 +213,36 @@ public class RunsRetriever
     // Adapter //
     //---------//
     /**
-     * Interface {@code Adapter} is used to plug call-backs to a run
-     * retrieval process.
+     * Interface {@code Adapter} is used to plug call-backs to a run retrieval process.
      */
     public static interface Adapter
             extends Concurrency
     {
         //~ Methods --------------------------------------------------------------------------------
 
-        //---------//
-        // backRun //
-        //---------//
         /**
-         * Called at end of a background run, with the related coordinates
+         * Called at end of position.
+         *
+         * @param pos  position value
+         * @param runs sequence of runs for this position
+         */
+        void endPosition (int pos,
+                          List<Run> runs);
+
+        /**
+         * Called at end of a foreground run.
          *
          * @param coord  location of the point past the end of the run
          * @param pos    constant position of the run
          * @param length length of the run just found
+         * @return true if run is accepted
          */
-        void backRun (int coord,
-                      int pos,
-                      int length);
+        boolean foreRun (int coord,
+                         int pos,
+                         int length);
 
-        //---------//
-        // foreRun //
-        //---------//
         /**
-         * Same as background, but for a foreground run. We also provide the
-         * measure of accumulated gray level in that case.
-         *
-         * @param coord  location of the point past the end of the run
-         * @param pos    constant position of the run
-         * @param length length of the run just found
-         * @param cumul  cumulated gray levels along the run
-         */
-        void foreRun (int coord,
-                      int pos,
-                      int length,
-                      int cumul);
-
-        //----------//
-        // getLevel //
-        //----------//
-        /**
-         * This method is used to report the gray level of the pixel
-         * read at location (coord, pos).
-         *
-         * @param coord x for horizontal runs, y for vertical runs
-         * @param pos   y for horizontal runs, x for vertical runs
-         *
-         * @return the pixel gray value (from 0 for black up to 255 for white)
-         */
-        int getLevel (int coord,
-                      int pos);
-
-        //--------//
-        // isFore //
-        //--------//
-        /**
-         * This method is used to check if the pixel at location
-         * (coord, pos) is a foreground pixel.
+         * Check if pixel at location (coord, pos) is foreground.
          *
          * @param coord x for horizontal runs, y for vertical runs
          * @param pos   y for horizontal runs, x for vertical runs
@@ -285,13 +251,5 @@ public class RunsRetriever
          */
         boolean isFore (int coord,
                         int pos);
-
-        //-----------//
-        // terminate //
-        //-----------//
-        /**
-         * Called at the very end of run retrieval.
-         */
-        void terminate ();
     }
 }

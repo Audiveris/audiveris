@@ -14,17 +14,13 @@ package omr.text;
 import omr.glyph.facets.Glyph;
 
 import omr.score.entity.PartNode;
-import omr.score.entity.Staff;
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldSystemPart;
 
-import omr.sheet.SystemInfo;
-
-import omr.util.Navigable;
+import omr.sheet.Skew;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -47,51 +43,15 @@ public class TextLine
 
     private static final Logger logger = LoggerFactory.getLogger(TextLine.class);
 
-    /** Line comparator by deskewed abscissa. */
-    public static final Comparator<TextLine> byAbscissa = new Comparator<TextLine>()
-    {
-        @Override
-        public int compare (TextLine o1,
-                            TextLine o2)
-        {
-            return Double.compare(o1.getDskOrigin().getX(), o2.getDskOrigin().getX());
-        }
-    };
-
-    /** Line comparator by deskewed ordinate. */
-    public static final Comparator<TextLine> byOrdinate = new Comparator<TextLine>()
-    {
-        @Override
-        public int compare (TextLine o1,
-                            TextLine o2)
-        {
-            return Double.compare(o1.getDskOrigin().getY(), o2.getDskOrigin().getY());
-        }
-    };
-
     //~ Instance fields ----------------------------------------------------------------------------
     //
-    /** Containing system. */
-    @Navigable(false)
-    private final SystemInfo system;
-
     /** Words that compose this line. */
     private final List<TextWord> words = new ArrayList<TextWord>();
-
-    /** Unmodifiable view of the words sequence. */
-    @Navigable(false)
-    private final List<TextWord> wordsView = Collections.unmodifiableList(words);
-
-    /** Deskewed origin. */
-    private Point2D dskOrigin;
 
     /** Average font for the line. */
     private FontInfo meanFont;
 
-    /**
-     * Role of this text line.
-     * Lazily computed, since it depends for a part on the contained words.
-     */
+    /** Role of this text line. */
     private TextRoleInfo roleInfo;
 
     /** Temporary processed flag. */
@@ -103,15 +63,13 @@ public class TextLine
     // TextLine //
     //----------//
     /**
-     * Creates a new TextLine object.
+     * Creates a new TextLine object from a sequence of words.
      *
-     * @param system the containing system
-     * @param words  the sequence of words
+     * @param words the sequence of words
      */
-    public TextLine (SystemInfo system,
-                     List<TextWord> words)
+    public TextLine (List<TextWord> words)
     {
-        this(system);
+        this();
 
         this.words.addAll(words);
 
@@ -124,16 +82,12 @@ public class TextLine
     // TextLine //
     //----------//
     /**
-     * Creates a new TextLine object, without its contained words which
-     * are assumed to be added later.
-     *
-     * @param system the containing system
+     * Creates a new TextLine object, without its contained words which are assumed
+     * to be added later.
      */
-    public TextLine (SystemInfo system)
+    public TextLine ()
     {
         super(null, null, null, null);
-
-        this.system = system;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -174,6 +128,48 @@ public class TextLine
         words.add(word);
         word.setTextLine(this);
         invalidateCache();
+    }
+
+    /**
+     * Give a Line comparator by de-skewed abscissa.
+     *
+     * @param skew the global sheet skew
+     * @return the skew-based abscissa comparator
+     */
+    public static Comparator<TextLine> byAbscissa (final Skew skew)
+    {
+        return new Comparator<TextLine>()
+        {
+            @Override
+            public int compare (TextLine line1,
+                                TextLine line2)
+            {
+                return Double.compare(
+                        line1.getDskOrigin(skew).getX(),
+                        line2.getDskOrigin(skew).getX());
+            }
+        };
+    }
+
+    /**
+     * Give a Line comparator by de-skewed ordinate.
+     *
+     * @param skew the global sheet skew
+     * @return the skew-based ordinate comparator
+     */
+    public static Comparator<TextLine> byOrdinate (final Skew skew)
+    {
+        return new Comparator<TextLine>()
+        {
+            @Override
+            public int compare (TextLine line1,
+                                TextLine line2)
+            {
+                return Double.compare(
+                        line1.getDskOrigin(skew).getY(),
+                        line2.getDskOrigin(skew).getY());
+            }
+        };
     }
 
     //------//
@@ -272,21 +268,20 @@ public class TextLine
     // getDskOrigin //
     //--------------//
     /**
-     * Report the deskewed origin of this text line
+     * Report the de-skewed origin of this text line
      *
-     * @return the deskewed origin
+     * @param skew the sheet global skew
+     * @return the de-skewed origin
      */
-    public Point2D getDskOrigin ()
+    public Point2D getDskOrigin (Skew skew)
     {
-        if (dskOrigin == null) {
-            Line2D base = getBaseline();
+        Line2D base = getBaseline();
 
-            if (base != null) {
-                dskOrigin = system.getSkew().deskewed(base.getP1());
-            }
+        if (base != null) {
+            return skew.deskewed(base.getP1());
         }
 
-        return dskOrigin;
+        return null;
     }
 
     //--------------//
@@ -390,17 +385,12 @@ public class TextLine
     // getRole //
     //---------//
     /**
-     * Lazily compute the line role.
+     * Report the line role.
      *
      * @return the roleInfo
      */
     public TextRoleInfo getRole ()
     {
-        if (roleInfo == null) {
-            // Guess role
-            roleInfo = TextRole.guessRole(this, system);
-        }
-
         return roleInfo;
     }
 
@@ -412,13 +402,15 @@ public class TextLine
      *
      * @return the containing system part
      */
-    public SystemPart getSystemPart ()
+    public OldSystemPart getSystemPart ()
     {
-        final TextRole role = getRole().role;
-        final Point location = getFirstWord().getLocation();
-        final Staff staff = system.getScoreSystem().getTextStaff(role, location);
+        throw new RuntimeException("getSystemPart. Not yet implemented");
 
-        return staff.getPart();
+        //        final TextRole role = getRole().role;
+        //        final Point location = getFirstWord().getLocation();
+        //        final Staff staff = system.getScoreSystem().getTextStaff(role, location);
+        //
+        //        return staff.getPart();
     }
 
     //----------//
@@ -487,20 +479,20 @@ public class TextLine
      */
     public List<TextWord> getWords ()
     {
-        return wordsView;
+        return Collections.unmodifiableList(words);
     }
 
-    //---------//
-    // isChord //
-    //---------//
+    //-------------//
+    // isChordName //
+    //-------------//
     /**
-     * Report whether this line has the Chord role
+     * Report whether this line has the ChordName role
      *
      * @return true for chord line
      */
-    public boolean isChord ()
+    public boolean isChordName ()
     {
-        return getRole().role == TextRole.Chord;
+        return getRole().role == TextRole.ChordName;
     }
 
     //----------//
@@ -596,33 +588,22 @@ public class TextLine
         // Translate line bounds and baseline
         super.translate(dx, dy);
 
-        // Update the deskewed origin
-        getDskOrigin().setLocation(system.getSkew().deskewed(getBaseline().getP1()));
-
         // Translate contained descriptors
         for (TextWord word : words) {
             word.translate(dx, dy);
         }
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
-    /**
-     * {@inheritDoc}
-     */
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internals());
 
-        if (getDskOrigin() != null) {
-            sb.append(
-                    String.format(" dsk[%.0f,%.0f]", getDskOrigin().getX(), getDskOrigin().getY()));
-        }
-
-        if (getRole() != null) {
-            sb.append(getRole());
+        if (roleInfo != null) {
+            sb.append(" ").append(roleInfo);
         }
 
         return sb.toString();
@@ -638,7 +619,6 @@ public class TextLine
         setBaseline(null);
         setConfidence(null);
 
-        dskOrigin = null;
         roleInfo = null;
         meanFont = null;
     }

@@ -13,7 +13,6 @@ package omr.sheet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
 
 /**
  * Class {@code Ending} is a physical {@link Dash} that is the
@@ -36,7 +35,7 @@ public class Ending
      * @param staff the related staff
      */
     public Ending (Glyph stick,
-                   StaffInfo staff)
+                   Staff staff)
     {
         super(stick, staff);
     }

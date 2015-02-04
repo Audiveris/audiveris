@@ -11,10 +11,16 @@
 // </editor-fold>
 package omr.sig;
 
+import omr.sig.relation.HeadStemRelation;
+import omr.sig.relation.BasicExclusion;
+import omr.sig.relation.Relation;
+import omr.sig.relation.BasicSupport;
+import omr.sig.inter.AbstractInter;
+import omr.sig.inter.Inter;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.sig.Exclusion.Cause;
+import omr.sig.relation.Exclusion.Cause;
 
 import omr.util.HorizontalSide;
 

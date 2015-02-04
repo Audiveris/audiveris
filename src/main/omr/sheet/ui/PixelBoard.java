@@ -57,20 +57,20 @@ public class PixelBoard
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Abscissa of upper Left point */
+    /** Abscissa of upper Left point. */
     private final LIntegerField x = new LIntegerField("X", "Abscissa of upper left corner");
 
-    /** Ordinate of upper Left point */
+    /** Ordinate of upper Left point. */
     private final LIntegerField y = new LIntegerField("Y", "Ordinate of upper left corner");
 
-    /** Width of rectangle */
+    /** Width of rectangle. */
     private final LIntegerField width = new LIntegerField("Width", "Width of rectangle");
 
-    /** Height of rectangle */
+    /** Height of rectangle. */
     private final LIntegerField height = new LIntegerField("Height", "Height of rectangle");
 
-    /** Pixel gray level */
-    private final LIntegerField level = new LIntegerField(false, "Level", "Pixel level");
+    /** Pixel level. */
+    protected final LIntegerField level = new LIntegerField(false, "Level", "Pixel level");
 
     //~ Constructors -------------------------------------------------------------------------------
     //------------//
@@ -195,8 +195,7 @@ public class PixelBoard
     {
         //~ Methods --------------------------------------------------------------------------------
 
-        // Method run whenever user presses Return/Enter in one of the parameter
-        // fields
+        // Method run whenever user presses Return/Enter in one of the parameter fields
         @Override
         public void actionPerformed (ActionEvent e)
         {

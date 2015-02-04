@@ -18,7 +18,7 @@ import omr.lag.BasicLag;
 import omr.lag.JunctionAllPolicy;
 import omr.lag.Lag;
 import omr.lag.Section;
-import omr.lag.SectionsBuilder;
+import omr.lag.SectionFactory;
 
 import omr.run.Orientation;
 
@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+import java.util.List;
 
 /**
  * Class {@code SymbolGlyph} is an artificial glyph, built from a symbol.
@@ -82,14 +83,12 @@ public class SymbolGlyph
         /** Build a dedicated SymbolPicture */
         ByteProcessor buffer = createBuffer(image);
 
-        /** Build related vertical lag */
-        Lag iLag = new BasicLag("iLag", Orientation.VERTICAL);
-
-        new SectionsBuilder(iLag, new JunctionAllPolicy()) // catch all
-                .createSections("symbol", buffer, 0); // minRunLength = 0
+        List<Section> sections = new SectionFactory(
+                Orientation.VERTICAL,
+                JunctionAllPolicy.INSTANCE).createSections(buffer, null);
 
         // Retrieve the whole glyph made of all sections
-        for (Section section : iLag.getSections()) {
+        for (Section section : sections) {
             addSection(section, Glyph.Linking.LINK);
         }
 

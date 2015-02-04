@@ -15,7 +15,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.sheet.Sheet;
 
-import omr.sig.Inter;
+import omr.sig.inter.Inter;
 
 import omr.ui.util.AbstractMouseListener;
 import omr.ui.util.UIUtil;

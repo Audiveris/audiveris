@@ -11,11 +11,11 @@
 // </editor-fold>
 package omr.script;
 
-import omr.score.ScoresManager;
-
+import omr.sheet.BookManager;
 import omr.sheet.Sheet;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -32,9 +32,9 @@ public class PrintTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The file used for print */
-    @XmlAttribute
-    private String path;
+    /** The path used for print */
+    @XmlAttribute(name = "path")
+    private String pathString;
 
     //~ Constructors -------------------------------------------------------------------------------
     //------------//
@@ -45,9 +45,9 @@ public class PrintTask
      *
      * @param path the full path of the PDF file
      */
-    public PrintTask (String path)
+    public PrintTask (Path path)
     {
-        this.path = path;
+        setPath(path.toString());
     }
 
     //------------//
@@ -65,17 +65,28 @@ public class PrintTask
     @Override
     public void core (Sheet sheet)
     {
-        ScoresManager.getInstance().writePhysicalPdf(
-                sheet.getScore(),
-                (path != null) ? new File(path) : null);
+        BookManager.getInstance().writePhysicalPdf(sheet.getBook(), getPath());
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
-    @Override
-    protected String internalsString ()
+    public Path getPath ()
     {
-        return " print " + path + super.internalsString();
+        return Paths.get(pathString);
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(" print ").append(pathString);
+
+        return sb.toString();
+    }
+
+    private void setPath (String pathString)
+    {
+        this.pathString = pathString;
     }
 }

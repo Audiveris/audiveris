@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.sheet.Staff;
 import omr.Main;
 
 import omr.constant.Constant;
@@ -18,7 +19,7 @@ import omr.constant.ConstantSet;
 
 import omr.image.jai.JaiDewarper;
 
-import omr.score.ScoresManager;
+import omr.sheet.BookManager;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -31,6 +32,7 @@ import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
@@ -122,7 +124,7 @@ public class TargetBuilder
         buildWarpGrid(dewarper);
 
         // Dewarp the initial image
-        RenderedImage dewarpedImage = dewarper.dewarpImage(sheet.getPicture().getInitialImage());
+        RenderedImage dewarpedImage = dewarper.dewarpImage(sheet.getPicture().getImage(null));
 
         // Add a view on dewarped image?
         if (Main.getGui() != null) {
@@ -206,7 +208,7 @@ public class TargetBuilder
     public void renderWarpGrid (Graphics g,
                                 boolean useSource)
     {
-        if (!constants.displayGrid.getValue()) {
+        if (!constants.showDewarpGrid.getValue()) {
             return;
         }
 
@@ -243,7 +245,7 @@ public class TargetBuilder
 
         // Target system parameters
         for (SystemInfo system : sheet.getSystems()) {
-            StaffInfo firstStaff = system.getFirstStaff();
+            Staff firstStaff = system.getFirstStaff();
             LineInfo firstLine = firstStaff.getFirstLine();
             Point2D dskLeft = skew.deskewed(firstLine.getEndPoint(LEFT));
             Point2D dskRight = skew.deskewed(firstLine.getEndPoint(RIGHT));
@@ -266,7 +268,7 @@ public class TargetBuilder
             targetPage.systems.add(targetSystem);
 
             // Target staff parameters
-            for (StaffInfo staff : system.getStaves()) {
+            for (Staff staff : system.getStaves()) {
                 dskLeft = skew.deskewed(staff.getFirstLine().getEndPoint(LEFT));
 
                 if (prevLine != null) {
@@ -387,10 +389,10 @@ public class TargetBuilder
     //------------//
     private void storeImage (RenderedImage dewarpedImage)
     {
-        String pageId = sheet.getPage().getId();
+        String sheetId = sheet.getId();
         File file = new File(
-                ScoresManager.getInstance().getDefaultDewarpDirectory(),
-                pageId + ".dewarped.png");
+                BookManager.getInstance().getDefaultDewarpDirectory(),
+                sheetId + ".dewarped.png");
 
         try {
             String path = file.getCanonicalPath();
@@ -410,9 +412,9 @@ public class TargetBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean displayGrid = new Constant.Boolean(
+        Constant.Boolean showDewarpGrid = new Constant.Boolean(
                 false,
-                "Should we display the dewarp grid?");
+                "Should we show the dewarp grid?");
 
         Scale.LineFraction gridPointSize = new Scale.LineFraction(
                 0.2,

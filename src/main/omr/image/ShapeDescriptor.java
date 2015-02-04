@@ -19,10 +19,8 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeSet;
 
 import omr.image.Anchored.Anchor;
-import omr.image.Template.Key;
 
 import omr.ui.symbol.MusicFont;
-import static omr.ui.symbol.MusicFont.getFont;
 import omr.ui.symbol.TemplateSymbol;
 
 import org.slf4j.Logger;
@@ -34,21 +32,27 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 /**
  * Class {@code ShapeDescriptor} handles all the templates for a shape at a given
  * global interline value.
  * <p>
- * It gathers all relevant template variants (they depend on line config).
- * All these variants share the same physical dimension (width * height).
+ * Today there is just a single template per ShapeDescriptor.
  * <p>
- * TODO: Support could be added for slightly different widths, if so needed.
+ * TODO: investigate the need for template variants:
+ * This would apply to NOTEHEAD_VOID_SMALL and NOTEHEAD_BLACK_SMALL for which we could make a
+ * difference between the stem side and the opposite (open) side, with background locations on open
+ * side and none on stem side.
+ * These variants would share the same physical dimension (width * height).
+ * <p>
+ * For WHOLE_NOTE_SMALL we have a single template with background locations on both sides.
+ * <p>
+ * All cue notes (*_SMALL shapes) have background locations on upper and lower sides.
+ * <p>
+ * TODO: Support could be added for slightly different widths, if so needed?
  *
  * @author Hervé Bitteur
  */
@@ -84,7 +88,7 @@ public class ShapeDescriptor
 
     private final int interline;
 
-    private final Map<Key, Template> variants = new HashMap<Key, Template>();
+    private final Template template;
 
     private int width = -1; // Template width
 
@@ -103,7 +107,7 @@ public class ShapeDescriptor
         this.shape = shape;
         this.interline = interline;
 
-        buildAllVariants();
+        template = createTemplate(shape, interline);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -111,31 +115,20 @@ public class ShapeDescriptor
     // evaluate //
     //----------//
     /**
-     * Try all defined templates at specified location and report
-     * the best distance found.
+     * Try the relevant templates at specified location and report best distance found.
      *
      * @param x         location abscissa
      * @param y         location ordinate
      * @param anchor    location WRT template
      * @param distances table of distances
-     * @param line      use of middle hasLine or not
      * @return the best distance found
      */
     public double evaluate (int x,
                             int y,
                             Anchor anchor,
-                            DistanceTable distances,
-                            boolean line)
+                            DistanceTable distances)
     {
-        double best = Double.MAX_VALUE;
-
-        for (Entry<Key, Template> entry : variants.entrySet()) {
-            if (entry.getKey().hasLine == line) {
-                best = Math.min(best, entry.getValue().evaluate(x, y, anchor, distances));
-            }
-        }
-
-        return best;
+        return template.evaluate(x, y, anchor, distances);
     }
 
     //-----------//
@@ -149,11 +142,7 @@ public class ShapeDescriptor
      */
     public Rectangle getBounds (Rectangle symBox)
     {
-        for (Template tpl : variants.values()) {
-            return tpl.getBounds(symBox);
-        }
-
-        return null;
+        return template.getBounds(symBox);
     }
 
     //-----------//
@@ -169,11 +158,7 @@ public class ShapeDescriptor
     //-----------//
     public Point getOffset (Anchored.Anchor anchor)
     {
-        for (Template tpl : variants.values()) {
-            return tpl.getOffset(anchor);
-        }
-
-        return null;
+        return template.getOffset(anchor);
     }
 
     //----------//
@@ -200,19 +185,15 @@ public class ShapeDescriptor
                                         int y,
                                         Anchored.Anchor anchor)
     {
-        for (Template tpl : variants.values()) {
-            return tpl.getSymbolBoundsAt(x, y, anchor);
-        }
-
-        return null;
+        return template.getSymbolBoundsAt(x, y, anchor);
     }
 
     //-------------//
     // getTemplate //
     //-------------//
-    public Template getTemplate (Key key)
+    public Template getTemplate ()
     {
-        return variants.get(key);
+        return template;
     }
 
     //---------------------//
@@ -231,11 +212,7 @@ public class ShapeDescriptor
                                           int y,
                                           Anchored.Anchor anchor)
     {
-        for (Template tpl : variants.values()) {
-            return tpl.getBoundsAt(x, y, anchor);
-        }
-
-        return null;
+        return template.getBoundsAt(x, y, anchor);
     }
 
     //----------//
@@ -244,15 +221,6 @@ public class ShapeDescriptor
     public int getWidth ()
     {
         return width;
-    }
-
-    //-------------//
-    // putTemplate //
-    //-------------//
-    public void putTemplate (Key key,
-                             Template tpl)
-    {
-        variants.put(key, tpl);
     }
 
     //----------//
@@ -279,12 +247,12 @@ public class ShapeDescriptor
      * Similarly, the non-relevant pixels are assumed to be foreground.
      * This is to allow the detection of reliable background key points.
      *
-     * @param img the source image
-     * @param key the template specs
+     * @param img   the source image
+     * @param shape the template shape
      * @return the table of distances to foreground
      */
-    private static Table computeDistances (BufferedImage img,
-                                           Key key)
+    private static DistanceTable computeDistances (BufferedImage img,
+                                                   Shape shape)
     {
         // Retrieve foreground pixels
         final int width = img.getWidth();
@@ -314,10 +282,10 @@ public class ShapeDescriptor
         }
 
         // Compute template distance transform
-        final Table distances = new ChamferDistance.Short().compute(fore);
+        final DistanceTable distances = new ChamferDistance.Short().compute(fore);
 
         if (logger.isDebugEnabled()) {
-            distances.dump(key + "  distances");
+            distances.dump(shape + "  distances");
         }
 
         // Trim the distance table of its surrounding rectangle?
@@ -327,9 +295,9 @@ public class ShapeDescriptor
     //---------//
     // getCode //
     //---------//
-    private static int getCode (Key key)
+    private static int getCode (Shape shape)
     {
-        switch (key.shape) {
+        switch (shape) {
         case NOTEHEAD_BLACK:
         case NOTEHEAD_BLACK_SMALL:
             return 207;
@@ -343,7 +311,7 @@ public class ShapeDescriptor
             return 119;
         }
 
-        logger.error(key.shape + " is not supported!");
+        logger.error(shape + " is not supported!");
 
         return 0;
     }
@@ -362,7 +330,7 @@ public class ShapeDescriptor
      * @return the collection of key locations, with their corresponding distance value
      */
     private static List<PixelDistance> getKeyPoints (BufferedImage img,
-                                                     Table distances)
+                                                     DistanceTable distances)
     {
         // Generate key points
         List<PixelDistance> keyPoints = new ArrayList<PixelDistance>();
@@ -415,7 +383,7 @@ public class ShapeDescriptor
                 (sym.y + (0.5 * (sym.height - 1))) / height);
 
         // WHOLE_NOTE & WHOLE_NOTE_SMALL are not concerned further
-        if (ShapeSet.Notes.contains(template.getKey().shape)) {
+        if (ShapeSet.Notes.contains(template.getShape())) {
             return;
         }
 
@@ -446,43 +414,18 @@ public class ShapeDescriptor
      * Such pixels are marked with a specific color (green foreground) so that the template can
      * measure their distance to (black) foreground.
      *
-     * @param img  the source image
-     * @param box  bounds of symbol relative to image
-     * @param line true if middle (ledger/staff) line is present
+     * @param img the source image
+     * @param box bounds of symbol relative to image
      */
     private void addHoles (BufferedImage img,
-                           Rectangle box,
-                           boolean line)
+                           Rectangle box)
     {
         if (shapesWithHoles.contains(shape)) {
             // Identify holes
             final List<Point> holeSeeds = new ArrayList<Point>();
 
-            if (line) {
-                // We have a ledger in the middle, with holes above and below
-                if ((shape == WHOLE_NOTE) || (shape == WHOLE_NOTE_SMALL)) {
-                    holeSeeds.add(
-                            new Point(
-                                    box.x + (int) Math.rint(box.width * 0.4),
-                                    box.y + (int) Math.rint(box.height * 0.15)));
-                    holeSeeds.add(
-                            new Point(
-                                    box.x + (int) Math.rint(box.width * 0.55),
-                                    box.y + (int) Math.rint(box.height * 0.67)));
-                } else {
-                    holeSeeds.add(
-                            new Point(
-                                    box.x + (int) Math.rint(box.width * 0.7),
-                                    box.y + (int) Math.rint(box.height * 0.2)));
-                    holeSeeds.add(
-                            new Point(
-                                    box.x + (int) Math.rint(box.width * 0.2),
-                                    box.y + (int) Math.rint(box.height * 0.68)));
-                }
-            } else {
-                // We have no ledger, just a big hole in the symbol center
-                holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
-            }
+            // We have no ledger, just a big hole in the symbol center
+            holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
 
             // Fill the holes if any with green color
             FloodFiller floodFiller = new FloodFiller(img);
@@ -535,20 +478,6 @@ public class ShapeDescriptor
         }
     }
 
-    //------------------//
-    // buildAllVariants //
-    //------------------//
-    private void buildAllVariants ()
-    {
-        final MusicFont font = getFont(interline);
-
-        for (boolean line : new boolean[]{false, true}) {
-            Key key = new Key(shape, line);
-            Template tpl = createTemplate(key, font);
-            putTemplate(key, tpl);
-        }
-    }
-
     //----------------//
     // createTemplate //
     //----------------//
@@ -557,15 +486,17 @@ public class ShapeDescriptor
      * TODO: Implement a better way to select representative key points perhaps using a skeleton for
      * foreground and another skeleton for holes?
      *
-     * @param key  full identification of the template
-     * @param font the underlying music font properly scaled
+     * @param shape     shape of the template
+     * @param interline scaling for font
      * @return the brand new template
      */
-    private Template createTemplate (Key key,
-                                     MusicFont font)
+    private Template createTemplate (Shape shape,
+                                     int interline)
     {
+        MusicFont font = MusicFont.getFont(interline);
+
         // Get symbol image painted on template rectangle
-        final TemplateSymbol symbol = new TemplateSymbol(key, getCode(key));
+        final TemplateSymbol symbol = new TemplateSymbol(shape, getCode(shape));
         final BufferedImage img = symbol.buildImage(font);
         width = img.getWidth();
         height = img.getHeight();
@@ -573,29 +504,24 @@ public class ShapeDescriptor
         binarize(img, 175);
 
         // Distances to foreground
-        final Table distances = computeDistances(img, key);
+        final DistanceTable distances = computeDistances(img, shape);
 
         // Add holes if any
-        addHoles(img, symbol.getSymbolBounds(font), key.hasLine);
+        addHoles(img, symbol.getSymbolBounds(font));
 
         // Flag non-relevant pixels
         flagIrrelevantPixels(img, distances);
 
         // Store a copy on disk for visual check?
         if (constants.keepTemplates.isSet()) {
-            ImageUtil.saveOnDisk(img, key + ".tpl" + interline);
+            ImageUtil.saveOnDisk(img, shape + ".tpl" + interline);
         }
 
         // Generate key points for relevant pixels (fore, holes or back)
         final List<PixelDistance> keyPoints = getKeyPoints(img, distances);
 
         // Generate the template instance
-        Template template = new Template(
-                key,
-                width,
-                height,
-                symbol.getSymbolBounds(font),
-                keyPoints);
+        Template template = new Template(shape, interline, symbol, width, height, keyPoints);
 
         // Add specific anchor points, if any
         addAnchors(template);
@@ -621,7 +547,7 @@ public class ShapeDescriptor
      * @param img the image to modify
      */
     private void flagIrrelevantPixels (BufferedImage img,
-                                       Table distances)
+                                       DistanceTable distances)
     {
         // First browse from each foreground pixel in the 4 directions to first non-foreground pixel
         // If this pixel is relevant and non-hole, flag it as a border pixel.
@@ -719,7 +645,7 @@ public class ShapeDescriptor
     //---------------//
     private Table getExtensions (Set<Point> borders,
                                  BufferedImage img,
-                                 Table distances)
+                                 DistanceTable distances)
     {
         Table ext = new Table.UnsignedByte(img.getWidth(), img.getHeight());
         ext.fill(0);

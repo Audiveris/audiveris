@@ -15,7 +15,8 @@ import omr.score.PartConnection.Candidate;
 import omr.score.PartConnection.Result;
 import omr.score.entity.Page;
 import omr.score.entity.ScorePart;
-import omr.score.entity.SystemPart;
+
+import omr.sheet.Part;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,18 +57,14 @@ public class PageReduction
     // reduce //
     //--------//
     /**
-     * Process a page by merging information from the page systems
+     * Process a page by merging information from the page systems.
      */
     public void reduce ()
     {
-        if (page.getSystems().isEmpty()) {
-            return;
-        }
-
-        /* Connect parts across the systems */
+        // Connect parts across the page systems
         PartConnection connection = PartConnection.connectPageSystems(page);
 
-        // Build part list
+        // Build logical part list and store it in page
         List<ScorePart> scoreParts = new ArrayList<ScorePart>();
 
         for (Result result : connection.getResultMap().keySet()) {
@@ -76,18 +73,18 @@ public class PageReduction
 
         page.setPartList(scoreParts);
 
-        // Make the connections: (system) SystemPart -> (page) ScorePart
+        // Make the connections: (system) Part -> (page) ScorePart
         Map<Candidate, Result> candidateMap = connection.getCandidateMap();
         logger.debug("Candidates:{}", candidateMap.size());
 
         for (Map.Entry<Candidate, Result> entry : candidateMap.entrySet()) {
             Candidate candidate = entry.getKey();
-            SystemPart systemPart = (SystemPart) candidate.getUnderlyingObject();
+            Part systemPart = (Part) candidate.getUnderlyingObject();
 
             Result result = entry.getValue();
             ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
 
-            // Connect (system) part -> (page) part
+            // Connect (system) part -> (page) ScorePart
             systemPart.setScorePart(scorePart);
 
             // Use same ID

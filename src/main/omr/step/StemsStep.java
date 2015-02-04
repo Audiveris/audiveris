@@ -11,7 +11,10 @@
 // </editor-fold>
 package omr.step;
 
+import omr.sheet.StemsBuilder;
 import omr.sheet.SystemInfo;
+
+import omr.sig.SigReducer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * @author Hervé Bitteur
  */
 public class StemsStep
-        extends AbstractSystemStep
+        extends AbstractSystemStep<Void>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -43,7 +46,7 @@ public class StemsStep
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 DATA_TAB,
-                "Build stems");
+                "Build stems for heads & beams");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -51,10 +54,11 @@ public class StemsStep
     // doSystem //
     //----------//
     @Override
-    public void doSystem (SystemInfo system)
+    public void doSystem (SystemInfo system,
+                          Void context)
             throws StepException
     {
-        system.stemsBuilder.linkStems(); // -> Stems links to heads & beams
-        system.sigReducer.contextualize();
+        new StemsBuilder(system).linkStems(); // -> Stems links to heads & beams
+        new SigReducer(system).contextualize();
     }
 }

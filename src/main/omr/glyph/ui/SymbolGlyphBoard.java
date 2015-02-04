@@ -165,7 +165,7 @@ public class SymbolGlyphBoard
         typeCombo.addActionListener(paramAction);
 
         // Confidence and Text fields
-        confField = new LDoubleField(false, "Conf", "Confidence in text value");
+        confField = new LDoubleField(false, "Conf", "Confidence in text value", "%.2f");
         textField = new LTextField(true, "Text", "Content of a textual glyph");
         textField.getField().setHorizontalAlignment(JTextField.LEFT);
 

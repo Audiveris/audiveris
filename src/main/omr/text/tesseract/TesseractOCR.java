@@ -16,15 +16,12 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.facets.BasicGlyph;
+import omr.sheet.Scale;
 
-import omr.sheet.SystemInfo;
-
-import omr.text.BasicContent;
 import omr.text.OCR;
+import omr.text.TextChar;
 import omr.text.TextLine;
-
-import omr.util.ClassUtil;
+import omr.text.TextWord;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,10 +69,6 @@ public class TesseractOCR
     private final AtomicInteger serial = new AtomicInteger(0);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //--------------//
-    // TesseractOCR //
-    //--------------//
     /**
      * Creates the TesseractOCR singleton.
      */
@@ -131,11 +124,11 @@ public class TesseractOCR
     // recognize //
     //-----------//
     @Override
-    public List<TextLine> recognize (BufferedImage bufferedImage,
+    public List<TextLine> recognize (Scale scale,
+                                     BufferedImage bufferedImage,
                                      Point topLeft,
                                      String languageCode,
                                      LayoutMode layoutMode,
-                                     SystemInfo system,
                                      String label)
     {
         // Make sure we have an OCR engine available
@@ -145,25 +138,8 @@ public class TesseractOCR
 
         try {
             // Allocate a processing order
-            TesseractOrder order;
-
-            // DEBUG
-            String name = "";
-
-            if (true) {
-                StackTraceElement elem = ClassUtil.getCallingFrame(
-                        BasicGlyph.class,
-                        BasicContent.class,
-                        TesseractOCR.class);
-
-                if (elem != null) {
-                    name += ("-" + elem.getMethodName());
-                }
-            }
-
-            order = new TesseractOrder(
-                    system,
-                    label + name,
+            TesseractOrder order = new TesseractOrder(
+                    label,
                     serial.incrementAndGet(),
                     constants.keepImages.isSet(),
                     languageCode,
@@ -173,10 +149,33 @@ public class TesseractOCR
             // Process the order
             List<TextLine> lines = order.process();
 
+            // Post-processing
             if (lines != null) {
-                // Translate relative coordinates to absolute ones
-                for (TextLine ol : lines) {
-                    ol.translate(topLeft.x, topLeft.y);
+                final int maxDashWidth = scale.toPixels(constants.maxDashWidth);
+
+                for (TextLine line : lines) {
+                    // Chars: Fix long "—" vs short "-"
+                    for (TextWord word : line.getWords()) {
+                        boolean updated = false;
+
+                        for (TextChar ch : word.getChars()) {
+                            String charValue = ch.getValue();
+
+                            if (charValue.equals("—") && (ch.getBounds().width <= maxDashWidth)) {
+                                ch.setValue("-");
+                                updated = true;
+                            }
+                        }
+
+                        if (updated) {
+                            word.checkValue(); // Sp that word value is consistent with its chars
+                        }
+                    }
+
+                    // Translate relative coordinates to absolute ones?
+                    if (topLeft != null) {
+                        line.translate(topLeft.x, topLeft.y);
+                    }
                 }
             }
 
@@ -226,5 +225,9 @@ public class TesseractOCR
         Constant.Boolean keepImages = new Constant.Boolean(
                 false,
                 "Should we keep the images sent to Tesseract?");
+
+        Scale.Fraction maxDashWidth = new Scale.Fraction(
+                1.0,
+                "Maximum width for a dash character");
     }
 }

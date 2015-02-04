@@ -13,10 +13,9 @@ package omr.score;
 
 import omr.score.entity.Page;
 import omr.score.entity.ScorePart;
-import omr.score.entity.ScoreSystem;
-import omr.score.entity.SystemPart;
 
-import omr.util.TreeNode;
+import omr.sheet.Part;
+import omr.sheet.SystemInfo;
 
 import com.audiveris.proxymusic.PartList;
 import com.audiveris.proxymusic.PartName;
@@ -46,7 +45,7 @@ import java.util.TreeMap;
  * <p>
  * This work is done across:
  * <ul>
- * <li>The various systems of a page using Audiveris ScoreSystem instances.</li>
+ * <li>The various systems of a page using Audiveris SystemInfo instances.</li>
  * <li>The various pages of a score using Audiveris Page instances.</li>
  * <li>The various pages of a score using Proxymusic ScorePartwise instances.</li>
  * </ul>
@@ -62,7 +61,7 @@ import java.util.TreeMap;
  * <li>Additional parts appear at the top of a system, rather than at the bottom. So we process part
  * connections bottom up.</li>
  * <li>When possible, we use the part names (or abbreviations) to help the connection algorithm.
- * (not yet fully implemented).
+ * (this is not yet fully implemented).
  * </ul>
  *
  * @author Hervé Bitteur
@@ -112,23 +111,21 @@ public class PartConnection
      * Convenient method to connect parts across systems of a page.
      * <p>
      * This method is to be used when processing one page, and simply connecting the parts of the
-     * systems that appear on this page. Here we work with Audiveris ScoreSystem entities.
+     * systems that appear on this page. Here we work with Audiveris SystemInfo entities.
      *
      * @param page the containing page
      * @return the mapping found
      */
     public static PartConnection connectPageSystems (Page page)
     {
-        // Build candidates (here, a candidate is a SystemPart)
+        // Build candidates (here, a candidate is a Part)
         Set<List<Candidate>> sequences = new LinkedHashSet<List<Candidate>>();
 
-        for (TreeNode sn : page.getSystems()) {
-            ScoreSystem system = (ScoreSystem) sn;
+        for (SystemInfo system : page.getSystems()) {
             List<Candidate> parts = new ArrayList<Candidate>();
 
-            for (TreeNode pn : system.getParts()) {
-                SystemPart systemPart = (SystemPart) pn;
-                parts.add(new SystemPartCandidate(systemPart));
+            for (Part systemPart : system.getAllParts()) {
+                parts.add(new PartCandidate(systemPart));
             }
 
             sequences.add(parts);
@@ -194,11 +191,13 @@ public class PartConnection
 
         for (Entry<Integer, Page> entry : pages.entrySet()) {
             Page page = entry.getValue();
-            List<ScorePart> partList = page.getPartList();
             List<Candidate> parts = new ArrayList<Candidate>();
+            List<ScorePart> partList = page.getPartList();
 
-            for (ScorePart scorePart : partList) {
-                parts.add(new ScorePartCandidate(scorePart, page));
+            if (partList != null) {
+                for (ScorePart scorePart : partList) {
+                    parts.add(new ScorePartCandidate(scorePart, page));
+                }
             }
 
             sequences.add(parts);
@@ -368,7 +367,7 @@ public class PartConnection
      * Interface {@code Candidate} is used to process part candidates, regardless whether they are
      * provided:
      * <ul>
-     * <li>as Audiveris {@link omr.score.entity.SystemPart} instances
+     * <li>as Audiveris {@link omr.sheet.Part} instances
      * (produced by the scanning of just one page)</li>
      * <li>as Audiveris {@link omr.score.entity.ScorePart}
      * (when merging Audiveris pages)</li>
@@ -381,22 +380,22 @@ public class PartConnection
         //~ Methods --------------------------------------------------------------------------------
 
         /** Create a related result instance consistent with this type */
-        public Result createResult ();
+        Result createResult ();
 
         /** Report the abbreviation, if any, that relates to this part */
-        public String getAbbreviation ();
+        String getAbbreviation ();
 
-        /** Index of the input: System # for SystemPart, Page # for ScorePart */
-        public int getInputIndex ();
+        /** Index of the input: System # for Part, Page # for ScorePart */
+        int getInputIndex ();
 
         /** Report the name of the part, if any */
-        public String getName ();
+        String getName ();
 
         /** Report the number of staves in the part */
-        public int getStaffCount ();
+        int getStaffCount ();
 
         /** Report the underlying object */
-        public Object getUnderlyingObject ();
+        Object getUnderlyingObject ();
     }
 
     //--------//
@@ -413,31 +412,31 @@ public class PartConnection
         //~ Methods --------------------------------------------------------------------------------
 
         /** Report the part abbreviation, if any */
-        public String getAbbreviation ();
+        String getAbbreviation ();
 
         /** Report the candidate object used to build this result */
-        public Candidate getCandidate ();
+        Candidate getCandidate ();
 
         /** Report the part id */
-        public int getId ();
+        int getId ();
 
         /** Report the part name */
-        public String getName ();
+        String getName ();
 
         /** Report the number of staves in that part */
-        public int getStaffCount ();
+        int getStaffCount ();
 
         /** Report the actual underlying instance */
-        public Object getUnderlyingObject ();
+        Object getUnderlyingObject ();
 
         /** Assign an abbreviation to the part */
-        public void setAbbreviation (String abbreviation);
+        void setAbbreviation (String abbreviation);
 
         /** Assign an unique id to the part */
-        public void setId (int id);
+        void setId (int id);
 
         /** Assign a name to the part */
-        public void setName (String name);
+        void setName (String name);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -736,6 +735,76 @@ public class PartConnection
         }
     }
 
+    //---------------//
+    // PartCandidate //
+    //---------------//
+    /**
+     * Wrapping class meant for a Part instance.
+     */
+    private static class PartCandidate
+            implements Candidate
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Part systemPart;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public PartCandidate (Part part)
+        {
+            this.systemPart = part;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public ScorePartResult createResult ()
+        {
+            // Create a brand new score part for this candidate
+            // Id is irrelevant for the time being
+            ScorePartResult result = new ScorePartResult(this, new ScorePart(0, getStaffCount()));
+            result.setName(getName());
+            result.setAbbreviation(getAbbreviation());
+            logger.debug("Created {} from {}", result, this);
+
+            return result;
+        }
+
+        @Override
+        public String getAbbreviation ()
+        {
+            return null;
+        }
+
+        @Override
+        public int getInputIndex ()
+        {
+            return systemPart.getSystem().getId();
+        }
+
+        @Override
+        public String getName ()
+        {
+            return systemPart.getName();
+        }
+
+        @Override
+        public int getStaffCount ()
+        {
+            return systemPart.getStaves().size();
+        }
+
+        @Override
+        public Object getUnderlyingObject ()
+        {
+            return systemPart;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "S" + getInputIndex() + "-" + systemPart.toString();
+        }
+    }
+
     //--------------------//
     // ScorePartCandidate //
     //--------------------//
@@ -782,7 +851,7 @@ public class PartConnection
         @Override
         public int getInputIndex ()
         {
-            return page.getIndex();
+            return page.getSheet().getIndex();
         }
 
         @Override
@@ -890,76 +959,6 @@ public class PartConnection
         public void setName (String name)
         {
             scorePart.setName(name);
-        }
-    }
-
-    //---------------------//
-    // SystemPartCandidate //
-    //---------------------//
-    /**
-     * Wrapping class meant for a SystemPart instance.
-     */
-    private static class SystemPartCandidate
-            implements Candidate
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final SystemPart systemPart;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public SystemPartCandidate (SystemPart part)
-        {
-            this.systemPart = part;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public ScorePartResult createResult ()
-        {
-            // Create a brand new score part for this candidate
-            // Id is irrelevant for the time being
-            ScorePartResult result = new ScorePartResult(this, new ScorePart(0, getStaffCount()));
-            result.setName(getName());
-            result.setAbbreviation(getAbbreviation());
-            logger.debug("Created {} from {}", result, this);
-
-            return result;
-        }
-
-        @Override
-        public String getAbbreviation ()
-        {
-            return null;
-        }
-
-        @Override
-        public int getInputIndex ()
-        {
-            return systemPart.getSystem().getId();
-        }
-
-        @Override
-        public String getName ()
-        {
-            return systemPart.getName();
-        }
-
-        @Override
-        public int getStaffCount ()
-        {
-            return systemPart.getStaves().size();
-        }
-
-        @Override
-        public Object getUnderlyingObject ()
-        {
-            return systemPart;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "S" + getInputIndex() + "-" + systemPart.toString();
         }
     }
 }

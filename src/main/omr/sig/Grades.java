@@ -47,51 +47,52 @@ public class Grades
 
         return value;
     }
-//
-//    //------------//
-//    // contextual //
-//    //------------//
-//    /**
-//     * Compute the contextual probability of an inter when supported
-//     * by a partner through a supporting relation with 'ratio' value.
-//     *
-//     * @param inter the intrinsic grade of the inter
-//     * @param partner the intrinsic grade of a supporting partner
-//     * @param ratio  the ratio of supporting relation
-//     * @return the resulting contextual probability for inter
-//     */
-//    public static double contextual (double inter,
-//                                     double partner,
-//                                     double ratio)
-//    {
-//        return (partner * support(inter, ratio)) + ((1 - partner) * inter);
-//    }
-//
-//    //------------//
-//    // contextual //
-//    //------------//
-//    /**
-//     * Compute the contextual probability of an inter when supported by two partners.
-//     *
-//     * @param inter  the intrinsic grade of the target
-//     * @param partner1 intrinsic grade of partner #1
-//     * @param ratio1  ratio of supporting partner #1
-//     * @param partner2 intrinsic grade of partner #2
-//     * @param ratio2  ratio of supporting partner #2
-//     * @return the resulting contextual probability for target
-//     */
-//    public static double contextual (double inter,
-//                                     double partner1,
-//                                     double ratio1,
-//                                     double partner2,
-//                                     double ratio2)
-//    {
-//        return (partner1 * partner2 * support(inter, ratio1 * ratio2))
-//               + ((1 - partner1) * partner2 * support(inter, ratio2))
-//               + (partner1 * (1 - partner2) * support(inter, ratio1))
-//               + ((1 - partner1) * (1 - partner2) * inter);
-//    }
-//
+
+    //
+    //    //------------//
+    //    // contextual //
+    //    //------------//
+    //    /**
+    //     * Compute the contextual probability of an inter when supported
+    //     * by a partner through a supporting relation with 'ratio' value.
+    //     *
+    //     * @param inter the intrinsic grade of the inter
+    //     * @param partner the intrinsic grade of a supporting partner
+    //     * @param ratio  the ratio of supporting relation
+    //     * @return the resulting contextual probability for inter
+    //     */
+    //    public static double contextual (double inter,
+    //                                     double partner,
+    //                                     double ratio)
+    //    {
+    //        return (partner * support(inter, ratio)) + ((1 - partner) * inter);
+    //    }
+    //
+    //    //------------//
+    //    // contextual //
+    //    //------------//
+    //    /**
+    //     * Compute the contextual probability of an inter when supported by two partners.
+    //     *
+    //     * @param inter  the intrinsic grade of the target
+    //     * @param partner1 intrinsic grade of partner #1
+    //     * @param ratio1  ratio of supporting partner #1
+    //     * @param partner2 intrinsic grade of partner #2
+    //     * @param ratio2  ratio of supporting partner #2
+    //     * @return the resulting contextual probability for target
+    //     */
+    //    public static double contextual (double inter,
+    //                                     double partner1,
+    //                                     double ratio1,
+    //                                     double partner2,
+    //                                     double ratio2)
+    //    {
+    //        return (partner1 * partner2 * support(inter, ratio1 * ratio2))
+    //               + ((1 - partner1) * partner2 * support(inter, ratio2))
+    //               + (partner1 * (1 - partner2) * support(inter, ratio1))
+    //               + ((1 - partner1) * (1 - partner2) * inter);
+    //    }
+    //
     //------------//
     // contextual //
     //------------//
@@ -99,9 +100,9 @@ public class Grades
      * General computation of contextual probability for an inter when supported by an
      * array of partners.
      *
-     * @param inter  the (intrinsic grade of the) inter
+     * @param inter    the (intrinsic grade of the) inter
      * @param partners the array of (intrinsic grades of the) supporting partners
-     * @param ratios  the array of ratios of supporting partners, parallel to partners array
+     * @param ratios   the array of ratios of supporting partners, parallel to partners array
      * @return the resulting contextual probability for inter
      */
     public static double contextual (double inter,
@@ -181,7 +182,7 @@ public class Grades
      * Compute the actual support brought on a interpretation with 'inter' grade
      *
      * @param inter the intrinsic grade of inter
-     * @param ratio  the supporting ratio of a partner
+     * @param ratio the supporting ratio of a partner
      * @return the resulting support
      */
     private static double support (double inter,

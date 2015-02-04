@@ -16,7 +16,7 @@ import omr.glyph.facets.Glyph;
 import omr.math.Histogram;
 
 import omr.run.Orientation;
-import omr.run.RunsTable;
+import omr.run.RunTable;
 
 import java.awt.Rectangle;
 import java.util.Collection;
@@ -60,7 +60,7 @@ public interface Roi
      * @return the computed histogram
      */
     Histogram<Integer> getRunHistogram (Orientation projection,
-                                        RunsTable table);
+                                        RunTable table);
 
     /**
      * Report the histogram obtained in the provided projection orientation

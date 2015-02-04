@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.curve;
 
-import omr.math.PointUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +28,8 @@ import java.util.List;
  * initial scanning of the arc points, and can be reversed via the reverse() method.
  * <p>
  * Two touching junction points can be joined by a "void" arc with no internal points.
+ *
+ * @author Hervé Bitteur
  */
 public class Arc
 {
@@ -157,7 +157,7 @@ public class Arc
     }
 
     /**
-     * Report the (square of) distance from arc first poit to arc last point
+     * Report the (square of) distance from arc first point to arc last point
      *
      * @return the square of arc distance
      */

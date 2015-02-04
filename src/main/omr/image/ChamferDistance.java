@@ -18,6 +18,12 @@ public interface ChamferDistance
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** Value when on target location. */
+    public static final int VALUE_TARGET = 0;
+
+    /** Value when on non-relevant/unknown location. */
+    public static final int VALUE_UNKNOWN = -1;
+
     /** Chessboard mask. */
     public static final int[][] chessboard = new int[][]{
         new int[]{1, 0, 1}, new int[]{1, 1, 1}
@@ -134,9 +140,9 @@ public interface ChamferDistance
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     if (input[x][y]) {
-                        output.setValue(x, y, 0); // reference pixel -> distance=0
+                        output.setValue(x, y, VALUE_TARGET); // reference pixel -> distance=0
                     } else {
-                        output.setValue(x, y, -1); // non-reference pixel -> to be computed
+                        output.setValue(x, y, VALUE_UNKNOWN); // non-reference pixel -> to be computed
                     }
                 }
             }
@@ -190,7 +196,7 @@ public interface ChamferDistance
                 for (int x = 0; x < width; x++) {
                     final int v = output.getValue(x, y);
 
-                    if (v < 0) {
+                    if (v == VALUE_UNKNOWN) {
                         continue;
                     }
 
@@ -221,7 +227,7 @@ public interface ChamferDistance
                 for (int x = width - 1; x >= 0; x--) {
                     final int v = output.getValue(x, y);
 
-                    if (v < 0) {
+                    if (v == VALUE_UNKNOWN) {
                         continue;
                     }
 
@@ -268,9 +274,9 @@ public interface ChamferDistance
             for (int y = 0, h = input.getHeight(); y < h; y++) {
                 for (int x = 0, w = input.getWidth(); x < w; x++) {
                     if (input.get(x, y) == 0) {
-                        output.setValue(x, y, -1); // non-reference pixel -> to be computed
+                        output.setValue(x, y, VALUE_UNKNOWN); // non-reference pixel -> to be computed
                     } else {
-                        output.setValue(x, y, 0); // reference pixel -> distance=0
+                        output.setValue(x, y, VALUE_TARGET); // reference pixel -> distance=0
                     }
                 }
             }
@@ -282,13 +288,11 @@ public interface ChamferDistance
         private void initializeToFore (ByteProcessor input,
                                        DistanceTable output)
         {
-            for (int y = 0, h = input.getHeight(); y < h; y++) {
-                for (int x = 0, w = input.getWidth(); x < w; x++) {
-                    if (input.get(x, y) == 0) {
-                        output.setValue(x, y, 0); // reference pixel -> distance=0
-                    } else {
-                        output.setValue(x, y, -1); // non-reference pixel -> to be computed
-                    }
+            for (int i = (input.getWidth() * input.getHeight()) - 1; i >= 0; i--) {
+                if (input.get(i) == 0) {
+                    output.setValue(i, VALUE_TARGET); // reference pixel -> distance=0
+                } else {
+                    output.setValue(i, VALUE_UNKNOWN); // non-reference pixel -> to be computed
                 }
             }
         }

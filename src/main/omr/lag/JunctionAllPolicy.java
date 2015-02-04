@@ -22,8 +22,12 @@ import omr.run.Run;
 public class JunctionAllPolicy
         implements JunctionPolicy
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** singleton. */
+    public static final JunctionAllPolicy INSTANCE = new JunctionAllPolicy();
+
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------------//
     // JunctionAllPolicy //
     //-------------------//

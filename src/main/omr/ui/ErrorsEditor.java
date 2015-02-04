@@ -13,7 +13,7 @@ package omr.ui;
 
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.Measure;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.MeasureNode;
 import omr.score.entity.SystemNode;
 
@@ -322,7 +322,7 @@ public class ErrorsEditor
                             if (pixPt == null) {
                                 if (record.node instanceof MeasureNode) {
                                     MeasureNode mn = (MeasureNode) record.node;
-                                    Measure measure = mn.getMeasure();
+                                    OldMeasure measure = mn.getMeasure();
 
                                     if (measure != null) {
                                         pixPt = measure.getCenter();

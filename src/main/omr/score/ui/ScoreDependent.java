@@ -109,11 +109,11 @@ public abstract class ScoreDependent
             Sheet sheet = event.getData();
 
             // Update scoreAvailable
-            setScoreAvailable((sheet != null) && (sheet.getScore() != null));
+            setScoreAvailable((sheet != null) && (sheet.getBook() != null));
 
             // Update scoreIdle
             if (isScoreAvailable()) {
-                setScoreIdle(sheet.getScore().isIdle());
+                setScoreIdle(sheet.getBook().isIdle());
             } else {
                 setScoreIdle(false);
             }

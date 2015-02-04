@@ -39,18 +39,16 @@ public abstract class SystemNode
     //~ Enumerations -------------------------------------------------------------------------------
 
     /** Relative vertical position with respect to the staves of the system
-     * or part at hand */
+     * or the part at hand */
     public enum StaffPosition
     {
         //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Above the first real staff of this entity */
         ABOVE_STAVES,
-        /** Somewhere
-         * within the staves of this entity (system or part) */
+        /** Somewhere within the staves of this entity (system or part) */
         WITHIN_STAVES,
-        /** Below the last staff of
-         * this entity */
+        /** Below the last staff of this entity */
         BELOW_STAVES;
     }
 

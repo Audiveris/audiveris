@@ -25,10 +25,20 @@ import omr.run.Orientation;
 import omr.selection.InterListEvent;
 
 import omr.sheet.Sheet;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
-import omr.sig.Exclusion.Cause;
+import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.Inter;
+import omr.sig.inter.StemInter;
+import omr.sig.relation.BasicExclusion;
+import omr.sig.relation.Exclusion;
+import omr.sig.relation.Exclusion.Cause;
+import omr.sig.relation.Relation;
+import omr.sig.relation.StemConnection;
+import omr.sig.relation.Support;
 
+import omr.util.Navigable;
 import omr.util.Predicate;
 
 import org.jgrapht.Graphs;
@@ -87,9 +97,11 @@ public class SIGraph
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated sheet */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Dedicated system */
+    @Navigable(false)
     private final SystemInfo system;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -134,6 +146,33 @@ public class SIGraph
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // getInter //
+    //----------//
+    /**
+     * Report the (first) interpretation if any of desired class for
+     * the glyph at hand.
+     * TODO: Could we have several inters of desired class for the same glyph?
+     * Interpretations are no longer automatically linked back from
+     * glyph!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     *
+     * @param glyph  the underlying glyph
+     * @param classe the interpretation class desired
+     * @return the existing interpretation if any, or null
+     */
+    @Deprecated
+    public static Inter getInter (Glyph glyph,
+                                  Class classe)
+    {
+        for (Inter inter : glyph.getInterpretations()) {
+            if (classe.isInstance(inter)) {
+                return inter;
+            }
+        }
+
+        return null;
+    }
+
     //-----------//
     // addVertex //
     //-----------//
@@ -148,6 +187,8 @@ public class SIGraph
     @Override
     public boolean addVertex (Inter inter)
     {
+        inter.undelete();
+
         boolean res = super.addVertex(inter);
         inter.setSig(this);
 
@@ -216,7 +257,9 @@ public class SIGraph
         List<Inter> found = new ArrayList<Inter>();
 
         for (Inter inter : vertexSet()) {
-            if (inter.getBounds().contains(point)) {
+            Rectangle bounds = inter.getBounds();
+
+            if ((bounds != null) && bounds.contains(point)) {
                 // More precise test if we know inter area
                 Area area = inter.getArea();
 
@@ -229,12 +272,22 @@ public class SIGraph
         return found;
     }
 
+    //--------------//
+    // deleteInters //
+    //--------------//
+    public void deleteInters (Collection<? extends Inter> inters)
+    {
+        for (Inter inter : inters) {
+            inter.delete();
+        }
+    }
+
     //------------------//
     // deleteWeakInters //
     //------------------//
     /**
-     * Purge the inter instances for which the contextual grade is
-     * lower than minimum threshold.
+     * Purge the inter instances for which the contextual grade is lower than minimum
+     * threshold.
      *
      * @return the set of inter instances purged
      */
@@ -252,7 +305,7 @@ public class SIGraph
             }
         }
 
-        removeAllVertices(removed);
+        deleteInters(removed);
 
         return removed;
     }
@@ -294,33 +347,6 @@ public class SIGraph
         return getRelations(inter, Exclusion.class);
     }
 
-    //----------//
-    // getInter //
-    //----------//
-    /**
-     * Report the (first) interpretation if any of desired class for
-     * the glyph at hand.
-     * TODO: Could we have several inters of desired class for the same glyph?
-     * Interpretations are no longer automatically linked back from
-     * glyph!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     *
-     * @param glyph  the underlying glyph
-     * @param classe the interpretation class desired
-     * @return the existing interpretation if any, or null
-     */
-    @Deprecated
-    public static Inter getInter (Glyph glyph,
-                                  Class classe)
-    {
-        for (Inter inter : glyph.getInterpretations()) {
-            if (classe.isAssignableFrom(inter.getClass())) {
-                return inter;
-            }
-        }
-
-        return null;
-    }
-
     //------------------//
     // getOppositeInter //
     //------------------//
@@ -337,59 +363,68 @@ public class SIGraph
         return Graphs.getOppositeVertex(this, relation, inter);
     }
 
-    //-------------//
-    // getPartners //
-    //-------------//
+    //---------------//
+    // getPartitions //
+    //---------------//
     /**
-     * Report all largest collections of non-conflicting partners
-     * within the provided collection of interpretations.
+     * Report all largest partitions of non-conflicting inters within the provided
+     * collection of interpretations.
      *
-     * @param focus  the inter instance for which partners are looked up
-     * @param inters the provided collection of interpretations, with perhaps
-     *               some mutual exclusion relations.
-     * @return all the possible consistent partner collections, with no pair
-     *         of concurrent interpretations in the same collection
+     * @param focus  the inter instance, if any, for which partners are looked up
+     * @param inters the provided collection of interpretations, with perhaps some mutual exclusion
+     *               relations.
+     * @return all the possible consistent partitions, with no pair of conflicting interpretations
+     *         in the same partition
      */
-    public List<List<Inter>> getPartners (Inter focus,
-                                          List<Inter> inters)
+    public List<List<Inter>> getPartitions (Inter focus,
+                                            List<Inter> inters)
     {
-        int n = inters.size();
-        Collections.sort(inters, Inter.byId);
+        Collections.sort(inters, Inter.byReverseGrade);
 
-        final List<Inter> stems = stemsOf(inters);
+        final int n = inters.size();
+        final List<Inter> stems = (focus instanceof AbstractHeadInter) ? stemsOf(inters) : null;
         final List<List<Inter>> result = new ArrayList<List<Inter>>();
 
-        // Map inter -> concurrents of inter (within the provided collection)
-        Map<Inter, Set<Inter>> map = new HashMap<Inter, Set<Inter>>();
-        boolean conflict = false;
+        // Map inter -> concurrents of inter (that appear later within the provided list)
+        List<Set<Integer>> concurrentSets = new ArrayList<Set<Integer>>();
+        boolean conflictDetected = false;
 
-        for (Inter inter : inters) {
-            Set<Inter> concurrents = new HashSet<Inter>();
-            map.put(inter, concurrents);
+        for (int i = 0; i < n; i++) {
+            Inter inter = inters.get(i);
+            Set<Integer> concurrents = new HashSet<Integer>();
+            concurrentSets.add(concurrents);
 
             for (Relation rel : getExclusions(inter)) {
                 Inter concurrent = getOppositeInter(inter, rel);
 
-                if ((inter.getId() < concurrent.getId()) && inters.contains(concurrent)) {
-                    concurrents.add(concurrent);
-                    conflict = true;
+                // Check whether this concurrent belongs to (and appears later in) the inters list
+                int ic = inters.indexOf(concurrent);
+
+                if (ic > i) {
+                    concurrents.add(ic);
+                    conflictDetected = true;
                 }
             }
 
             //TODO: this is a hack that should be removed when
             // multiple stems for a head are correctly filtered out.
-            if (focus instanceof AbstractNoteInter && inter instanceof StemInter) {
+            // We assume that the various stems are potential partners of the focused head
+            // and thus all stems are concurrent of one another
+            if (focus instanceof AbstractHeadInter && inter instanceof StemInter) {
                 // Flag all other stems, if any, as concurrents of this one
                 for (Inter stem : stems) {
-                    if ((stem != inter) && (inter.getId() < stem.getId())) {
-                        concurrents.add(stem);
-                        conflict = true;
+                    int ic = inters.indexOf(stem);
+
+                    if (ic > i) {
+                        concurrents.add(ic);
+                        conflictDetected = true;
                     }
                 }
             }
         }
 
-        if (!conflict) {
+        // If no conflict was detected, the provided collection is a single partition
+        if (!conflictDetected) {
             result.add(inters);
 
             return result;
@@ -400,33 +435,30 @@ public class SIGraph
         seqs.add(new Sequence(n));
 
         for (int i = 0; i < n; i++) {
-            Inter inter = inters.get(i);
-            Set<Inter> concurrents = map.get(inter);
+            Set<Integer> concurrents = concurrentSets.get(i);
 
             for (int is = 0, isBreak = seqs.size(); is < isBreak; is++) {
                 Sequence seq = seqs.get(is);
 
                 if (seq.line[i] != -1) {
-                    if (concurrents.isEmpty()) {
-                        seq.line[i] = 1;
-                    } else {
-                        seq.line[i] = 0;
+                    seq.line[i] = 1;
 
+                    if (!concurrents.isEmpty()) {
                         // Duplicate line
                         Sequence newSeq = seq.copy();
-                        newSeq.line[i] = 1;
-
-                        for (Inter c : concurrents) {
-                            // Forbid dependent locations
-                            newSeq.line[inters.indexOf(c)] = -1;
-                        }
-
+                        newSeq.line[i] = 0;
                         seqs.add(newSeq);
+
+                        // Forbid dependent locations
+                        for (Integer ic : concurrents) {
+                            seq.line[ic] = -1;
+                        }
                     }
                 }
             }
         }
 
+        // Build resulting partitions
         for (Sequence seq : seqs) {
             List<Inter> list = new ArrayList<Inter>();
 
@@ -446,7 +478,7 @@ public class SIGraph
     // getRelation //
     //-------------//
     /**
-     * Report the relation if any of desired class between the provided
+     * Report the first relation if any of desired class between the provided
      * source and target vertices.
      *
      * @param source provided source
@@ -459,7 +491,7 @@ public class SIGraph
                                  Class classe)
     {
         for (Relation rel : getAllEdges(source, target)) {
-            if (rel.getClass().isAssignableFrom(classe)) {
+            if (classe.isInstance(rel)) {
                 return rel;
             }
         }
@@ -471,8 +503,7 @@ public class SIGraph
     // getRelations //
     //--------------//
     /**
-     * Report the set of relations of desired class the provided inter
-     * is involved in.
+     * Report the set of relations of desired class the provided inter is involved in.
      *
      * @param inter  the provided interpretation
      * @param classe the desired class of relation
@@ -484,8 +515,34 @@ public class SIGraph
         Set<Relation> relations = new LinkedHashSet<Relation>();
 
         for (Relation rel : edgesOf(inter)) {
-            if (classe.isAssignableFrom(rel.getClass())) {
+            if (classe.isInstance(rel)) {
                 relations.add(rel);
+            }
+        }
+
+        return relations;
+    }
+
+    //--------------//
+    // getRelations //
+    //--------------//
+    /**
+     * Report the set of relations of desired classes the provided inter is involved in.
+     *
+     * @param inter   the provided interpretation
+     * @param classes the desired classes of relation
+     * @return the set of involving relations, perhaps empty but not null
+     */
+    public Set<Relation> getRelations (Inter inter,
+                                       Class... classes)
+    {
+        Set<Relation> relations = new LinkedHashSet<Relation>();
+
+        for (Relation rel : edgesOf(inter)) {
+            for (Class classe : classes) {
+                if (classe.isInstance(rel)) {
+                    relations.add(rel);
+                }
             }
         }
 
@@ -556,13 +613,39 @@ public class SIGraph
         return system;
     }
 
+    //-------------//
+    // hasRelation //
+    //-------------//
+    /**
+     * Check whether the provided Inter is involved in a relation of one of the
+     * specified relation classes.
+     *
+     * @param inter
+     * @param relationClasses
+     * @return true if such relation is found, false otherwise
+     */
+    public boolean hasRelation (Inter inter,
+                                Class... relationClasses)
+    {
+        for (Relation rel : edgesOf(inter)) {
+            for (Class classe : relationClasses) {
+                if (classe.isInstance(rel)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     //-----------------//
     // insertExclusion //
     //-----------------//
     /**
      * Insert an exclusion relation between two provided inters, unless there is a
      * support relation between them or unless an exclusion already exists.
-     * We always insert exclusion from lower id to higher id.
+     * <p>
+     * Nota: We always insert exclusion from lower id to higher id.
      *
      * @param inter1 provided inter #1
      * @param inter2 provided inter #2
@@ -577,26 +660,22 @@ public class SIGraph
         Inter source = direct ? inter1 : inter2;
         Inter target = direct ? inter2 : inter1;
 
-        // Look for existing exclusion
-        Set<Relation> rels = getAllEdges(source, target);
+        {
+            // Look for existing exclusion
+            Relation rel = getRelation(source, target, Exclusion.class);
 
-        for (Relation rel : getAllEdges(source, target)) {
-            if (rel instanceof Exclusion) {
+            if (rel != null) {
                 return (Exclusion) rel;
             }
         }
 
         // Check no support relation exists, in either direction
-        for (Relation rel : getAllEdges(source, target)) {
-            if (rel instanceof Support) {
-                return null;
-            }
+        if (getRelation(source, target, Support.class) != null) {
+            return null;
         }
 
-        for (Relation rel : getAllEdges(target, source)) {
-            if (rel instanceof Support) {
-                return null;
-            }
+        if (getRelation(target, source, Support.class) != null) {
+            return null;
         }
 
         // Do insert an exclusion
@@ -641,8 +720,31 @@ public class SIGraph
     // inters //
     //--------//
     /**
-     * Lookup for interpretations for which the provided predicate
-     * applies.
+     * Select in the provided collection the inters that relate to the specified staff.
+     *
+     * @param staff  the specified staff
+     * @param inters the collection to filter
+     * @return the list of interpretations
+     */
+    public static List<Inter> inters (Staff staff,
+                                      Collection<? extends Inter> inters)
+    {
+        List<Inter> filtered = new ArrayList<Inter>();
+
+        for (Inter inter : inters) {
+            if (inter.getStaff() == staff) {
+                filtered.add(inter);
+            }
+        }
+
+        return filtered;
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations for which the provided predicate applies.
      *
      * @param predicate the predicate to apply, or null
      * @return the list of compliant interpretations
@@ -664,7 +766,7 @@ public class SIGraph
     // inters //
     //--------//
     /**
-     * Lookup for interpretations of the provided shape
+     * Lookup for interpretations of the provided shape.
      *
      * @param shape the shape to check for
      * @return the interpretations of desired shape
@@ -686,7 +788,7 @@ public class SIGraph
     // inters //
     //--------//
     /**
-     * Lookup for interpretations of the provided class
+     * Lookup for interpretations of the provided class.
      *
      * @param classe the class to search for
      * @return the interpretations of desired class
@@ -699,7 +801,7 @@ public class SIGraph
                     @Override
                     public boolean check (Inter inter)
                     {
-                        return !inter.isDeleted() && (classe.isAssignableFrom(inter.getClass()));
+                        return !inter.isDeleted() && (classe.isInstance(inter));
                     }
                 });
     }
@@ -708,7 +810,32 @@ public class SIGraph
     // inters //
     //--------//
     /**
-     * Lookup for interpretations of the provided collection of shapes
+     * Lookup for interpretations of the provided class, attached to the specified staff.
+     *
+     * @param staff  the specified staff
+     * @param classe the class to search for
+     * @return the list of interpretations found
+     */
+    public List<Inter> inters (final Staff staff,
+                               final Class classe)
+    {
+        return inters(
+                new Predicate<Inter>()
+                {
+                    @Override
+                    public boolean check (Inter inter)
+                    {
+                        return !inter.isDeleted() && (inter.getStaff() == staff)
+                               && ((classe == null) || classe.isInstance(inter));
+                    }
+                });
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations of the provided collection of shapes.
      *
      * @param shapes the shapes to check for
      * @return the interpretations of desired shapes
@@ -726,6 +853,20 @@ public class SIGraph
                 });
     }
 
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Select the inters that relate to the specified staff.
+     *
+     * @param staff the specified staff
+     * @return the list of selected inters
+     */
+    public List<Inter> inters (Staff staff)
+    {
+        return inters(staff, vertexSet());
+    }
+
     //-------------------//
     // intersectedGlyphs //
     //-------------------//
@@ -739,9 +880,9 @@ public class SIGraph
      * @param box              the intersecting box
      * @return the intersected glyph instances found
      */
-    public List<Glyph> intersectedGlyphs (List<Glyph> glyphs,
-                                          boolean sortedByAbscissa,
-                                          Rectangle2D box)
+    public static List<Glyph> intersectedGlyphs (List<Glyph> glyphs,
+                                                 boolean sortedByAbscissa,
+                                                 Rectangle2D box)
     {
         List<Glyph> found = new ArrayList<Glyph>();
 
@@ -771,9 +912,9 @@ public class SIGraph
      * @param area             the intersecting box
      * @return the intersected glyph instances found
      */
-    public List<Glyph> intersectedGlyphs (List<Glyph> glyphs,
-                                          boolean sortedByAbscissa,
-                                          Area area)
+    public static List<Glyph> intersectedGlyphs (List<Glyph> glyphs,
+                                                 boolean sortedByAbscissa,
+                                                 Area area)
     {
         double xMax = area.getBounds().getMaxX();
         List<Glyph> found = new ArrayList<Glyph>();
@@ -804,9 +945,9 @@ public class SIGraph
      * @param box    the intersecting box
      * @return the intersected interpretations found
      */
-    public List<Inter> intersectedInters (List<Inter> inters,
-                                          GeoOrder order,
-                                          Rectangle box)
+    public static List<Inter> intersectedInters (List<Inter> inters,
+                                                 GeoOrder order,
+                                                 Rectangle box)
     {
         List<Inter> found = new ArrayList<Inter>();
         int xMax = (box.x + box.width) - 1;
@@ -844,9 +985,9 @@ public class SIGraph
      * @param area   the intersecting area
      * @return the intersected interpretations found
      */
-    public List<Inter> intersectedInters (List<Inter> inters,
-                                          GeoOrder order,
-                                          Area area)
+    public static List<Inter> intersectedInters (List<Inter> inters,
+                                                 GeoOrder order,
+                                                 Area area)
     {
         List<Inter> found = new ArrayList<Inter>();
         Rectangle bounds = area.getBounds();
@@ -888,6 +1029,33 @@ public class SIGraph
         return found;
     }
 
+    //-----------//
+    // noSupport //
+    //-----------//
+    /**
+     * Check for no existing support relation between the provided inters, regardless
+     * of their order.
+     *
+     * @param one an inter
+     * @param two another inter
+     * @return true if no support exists between them, in either direction
+     */
+    public boolean noSupport (Inter one,
+                              Inter two)
+    {
+        Set<Relation> rels = new HashSet<Relation>();
+        rels.addAll(getAllEdges(one, two));
+        rels.addAll(getAllEdges(two, one));
+
+        for (Relation rel : rels) {
+            if (rel instanceof Support) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     //---------//
     // publish //
     //---------//
@@ -912,7 +1080,7 @@ public class SIGraph
      * </pre>
      *
      * @param minDelta  minimum delta value to decide on conflict
-     * @param warning true to issue a warning on tight exclusion
+     * @param warning   true to issue a warning on tight exclusion
      * @param relations the collection to process
      * @return the set of vertices removed
      */
@@ -990,7 +1158,7 @@ public class SIGraph
 
                     relations.removeAll(edges);
                     removed.add(weaker);
-                    removeVertex(weaker);
+                    weaker.delete();
                     involved.remove(weaker);
 
                     // Update contextual values
@@ -1062,15 +1230,19 @@ public class SIGraph
         return reduceExclusions(mode, new HashSet<Relation>(edgeSet()));
     }
 
-    //--------------//
-    // removeVertex //
-    //--------------//
+    //----------//
+    // toString //
+    //----------//
     @Override
-    public boolean removeVertex (Inter inter)
+    public String toString ()
     {
-        inter.delete();
+        StringBuilder sb = new StringBuilder("{");
+        sb.append(getClass().getSimpleName());
+        sb.append(" inters:").append(vertexSet().size());
+        sb.append(" relations:").append(edgeSet().size());
+        sb.append("}");
 
-        return super.removeVertex(inter);
+        return sb.toString();
     }
 
     //------------------------//
@@ -1079,6 +1251,7 @@ public class SIGraph
     /**
      * Compute the contextual probability for a interpretation which is supported by
      * a collection of relations with partners.
+     * <p>
      * It is assumed that all these supporting relations involve the inter as either a target or a
      * source, otherwise a runtime exception is thrown.
      * <p>
@@ -1129,8 +1302,8 @@ public class SIGraph
             }
         }
 
-        // Check for mutual exclusion between 'others'
-        List<List<Inter>> seqs = getPartners(inter, partners);
+        // Check for mutual exclusion between partners
+        List<List<Inter>> seqs = getPartitions(inter, partners);
         double bestCg = 0;
         List<Inter> bestSeq = null;
 

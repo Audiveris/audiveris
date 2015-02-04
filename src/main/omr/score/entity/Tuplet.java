@@ -51,7 +51,7 @@ public class Tuplet
     /**
      * Set of chords involved in the tuplet sequence.
      */
-    private final SortedSet<Chord> chords;
+    private final SortedSet<OldChord> chords;
 
     //~ Constructors -------------------------------------------------------------------------------
     //
@@ -66,9 +66,9 @@ public class Tuplet
      * @param chords  the embraced chords
      * @param glyph   the underlying glyph
      */
-    private Tuplet (Measure measure,
+    private Tuplet (OldMeasure measure,
                     Point point,
-                    SortedSet<Chord> chords,
+                    SortedSet<OldChord> chords,
                     Glyph glyph)
     {
         super(measure, point, chords.first(), glyph);
@@ -78,7 +78,7 @@ public class Tuplet
         // Apply the tuplet factor to each chord embraced
         DurationFactor factor = getFactor(glyph);
 
-        for (Chord chord : chords) {
+        for (OldChord chord : chords) {
             chord.setTupletFactor(factor);
         }
 
@@ -99,7 +99,7 @@ public class Tuplet
      * @param point   location for the sign
      */
     public static void populate (Glyph glyph,
-                                 Measure measure,
+                                 OldMeasure measure,
                                  Point point)
     {
         if (glyph.isVip()) {
@@ -108,10 +108,10 @@ public class Tuplet
 
         // Let's gather the set of possible chords, ordered by their distance
         // (abscissa-based) to the position of the tuplet sign.
-        List<Chord> candidates = new ArrayList<Chord>();
+        List<OldChord> candidates = new ArrayList<OldChord>();
 
         for (TreeNode node : measure.getChords()) {
-            Chord chord = (Chord) node;
+            OldChord chord = (OldChord) node;
 
             if (chord.getReferencePoint() != null) {
                 // No tuplet on a whole
@@ -124,7 +124,7 @@ public class Tuplet
         Collections.sort(candidates, new DxComparator(point));
 
         // Now, get the properly embraced chords
-        SortedSet<Chord> chords = getEmbracedChords(glyph, measure, point, candidates, null);
+        SortedSet<OldChord> chords = getEmbracedChords(glyph, measure, point, candidates, null);
 
         if (chords != null) {
             glyph.setTranslation(new Tuplet(measure, point, chords, glyph));
@@ -153,7 +153,7 @@ public class Tuplet
     {
         List<Line2D> links = new ArrayList<Line2D>();
 
-        for (Chord chord : chords) {
+        for (OldChord chord : chords) {
             links.addAll(chord.getTranslationLinks(glyph));
         }
 
@@ -210,11 +210,11 @@ public class Tuplet
      * @return the set of embraced chords, ordered from left to right, or null
      *         when the retrieval has failed
      */
-    private static SortedSet<Chord> getEmbracedChords (Glyph glyph,
-                                                       Measure measure,
+    private static SortedSet<OldChord> getEmbracedChords (Glyph glyph,
+                                                       OldMeasure measure,
                                                        Point point,
-                                                       List<Chord> candidates,
-                                                       Staff requiredStaff)
+                                                       List<OldChord> candidates,
+                                                       OldStaff requiredStaff)
     {
         logger.debug(
                 "{} {}{}",
@@ -226,13 +226,13 @@ public class Tuplet
         // in order to determine the duration base of the tuplet
         TupletCollector collector = new TupletCollector(
                 glyph,
-                new TreeSet<Chord>(Chord.byAbscissa));
+                new TreeSet<OldChord>(OldChord.byAbscissa));
 
         // Check that all chords are on the same staff
-        Staff commonStaff = null;
+        OldStaff commonStaff = null;
 
-        for (Chord chord : candidates) {
-            Staff staff = chord.getStaff();
+        for (OldChord chord : candidates) {
+            OldStaff staff = chord.getStaff();
 
             // If we have a constraint on the staff, let's use it
             if ((requiredStaff != null) && (requiredStaff != staff)) {
@@ -244,9 +244,9 @@ public class Tuplet
             } else if (staff != commonStaff) {
                 // We have chords in different staves, we must fix that.
                 // We choose the closest in ordinate of the chords so far
-                SortedSet<Chord> verticals = new TreeSet<Chord>(new DyComparator(point));
+                SortedSet<OldChord> verticals = new TreeSet<OldChord>(new DyComparator(point));
 
-                for (Chord ch : candidates) {
+                for (OldChord ch : candidates) {
                     verticals.add(ch);
 
                     if (ch == chord) {
@@ -322,7 +322,7 @@ public class Tuplet
     // DxComparator //
     //--------------//
     private static class DxComparator
-            implements Comparator<Chord>
+            implements Comparator<OldChord>
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -338,8 +338,8 @@ public class Tuplet
         //~ Methods --------------------------------------------------------------------------------
         /** Compare their horizontal distance from the signPoint reference */
         @Override
-        public int compare (Chord c1,
-                            Chord c2)
+        public int compare (OldChord c1,
+                            OldChord c2)
         {
             int dx1 = Math.abs(c1.getReferencePoint().x - signPoint.x);
             int dx2 = Math.abs(c2.getReferencePoint().x - signPoint.x);
@@ -352,7 +352,7 @@ public class Tuplet
     // DyComparator //
     //--------------//
     private static class DyComparator
-            implements Comparator<Chord>
+            implements Comparator<OldChord>
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -368,8 +368,8 @@ public class Tuplet
         //~ Methods --------------------------------------------------------------------------------
         /** Compare their vertical distance from the signPoint reference */
         @Override
-        public int compare (Chord c1,
-                            Chord c2)
+        public int compare (OldChord c1,
+                            OldChord c2)
         {
             int dy1 = Math.min(
                     Math.abs(c1.getHeadLocation().y - signPoint.y),
@@ -421,7 +421,7 @@ public class Tuplet
         private final int expectedCount;
 
         /** The chords collected so far */
-        private final SortedSet<Chord> chords;
+        private final SortedSet<OldChord> chords;
 
         /** The base duration as identified so far */
         private Rational base = Rational.MAX_VALUE;
@@ -437,7 +437,7 @@ public class Tuplet
 
         //~ Constructors ---------------------------------------------------------------------------
         public TupletCollector (Glyph glyph,
-                                SortedSet<Chord> chords)
+                                SortedSet<OldChord> chords)
         {
             this.glyph = glyph;
             expectedCount = expectedCount(glyph.getShape());
@@ -461,14 +461,14 @@ public class Tuplet
 
             sb.append(" Total:").append(total);
 
-            for (Chord chord : chords) {
+            for (OldChord chord : chords) {
                 sb.append("\n").append(chord);
             }
 
             logger.debug(sb.toString());
         }
 
-        public SortedSet<Chord> getChords ()
+        public SortedSet<OldChord> getChords ()
         {
             return chords;
         }
@@ -496,7 +496,7 @@ public class Tuplet
         }
 
         /** Include a chord into the collection */
-        public void include (Chord chord)
+        public void include (OldChord chord)
         {
             if (chords.add(chord)) {
                 Rational duration = chord.getRawDuration();
@@ -523,9 +523,9 @@ public class Tuplet
         }
 
         /** Include a bunch of chords, all in a row */
-        public void includeAll (Collection<Chord> newChords)
+        public void includeAll (Collection<OldChord> newChords)
         {
-            for (Chord chord : newChords) {
+            for (OldChord chord : newChords) {
                 include(chord);
             }
         }

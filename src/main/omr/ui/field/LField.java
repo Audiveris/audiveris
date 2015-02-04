@@ -20,7 +20,7 @@ import javax.swing.SwingConstants;
  * and a component, which are handled as a whole.
  *
  * @param <C> the precise subtype of the JComponent field
- * <img src="doc-files/Fields.jpg" />
+ * <img src="doc-files/Fields.png" />
  *
  * @author Hervé Bitteur
  */
@@ -28,10 +28,10 @@ public class LField<C extends JComponent>
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The label */
+    /** The label. */
     private final JLabel label;
 
-    /** The field */
+    /** The field. */
     private final C field;
 
     //~ Constructors -------------------------------------------------------------------------------

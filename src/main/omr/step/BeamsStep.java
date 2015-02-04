@@ -11,10 +11,19 @@
 // </editor-fold>
 package omr.step;
 
+import omr.math.Population;
+
+import omr.sheet.BeamsBuilder;
 import omr.sheet.Sheet;
+import omr.sheet.SpotsBuilder;
 import omr.sheet.SystemInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collection;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Class {@code BeamsStep} implements <b>BEAMS</b> step, which uses the spots produced
@@ -23,10 +32,13 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class BeamsStep
-        extends AbstractSystemStep
+        extends AbstractSystemStep<BeamsStep.Context>
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(BeamsStep.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // BeamsStep //
     //-----------//
@@ -35,12 +47,7 @@ public class BeamsStep
      */
     public BeamsStep ()
     {
-        super(
-                Steps.BEAMS,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Retrieve beams");
+        super(Steps.BEAMS, Level.SHEET_LEVEL, Mandatory.MANDATORY, DATA_TAB, "Retrieve beams");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -48,10 +55,34 @@ public class BeamsStep
     // doSystem //
     //----------//
     @Override
-    public void doSystem (SystemInfo system)
+    public void doSystem (SystemInfo system,
+                          Context context)
             throws StepException
     {
-        system.beamsBuilder.buildBeams(); // -> Beams
+        new BeamsBuilder(system, context.gapMap.get(system)).buildBeams(); // -> Beams
+    }
+
+    //----------//
+    // doEpilog //
+    //----------//
+    @Override
+    protected void doEpilog (Collection<SystemInfo> systems,
+                             Sheet sheet,
+                             Context context)
+            throws StepException
+    {
+        // Cumulate system results
+        Population vGaps = new Population();
+
+        for (Population pop : context.gapMap.values()) {
+            vGaps.includePopulation(pop);
+        }
+
+        if (vGaps.getCardinality() > 0) {
+            logger.info("InterBeam gaps {}", vGaps);
+        }
+
+        sheet.setBeamGaps(vGaps);
     }
 
     //----------//
@@ -62,12 +93,38 @@ public class BeamsStep
      * <p>
      * Perform a closing operation on the whole image with a disk shape as the structure
      * element to point out concentrations of foreground pixels (for beams essentially).
+     *
+     * @return the populated context
      */
     @Override
-    protected void doProlog (Collection<SystemInfo> systems,
-                             Sheet sheet)
+    protected Context doProlog (Collection<SystemInfo> systems,
+                                Sheet sheet)
     {
         // Retrieve significant spots for the whole sheet
-        sheet.getSpotsBuilder().buildPageSpots();
+        new SpotsBuilder(sheet).buildSheetSpots();
+
+        // Allocate map to collect vertical gaps
+        Map<SystemInfo, Population> gapMap = new TreeMap<SystemInfo, Population>();
+
+        for (SystemInfo system : sheet.getSystems()) {
+            gapMap.put(system, new Population());
+        }
+
+        return new Context(gapMap);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    public static class Context
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Beam group vertical gaps, per system. */
+        public final Map<SystemInfo, Population> gapMap;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Context (Map<SystemInfo, Population> gapMap)
+        {
+            this.gapMap = gapMap;
+        }
     }
 }

@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        C u r v e I n f o                                       //
+//                                           C u r v e                                            //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -13,7 +13,6 @@ package omr.sheet.curve;
 
 import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphNest;
-import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphComposition;
 import omr.glyph.ui.AttachmentHolder;
@@ -21,14 +20,17 @@ import omr.glyph.ui.BasicAttachmentHolder;
 
 import omr.grid.FilamentLine;
 
-import omr.lag.Lag;
-import omr.lag.Lags;
 import omr.lag.Section;
+import omr.lag.Sections;
+
+import omr.math.GeoUtil;
 
 import omr.run.Run;
-import omr.run.RunsTable;
+import omr.run.RunTable;
 
+import omr.sheet.Picture;
 import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -434,12 +436,16 @@ public abstract class Curve
     //---------------//
     /**
      * Retrieve the underlying glyph of a curve.
+     * <p>
      * Based on each point of curve sequence of points, we find the containing run (either
      * horizontal or vertical), then the containing section.
      * <p>
      * However, we have to check that the containing section is actually compatible with the curve,
      * to avoid picking up sections that cannot be part of the curve.
      * Compatibility is checked for all vertices of section polygon.
+     * <p>
+     * TODO: A more efficient approach could work with runs only, if we could build a glyph instance
+     * directly from a set of runs.
      *
      * @param sheet          the containing sheet
      * @param maxRunDistance maximum distance from any section vertex to curve points
@@ -448,40 +454,62 @@ public abstract class Curve
     public Glyph retrieveGlyph (Sheet sheet,
                                 double maxRunDistance)
     {
-        RunsTable table = sheet.getWholeVerticalTable();
-        Lag hLag = sheet.getLag(Lags.HLAG);
-        Lag vLag = sheet.getLag(Lags.VLAG);
-        Set<Section> sectionsIn = new HashSet<Section>();
-        Set<Section> sectionsOut = new HashSet<Section>();
+        RunTable table = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+        Set<Section> sectionsIn = new HashSet<Section>(); // Sections kept
+        Set<Section> sectionsOut = new HashSet<Section>(); // Sections discarded
+
+        // Restrain to first system that contains the curve
+        // Slur bounds can be significantly larger than necessary, use bounds center point instead
+        List<SystemInfo> relevants = sheet.getSystemManager()
+                .getSystemsOf(GeoUtil.centerOf(getBounds()), null);
+
+        if (relevants.isEmpty()) {
+            return null;
+        }
+
+        SystemInfo system = relevants.get(0);
+        Collection<Section> hSections = system.getHorizontalSections();
+        Collection<Section> vSections = system.getVerticalSections();
+        Section prevSection = null; // Cached section to speed up search
 
         for (int index = 0; index < points.size(); index++) {
-            Point point = points.get(index);
+            Point point = points.get(index); // Point of curve
             Run wholeRun = table.getRunAt(point.x, point.y);
 
             for (int y = wholeRun.getStart(); y <= wholeRun.getStop(); y++) {
-                Run run = hLag.getRunAt(point.x, y);
-
-                if (run == null) {
-                    run = vLag.getRunAt(point.x, y);
+                // Find section that contains (point.x, y)
+                if ((prevSection != null) && prevSection.contains(point.x, y)) {
+                    continue; // Section just processed
                 }
 
-                if (run != null) {
-                    Section section = run.getSection();
+                Section section = Sections.containingSection(point.x, y, hSections);
 
-                    if (section != null) {
-                        if (!sectionsIn.contains(section) && !sectionsOut.contains(section)) {
-                            if (isCloseToCurve(section, maxRunDistance, index)) {
-                                sectionsIn.add(section);
-                            } else {
-                                sectionsOut.add(section);
-                            }
-                        }
-                    }
+                if (section == null) {
+                    section = Sections.containingSection(point.x, y, vSections);
+                }
+
+                prevSection = section;
+
+                if (section == null) {
+                    continue;
+                }
+
+                // Section already processed?
+                if (sectionsIn.contains(section) || sectionsOut.contains(section)) {
+                    continue;
+                }
+
+                // Check whether section can be part of curve glyph (expensive operation)
+                if (isCloseToCurve(section, maxRunDistance, index)) {
+                    sectionsIn.add(section);
+                } else {
+                    sectionsOut.add(section);
                 }
             }
         }
 
         if (!sectionsIn.isEmpty()) {
+            // Build glyph out of sections kept
             GlyphNest nest = sheet.getNest();
             Glyph curveGlyph = nest.buildGlyph(
                     sectionsIn,
@@ -491,6 +519,7 @@ public abstract class Curve
             logger.debug("{} -> {}", this, curveGlyph);
 
             setGlyph(curveGlyph);
+
             return curveGlyph;
         } else {
             logger.debug("{} -> no glyph", this);

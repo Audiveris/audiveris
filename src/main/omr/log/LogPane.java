@@ -48,7 +48,7 @@ public class LogPane
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The scrolling text area */
-    private JScrollPane component;
+    private final JScrollPane component;
 
     /** Status/log area */
     private final JTextPane logArea;

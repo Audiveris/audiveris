@@ -77,8 +77,7 @@ public interface Anchored
                     double yRatio);
 
     /**
-     * Report the rectangular bounds when positioning anchor
-     * at location (x,y).
+     * Report the rectangular bounds when positioning anchor at location (x,y).
      *
      * @param x      abscissa for anchor
      * @param y      ordinate for anchor
@@ -97,8 +96,7 @@ public interface Anchored
     int getHeight ();
 
     /**
-     * Report the offset from rectangle upper left corner to the
-     * provided anchor.
+     * Report the offset from rectangle upper left corner to the provided anchor.
      *
      * @param anchor the desired anchor
      * @return the corresponding offset (vector from upper-left to anchor)

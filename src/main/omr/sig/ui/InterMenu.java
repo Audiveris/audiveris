@@ -11,13 +11,12 @@
 // </editor-fold>
 package omr.sig.ui;
 
-import omr.glyph.facets.Glyph;
-
 import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 
-import omr.sig.Inter;
-import omr.sig.Relation;
 import omr.sig.SIGraph;
+import omr.sig.inter.Inter;
+import omr.sig.relation.Relation;
 
 import omr.ui.util.AbstractMouseListener;
 import omr.ui.util.UIUtil;
@@ -28,10 +27,13 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -68,32 +70,14 @@ public class InterMenu
         this.sheet = sheet;
     }
 
-    //-----------//
-    // InterMenu //
-    //-----------//
-    /**
-     * Creates a new InterMenu object.
-     *
-     * @param sheet  the related sheet
-     * @param glyph  the glyph at hand
-     * @param inters the glyph interpretations
-     */
-    public InterMenu (Sheet sheet,
-                      Glyph glyph,
-                      Collection<Inter> inters)
-    {
-        super(new GlyphAction(glyph, null));
-        this.sheet = sheet;
-        updateMenu(inters);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------------//
+    // updateUserLocation //
+    //--------------------//
     @Override
     public void updateUserLocation (Rectangle rect)
     {
-        List<Inter> inters = sheet.getSelectedInterList();
-        Collections.sort(inters, Inter.byReverseContextualGrade);
-        updateMenu(inters);
+        updateMenu(sheet.getSelectedInterList());
 
         super.updateUserLocation(rect);
     }
@@ -103,32 +87,58 @@ public class InterMenu
     //------------//
     private void updateMenu (Collection<Inter> inters)
     {
+        // Sort the inters, first by containing system, then by decreasing contextual grade
+        Map<SystemInfo, List<Inter>> interMap = new TreeMap<SystemInfo, List<Inter>>();
+
+        for (Inter inter : inters) {
+            SIGraph sig = inter.getSig();
+
+            if (sig != null) {
+                SystemInfo system = sig.getSystem();
+
+                if (system != null) {
+                    List<Inter> list = interMap.get(system);
+
+                    if (list == null) {
+                        interMap.put(system, list = new ArrayList<Inter>());
+                    }
+
+                    list.add(inter);
+                }
+            }
+        }
+
+        for (List<Inter> list : interMap.values()) {
+            Collections.sort(list, Inter.byReverseContextualGrade);
+        }
+
         try {
             // We rebuild the menu items on each update, since the set of inters is brand new.
             removeAll();
 
             if ((inters != null) && !inters.isEmpty()) {
-                UIUtil.insertTitle(this, "Interpretations:");
-
-                for (Inter inter : inters) {
-                    final SIGraph sig = inter.getSig();
-
-                    if (sig == null) {
-                        logger.warn("No SIG for {}", inter);
+                for (SystemInfo system : interMap.keySet()) {
+                    if (getMenuComponentCount() > 0) {
+                        addSeparator();
                     }
 
-                    final Set<Relation> rels = sig.edgesOf(inter);
+                    UIUtil.insertTitle(this, "Inters for System #" + system.getId() + ":");
 
-                    if ((rels == null) || rels.isEmpty()) {
-                        // Just a interpretation item
-                        JMenuItem item = new JMenuItem(new InterAction(inter));
-                        item.addMouseListener(interListener);
-                        add(item);
-                    } else {
-                        // A whole menu of relations for this interpretation
-                        JMenu relMenu = new RelationMenu(inter, rels).getMenu();
-                        relMenu.addMouseListener(interListener);
-                        add(relMenu);
+                    for (Inter inter : interMap.get(system)) {
+                        final SIGraph sig = inter.getSig();
+                        final Set<Relation> rels = sig.edgesOf(inter);
+
+                        if ((rels == null) || rels.isEmpty()) {
+                            // Just a interpretation item
+                            JMenuItem item = new JMenuItem(new InterAction(inter));
+                            item.addMouseListener(interListener);
+                            add(item);
+                        } else {
+                            // A whole menu of relations for this interpretation
+                            JMenu relMenu = new RelationMenu(inter, rels).getMenu();
+                            relMenu.addMouseListener(interListener);
+                            add(relMenu);
+                        }
                     }
                 }
 

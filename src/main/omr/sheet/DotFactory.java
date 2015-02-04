@@ -17,17 +17,20 @@ import omr.glyph.facets.Glyph;
 
 import omr.math.GeoOrder;
 
-import omr.sig.AugmentationDotInter;
-import omr.sig.AugmentationRelation;
-import omr.sig.BarlineInter;
-import omr.sig.DoubleDotRelation;
-import omr.sig.Inter;
-import omr.sig.RepeatDotBarRelation;
-import omr.sig.RepeatDotDotRelation;
-import omr.sig.RepeatDotInter;
 import omr.sig.SIGraph;
-import omr.sig.StaccatoInter;
-import omr.sig.StaccatoNoteRelation;
+import omr.sig.inter.AugmentationDotInter;
+import omr.sig.inter.BarlineInter;
+import omr.sig.inter.FermataDotInter;
+import omr.sig.inter.FermataInter;
+import omr.sig.inter.Inter;
+import omr.sig.inter.RepeatDotInter;
+import omr.sig.inter.StaccatoInter;
+import omr.sig.relation.AugmentationRelation;
+import omr.sig.relation.DotFermataRelation;
+import omr.sig.relation.DoubleDotRelation;
+import omr.sig.relation.RepeatDotBarRelation;
+import omr.sig.relation.RepeatDotDotRelation;
+import omr.sig.relation.StaccatoChordRelation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,13 +45,16 @@ import java.util.List;
  * Class {@code DotFactory} is a companion of {@link SymbolFactory}, dedicated to the
  * interpretation of dot-shaped symbols.
  * <p>
+ * Some processing can be done instantly while the symbol is being built, other dot processing
+ * require symbols nearby and thus can take place only when all other symbols have been built.
+ * <p>
  * A dot can be:<ul>
- * <li>an augmentation dot (first or second dot), [TODO: Handle augmentation dot for mirrored notes]
  * <li>a part of a repeat sign (upper or lower dot),
  * <li>a staccato sign,
+ * <li>an augmentation dot (first or second dot), [TODO: Handle augmentation dot for mirrored notes]
+ * <li>a part of fermata sign,
  * <li>a dot of an ending indication, [TODO: Handle dot in ending]
- * <li>a part of fermata sign, [TODO: Handle dot in fermata]
- * <li>a simple text dot.
+ * <li>a simple text dot. [TODO: Anything to be done here?]
  * </ul>
  *
  * @author Hervé Bitteur
@@ -70,8 +76,8 @@ public class DotFactory
 
     private final Scale scale;
 
-    /** Candidates for augmentation dots. */
-    private final List<AugDot> augDots = new ArrayList<AugDot>();
+    /** Dot candidates. */
+    private final List<Dot> dots = new ArrayList<Dot>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -88,67 +94,34 @@ public class DotFactory
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------------//
-    // checkAugmentations //
-    //--------------------//
+    //---------------//
+    // lateDotChecks //
+    //---------------//
     /**
-     * Perform check for augmentation dots, once rests symbols have been retrieved.
+     * Launch all processing that can take place only after all symbols interpretations
+     * have been retrieved for the system.
      */
-    public void checkAugmentations ()
+    public void lateDotChecks ()
     {
-        // Phase #1: Tests for first augmentation dots
-        for (AugDot augDot : augDots) {
-            checkAugmentationFirst(augDot);
-        }
+        // Sort dots by abscissa
+        Collections.sort(dots);
 
-        // Collect all (first) repeats found so far in this system
-        List<Inter> systemFirsts = sig.inters(Shape.AUGMENTATION_DOT);
-        Collections.sort(systemFirsts, Inter.byAbscissa);
-
-        // Phase #2: Tests for second augmentation dots (double dots)
-        for (AugDot augDot : augDots) {
-            checkAugmentationSecond(augDot, systemFirsts);
-        }
-    }
-
-    //------------//
-    // pairRepeat //
-    //------------//
-    /**
-     * Try to pair each repeat dot with another repeat dot.
-     */
-    public void pairRepeats ()
-    {
-        List<Inter> dots = sig.inters(Shape.REPEAT_DOT);
-        Collections.sort(dots, Inter.byAbscissa);
-
-        for (int i = 0; i < dots.size(); i++) {
-            RepeatDotInter dot = (RepeatDotInter) dots.get(i);
-            int dotPitch = dot.getPitch();
-            Rectangle luBox = dot.getBounds();
-            luBox.y -= (scale.getInterline() * dotPitch);
-
-            final int xBreak = luBox.x + luBox.width;
-
-            for (Inter inter : dots.subList(i + 1, dots.size())) {
-                Rectangle otherBox = inter.getBounds();
-
-                if (luBox.intersects(otherBox)) {
-                    RepeatDotInter other = (RepeatDotInter) inter;
-                    logger.debug("Pair {} and {}", dot, other);
-                    sig.addEdge(dot, other, new RepeatDotDotRelation());
-                } else if (otherBox.x >= xBreak) {
-                    break;
-                }
-            }
-        }
+        // Run all late checks
+        lateRepeatPairChecks(); // Relation between the two repeat dots of a barline
+        lateAugmentationChecks(); // Note-Dot and Note-Dot-Dot configurations
+        lateFermataChecks(); // Dot as part of a fermata sign
     }
 
     //------------//
     // processDot //
     //------------//
     /**
-     * Run the various checks for the provided dot-shaped glyph
+     * Run the various checks for the provided dot-shaped glyph.
+     * <p>
+     * All symbols may not be available yet, so only instant processing is launched on the dot (as
+     * a repeat dot, as a staccato dot).
+     * <p>
+     * The symbol is also saved as a dot candidate for later processing.
      *
      * @param eval  evaluation result
      * @param glyph underlying glyph
@@ -156,183 +129,28 @@ public class DotFactory
     public void processDot (Evaluation eval,
                             Glyph glyph)
     {
-        // Try as repeat dot
-        checkRepeat(eval, glyph);
+        // Simply record the candidate dot
+        Dot dot = new Dot(eval, glyph);
+        dots.add(dot);
 
-        // Try as staccato dot
-        checkStaccato(eval, glyph);
-
-        // Postpone the processing as augmentation dot until all symbols have been retrieved
-        // So, simply record the candidate glyph
-        augDots.add(new AugDot(eval, glyph));
+        // Run instant checks
+        instantCheckRepeat(dot); // Repeat dot (relation between the two repeat dots is postponed)
+        instantCheckStaccato(dot); // Staccato dot
     }
 
-    //------------------------//
-    // checkAugmentationFirst //
-    //------------------------//
-    /**
-     * Try to interpret the glyph as an augmentation dot.
-     * <p>
-     * An augmentation dot can relate to a note or a rest, therefore this method can be called only
-     * after all notes and rests interpretations have been retrieved, and rests are retrieved during
-     * symbols step.
-     *
-     * @param augDot a candidate for augmentation dot
-     */
-    private void checkAugmentationFirst (AugDot augDot)
-    {
-        // Look for entities (notes and rests) reachable from this glyph
-        final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum());
-        final Point dotCenter = augDot.glyph.getAreaCenter();
-        final Rectangle luBox = new Rectangle(dotCenter);
-        luBox.grow(0, maxDy);
-        luBox.x -= maxDx;
-        luBox.width += maxDx;
-
-        final List<Inter> entities = sig.intersectedInters(
-                symbolFactory.getSystemNotes(),
-                GeoOrder.BY_ABSCISSA,
-                luBox);
-
-        entities.addAll(
-                sig.intersectedInters(symbolFactory.getSystemRests(), GeoOrder.BY_ABSCISSA, luBox));
-
-        if (entities.isEmpty()) {
-            return;
-        }
-
-        // Notes have already been reduced, but not the rests (created as symbols)
-        // So we have to set a relation with all acceptable entities
-        // This will be later reduced by the sig solver.
-        AugmentationDotInter aug = null;
-
-        for (Inter entity : entities) {
-            // Select proper entity reference point (center right)
-            Point refPt = entity.getCenterRight();
-            double xGap = dotCenter.x - refPt.x;
-
-            if (xGap > 0) {
-                double yGap = Math.abs(refPt.y - dotCenter.y);
-                AugmentationRelation rel = new AugmentationRelation();
-                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
-
-                if (rel.getGrade() >= rel.getMinGrade()) {
-                    if (aug == null) {
-                        double grade = Inter.intrinsicRatio * augDot.eval.grade;
-                        aug = new AugmentationDotInter(augDot.glyph, grade);
-                        sig.addVertex(aug);
-                        logger.debug("Created {}", aug);
-                    }
-
-                    sig.addEdge(aug, entity, rel);
-                }
-            }
-        }
-    }
-
-    //-------------------------//
-    // checkAugmentationSecond //
-    //-------------------------//
-    /**
-     * Try to interpret the glyph as a second augmentation dot, composing a double dot.
-     * <p>
-     * Candidates are dots left over (too far from note/rest) as well as some dots already
-     * recognized as (single) repeats.
-     *
-     * @param augDot       a candidate for repeat dot
-     * @param systemFirsts all (first) repeats recognized during phase #1
-     */
-    private void checkAugmentationSecond (AugDot augDot,
-                                          List<Inter> systemFirsts)
-    {
-        // Look for repeats reachable from this glyph
-        final int maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum());
-        final Point dot = augDot.glyph.getAreaCenter();
-        final Rectangle luBox = new Rectangle(dot);
-        luBox.grow(0, maxDy);
-        luBox.x -= maxDx;
-        luBox.width += maxDx;
-
-        final List<Inter> firsts = sig.intersectedInters(
-                systemFirsts,
-                GeoOrder.BY_ABSCISSA,
-                luBox);
-
-        // Remove the repeat, if any, that corresponds to the glyph at hand
-        AugmentationDotInter second = null;
-
-        for (Inter first : firsts) {
-            if (first.getGlyph() == augDot.glyph) {
-                second = (AugmentationDotInter) first;
-                firsts.remove(first);
-
-                break;
-            }
-        }
-
-        if (firsts.isEmpty()) {
-            return;
-        }
-
-        DoubleDotRelation bestRel = null;
-        Inter bestFirst = null;
-        double bestYGap = Double.MAX_VALUE;
-
-        for (Inter first : firsts) {
-            // Select proper entity reference point (center right)
-            Point refPt = first.getCenterRight();
-            double xGap = dot.x - refPt.x;
-
-            if (xGap > 0) {
-                double yGap = Math.abs(refPt.y - dot.y);
-                DoubleDotRelation rel = new DoubleDotRelation();
-                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
-
-                if (rel.getGrade() >= rel.getMinGrade()) {
-                    if ((bestRel == null) || (bestYGap > yGap)) {
-                        bestRel = rel;
-                        bestFirst = first;
-                        bestYGap = yGap;
-                    }
-                }
-            }
-        }
-
-        if (bestRel != null) {
-            if (second == null) {
-                double grade = Inter.intrinsicRatio * augDot.eval.grade;
-                second = new AugmentationDotInter(augDot.glyph, grade);
-                sig.addVertex(second);
-                logger.debug("Created {}", second);
-            } else {
-                // Here, we have a second dot with two relations:
-                // - First dot is linked to some note/rest entities
-                // - Second dot is linked to some note/rest entities and also to first dot
-                // Since yGap between dots is very strict, just make second dot focus on double dots
-                sig.removeAllEdges(sig.getRelations(second, AugmentationRelation.class));
-            }
-
-            sig.addEdge(second, bestFirst, bestRel);
-            logger.info("DoubleDot relation {} over {}", second, bestFirst);
-        }
-    }
-
-    //-------------//
-    // checkRepeat //
-    //-------------//
+    //--------------------//
+    // instantCheckRepeat //
+    //--------------------//
     /**
      * Try to interpret the provided glyph as a repeat dot.
+     * This method can be called during symbols step since bar-lines are already available.
      *
-     * @param eval  evaluation result
-     * @param glyph underlying glyph
+     * @param dot the candidate dot
      */
-    private void checkRepeat (Evaluation eval,
-                              Glyph glyph)
+    private void instantCheckRepeat (Dot dot)
     {
         // Check vertical pitch position within the staff: close to +1 or -1
-        double pitchDif = Math.abs(Math.abs(glyph.getPitchPosition()) - 1);
+        double pitchDif = Math.abs(Math.abs(dot.glyph.getPitchPosition()) - 1);
         double maxDif = RepeatDotBarRelation.getYGapMaximum().getValue();
 
         // Rough sanity check
@@ -342,8 +160,8 @@ public class DotFactory
 
         final int maxDx = scale.toPixels(RepeatDotBarRelation.getXOutGapMaximum());
         final int maxDy = scale.toPixels(RepeatDotBarRelation.getYGapMaximum());
-        final Point dot = glyph.getAreaCenter();
-        final Rectangle luBox = new Rectangle(dot);
+        final Point dotPt = dot.glyph.getAreaCenter();
+        final Rectangle luBox = new Rectangle(dotPt);
         luBox.grow(maxDx, maxDy);
 
         final List<Inter> bars = sig.intersectedInters(
@@ -366,12 +184,12 @@ public class DotFactory
 
             // Select proper bar reference point (left or right side and proper vertical side)
             double barY = center.y
-                          + ((box.height / 8d) * Integer.signum(dot.y - center.y));
+                          + ((box.height / 8d) * Integer.signum(dotPt.y - center.y));
             double barX = bar.getMedian().xAtY(barY)
-                          + ((bar.getWidth() / 2) * Integer.signum(dot.x - center.x));
+                          + ((bar.getWidth() / 2) * Integer.signum(dotPt.x - center.x));
 
-            double xGap = Math.abs(barX - dot.x);
-            double yGap = Math.abs(barY - dot.y);
+            double xGap = Math.abs(barX - dotPt.x);
+            double yGap = Math.abs(barY - dotPt.y);
             RepeatDotBarRelation rel = new RepeatDotBarRelation();
             rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
@@ -385,89 +203,370 @@ public class DotFactory
         }
 
         if (bestRel != null) {
-            double grade = Inter.intrinsicRatio * eval.grade;
-            int pitch = (glyph.getPitchPosition() > 0) ? 1 : (-1);
-            RepeatDotInter repeat = new RepeatDotInter(glyph, grade, pitch);
+            final Point center = dot.glyph.getLocation();
+            final Staff staff = system.getClosestStaff(center); // Staff is OK
+            double grade = Inter.intrinsicRatio * dot.eval.grade;
+            int pitch = (dot.glyph.getPitchPosition() > 0) ? 1 : (-1);
+            RepeatDotInter repeat = new RepeatDotInter(dot.glyph, grade, staff, pitch);
             sig.addVertex(repeat);
             sig.addEdge(repeat, bestBar, bestRel);
 
-            if (glyph.isVip()) {
-                logger.info("VIP Created {} from glyph#{}", repeat, glyph.getId());
+            if (dot.glyph.isVip()) {
+                logger.info("VIP Created {} from glyph#{}", repeat, dot.glyph.getId());
             }
         }
     }
 
-    //---------------//
-    // checkStaccato //
-    //---------------//
+    //----------------------//
+    // instantCheckStaccato //
+    //----------------------//
     /**
-     * Try to interpret the provided glyph as a staccato sign.
+     * Try to interpret the provided glyph as a staccato sign related to note head.
+     * This method can be called during symbols step, since only head-chords (not rest-chords) are
+     * concerned and head-based chords are already available.
+     * <p>
      * TODO: Use the method for staccatissimo glyph as well
      *
-     * @param eval  evaluation result
-     * @param glyph underlying glyph
+     * @param dot the candidate dot
      */
-    private void checkStaccato (Evaluation eval,
-                                Glyph glyph)
+    private void instantCheckStaccato (Dot dot)
     {
-        final int maxDx = scale.toPixels(StaccatoNoteRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(StaccatoNoteRelation.getYGapMaximum());
-        final Point dot = glyph.getAreaCenter();
-        final Rectangle luBox = new Rectangle(dot);
+        final int maxDx = scale.toPixels(StaccatoChordRelation.getXOutGapMaximum());
+        final int maxDy = scale.toPixels(StaccatoChordRelation.getYGapMaximum());
+        final Rectangle dotBox = dot.glyph.getBounds();
+        final Point dotPt = dot.glyph.getAreaCenter();
+        final Rectangle luBox = new Rectangle(dotPt);
         luBox.grow(maxDx, maxDy);
 
-        final List<Inter> notes = sig.intersectedInters(
-                symbolFactory.getSystemNotes(),
+        final List<Inter> chords = sig.intersectedInters(
+                symbolFactory.getSystemChords(),
                 GeoOrder.BY_ABSCISSA,
                 luBox);
 
-        if (notes.isEmpty()) {
+        if (chords.isEmpty()) {
             return;
         }
 
-        StaccatoNoteRelation bestRel = null;
-        Inter bestNote = null;
+        StaccatoChordRelation bestRel = null;
+        Inter bestChord = null;
         double bestYGap = Double.MAX_VALUE;
 
-        for (Inter note : notes) {
-            Rectangle box = note.getBounds();
-            Point center = note.getCenter();
+        for (Inter chord : chords) {
+            Rectangle chordBox = chord.getBounds();
 
-            // Select proper note reference point (top or bottom)
-            Point notePt = new Point(
-                    center.x,
-                    center.y + ((box.height / 2) * Integer.signum(dot.y - center.y)));
-            double xGap = Math.abs(notePt.x - dot.x);
-            double yGap = Math.abs(notePt.y - dot.y);
-            StaccatoNoteRelation rel = new StaccatoNoteRelation();
+            // The staccato dot cannot intersect the chord
+            if (chordBox.intersects(dotBox)) {
+                continue;
+            }
+
+            Point center = chord.getCenter();
+
+            // Select proper chord reference point (top or bottom)
+            int yRef = (dotPt.y > center.y) ? (chordBox.y + chordBox.height)
+                    : chordBox.y;
+            double xGap = Math.abs(center.x - dotPt.x);
+            double yGap = Math.abs(yRef - dotPt.y);
+            StaccatoChordRelation rel = new StaccatoChordRelation();
             rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
             if (rel.getGrade() >= rel.getMinGrade()) {
                 if ((bestRel == null) || (bestYGap > yGap)) {
                     bestRel = rel;
-                    bestNote = note;
+                    bestChord = chord;
                     bestYGap = yGap;
                 }
             }
         }
 
         if (bestRel != null) {
-            double grade = Inter.intrinsicRatio * eval.grade;
-            StaccatoInter staccato = new StaccatoInter(glyph, grade);
+            double grade = Inter.intrinsicRatio * dot.eval.grade;
+            StaccatoInter staccato = new StaccatoInter(dot.glyph, grade);
             sig.addVertex(staccato);
-            sig.addEdge(staccato, bestNote, bestRel);
+            sig.addEdge(staccato, bestChord, bestRel);
             logger.debug("Created {}", staccato);
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //--------//
-    // AugDot //
-    //--------//
+    //------------------------//
+    // lateAugmentationChecks //
+    //------------------------//
     /**
-     * Remember a candidate glyph for augmentation dot.
+     * Perform check for augmentation dots, once rests symbols have been retrieved.
      */
-    private static class AugDot
+    private void lateAugmentationChecks ()
+    {
+        // Phase #1: Tests for first augmentation dots
+        for (Dot dot : dots) {
+            lateFirstAugmentationCheck(dot);
+        }
+
+        // Collect all (first) augmentation dots found so far in this system
+        List<Inter> systemFirsts = sig.inters(Shape.AUGMENTATION_DOT);
+        Collections.sort(systemFirsts, Inter.byAbscissa);
+
+        // Phase #2: Tests for second augmentation dots (double dots)
+        for (Dot dot : dots) {
+            lateSecondAugmentationCheck(dot, systemFirsts);
+        }
+    }
+
+    //-------------------//
+    // lateFermataChecks //
+    //-------------------//
+    /**
+     * Try to include the dot in a fermata symbol.
+     */
+    private void lateFermataChecks ()
+    {
+        // Collection of fermata candidates in the system
+        List<Inter> fermatas = sig.inters(FermataInter.class);
+
+        if (fermatas.isEmpty()) {
+            return;
+        }
+
+        for (Dot dot : dots) {
+            Rectangle dotBox = dot.glyph.getBounds();
+            FermataDotInter dotInter = null;
+
+            for (Inter fermata : fermatas) {
+                // Box: use lower half for FERMATA and upper half for FERMATA_BELOW
+                Rectangle halfBox = fermata.getBounds();
+                halfBox.height /= 2;
+
+                if (fermata.getShape() == Shape.FERMATA) {
+                    halfBox.y += halfBox.height;
+                }
+
+                if (halfBox.intersects(dotBox)) {
+                    final Point dotCenter = dot.glyph.getAreaCenter();
+                    double xGap = Math.abs(
+                            dotCenter.x - (halfBox.x + (halfBox.width / 2)));
+                    double yTarget = (fermata.getShape() == Shape.FERMATA_BELOW)
+                            ? (halfBox.y + (halfBox.height * 0.25))
+                            : (halfBox.y + (halfBox.height * 0.75));
+                    double yGap = Math.abs(dotCenter.y - yTarget);
+                    DotFermataRelation rel = new DotFermataRelation();
+                    rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+
+                    if (rel.getGrade() >= rel.getMinGrade()) {
+                        if (dotInter == null) {
+                            double grade = Inter.intrinsicRatio * dot.eval.grade;
+                            dotInter = new FermataDotInter(dot.glyph, grade);
+                            sig.addVertex(dotInter);
+                            logger.debug("Created {}", dotInter);
+                        }
+
+                        sig.addEdge(dotInter, fermata, rel);
+                        logger.debug("{} matches dot glyph#{}", fermata, dot.glyph.getId());
+                    }
+                }
+            }
+        }
+    }
+
+    //----------------------------//
+    // lateFirstAugmentationCheck //
+    //----------------------------//
+    /**
+     * Try to interpret the glyph as an augmentation dot.
+     * <p>
+     * An augmentation dot can relate to a note or a rest, therefore this method can be called only
+     * after all notes and rests interpretations have been retrieved, and rests are retrieved during
+     * symbols step.
+     *
+     * @param dot a candidate for augmentation dot
+     */
+    private void lateFirstAugmentationCheck (Dot dot)
+    {
+        // Look for entities (notes and rests) reachable from this glyph
+        final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum());
+        final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum());
+        final Point dotCenter = dot.glyph.getAreaCenter();
+        final Rectangle luBox = new Rectangle(dotCenter);
+        luBox.grow(0, maxDy);
+        luBox.x -= maxDx;
+        luBox.width += maxDx;
+
+        final List<Inter> entities = sig.intersectedInters(
+                symbolFactory.getSystemHeads(),
+                GeoOrder.BY_ABSCISSA,
+                luBox);
+
+        entities.addAll(
+                sig.intersectedInters(symbolFactory.getSystemRests(), GeoOrder.BY_ABSCISSA, luBox));
+
+        if (entities.isEmpty()) {
+            return;
+        }
+
+        // Heads have already been reduced, but not the rests (created as symbols)
+        // So we have to set a relation with all acceptable entities
+        // This will be later solved by the sig reducer.
+        AugmentationDotInter aug = null;
+
+        for (Inter entity : entities) {
+            // Select proper entity reference point (center right)
+            Point refPt = entity.getCenterRight();
+            double xGap = dotCenter.x - refPt.x;
+
+            if (xGap > 0) {
+                double yGap = Math.abs(refPt.y - dotCenter.y);
+                AugmentationRelation rel = new AugmentationRelation();
+                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+
+                if (rel.getGrade() >= rel.getMinGrade()) {
+                    if (aug == null) {
+                        double grade = Inter.intrinsicRatio * dot.eval.grade;
+                        aug = new AugmentationDotInter(dot.glyph, grade);
+                        sig.addVertex(aug);
+                        logger.debug("Created {}", aug);
+                    }
+
+                    sig.addEdge(aug, entity, rel);
+
+                    // We cannot yet safely assign a containing staff to the augmentation dot
+                }
+            }
+        }
+    }
+
+    //----------------------//
+    // lateRepeatPairChecks //
+    //----------------------//
+    /**
+     * Try to pair each repeat dot with another repeat dot, once all dot-repeat symbols
+     * have been retrieved.
+     */
+    private void lateRepeatPairChecks ()
+    {
+        List<Inter> repeatDots = sig.inters(Shape.REPEAT_DOT);
+        Collections.sort(repeatDots, Inter.byAbscissa);
+
+        for (int i = 0; i < repeatDots.size(); i++) {
+            RepeatDotInter dot = (RepeatDotInter) repeatDots.get(i);
+            int dotPitch = dot.getPitch();
+            Rectangle luBox = dot.getBounds();
+            luBox.y -= (scale.getInterline() * dotPitch);
+
+            final int xBreak = luBox.x + luBox.width;
+
+            for (Inter inter : repeatDots.subList(i + 1, repeatDots.size())) {
+                Rectangle otherBox = inter.getBounds();
+
+                if (luBox.intersects(otherBox)) {
+                    RepeatDotInter other = (RepeatDotInter) inter;
+                    logger.debug("Pair {} and {}", dot, other);
+                    sig.addEdge(dot, other, new RepeatDotDotRelation());
+                } else if (otherBox.x >= xBreak) {
+                    break;
+                }
+            }
+        }
+    }
+
+    //-----------------------------//
+    // lateSecondAugmentationCheck //
+    //-----------------------------//
+    /**
+     * Try to interpret the glyph as a second augmentation dot, composing a double dot.
+     * <p>
+     * Candidates are dots left over (too far from note/rest) as well as some dots already
+     * recognized as (single) dots.
+     *
+     * @param dot          a candidate for augmentation dot
+     * @param systemFirsts all (first) augmentation dots recognized during phase #1
+     */
+    private void lateSecondAugmentationCheck (Dot dot,
+                                              List<Inter> systemFirsts)
+    {
+        if (dot.glyph.isVip()) {
+            logger.info("VIP lateSecondAugmentationCheck for {}", dot);
+        }
+
+        // Look for augmentation dots reachable from this glyph
+        final int maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum());
+        final int maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum());
+        final Point dotCenter = dot.glyph.getAreaCenter();
+        final Rectangle luBox = new Rectangle(dotCenter);
+        luBox.grow(0, maxDy);
+        luBox.x -= maxDx;
+        luBox.width += maxDx;
+
+        final List<Inter> firsts = sig.intersectedInters(
+                systemFirsts,
+                GeoOrder.BY_ABSCISSA,
+                luBox);
+
+        // Remove the augmentation dot, if any, that corresponds to the glyph at hand
+        AugmentationDotInter second = null;
+
+        for (Inter first : firsts) {
+            if (first.getGlyph() == dot.glyph) {
+                second = (AugmentationDotInter) first;
+                firsts.remove(first);
+
+                break;
+            }
+        }
+
+        if (firsts.isEmpty()) {
+            return;
+        }
+
+        DoubleDotRelation bestRel = null;
+        Inter bestFirst = null;
+        double bestYGap = Double.MAX_VALUE;
+
+        for (Inter first : firsts) {
+            // Select proper entity reference point (center right)
+            Point refPt = first.getCenterRight();
+            double xGap = dotCenter.x - refPt.x;
+
+            if (xGap > 0) {
+                double yGap = Math.abs(refPt.y - dotCenter.y);
+                DoubleDotRelation rel = new DoubleDotRelation();
+                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+
+                if (rel.getGrade() >= rel.getMinGrade()) {
+                    if ((bestRel == null) || (bestYGap > yGap)) {
+                        bestRel = rel;
+                        bestFirst = first;
+                        bestYGap = yGap;
+                    }
+                }
+            }
+        }
+
+        if (bestRel != null) {
+            if (second == null) {
+                double grade = Inter.intrinsicRatio * dot.eval.grade;
+                second = new AugmentationDotInter(dot.glyph, grade);
+                sig.addVertex(second);
+                logger.debug("Created {}", second);
+            } else {
+                // Here, we have a second dot with two relations:
+                // - First dot is linked to some note/rest entities
+                // - Second dot is linked to some note/rest entities and also to first dot
+                // Since yGap between dots is very strict, just make second dot focus on double dots
+                sig.removeAllEdges(sig.getRelations(second, AugmentationRelation.class));
+            }
+
+            sig.addEdge(second, bestFirst, bestRel);
+            logger.info("DoubleDot relation {} over {}", second, bestFirst);
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----//
+    // Dot //
+    //-----//
+    /**
+     * Remember a dot candidate, for late processing.
+     * For augmentation dot, for fermata dot. TODO: Perhaps others
+     */
+    private static class Dot
+            implements Comparable<Dot>
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -476,11 +575,29 @@ public class DotFactory
         final Glyph glyph; // Underlying glyph
 
         //~ Constructors ---------------------------------------------------------------------------
-        public AugDot (Evaluation eval,
-                       Glyph glyph)
+        public Dot (Evaluation eval,
+                    Glyph glyph)
         {
             this.eval = eval;
             this.glyph = glyph;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public int compareTo (Dot that)
+        {
+            return Glyph.byAbscissa.compare(glyph, that.glyph);
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("{Dot");
+            sb.append(" glyph#").append(glyph.getId());
+            sb.append(" ").append(eval);
+            sb.append("}");
+
+            return sb.toString();
         }
     }
 }

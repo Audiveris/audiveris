@@ -11,17 +11,18 @@
 // </editor-fold>
 package omr.score;
 
-import omr.score.entity.Measure;
 import omr.score.entity.Page;
-import omr.score.entity.ScoreSystem;
-import omr.score.entity.Staff;
-import omr.score.entity.SystemPart;
 import omr.score.entity.TimeRational;
 import omr.score.entity.TimeSignature;
-import omr.score.entity.Voice;
-import omr.score.visitor.AbstractScoreVisitor;
 
-import omr.util.TreeNode;
+import omr.sheet.Measure;
+import omr.sheet.MeasureStack;
+import omr.sheet.Staff;
+import omr.sheet.SystemInfo;
+import omr.sheet.Voice;
+
+import omr.sig.inter.TimeInter;
+
 import omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
@@ -40,7 +41,6 @@ import java.util.TreeMap;
  * @author Hervé Bitteur
  */
 public class TimeSignatureFixer
-        extends AbstractScoreVisitor
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -54,7 +54,7 @@ public class TimeSignatureFixer
         public int compare (Integer e1,
                             Integer e2)
         {
-            return e2 - e1;
+            return Integer.compare(e2, e1);
         }
     };
 
@@ -70,114 +70,103 @@ public class TimeSignatureFixer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // visit Page //
-    //------------//
+    //---------//
+    // process //
+    //---------//
     /**
      * Page hierarchy entry point
      *
-     * @param page the page to export
-     * @return false
+     * @param page the page to process
      */
-    @Override
-    public boolean visit (Page page)
+    public void process (Page page)
     {
         try {
-            // We cannot rely on standard browsing part by part, since we need to
-            // address all vertical measures (of same Id), regardless of their
-            // containing part
-            ScoreSystem system = page.getFirstSystem();
-            SystemPart part = system.getFirstPart();
-            Measure measure = part.getFirstMeasure();
+            SystemInfo firstSystem = page.getFirstSystem();
+            MeasureStack stack = firstSystem.getMeasureStacks().get(0);
 
-            // Measure that starts a range of measures with an explicit time sig
-            Measure startMeasure = null;
+            // MeasureStack that starts a range of measures with an explicit time sig
+            MeasureStack startStack = null;
 
             // Is this starting time sig a manual one?
             boolean startManual = false;
 
-            // Measure that ends the range
-            // Right before another time sig, or last measure of the score
-            Measure stopMeasure = null;
+            // End of range (right before another time sig, or last measure of the page)
+            MeasureStack stopStack = null;
 
-            // Remember if current signature is manual
-            // And thus should not be updated
+            // Remember if current signature is manual, and thus should not be updated
             WrappedBoolean isManual = new WrappedBoolean(false);
 
-            while (measure != null) {
-                if (hasTimeSig(measure, isManual)) {
-                    if ((startMeasure != null) && !startManual) {
+            while (stack != null) {
+                if (hasTimeSig(stack, isManual)) {
+                    if ((startStack != null) && !startManual) {
                         // Complete the ongoing time sig analysis
-                        checkTimeSigs(startMeasure, stopMeasure);
+                        checkTimeSigs(startStack, stopStack);
                     }
 
                     // Start a new analysis
-                    startMeasure = measure;
+                    startStack = stack;
                     startManual = isManual.isSet();
                 }
 
-                stopMeasure = measure;
-                measure = measure.getFollowing();
+                stopStack = stack;
+                stack = stack.getFollowingInPage();
             }
 
-            if (startMeasure != null) {
+            if (startStack != null) {
                 if (!startManual) {
                     // Complete the ongoing time sig analysis
-                    checkTimeSigs(startMeasure, stopMeasure);
+                    checkTimeSigs(startStack, stopStack);
                 }
             } else {
                 // Whole page without explicit time signature
                 checkTimeSigs(
-                        part.getFirstMeasure(),
-                        page.getLastSystem().getFirstPart().getLastMeasure());
+                        firstSystem.getFirstMeasureStack(),
+                        page.getLastSystem().getLastMeasureStack());
             }
         } catch (Exception ex) {
-            logger.warn("TimeSignatureFixer. Error visiting " + page, ex);
+            logger.warn("TimeSignatureFixer. Error processing " + page, ex);
         }
-
-        // Don't go the standard way (part per part)
-        return false;
     }
 
-    //---------------//
-    // visit Measure //
-    //---------------//
-    @Override
-    public boolean visit (Measure measure)
-    {
-        measure.setExpectedDuration(null);
-
-        return false;
-    }
-
+    //
+    //    //---------------//
+    //    // visit MeasureStack //
+    //    //---------------//
+    //    @Override
+    //    public boolean visit (MeasureStack measure)
+    //    {
+    //        measure.setExpectedDuration(null);
+    //
+    //        return false;
+    //    }
+    //
     //---------------//
     // checkTimeSigs //
     //---------------//
     /**
-     * Perform the analysis on the provided range of measures,
-     * retrieving the most significant intrinsic time sig as determined
-     * by measures chords.
-     * Based on this "intrinsic" time information, modify the explicit time
-     * signatures accordingly.
+     * Perform the analysis on the provided range of measures, retrieving the most
+     * significant intrinsic time sig as determined by measures chords.
+     * Based on this "intrinsic" time information, modify the explicit time signatures accordingly.
      *
-     * @param startMeasure beginning of the measure range
-     * @param stopMeasure  end of the measure range
+     * startStack startMeasure beginning of the measure range
+     *
+     * @param stopStack end of the measure range
      */
-    private void checkTimeSigs (Measure startMeasure,
-                                Measure stopMeasure)
+    private void checkTimeSigs (MeasureStack startStack,
+                                MeasureStack stopStack)
     {
         logger.debug(
-                "checkTimeSigs on measure range {}..{}",
-                startMeasure.getPageId(),
-                stopMeasure.getPageId());
+                "checkTimeSigs on measure stacks {}..{}",
+                startStack.getPageId(),
+                stopStack.getPageId());
 
         // Retrieve the best possible time signature(s)
-        SortedMap<Integer, TimeRational> bestSigs = retrieveBestSigs(startMeasure, stopMeasure);
+        SortedMap<Integer, TimeRational> bestSigs = retrieveBestSigs(startStack, stopStack);
         logger.debug(
                 "{}Best inferred time sigs in [M#{},M#{}]: {}",
-                startMeasure.getPage().getSheet().getLogPrefix(),
-                startMeasure.getIdValue(),
-                stopMeasure.getIdValue(),
+                startStack.getSystem().getPage().getSheet().getLogPrefix(),
+                startStack.getIdValue(),
+                stopStack.getIdValue(),
                 bestSigs);
 
         if (!bestSigs.isEmpty()) {
@@ -191,31 +180,30 @@ public class TimeSignatureFixer
 
             logger.debug("Best sig: {}", bestRational);
 
-            // Loop on every staff in the vertical startMeasure
-            for (Staff.SystemIterator sit = new Staff.SystemIterator(startMeasure); sit.hasNext();) {
-                Staff staff = sit.next();
-                Measure measure = sit.getMeasure();
-                TimeSignature sig = measure.getTimeSignature(staff);
+            // Loop on every staff in the vertical startStack
+            for (Measure measure : startStack.getMeasures()) {
+                for (Staff staff : measure.getPart().getStaves()) {
+                    int staffIndexInPart = measure.getPart().getStaves().indexOf(staff);
+                    TimeInter time = measure.getTimeSignature(staffIndexInPart);
 
-                if (sig != null) {
-                    try {
-                        TimeRational timeRational = sig.getTimeRational();
+                    if (time != null) {
+                        try {
+                            TimeRational timeRational = time.getTimeRational();
 
-                        if ((timeRational == null) || !timeRational.equals(bestRational)) {
-                            logger.info(
-                                    "{}Measure#{} {}T{} {}->{}",
-                                    measure.getPage().getSheet().getLogPrefix(),
-                                    measure.getPageId(),
-                                    staff.getContextString(),
-                                    staff.getId(),
-                                    timeRational,
-                                    bestRational);
-                            sig.modify(null, bestRational);
+                            if ((timeRational == null) || !timeRational.equals(bestRational)) {
+                                logger.info(
+                                        "{}Measure#{} {}T{} {}->{}",
+                                        measure.getPage().getSheet().getLogPrefix(),
+                                        measure.getStack().getPageId(),
+                                        staff.getId(),
+                                        staff.getId(),
+                                        timeRational,
+                                        bestRational);
+                                time.modify(null, bestRational);
+                            }
+                        } catch (Exception ex) {
+                            logger.warn("Could not check time signature for " + time + "ex:" + ex);
                         }
-                    } catch (Exception ex) {
-                        sig.addError(
-                                sig.getGlyphs().iterator().next(),
-                                "Could not check time signature " + ex);
                     }
                 }
             }
@@ -228,37 +216,31 @@ public class TimeSignatureFixer
     // hasTimeSig //
     //------------//
     /**
-     * Check whether the provided measure contains at least one explicit
-     * time signature.
+     * Check whether the provided stack contains at least one explicit time signature.
      *
-     * @param measure the provided measure (in fact we care only about the
-     *                measure id, regardless of the part)
-     * @return true if a time sig exists in some staff of the measure
+     * @param stack the provided measure stack
+     * @return true if a time sig exists in some staff of the stack
      */
-    private boolean hasTimeSig (Measure measure,
+    private boolean hasTimeSig (MeasureStack stack,
                                 WrappedBoolean isManual)
     {
         isManual.set(false);
 
         boolean found = false;
 
-        for (Staff.SystemIterator sit = new Staff.SystemIterator(measure); sit.hasNext();) {
-            Staff staff = sit.next();
-            TimeSignature sig = sit.getMeasure().getTimeSignature(staff);
+        for (Measure measure : stack.getMeasures()) {
+            for (Staff staff : measure.getPart().getStaves()) {
+                int staffIndexInPart = measure.getPart().getStaves().indexOf(staff);
+                TimeInter time = measure.getTimeSignature(staffIndexInPart);
 
-            if (sig != null) {
-                logger.debug(
-                        "Measure#{} {}T{} {}",
-                        measure.getPageId(),
-                        staff.getContextString(),
-                        staff.getId(),
-                        sig);
-
-                if (sig.isManual()) {
-                    isManual.set(true);
+                if (time != null) {
+                    logger.debug("Stack#{} T{} {}", stack.getPageId(), staff.getId(), time);
+                    //
+                    //                    if (time.isManual()) {
+                    //                        isManual.set(true);
+                    //                    }
+                    found = true;
                 }
-
-                found = true;
             }
         }
 
@@ -269,62 +251,51 @@ public class TimeSignatureFixer
     // retrieveBestSigs //
     //------------------//
     /**
-     * By inspecting each voice in the provided measure range,
-     * determine the best intrinsic time signatures.
+     * By inspecting each voice in the provided range of measure stacks, determine
+     * the best intrinsic time signatures.
      *
-     * @param startMeasure beginning of the measure range
-     * @param stopMeasure  end of the measure range
+     * @param startStack beginning of the stack range
+     * @param stopStack  end of the stack range
      * @return a map, sorted by decreasing count, of possible time signatures
      */
-    private SortedMap<Integer, TimeRational> retrieveBestSigs (Measure startMeasure,
-                                                               Measure stopMeasure)
+    private SortedMap<Integer, TimeRational> retrieveBestSigs (MeasureStack startStack,
+                                                               MeasureStack stopStack)
     {
         // Retrieve the significant measure informations
-        Map<TimeRational, Integer> sigs = new LinkedHashMap<TimeRational, Integer>();
-        Measure m = startMeasure;
-        int mIndex = m.getParent().getChildren().indexOf(m);
+        final Map<TimeRational, Integer> sigs = new LinkedHashMap<TimeRational, Integer>();
+        MeasureStack stack = startStack;
 
-        // Loop on measure range
+        // Loop on stack range
         while (true) {
             // Retrieve info
-            logger.debug("Checking measure#{} idx:{}", m.getPageId(), m.getChildIndex());
+            logger.debug("Checking stack#{}", stack.getPageId());
 
-            ScoreSystem system = m.getSystem();
+            if (logger.isDebugEnabled()) {
+                stack.printVoices(null);
+            }
 
-            for (TreeNode pNode : system.getParts()) {
-                SystemPart part = (SystemPart) pNode;
-                Measure measure = (Measure) part.getMeasures().get(mIndex);
+            for (Voice voice : stack.getVoices()) {
+                TimeRational timeRational = voice.getInferredTimeSignature();
+                logger.debug("Voice#{} time inferred: {}", voice.getId(), timeRational);
 
-                if (logger.isDebugEnabled()) {
-                    measure.printVoices(null);
-                }
+                if (timeRational != null) {
+                    // Update histogram
+                    Integer sum = sigs.get(timeRational);
 
-                for (Voice voice : measure.getVoices()) {
-                    TimeRational timeRational = voice.getInferredTimeSignature();
-                    logger.debug("Voice#{} time inferred: {}", voice.getId(), timeRational);
-
-                    if (timeRational != null) {
-                        // Update histogram
-                        Integer sum = sigs.get(timeRational);
-
-                        if (sum == null) {
-                            sum = 1;
-                        } else {
-                            sum += 1;
-                        }
-
-                        sigs.put(timeRational, sum);
+                    if (sum == null) {
+                        sum = 1;
+                    } else {
+                        sum += 1;
                     }
+
+                    sigs.put(timeRational, sum);
                 }
             }
 
-            // Are we through?
-            if (m == stopMeasure) {
-                break;
+            if (stack == stopStack) {
+                break; // We are through
             } else {
-                // Move to next measure
-                m = m.getFollowing();
-                mIndex = m.getParent().getChildren().indexOf(m);
+                stack = stack.getFollowingInPage(); // Move to next measure
             }
         }
 

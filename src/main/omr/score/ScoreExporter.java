@@ -11,9 +11,7 @@
 // </editor-fold>
 package omr.score;
 
-import static omr.score.ScoresManager.SCORE_EXTENSION;
-
-import omr.util.FileUtil;
+import static omr.sheet.BookManager.SCORE_EXTENSION;
 
 import com.audiveris.proxymusic.ScorePartwise;
 import com.audiveris.proxymusic.mxl.Mxl;
@@ -25,11 +23,9 @@ import org.slf4j.LoggerFactory;
 
 import org.w3c.dom.Node;
 
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.util.concurrent.ExecutionException;
+import java.nio.file.Path;
 
 /**
  * Class {@code ScoreExporter} exports the provided score to a MusicXML file, stream or
@@ -48,18 +44,12 @@ public class ScoreExporter
     private final Score score;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // ScoreExporter //
-    //---------------//
     /**
-     * Create a new ScoreExporter object, on a related score instance.
+     * Create a new {@code ScoreExporter} object, on a related score instance.
      *
      * @param score the score to export (cannot be null)
-     * @throws InterruptedException
-     * @throws ExecutionException
      */
     public ScoreExporter (Score score)
-            throws InterruptedException, ExecutionException
     {
         if (score == null) {
             throw new IllegalArgumentException("Trying to export a null score");
@@ -75,17 +65,22 @@ public class ScoreExporter
     /**
      * Export the score to a file.
      *
-     * @param file            the xml or mxl file to write (cannot be null)
-     * @param injectSignature should we inject out signature?
-     * @param compressed      true for compressed output, false for uncompressed output
+     * @param path       the xml or mxl path to write (cannot be null)
+     * @param scoreName  simple score name, without extension
+     * @param signed     should we inject ProxyMusic signature?
+     * @param compressed true for compressed output, false for uncompressed output
+     * @throws java.lang.Exception
      */
-    public void export (File file,
-                        boolean injectSignature,
+    public void export (Path path,
+                        String scoreName,
+                        boolean signed,
                         boolean compressed)
             throws Exception
     {
-        String rootName = FileUtil.getNameSansExtension(file);
-        export(new FileOutputStream(file), injectSignature, compressed, rootName);
+        final OutputStream os = new FileOutputStream(path.toString());
+        export(os, signed, scoreName, compressed);
+        os.close();
+        logger.info("Score {} exported to {}", scoreName, path);
     }
 
     //--------//
@@ -94,40 +89,39 @@ public class ScoreExporter
     /**
      * Export the score to an output stream.
      *
-     * @param os              the output stream where XML data is written (cannot be null)
-     * @param injectSignature should we inject our signature?
-     * @param compressed      true for compressed output
-     * @param rootName        (for compressed only) simple root path name, without extension
-     * @throws IOException
+     * @param os         the output stream where XML data is written (cannot be null)
+     * @param signed     should we inject ProxyMusic signature?
+     * @param scoreName  (for compressed only) simple score name, without extension
+     * @param compressed true for compressed output
      * @throws Exception
      */
     public void export (OutputStream os,
-                        boolean injectSignature,
-                        boolean compressed,
-                        String rootName)
-            throws IOException, Exception
+                        boolean signed,
+                        String scoreName,
+                        boolean compressed)
+            throws Exception
     {
         if (os == null) {
             throw new IllegalArgumentException("Trying to export a score to a null output stream");
         }
 
         // Build the ScorePartwise proxy
-        ScorePartwise scorePartwise = new PartwiseBuilder(score).build();
+        ScorePartwise scorePartwise = PartwiseBuilder.build(score);
 
         // Marshal the proxy
         if (compressed) {
             Mxl.Output mof = new Mxl.Output(os);
             OutputStream zos = mof.getOutputStream();
 
-            if (rootName == null) {
-                rootName = "score"; // Fall-back value
+            if (scoreName == null) {
+                scoreName = "score"; // Fall-back value
             }
 
-            mof.addEntry(new RootFile(rootName + SCORE_EXTENSION, RootFile.MUSICXML_MEDIA_TYPE));
-            Marshalling.marshal(scorePartwise, zos, injectSignature, 2);
+            mof.addEntry(new RootFile(scoreName + SCORE_EXTENSION, RootFile.MUSICXML_MEDIA_TYPE));
+            Marshalling.marshal(scorePartwise, zos, signed, 2);
             mof.close();
         } else {
-            Marshalling.marshal(scorePartwise, os, injectSignature, 2);
+            Marshalling.marshal(scorePartwise, os, signed, 2);
             os.close();
         }
     }
@@ -139,23 +133,22 @@ public class ScoreExporter
      * Export the score to DOM node.
      * (No longer used, it was meant for Audiveris->Zong pure java transfer)
      *
-     * @param node            the DOM node to export to (cannot be null)
-     * @param injectSignature should we inject our signature?
-     * @throws java.io.IOException
-     * @throws java.lang.Exception
+     * @param node   the DOM node to export to (cannot be null)
+     * @param signed should we inject ProxyMusic signature?
+     * @throws Exception
      */
     public void export (Node node,
-                        boolean injectSignature)
-            throws IOException, Exception
+                        boolean signed)
+            throws Exception
     {
         if (node == null) {
             throw new IllegalArgumentException("Trying to export a score to a null DOM Node");
         }
 
         // Build the ScorePartwise proxy
-        ScorePartwise scorePartwise = new PartwiseBuilder(score).build();
+        ScorePartwise scorePartwise = PartwiseBuilder.build(score);
 
         // Marshal the proxy
-        Marshalling.marshal(scorePartwise, node, injectSignature);
+        Marshalling.marshal(scorePartwise, node, signed);
     }
 }

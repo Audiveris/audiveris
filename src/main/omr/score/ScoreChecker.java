@@ -25,13 +25,13 @@ import omr.glyph.facets.Glyph;
 import omr.math.GeoUtil;
 
 import omr.score.entity.Beam;
-import omr.score.entity.Chord;
+import omr.score.entity.OldChord;
 import omr.score.entity.Dynamics;
-import omr.score.entity.Measure;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.Note;
 import omr.score.entity.ScoreSystem;
-import omr.score.entity.Staff;
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldStaff;
+import omr.score.entity.OldSystemPart;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.AbstractScoreVisitor;
@@ -137,7 +137,7 @@ public class ScoreChecker
                 return true;
             }
 
-            List<Chord> chords = beam.getChords();
+            List<OldChord> chords = beam.getChords();
 
             if (chords.size() > 1) {
                 beam.addError(glyph, "Beam hook connected to several chords");
@@ -153,7 +153,7 @@ public class ScoreChecker
 
             // Check that there is at least one full beam on the same chord
             // And vertically closer than the chord head
-            Chord chord = chords.get(0);
+            OldChord chord = chords.get(0);
             int stemX = chord.getStem().getLocation().x;
             double hookY = glyph.getCentroid().y;
             int headY = chord.getHeadLocation().y;
@@ -194,7 +194,7 @@ public class ScoreChecker
     // visit Chord //
     //-------------//
     @Override
-    public boolean visit (Chord chord)
+    public boolean visit (OldChord chord)
     {
         try {
             // Check note heads pitches
@@ -237,7 +237,7 @@ public class ScoreChecker
     }
 
     //---------------//
-    // visit Measure //
+    // visit OldMeasure //
     //---------------//
     /**
      * This method is used to detect & fix unrecognized beam hooks
@@ -247,7 +247,7 @@ public class ScoreChecker
      *         set to true if at least a beam_hook has been fixed.
      */
     @Override
-    public boolean visit (Measure measure)
+    public boolean visit (OldMeasure measure)
     {
         //        try {
         //            final Scale scale = measure.getScale();
@@ -300,7 +300,7 @@ public class ScoreChecker
     }
 
     //------------------//
-    // visit SystemPart //
+    // visit OldSystemPart //
     //------------------//
     /**
      * Check that all slurs have embraced notes on each end, except
@@ -310,7 +310,7 @@ public class ScoreChecker
      * @return true, since measures below must be visited too
      */
     @Override
-    public boolean visit (SystemPart systemPart)
+    public boolean visit (OldSystemPart systemPart)
     {
         systemPart.checkSlurConnections();
 
@@ -406,7 +406,7 @@ public class ScoreChecker
      *
      * @param chord the chord to check
      */
-    private void checkHeadLocations (Chord chord)
+    private void checkHeadLocations (OldChord chord)
     {
         // This test applies only to chords with stem
         Glyph stem = chord.getStem();
@@ -446,7 +446,7 @@ public class ScoreChecker
      *
      * @param chord
      */
-    private void checkNoteConsistency (Chord chord)
+    private void checkNoteConsistency (OldChord chord)
     {
         EnumMap<Shape, List<Note>> shapes = new EnumMap<Shape, List<Note>>(Shape.class);
 
@@ -538,7 +538,7 @@ public class ScoreChecker
      *
      * @param chord the chord at hand
      */
-    private void checkNotePitches (Chord chord)
+    private void checkNotePitches (OldChord chord)
     {
         Glyph stem = chord.getStem();
 
@@ -551,7 +551,7 @@ public class ScoreChecker
 
         // Look on left and right sides
         List<TreeNode> allNotes = new ArrayList<TreeNode>(chord.getNotes());
-        Collections.sort(allNotes, Chord.noteHeadComparator);
+        Collections.sort(allNotes, OldChord.noteHeadComparator);
 
         List<Note> lefts = new ArrayList<Note>();
         List<Note> rights = new ArrayList<Note>();
@@ -595,10 +595,10 @@ public class ScoreChecker
         TimeSignature bestSig = findBestTimeSig(timeSignature.getMeasure());
 
         if (bestSig != null) {
-            for (Staff.SystemIterator sit = new Staff.SystemIterator(timeSignature.getMeasure());
+            for (OldStaff.SystemIterator sit = new OldStaff.SystemIterator(timeSignature.getMeasure());
                     sit.hasNext();) {
-                Staff staff = sit.next();
-                Measure measure = sit.getMeasure();
+                OldStaff staff = sit.next();
+                OldMeasure measure = sit.getMeasure();
                 TimeSignature sig = measure.getTimeSignature(staff);
 
                 if (sig == null) {
@@ -628,7 +628,7 @@ public class ScoreChecker
      *
      * @param chord
      */
-    private void checkVoidHeads (Chord chord)
+    private void checkVoidHeads (OldChord chord)
     {
         // Void heads?
         double noteGrade = Double.MIN_VALUE;
@@ -706,7 +706,7 @@ public class ScoreChecker
      * @param measure the reference measure
      * @return the best signature, or null if no suitable signature found
      */
-    private TimeSignature findBestTimeSig (Measure measure)
+    private TimeSignature findBestTimeSig (OldMeasure measure)
     {
         TimeSignature manualSig;
 
@@ -720,8 +720,8 @@ public class ScoreChecker
 
         TimeSignature bestSig = manualSig;
 
-        for (Staff.SystemIterator sit = new Staff.SystemIterator(measure); sit.hasNext();) {
-            Staff staff = sit.next();
+        for (OldStaff.SystemIterator sit = new OldStaff.SystemIterator(measure); sit.hasNext();) {
+            OldStaff staff = sit.next();
             measure = sit.getMeasure();
 
             TimeSignature sig = measure.getTimeSignature(staff);
@@ -781,13 +781,13 @@ public class ScoreChecker
      * @return the suitable manual sig, if any
      * @throws InconsistentTimeSignatures if at least two manual sigs differ
      */
-    private TimeSignature findManualTimeSig (Measure measure)
+    private TimeSignature findManualTimeSig (OldMeasure measure)
             throws InconsistentTimeSignatures
     {
         TimeSignature manualSig = null;
 
-        for (Staff.SystemIterator sit = new Staff.SystemIterator(measure); sit.hasNext();) {
-            Staff staff = sit.next();
+        for (OldStaff.SystemIterator sit = new OldStaff.SystemIterator(measure); sit.hasNext();) {
+            OldStaff staff = sit.next();
             TimeSignature sig = sit.getMeasure().getTimeSignature(staff);
 
             if ((sig != null) && !sig.isDummy() && sig.isManual()) {
@@ -859,7 +859,7 @@ public class ScoreChecker
      * @param chord  the provided chord
      * @param glyphs the surrounding glyphs
      */
-    private void searchHooks (Chord chord,
+    private void searchHooks (OldChord chord,
                               Collection<Glyph> glyphs)
     {
         // Up(+1) or down(-1) stem?

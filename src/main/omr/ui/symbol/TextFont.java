@@ -105,8 +105,7 @@ public class TextFont
     // computeFontSize //
     //-----------------//
     /**
-     * Convenient method to compute a font size using a string content
-     * and dimension.
+     * Convenient method to compute a font size using a string content and dimension.
      *
      * @param content  the string value
      * @param fontInfo OCR-based font information

@@ -92,9 +92,6 @@ public class BasicNest
     /** (Debug) a unique name for this nest. */
     private final String name;
 
-    /** Related sheet. */
-    private final Sheet sheet;
-
     /** Sheet scale. */
     private Scale scale;
 
@@ -141,7 +138,6 @@ public class BasicNest
                       Sheet sheet)
     {
         this.name = name;
-        this.sheet = sheet;
 
         if (sheet != null) {
             scale = sheet.getScale();
@@ -845,7 +841,7 @@ public class BasicNest
 
         Constant.String vipGlyphs = new Constant.String(
                 "",
-                "(Debug) Comma-separated list of VIP glyphs");
+                "(Debug) Comma-separated values of VIP glyphs IDs");
     }
 
     //------------//

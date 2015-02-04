@@ -26,8 +26,6 @@ import omr.glyph.Grades;
 import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
-
 import omr.math.GeoUtil;
 
 import omr.util.Navigable;
@@ -42,10 +40,10 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -119,13 +117,15 @@ public class SymbolsBuilder
      *          - FOREACH acceptable evaluation
      *             + symbolFactory.create(eval, glyph) // Create inter(s) related to evaluation
      * </pre>
+     *
+     * @param optionalsMap the optional (weak) glyphs per system
      */
-    public void buildSymbols ()
+    public void buildSymbols (Map<SystemInfo, List<Glyph>> optionalsMap)
     {
         logger.debug("System#{} buildSymbols", system.getId());
 
         // Retrieve all candidate glyphs
-        List<Glyph> glyphs = getSymbolsGlyphs();
+        List<Glyph> glyphs = getSymbolsGlyphs(optionalsMap);
 
         // Formalize glyphs relationships in a system-level graph
         final SimpleGraph<Glyph, GlyphLink> systemGraph = Glyphs.buildLinks(glyphs, params.maxGap);
@@ -145,17 +145,17 @@ public class SymbolsBuilder
     private void evaluateGlyph (Glyph glyph)
     {
         if (glyph.isVip()) {
-            logger.info("VIP buildSymbols on glyph#{}", glyph.getId());
+            logger.info("VIP evaluateGlyph on glyph#{}", glyph.getId());
         }
 
         final Point center = glyph.getLocation();
-        final StaffInfo staff = system.getStaffAt(center);
+        final Staff closestStaff = system.getClosestStaff(center); // Just an indication!
 
-        if (staff == null) {
+        if (closestStaff == null) {
             return;
         }
 
-        glyph.setPitchPosition(staff.pitchPositionOf(center));
+        glyph.setPitchPosition(closestStaff.pitchPositionOf(center));
 
         Evaluation[] evals = evaluator.evaluate(
                 glyph,
@@ -169,7 +169,7 @@ public class SymbolsBuilder
             // Create one interpretation for each acceptable evaluation
             for (Evaluation eval : evals) {
                 try {
-                    factory.create(eval, glyph, staff);
+                    factory.create(eval, glyph, closestStaff);
                 } catch (Exception ex) {
                     logger.warn("Error in glyph evaluation " + ex, ex);
                 }
@@ -205,20 +205,18 @@ public class SymbolsBuilder
      *
      * @return the candidates (ordered by abscissa)
      */
-    private List<Glyph> getSymbolsGlyphs ()
+    private List<Glyph> getSymbolsGlyphs (Map<SystemInfo, List<Glyph>> optionalsMap)
     {
         List<Glyph> glyphs = new ArrayList<Glyph>(); // Sorted by abscissa, ordinate, id
 
         for (Glyph glyph : system.getGlyphs()) {
-            if ((glyph.getLayer() == GlyphLayer.SYMBOL)
-                && (glyph.getShape() == null)
-                && (glyph.getWeight() >= params.minWeight)) {
+            if ((glyph.getLayer() == GlyphLayer.SYMBOL) && (glyph.getWeight() >= params.minWeight)) {
                 glyphs.add(glyph);
             }
         }
 
         // Include optional glyphs as well
-        List<Glyph> optionals = system.getOptionalGlyphs();
+        List<Glyph> optionals = optionalsMap.get(system);
 
         if ((optionals != null) && !optionals.isEmpty()) {
             for (Glyph glyph : optionals) {
@@ -226,8 +224,6 @@ public class SymbolsBuilder
                     glyphs.add(glyph);
                 }
             }
-
-            Collections.sort(glyphs, Glyph.byAbscissa);
         }
 
         return glyphs;
@@ -275,7 +271,7 @@ public class SymbolsBuilder
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxGap = new Scale.Fraction(
-                0.5,
+                0.75, // 0.5 is a bit too small for fermata - dot distance
                 "Maximum distance between two compound parts");
 
         private final Scale.AreaFraction minWeight = new Scale.AreaFraction(

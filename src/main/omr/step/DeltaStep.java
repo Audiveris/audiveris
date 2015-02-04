@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.step;
 
-import omr.score.Score;
 import omr.score.entity.Page;
 
 import omr.sheet.Sheet;
@@ -24,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import omr.sheet.Book;
 
 /**
  * Class {@code DeltaStep} computes the delta value as a kind of recognition level on a
@@ -59,15 +59,13 @@ public class DeltaStep
                       Sheet sheet)
             throws StepException
     {
-        // Run it for ALL sheets of the score
-        // and compute a mean ratio other all sheets
-        final Score score = sheet.getScore();
+        // Run it for ALL sheets of the book and compute a mean ratio other all sheets
+        final Book book = sheet.getBook();
         int count = 0;
         double globalRatio = 0;
 
-        for (TreeNode pn : score.getPages()) {
-            Page page = (Page) pn;
-            SheetDiff sheetDelta = new SheetDiff(page.getSheet());
+        for (Sheet sh : book.getSheets()) {
+            SheetDiff sheetDelta = new SheetDiff(sh);
             double ratio = sheetDelta.computeDiff();
             globalRatio += ratio;
             count++;
@@ -76,7 +74,7 @@ public class DeltaStep
         if (count > 0) {
             globalRatio /= count;
             logger.info("Global score delta: {}%", String.format("%4.1f", 100 * globalRatio));
-            score.getBench().recordDelta(globalRatio);
+            book.getBench().recordDelta(globalRatio);
         }
     }
 }

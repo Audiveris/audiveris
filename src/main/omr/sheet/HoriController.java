@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet;
 
-import java.awt.Graphics2D;
-import java.awt.Stroke;
 import omr.glyph.GlyphNest;
 import omr.glyph.GlyphsModel;
 import omr.glyph.ui.GlyphsController;
@@ -21,11 +19,6 @@ import omr.glyph.ui.SymbolGlyphBoard;
 
 import omr.lag.Lag;
 import omr.lag.ui.SectionBoard;
-
-import omr.run.RunBoard;
-
-import omr.selection.MouseMovement;
-import omr.selection.UserEvent;
 
 import omr.sheet.ui.PixelBoard;
 
@@ -38,9 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import omr.glyph.ui.ViewParameters;
-import omr.lag.Section;
-import omr.ui.util.UIUtil;
 
 /**
  * Class {@code HoriController} display horizontal glyphs for ledgers etc.
@@ -61,11 +51,8 @@ public class HoriController
     private MyView view;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // HoriController //
-    //----------------//
     /**
-     * Creates a new HoriController object.
+     * Creates a new {@code HoriController} object.
      *
      * @param sheet related sheet
      * @param lag   the full horizontal lag
@@ -105,10 +92,9 @@ public class HoriController
                 Step.LEDGER_TAB,
                 new ScrollView(view),
                 new BoardsPane(
-                new PixelBoard(sheet),
-                new RunBoard(lag, false),
-                new SectionBoard(lag, false),
-                new SymbolGlyphBoard(this, true, true)));
+                        new PixelBoard(sheet),
+                        new SectionBoard(lag, false),
+                        new SymbolGlyphBoard(this, true, true)));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -128,124 +114,5 @@ public class HoriController
 
             setName("HoriController-MyView");
         }
-
-        //~ Methods --------------------------------------------------------------------------------
-        //---------//
-        // onEvent //
-        //---------//
-        /**
-         * Call-back triggered from selection objects.
-         *
-         * @param event the notified event
-         */
-        @Override
-        public void onEvent (UserEvent event)
-        {
-            try {
-                // Ignore RELEASING
-                if (event.movement == MouseMovement.RELEASING) {
-                    return;
-                }
-
-                // Keep normal view behavior (rubber, etc...)
-                super.onEvent(event);
-
-                //
-                //                // Additional tasks
-                //                if (event instanceof LocationEvent) {
-                //                    LocationEvent sheetLocation = (LocationEvent) event;
-                //
-                //                    if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
-                //                        Rectangle rect = sheetLocation.getData();
-                //
-                //                        if ((rect != null) &&
-                //                            (rect.width == 0) &&
-                //                            (rect.height == 0)) {
-                //                            // Look for pointed glyph
-                //                            logger.info("Rect: {}", rect);
-                //
-                //                            //                            int index = glyphLookup(rect);
-                //                            //                            navigator.setIndex(index, sheetLocation.hint);
-                //                        }
-                //                    }
-                //                } else if (event instanceof GlyphEvent) {
-                //                    GlyphEvent glyphEvent = (GlyphEvent) event;
-                //
-                //                    if (glyphEvent.hint == GLYPH_INIT) {
-                //                        Glyph glyph = glyphEvent.getData();
-                //
-                //                        // Display glyph contour
-                //                        if (glyph != null) {
-                //                            locationService.publish(
-                //                                new LocationEvent(
-                //                                    this,
-                //                                    glyphEvent.hint,
-                //                                    null,
-                //                                    glyph.getBounds()));
-                //                        }
-                //                    }
-                //                }
-            } catch (Exception ex) {
-                logger.warn(getClass().getName() + " onEvent error", ex);
-            }
-        }
-
-    //--------//
-    // render //
-    //--------//
-    /**
-     * Render the nest in the provided Graphics context, which may be
-     * already scaled.
-     *
-     * @param g the graphics context
-     */
-    @Override
-    public void render (Graphics2D g)
-    {
-        // Should we draw the section borders?
-        final boolean drawBorders = ViewParameters.getInstance().isSectionMode();
-
-        // Stroke for borders
-        final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-
-        for (Lag lag : lags) {
-            // Render all sections, using the colors they have been assigned
-            for (Section section : lag.getVertices()) {
-                section.render(g, drawBorders, null);
-            }
-        }
-
-        // Paint additional items, such as recognized items, etc...
-        renderItems(g);
-
-        // Restore stroke
-        g.setStroke(oldStroke);
-    }
-
-        //        //-------------//
-        //        // renderItems //
-        //        //-------------//
-        //        @Override
-        //        public void renderItems (Graphics2D g)
-        //        {
-        //            super.renderItems(g);
-        //
-        //            Rectangle clip = g.getClipBounds();
-        //
-        //            Color oldColor = g.getColor();
-        //            g.setColor(Color.RED);
-        //
-        //            for (Glyph glyph : nest.getAllGlyphs()) {
-        //                final Shape shape = glyph.getShape();
-        //
-        //                if (relevantShapes.contains(shape)
-        //                    && clip.intersects(glyph.getBounds())) {
-        //                    // Draw mean line
-        //                    glyph.renderLine(g);
-        //                }
-        //            }
-        //
-        //            g.setColor(oldColor);
-        //        }
     }
 }

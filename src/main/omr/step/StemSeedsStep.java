@@ -12,7 +12,13 @@
 package omr.step;
 
 import omr.sheet.Sheet;
+import omr.sheet.StemScale;
+import omr.sheet.StemScaler;
 import omr.sheet.SystemInfo;
+import omr.sheet.VerticalsBuilder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
@@ -23,10 +29,13 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class StemSeedsStep
-        extends AbstractSystemStep
+        extends AbstractSystemStep<Void>
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(StemSeedsStep.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // StemSeedsStep //
     //---------------//
@@ -54,27 +63,34 @@ public class StemSeedsStep
         SystemInfo aSystem = sheet.getSystems().get(0);
 
         // Add stem checkboard
-        aSystem.verticalsBuilder.addCheckBoard();
+        new VerticalsBuilder(aSystem).addCheckBoard();
     }
 
     //----------//
     // doSystem //
     //----------//
     @Override
-    public void doSystem (SystemInfo system)
+    public void doSystem (SystemInfo system,
+                          Void context)
             throws StepException
     {
-        system.verticalsBuilder.buildVerticals(); // -> Stem seeds
+        new VerticalsBuilder(system).buildVerticals(); // -> Stem seeds
     }
 
     //----------//
     // doProlog //
     //----------//
     @Override
-    protected void doProlog (Collection<SystemInfo> systems,
+    protected Void doProlog (Collection<SystemInfo> systems,
                              Sheet sheet)
             throws StepException
     {
-        sheet.getStemScaler().retrieveStem();
+        StemScale stemScale = new StemScaler(sheet).retrieveStem();
+
+        logger.info("{}{}", sheet.getLogPrefix(), stemScale);
+        sheet.setStemScale(stemScale);
+        sheet.getBench().recordStemScale(stemScale);
+
+        return null;
     }
 }

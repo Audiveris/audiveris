@@ -12,16 +12,17 @@
 package omr.score.ui;
 
 import omr.glyph.Shape;
+
 import static omr.glyph.Shape.*;
 
 import omr.grid.FilamentLine;
 import omr.grid.LineInfo;
-import omr.grid.StaffInfo;
+import omr.sheet.Staff;
 
 import omr.math.BasicLine;
 import omr.math.Line;
 
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldSystemPart;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,7 +105,7 @@ public class BarPainter
     public void draw (Graphics2D g,
                       Point2D topCenter,
                       Point2D botCenter,
-                      SystemPart part)
+                      OldSystemPart part)
     {
         double offset = -getGlobalWidth() / 2;
         BarItem prev = null;
@@ -136,7 +137,6 @@ public class BarPainter
     public static BarPainter getBarPainter (Shape shape)
     {
         switch (shape) {
-        case PART_DEFINING_BARLINE:
         case THIN_BARLINE:
             return THIN_BP;
 
@@ -239,7 +239,7 @@ public class BarPainter
         public void draw (Graphics2D g,
                           Point2D topCenter,
                           Point2D botCenter,
-                          SystemPart part,
+                          OldSystemPart part,
                           double offset)
         {
             int il = part.getScale().getInterline();
@@ -293,7 +293,7 @@ public class BarPainter
         public void draw (Graphics2D g,
                           Point2D topCenter,
                           Point2D botCenter,
-                          SystemPart part,
+                          OldSystemPart part,
                           double offset)
         {
             Line bar = new BasicLine(
@@ -302,7 +302,7 @@ public class BarPainter
 
             int il = part.getScale().getInterline();
 
-            for (StaffInfo staff : part.getInfo().getStaves()) {
+            for (Staff staff : part.getInfo().getStaves()) {
                 // Compute staff-based center
                 List<FilamentLine> lines = staff.getLines();
                 LineInfo staffMidLine = lines.get(lines.size() / 2);

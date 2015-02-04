@@ -11,7 +11,13 @@
 // </editor-fold>
 package omr.moments;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import static omr.moments.ARTMoments.*;
+
+import omr.sheet.NoteHeadsBuilder;
+import omr.util.StopWatch;
 
 import java.awt.image.WritableRaster;
 
@@ -26,6 +32,8 @@ public class BasicARTExtractor
         extends AbstractExtractor<ARTMoments>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     // Zernike basis function radius
     private static final int LUT_RADIUS = 50;
@@ -108,9 +116,13 @@ public class BasicARTExtractor
     //---------//
     /**
      * Compute, once for all, the lookup table values.
+     * (Size for each of the 2 tables realLuts & imagLuts is about 2.5 MBytes)
      */
     private static void initLUT ()
     {
+        StopWatch watch = new StopWatch("LUT");
+        watch.start("initLUT");
+
         // Allocate LUT's
         for (int p = 0; p < ANGULAR; p++) {
             for (int r = 0; r < RADIAL; r++) {
@@ -152,5 +164,23 @@ public class BasicARTExtractor
                 }
             }
         }
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
     }
 }

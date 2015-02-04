@@ -16,7 +16,6 @@ import omr.check.CheckBoard;
 import omr.check.CheckSuite;
 import omr.check.Checkable;
 import omr.check.Failure;
-import omr.check.SuiteImpacts;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -28,12 +27,12 @@ import omr.glyph.facets.Glyph;
 import omr.grid.Filament;
 import omr.grid.FilamentsFactory;
 import omr.grid.LineInfo;
-import omr.grid.StaffInfo;
 
 import omr.lag.Section;
 
 import omr.math.GeoUtil;
 import omr.math.LineUtil;
+
 import static omr.run.Orientation.*;
 
 import omr.selection.GlyphEvent;
@@ -42,17 +41,20 @@ import omr.selection.UserEvent;
 
 import omr.sheet.ui.SheetAssembly;
 
-import omr.sig.AbstractBeamInter;
-import omr.sig.Exclusion;
-import omr.sig.Inter;
-import omr.sig.LedgerInter;
+import omr.sig.inter.AbstractBeamInter;
+import omr.sig.relation.Exclusion;
+import omr.sig.GradeImpacts;
+import omr.sig.inter.Inter;
+import omr.sig.inter.LedgerInter;
 import omr.sig.SIGraph;
 import omr.sig.SIGraph.ReductionMode;
 
 import omr.step.Step;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Predicate;
 
 import ij.process.ByteProcessor;
@@ -135,9 +137,6 @@ public class LedgersBuilder
     /** The (good) system-wide beams and hooks. */
     private List<Inter> systemBeams;
 
-    /** Input image. (with staves removed) */
-    private ByteProcessor pixelFilter;
-
     //~ Constructors -------------------------------------------------------------------------------
     //----------------//
     // LedgersBuilder //
@@ -164,8 +163,8 @@ public class LedgersBuilder
     public void addCheckBoard ()
     {
         SheetAssembly assembly = sheet.getAssembly();
-        assembly.addBoard(Step.DATA_TAB, new LedgerCheckBoard());
-        assembly.addBoard(Step.LEDGER_TAB, new LedgerCheckBoard());
+        assembly.addBoard(Step.DATA_TAB, new LedgerCheckBoard(sheet));
+        assembly.addBoard(Step.LEDGER_TAB, new LedgerCheckBoard(sheet));
     }
 
     //--------------//
@@ -177,9 +176,6 @@ public class LedgersBuilder
     public void buildLedgers ()
     {
         try {
-            // Cache input image
-            pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.STAFF_LINE_FREE);
-
             // Put apart the (good) system beams
             systemBeams = getGoodBeams();
 
@@ -196,60 +192,38 @@ public class LedgersBuilder
         }
     }
 
-    //-----------------//
-    // getLedgerTarget //
-    //-----------------//
+    //-------------//
+    // selectSuite //
+    //-------------//
     /**
-     * Report the line index and ordinate target for a candidate ledger, based on the
-     * reference found (other ledger or staff line).
+     * Select proper check suite, according to (length of) provided ledger candidate
      *
-     * @param stick the ledger candidate
-     * @return the index value and target ordinate, or null if not found.
+     * @param stick the candidate
+     * @return the proper check suite to apply
      */
-    IndexTarget getLedgerTarget (Glyph stick)
+    public CheckSuite selectSuite (Glyph stick)
     {
-        // Find reference staff
-        Point center = stick.getCentroid();
-        StaffInfo staff = system.getStaffAt(center);
+        return (stick.getLength(HORIZONTAL) <= scale.toPixels(constants.maxShortLength))
+                ? shortSuite : longSuite;
+    }
 
-        // Search for best virtual line index
-        double rawPitch = staff.pitchPositionOf(center);
+    //-----------//
+    // getMiddle //
+    //-----------//
+    /**
+     * Retrieve the middle point of a stick, assumed rather horizontal.
+     *
+     * @param stick the stick to process
+     * @return the middle point
+     */
+    private static Point2D getMiddle (Glyph stick)
+    {
+        final Point2D startPoint = stick.getStartPoint(HORIZONTAL);
+        final Point2D stopPoint = stick.getStopPoint(HORIZONTAL);
 
-        if (Math.abs(rawPitch) <= 4) {
-            return null;
-        }
-
-        int sign = (rawPitch > 0) ? 1 : (-1);
-        int rawIndex = (int) Math.rint((Math.abs(rawPitch) - 4) / 2);
-        int iMin = Math.max(1, rawIndex - 1);
-        int iMax = rawIndex + 1;
-
-        Integer bestIndex = null;
-        Double bestTarget = null;
-        double bestDy = Double.MAX_VALUE;
-        double yMid = getMiddle(stick).getY();
-
-        for (int i = iMin; i <= iMax; i++) {
-            int index = i * sign;
-            Double yRef = getYReference(staff, index, stick);
-
-            if (yRef != null) {
-                double yTarget = yRef + (sign * scale.getInterline());
-                double dy = Math.abs(yTarget - yMid);
-
-                if (dy < bestDy) {
-                    bestDy = dy;
-                    bestIndex = index;
-                    bestTarget = yTarget;
-                }
-            }
-        }
-
-        if (bestIndex != null) {
-            return new IndexTarget(bestIndex, bestTarget);
-        } else {
-            return null;
-        }
+        return new Point2D.Double(
+                (startPoint.getX() + stopPoint.getX()) / 2,
+                (startPoint.getY() + stopPoint.getY()) / 2);
     }
 
     //-------------//
@@ -294,7 +268,7 @@ public class LedgersBuilder
      */
     private void filterLedgers ()
     {
-        for (StaffInfo staff : system.getStaves()) {
+        for (Staff staff : system.getStaves()) {
             logger.debug("Staff#{}", staff.getId());
 
             // Above staff
@@ -352,7 +326,8 @@ public class LedgersBuilder
         }
 
         for (Section section : sections) {
-            section.setGlyph(null); // Needed for sections shared by two systems!
+            //TODO: this may prevent the processing of systems in parallel!???
+            section.setGlyph(null); // Needed for sections "shared" by two systems!
         }
 
         List<Glyph> glyphs = factory.retrieveFilaments(sections);
@@ -393,7 +368,7 @@ public class LedgersBuilder
         List<Section> keptSections = new ArrayList<Section>();
         int minWidth = scale.toPixels(constants.minLedgerLengthLow);
 
-        for (Section section : system.getHorizontalFullSections()) {
+        for (Section section : system.getLedgerSections()) {
             // Check minimum length
             if (section.getBounds().width < minWidth) {
                 continue;
@@ -436,23 +411,61 @@ public class LedgersBuilder
         return beams;
     }
 
-    //-----------//
-    // getMiddle //
-    //-----------//
+    //-----------------//
+    // getLedgerTarget //
+    //-----------------//
     /**
-     * Retrieve the middle point of a stick, assumed rather horizontal.
+     * Report the line index and ordinate target for a candidate ledger, based on the
+     * reference found (other ledger or staff line).
      *
-     * @param stick the stick to process
-     * @return the middle point
+     * @param stick the ledger candidate
+     * @return the index value and target ordinate, or null if not found.
      */
-    private static Point2D getMiddle (Glyph stick)
+    private IndexTarget getLedgerTarget (Glyph stick)
     {
-        final Point2D startPoint = stick.getStartPoint(HORIZONTAL);
-        final Point2D stopPoint = stick.getStopPoint(HORIZONTAL);
+        final Point center = stick.getCentroid();
 
-        return new Point2D.Double(
-                (startPoint.getX() + stopPoint.getX()) / 2,
-                (startPoint.getY() + stopPoint.getY()) / 2);
+        // Check possibles staves
+        for (Staff staff : system.getStavesOf(center)) {
+            // Search for best virtual line index
+            double rawPitch = staff.pitchPositionOf(center);
+
+            if (Math.abs(rawPitch) <= 4) {
+                return null; // Point is within staff core height
+            }
+
+            int sign = (rawPitch > 0) ? 1 : (-1);
+            int rawIndex = (int) Math.rint((Math.abs(rawPitch) - 4) / 2);
+            int iMin = Math.max(1, rawIndex - 1);
+            int iMax = rawIndex + 1;
+
+            Integer bestIndex = null;
+            Double bestTarget = null;
+            double bestDy = Double.MAX_VALUE;
+            double yMid = getMiddle(stick).getY();
+
+            for (int i = iMin; i <= iMax; i++) {
+                int index = i * sign;
+                Double yRef = getYReference(staff, index, stick);
+
+                if (yRef != null) {
+                    double yTarget = yRef + (sign * scale.getInterline());
+                    double dy = Math.abs(yTarget - yMid);
+
+                    if (dy < bestDy) {
+                        bestDy = dy;
+                        bestIndex = index;
+                        bestTarget = yTarget;
+                    }
+                }
+            }
+
+            if (bestIndex != null) {
+                return new IndexTarget(bestIndex, bestTarget);
+            }
+        }
+
+        return null;
     }
 
     //---------------//
@@ -467,7 +480,7 @@ public class LedgersBuilder
      * @param stick the candidate stick to check
      * @return the ordinate reference found, or null if not found
      */
-    private Double getYReference (StaffInfo staff,
+    private Double getYReference (Staff staff,
                                   int index,
                                   Glyph stick)
     {
@@ -533,7 +546,7 @@ public class LedgersBuilder
      * Check whether the provided section intersects at least one horizontal section of
      * the system.
      *
-     * @param section the provided (full length) section
+     * @param section the provided (ledger) section
      * @return true if intersects a horizontal section
      */
     private boolean intersectHorizontal (Section section)
@@ -569,7 +582,7 @@ public class LedgersBuilder
      * @param index index of line relative to staff
      * @return the number of ledgers found on this virtual line
      */
-    private int lookupLine (StaffInfo staff,
+    private int lookupLine (Staff staff,
                             int index)
     {
         logger.debug("Checking staff: {} line: {}", staff.getId(), index);
@@ -578,19 +591,18 @@ public class LedgersBuilder
         final LineInfo staffLine = (index < 0) ? staff.getFirstLine() : staff.getLastLine();
 
         // Define bounds for the virtual line, properly shifted and enlarged
-        Rectangle staffLineBox = staffLine.getBounds();
-        staffLineBox.y += (index * scale.getInterline());
-        staffLineBox.grow(0, 2 * yMargin);
+        Rectangle virtualLineBox = staffLine.getBounds();
+        virtualLineBox.y += (index * scale.getInterline());
+        virtualLineBox.grow(0, 2 * yMargin);
 
         final List<LedgerInter> ledgers = new ArrayList<LedgerInter>();
-        final int maxShortLength = scale.toPixels(constants.maxShortLength);
 
         // Filter enclosed candidates and populate acceptable ledgers
         for (Glyph stick : ledgerCandidates) {
             // Rough containment
             final Point2D middle = getMiddle(stick);
 
-            if (!staffLineBox.contains(middle)) {
+            if (!virtualLineBox.contains(middle)) {
                 continue;
             }
 
@@ -614,9 +626,9 @@ public class LedgersBuilder
             final double yTarget = yRef + (Integer.signum(index) * scale.getInterline());
 
             // Choose which suite to apply
-            LedgerSuite suite = selectSuite(stick);
+            CheckSuite suite = selectSuite(stick);
 
-            SuiteImpacts impacts = suite.getImpacts(new GlyphContext(stick, yTarget));
+            GradeImpacts impacts = suite.getImpacts(new GlyphContext(stick, yTarget));
             double grade = impacts.getGrade();
 
             if (stick.isVip()) {
@@ -674,7 +686,7 @@ public class LedgersBuilder
      * @param index   index of virtual line around staff
      * @param ledgers population of ledger interpretations for the line
      */
-    private void reduceLedgers (StaffInfo staff,
+    private void reduceLedgers (Staff staff,
                                 int index,
                                 List<LedgerInter> ledgers)
     {
@@ -688,7 +700,7 @@ public class LedgersBuilder
             final Rectangle fatBox = ledger.getBounds();
             fatBox.grow(maxDx, scale.getInterline());
 
-            // Check neighbors on the right only
+            // Check neighbors on the right only (since we are browsing a sorted list)
             for (LedgerInter other : ledgers.subList(i + 1, ledgers.size())) {
                 if (GeoUtil.xOverlap(ledgerBox, other.getBounds()) > 0) {
                     // Abscissa overlap
@@ -709,21 +721,6 @@ public class LedgersBuilder
                     deletions);
             ledgers.removeAll(deletions);
         }
-    }
-
-    //-------------//
-    // selectSuite //
-    //-------------//
-    /**
-     * Select proper check suite, according to (length of) provided ledger candidate
-     *
-     * @param stick the candidate
-     * @return the proper check suite to apply
-     */
-    private LedgerSuite selectSuite (Glyph stick)
-    {
-        return (stick.getLength(HORIZONTAL) <= scale.toPixels(constants.maxShortLength))
-                ? shortSuite : longSuite;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -822,60 +819,6 @@ public class LedgersBuilder
                 "High Minimum for ratio of white pixels above or below ledger");
     }
 
-    //----------------//
-    // ConvexityCheck //
-    //----------------//
-    private class ConvexityCheck
-            extends Check<GlyphContext>
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public ConvexityCheck ()
-        {
-            super(
-                    "Convex",
-                    "Check number of convex stick ends",
-                    constants.convexityLow,
-                    Constant.Double.TWO,
-                    true,
-                    TOO_CONCAVE);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        // Retrieve the density
-        @Override
-        protected double getValue (GlyphContext context)
-        {
-            Glyph stick = context.stick;
-            Rectangle box = stick.getBounds();
-            int convexities = 0;
-
-            // On each end of the stick, we check that pixels just above and
-            // just below are white, so that stick slightly points out.
-            // We use the stick bounds, whatever the precise geometry inside.
-            //
-            //  X                                                         X
-            //  +---------------------------------------------------------+
-            //  |                                                         |
-            //  |                                                         |
-            //  +---------------------------------------------------------+
-            //  X                                                         X
-            //
-            for (HorizontalSide hSide : HorizontalSide.values()) {
-                int x = (hSide == LEFT) ? box.x : ((box.x + box.width) - 1);
-                boolean topFore = pixelFilter.get(x, box.y - 1) == 0;
-                boolean bottomFore = pixelFilter.get(x, box.y + box.height) == 0;
-                boolean isConvex = !(topFore || bottomFore);
-
-                if (isConvex) {
-                    convexities++;
-                }
-            }
-
-            return convexities;
-        }
-    }
-
     //--------------//
     // GlyphContext //
     //--------------//
@@ -950,14 +893,18 @@ public class LedgersBuilder
     /**
      * A specific board to display intrinsic checks of ledger sticks.
      */
-    private class LedgerCheckBoard
+    private static class LedgerCheckBoard
             extends CheckBoard<GlyphContext>
     {
-        //~ Constructors ---------------------------------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        public LedgerCheckBoard ()
+        private final Sheet sheet;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public LedgerCheckBoard (Sheet sheet)
         {
             super("Ledger", null, sheet.getNest().getGlyphService(), eventClasses);
+            this.sheet = sheet;
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -982,11 +929,14 @@ public class LedgersBuilder
                         SystemManager systemManager = sheet.getSystemManager();
 
                         for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
-                            IndexTarget it = system.ledgersBuilder.getLedgerTarget(glyph);
+                            LedgersBuilder builder = new LedgersBuilder(system);
+                            IndexTarget it = builder.getLedgerTarget(glyph);
 
                             // Run the check suite?
                             if (it != null) {
-                                applySuite(selectSuite(glyph), new GlyphContext(glyph, it.target));
+                                applySuite(
+                                        builder.selectSuite(glyph),
+                                        new GlyphContext(glyph, it.target));
 
                                 return;
                             }
@@ -998,6 +948,62 @@ public class LedgersBuilder
             } catch (Exception ex) {
                 logger.warn(getClass().getName() + " onEvent error", ex);
             }
+        }
+    }
+
+    //----------------//
+    // ConvexityCheck //
+    //----------------//
+    private class ConvexityCheck
+            extends Check<GlyphContext>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public ConvexityCheck ()
+        {
+            super(
+                    "Convex",
+                    "Check number of convex stick ends",
+                    constants.convexityLow,
+                    Constant.Double.TWO,
+                    true,
+                    TOO_CONCAVE);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        // Retrieve the density
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            ByteProcessor pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
+
+            Glyph stick = context.stick;
+            Rectangle box = stick.getBounds();
+            int convexities = 0;
+
+            // On each end of the stick, we check that pixels just above and
+            // just below are white, so that stick slightly points out.
+            // We use the stick bounds, regardless of the precise geometry inside.
+            //
+            //  X                                                         X
+            //  +---------------------------------------------------------+
+            //  |                                                         |
+            //  |                                                         |
+            //  +---------------------------------------------------------+
+            //  X                                                         X
+            //
+            for (HorizontalSide hSide : HorizontalSide.values()) {
+                int x = (hSide == LEFT) ? box.x : ((box.x + box.width) - 1);
+                boolean topFore = pixelFilter.get(x, box.y - 1) == 0;
+                boolean bottomFore = pixelFilter.get(x, box.y + box.height) == 0;
+                boolean isConvex = !(topFore || bottomFore);
+
+                if (isConvex) {
+                    convexities++;
+                }
+            }
+
+            return convexities;
         }
     }
 
@@ -1239,7 +1245,7 @@ public class LedgersBuilder
 //            double sumFree = 0;
 //
 //            for (Section section : stick.getMembers()) {
-//                Run run = section.getFirstRun();
+//                Run run = section.getLastRun();
 //                double free = (1 - section.getLastAdjacency()) * run.getLength();
 //                sumFree += free;
 //            }

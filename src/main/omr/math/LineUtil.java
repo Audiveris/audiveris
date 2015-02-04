@@ -27,7 +27,7 @@ public abstract class LineUtil
     // bisector //
     //----------//
     /**
-     * Return the bisector (french: médiatrice) of the segment defined
+     * Return the bisector (French: médiatrice) of the segment defined
      * by the two provided points
      *
      * @param p1 first provided point
@@ -59,7 +59,7 @@ public abstract class LineUtil
     // bisector //
     //----------//
     /**
-     * Return the bisector (french: médiatrice) of the provided segment
+     * Return the bisector (French: médiatrice) of the provided segment
      *
      * @param segment the provided segment
      * @return (a segment on) the bisector
@@ -137,8 +137,7 @@ public abstract class LineUtil
     // intersection //
     //--------------//
     /**
-     * Return the intersection point between the two infinite lines
-     * provided.
+     * Return the intersection point between the two infinite lines provided.
      *
      * @param l1 first line
      * @param l2 second line

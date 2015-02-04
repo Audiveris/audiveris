@@ -12,21 +12,23 @@
 package omr.score;
 
 import omr.glyph.Shape;
+
 import static omr.glyph.ShapeSet.*;
+
 import omr.glyph.facets.Glyph;
 
 import omr.score.entity.Arpeggiate;
 import omr.score.entity.Articulation;
-import omr.score.entity.Barline;
-import omr.score.entity.BeamGroup;
+import omr.score.entity.OldBarline;
+import omr.score.entity.OldBeamGroup;
 import omr.score.entity.BeamItem;
-import omr.score.entity.Chord;
+import omr.score.entity.OldChord;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
 import omr.score.entity.DotTranslation;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
-import omr.score.entity.Measure;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.MeasureNode;
 import omr.score.entity.Note;
 import omr.score.entity.Ornament;
@@ -35,8 +37,8 @@ import omr.score.entity.Pedal;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Segno;
 import omr.score.entity.Slur;
-import omr.score.entity.Staff;
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldStaff;
+import omr.score.entity.OldSystemPart;
 import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
@@ -76,16 +78,16 @@ public class SystemTranslator
     private ScoreSystem system;
 
     /** The current systempart. */
-    private SystemPart currentPart;
+    private OldSystemPart currentPart;
 
     /** The current staff. */
-    private Staff currentStaff;
+    private OldStaff currentStaff;
 
     /** The current point in current system. */
     private Point currentCenter;
 
     /** The current measure. */
-    private Measure currentMeasure;
+    private OldMeasure currentMeasure;
 
     //~ Constructors -------------------------------------------------------------------------------
     //
@@ -159,11 +161,11 @@ public class SystemTranslator
         // Key
         translate(new KeyTranslator());
 
-        // Measure impact
+        // OldMeasure impact
         //---------------
         // Chord, Note
         translate(new ChordTranslator());
-        // Beam (-> chord), BeamItem, BeamGroup
+        // Beam (-> chord), BeamItem, OldBeamGroup
         translate(new BeamTranslator());
         // Flag (-> chord)
         translate(new FlagTranslator());
@@ -324,10 +326,10 @@ public class SystemTranslator
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public void browse (Measure measure)
+        public void browse (OldMeasure measure)
         {
             // Link beams to chords, and populate beam groups
-            BeamGroup.populate(measure);
+            OldBeamGroup.populate(measure);
         }
 
         @Override
@@ -412,7 +414,7 @@ public class SystemTranslator
         @Override
         public void translate (Glyph glyph)
         {
-            Chord.populate(glyph, currentMeasure);
+            OldChord.populate(glyph, currentMeasure);
         }
     }
 
@@ -431,7 +433,7 @@ public class SystemTranslator
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public void browse (Measure measure)
+        public void browse (OldMeasure measure)
         {
             // Sort the clefs according to containing staff
             Collections.sort(measure.getClefs(), MeasureNode.staffComparator);
@@ -526,7 +528,7 @@ public class SystemTranslator
             Shape shape = glyph.getShape();
 
             return Dynamics.contains(shape) && (shape != Shape.CRESCENDO)
-                   && (shape != Shape.DECRESCENDO);
+                   && (shape != Shape.DIMINUENDO);
         }
 
         @Override
@@ -579,14 +581,14 @@ public class SystemTranslator
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public void browse (Measure measure)
+        public void browse (OldMeasure measure)
         {
             if (logger.isDebugEnabled()) {
                 // Print flag/beam value of each chord
                 logger.debug("Flag/Beams for {}", measure.getContextString());
 
                 for (TreeNode node : measure.getChords()) {
-                    Chord chord = (Chord) node;
+                    OldChord chord = (OldChord) node;
                     logger.debug(chord.toString());
 
                     if (!chord.getBeams().isEmpty()) {
@@ -630,7 +632,7 @@ public class SystemTranslator
         @Override
         public void translate (Glyph glyph)
         {
-            Chord.populateFlag(glyph, currentMeasure);
+            OldChord.populateFlag(glyph, currentMeasure);
         }
     }
 
@@ -680,7 +682,7 @@ public class SystemTranslator
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        SlotBuilder slotBuilder = new SlotBuilder(system);
+        ///SlotBuilder slotBuilder = new SlotBuilder(system);
 
         //~ Constructors ---------------------------------------------------------------------------
         public MeasureTranslator ()
@@ -690,16 +692,16 @@ public class SystemTranslator
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public void browse (Measure measure)
+        public void browse (OldMeasure measure)
         {
             // Check that a chord is not tied to different chords
             measure.checkTiedChords();
 
             // Build slots and voices
-            slotBuilder.buildSlots(measure);
+            ///slotBuilder.buildSlots(measure);
 
             // Make sure all barline glyphs point to it
-            Barline barline = measure.getBarline();
+            OldBarline barline = measure.getBarline();
 
             if (barline != null) {
                 barline.translateGlyphs();
@@ -713,8 +715,8 @@ public class SystemTranslator
 
             // Make sure all starting barline glyphs point to it
             for (TreeNode pn : system.getParts()) {
-                SystemPart part = (SystemPart) pn;
-                Barline barline = part.getStartingBarline();
+                OldSystemPart part = (OldSystemPart) pn;
+                OldBarline barline = part.getStartingBarline();
 
                 if (barline != null) {
                     barline.translateGlyphs();
@@ -884,7 +886,7 @@ public class SystemTranslator
             }
 
             for (TreeNode node : system.getParts()) {
-                SystemPart part = (SystemPart) node;
+                OldSystemPart part = (OldSystemPart) node;
                 part.populateLyricsLines();
                 part.mapSyllables();
             }
@@ -966,7 +968,7 @@ public class SystemTranslator
          *
          * @param measure the given measure
          */
-        public void browse (Measure measure)
+        public void browse (OldMeasure measure)
         {
         }
 
@@ -976,10 +978,10 @@ public class SystemTranslator
         public void completeSystem ()
         {
             for (TreeNode node : system.getParts()) {
-                SystemPart part = (SystemPart) node;
+                OldSystemPart part = (OldSystemPart) node;
 
                 for (TreeNode mn : part.getMeasures()) {
-                    Measure measure = (Measure) mn;
+                    OldMeasure measure = (OldMeasure) mn;
 
                     try {
                         browse(measure);
@@ -1105,7 +1107,7 @@ public class SystemTranslator
         {
             Shape shape = glyph.getShape();
 
-            return (shape == Shape.CRESCENDO) || (shape == Shape.DECRESCENDO);
+            return (shape == Shape.CRESCENDO) || (shape == Shape.DIMINUENDO);
         }
 
         @Override

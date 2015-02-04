@@ -13,13 +13,12 @@ import omr.glyph.facets.GlyphValue;
 
 import omr.run.Orientation;
 import omr.run.Run;
-import omr.run.RunsTable;
+import omr.run.RunTable;
 
 import omr.util.BaseTestCase;
 
 import org.junit.BeforeClass;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -55,14 +54,14 @@ public class SectionBindingTest
 
     private JAXBContext jaxbContext;
 
-    // Lags and RunsTable instances
+    // Lags and RunTable instances
     Lag vLag;
 
-    RunsTable vTable;
+    RunTable vTable;
 
     Lag hLag;
 
-    RunsTable hTable;
+    RunTable hTable;
 
     //~ Methods ------------------------------------------------------------------------------------
     //
@@ -78,8 +77,8 @@ public class SectionBindingTest
     public void testGlyph ()
             throws JAXBException, FileNotFoundException
     {
-        Section sv = vLag.createSection(180, new Run(100, 10, 127));
-        sv.append(new Run(101, 20, 127));
+        Section sv = vLag.createSection(180, new Run(100, 10));
+        sv.append(new Run(101, 20));
 
         int p = 180;
         Section sh = hLag.createSection(180, createRun(hTable, p++, 100, 10));
@@ -143,8 +142,8 @@ public class SectionBindingTest
     public void testVertical ()
             throws JAXBException, FileNotFoundException
     {
-        Section section = vLag.createSection(180, new Run(100, 10, 127));
-        section.append(new Run(101, 20, 127));
+        Section section = vLag.createSection(180, new Run(100, 10));
+        section.append(new Run(101, 20));
 
         Marshaller m = jaxbContext.createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -168,23 +167,23 @@ public class SectionBindingTest
         jaxbContext = JAXBContext.newInstance(GlyphValue.class);
 
         vLag = new BasicLag("My Vertical Lag", Orientation.VERTICAL);
-        vTable = new RunsTable("Vert Runs", Orientation.VERTICAL, new Dimension(100, 200)); // Absolute
+        vTable = new RunTable("Vert Runs", Orientation.VERTICAL, 100, 200); // Absolute
         vLag.setRuns(vTable);
 
         hLag = new BasicLag("My Horizontal Lag", Orientation.HORIZONTAL);
-        hTable = new RunsTable("Hori Runs", Orientation.HORIZONTAL, new Dimension(100, 200)); // Absolute
+        hTable = new RunTable("Hori Runs", Orientation.HORIZONTAL, 100, 200); // Absolute
         hLag.setRuns(hTable);
     }
 
     //-----------//
     // createRun //
     //-----------//
-    private Run createRun (RunsTable table,
+    private Run createRun (RunTable table,
                            int alignment,
                            int start,
                            int length)
     {
-        Run run = new Run(start, length, 127);
+        Run run = new Run(start, length);
 
         table.getSequence(alignment).add(run);
 

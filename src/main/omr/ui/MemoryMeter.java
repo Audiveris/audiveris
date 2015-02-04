@@ -215,7 +215,7 @@ public class MemoryMeter
                     displayMemory();
 
                     try {
-                        sleep(constants.displayPeriod.getValue());
+                        sleep(constants.samplingPeriod.getValue());
                     } catch (InterruptedException ex1) {
                         monitoring = false;
                     }
@@ -238,7 +238,7 @@ public class MemoryMeter
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Display period */
-        Constant.Integer displayPeriod = new Constant.Integer(
+        Constant.Integer samplingPeriod = new Constant.Integer(
                 "MilliSeconds",
                 2000,
                 "Memory display period");

@@ -75,7 +75,7 @@ public class DotTranslation
      * @param dotCenter the location of the dot
      */
     public static void populateDot (Glyph glyph,
-                                    Measure measure,
+                                    OldMeasure measure,
                                     Point dotCenter)
     {
         logger.debug("{} populateDot {}", measure.getContextString(), glyph);
@@ -145,7 +145,7 @@ public class DotTranslation
         //~ Methods --------------------------------------------------------------------------------
         @Override
         Result process (Glyph glyph,
-                        Measure measure,
+                        OldMeasure measure,
                         Point dotCenter)
         {
             Scale scale = measure.getScale();
@@ -158,7 +158,7 @@ public class DotTranslation
             // - slighly above or below (note with odd pitch = on a staff line)
             ChordLoop:
             for (TreeNode node : measure.getChords()) {
-                Chord chord = (Chord) node;
+                OldChord chord = (OldChord) node;
 
                 for (TreeNode n : chord.getNotes()) {
                     Note note = (Note) n;
@@ -217,7 +217,7 @@ public class DotTranslation
             //~ Methods ----------------------------------------------------------------------------
             @Override
             public void commit (Glyph glyph,
-                                Measure measure,
+                                OldMeasure measure,
                                 Point dotCenter)
             {
                 // Is there a second dot on the right?
@@ -240,7 +240,7 @@ public class DotTranslation
             }
 
             private Glyph secondDot (Glyph glyph,
-                                     Measure measure,
+                                     OldMeasure measure,
                                      Point dotCenter)
             {
                 Scale scale = measure.getScale();
@@ -311,14 +311,14 @@ public class DotTranslation
         //~ Methods --------------------------------------------------------------------------------
         @Override
         RepeatResult process (Glyph glyph,
-                              Measure measure,
+                              OldMeasure measure,
                               Point dotCenter)
         {
             if (glyph.isVip()) {
                 logger.info("RepeatTrial. process {}", glyph.idString());
             }
 
-            SortedMap<Double, Barline> distances = new TreeMap<Double, Barline>();
+            SortedMap<Double, OldBarline> distances = new TreeMap<Double, OldBarline>();
 
             // Check vertical pitch position within the staff: close to +1 or -1
             double pitchDif = Math.abs(Math.abs(glyph.getPitchPosition()) - 1);
@@ -331,19 +331,19 @@ public class DotTranslation
             final int maxDx = scale.toPixels(constants.maxRepeatDotDx);
 
             // Check wrt inside/starting barline on left & ending barline on right
-            Barline leftBar;
+            OldBarline leftBar;
 
             if (measure.getInsideBarline() != null) {
                 leftBar = measure.getInsideBarline();
             } else {
-                Measure prevMeasure = (Measure) measure.getPreviousSibling();
+                OldMeasure prevMeasure = (OldMeasure) measure.getPreviousSibling();
                 leftBar = (prevMeasure != null) ? prevMeasure.getBarline()
                         : measure.getPart().getStartingBarline();
             }
 
-            Barline rightBar = measure.getBarline();
+            OldBarline rightBar = measure.getBarline();
 
-            for (Barline bar : Arrays.asList(leftBar, rightBar)) {
+            for (OldBarline bar : Arrays.asList(leftBar, rightBar)) {
                 if (bar != null) {
                     final int dx = (bar == leftBar) ? (dotCenter.x - bar.getRightX())
                             : (bar.getLeftX() - dotCenter.x);
@@ -373,10 +373,10 @@ public class DotTranslation
         {
             //~ Instance fields --------------------------------------------------------------------
 
-            final Barline barline;
+            final OldBarline barline;
 
             //~ Constructors -----------------------------------------------------------------------
-            public RepeatResult (Barline barline,
+            public RepeatResult (OldBarline barline,
                                  double dist)
             {
                 super(dist);
@@ -386,7 +386,7 @@ public class DotTranslation
             //~ Methods ----------------------------------------------------------------------------
             @Override
             public void commit (Glyph glyph,
-                                Measure measure,
+                                OldMeasure measure,
                                 Point dotCenter)
             {
                 barline.addGlyph(glyph);
@@ -425,17 +425,17 @@ public class DotTranslation
         //~ Methods --------------------------------------------------------------------------------
         @Override
         StaccatoResult process (Glyph glyph,
-                                Measure measure,
+                                OldMeasure measure,
                                 Point dotCenter)
         {
             Scale scale = measure.getScale();
             final int maxDx = scale.toPixels(constants.maxStaccatoDotDx);
             final int maxDy = scale.toPixels(constants.maxStaccatoDotDy);
-            SortedMap<Double, Chord> distances = new TreeMap<Double, Chord>();
+            SortedMap<Double, OldChord> distances = new TreeMap<Double, OldChord>();
 
             ChordLoop:
             for (TreeNode node : measure.getChords()) {
-                Chord chord = (Chord) node;
+                OldChord chord = (OldChord) node;
 
                 for (TreeNode n : chord.getNotes()) {
                     Note note = (Note) n;
@@ -477,10 +477,10 @@ public class DotTranslation
         {
             //~ Instance fields --------------------------------------------------------------------
 
-            final Chord chord;
+            final OldChord chord;
 
             //~ Constructors -----------------------------------------------------------------------
-            public StaccatoResult (Chord chord,
+            public StaccatoResult (OldChord chord,
                                    double dist)
             {
                 super(dist);
@@ -490,7 +490,7 @@ public class DotTranslation
             //~ Methods ----------------------------------------------------------------------------
             @Override
             public void commit (Glyph glyph,
-                                Measure measure,
+                                OldMeasure measure,
                                 Point dotCenter)
             {
                 glyph.setTranslation(new Articulation(measure, dotCenter, chord, glyph));
@@ -532,7 +532,7 @@ public class DotTranslation
         }
 
         abstract Result process (Glyph glyph,
-                                 Measure measure,
+                                 OldMeasure measure,
                                  Point dotCenter);
 
         //~ Inner Classes --------------------------------------------------------------------------
@@ -555,7 +555,7 @@ public class DotTranslation
 
             //~ Methods ----------------------------------------------------------------------------
             public abstract void commit (Glyph glyph,
-                                         Measure measure,
+                                         OldMeasure measure,
                                          Point dotCenter);
 
             @Override

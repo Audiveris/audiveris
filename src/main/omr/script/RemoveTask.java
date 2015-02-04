@@ -58,12 +58,16 @@ public class RemoveTask
         sheet.remove(false);
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        return super.internalsString() + " remove";
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(" remove");
+
+        return sb.toString();
+
     }
 }

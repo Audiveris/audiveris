@@ -21,7 +21,7 @@ import omr.sheet.ui.ImageView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.ScrollImageView;
 
-import omr.sig.SegmentInter;
+import omr.sig.inter.SegmentInter;
 
 import omr.ui.BoardsPane;
 import omr.ui.util.ItemRenderer;
@@ -98,8 +98,8 @@ public class Curves
 
         BufferedImage img = skeleton.buildSkeleton();
 
-        // Display skeleton
-        if (Main.getGui() != null) {
+        // Display skeleton buffer?
+        if ((Main.getGui() != null) && constants.displayCurves.isSet()) {
             view = new Curves.MyView(img);
             sheet.getAssembly().addViewTab(
                     "Curves",
@@ -271,13 +271,17 @@ public class Curves
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        Constant.Boolean displayCurves = new Constant.Boolean(
+                false,
+                "Should we display the view on curves?");
+
         Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
         Constant.String breakPointCoordinates = new Constant.String(
                 "",
-                "(Debug) Coordinates of curve break points if any");
+                "(Debug) Comma-separated coordinates of curve break points if any");
     }
 
     //--------//

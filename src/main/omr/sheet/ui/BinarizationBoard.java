@@ -80,11 +80,11 @@ public class BinarizationBoard
     /**
      * Creates a new BinarizationBoard object.
      *
-     * @param sheet DOCUMENT ME!
+     * @param sheet related sheet
      */
     public BinarizationBoard (Sheet sheet)
     {
-        super("Binarization", 150, sheet.getLocationService(), eventClasses, false, false);
+        super(Board.BINARIZATION, sheet.getLocationService(), eventClasses, false, false);
 
         this.sheet = sheet;
 
@@ -113,7 +113,7 @@ public class BinarizationBoard
                 Rectangle rect = sheetLocation.getData();
 
                 if (rect != null) {
-                    FilterDescriptor desc = sheet.getPage().getFilterParam().getTarget();
+                    FilterDescriptor desc = sheet.getFilterParam().getTarget();
                     ByteProcessor source = sheet.getPicture().getSource(
                             Picture.SourceKey.INITIAL);
                     PixelFilter filter = desc.getFilter(source);

@@ -35,6 +35,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import omr.sig.GradeImpacts;
 
 /**
  * Class {@code CheckPanel} handles a panel to display the results of a check suite,
@@ -140,14 +141,14 @@ public class CheckPanel<C extends Checkable>
         }
 
         // Run the suite
-        SuiteImpacts impacts = suite.getImpacts(checkable);
+        GradeImpacts impacts = suite.getImpacts(checkable);
 
         // Fill one row per check
         List<Check<C>> checks = suite.getChecks();
 
         for (int index = 0; index < checks.size(); index++) {
             final Check<C> check = checks.get(index);
-            final double value = impacts.getValue(index);
+            final double value = suite.getChecks().get(index).getValue(checkable);////impacts.getValue(index);
 
             // Update proper field to display check result
             final int col = (value <= check.getLow()) ? 0 : ((value < check.getHigh()) ? 1 : 2);

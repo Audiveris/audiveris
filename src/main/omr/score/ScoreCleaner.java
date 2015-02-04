@@ -14,9 +14,9 @@ package omr.score;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.Measure;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.ScoreSystem;
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldSystemPart;
 import omr.score.visitor.AbstractScoreVisitor;
 
 import org.slf4j.Logger;
@@ -72,10 +72,10 @@ public class ScoreCleaner
     }
 
     //------------------//
-    // visit SystemPart //
+    // visit OldSystemPart //
     //------------------//
     @Override
-    public boolean visit (SystemPart systemPart)
+    public boolean visit (OldSystemPart systemPart)
     {
         try {
             if (systemPart.isDummy()) {
@@ -96,10 +96,10 @@ public class ScoreCleaner
     }
 
     //---------------//
-    // visit Measure //
+    // visit OldMeasure //
     //---------------//
     @Override
-    public boolean visit (Measure measure)
+    public boolean visit (OldMeasure measure)
     {
         try {
             measure.cleanupNode();

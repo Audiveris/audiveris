@@ -26,19 +26,20 @@ import omr.math.GeoOrder;
 import omr.math.GeoUtil;
 import omr.math.Line;
 import omr.math.LineUtil;
+import omr.math.Population;
 
 import omr.run.Orientation;
 
-import omr.sig.AbstractBeamInter;
-import omr.sig.AbstractBeamInter.Impacts;
-import omr.sig.BeamHookInter;
-import omr.sig.Exclusion;
-import omr.sig.FullBeamInter;
-import omr.sig.HeadStemRelation;
-import omr.sig.Inter;
-import omr.sig.Relation;
 import omr.sig.SIGraph;
-import omr.sig.SmallBeamInter;
+import omr.sig.inter.AbstractBeamInter;
+import omr.sig.inter.AbstractBeamInter.Impacts;
+import omr.sig.inter.BeamHookInter;
+import omr.sig.inter.FullBeamInter;
+import omr.sig.inter.Inter;
+import omr.sig.inter.SmallBeamInter;
+import omr.sig.relation.Exclusion;
+import omr.sig.relation.HeadStemRelation;
+import omr.sig.relation.Relation;
 
 import omr.util.Corner;
 import omr.util.HorizontalSide;
@@ -70,11 +71,12 @@ import java.util.List;
  * beam and beam hook interpretations.
  * <p>
  * The retrieval is performed on the collection of spots produced by closing the blurred initial
- * image with a disk-shape structure element whose diameter is just slightly smaller than the
+ * image with a disk-shaped structure element whose diameter is just slightly smaller than the
  * typical beam height.
- * <p>
- * {@link #buildBeams()} retrieves standard beams.
- * {@link #buildCueBeams()} retrieves cue beams.
+ * <ol>
+ * <li>{@link #buildBeams()} retrieves standard beams.</li>
+ * <li>{@link #buildCueBeams()} retrieves cue beams.</li>
+ * </ol>
  *
  * @author Hervé Bitteur
  */
@@ -122,6 +124,9 @@ public class BeamsBuilder
     /** Input image. */
     private ByteProcessor pixelFilter;
 
+    /** Population of observed vertical gaps between grouped beams. */
+    private final Population vGaps;
+
     //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // BeamsBuilder //
@@ -130,10 +135,13 @@ public class BeamsBuilder
      * Creates a new BeamsBuilder object.
      *
      * @param system the dedicated system
+     * @param vGaps  (output) population of vertical beam gaps within groups
      */
-    public BeamsBuilder (SystemInfo system)
+    public BeamsBuilder (SystemInfo system,
+                         Population vGaps)
     {
         this.system = system;
+        this.vGaps = vGaps;
 
         sig = system.getSig();
         sheet = system.getSheet();
@@ -146,14 +154,15 @@ public class BeamsBuilder
     //------------//
     /**
      * Find possible interpretations of beams among system spots.
+     *
      */
     public void buildBeams ()
     {
         // Select parameters for standard items
-        itemParams = new ItemParameters(sheet.getScale(), 1);
+        itemParams = new ItemParameters(sheet.getScale(), 1.0);
 
         // Cache input image
-        pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.STAFF_LINE_FREE);
+        pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
 
         // First, retrieve beam candidates from spots
         sortedBeamSpots = getBeamSpots();
@@ -168,6 +177,11 @@ public class BeamsBuilder
         // Finally, retrieve beam hooks
         sortedBeamSpots.removeAll(assignedSpots);
         buildHooks();
+
+        // Measure vertical gap
+        if (vGaps.getCardinality() > 0) {
+            logger.debug("S#{} beam gaps {}", system.getId(), vGaps);
+        }
     }
 
     //---------------//
@@ -180,6 +194,9 @@ public class BeamsBuilder
     {
         // Select parameters for cue items
         itemParams = new ItemParameters(sheet.getScale(), constants.cueBeamRatio.getValue());
+
+        // Cache input image
+        pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
 
         List<CueAggregate> aggregates = getCueAggregates();
 
@@ -601,28 +618,39 @@ public class BeamsBuilder
                     }
                 }
 
-                //TODO: test for detecting top/bottom items is not correct
-                Impacts impacts = computeBeamImpacts(
-                        item,
-                        idx == 0, // Check above only for first item
-                        idx == (lines.size() - 1), // Check below only for last item
-                        meanDist);
+                try {
+                    //TODO: test for detecting top/bottom items is not correct
+                    Impacts impacts = computeBeamImpacts(
+                            item,
+                            idx == 0, // Check above only for first item
+                            idx == (lines.size() - 1), // Check below only for last item
+                            meanDist);
 
-                if ((impacts != null) && (impacts.getGrade() >= FullBeamInter.getMinGrade())) {
-                    success = true;
+                    if ((impacts != null) && (impacts.getGrade() >= FullBeamInter.getMinGrade())) {
+                        success = true;
 
-                    FullBeamInter beam = new FullBeamInter(null, impacts, item.median, item.height);
+                        FullBeamInter beam = new FullBeamInter(
+                                null,
+                                impacts,
+                                item.median,
+                                item.height);
 
-                    if (line.isVip()) {
-                        beam.setVip();
+                        if (line.isVip()) {
+                            beam.setVip();
+                        }
+
+                        sig.addVertex(beam);
+
+                        // Exclusion between beam and hook, if any
+                        if (hook != null) {
+                            sig.insertExclusion(hook, beam, Exclusion.Cause.OVERLAP);
+                        }
                     }
-
-                    sig.addVertex(beam);
-
-                    // Exclusion between beam and hook, if any
-                    if (hook != null) {
-                        sig.insertExclusion(hook, beam, Exclusion.Cause.OVERLAP);
-                    }
+                } catch (Exception ex) {
+                    // This is often due to pseudo beam candidate stuck on image border
+                    // resulting in ArrayIndexOutOfBoundsException when checking beam white belt
+                    // We can skip such candidates!
+                    logger.warn("Could not compute impacts for beam " + item + " ex: " + ex, ex);
                 }
             }
         }
@@ -715,9 +743,7 @@ public class BeamsBuilder
         rawSystemBeams = sig.inters(AbstractBeamInter.class);
 
         // Extend each orphan beam as much as possible
-        for (int i = 0; i < rawSystemBeams.size(); i++) {
-            final Inter inter = rawSystemBeams.get(i);
-
+        for (Inter inter : rawSystemBeams) {
             if (inter.isDeleted()) {
                 continue;
             }
@@ -801,13 +827,13 @@ public class BeamsBuilder
                 AbstractBeamInter other = (AbstractBeamInter) ib;
 
                 if (logging) {
-                    logger.info("{} found parallel {}", beam, other);
+                    logger.info("VIP {} found parallel {}", beam, other);
                 }
 
                 // Check concrete intersection
                 if (!AreaUtil.intersection(other.getArea(), luArea)) {
                     if (logging) {
-                        logger.info("Too distant beams {} and {}", beam, other);
+                        logger.info("VIP too distant beams {} and {}", beam, other);
                     }
 
                     continue;
@@ -819,11 +845,14 @@ public class BeamsBuilder
 
                 if (Math.abs(otherSlope - slope) > params.maxBeamSlopeGap) {
                     if (logging) {
-                        logger.info("{} not parallel with {}", beam, other);
+                        logger.info("VIP {} not parallel with {}", beam, other);
                     }
 
                     continue;
                 }
+
+                // Side-effect: measure the actual vertical gap between such parallel beams
+                measureVerticalGap(beam, other);
 
                 // Check the other beam can really extend current beam
                 final Point2D otherEndPt = (side == LEFT) ? otherMedian.getP1() : otherMedian.getP2();
@@ -832,7 +861,7 @@ public class BeamsBuilder
 
                 if (extDx < (2 * params.maxStemBeamGapX)) {
                     if (logging) {
-                        logger.info("{} no increment with {}", beam, other);
+                        logger.info("VIP {} no increment with {}", beam, other);
                     }
 
                     continue;
@@ -1131,8 +1160,8 @@ public class BeamsBuilder
     // getCueAggregates //
     //------------------//
     /**
-     * Gather the cue heads and stems regions into aggregates of at
-     * least two heads (and stems).
+     * Gather the cue heads and stems regions into aggregates of at least two heads
+     * (and stems).
      *
      * @return the aggregates retrieved
      */
@@ -1279,6 +1308,39 @@ public class BeamsBuilder
         }
 
         return null;
+    }
+
+    //--------------------//
+    // measureVerticalGap //
+    //--------------------//
+    /**
+     * Measure the actual vertical gap between the two provided beams.
+     * (These beams are very likely to be in a single group)
+     *
+     * @param one a beam
+     * @param two another beam
+     */
+    private void measureVerticalGap (AbstractBeamInter one,
+                                     AbstractBeamInter two)
+    {
+        if (vGaps != null) {
+            Line2D m1 = one.getMedian();
+            Line2D m2 = two.getMedian();
+
+            // Determine a suitable abscissa
+            double maxLeft = Math.max(m1.getX1(), m2.getX1());
+            double minRight = Math.min(m1.getX2(), m2.getX2());
+            double x = (maxLeft + minRight) / 2;
+
+            // Measure actual vertical gap at this abscissa
+            Point2D p1 = LineUtil.intersectionAtX(m1, x);
+            Point2D p2 = LineUtil.intersectionAtX(m2, x);
+
+            double gap = Math.max(
+                    0,
+                    Math.abs(p2.getY() - p1.getY()) - ((one.getHeight() + two.getHeight()) / 2));
+            vGaps.includeValue(gap);
+        }
     }
 
     //---------//
@@ -1752,7 +1814,7 @@ public class BeamsBuilder
                 }
             }
 
-            system.stemsBuilder.linkCueBeams(head, corner, stem, beams);
+            new StemsBuilder(system).linkCueBeams(head, corner, stem, beams);
         }
 
         /**
@@ -1788,7 +1850,7 @@ public class BeamsBuilder
 
             double beam = params.cueBeamRatio * scale.getMainBeam();
 
-            return sheet.getSpotsBuilder().buildSpots(buf, box.getLocation(), beam, id);
+            return new SpotsBuilder(sheet).buildSpots(buf, box.getLocation(), beam, id);
         }
 
         /**

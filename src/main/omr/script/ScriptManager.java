@@ -13,7 +13,7 @@ package omr.script;
 
 import omr.Main;
 
-import omr.score.Score;
+import omr.sheet.Book;
 
 import omr.step.ProcessingCancellationException;
 
@@ -118,11 +118,13 @@ public class ScriptManager
             long stop = System.currentTimeMillis();
             logger.info("Script file {} run in {} ms", file, stop - start);
         } catch (ProcessingCancellationException pce) {
-            Score score = script.getScore();
-            logger.warn("Cancelled " + score, pce);
+            if (script != null) {
+                Book book = script.getBook();
+                logger.warn("Cancelled " + book, pce);
 
-            if (score != null) {
-                score.getBench().recordCancellation();
+                if (book != null) {
+                    book.getBench().recordCancellation();
+                }
             }
         } catch (FileNotFoundException ex) {
             logger.warn("Cannot find script file {}", file);
@@ -131,10 +133,10 @@ public class ScriptManager
         } finally {
             // Close when in batch mode
             if ((Main.getGui() == null) && (script != null)) {
-                Score score = script.getScore();
+                Book book = script.getBook();
 
-                if (score != null) {
-                    score.close();
+                if (book != null) {
+                    book.close();
                 }
             }
         }

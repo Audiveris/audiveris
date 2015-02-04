@@ -11,11 +11,11 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.run.RunsTable;
+import omr.run.RunTable;
 
-import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
 
+import omr.sheet.Picture;
 import omr.sheet.Sheet;
 
 import omr.ui.view.RubberPanel;
@@ -130,7 +130,7 @@ public class DeltaView
             }
 
             Color veryLight = new Color(222, 222, 200);
-            RunsTable input = sheet.getWholeVerticalTable();
+            RunTable input = sheet.getPicture().getTable(Picture.TableKey.BINARY);
             gbi.setColor(Color.BLACK);
             gbi.setComposite(AlphaComposite.SrcOver);
 
@@ -176,7 +176,7 @@ public class DeltaView
 
         private void renderOutput (Graphics2D g)
         {
-            sheet.getPage().accept(new PagePhysicalPainter(g, false, true, false));
+            ///////////////////////////////////////////////////sheet.getPage().accept(new PagePhysicalPainter(g, false, true, false));
         }
     }
 }

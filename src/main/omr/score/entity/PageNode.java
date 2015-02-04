@@ -12,6 +12,7 @@
 package omr.score.entity;
 
 import omr.sheet.Scale;
+import omr.sheet.Sheet;
 
 import omr.util.TreeNode;
 
@@ -48,8 +49,17 @@ public abstract class PageNode
     {
         StringBuilder sb = new StringBuilder(super.getContextString());
 
-        if (getScore().isMultiPage()) {
-            sb.append("[#").append(getPage().getIndex()).append("] ");
+        Page page = getPage();
+        Sheet sheet = page.getSheet();
+
+        if (sheet.getBook().isMultiSheet()) {
+            sb.append("[#").append(sheet.getIndex());
+
+            if (sheet.getPages().size() > 1) {
+                sb.append("-").append(1 + sheet.getPages().indexOf(page));
+            }
+
+            sb.append("] ");
         }
 
         return sb.toString();

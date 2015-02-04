@@ -116,7 +116,7 @@ public class FilamentAlignment
         Line2D prevBisector = null;
         Line2D bisector = null;
         Population curvatures = new Population();
-        
+
         if (line == null) {
             computeLine();
         }
@@ -588,7 +588,7 @@ public class FilamentAlignment
 
         Constant.Boolean showFilamentPoints = new Constant.Boolean(
                 false,
-                "Should we display filament points?");
+                "Should we show filament points?");
 
         Scale.Fraction filamentPointSize = new Scale.Fraction(
                 0.05,

@@ -71,16 +71,16 @@ public class RubberPanel
     private static final Logger logger = LoggerFactory.getLogger(RubberPanel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Current display zoom, if any */
+    /** Current display zoom, if any. */
     protected Zoom zoom;
 
-    /** Rubber band mouse handling, if any */
+    /** Rubber band mouse handling, if any. */
     protected Rubber rubber;
 
-    /** Model size (independent of display zoom) */
+    /** Model size (independent of display zoom). */
     protected Dimension modelSize;
 
-    /** Location Service if any (for Location event) */
+    /** Location Service if any (for Location event). */
     protected SelectionService locationService;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -199,7 +199,7 @@ public class RubberPanel
      * Retrieve the current center of the display, and report its
      * corresponding model location.
      *
-     * @return the unscaled coordinates of the panel center
+     * @return the un-scaled coordinates of the panel center
      */
     public Point getPanelCenter ()
     {
@@ -629,10 +629,9 @@ public class RubberPanel
     // setFocusLocation //
     //------------------//
     /**
-     * Modifies the location information. This method simply posts the
-     * location information on the proper Service object, provided that
-     * such object has been previously injected (by means of the method
-     * {@link #setLocationService}.
+     * Modifies the location information. This method simply posts the location information on the
+     * proper Service object, provided that such object has been previously injected (by means of
+     * the method {@link #setLocationService}.
      *
      * @param rect     the location information
      * @param movement the button movement

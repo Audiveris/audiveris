@@ -51,9 +51,9 @@ public class ChordSymbol
      * @param chord          the chord related to the mark, if any
      * @param text           the sentence text
      */
-    public ChordSymbol (Measure measure,
+    public ChordSymbol (OldMeasure measure,
                         Point referencePoint,
-                        Chord chord,
+                        OldChord chord,
                         Text.ChordText text)
     {
         super(measure, true, referencePoint, chord, text.getSentence().getFirstWord().getGlyph());
@@ -106,7 +106,7 @@ public class ChordSymbol
     }
 
     //-----------------//
-    // internalsString //
+    // internals //
     //-----------------//
     @Override
     protected String internalsString ()

@@ -38,22 +38,24 @@ public abstract class AbstractDirection
     private static final Logger logger = LoggerFactory.getLogger(AbstractDirection.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    /** Creates a new instance of Direction
+    /**
+     * Creates a new instance of Direction
      *
      * @param measure        the containing measure
      * @param referencePoint the reference point for this direction
      * @param chord          the related chord if any
      * @param glyph          the underlying glyph
      */
-    public AbstractDirection (Measure measure,
+    public AbstractDirection (OldMeasure measure,
                               Point referencePoint,
-                              Chord chord,
+                              OldChord chord,
                               Glyph glyph)
     {
         this(measure, true, referencePoint, chord, glyph);
     }
 
-    /** Creates a new instance of Direction
+    /**
+     * Creates a new instance of Direction
      *
      * @param measure        the containing measure
      * @param isStart        true or false, to flag a start or a stop
@@ -61,10 +63,10 @@ public abstract class AbstractDirection
      * @param chord          the related chord if any
      * @param glyph          the underlying glyph
      */
-    public AbstractDirection (Measure measure,
+    public AbstractDirection (OldMeasure measure,
                               boolean isStart,
                               Point referencePoint,
-                              Chord chord,
+                              OldChord chord,
                               Glyph glyph)
     {
         super(measure, isStart, referencePoint, chord, glyph);

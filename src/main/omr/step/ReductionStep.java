@@ -11,14 +11,10 @@
 // </editor-fold>
 package omr.step;
 
-import omr.sheet.Picture;
-import static omr.sheet.Picture.SourceKey.*;
-import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.sig.SIGraph.ReductionMode;
-
-import java.util.Collection;
+import omr.sig.SigReducer;
 
 /**
  * Class {@code ReductionStep} implements <b>REDUCTION</b> step, which tries to reduce
@@ -27,7 +23,7 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class ReductionStep
-        extends AbstractSystemStep
+        extends AbstractSystemStep<Void>
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -41,7 +37,7 @@ public class ReductionStep
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 DATA_TAB,
-                "Reduce structures");
+                "Reduce structures of heads, stems & beams");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -49,24 +45,10 @@ public class ReductionStep
     // doSystem //
     //----------//
     @Override
-    public void doSystem (SystemInfo system)
+    public void doSystem (SystemInfo system,
+                          Void context)
             throws StepException
     {
-        system.sigReducer.reduce(ReductionMode.STRICT);
-    }
-
-    @Override
-    protected void doEpilog (Collection<SystemInfo> systems,
-                             Sheet sheet)
-            throws StepException
-    {
-        final Picture picture = sheet.getPicture();
-
-        //        picture.disposeSource(INITIAL);
-        // picture.disposeSource(BINARY);
-        picture.disposeSource(GAUSSIAN);
-        picture.disposeSource(MEDIAN);
-
-        ///picture.disposeSource(STAFF_LINE_FREE);
+        new SigReducer(system).reduce(ReductionMode.STRICT, true);
     }
 }

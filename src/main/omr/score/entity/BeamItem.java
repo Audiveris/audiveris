@@ -229,7 +229,7 @@ public class BeamItem
      * @param measure the containing measure
      */
     public static void populate (Glyph glyph,
-                                 Measure measure)
+                                 OldMeasure measure)
     {
         if (glyph.isVip()) {
             logger.info("BeamItem. populate {}", glyph.idString());
@@ -323,7 +323,7 @@ public class BeamItem
      * @param measure the containing measure
      * @param glyph   the underlying glyph of the beam pack
      */
-    private static void createPack (Measure measure,
+    private static void createPack (OldMeasure measure,
                                     Glyph glyph)
     {
         int card = packCardOf(glyph.getShape());

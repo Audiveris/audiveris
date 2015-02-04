@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.sig.Inter;
+import omr.sig.inter.Inter;
 
 import java.util.Set;
 

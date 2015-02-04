@@ -18,17 +18,20 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphRepository;
 
-import omr.grid.StaffInfo;
-import omr.grid.StaffManager;
-
-import omr.score.Score;
-import omr.score.ScoresManager;
-import omr.score.ui.ScoreController;
+import omr.sheet.Staff;
+import omr.sheet.StaffManager;
+import omr.grid.StaffProjector;
 
 import omr.script.RemoveTask;
 
+import omr.sheet.Book;
+import omr.sheet.BookManager;
 import omr.sheet.ScaleBuilder;
 import omr.sheet.Sheet;
+import omr.sheet.StemScaler;
+
+import omr.step.Step;
+import omr.step.Steps;
 
 import omr.ui.MainGui;
 import omr.ui.util.OmrFileFilter;
@@ -53,27 +56,25 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
-import omr.sheet.StemScaler;
 
 /**
  * Class {@code SheetActions} simply gathers UI actions related to sheet handling.
- * These methods are ready to be picked up by the plugins mechanism.
  *
  * @author Hervé Bitteur
  */
 public class SheetActions
-    extends SheetDependent
+        extends SheetDependent
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
-    private static final Logger    logger = LoggerFactory.getLogger(SheetActions.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(SheetActions.class);
 
     /** Singleton */
     private static SheetActions INSTANCE;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     //--------------//
     // SheetActions //
     //--------------//
@@ -85,22 +86,21 @@ public class SheetActions
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
-    //------------//
-    // closeScore //
-    //------------//
+    //-----------//
+    // closeBook //
+    //-----------//
     /**
-     * Action that handles the closing of the currently selected score.
+     * Action that handles the closing of the currently selected book.
      *
      * @param e the event that triggered this action
      */
     @Action(enabledProperty = SHEET_AVAILABLE)
-    public void closeScore (ActionEvent e)
+    public void closeBook (ActionEvent e)
     {
-        Score score = ScoreController.getCurrentScore();
+        Book book = BookController.getCurrentBook();
 
-        if (score != null) {
-            score.close();
+        if (book != null) {
+            book.close();
         }
     }
 
@@ -135,13 +135,13 @@ public class SheetActions
     {
         String suffixes = constants.validImageExtensions.getValue();
         String allSuffixes = suffixes + " " + suffixes.toUpperCase();
-        File   file = UIUtil.fileChooser(
-            false,
-            Main.getGui().getFrame(),
-            new File(ScoresManager.getInstance().getDefaultInputDirectory()),
-            new OmrFileFilter(
-                "Major image files" + " (" + suffixes + ")",
-                allSuffixes.split("\\s")));
+        File file = UIUtil.fileChooser(
+                false,
+                Main.getGui().getFrame(),
+                new File(BookManager.getInstance().getDefaultInputDirectory()),
+                new OmrFileFilter(
+                        "Major image files" + " (" + suffixes + ")",
+                        allSuffixes.split("\\s")));
 
         if (file != null) {
             if (file.exists()) {
@@ -168,36 +168,12 @@ public class SheetActions
         Sheet sheet = SheetsController.getCurrentSheet();
 
         if (sheet != null) {
-            ScaleBuilder scaleBuilder = sheet.getScaleBuilder();
+            Step scaleStep = Steps.valueOf(Steps.SCALE);
 
-            if (scaleBuilder != null) {
-                scaleBuilder.displayChart();
+            if (sheet.isDone(scaleStep)) {
+                new ScaleBuilder(sheet).displayChart();
             } else {
                 logger.warn("Cannot display scale plot, for lack of scale data");
-            }
-        }
-    }
-
-    //----------//
-    // plotStem //
-    //----------//
-    /**
-     * Action that allows to display the plot of stem scaler.
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = SHEET_AVAILABLE)
-    public void plotStem (ActionEvent e)
-    {
-        Sheet sheet = SheetsController.getCurrentSheet();
-
-        if (sheet != null) {
-            StemScaler stemScaler = sheet.getStemScaler();
-
-            if (stemScaler != null) {
-                stemScaler.displayChart();
-            } else {
-                logger.warn("Cannot display stem plot, for lack of stem data");
             }
         }
     }
@@ -236,18 +212,19 @@ public class SheetActions
             popup.add(title);
             popup.addSeparator();
 
-            ActionListener listener = new ActionListener() {
+            ActionListener listener = new ActionListener()
+            {
                 @Override
                 public void actionPerformed (ActionEvent e)
                 {
-                    int       index = Integer.decode(e.getActionCommand()) - 1;
-                    StaffInfo staff = staffManager.getStaff(index);
-                    sheet.getGridBuilder().barsRetriever.plot(staff);
+                    int index = Integer.decode(e.getActionCommand()) - 1;
+                    Staff staff = staffManager.getStaff(index);
+                    new StaffProjector(sheet, staff).plot();
                 }
             };
 
             // Populate popup
-            for (StaffInfo staff : staffManager.getStaves()) {
+            for (Staff staff : staffManager.getStaves()) {
                 JMenuItem item = new JMenuItem("" + staff.getId());
                 item.addActionListener(listener);
                 popup.add(item);
@@ -259,6 +236,30 @@ public class SheetActions
         }
     }
 
+    //----------//
+    // plotStem //
+    //----------//
+    /**
+     * Action that allows to display the plot of stem scaler.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = SHEET_AVAILABLE)
+    public void plotStem (ActionEvent e)
+    {
+        Sheet sheet = SheetsController.getCurrentSheet();
+
+        if (sheet != null) {
+            Step seedsStep = Steps.valueOf(Steps.STEM_SEEDS);
+
+            if (sheet.isDone(seedsStep)) {
+                new StemScaler(sheet).displayChart();
+            } else {
+                logger.warn("Cannot display stem plot, for lack of stem data");
+            }
+        }
+    }
+
     //--------------//
     // recordGlyphs //
     //--------------//
@@ -266,8 +267,8 @@ public class SheetActions
     public RecordGlyphsTask recordGlyphs ()
     {
         int answer = JOptionPane.showConfirmDialog(
-            null,
-            "Are you sure of all the symbols of this sheet ?");
+                null,
+                "Are you sure of all the symbols of this sheet ?");
 
         if (answer == JOptionPane.YES_OPTION) {
             return new RecordGlyphsTask();
@@ -291,8 +292,8 @@ public class SheetActions
 
         if (sheet != null) {
             int answer = JOptionPane.showConfirmDialog(
-                null,
-                "Do you confirm the removal of this sheet" + " from its containing score ?");
+                    null,
+                    "Do you confirm the removal of this sheet" + " from its containing score ?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 new RemoveTask(sheet).launch(sheet);
@@ -355,7 +356,6 @@ public class SheetActions
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //-------------//
     // HistoryMenu //
     //-------------//
@@ -369,20 +369,17 @@ public class SheetActions
         private static HistoryMenu INSTANCE;
 
         //~ Instance fields ------------------------------------------------------------------------
-
         //
         /** Concrete menu. */
         private JMenu menu;
 
         //~ Constructors ---------------------------------------------------------------------------
-
         //
         private HistoryMenu ()
         {
         }
 
         //~ Methods --------------------------------------------------------------------------------
-
         public static HistoryMenu getInstance ()
         {
             if (INSTANCE == null) {
@@ -395,14 +392,14 @@ public class SheetActions
         public JMenu getMenu ()
         {
             if (menu == null) {
-                NameSet history = ScoresManager.getInstance().getHistory();
+                NameSet history = BookManager.getInstance().getHistory();
                 menu = history.menu("Sheet History", new HistoryListener());
                 menu.setEnabled(!history.isEmpty());
 
                 menu.setName("historyMenu");
 
                 ResourceMap resource = MainGui.getInstance().getContext()
-                                              .getResourceMap(SheetActions.class);
+                        .getResourceMap(SheetActions.class);
                 resource.injectComponents(menu);
             }
 
@@ -415,13 +412,12 @@ public class SheetActions
         }
 
         //~ Inner Classes --------------------------------------------------------------------------
-
         /**
          * Class {@code HistoryListener} is used to reload an image file,
          * when selected from the history of previous image files.
          */
         private static class HistoryListener
-            implements ActionListener
+                implements ActionListener
         {
             //~ Methods ----------------------------------------------------------------------------
 
@@ -441,30 +437,31 @@ public class SheetActions
     //----------//
     // OpenTask //
     //----------//
+    /**
+     * Task that opens a book image file.
+     */
     public static class OpenTask
-        extends BasicTask
+            extends BasicTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         private final File file;
 
         //~ Constructors ---------------------------------------------------------------------------
-
         public OpenTask (File file)
         {
             this.file = file;
         }
 
         //~ Methods --------------------------------------------------------------------------------
-
         @Override
         protected Void doInBackground ()
-            throws InterruptedException
+                throws InterruptedException
         {
             if (file.exists()) {
-                // Actually load the image file
-                Score score = new Score(file);
-                score.createPages(null);
+                // Actually open the image file
+                Book book = new Book(file.toPath());
+                book.createSheets(null);
             } else {
                 logger.warn("File {} does not exist", file);
             }
@@ -477,32 +474,32 @@ public class SheetActions
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Valid extensions for image files */
         Constant.String validImageExtensions = new Constant.String(
-            ".bmp .gif .jpg .png .tiff .tif .pdf",
-            "Valid image file extensions, whitespace-separated");
+                ".bmp .gif .jpg .png .tiff .tif .pdf",
+                "Valid image file extensions, whitespace-separated");
     }
 
     //------------------//
     // RecordGlyphsTask //
     //------------------//
     private static class RecordGlyphsTask
-        extends BasicTask
+            extends BasicTask
     {
         //~ Methods --------------------------------------------------------------------------------
 
         @Override
         protected Void doInBackground ()
-            throws InterruptedException
+                throws InterruptedException
         {
             Sheet sheet = SheetsController.getCurrentSheet();
             GlyphRepository.getInstance().recordSheetGlyphs(
-                sheet, /* emptyStructures => */
-                sheet.isOnPatterns());
+                    sheet, /* emptyStructures => */
+                    sheet.isOnPatterns());
 
             return null;
         }

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.run.RunsTable;
+import omr.run.RunTable;
 
 import omr.sheet.Sheet;
 
@@ -24,7 +24,7 @@ import java.awt.Graphics2D;
 
 /**
  * Class {@code MultipleRunsViewer} is similar to RunsViewer but can
- * display multiple RunsTable instances one upon the other.
+ display multiple RunTable instances one upon the other.
  *
  * @author Hervé Bitteur
  */
@@ -65,7 +65,7 @@ public class MultipleRunsViewer
      *
      * @param tables the tables to display
      */
-    public void display (RunsTable... tables)
+    public void display (RunTable... tables)
     {
         RubberPanel view = new MyView(tables);
         view.setName("MultiTables");
@@ -89,10 +89,10 @@ public class MultipleRunsViewer
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final RunsTable[] tables;
+        private final RunTable[] tables;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public MyView (RunsTable... tables)
+        public MyView (RunTable... tables)
         {
             this.tables = tables;
 
@@ -119,7 +119,7 @@ public class MultipleRunsViewer
             // Render all sections, using the colors they have been assigned
             int index = 0;
 
-            for (RunsTable table : tables) {
+            for (RunTable table : tables) {
                 g.setColor(colors[index++ % colors.length]);
                 table.render(g);
             }

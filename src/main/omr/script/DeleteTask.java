@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
@@ -104,13 +106,13 @@ public class DeleteTask
         logger.info("Deletion of virtual {}", Glyphs.toString(glyphs));
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internals());
         sb.append(" delete");
 
         if (!locations.isEmpty()) {
@@ -180,6 +182,7 @@ public class DeleteTask
      * for this object, but before this object is set to the parent
      * object.
      */
+    @PostConstruct // Don't remove this method, invoked by JAXB through reflection
     private void afterUnmarshal (Unmarshaller um,
                                  Object parent)
     {
@@ -199,6 +202,7 @@ public class DeleteTask
     /**
      * Called immediately before the marshalling of this object begins.
      */
+    @PreDestroy // Don't remove this method, invoked by JAXB through reflection
     private void beforeMarshal (Marshaller m)
     {
         // Convert locations -> array of point facades
@@ -209,7 +213,7 @@ public class DeleteTask
                 facades.add(new PointFacade(point));
             }
 
-            points = facades.toArray(new PointFacade[0]);
+            points = facades.toArray(new PointFacade[facades.size()]);
         }
     }
 }

@@ -19,7 +19,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 
 import omr.grid.FilamentLine;
-import omr.grid.StaffInfo;
+import omr.sheet.Staff;
 
 import omr.math.Circle;
 
@@ -28,9 +28,9 @@ import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 
 import omr.sig.GradeImpacts;
-import omr.sig.Inter;
+import omr.sig.inter.Inter;
 import omr.sig.SIGraph;
-import omr.sig.SlurInter;
+import omr.sig.inter.SlurInter;
 
 import omr.ui.util.UIUtil;
 
@@ -46,11 +46,13 @@ import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.toRadians;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -429,7 +431,7 @@ public class SlursBuilder
 
         // Distance from slur end to closest staff line
         Point se = slur.getEnd(reverse);
-        StaffInfo staff = sheet.getStaffManager().getStaffAt(se);
+        Staff staff = sheet.getStaffManager().getClosestStaff(se);
         FilamentLine line = staff.getClosestLine(se);
 
         if (line == slur.getCrossedLine()) {
@@ -780,7 +782,7 @@ public class SlursBuilder
                 "Maximum circle distance for final slur");
 
         final Scale.Fraction maxExtDistance = new Scale.Fraction(
-                0.35,
+                0.45, //0.35,
                 "Maximum circle distance for extension arc");
 
         final Scale.Fraction maxArcsDistance = new Scale.Fraction(
@@ -788,7 +790,7 @@ public class SlursBuilder
                 "Maximum circle distance for intermediate arcs");
 
         final Scale.Fraction arcCheckLength = new Scale.Fraction(
-                3,
+                2, //3,
                 "Length checked for extension arc");
 
         final Scale.Fraction sideModelLength = new Scale.Fraction(

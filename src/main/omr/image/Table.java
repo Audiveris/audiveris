@@ -68,6 +68,14 @@ public interface Table
                   int y);
 
     /**
+     * Report value at index location in table data
+     *
+     * @param index position in table data
+     * @return the value at index
+     */
+    int getValue (int index);
+
+    /**
      * Define a sub-table view on a table.
      * Modification on the view are performed on the underlying table.
      *
@@ -84,6 +92,15 @@ public interface Table
     int getWidth ();
 
     /**
+     * Assign value at index location in table data
+     *
+     * @param index position in table data
+     * @param val   the value to assign at index
+     */
+    void setValue (int index,
+                   int val);
+
+    /**
      * Assign the provided value at given location
      *
      * @param x   abscissa
@@ -95,12 +112,11 @@ public interface Table
                    int val);
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //----------//
     // Abstract //
     //----------//
     public abstract class Abstract
-        implements Table
+            implements Table
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -114,9 +130,8 @@ public interface Table
         protected final Rectangle roi;
 
         //~ Constructors ---------------------------------------------------------------------------
-
-        protected Abstract (int       width,
-                            int       height,
+        protected Abstract (int width,
+                            int height,
                             Rectangle roi)
         {
             this.width = width;
@@ -125,7 +140,6 @@ public interface Table
         }
 
         //~ Methods --------------------------------------------------------------------------------
-
         @Override
         public void dump (String title)
         {
@@ -171,12 +185,12 @@ public interface Table
         {
             if ((roi.x < 0) || ((roi.x + roi.width) > width)) {
                 throw new IllegalArgumentException(
-                    "Illegal abscissa range " + roi + " width:" + width);
+                        "Illegal abscissa range " + roi + " width:" + width);
             }
 
             if ((roi.y < 0) || ((roi.y + roi.height) > height)) {
                 throw new IllegalArgumentException(
-                    "Illegal ordinate range " + roi + " height:" + height);
+                        "Illegal ordinate range " + roi + " height:" + height);
             }
         }
     }
@@ -185,7 +199,7 @@ public interface Table
     // Integer //
     //---------//
     public static class Integer
-        extends Abstract
+            extends Abstract
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -193,7 +207,6 @@ public interface Table
         private final int[] data;
 
         //~ Constructors ---------------------------------------------------------------------------
-
         public Integer (int width,
                         int height)
         {
@@ -201,7 +214,7 @@ public interface Table
             data = new int[width * height];
         }
 
-        protected Integer (Integer   table,
+        protected Integer (Integer table,
                            Rectangle roi)
         {
             super(table.width, table.height, roi);
@@ -209,7 +222,6 @@ public interface Table
         }
 
         //~ Methods --------------------------------------------------------------------------------
-
         @Override
         public void fill (int val)
         {
@@ -254,6 +266,12 @@ public interface Table
             return data[(y * width) + x];
         }
 
+        @Override
+        public int getValue (int index)
+        {
+            return data[index];
+        }
+
         public int[] getValues ()
         {
             if (roi != null) {
@@ -269,6 +287,13 @@ public interface Table
             checkRoi(roi);
 
             return new Integer(this, roi);
+        }
+
+        @Override
+        public void setValue (int index,
+                              int val)
+        {
+            data[index] = val;
         }
 
         @Override
@@ -289,7 +314,7 @@ public interface Table
     // Short //
     //-------//
     public static class Short
-        extends Abstract
+            extends Abstract
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -297,7 +322,6 @@ public interface Table
         private final short[] data;
 
         //~ Constructors ---------------------------------------------------------------------------
-
         public Short (int width,
                       int height)
         {
@@ -305,7 +329,7 @@ public interface Table
             data = new short[width * height];
         }
 
-        protected Short (Short     table,
+        protected Short (Short table,
                          Rectangle roi)
         {
             super(table.width, table.height, roi);
@@ -313,7 +337,6 @@ public interface Table
         }
 
         //~ Methods --------------------------------------------------------------------------------
-
         @Override
         public void fill (int val)
         {
@@ -358,6 +381,12 @@ public interface Table
             return data[(y * width) + x];
         }
 
+        @Override
+        public int getValue (int index)
+        {
+            return data[index];
+        }
+
         public short[] getValues ()
         {
             if (roi != null) {
@@ -373,6 +402,13 @@ public interface Table
             checkRoi(roi);
 
             return new Short(this, roi);
+        }
+
+        @Override
+        public void setValue (int index,
+                              int val)
+        {
+            data[index] = (short) val;
         }
 
         @Override
@@ -393,7 +429,7 @@ public interface Table
     // UnsignedByte //
     //--------------//
     public static class UnsignedByte
-        extends Abstract
+            extends Abstract
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -401,7 +437,6 @@ public interface Table
         protected final byte[] data;
 
         //~ Constructors ---------------------------------------------------------------------------
-
         public UnsignedByte (int width,
                              int height)
         {
@@ -410,14 +445,13 @@ public interface Table
         }
 
         protected UnsignedByte (UnsignedByte table,
-                                Rectangle    roi)
+                                Rectangle roi)
         {
             super(table.width, table.height, roi);
             data = table.data;
         }
 
         //~ Methods --------------------------------------------------------------------------------
-
         @Override
         public void fill (int val)
         {
@@ -462,6 +496,12 @@ public interface Table
             return data[(y * width) + x] & 0xff;
         }
 
+        @Override
+        public int getValue (int index)
+        {
+            return data[index] & 0xff;
+        }
+
         public byte[] getValues ()
         {
             if (roi != null) {
@@ -477,6 +517,13 @@ public interface Table
             checkRoi(roi);
 
             return new UnsignedByte(this, roi);
+        }
+
+        @Override
+        public void setValue (int index,
+                              int val)
+        {
+            data[index] = (byte) val;
         }
 
         @Override

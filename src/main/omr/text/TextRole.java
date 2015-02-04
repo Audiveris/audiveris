@@ -15,15 +15,17 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.ScoreSystem;
-import omr.score.entity.Staff;
 import omr.score.entity.SystemNode.StaffPosition;
-import omr.score.entity.SystemPart;
-import omr.score.entity.Text;
 
+import static omr.score.entity.Text.CreatorText.CreatorType.*;
+
+import omr.sheet.Part;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
+
+import static omr.text.TextRole.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,14 +52,13 @@ public enum TextRole
     /** Number for this opus. */
     Number,
     /** Name for the part. */
-    Name,
+    PartName,
     /** A creator (composer, etc...). */
     Creator,
     /** Copyright notice. */
     Rights,
     /** Chord mark. */
-    Chord;
-    //
+    ChordName;
 
     /** Specific application parameters. */
     private static final Constants constants = new Constants();
@@ -65,7 +66,6 @@ public enum TextRole
     /** Usual logger utility. */
     private static final Logger logger = LoggerFactory.getLogger(TextRole.class);
 
-    //
     //-----------------//
     // getStringHolder //
     //-----------------//
@@ -98,15 +98,16 @@ public enum TextRole
     //-----------//
     /**
      * Try to infer the role of this textual item.
-     * For the time being, this is a simple algorithm based on sentence location
-     * within the page, augmented by valid chord name, etc.
+     * <p>
+     * For the time being, this is a simple algorithm based on sentence location within the sheet,
+     * augmented by valid chord name, etc.
      *
-     * @param line       the sentence
-     * @param systemInfo the containing system
+     * @param line   the sentence
+     * @param system the containing system
      * @return the role information inferred for the provided sentence glyph
      */
     public static TextRoleInfo guessRole (TextLine line,
-                                          SystemInfo systemInfo)
+                                          SystemInfo system)
     {
         if (line == null) {
             return null;
@@ -127,11 +128,11 @@ public enum TextRole
                     return glyph.getManualRole();
                 }
             }
-
-            // Word that could be a chord symbol?
-            if (word.guessChordInfo() != null) {
-                chordCount++;
-            }
+//
+//            // Word that could be a chord symbol?
+//            if (word.guessChordInfo() != null) {
+//                chordCount++;
+//            }
         }
 
         // Is line made entirely of potential chord symbols?
@@ -144,11 +145,12 @@ public enum TextRole
         }
 
         // Is line mainly in italic?
-        boolean isMainlyItalic = systemInfo.getTextBuilder().isMainlyItalic(line);
+        boolean isMainlyItalic = TextBuilder.isMainlyItalic(line);
 
-        Sheet sheet = systemInfo.getSheet();
-        ScoreSystem system = systemInfo.getScoreSystem();
-        Scale scale = system.getScale();
+        Sheet sheet = system.getSheet();
+
+        ///ScoreSystem system = system.getScoreSystem();
+        Scale scale = sheet.getScale();
         Point left = new Point(box.x, box.y + (box.height / 2));
         Point right = new Point(box.x + box.width, box.y + (box.height / 2));
 
@@ -162,16 +164,16 @@ public enum TextRole
         StaffPosition systemPosition = system.getStaffPosition(left);
 
         // Vertical position wrt (part) staves
-        SystemPart part = system.getPartAbove(left);
+        Part part = system.getRealPartAbove(left);
         StaffPosition partPosition = part.getStaffPosition(left);
 
         // Vertical distance from staff?
-        Staff staff = system.getStaffAt(left);
-        int staffDy = Math.abs(staff.getTopLeft().y - box.y);
+        Staff staff = system.getClosestStaff(left);
+        int staffDy = staff.distanceTo(box.getLocation());
         boolean closeToStaff = staffDy <= scale.toPixels(constants.maxStaffDy);
 
         // Begins on left side of the part?
-        boolean leftOfStaves = system.isLeftOfStaves(left);
+        boolean leftOfStaves = left.x < system.getLeft();
 
         // At the center of page width?
         int maxCenterDx = scale.toPixels(constants.maxCenterDx);
@@ -180,8 +182,7 @@ public enum TextRole
 
         // Right aligned with staves?
         int maxRightDx = scale.toPixels(constants.maxRightDx);
-        boolean rightAligned = Math.abs(
-                right.x - system.getTopLeft().x - system.getDimension().width) <= maxRightDx;
+        boolean rightAligned = Math.abs(right.x - system.getRight()) <= maxRightDx;
 
         // Short Sentence?
         int maxShortLength = scale.toPixels(constants.maxShortLength);
@@ -217,40 +218,36 @@ public enum TextRole
 
             if (tinySentence) {
                 if (isAllChord) {
-                    return new TextRoleInfo(TextRole.Chord);
+                    return new TextRoleInfo(ChordName);
                 } else {
-                    return new TextRoleInfo(TextRole.UnknownRole);
+                    return new TextRoleInfo(UnknownRole);
                 }
             }
 
             if (firstSystem) {
                 if (leftOfStaves) {
-                    return new TextRoleInfo(
-                            TextRole.Creator,
-                            Text.CreatorText.CreatorType.lyricist);
+                    return new TextRoleInfo(Creator, lyricist);
                 } else if (rightAligned) {
-                    return new TextRoleInfo(
-                            TextRole.Creator,
-                            Text.CreatorText.CreatorType.composer);
+                    return new TextRoleInfo(Creator, composer);
                 } else if (closeToStaff) {
                     if (isAllChord) {
-                        return new TextRoleInfo(TextRole.Chord);
+                        return new TextRoleInfo(ChordName);
                     } else {
-                        return new TextRoleInfo(TextRole.Direction);
+                        return new TextRoleInfo(Direction);
                     }
                 } else if (pageCentered) { // Title, Number
 
                     if (highText) {
-                        return new TextRoleInfo(TextRole.Title);
+                        return new TextRoleInfo(Title);
                     } else {
-                        return new TextRoleInfo(TextRole.Number);
+                        return new TextRoleInfo(Number);
                     }
                 }
             } else {
                 if (isAllChord) {
-                    return new TextRoleInfo(TextRole.Chord);
+                    return new TextRoleInfo(ChordName);
                 } else {
-                    return new TextRoleInfo(TextRole.Direction);
+                    return new TextRoleInfo(Direction);
                 }
             }
 
@@ -259,32 +256,32 @@ public enum TextRole
         case WITHIN_STAVES: // Name, Lyrics, Direction
 
             if (leftOfStaves) {
-                return new TextRoleInfo(TextRole.Name);
+                return new TextRoleInfo(PartName);
             } else if ((partPosition == StaffPosition.BELOW_STAVES) && !isMainlyItalic) {
-                return new TextRoleInfo(TextRole.Lyrics);
+                return new TextRoleInfo(Lyrics);
             } else {
-                return new TextRoleInfo(TextRole.Direction);
+                return new TextRoleInfo(Direction);
             }
 
         case BELOW_STAVES: // Copyright, Lyrics for single-staff part
 
             if (tinySentence) {
-                return new TextRoleInfo(TextRole.UnknownRole);
+                return new TextRoleInfo(UnknownRole);
             }
 
             if (pageCentered && shortSentence && lastSystem) {
-                return new TextRoleInfo(TextRole.Rights);
+                return new TextRoleInfo(Rights);
             }
 
             if (part.getStaves().size() == 1) {
                 if ((partPosition == StaffPosition.BELOW_STAVES) && !isMainlyItalic) {
-                    return new TextRoleInfo(TextRole.Lyrics);
+                    return new TextRoleInfo(Lyrics);
                 }
             }
         }
 
         // Default
-        return new TextRoleInfo(TextRole.UnknownRole);
+        return new TextRoleInfo(UnknownRole);
     }
 
     //-----------//

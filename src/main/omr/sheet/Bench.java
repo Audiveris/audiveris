@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.score.ScoreBench;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +19,7 @@ import java.util.Properties;
 
 /**
  * Class {@code Bench} defines the general features of a bench, used by each individual
- * {@link SheetBench} and the containing {@link ScoreBench}.
+ * {@link SheetBench} and the containing {@link BookBench}.
  *
  * @author Hervé Bitteur
  */

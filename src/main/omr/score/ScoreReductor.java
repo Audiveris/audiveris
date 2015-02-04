@@ -13,7 +13,7 @@ package omr.score;
 
 import omr.math.Rational;
 
-import omr.score.entity.Chord;
+import omr.score.entity.OldChord;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.AbstractScoreVisitor;
 
@@ -57,7 +57,7 @@ public class ScoreReductor
     // visit Chord //
     //-------------//
     @Override
-    public boolean visit (Chord chord)
+    public boolean visit (OldChord chord)
     {
         Rational duration;
 

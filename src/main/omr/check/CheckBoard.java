@@ -53,7 +53,7 @@ public class CheckBoard<C extends Checkable>
      * Create a Check Board.
      *
      * @param name             the name of the check
-     * @param suite            the check suite to be used
+     * @param suite            the check suite to be used, if any
      * @param selectionService which selection service to use
      * @param eventList        which event classes to expect
      */

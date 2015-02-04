@@ -17,45 +17,48 @@ import static omr.glyph.Shape.*;
 
 import omr.glyph.facets.Glyph;
 
-import omr.grid.LineInfo;
-import omr.grid.StaffInfo;
-
-import omr.math.BasicLine;
 import omr.math.GeoUtil;
 import omr.math.Line;
 import omr.math.Rational;
 
 import omr.run.Orientation;
 
-import omr.score.entity.Barline;
-import omr.score.entity.Chord;
-import omr.score.entity.Measure;
+import omr.score.entity.OldBarline;
+import omr.score.entity.OldChord;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.Note;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
-import omr.score.entity.Slot;
-import omr.score.entity.Staff;
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldSlot;
+import omr.score.entity.OldStaff;
+import omr.score.entity.OldSystemPart;
 
 import omr.sheet.Sheet;
-import omr.sheet.Skew;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
-import omr.sig.AbstractBeamInter;
-import omr.sig.AbstractNoteInter;
-import omr.sig.BarConnectionInter;
-import omr.sig.BarlineInter;
-import omr.sig.BraceInter;
-import omr.sig.ClefInter;
-import omr.sig.EndingInter;
-import omr.sig.Inter;
-import omr.sig.InterVisitor;
-import omr.sig.KeyAlterInter;
-import omr.sig.LedgerInter;
+import omr.sig.inter.AbstractBeamInter;
+import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.BarConnectionInter;
+import omr.sig.inter.BarlineInter;
+import omr.sig.inter.BraceInter;
+import omr.sig.inter.BracketConnectionInter;
+import omr.sig.inter.BracketInter;
+import omr.sig.inter.ClefInter;
+import omr.sig.inter.EndingInter;
+import omr.sig.inter.Inter;
+import omr.sig.inter.InterVisitor;
+import omr.sig.inter.KeyAlterInter;
+import omr.sig.inter.KeyInter;
+import omr.sig.inter.LedgerInter;
 import omr.sig.SIGraph;
-import omr.sig.SlurInter;
-import omr.sig.StemInter;
-import omr.sig.WedgeInter;
+import omr.sig.inter.SentenceInter;
+import omr.sig.inter.SlurInter;
+import omr.sig.inter.StemInter;
+import omr.sig.inter.TimePairInter;
+import omr.sig.inter.TimeWholeInter;
+import omr.sig.inter.WedgeInter;
+import omr.sig.inter.WordInter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
@@ -69,6 +72,8 @@ import omr.ui.symbol.Symbols;
 
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
+import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
+import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
 
 import omr.ui.util.UIUtil;
 
@@ -89,12 +94,8 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ConcurrentModificationException;
-import omr.sig.BracketConnectionInter;
-import omr.sig.BracketInter;
-import omr.sig.TimeInter;
-
-import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
-import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
+import omr.sig.inter.ChordInter;
+import omr.sig.inter.FlagInter;
 
 /**
  * Class {@code PagePhysicalPainter} paints the recognized page entities at the location
@@ -106,6 +107,7 @@ import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
  *
  * @author Hervé Bitteur
  */
+@Deprecated
 public class PagePhysicalPainter
         extends PagePainter
         implements InterVisitor
@@ -147,10 +149,10 @@ public class PagePhysicalPainter
      * @param color       the color to use in drawing
      */
     public void drawSlot (boolean wholeSystem,
-                          Slot slot,
+                          OldSlot slot,
                           Color color)
     {
-        final Measure measure = slot.getMeasure();
+        final OldMeasure measure = slot.getMeasure();
         final Color oldColor = g.getColor();
         g.setColor(color);
         UIUtil.setAbsoluteStroke(g, 1);
@@ -168,7 +170,7 @@ public class PagePhysicalPainter
                 g.drawLine(x, top, x, bottom);
             } else {
                 // Draw for just the part height
-                SystemPart part = measure.getPart();
+                OldSystemPart part = measure.getPart();
                 int top = part.getFirstStaff().getInfo().getFirstLine().yAt(x);
                 int bottom = part.getLastStaff().getInfo().getLastLine().yAt(x);
                 g.drawLine(x, top, x, bottom);
@@ -206,13 +208,13 @@ public class PagePhysicalPainter
      *
      * @param slot the slot to highlight
      */
-    public void highlightSlot (Slot slot)
+    public void highlightSlot (OldSlot slot)
     {
         Color oldColor = g.getColor();
         g.setColor(Colors.SLOT_CURRENT);
 
         // Draw the slot components
-        for (Chord chord : slot.getChords()) {
+        for (OldChord chord : slot.getChords()) {
             visit(chord);
 
             for (TreeNode tn : chord.getNotes()) {
@@ -227,87 +229,87 @@ public class PagePhysicalPainter
     }
 
     //---------------//
-    // visit Barline //
+    // visit OldBarline //
     //---------------//
     @Override
-    public boolean visit (Barline barline)
+    public boolean visit (OldBarline barline)
     {
-//        if (!barline.getBox().intersects(oldClip)
-//            || systemInfo.getSheet().getStaffManager().getStaves().isEmpty()) {
-//            return false;
-//        }
-//
-//        g.setColor(defaultColor);
-//
-//        try {
-//            // This drawing is driven by the barline shape
-//            Shape shape = barline.getShape();
-//            Rectangle box = barline.getBox();
-//            Point center = barline.getCenter();
-//            SystemPart part = barline.getPart();
-//
-//            // Top and bottom limits of the barline, using staff lines
-//            StaffInfo topStaff = systemInfo.getStaffAt(box.getLocation());
-//            LineInfo topLine = topStaff.getFirstLine();
-//            StaffInfo botStaff = systemInfo.getStaffAt(new Point(box.x, box.y + box.height));
-//            LineInfo botLine = botStaff.getLastLine();
-//
-//            Skew skew = systemInfo.getSkew();
-//
-//            if (skew == null) { // Safer
-//
-//                return false;
-//            }
-//
-//            double slope = skew.getSlope();
-//            BasicLine bar = new BasicLine();
-//            bar.includePoint(center.x, center.y);
-//            bar.includePoint(center.x - (100 * slope), center.y + 100);
-//
-//            Point2D topCenter = topLine.verticalIntersection(bar);
-//            Point2D botCenter = botLine.verticalIntersection(bar);
-//
-//            if (shape != null) {
-//                BarPainter barPainter = BarPainter.getBarPainter(shape);
-//                barPainter.draw(g, topCenter, botCenter, part);
-//            } else {
-//                barline.addError("Barline with no recognized shape");
-//            }
-//
-//            // This drawing is driven by the underlying glyphs
-//            //            for (Glyph glyph : barline.getGlyphs()) {
-//            //                Shape shape = glyph.getShape();
-//            //
-//            //                if (glyph.isBar()) {
-//            //                    float thickness = (float) glyph.getWeight() / glyph.
-//            //                            getLength(
-//            //                            Orientation.VERTICAL);
-//            //                    g.setStroke(new BasicStroke(thickness));
-//            //
-//            //                    // Stroke is now OK for thickness but will draw beyond start
-//            //                    // and stop points of the bar. So use clipping to fix this.
-//            //                    final Rectangle box = glyph.getBounds();
-//            //                    box.y = (int) Math.floor(
-//            //                            glyph.getStartPoint(Orientation.VERTICAL).getY());
-//            //                    box.height = (int) Math.ceil(
-//            //                            glyph.getStopPoint(Orientation.VERTICAL).getY())
-//            //                            - box.y;
-//            //                    g.setClip(oldClip.intersection(box));
-//            //
-//            //                    glyph.renderLine(g);
-//            //
-//            //                    g.setClip(oldClip);
-//            //                } else if ((shape == REPEAT_DOT) || (shape == DOT_set)) {
-//            //                    paint(DOT_set, glyph.getCentroid());
-//            //                }
-//            //            }
-//            ///g.setStroke(defaultStroke);
-//        } catch (ConcurrentModificationException ignored) {
-//            return false;
-//        } catch (Exception ex) {
-//            logger.warn(getClass().getSimpleName() + " Error visiting " + barline, ex);
-//        }
-//
+        //        if (!barline.getBox().intersects(oldClip)
+        //            || systemInfo.getSheet().getStaffManager().getStaves().isEmpty()) {
+        //            return false;
+        //        }
+        //
+        //        g.setColor(defaultColor);
+        //
+        //        try {
+        //            // This drawing is driven by the barline shape
+        //            Shape shape = barline.getShape();
+        //            Rectangle box = barline.getBox();
+        //            Point center = barline.getCenter();
+        //            OldSystemPart part = barline.getPart();
+        //
+        //            // Top and bottom limits of the barline, using staff lines
+        //            StaffInfo topStaff = systemInfo.getStaffAt(box.getLocation());
+        //            LineInfo topLine = topStaff.getFirstLine();
+        //            StaffInfo botStaff = systemInfo.getStaffAt(new Point(box.x, box.y + box.height));
+        //            LineInfo botLine = botStaff.getLastLine();
+        //
+        //            Skew skew = systemInfo.getSkew();
+        //
+        //            if (skew == null) { // Safer
+        //
+        //                return false;
+        //            }
+        //
+        //            double slope = skew.getSlope();
+        //            BasicLine bar = new BasicLine();
+        //            bar.includePoint(center.x, center.y);
+        //            bar.includePoint(center.x - (100 * slope), center.y + 100);
+        //
+        //            Point2D topCenter = topLine.verticalIntersection(bar);
+        //            Point2D botCenter = botLine.verticalIntersection(bar);
+        //
+        //            if (shape != null) {
+        //                BarPainter barPainter = BarPainter.getBarPainter(shape);
+        //                barPainter.draw(g, topCenter, botCenter, part);
+        //            } else {
+        //                barline.addError("OldBarline with no recognized shape");
+        //            }
+        //
+        //            // This drawing is driven by the underlying glyphs
+        //            //            for (Glyph glyph : barline.getGlyphs()) {
+        //            //                Shape shape = glyph.getShape();
+        //            //
+        //            //                if (glyph.isBar()) {
+        //            //                    float thickness = (float) glyph.getWeight() / glyph.
+        //            //                            getLength(
+        //            //                            Orientation.VERTICAL);
+        //            //                    g.setStroke(new BasicStroke(thickness));
+        //            //
+        //            //                    // Stroke is now OK for thickness but will draw beyond start
+        //            //                    // and stop points of the bar. So use clipping to fix this.
+        //            //                    final Rectangle box = glyph.getBounds();
+        //            //                    box.y = (int) Math.floor(
+        //            //                            glyph.getStartPoint(Orientation.VERTICAL).getY());
+        //            //                    box.height = (int) Math.ceil(
+        //            //                            glyph.getStopPoint(Orientation.VERTICAL).getY())
+        //            //                            - box.y;
+        //            //                    g.setClip(oldClip.intersection(box));
+        //            //
+        //            //                    glyph.renderLine(g);
+        //            //
+        //            //                    g.setClip(oldClip);
+        //            //                } else if ((shape == REPEAT_DOT) || (shape == DOT_set)) {
+        //            //                    paint(DOT_set, glyph.getCentroid());
+        //            //                }
+        //            //            }
+        //            ///g.setStroke(defaultStroke);
+        //        } catch (ConcurrentModificationException ignored) {
+        //            return false;
+        //        } catch (Exception ex) {
+        //            logger.warn(getClass().getSimpleName() + " Error visiting " + barline, ex);
+        //        }
+        //
         return true;
     }
 
@@ -315,7 +317,7 @@ public class PagePhysicalPainter
     // visit Chord //
     //-------------//
     @Override
-    public boolean visit (Chord chord)
+    public boolean visit (OldChord chord)
     {
         try {
             // Super: check, voice color, flags
@@ -358,14 +360,14 @@ public class PagePhysicalPainter
     }
 
     //---------------//
-    // visit Measure //
+    // visit OldMeasure //
     //---------------//
     @Override
-    public boolean visit (Measure measure)
+    public boolean visit (OldMeasure measure)
     {
         if (annotated) {
             if (!measure.isDummy()) {
-                final SystemPart part = measure.getPart();
+                final OldSystemPart part = measure.getPart();
                 final Color oldColor = g.getColor();
 
                 // Write the score-based measure id, on first real part only
@@ -375,7 +377,7 @@ public class PagePhysicalPainter
                     if (mid != null) {
                         g.setColor(Colors.ANNOTATION);
 
-                        StaffInfo staff = measure.getPart().getFirstStaff().getInfo();
+                        Staff staff = measure.getPart().getFirstStaff().getInfo();
                         Point loc = new Point(
                                 measure.getLeftX(),
                                 staff.getFirstLine().yAt(measure.getLeftX()) - annotationDy);
@@ -385,7 +387,7 @@ public class PagePhysicalPainter
 
                 // Draw slot vertical lines ?
                 if (parameters.isSlotPainting() && (measure.getSlots() != null)) {
-                    for (Slot slot : measure.getSlots()) {
+                    for (OldSlot slot : measure.getSlots()) {
                         drawSlot(false, slot, Colors.SLOT);
                     }
                 }
@@ -404,7 +406,7 @@ public class PagePhysicalPainter
 
         // WholeChords are not in the children hierarchy
         // Thus, we must explicitly visit them
-        for (Chord chord : measure.getWholeChords()) {
+        for (OldChord chord : measure.getWholeChords()) {
             if (chord.accept(this)) {
                 chord.acceptChildren(this);
             }
@@ -462,7 +464,7 @@ public class PagePhysicalPainter
             beamThickness = scale.getMainBeam();
             beamHalfThickness = beamThickness / 2;
 
-            if (!page.getSystems().isEmpty()) {
+            if (!page.getScoreSystems().isEmpty()) {
                 // Normal (full) rendering of the score
                 page.acceptChildren(this);
             } else {
@@ -535,7 +537,7 @@ public class PagePhysicalPainter
      * @return true if actually painted
      */
     @Override
-    public boolean visit (Staff staff)
+    public boolean visit (OldStaff staff)
     {
         try {
             if (staff.isDummy()) {
@@ -625,21 +627,12 @@ public class PagePhysicalPainter
     // visit //
     //-------//
     @Override
-    public void visit (TimeInter time)
-    {
-        visit((Inter) time);
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
     public void visit (KeyAlterInter inter)
     {
         setColor(inter);
 
         Point center = GeoUtil.centerOf(inter.getBounds());
-        StaffInfo staff = systemInfo.getStaffAt(center);
+        Staff staff = systemInfo.getClosestStaff(center);
         double y = staff.pitchToOrdinate(center.x, inter.getPitch());
         center.y = (int) Math.rint(y);
 
@@ -741,22 +734,22 @@ public class PagePhysicalPainter
         g.fill(bracket.getArea());
 
         final double ratio = 2.7;
-        final Rectangle   box = bracket.getBounds();
+        final Rectangle box = bracket.getBounds();
         final BracketInter.BracketKind kind = bracket.getKind();
-        final double      width = bracket.getWidth();
-        final Dimension   dim = new Dimension(
-            (int) Math.rint(ratio * width),
-            (int) Math.rint(ratio * 1.25 * width));
+        final double width = bracket.getWidth();
+        final Dimension dim = new Dimension(
+                (int) Math.rint(ratio * width),
+                (int) Math.rint(ratio * 1.25 * width));
 
         if ((kind == BracketInter.BracketKind.TOP) || (kind == BracketInter.BracketKind.BOTH)) {
             // Draw upper symbol part
-            final Point left = new Point (box.x, box.y + (int) Math.rint(width));
+            final Point left = new Point(box.x, box.y + (int) Math.rint(width));
             OmrFont.paint(g, musicFont.layout(SYMBOL_BRACKET_UPPER_SERIF, dim), left, BOTTOM_LEFT);
         }
 
         if ((kind == BracketInter.BracketKind.BOTTOM) || (kind == BracketInter.BracketKind.BOTH)) {
             // Draw lower symbol part
-            final Point left = new Point(box.x, box.y + box.height -  (int) Math.rint(width));
+            final Point left = new Point(box.x, (box.y + box.height) - (int) Math.rint(width));
             OmrFont.paint(g, musicFont.layout(SYMBOL_BRACKET_LOWER_SERIF, dim), left, TOP_LEFT);
         }
     }
@@ -834,10 +827,52 @@ public class PagePhysicalPainter
     // visit //
     //-------//
     @Override
-    public void visit (AbstractNoteInter note)
+    public void visit (AbstractHeadInter head)
     {
         // Consider it as a plain inter
-        visit((Inter) note);
+        visit((Inter) head);
+    }
+
+    @Override
+    public void visit (SentenceInter inter)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void visit (WordInter inter)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void visit (KeyInter inter)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void visit (TimeWholeInter inter)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void visit (TimePairInter inter)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void visit (FlagInter inter)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void visit (ChordInter inter)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //--------------------//
@@ -854,7 +889,7 @@ public class PagePhysicalPainter
     // braceBox //
     //----------//
     @Override
-    protected Rectangle braceBox (SystemPart part)
+    protected Rectangle braceBox (OldSystemPart part)
     {
         Rectangle braceBox = part.getBrace().getBounds();
 
@@ -872,7 +907,7 @@ public class PagePhysicalPainter
     // bracketLine //
     //-------------//
     @Override
-    protected Line2D bracketLine (SystemPart part)
+    protected Line2D bracketLine (OldSystemPart part)
     {
         // Driving line of the brace
         final Line line = part.getBrace().getLine();
@@ -896,7 +931,7 @@ public class PagePhysicalPainter
     protected Point noteLocation (Note note)
     {
         final Point center = note.getCenter();
-        final Chord chord = note.getChord();
+        final OldChord chord = note.getChord();
         final Glyph stem = chord.getStem();
 
         if (stem != null) {

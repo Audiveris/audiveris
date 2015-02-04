@@ -45,9 +45,9 @@ public class Pedal
      * @param chord   the chord related to the mark, if any
      * @param glyph   the underlying glyph
      */
-    public Pedal (Measure measure,
+    public Pedal (OldMeasure measure,
                   Point point,
-                  Chord chord,
+                  OldChord chord,
                   Glyph glyph)
     {
         super(measure, glyph.getShape() == Shape.PEDAL_MARK, point, chord, glyph);
@@ -65,7 +65,7 @@ public class Pedal
      * @param point   location for the mark
      */
     public static void populate (Glyph glyph,
-                                 Measure measure,
+                                 OldMeasure measure,
                                  Point point)
     {
         if (glyph.isVip()) {

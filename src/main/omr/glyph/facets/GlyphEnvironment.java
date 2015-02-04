@@ -127,6 +127,14 @@ interface GlyphEnvironment
     boolean intersects (Glyph that);
 
     /**
+     * Report whether this glyph touches (or intersects) that provided glyph
+     *
+     * @param that the other glyph
+     * @return true if touching, false otherwise
+     */
+    boolean touches (Glyph that);
+
+    /**
      * Setter for the pitch position, with respect to containing staff
      *
      * @param pitchPosition the pitch position wrt the staff

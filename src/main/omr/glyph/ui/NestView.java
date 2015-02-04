@@ -15,7 +15,6 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphNest;
-import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
 import omr.graph.DigraphView;
@@ -59,7 +58,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code GlyphNestView} is a view that combines the display of several lags to
+ * Class {@code NestView} is a view that combines the display of several lags to
  * represent a nest of glyphs.
  *
  * @author Hervé Bitteur
@@ -146,8 +145,7 @@ public class NestView
     // render //
     //--------//
     /**
-     * Render the nest in the provided Graphics context, which may be
-     * already scaled.
+     * Render the nest in the provided Graphics context, which may be already scaled.
      *
      * @param g the graphics context
      */
@@ -198,10 +196,9 @@ public class NestView
     // renderItems //
     //-------------//
     /**
-     * Room for rendering additional items, on top of the basic nest
-     * itself.
-     * This default implementation paints the selected glyph set,
-     * or the selected sections set, if any.
+     * Room for rendering additional items, on top of the basic nest itself.
+     * This default implementation paints the selected glyph set, or the selected sections set if
+     * any.
      *
      * @param g the graphic context
      */
@@ -303,8 +300,8 @@ public class NestView
     // renderGlyphSentence //
     //---------------------//
     /**
-     * Display the relation between the glyph/word at hand and the other
-     * words of the same containing sentence
+     * Display the relation between the glyph/word at hand and the other words of the
+     * same containing sentence
      *
      * @param glyph the provided selected glyph
      * @param g     graphic context

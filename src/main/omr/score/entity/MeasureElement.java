@@ -48,14 +48,14 @@ public abstract class MeasureElement
     private static final Constants constants = new Constants();
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The precise shape */
+    /** The precise shape. */
     private Shape shape;
 
-    /** Is this a start (rather than a stop) */
+    /** Is this a start. (rather than a stop) */
     private final boolean start;
 
-    /** Related chord if any (in containing measure) */
-    private final Chord chord;
+    /** Related chord if any. (in containing measure) */
+    private final OldChord chord;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -67,10 +67,10 @@ public abstract class MeasureElement
      * @param chord          the related chord, if any
      * @param glyph          the underlying glyph
      */
-    public MeasureElement (Measure measure,
+    public MeasureElement (OldMeasure measure,
                            boolean start,
                            Point referencePoint,
-                           Chord chord,
+                           OldChord chord,
                            Glyph glyph)
     {
         super(measure);
@@ -88,7 +88,7 @@ public abstract class MeasureElement
     //----------//
     // getChord //
     //----------//
-    public Chord getChord ()
+    public OldChord getChord ()
     {
         return chord;
     }
@@ -189,7 +189,7 @@ public abstract class MeasureElement
     //-----------//
     // findChord //
     //-----------//
-    protected static Chord findChord (Measure measure,
+    protected static OldChord findChord (OldMeasure measure,
                                       Point point)
     {
         // Shift on abscissa (because of left side of note heads)

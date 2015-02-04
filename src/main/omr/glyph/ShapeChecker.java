@@ -13,23 +13,24 @@ package omr.glyph;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import static omr.glyph.Shape.*;
 import static omr.glyph.ShapeSet.*;
-import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
+import omr.glyph.facets.Glyph;
 
 import omr.run.Orientation;
 
-import omr.score.entity.Barline;
+import omr.score.entity.OldBarline;
 import omr.score.entity.Clef;
-import omr.score.entity.Measure;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.ScoreSystem;
-import omr.score.entity.Staff;
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldStaff;
+import omr.score.entity.OldSystemPart;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
@@ -73,40 +74,39 @@ public class ShapeChecker
 
     /** Singleton */
     private static ShapeChecker INSTANCE;
-
-    /** Small dynamics with no 'P' or 'F' */
-    private static final EnumSet<Shape> SmallDynamics = EnumSet.copyOf(
-            shapesOf(DYNAMICS_CHAR_M, DYNAMICS_CHAR_R, DYNAMICS_CHAR_S, DYNAMICS_CHAR_Z));
-
-    /** Medium dynamics with a 'P' (but no 'F') */
-    private static final EnumSet<Shape> MediumDynamics = EnumSet.copyOf(
-            shapesOf(DYNAMICS_MP, DYNAMICS_P, DYNAMICS_PP, DYNAMICS_PPP));
-
-    /** Tall dynamics with an 'F' */
-    private static final EnumSet<Shape> TallDynamics = EnumSet.copyOf(
-            shapesOf(
-                    DYNAMICS_F,
-                    DYNAMICS_FF,
-                    DYNAMICS_FFF,
-                    DYNAMICS_FP,
-                    DYNAMICS_FZ,
-                    DYNAMICS_MF,
-                    DYNAMICS_RF,
-                    DYNAMICS_RFZ,
-                    DYNAMICS_SF,
-                    DYNAMICS_SFFZ,
-                    DYNAMICS_SFP,
-                    DYNAMICS_SFPP,
-                    DYNAMICS_SFZ));
-
+//
+//    /** Small dynamics with no 'P' or 'F' */
+//    private static final EnumSet<Shape> SmallDynamics = EnumSet.copyOf(
+//            shapesOf(DYNAMICS_CHAR_M, DYNAMICS_CHAR_R, DYNAMICS_CHAR_S, DYNAMICS_CHAR_Z));
+//
+//    /** Medium dynamics with a 'P' (but no 'F') */
+//    private static final EnumSet<Shape> MediumDynamics = EnumSet.copyOf(
+//            shapesOf(DYNAMICS_MP, DYNAMICS_P, DYNAMICS_PP, DYNAMICS_PPP));
+//
+//    /** Tall dynamics with an 'F' */
+//    private static final EnumSet<Shape> TallDynamics = EnumSet.copyOf(
+//            shapesOf(
+//                    DYNAMICS_F,
+//                    DYNAMICS_FF,
+//                    DYNAMICS_FFF,
+//                    DYNAMICS_FP,
+//                    DYNAMICS_FZ,
+//                    DYNAMICS_MF,
+//                    DYNAMICS_RF,
+//                    DYNAMICS_RFZ,
+//                    DYNAMICS_SF,
+//                    DYNAMICS_SFFZ,
+//                    DYNAMICS_SFP,
+//                    DYNAMICS_SFPP,
+//                    DYNAMICS_SFZ));
+//
     //~ Instance fields ----------------------------------------------------------------------------
     /** Map of Shape => Sequence of checkers */
     private final EnumMap<Shape, Collection<Checker>> checkerMap;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** Checker that can be used on its own. */
     ///private Checker stemChecker;
-
-    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // ShapeChecker //
     //--------------//
@@ -136,8 +136,8 @@ public class ShapeChecker
      * Run a series of checks on the provided glyph, based on the
      * candidate shape, and annotate the evaluation accordingly.
      * This annotation can even change the shape itself, thus allowing a move
-     * from physical shape (such as WEDGE_set) to proper logical shape
-     * (CRESCENDO or DECRESCENDO).
+ from physical shape (such as WEDGE_set) to proper logical shape
+ (CRESCENDO or DIMINUENDO).
      *
      * @param system   the containing system
      * @param eval     the evaluation to populate
@@ -175,23 +175,23 @@ public class ShapeChecker
             }
         }
     }
-//
-//    //-----------//
-//    // checkStem //
-//    //-----------//
-//    /**
-//     * Basic check for a stem candidate, using gap to closest staff.
-//     *
-//     * @param system containing system
-//     * @param glyph  stem candidate
-//     * @return true if OK
-//     */
-//    public boolean checkStem (SystemInfo system,
-//                              Glyph glyph)
-//    {
-//        return stemChecker.check(system, null, glyph, null);
-//    }
 
+    //
+    //    //-----------//
+    //    // checkStem //
+    //    //-----------//
+    //    /**
+    //     * Basic check for a stem candidate, using gap to closest staff.
+    //     *
+    //     * @param system containing system
+    //     * @param glyph  stem candidate
+    //     * @return true if OK
+    //     */
+    //    public boolean checkStem (SystemInfo system,
+    //                              Glyph glyph)
+    //    {
+    //        return stemChecker.check(system, null, glyph, null);
+    //    }
     //-------//
     // relax //
     //-------//
@@ -423,7 +423,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker("WithinStaffHeight", Dynamics)
+        new Checker("WithinStaffHeight", Dynamics.getShapes(), Fermatas)
         {
             @Override
             public boolean check (SystemInfo system,
@@ -444,8 +444,8 @@ public class ShapeChecker
                                   Glyph glyph,
                                   double[] features)
             {
-                // Must be on right side of system DMZ
-                return Math.abs(glyph.getLocation().x) > system.getFirstStaff().getDmzStop();
+                // Must be on right side of system header
+                return Math.abs(glyph.getLocation().x) > system.getFirstStaff().getHeaderStop();
             }
         };
 
@@ -463,15 +463,15 @@ public class ShapeChecker
                 double maxKeyXOffset = scale.toPixels(constants.maxKeyXOffset);
                 Rectangle box = glyph.getBounds();
                 Point point = box.getLocation();
-                SystemPart part = scoreSystem.getPartAt(point);
-                Measure measure = part.getMeasureAt(point);
+                OldSystemPart part = scoreSystem.getPartAt(point);
+                OldMeasure measure = part.getMeasureAt(point);
 
                 if (measure == null) {
                     return true;
                 }
 
-                Barline insideBar = measure.getInsideBarline();
-                Staff staff = part.getStaffAt(point);
+                OldBarline insideBar = measure.getInsideBarline();
+                OldStaff staff = part.getStaffAt(point);
 
                 if (staff == null) {
                     return false;
@@ -580,33 +580,32 @@ public class ShapeChecker
                 }
             }
         };
-//
-//        // Shapes that require a stem on the left side
-//        new Checker("noLeftStem", shapesOf(FlagSets, shapesOf(Flags.getShapes())))
-//        {
-//            @Override
-//            public boolean check (SystemInfo system,
-//                                  Evaluation eval,
-//                                  Glyph glyph,
-//                                  double[] features)
-//            {
-//                return glyph.getStem(HorizontalSide.LEFT) != null;
-//            }
-//        };
 
-//        // Shapes that require a stem nearby
-//        new Checker("noStem", StemSymbols)
-//        {
-//            @Override
-//            public boolean check (SystemInfo system,
-//                                  Evaluation eval,
-//                                  Glyph glyph,
-//                                  double[] features)
-//            {
-//                return glyph.getStemNumber() >= 1;
-//            }
-//        };
-
+        //
+        //        // Shapes that require a stem on the left side
+        //        new Checker("noLeftStem", shapesOf(FlagSets, shapesOf(Flags.getShapes())))
+        //        {
+        //            @Override
+        //            public boolean check (SystemInfo system,
+        //                                  Evaluation eval,
+        //                                  Glyph glyph,
+        //                                  double[] features)
+        //            {
+        //                return glyph.getStem(HorizontalSide.LEFT) != null;
+        //            }
+        //        };
+        //        // Shapes that require a stem nearby
+        //        new Checker("noStem", StemSymbols)
+        //        {
+        //            @Override
+        //            public boolean check (SystemInfo system,
+        //                                  Evaluation eval,
+        //                                  Glyph glyph,
+        //                                  double[] features)
+        //            {
+        //                return glyph.getStemNumber() >= 1;
+        //            }
+        //        };
         new Checker("Text", TEXT, CHARACTER)
         {
             @Override
@@ -645,14 +644,14 @@ public class ShapeChecker
             //                 */
             //                private boolean hugeGapBetweenParts (Glyph compound)
             //                {
-            //                    if (compound.getParts()
+            //                    if (compound.getAllParts()
             //                                .isEmpty()) {
             //                        return false;
             //                    }
             //
             //                    // Sort glyphs by abscissa
             //                    List<Glyph> glyphs = new ArrayList<Glyph>(
-            //                        compound.getParts());
+            //                        compound.getAllParts());
             //                    Collections.sort(glyphs, Glyph.abscissaComparator);
             //
             //                    final Scale scale = new Scale(glyphs.get(0).getInterline());
@@ -683,7 +682,7 @@ public class ShapeChecker
             //                }
         };
 
-        new Checker("FullTimeSig", FullTimes)
+        new Checker("FullTimeSig", WholeTimes)
         {
             @Override
             public boolean check (SystemInfo system,
@@ -712,7 +711,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker("PartialTimeSig",  PartialTimes)
+        new Checker("PartialTimeSig", PartialTimes)
         {
             @Override
             public boolean check (SystemInfo system,
@@ -741,33 +740,62 @@ public class ShapeChecker
                 Rests.getShapes(),
                 Dynamics.getShapes(),
                 Articulations.getShapes())
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                // A note / rest / dynamic cannot be too far from a staff
-                Point center = glyph.getAreaCenter();
-                StaffInfo staff = system.getStaffAt(center);
+                {
+                    @Override
+                    public boolean check (SystemInfo system,
+                                          Evaluation eval,
+                                          Glyph glyph,
+                                          double[] features)
+                    {
+                        // A note / rest / dynamic cannot be too far from a staff
+                        Point center = glyph.getAreaCenter();
+                        Staff staff = system.getClosestStaff(center);
 
-                // Staff may be null when we are modifying system boundaries
-                if (staff == null) {
-                    return false;
-                }
+                        // Staff may be null when we are modifying system boundaries
+                        if (staff == null) {
+                            return false;
+                        }
 
-                int gap = staff.gapTo(glyph.getBounds());
-                int maxGap = system.getScoreSystem().getScale().toPixels(
-                        constants.maxGapToStaff);
+                        int gap = staff.gapTo(glyph.getBounds());
+                        int maxGap = system.getSheet().getScale().toPixels(constants.maxGapToStaff);
 
-                return gap <= maxGap;
-            }
-        };
+                        return gap <= maxGap;
+                    }
+                };
 
-//        stemChecker = new Checker(
-//                "StaffStemGap",
-//                shapesOf(shapesOf(STEM), shapesOf(Beams.getShapes(), Flags.getShapes(), FlagSets)))
+        //        stemChecker = new Checker(
+        //                "StaffStemGap",
+        //                shapesOf(shapesOf(STEM), shapesOf(Beams.getShapes(), Flags.getShapes(), FlagSets)))
+        //        {
+        //            @Override
+        //            public boolean check (SystemInfo system,
+        //                                  Evaluation eval,
+        //                                  Glyph glyph,
+        //                                  double[] features)
+        //            {
+        //                // A beam / flag / stem  cannot be too far from a staff
+        //                Point center = glyph.getAreaCenter();
+        //                StaffInfo staff = system.getStaffAt(center);
+        //
+        //                // Staff may be null for a very long glyph across systems
+        //                if (staff == null) {
+        //                    return false;
+        //                }
+        //
+        //                // Horizontal: not in staff header
+        //                if (center.x < staff.getHeaderEnd()) {
+        //                    return false;
+        //                }
+        //
+        //                // Vertical: A beam / flag / stem  cannot be too far from a staff
+        //                int yGap = staff.gapTo(glyph.getBounds());
+        //                int maxYGap = system.getScoreSystem().getScale()
+        //                        .toPixels(constants.maxStemGapToStaff);
+        //
+        //                return yGap <= maxYGap;
+        //            }
+        //        };
+//        new Checker("SmallDynamics", SmallDynamics)
 //        {
 //            @Override
 //            public boolean check (SystemInfo system,
@@ -775,67 +803,36 @@ public class ShapeChecker
 //                                  Glyph glyph,
 //                                  double[] features)
 //            {
-//                // A beam / flag / stem  cannot be too far from a staff
-//                Point center = glyph.getAreaCenter();
-//                StaffInfo staff = system.getStaffAt(center);
-//
-//                // Staff may be null for a very long glyph across systems
-//                if (staff == null) {
-//                    return false;
-//                }
-//
-//                // Horizontal: not in DMZ
-//                if (center.x < staff.getDmzEnd()) {
-//                    return false;
-//                }
-//
-//                // Vertical: A beam / flag / stem  cannot be too far from a staff
-//                int yGap = staff.gapTo(glyph.getBounds());
-//                int maxYGap = system.getScoreSystem().getScale()
-//                        .toPixels(constants.maxStemGapToStaff);
-//
-//                return yGap <= maxYGap;
+//                // Check height
+//                return glyph.getNormalizedHeight() <= constants.maxSmallDynamicsHeight.getValue();
 //            }
 //        };
-
-        new Checker("SmallDynamics", SmallDynamics)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                // Check height
-                return glyph.getNormalizedHeight() <= constants.maxSmallDynamicsHeight.getValue();
-            }
-        };
-
-        new Checker("MediumDynamics", MediumDynamics)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                // Check height
-                return glyph.getNormalizedHeight() <= constants.maxMediumDynamicsHeight.getValue();
-            }
-        };
-
-        new Checker("TallDynamics", TallDynamics)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                // Check height
-                return glyph.getNormalizedHeight() <= constants.maxTallDynamicsHeight.getValue();
-            }
-        };
+//
+//        new Checker("MediumDynamics", MediumDynamics)
+//        {
+//            @Override
+//            public boolean check (SystemInfo system,
+//                                  Evaluation eval,
+//                                  Glyph glyph,
+//                                  double[] features)
+//            {
+//                // Check height
+//                return glyph.getNormalizedHeight() <= constants.maxMediumDynamicsHeight.getValue();
+//            }
+//        };
+//
+//        new Checker("TallDynamics", TallDynamics)
+//        {
+//            @Override
+//            public boolean check (SystemInfo system,
+//                                  Evaluation eval,
+//                                  Glyph glyph,
+//                                  double[] features)
+//            {
+//                // Check height
+//                return glyph.getNormalizedHeight() <= constants.maxTallDynamicsHeight.getValue();
+//            }
+//        };
 
         new Checker("BelowStaff", Pedals)
         {
@@ -980,7 +977,7 @@ public class ShapeChecker
                 boolean embraced = false;
                 int intervalTop = Integer.MIN_VALUE;
 
-                for (StaffInfo staff : system.getStaves()) {
+                for (Staff staff : system.getStaves()) {
                     if (intervalTop != Integer.MIN_VALUE) {
                         int intervalBottom = staff.getFirstLine().yAt(box.x);
 
@@ -1012,10 +1009,9 @@ public class ShapeChecker
                                   Glyph glyph,
                                   double[] features)
             {
-                // Check that whole notes are not too far from staves
-                // without ledgers
+                // Check that whole notes are not too far from staves without ledgers
                 Point point = glyph.getAreaCenter();
-                StaffInfo staff = system.getStaffAt(point);
+                Staff staff = system.getClosestStaff(point);
 
                 if (staff == null) {
                     return false;
@@ -1041,7 +1037,7 @@ public class ShapeChecker
             {
                 // Check that these markers are just above first staff
                 Point point = glyph.getAreaCenter();
-                StaffInfo staff = system.getStaffAt(point);
+                Staff staff = system.getClosestStaff(point);
 
                 if (staff != system.getFirstStaff()) {
                     return false;
@@ -1053,136 +1049,136 @@ public class ShapeChecker
             }
         };
 
-//        new Checker("Fermata_set", FERMATA_set)
-//        {
-//            @Override
-//            public boolean check (SystemInfo system,
-//                                  Evaluation eval,
-//                                  Glyph glyph,
-//                                  double[] features)
-//            {
-//                // Use moment n21 to differentiate between V & ^
-//                // TBD: We could use pitch position as well?
-//                double n21 = glyph.getGeometricMoments().getN21();
-//                Shape newShape = (n21 > 0) ? FERMATA : FERMATA_BELOW;
-//
-//                ///logLogical(system, glyph, eval, newShape);
-//                eval.shape = newShape;
-//
-//                return true;
-//            }
-//        };
-//
-//        new Checker("FLAG_*_set", FlagSets)
-//        {
-//            @Override
-//            public boolean check (SystemInfo system,
-//                                  Evaluation eval,
-//                                  Glyph glyph,
-//                                  double[] features)
-//            {
-//                Shape newShape = null;
-//                boolean covar = glyph.getGeometricMoments().getN11() > 0;
-//
-//                switch (eval.shape) {
-//                case FLAG_1_set:
-//                    newShape = covar ? FLAG_1 : FLAG_1_UP;
-//
-//                    break;
-//
-//                case FLAG_2_set:
-//                    newShape = covar ? FLAG_2 : FLAG_2_UP;
-//
-//                    break;
-//
-//                case FLAG_3_set:
-//                    newShape = covar ? FLAG_3 : FLAG_3_UP;
-//
-//                    break;
-//
-//                case FLAG_4_set:
-//                    newShape = covar ? FLAG_4 : FLAG_4_UP;
-//
-//                    break;
-//
-//                case FLAG_5_set:
-//                    newShape = covar ? FLAG_5 : FLAG_5_UP;
-//
-//                    break;
-//                }
-//
-//                ///logLogical(system, glyph, eval, newShape);
-//                eval.shape = newShape;
-//
-//                return true;
-//            }
-//        };
-//
-//        new Checker("TIME_69_set", TIME_69_set)
-//        {
-//            @Override
-//            public boolean check (SystemInfo system,
-//                                  Evaluation eval,
-//                                  Glyph glyph,
-//                                  double[] features)
-//            {
-//                // Use moment n12 to differentiate between <(6) & >(9)
-//                double n12 = glyph.getGeometricMoments().getN12();
-//                Shape newShape = (n12 > 0) ? TIME_NINE : TIME_SIX;
-//                ///logLogical(system, glyph, eval, newShape);
-//                eval.shape = newShape;
-//
-//                return true;
-//            }
-//        };
-//
-//        new Checker("TURN_set", TURN_set)
-//        {
-//            @Override
-//            public boolean check (SystemInfo system,
-//                                  Evaluation eval,
-//                                  Glyph glyph,
-//                                  double[] features)
-//            {
-//                Shape newShape;
-//
-//                // Use aspect to detect turn_up
-//                double aspect = glyph.getAspect(Orientation.VERTICAL);
-//
-//                if (aspect > 1) {
-//                    newShape = TURN_UP;
-//                } else {
-//                    // Use xy covariance
-//                    boolean covar = glyph.getGeometricMoments().getN11() > 0;
-//
-//                    newShape = covar ? TURN : TURN_INVERTED;
-//                }
-//
-//                ///logLogical(system, glyph, eval, newShape);
-//                eval.shape = newShape;
-//
-//                return true;
-//            }
-//        };
-//
-//        new Checker("Wedge_set", WEDGE_set)
-//        {
-//            @Override
-//            public boolean check (SystemInfo system,
-//                                  Evaluation eval,
-//                                  Glyph glyph,
-//                                  double[] features)
-//            {
-//                // Use moment n12 to differentiate between < & >
-//                double n12 = glyph.getGeometricMoments().getN12();
-//                Shape newShape = (n12 > 0) ? CRESCENDO : DECRESCENDO;
-//
-//                ///logLogical(system, glyph, eval, newShape);
-//                eval.shape = newShape;
-//
-//                return true;
-//            }
-//        };
+        //        new Checker("Fermata_set", FERMATA_set)
+        //        {
+        //            @Override
+        //            public boolean check (SystemInfo system,
+        //                                  Evaluation eval,
+        //                                  Glyph glyph,
+        //                                  double[] features)
+        //            {
+        //                // Use moment n21 to differentiate between V & ^
+        //                // TBD: We could use pitch position as well?
+        //                double n21 = glyph.getGeometricMoments().getN21();
+        //                Shape newShape = (n21 > 0) ? FERMATA : FERMATA_BELOW;
+        //
+        //                ///logLogical(system, glyph, eval, newShape);
+        //                eval.shape = newShape;
+        //
+        //                return true;
+        //            }
+        //        };
+        //
+        //        new Checker("FLAG_*_set", FlagSets)
+        //        {
+        //            @Override
+        //            public boolean check (SystemInfo system,
+        //                                  Evaluation eval,
+        //                                  Glyph glyph,
+        //                                  double[] features)
+        //            {
+        //                Shape newShape = null;
+        //                boolean covar = glyph.getGeometricMoments().getN11() > 0;
+        //
+        //                switch (eval.shape) {
+        //                case FLAG_1_set:
+        //                    newShape = covar ? FLAG_1 : FLAG_1_UP;
+        //
+        //                    break;
+        //
+        //                case FLAG_2_set:
+        //                    newShape = covar ? FLAG_2 : FLAG_2_UP;
+        //
+        //                    break;
+        //
+        //                case FLAG_3_set:
+        //                    newShape = covar ? FLAG_3 : FLAG_3_UP;
+        //
+        //                    break;
+        //
+        //                case FLAG_4_set:
+        //                    newShape = covar ? FLAG_4 : FLAG_4_UP;
+        //
+        //                    break;
+        //
+        //                case FLAG_5_set:
+        //                    newShape = covar ? FLAG_5 : FLAG_5_UP;
+        //
+        //                    break;
+        //                }
+        //
+        //                ///logLogical(system, glyph, eval, newShape);
+        //                eval.shape = newShape;
+        //
+        //                return true;
+        //            }
+        //        };
+        //
+        //        new Checker("TIME_69_set", TIME_69_set)
+        //        {
+        //            @Override
+        //            public boolean check (SystemInfo system,
+        //                                  Evaluation eval,
+        //                                  Glyph glyph,
+        //                                  double[] features)
+        //            {
+        //                // Use moment n12 to differentiate between <(6) & >(9)
+        //                double n12 = glyph.getGeometricMoments().getN12();
+        //                Shape newShape = (n12 > 0) ? TIME_NINE : TIME_SIX;
+        //                ///logLogical(system, glyph, eval, newShape);
+        //                eval.shape = newShape;
+        //
+        //                return true;
+        //            }
+        //        };
+        //
+        //        new Checker("TURN_set", TURN_set)
+        //        {
+        //            @Override
+        //            public boolean check (SystemInfo system,
+        //                                  Evaluation eval,
+        //                                  Glyph glyph,
+        //                                  double[] features)
+        //            {
+        //                Shape newShape;
+        //
+        //                // Use aspect to detect turn_up
+        //                double aspect = glyph.getAspect(Orientation.VERTICAL);
+        //
+        //                if (aspect > 1) {
+        //                    newShape = TURN_UP;
+        //                } else {
+        //                    // Use xy covariance
+        //                    boolean covar = glyph.getGeometricMoments().getN11() > 0;
+        //
+        //                    newShape = covar ? TURN : TURN_INVERTED;
+        //                }
+        //
+        //                ///logLogical(system, glyph, eval, newShape);
+        //                eval.shape = newShape;
+        //
+        //                return true;
+        //            }
+        //        };
+        //
+        //        new Checker("Wedge_set", WEDGE_set)
+        //        {
+        //            @Override
+        //            public boolean check (SystemInfo system,
+        //                                  Evaluation eval,
+        //                                  Glyph glyph,
+        //                                  double[] features)
+        //            {
+        //                // Use moment n12 to differentiate between < & >
+        //                double n12 = glyph.getGeometricMoments().getN12();
+        //                Shape newShape = (n12 > 0) ? CRESCENDO : DIMINUENDO;
+        //
+        //                ///logLogical(system, glyph, eval, newShape);
+        //                eval.shape = newShape;
+        //
+        //                return true;
+        //            }
+        //        };
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

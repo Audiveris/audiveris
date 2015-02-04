@@ -21,8 +21,8 @@ import omr.math.PointsCollector;
 
 import omr.moments.ARTMoments;
 import omr.moments.BasicARTExtractor;
-import omr.moments.BasicARTMoments;
 import omr.moments.GeometricMoments;
+import omr.moments.QuantizedARTMoments;
 
 import omr.ui.symbol.ShapeSymbol;
 
@@ -354,13 +354,13 @@ class BasicGeometry
     // intersects //
     //------------//
     @Override
-    public boolean intersects (Rectangle rectangle)
+    public boolean intersects (java.awt.Shape shape)
     {
         // First make a rough test
-        if (rectangle.intersects(glyph.getBounds())) {
-            // Then make sure at least one section intersects the rectangle
+        if (shape.intersects(glyph.getBounds())) {
+            // Then make sure at least one section intersects the shape
             for (Section section : glyph.getMembers()) {
-                if (rectangle.intersects(section.getBounds())) {
+                if (section.intersects(shape)) {
                     return true;
                 }
             }
@@ -434,7 +434,8 @@ class BasicGeometry
         PointsCollector collector = glyph.getPointsCollector();
 
         // Then compute the ART moments with this collector
-        artMoments = new BasicARTMoments();
+        ///artMoments = new BasicARTMoments();
+        artMoments = new QuantizedARTMoments();
 
         BasicARTExtractor extractor = new BasicARTExtractor();
         extractor.setDescriptor(artMoments);

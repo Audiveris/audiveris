@@ -14,6 +14,7 @@ package omr.math;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code GeoUtil} gathers simple utilities related to geometry.
@@ -50,6 +51,40 @@ public abstract class GeoUtil
     public static Point centerOf (Rectangle rect)
     {
         return new Point(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
+    }
+
+    //--------------//
+    // ptDistanceSq //
+    //--------------//
+    /**
+     * Report the minimum square distance from a point to a rectangle.
+     *
+     * @param r provided rectangle
+     * @param x abscissa of point
+     * @param y ordinate of point
+     * @return square of minimum distance
+     */
+    public static double ptDistanceSq (Rectangle r,
+                                       double x,
+                                       double y)
+    {
+        if (r.contains(x, y)) {
+            return 0;
+        }
+
+        double d = Double.MAX_VALUE;
+
+        final int x1 = r.x;
+        final int x2 = (r.x + r.width) - 1;
+        final int y1 = r.y;
+        final int y2 = (r.y + r.height) - 1;
+
+        d = Math.min(d, Line2D.ptSegDistSq(x1, y1, x2, y1, x, y));
+        d = Math.min(d, Line2D.ptSegDistSq(x1, y2, x2, y2, x, y));
+        d = Math.min(d, Line2D.ptSegDistSq(x1, y1, x1, y2, x, y));
+        d = Math.min(d, Line2D.ptSegDistSq(x2, y1, x2, y2, x, y));
+
+        return d;
     }
 
     //----------//

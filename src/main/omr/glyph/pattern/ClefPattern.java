@@ -22,9 +22,8 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
-
 import omr.sheet.Scale;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
@@ -127,7 +126,7 @@ public class ClefPattern
         int successNb = 0;
         int staffId = 0;
 
-        for (StaffInfo staff : system.getStaves()) {
+        for (Staff staff : system.getStaves()) {
             staffId++;
 
             // Define the inner box to intersect clef glyph(s)
@@ -191,7 +190,7 @@ public class ClefPattern
      * @return true if successful
      */
     private boolean checkClef (Collection<Glyph> glyphs,
-                               StaffInfo staff)
+                               Staff staff)
     {
         if (glyphs.isEmpty()) {
             return false;

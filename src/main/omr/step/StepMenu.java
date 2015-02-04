@@ -190,7 +190,7 @@ public class StepMenu
                     Step sofar = Stepping.getLatestMandatoryStep(sheet);
 
                     if ((sofar == null) || (Steps.compare(sofar, step) <= 0)) {
-                        // Here we progress on all sheets of the score
+                        // Here we progress on all sheets of the book (BINGO)
                         new StepTask(step).run(sheet);
                     } else {
                         // There we rebuild just the current sheet

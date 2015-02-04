@@ -21,20 +21,20 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
+import omr.sheet.Staff;
 
 import omr.math.GeoUtil;
 
-import omr.score.entity.Barline;
-import omr.score.entity.Chord;
+import omr.score.entity.OldBarline;
+import omr.score.entity.OldChord;
 import omr.score.entity.Clef;
 import omr.score.entity.KeySignature;
-import omr.score.entity.Measure;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.Note;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
-import omr.score.entity.Staff;
-import omr.score.entity.SystemPart;
+import omr.score.entity.OldStaff;
+import omr.score.entity.OldSystemPart;
 import omr.score.entity.TimeSignature;
 import omr.score.visitor.AbstractScoreVisitor;
 
@@ -101,8 +101,8 @@ public class TimeSignatureRetriever
 
         try {
             // We simply consider the very first measure of every staff
-            ScoreSystem system = page.getFirstSystem();
-            Measure firstMeasure = system.getFirstRealPart().getFirstMeasure();
+            ScoreSystem system = page.getFirstScoreSystem();
+            OldMeasure firstMeasure = system.getFirstRealPart().getFirstMeasure();
 
             // If we have some TS, then it's OK
             if (hasTimeSig(firstMeasure)) {
@@ -118,8 +118,8 @@ public class TimeSignatureRetriever
                 return false;
             }
 
-            for (Staff.SystemIterator sit = new Staff.SystemIterator(firstMeasure); sit.hasNext();) {
-                Staff staff = sit.next();
+            for (OldStaff.SystemIterator sit = new OldStaff.SystemIterator(firstMeasure); sit.hasNext();) {
+                OldStaff staff = sit.next();
 
                 if (staff.isDummy()) {
                     continue;
@@ -133,7 +133,7 @@ public class TimeSignatureRetriever
                         new TimeSigAdapter(
                         system.getInfo(),
                         Grades.timeMinGrade,
-                        ShapeSet.FullTimes,
+                        ShapeSet.WholeTimes,
                         staff,
                         center));
 
@@ -159,21 +159,21 @@ public class TimeSignatureRetriever
      * @param firstMeasure the containing measure (whatever the part)
      * @return a degenerated rectangle, just to provide left and right bounds
      */
-    private Rectangle getRoi (Measure firstMeasure)
+    private Rectangle getRoi (OldMeasure firstMeasure)
     {
         ScoreSystem system = firstMeasure.getSystem();
         int left = 0; // Min
         int right = system.getTopLeft().x + system.getDimension().width; // Max
 
-        for (Staff.SystemIterator sit = new Staff.SystemIterator(firstMeasure); sit.hasNext();) {
-            Staff staff = sit.next();
+        for (OldStaff.SystemIterator sit = new OldStaff.SystemIterator(firstMeasure); sit.hasNext();) {
+            OldStaff staff = sit.next();
 
             if (staff.isDummy()) {
                 continue;
             }
 
             int staffId = staff.getId();
-            Measure measure = sit.getMeasure();
+            OldMeasure measure = sit.getMeasure();
 
             // Before: clef? + key signature?
             KeySignature keySig = measure.getFirstMeasureKey(staffId);
@@ -191,7 +191,7 @@ public class TimeSignatureRetriever
             }
 
             // After: alteration? + chord?
-            Chord chord = measure.getClosestChord(new Point(0, 0));
+            OldChord chord = measure.getClosestChord(new Point(0, 0));
 
             if (chord != null) {
                 for (TreeNode tn : chord.getNotes()) {
@@ -228,10 +228,10 @@ public class TimeSignatureRetriever
      *                measure id, regardless of the part)
      * @return true if a time sig exists in some staff of the measure
      */
-    private boolean hasTimeSig (Measure measure)
+    private boolean hasTimeSig (OldMeasure measure)
     {
-        for (Staff.SystemIterator sit = new Staff.SystemIterator(measure); sit.hasNext();) {
-            Staff staff = sit.next();
+        for (OldStaff.SystemIterator sit = new OldStaff.SystemIterator(measure); sit.hasNext();) {
+            OldStaff staff = sit.next();
 
             if (sit.getMeasure().getTimeSignature(staff) != null) {
                 return true;
@@ -268,7 +268,7 @@ public class TimeSignatureRetriever
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Staff staff;
+        final OldStaff staff;
 
         final int center;
 
@@ -276,7 +276,7 @@ public class TimeSignatureRetriever
         public TimeSigAdapter (SystemInfo system,
                                double minGrade,
                                EnumSet<Shape> desiredShapes,
-                               Staff staff,
+                               OldStaff staff,
                                int center)
         {
             super(system, minGrade, desiredShapes);
@@ -288,7 +288,7 @@ public class TimeSignatureRetriever
         @Override
         public Rectangle computeReferenceBox ()
         {
-            StaffInfo staffInfo = staff.getInfo();
+            Staff staffInfo = staff.getInfo();
             Rectangle newBox = new Rectangle(
                     center,
                     staffInfo.getFirstLine().yAt(center) + (staffInfo.getHeight() / 2),
@@ -297,12 +297,12 @@ public class TimeSignatureRetriever
             newBox.grow((timeSigWidth / 2), (staffInfo.getHeight() / 2) - yOffset);
 
             // Draw the box, for visual debug
-            SystemPart part = system.getScoreSystem().getPartAt(GeoUtil.centerOf(newBox));
-            Barline barline = part.getStartingBarline();
+            OldSystemPart part = system.getScoreSystem().getPartAt(GeoUtil.centerOf(newBox));
+            OldBarline barline = part.getStartingBarline();
             Glyph line = null;
 
             if (barline != null) {
-                line = Glyphs.firstOf(barline.getGlyphs(), Barline.linePredicate);
+                line = Glyphs.firstOf(barline.getGlyphs(), OldBarline.linePredicate);
 
                 if (line != null) {
                     line.addAttachment("ti" + staff.getId(), newBox);

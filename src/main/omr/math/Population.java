@@ -188,4 +188,24 @@ public class Population
         reset();
         includeValue(val);
     }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("n:").append(n);
+
+        if (n > 0) {
+            sb.append(String.format(" mean:%.2f", getMeanValue()));
+
+            if (n > 1) {
+                sb.append(String.format(" std:%.2f", getStandardDeviation()));
+            }
+        }
+
+        return sb.toString();
+    }
 }
