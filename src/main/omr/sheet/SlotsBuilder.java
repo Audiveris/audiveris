@@ -43,13 +43,13 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code SlotsBuilder} is in charge, at system level, to organize in each measure
- * stack all chords into proper time slots and voices.
+ * Class {@code SlotsBuilder} is in charge, within one measure stack of a system,
+ * to organize all chords into proper time slots and voices.
  * <p>
  * The key point is to determine when two chords should belong or not to the same time slot:
  * <ul>
  * <li>Chords that share a common stem belong to the same slot.</li>
- * <li>Chords that originate from the same physical glyph belong to the same slot. (for example a
+ * <li>Chords that originate from mirrored heads belong to the same slot. (for example a
  * note head with one stem on left and one stem on right leads to two overlapping logical
  * chords)</li>
  * <li>Chords within the same beam group, but not on the same stem, cannot belong to the same
@@ -192,7 +192,7 @@ public class SlotsBuilder
     // process //
     //---------//
     /**
-     * Allocate the proper sequence of slots for the chords of the measure stack.
+     * Determine the proper sequence of slots for the chords of the measure stack.
      */
     public void process ()
     {
@@ -207,7 +207,7 @@ public class SlotsBuilder
     //-------------//
     /**
      * Check whether the two provided chords can be considered as "adjacent" and thus
-     * share the same time slots, though they are slightly separated in x and y.
+     * share the same time slot, though they are slightly separated in x and y.
      *
      * @param ch1 one chord
      * @param ch2 another chord
@@ -308,7 +308,7 @@ public class SlotsBuilder
     // buildSlots //
     //------------//
     /**
-     * Build the measure time slots, using the inter-chord relationships and the
+     * Build the measure stack time slots, using the inter-chord relationships and the
      * chords durations.
      */
     private void buildSlots ()
@@ -378,7 +378,7 @@ public class SlotsBuilder
         stackTerms.clear();
 
         for (ChordInter chord : actives) {
-            // Skip the "whole" chords
+            // Skip the "whole" chords, since they don't expire before measure end
             if (!chord.isWholeDuration()) {
                 Rational endTime = chord.getEndTime();
                 Staff staff = chord.getStaff();
@@ -411,7 +411,7 @@ public class SlotsBuilder
      * Detect which chords (among the active ones) expire at the provided term.
      *
      * @param actives     chords still active
-     * @param time        term time
+     * @param term        term time
      * @param endings     (output) expiring chords that do not release their voice
      * @param freeEndings (output) expiring chords that release their voice
      */
@@ -462,6 +462,9 @@ public class SlotsBuilder
     //-------------------//
     // dumpRelationships //
     //-------------------//
+    /**
+     * Print out the matrix of chord relationships for the stack.
+     */
     private void dumpRelationships ()
     {
         // List BeamGroups
@@ -507,6 +510,13 @@ public class SlotsBuilder
     //------------//
     // getClosure //
     //------------//
+    /**
+     * Report the chords that are likely to belong to the same slot as the provided chord
+     *
+     * @param chord the provided chord
+     * @return the set of chords candidates which are flagged as either EQUAL or CLOSE to the
+     *         provided chord
+     */
     private Set<ChordInter> getClosure (ChordInter chord)
     {
         Set<ChordInter> closes = new LinkedHashSet<ChordInter>();
@@ -527,6 +537,11 @@ public class SlotsBuilder
     //------------------//
     // getPendingChords //
     //------------------//
+    /**
+     * Report all chords in stack that are to be assigned a time slot.
+     *
+     * @return all stack chords, except the whole ones
+     */
     private List<ChordInter> getPendingChords ()
     {
         List<ChordInter> pendings = new ArrayList<ChordInter>();
@@ -543,6 +558,14 @@ public class SlotsBuilder
     //--------//
     // getRel //
     //--------//
+    /**
+     * Report the inter-chord relationship, if any, that exists within the ordered pair
+     * of chords
+     *
+     * @param from source chord
+     * @param to   target chord
+     * @return the relationship from source to target, if any
+     */
     private Rel getRel (ChordInter from,
                         ChordInter to)
     {
@@ -558,9 +581,14 @@ public class SlotsBuilder
     //-------------------//
     // handleWholeVoices //
     //-------------------//
-    private void handleWholeVoices (List<ChordInter> actives)
+    /**
+     * Assign a dedicated voice to each whole chord
+     *
+     * @param wholes the whole chords
+     */
+    private void handleWholeVoices (List<ChordInter> wholes)
     {
-        for (ChordInter chord : actives) {
+        for (ChordInter chord : wholes) {
             chord.setStartTime(Rational.ZERO);
             Voice voice = Voice.createWholeVoice(chord, chord.getMeasure());
             stack.getVoices().add(voice);
@@ -725,7 +753,7 @@ public class SlotsBuilder
     // inspectMirrors //
     //----------------//
     /**
-     * Derive some inter-chords relationships from mirror chords (and notes).
+     * Derive some inter-chords relationships from mirror chords (and heads).
      */
     private void inspectMirrors ()
     {
@@ -759,6 +787,12 @@ public class SlotsBuilder
     //------------------------//
     // propagateRelationships //
     //------------------------//
+    /**
+     * Since the chords in the provided pair are mirrored, they share identical
+     * relationships with the other chords in stack
+     *
+     * @param pair array of exactly 2 chords
+     */
     private void propagateRelationships (ChordInter... pair)
     {
         final List<ChordInter> stackChords = stack.getChords();
@@ -814,9 +848,12 @@ public class SlotsBuilder
         //            Voice voice = chord.getVoice();
         //            stack.swapVoiceId(voice, i + 1);
         //        }
+
+        // Sort voices vertically in stack
         List<Voice> voices = stack.getVoices();
         Collections.sort(voices, Voice.byOrdinate);
 
+        // Assign each voice ID according to its relative vertical position
         for (int i = 0; i < voices.size(); i++) {
             voices.get(i).setId(i + 1);
         }
@@ -828,7 +865,7 @@ public class SlotsBuilder
     /**
      * Among the pending chords, select the ones that would start in the next slot.
      *
-     * @param pendings the sequence of not yet assigned chords
+     * @param pendings the collection of all chords still to be assigned
      * @param term     time considered for next slot
      * @return the collection of chords for next slot
      */
@@ -843,7 +880,7 @@ public class SlotsBuilder
 
         for (ChordInter chord : pendings) {
             // Here all chords should be >= firstChord
-            // Chords < firstChord indicate a startTime inconsistent with slot ordering
+            // Chords < firstChord indicate a startTime inconsistent with slot ordering !!!!!!!
             // Chords = firstChord are taken as incomings
             // Chords > firstChord are left for following time slots
             if (byRel.compare(chord, firstChord) <= 0) {
@@ -867,6 +904,13 @@ public class SlotsBuilder
     //--------//
     // setRel //
     //--------//
+    /**
+     * Store the relationship between a source and a target chord
+     *
+     * @param from     source chord
+     * @param totarget chord
+     * @param rel      the relationship value
+     */
     private void setRel (ChordInter from,
                          ChordInter to,
                          Rel rel)
@@ -884,6 +928,9 @@ public class SlotsBuilder
     //------//
     // Link //
     //------//
+    /**
+     * Meant to store a relation instance (edge) between two chords (vertices).
+     */
     protected static class Link
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -917,6 +964,9 @@ public class SlotsBuilder
     //-----------//
     // ChordPair //
     //-----------//
+    /**
+     * Meant to store a pair of chords found as being adjacent.
+     */
     private static class ChordPair
     {
         //~ Instance fields ------------------------------------------------------------------------

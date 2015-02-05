@@ -235,6 +235,6 @@ public class TemplateView
 
         final Constant.Ratio minZoomRatio = new Constant.Ratio(
                 4.0,
-                "Minimum zoo ratio to show template key points");
+                "Minimum zoom ratio to show template key points");
     }
 }

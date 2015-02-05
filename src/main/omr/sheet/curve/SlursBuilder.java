@@ -806,7 +806,7 @@ public class SlursBuilder
                 "Maximum circle radius for a slur");
 
         final Scale.Fraction minSlurWidthLow = new Scale.Fraction(
-                0.6,
+                0.7,
                 "Low minimum width for a slur");
 
         final Scale.Fraction minSlurWidthHigh = new Scale.Fraction(

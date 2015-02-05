@@ -12,11 +12,11 @@
 package omr.score;
 
 import omr.glyph.Shape;
-
 import static omr.glyph.Shape.*;
 
 import omr.score.entity.LyricsItem;
 import omr.score.entity.Note;
+import omr.score.entity.OldBarline;
 
 import com.audiveris.proxymusic.AccidentalText;
 import com.audiveris.proxymusic.AccidentalValue;
@@ -37,14 +37,13 @@ import org.slf4j.LoggerFactory;
 import java.lang.String; // Do not remove this line!
 
 import javax.xml.bind.JAXBElement;
-import omr.score.entity.OldBarline;
 
 /**
- * Class {@code MusicXML} gathers symbols related to the MusicXML data
+ * Class {@code MusicXML} gathers convenient methods dealing with MusicXML data
  *
  * @author Hervé Bitteur
  */
-public class MusicXML
+public abstract class MusicXML
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -58,11 +57,8 @@ public class MusicXML
     };
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // ScoreExporter //
-    //---------------//
     /**
-     * Not meant to be instantiated
+     * Not meant to be instantiated.
      */
     private MusicXML ()
     {
@@ -108,7 +104,7 @@ public class MusicXML
     {
         try {
             return BarStyle.valueOf(style.name());
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             throw new IllegalArgumentException("Unknown bar style " + style, ex);
         }
     }
@@ -178,9 +174,9 @@ public class MusicXML
         case DYNAMICS_FF:
             return factory.createDynamicsFf(empty);
 
-//        case DYNAMICS_FFF:
-//            return factory.createDynamicsFff(empty);
-//
+        //        case DYNAMICS_FFF:
+        //            return factory.createDynamicsFff(empty);
+        //
         //        case DYNAMICS_FFFF :
         //            return factory.createDynamicsFfff(empty);
         //
@@ -191,10 +187,10 @@ public class MusicXML
         //            return factory.createDynamicsFfffff(empty);
         case DYNAMICS_FP:
             return factory.createDynamicsFp(empty);
-//
-//        case DYNAMICS_FZ:
-//            return factory.createDynamicsFz(empty);
 
+        //
+        //        case DYNAMICS_FZ:
+        //            return factory.createDynamicsFz(empty);
         case DYNAMICS_MF:
             return factory.createDynamicsMf(empty);
 
@@ -206,10 +202,11 @@ public class MusicXML
 
         case DYNAMICS_PP:
             return factory.createDynamicsPp(empty);
-//
-//        case DYNAMICS_PPP:
-//            return factory.createDynamicsPpp(empty);
-//
+
+        //
+        //        case DYNAMICS_PPP:
+        //            return factory.createDynamicsPpp(empty);
+        //
         //        case DYNAMICS_PPPP :
         //            return factory.createDynamicsPppp(empty);
         //
@@ -218,24 +215,24 @@ public class MusicXML
         //
         //        case DYNAMICS_PPPPPP :
         //            return factory.createDynamicsPppppp(empty);
-//        case DYNAMICS_RF:
-//            return factory.createDynamicsRf(empty);
-//
-//        case DYNAMICS_RFZ:
-//            return factory.createDynamicsRfz(empty);
-//
-//        case DYNAMICS_SF:
-//            return factory.createDynamicsSf(empty);
-//
-//        case DYNAMICS_SFFZ:
-//            return factory.createDynamicsSffz(empty);
-//
-//        case DYNAMICS_SFP:
-//            return factory.createDynamicsSfp(empty);
-//
-//        case DYNAMICS_SFPP:
-//            return factory.createDynamicsSfpp(empty);
-//
+        //        case DYNAMICS_RF:
+        //            return factory.createDynamicsRf(empty);
+        //
+        //        case DYNAMICS_RFZ:
+        //            return factory.createDynamicsRfz(empty);
+        //
+        //        case DYNAMICS_SF:
+        //            return factory.createDynamicsSf(empty);
+        //
+        //        case DYNAMICS_SFFZ:
+        //            return factory.createDynamicsSffz(empty);
+        //
+        //        case DYNAMICS_SFP:
+        //            return factory.createDynamicsSfp(empty);
+        //
+        //        case DYNAMICS_SFPP:
+        //            return factory.createDynamicsSfpp(empty);
+        //
         case DYNAMICS_SFZ:
             return factory.createDynamicsSfz(empty);
         }
@@ -245,9 +242,9 @@ public class MusicXML
         return null;
     }
 
-    //-------------//
-    // getTypeName //
-    //-------------//
+    //-----------------//
+    // getNoteTypeName //
+    //-----------------//
     /**
      * Report the name for the note type
      *
@@ -306,8 +303,7 @@ public class MusicXML
     // kindOf //
     //--------//
     /**
-     * Convert from Audiveris ChordInfo.Kind.Type type to
-     * Proxymusic KindValue type
+     * Convert from Audiveris ChordInfo.Kind.Type type to Proxymusic KindValue type
      *
      * @param type Audiveris enum ChordSymbol.Type
      * @return Proxymusic enum KindValue
@@ -335,8 +331,7 @@ public class MusicXML
     // typeOf //
     //--------//
     /**
-     * Convert from Audiveris ChordInfo.Degree.DegreeType to
-     * Proxymusic DegreeTypeValue
+     * Convert from Audiveris ChordInfo.Degree.DegreeType to Proxymusic DegreeTypeValue
      *
      * @param type Audiveris enum DegreeType
      * @return Proxymusic enum DegreeTypeValue

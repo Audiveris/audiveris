@@ -475,7 +475,7 @@ public class MeasureStack
     //------------//
     /**
      * Report the numeric value of the measure id.
-     * First (n) & second (Xn) measure halves share the same numeric value n.
+     * Note that first (n) & second (Xn) measure halves share the same numeric value n.
      *
      * @return the numeric value of measure id
      */
@@ -603,6 +603,9 @@ public class MeasureStack
         return null;
     }
 
+    //---------------//
+    // getRestChords //
+    //---------------//
     /**
      * @return the restChords
      */
@@ -612,10 +615,21 @@ public class MeasureStack
     }
 
     //------------//
+    // getRhythms //
+    //------------//
+    /**
+     * @return the rhythms
+     */
+    public List<Inter> getRhythms ()
+    {
+        return rhythms;
+    }
+
+    //------------//
     // getScoreId //
     //------------//
     /**
-     * Report the image of the score-based measure id.
+     * Report the character string of the score-based measure id.
      *
      * @return the (absolute) score-based measure id string
      */
@@ -679,14 +693,6 @@ public class MeasureStack
     public SystemInfo getSystem ()
     {
         return system;
-    }
-
-    /**
-     * @return the rhythms
-     */
-    public List<Inter> getTimings ()
-    {
-        return rhythms;
     }
 
     //------------//
