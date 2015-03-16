@@ -88,10 +88,6 @@ public class StaffManager
     private final List<Staff> staves = new ArrayList<Staff>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //--------------//
-    // StaffManager //
-    //--------------//
     /**
      * Creates a new StaffManager object.
      *

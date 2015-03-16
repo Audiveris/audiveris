@@ -26,14 +26,10 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.BasicLag;
 import omr.lag.JunctionAllPolicy;
-import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionFactory;
 import static omr.run.Orientation.VERTICAL;
-import omr.run.RunTable;
-import omr.run.RunTableFactory;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.ClefInter;
@@ -227,7 +223,7 @@ public class ClefBuilder
     }
 
     //----------//
-    // getAllParts //
+    // getParts //
     //----------//
     /**
      * Retrieve all glyph instances that could be part of clef.
@@ -318,7 +314,7 @@ public class ClefBuilder
                 sig.computeContextualGrade(clef, false);
             }
 
-            Collections.sort(clefs, Inter.byReverseContextualGrade);
+            Collections.sort(clefs, Inter.byReverseBestGrade);
 
             // Pickup the first one as header clef
             staff.getHeader().clef = (ClefInter) clefs.get(0);
@@ -396,41 +392,45 @@ public class ClefBuilder
         }
     }
 
-    //------------//
-    // Parameters //
-    //------------//
-    private static class Parameters
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final int maxClefEnd;
+        final Scale.Fraction maxClefEnd = new Scale.Fraction(
+                4.5,
+                "Maximum x distance from measure start to end of clef");
 
-        final int beltMargin;
+        final Scale.Fraction beltMargin = new Scale.Fraction(
+                0.15,
+                "White margin within raw rectangle");
 
-        final int xCoreMargin;
+        final Scale.Fraction xCoreMargin = new Scale.Fraction(
+                0.4,
+                "Horizontal margin around core rectangle");
 
-        final int yCoreMargin;
+        final Scale.Fraction yCoreMargin = new Scale.Fraction(
+                0.5,
+                "Vertical margin around core rectangle");
 
-        final int minPartWeight;
+        final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(
+                0.01,
+                "Minimum weight for a glyph part");
 
-        final double maxPartGap;
+        final Scale.Fraction maxPartGap = new Scale.Fraction(
+                1.0,
+                "Maximum distance between two parts of a single clef symbol");
 
-        final double maxGlyphHeight;
+        final Scale.Fraction maxGlyphHeight = new Scale.Fraction(
+                8.0,
+                "Maximum height for clef glyph");
 
-        final int minGlyphWeight;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
-        {
-            maxClefEnd = scale.toPixels(constants.maxClefEnd);
-            beltMargin = scale.toPixels(constants.beltMargin);
-            xCoreMargin = scale.toPixels(constants.xCoreMargin);
-            yCoreMargin = scale.toPixels(constants.yCoreMargin);
-            minPartWeight = scale.toPixels(constants.minPartWeight);
-            maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
-            maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
-            minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
-        }
+        final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
+                0.3,
+                "Minimum weight for clef glyph");
     }
 
     //-------------//
@@ -516,44 +516,40 @@ public class ClefBuilder
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //------------//
+    // Parameters //
+    //------------//
+    private static class Parameters
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction maxClefEnd = new Scale.Fraction(
-                4.5,
-                "Maximum x distance from measure start to end of clef");
+        final int maxClefEnd;
 
-        final Scale.Fraction beltMargin = new Scale.Fraction(
-                0.15,
-                "White margin within raw rectangle");
+        final int beltMargin;
 
-        final Scale.Fraction xCoreMargin = new Scale.Fraction(
-                0.4,
-                "Horizontal margin around core rectangle");
+        final int xCoreMargin;
 
-        final Scale.Fraction yCoreMargin = new Scale.Fraction(
-                0.5,
-                "Vertical margin around core rectangle");
+        final int yCoreMargin;
 
-        final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(
-                0.01,
-                "Minimum weight for a glyph part");
+        final int minPartWeight;
 
-        final Scale.Fraction maxPartGap = new Scale.Fraction(
-                1.0,
-                "Maximum distance between two parts of a single clef symbol");
+        final double maxPartGap;
 
-        final Scale.Fraction maxGlyphHeight = new Scale.Fraction(
-                8.0,
-                "Maximum height for clef glyph");
+        final double maxGlyphHeight;
 
-        final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
-                0.3,
-                "Minimum weight for clef glyph");
+        final int minGlyphWeight;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Parameters (Scale scale)
+        {
+            maxClefEnd = scale.toPixels(constants.maxClefEnd);
+            beltMargin = scale.toPixels(constants.beltMargin);
+            xCoreMargin = scale.toPixels(constants.xCoreMargin);
+            yCoreMargin = scale.toPixels(constants.yCoreMargin);
+            minPartWeight = scale.toPixels(constants.minPartWeight);
+            maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
+            maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
+            minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
+        }
     }
 }

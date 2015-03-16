@@ -59,10 +59,6 @@ public class SystemBoundary
     private Polygon polygon;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //----------------//
-    // SystemBoundary //
-    //----------------//
     /**
      * Creates a new SystemBoundary object with north and south borders
      *

@@ -56,9 +56,9 @@ public interface Step
     {
         //~ Enumeration constant initializers ------------------------------------------------------
 
-        /** Must be performed before any output */
+        /** Must be performed before any output. */
         MANDATORY,
-        /** Non mandatory */
+        /** Non mandatory. */
         OPTIONAL;
     }
 
@@ -66,9 +66,9 @@ public interface Step
     {
         //~ Enumeration constant initializers ------------------------------------------------------
 
-        /** Step makes sense at book/score level only */
-        SCORE_LEVEL,
-        /** The step can be performed at sheet level */
+        /** Step makes sense at book level only. */
+        BOOK_LEVEL,
+        /** The step can be performed at sheet level. */
         SHEET_LEVEL;
     }
 
@@ -143,11 +143,11 @@ public interface Step
     public boolean isMandatory ();
 
     /**
-     * Does the step need to be performed at score level only?
+     * Does the step need to be performed at book level?
      *
-     * @return true for score-level step, false for sheet-level step
+     * @return true for book-level step, false for sheet-level step
      */
-    public boolean isScoreLevel ();
+    public boolean isBookLevel ();
 
     /**
      * A detailed description.

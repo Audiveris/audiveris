@@ -68,10 +68,6 @@ public class VerticalFilter
     private static final Logger logger = LoggerFactory.getLogger(VerticalFilter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //----------------//
-    // VerticalFilter //
-    //----------------//
     /**
      * Create an adaptive wrapper on a raw pixel source.
      *

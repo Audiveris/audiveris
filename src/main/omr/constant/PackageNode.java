@@ -34,9 +34,6 @@ public class PackageNode
             Node.nameComparator);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // PackageNode //
-    //-------------//
     /**
      * Create a new PackageNode.
      *

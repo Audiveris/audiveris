@@ -34,6 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "rational")
 public class Rational
+        extends Number
         implements Comparable<Rational>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -43,6 +44,9 @@ public class Rational
 
     /** The one rational instance. */
     public static final Rational ONE = new Rational(1, 1);
+
+    /** The half rational instance. */
+    public static final Rational HALF = new Rational(1, 2);
 
     /** Max rational value. */
     public static final Rational MAX_VALUE = new Rational(Integer.MAX_VALUE, 1);
@@ -57,9 +61,6 @@ public class Rational
     public final int num;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // Rational //
-    //----------//
     /**
      * Create a final Rational instance
      *
@@ -90,43 +91,13 @@ public class Rational
         this.den = den;
     }
 
-    //----------//
-    // Rational //
-    //----------//
-    /** Needed for JAXB */
+    /** Needed for JAXB. */
     private Rational ()
     {
         num = den = 1;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----//
-    // gcd //
-    //-----//
-    public static Rational gcd (Rational a,
-                                Rational b)
-    {
-        if (a.num == 0) {
-            return b;
-        } else {
-            return new Rational(1, GCD.lcm(a.den, b.den));
-        }
-    }
-
-    //-----//
-    // gcd //
-    //-----//
-    public static Rational gcd (Rational... vals)
-    {
-        Rational s = Rational.ZERO;
-
-        for (Rational val : vals) {
-            s = gcd(s, val);
-        }
-
-        return s;
-    }
-
     //-----//
     // abs //
     //-----//
@@ -199,6 +170,15 @@ public class Rational
         return new Rational(num, den * that);
     }
 
+    //-------------//
+    // doubleValue //
+    //-------------//
+    @Override
+    public double doubleValue ()
+    {
+        return (double) num / den;
+    }
+
     //--------//
     // equals //
     //--------//
@@ -218,6 +198,42 @@ public class Rational
         }
     }
 
+    //------------//
+    // floatValue //
+    //------------//
+    @Override
+    public float floatValue ()
+    {
+        return (float) doubleValue();
+    }
+
+    //-----//
+    // gcd //
+    //-----//
+    public static Rational gcd (Rational a,
+                                Rational b)
+    {
+        if (a.num == 0) {
+            return b;
+        } else {
+            return new Rational(1, GCD.lcm(a.den, b.den));
+        }
+    }
+
+    //-----//
+    // gcd //
+    //-----//
+    public static Rational gcd (Rational... vals)
+    {
+        Rational s = Rational.ZERO;
+
+        for (Rational val : vals) {
+            s = gcd(s, val);
+        }
+
+        return s;
+    }
+
     //----------//
     // hashCode //
     //----------//
@@ -231,6 +247,15 @@ public class Rational
         return hash;
     }
 
+    //----------//
+    // intValue //
+    //----------//
+    @Override
+    public int intValue ()
+    {
+        return (int) Math.rint(doubleValue());
+    }
+
     //---------//
     // inverse //
     //---------//
@@ -242,6 +267,15 @@ public class Rational
     public Rational inverse ()
     {
         return new Rational(den, num);
+    }
+
+    //-----------//
+    // longValue //
+    //-----------//
+    @Override
+    public long longValue ()
+    {
+        return (long) Math.rint(doubleValue());
     }
 
     //-------//
@@ -347,14 +381,6 @@ public class Rational
     public Rational times (int that)
     {
         return new Rational(num * that, den);
-    }
-
-    //----------//
-    // toDouble //
-    //----------//
-    public double toDouble ()
-    {
-        return (double) num / den;
     }
 
     //----------//

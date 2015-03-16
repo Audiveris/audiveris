@@ -34,9 +34,6 @@ public abstract class GlyphPattern
     protected final Scale scale;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // GlyphPattern //
-    //--------------//
     /**
      * Creates a new GlyphPattern object.
      *

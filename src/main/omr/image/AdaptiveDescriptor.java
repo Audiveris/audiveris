@@ -49,10 +49,6 @@ public class AdaptiveDescriptor
     public final double stdDevCoeff;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //--------------------//
-    // AdaptiveDescriptor //
-    //--------------------//
     /**
      * Creates a new AdaptiveDescriptor object.
      *
@@ -66,9 +62,7 @@ public class AdaptiveDescriptor
         this.stdDevCoeff = stdDevCoeff;
     }
 
-    //--------------------//
-    // AdaptiveDescriptor // No-arg constructor meant for JAXB
-    //--------------------//
+    /** No-arg constructor meant for JAXB. */
     private AdaptiveDescriptor ()
     {
         meanCoeff = 0;

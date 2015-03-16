@@ -28,9 +28,6 @@ public class BasicLegendreMoments
     protected double[][] moments = new double[ORDER + 1][ORDER + 1];
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------------//
-    // BasicLegendreMoments //
-    //----------------------//
     /**
      * Creates a new BasicLegendreMoments object.
      */

@@ -36,9 +36,6 @@ public class ScoreCleaner
     private static final Logger logger = LoggerFactory.getLogger(ScoreCleaner.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // ScoreCleaner //
-    //--------------//
     /**
      * Creates a new ScoreCleaner object.
      */

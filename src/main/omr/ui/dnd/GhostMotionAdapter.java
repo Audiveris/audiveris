@@ -36,9 +36,6 @@ public class GhostMotionAdapter
     protected GhostGlassPane glassPane;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------------//
-    // GhostMotionAdapter //
-    //--------------------//
     /**
      * Create a new GhostMotionAdapter object
      *

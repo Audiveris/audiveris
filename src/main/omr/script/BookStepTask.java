@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        S t e p T a s k                                         //
+//                                     B o o k S t e p T a s k                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -28,12 +28,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code StepTask} performs a step on a whole book.
+ * Class {@code BookStepTask} performs a step on a whole book.
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
-public class StepTask
+public class BookStepTask
         extends ScriptTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
@@ -42,24 +42,18 @@ public class StepTask
     private Step step;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // StepTask //
-    //----------//
     /**
-     * Create a task to apply a given step to the related sheet.
+     * Create a task to apply a given step to the related book.
      *
      * @param step the step to apply
      */
-    public StepTask (Step step)
+    public BookStepTask (Step step)
     {
         this.step = step;
     }
 
-    //----------//
-    // StepTask //
-    //----------//
     /** No-arg constructor needed by JAXB */
-    private StepTask ()
+    private BookStepTask ()
     {
     }
 
@@ -72,8 +66,7 @@ public class StepTask
             throws StepException
     {
         Stepping.processBook(Collections.singleton(step), null, sheet.getBook());
-        ///Stepping.processSheet(Collections.singleton(step), sheet);
-        logger.info("End of step {}", step);
+        logger.info("End of book step {}", step);
     }
 
     //-----------//
@@ -83,7 +76,7 @@ public class StepTask
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" step ").append(step);
+        sb.append(" book-step ").append(step);
 
         return sb.toString();
     }

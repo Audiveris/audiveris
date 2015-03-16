@@ -29,9 +29,6 @@ public class Polynomial
     protected double[] coefficients;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // Polynomial //
-    //------------//
     /**
      * Creates a new Polynomial object (actually just a monomial).
      * Example new Polynomial(3,2) = 3x^2

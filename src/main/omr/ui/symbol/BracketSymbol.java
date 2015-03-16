@@ -38,9 +38,6 @@ public class BracketSymbol
     private static final BasicSymbol lowerSymbol = Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // BracketSymbol //
-    //---------------//
     /**
      * Create a BracketSymbol (which is made of upper and lower parts)
      *

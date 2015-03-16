@@ -85,8 +85,7 @@ public class SheetGradedPainter
             final Color base = inter.getShape().getColor();
 
             // Prefer contextual grade over intrinsic grade when available
-            final double grade = (inter.getContextualGrade() != null) ? inter.getContextualGrade()
-                    : inter.getGrade();
+            final double grade = inter.getBestGrade();
 
             // Alpha value [0 .. 255] is derived from grade [0.0 .. 1.0]
             final int alpha = Math.min(255, Math.max(0, (int) Math.rint(255 * grade)));

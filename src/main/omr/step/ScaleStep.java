@@ -45,9 +45,6 @@ public class ScaleStep
     private static final Logger logger = LoggerFactory.getLogger(ScaleStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // ScaleStep //
-    //-----------//
     /**
      * Creates a new ScaleStep object.
      */

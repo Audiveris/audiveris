@@ -138,9 +138,6 @@ public class LedgersBuilder
     private List<Inter> systemBeams;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // LedgersBuilder //
-    //----------------//
     /**
      * @param system the related system to process
      */

@@ -44,10 +44,6 @@ public class BrokenLineContext
     public final BrokenLine line;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //-------------------//
-    // BrokenLineContext //
-    //-------------------//
     /**
      * Creates a new BrokenLineContext object.
      *
@@ -64,9 +60,7 @@ public class BrokenLineContext
         this.line = line;
     }
 
-    //-------------------//
-    // BrokenLineContext // No-arg constructor for JAXB only
-    //-------------------//
+    /** No-arg constructor for JAXB only. */
     private BrokenLineContext ()
     {
         this.systemAbove = 0;

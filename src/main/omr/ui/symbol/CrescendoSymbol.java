@@ -26,11 +26,9 @@ import java.awt.Stroke;
 public class CrescendoSymbol
         extends ShapeSymbol
 {
+
     //~ Constructors -------------------------------------------------------------------------------
 
-    //-----------------//
-    // CrescendoSymbol //
-    //-----------------//
     /**
      * Creates a new CrescendoSymbol object.
      *

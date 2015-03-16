@@ -57,9 +57,6 @@ public class BasicLegendreExtractor
     }
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------------//
-    // BasicLegendreExtractor //
-    //------------------------//
     /**
      * Creates a new BasicLegendreExtractor object.
      */

@@ -34,9 +34,6 @@ public class PointFacade
     private Point point;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // PointFacade //
-    //-------------//
     /**
      * Creates a new instance of PointFacade
      */
@@ -44,9 +41,6 @@ public class PointFacade
     {
     }
 
-    //-------------//
-    // PointFacade //
-    //-------------//
     /**
      * Creates a new PointFacade object.
      *

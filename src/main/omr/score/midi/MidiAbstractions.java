@@ -291,11 +291,8 @@ public class MidiAbstractions
     };
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // MidiAbstractions //
-    //------------------//
     /**
-     * Not meant to be instantiated
+     * Not meant to be instantiated.
      */
     private MidiAbstractions ()
     {

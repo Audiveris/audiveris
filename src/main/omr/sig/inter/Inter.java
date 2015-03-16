@@ -87,6 +87,19 @@ public interface Inter
     };
 
     /**
+     * For comparing interpretations by center abscissa.
+     */
+    public static final Comparator<Inter> byCenterAbscissa = new Comparator<Inter>()
+    {
+        @Override
+        public int compare (Inter i1,
+                            Inter i2)
+        {
+            return Integer.compare(i1.getCenter().x, i2.getCenter().x);
+        }
+    };
+
+    /**
      * For comparing interpretations by right abscissa.
      */
     public static final Comparator<Inter> byRightAbscissa = new Comparator<Inter>()
@@ -179,27 +192,15 @@ public interface Inter
     };
 
     /**
-     * For comparing interpretations by decreasing contextual grade.
+     * For comparing interpretations by decreasing best grade.
      */
-    public static final Comparator<Inter> byReverseContextualGrade = new Comparator<Inter>()
+    public static final Comparator<Inter> byReverseBestGrade = new Comparator<Inter>()
     {
         @Override
         public int compare (Inter i1,
                             Inter i2)
         {
-            Double g1 = i1.getContextualGrade();
-
-            if (g1 == null) {
-                g1 = i1.getGrade();
-            }
-
-            Double g2 = i2.getContextualGrade();
-
-            if (g2 == null) {
-                g2 = i2.getGrade();
-            }
-
-            return Double.compare(g2, g1); // Reverse order
+            return Double.compare(i2.getBestGrade(), i1.getBestGrade()); // Reverse order
         }
     };
 
@@ -218,12 +219,6 @@ public interface Inter
     static double goodGrade = intrinsicRatio * constants.goodGrade.getValue();
 
     //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Mark this inter as frozen, that cannot be deleted even by a conflicting
-     * instance with higher grade.
-     */
-    public void freeze ();
-
     /**
      * Decrease the inter grade.
      *
@@ -244,11 +239,24 @@ public interface Inter
     String dumpOf ();
 
     /**
+     * Mark this inter as frozen, that cannot be deleted even by a conflicting
+     * instance with higher grade.
+     */
+    void freeze ();
+
+    /**
      * Report the precise defining area
      *
      * @return the inter area, if any
      */
     Area getArea ();
+
+    /**
+     * Report the best grade (either contextual or intrinsic) assigned to interpretation
+     *
+     * @return the contextual grade if available, otherwise the intrinsic grade
+     */
+    double getBestGrade ();
 
     /**
      * Report a COPY of the bounding box for this interpretation.
@@ -279,10 +287,9 @@ public interface Inter
     Point getCenterRight ();
 
     /**
-     * Report the contextual grade, (0..1 probability) computed for
-     * interpretation.
+     * Report the contextual grade, (0..1 probability) computed for interpretation.
      *
-     * @return the contextual grade, if any
+     * @return the contextual grade, if any, or null
      */
     Double getContextualGrade ();
 
@@ -315,8 +322,7 @@ public interface Inter
     Glyph getGlyph ();
 
     /**
-     * Report the intrinsic grade (0..1 probability) assigned to
-     * interpretation
+     * Report the intrinsic grade (0..1 probability) assigned to interpretation
      *
      * @return the intrinsic grade
      */
@@ -373,7 +379,7 @@ public interface Inter
     Rectangle getSymbolBounds (int interline);
 
     /**
-     * Report the voice, if any, this inter belongs to * @return
+     * Report the voice, if any, this inter belongs to
      *
      * @return the inter voice or null
      */
@@ -415,8 +421,7 @@ public interface Inter
     boolean isGood ();
 
     /**
-     * Report whether this interpretation represents the same thing
-     * as that interpretation
+     * Report whether this interpretation represents the same thing as that interpretation
      *
      * @param that the other inter to check
      * @return true if identical, false otherwise
@@ -433,7 +438,7 @@ public interface Inter
      * <p>
      * <b>NOTA</b>, precise meaning is: <i>"Does this inter step on the toes of that other one in
      * some incompatible way?"</i>.
-     * Keeping this in mind, an InterEnsemble does not "overlap" any of its contained inters, and
+     * Keeping this in mind, an InterEnsemble does not "overlap" any of its contained members, and
      * vice versa.
      * <p>
      * To save on CPU, this method does not test for trivial overlap
@@ -483,6 +488,8 @@ public interface Inter
 
     /**
      * Assign the mirror instance.
+     *
+     * @param mirror the mirrored instance
      */
     void setMirror (Inter mirror);
 

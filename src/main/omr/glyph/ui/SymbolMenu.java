@@ -76,9 +76,6 @@ public class SymbolMenu
     private boolean noVirtuals;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // SymbolMenu //
-    //------------//
     /**
      * Create the Symbol menu.
      *

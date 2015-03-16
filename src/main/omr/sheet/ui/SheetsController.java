@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sheet.ui;
 
+import omr.action.ActionManager;
+import omr.action.Actions;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -25,6 +28,9 @@ import omr.sheet.Sheet;
 import omr.step.Step;
 import omr.step.Stepping;
 import omr.step.Steps;
+
+import omr.ui.Colors;
+import omr.ui.util.SeparableMenu;
 
 import omr.util.OmrExecutors;
 
@@ -45,12 +51,12 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import omr.ui.Colors;
 
 /**
  * Class {@code SheetsController} is the UI Controller in charge of user interactions
@@ -62,10 +68,13 @@ import omr.ui.Colors;
  * <p>
  * The sheetsPane plays with the foreground color of its tabs to indicate current sheet status:
  * <ul>
- * <li>LIGHT_GRAY as default color (for a sheet just created and still empty)</li>
- * <li>ORANGE for a sheet on which early steps, typically LOAD+BINARY, are being processed.</li>
- * <li>BLACK for a sheet ready.</li>
- * <li>RED for a sheet where early steps failed (e.g. for lack of memory on very large books).
+ * <li><span style="color:gray"><b>LIGHT_GRAY</b></span> as default color
+ * (for a sheet just created and still empty).</li>
+ * <li><span style="color:orange"><b>ORANGE</b></span> for a sheet on which early
+ * steps, typically LOAD+BINARY, are being processed.</li>
+ * <li><span style=""><b>BLACK</b></span> for a sheet ready.</li>
+ * <li><span style="color:red"><b>RED</b></span> for a sheet where early steps
+ * failed (e.g. for lack of memory on very large books).
  * Selecting the sheet tab again will re-launch those steps.</li>
  * </ul>
  * <p>
@@ -522,6 +531,48 @@ public class SheetsController
         }
     }
 
+    //----------------//
+    // injectBookMenu //
+    //----------------//
+    /**
+     * If this sheet belongs to a multi-sheet book, make sure proper book sub-menu is
+     * inserted at end of sheet menu.
+     *
+     * @param sheet the sheet at hand
+     */
+    private void injectBookMenu (final Sheet sheet)
+    {
+        SwingUtilities.invokeLater(
+                new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        final ActionManager mgr = ActionManager.getInstance();
+                        final JMenu topMenu = mgr.getMenu(Actions.Domain.SHEET.name());
+                        final String subMenuName = Actions.Domain.BOOK.name();
+                        final JMenu subMenu = mgr.getMenu(subMenuName);
+
+                        final int count = topMenu.getMenuComponentCount();
+                        final String lastName = topMenu.getMenuComponent(count - 1).getName();
+
+                        if (sheet.getBook().isMultiSheet()) {
+                            // Make sure the last item in top menu is the sub-menu
+                            if ((lastName == null) || !lastName.equals(subMenuName)) {
+                                topMenu.addSeparator();
+                                topMenu.add(subMenu);
+                            }
+                        } else {
+                            // Remove the sub-menu if any is found at end of the top-menu
+                            if ((lastName != null) && lastName.equals(subMenuName)) {
+                                topMenu.remove(subMenu);
+                                SeparableMenu.trimSeparator(topMenu);
+                            }
+                        }
+                    }
+                });
+    }
+
     //------------------//
     // sheetTabSelected //
     //------------------//
@@ -537,6 +588,9 @@ public class SheetsController
         Sheet sheet = assembly.getSheet();
 
         if (!sheet.getBook().isClosing()) {
+            // Inject book submenu only if the containing book is a multi-sheet book
+            injectBookMenu(sheet);
+
             // Check whether we should run early steps on the sheet
             checkSheetStatus(sheet, sheetIndex);
 

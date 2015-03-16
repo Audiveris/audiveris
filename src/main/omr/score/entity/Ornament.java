@@ -48,9 +48,6 @@ public class Ornament
     private static final Logger logger = LoggerFactory.getLogger(Ornament.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // Ornament //
-    //----------//
     /**
      * Creates a new instance of Ornament event
      *

@@ -80,9 +80,6 @@ public class BookBench
     private final Date date = new Date(startTime);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // BookBench //
-    //-----------//
     /**
      * Creates a new {@code BookBench} object.
      *

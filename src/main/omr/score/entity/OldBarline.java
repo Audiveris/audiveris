@@ -93,9 +93,6 @@ public class OldBarline
     private String signature;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------//
-    // OldBarline //
-    //---------//
     /**
      * Create a bar line, in a containing measure
      *

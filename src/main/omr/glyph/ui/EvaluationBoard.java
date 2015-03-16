@@ -98,9 +98,6 @@ class EvaluationBoard
     private boolean useAnnotations;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // EvaluationBoard //
-    //-----------------//
     /**
      * Create a simplified passive evaluation board with one neural
      * network evaluator.

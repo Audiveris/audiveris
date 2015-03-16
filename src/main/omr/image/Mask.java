@@ -43,9 +43,6 @@ public class Mask
     private int pointCount;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------//
-    // Mask //
-    //------//
     /**
      * Creates a new Mask object.
      *

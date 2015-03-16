@@ -52,9 +52,6 @@ public abstract class MeasureId
     protected final boolean secondHalf;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // MeasureId //
-    //-----------//
     /**
      * Creates a new MeasureId object.
      *
@@ -75,7 +72,9 @@ public abstract class MeasureId
     /**
      * Creates a ScoreBased measure id object.
      *
+     * @param score related score
      * @param strId the score-based id (as visible by the user)
+     * @return score-based id
      */
     public static ScoreBased createScoreBased (Score score,
                                                String strId)

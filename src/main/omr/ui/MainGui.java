@@ -87,16 +87,16 @@ import omr.sheet.Book;
  * @author Hervé Bitteur
  */
 public class MainGui
-    extends SingleFrameApplication
-    implements EventSubscriber<SheetEvent>, PropertyChangeListener
+        extends SingleFrameApplication
+        implements EventSubscriber<SheetEvent>, PropertyChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
-    private static final Logger    logger = LoggerFactory.getLogger(MainGui.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(MainGui.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     //
     /** Official name of the application. */
     private String appName;
@@ -129,10 +129,6 @@ public class MainGui
     private StepMenu stepMenu;
 
     //~ Constructors -------------------------------------------------------------------------------
-
-    //---------//
-    // MainGui //
-    //---------//
     /**
      * Creates a new {@code MainGui} instance, to handle any user
      * display and interaction.
@@ -142,7 +138,6 @@ public class MainGui
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //
     //----------//
     // clearLog //
@@ -167,10 +162,10 @@ public class MainGui
     public boolean displayConfirmation (String message)
     {
         int answer = JOptionPane.showConfirmDialog(
-            frame,
-            message,
-            "Confirm - " + appName,
-            JOptionPane.WARNING_MESSAGE);
+                frame,
+                message,
+                "Confirm - " + appName,
+                JOptionPane.WARNING_MESSAGE);
 
         return answer == JOptionPane.YES_OPTION;
     }
@@ -186,10 +181,10 @@ public class MainGui
     public void displayError (String message)
     {
         JOptionPane.showMessageDialog(
-            frame,
-            message,
-            "Error - " + appName,
-            JOptionPane.ERROR_MESSAGE);
+                frame,
+                message,
+                "Error - " + appName,
+                JOptionPane.ERROR_MESSAGE);
     }
 
     //----------------//
@@ -219,10 +214,10 @@ public class MainGui
     public int displayModelessConfirm (String message)
     {
         return ModelessOptionPane.showModelessConfirmDialog(
-            frame,
-            message,
-            "Confirm - " + appName,
-            JOptionPane.YES_NO_OPTION);
+                frame,
+                message,
+                "Confirm - " + appName,
+                JOptionPane.YES_NO_OPTION);
     }
 
     //----------------//
@@ -236,10 +231,10 @@ public class MainGui
     public void displayWarning (String message)
     {
         JOptionPane.showMessageDialog(
-            frame,
-            message,
-            "Warning - " + appName,
-            JOptionPane.WARNING_MESSAGE);
+                frame,
+                message,
+                "Warning - " + appName,
+                JOptionPane.WARNING_MESSAGE);
     }
 
     //----------//
@@ -363,7 +358,8 @@ public class MainGui
 
             final Sheet sheet = sheetEvent.getData();
             SwingUtilities.invokeLater(
-                new Runnable() {
+                    new Runnable()
+                    {
                         @Override
                         public void run ()
                         {
@@ -379,7 +375,7 @@ public class MainGui
                             sb.append(" - ");
 
                             ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-                                getClass());
+                                    getClass());
                             sb.append(resource.getString("mainFrame.title"));
                             frame.setTitle(sb.toString());
                         }
@@ -400,11 +396,11 @@ public class MainGui
     @Override
     public void propertyChange (PropertyChangeEvent evt)
     {
-        String  propertyName = evt.getPropertyName();
+        String propertyName = evt.getPropertyName();
         Boolean display = (Boolean) evt.getNewValue();
 
         switch (propertyName) {
-        case GuiActions.BOARDS_DISPLAYED :
+        case GuiActions.BOARDS_DISPLAYED:
 
             // Toggle display of boards
             if (display) {
@@ -417,7 +413,7 @@ public class MainGui
 
             break;
 
-        case GuiActions.LOG_DISPLAYED :
+        case GuiActions.LOG_DISPLAYED:
 
             // Toggle display of log
             if (display) {
@@ -428,12 +424,12 @@ public class MainGui
 
             break;
 
-        case GuiActions.ERRORS_DISPLAYED :
+        case GuiActions.ERRORS_DISPLAYED:
 
             // Toggle display of errors
             if (display) {
                 JComponent comp = null;
-                Sheet      sheet = sheetsController.getSelectedSheet();
+                Sheet sheet = sheetsController.getSelectedSheet();
 
                 if (sheet != null) {
                     ErrorsEditor editor = sheet.getErrorsEditor();
@@ -577,7 +573,8 @@ public class MainGui
 
         // Define an exit listener
         addExitListener(
-            new ExitListener() {
+                new ExitListener()
+                {
                     @Override
                     public boolean canExit (EventObject e)
                     {
@@ -692,21 +689,21 @@ public class MainGui
     //-------------//
     private void defineMenus ()
     {
-        // Specific sheet menu
-        JMenu sheetMenu = new SeparableMenu();
+        // Specific file menu
+        JMenu fileMenu = new SeparableMenu();
 
         // Specific history sub-menu of sheet menu
-        sheetMenu.add(SheetActions.HistoryMenu.getInstance().getMenu());
+        fileMenu.add(SheetActions.HistoryMenu.getInstance().getMenu());
 
         // Specific step menu
         stepMenu = new StepMenu(new SeparableMenu());
 
         // Specific plugin menu
-        JMenu         pluginMenu = PluginManager.getInstance().getMenu(null);
+        JMenu pluginMenu = PluginManager.getInstance().getMenu(null);
 
         // For some specific top-level menus
         ActionManager mgr = ActionManager.getInstance();
-        mgr.injectMenu(Actions.Domain.FILE.name(), sheetMenu);
+        mgr.injectMenu(Actions.Domain.FILE.name(), fileMenu);
         mgr.injectMenu(Actions.Domain.STEP.name(), stepMenu.getMenu());
         mgr.injectMenu(Actions.Domain.PLUGIN.name(), pluginMenu);
 
@@ -717,13 +714,13 @@ public class MainGui
         // Menu bar
         JMenuBar innerBar = mgr.getMenuBar();
 
-        // Gauges = progress + memory
+        // Gauges = progress | memory
         JPanel gauges = new JPanel();
         gauges.setLayout(new BorderLayout());
         gauges.add(Stepping.createMonitor().getComponent(), BorderLayout.CENTER);
         gauges.add(new MemoryMeter().getComponent(), BorderLayout.EAST);
 
-        // Outer bar = menu + gauges
+        // Outer bar = menu | gauges
         JMenuBar outerBar = new JMenuBar();
         outerBar.setLayout(new GridLayout(1, 0));
         outerBar.add(innerBar);
@@ -752,12 +749,11 @@ public class MainGui
      */
     private boolean needBottomPane ()
     {
-        return GuiActions.getInstance().isLogDisplayed() ||
-               GuiActions.getInstance().isErrorsDisplayed();
+        return GuiActions.getInstance().isLogDisplayed()
+               || GuiActions.getInstance().isErrorsDisplayed();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //
     //------------------//
     // BoardsScrollPane //
@@ -767,7 +763,7 @@ public class MainGui
      * enough room for the boards.
      */
     private class BoardsScrollPane
-        extends JScrollPane
+            extends JScrollPane
     {
         //~ Methods --------------------------------------------------------------------------------
 
@@ -782,12 +778,12 @@ public class MainGui
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-            true,
-            "Should we preload costly packages in the background?");
+                true,
+                "Should we preload costly packages in the background?");
     }
 }

@@ -34,9 +34,6 @@ class RegressionPanel
     private static final Logger logger = LoggerFactory.getLogger(RegressionPanel.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // RegressionPanel //
-    //-----------------//
     /**
      * Creates a new RegressionPanel object.
      *

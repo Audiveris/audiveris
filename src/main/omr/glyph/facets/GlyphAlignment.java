@@ -37,7 +37,7 @@ import java.awt.geom.Point2D;
  * @author Hervé Bitteur
  */
 public interface GlyphAlignment
-    extends GlyphFacet
+        extends GlyphFacet
 {
     //~ Methods ------------------------------------------------------------------------------------
 
@@ -108,6 +108,7 @@ public interface GlyphAlignment
     /**
      * Return the position at the middle of the glyph, using the provided orientation.
      *
+     * @param orientation provided orientation
      * @return the position of the middle of the glyph
      */
     int getMidPos (Orientation orientation);
@@ -119,7 +120,7 @@ public interface GlyphAlignment
      * @param orientation the general orientation reference
      * @return the pos value (y for horizontal, x for vertical)
      */
-    double getPositionAt (double      coord,
+    double getPositionAt (double coord,
                           Orientation orientation);
 
     /**
@@ -172,11 +173,12 @@ public interface GlyphAlignment
      * @param orientation the general orientation reference
      * @return the thickness measured, expressed in number of pixels.
      */
-    double getThicknessAt (double      coord,
+    double getThicknessAt (double coord,
                            Orientation orientation);
 
     /**
      * Report whether a line definition is available
+     *
      * @return true if line is defined
      */
     boolean isLineDefined ();

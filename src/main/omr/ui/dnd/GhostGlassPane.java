@@ -62,9 +62,6 @@ public class GhostGlassPane
     private boolean overTarget = false;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // GhostGlassPane //
-    //----------------//
     /**
      * Create a new GhostGlassPane object
      */

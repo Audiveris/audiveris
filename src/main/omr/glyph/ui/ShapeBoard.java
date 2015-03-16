@@ -207,7 +207,7 @@ public class ShapeBoard
     private Panel shapesPanel;
 
     /** GlassPane */
-    private GhostGlassPane glassPane = Main.getGui().getGlassPane();
+    private final GhostGlassPane glassPane = Main.getGui().getGlassPane();
 
     // Update image and forward mouse location
     private final MyMotionAdapter motionAdapter = new MyMotionAdapter(glassPane);
@@ -219,9 +219,6 @@ public class ShapeBoard
     private final GhostDropAdapter<Shape> dropAdapter = new MyDropAdapter(glassPane);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // ShapeBoard //
-    //------------//
     /**
      * Create a new ShapeBoard object.
      *

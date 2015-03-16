@@ -40,9 +40,6 @@ public class BeamSymbol
     protected final int beamCount;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // BeamSymbol //
-    //------------//
     /**
      * Create a BeamSymbol.
      *

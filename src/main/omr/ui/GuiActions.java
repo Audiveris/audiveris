@@ -21,8 +21,8 @@ import omr.glyph.ui.SampleVerifier;
 import omr.glyph.ui.ShapeColorChooser;
 import omr.glyph.ui.panel.GlyphTrainer;
 
-import omr.score.ui.ScoreDependent;
-
+import omr.sheet.ui.SheetDependent;
+import static omr.sheet.ui.SheetDependent.SHEET_AVAILABLE;
 import omr.sheet.ui.SheetsController;
 
 import omr.ui.symbol.SymbolRipper;
@@ -72,7 +72,7 @@ import javax.swing.text.JTextComponent;
  * @author Hervé Bitteur
  */
 public class GuiActions
-        extends ScoreDependent
+        extends SheetDependent
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -103,6 +103,23 @@ public class GuiActions
     public static final String BOARDS_DISPLAYED = "boardsDisplayed";
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized GuiActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new GuiActions();
+        }
+
+        return INSTANCE;
+    }
+
     //----------//
     // clearLog //
     //----------//
@@ -173,23 +190,6 @@ public class GuiActions
     public void exit (ActionEvent e)
     {
         MainGui.getInstance().exit();
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized GuiActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new GuiActions();
-        }
-
-        return INSTANCE;
     }
 
     //-------------------//

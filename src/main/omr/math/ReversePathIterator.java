@@ -94,8 +94,7 @@ public class ReversePathIterator
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create an inverted path iterator from a standard one, keeping the winding
-     * rule.
+     * Create an inverted path iterator from a standard one, keeping the winding rule.
      *
      * @param original original iterator
      */

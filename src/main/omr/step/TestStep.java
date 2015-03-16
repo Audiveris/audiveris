@@ -49,9 +49,8 @@ public class TestStep
      */
     public TestStep ()
     {
-        super(
-                Steps.TEST,
-                Level.SCORE_LEVEL,
+        super(Steps.TEST,
+                Level.BOOK_LEVEL,
                 Mandatory.OPTIONAL,
                 DATA_TAB,
                 "Placeholder for specific tests");

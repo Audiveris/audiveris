@@ -50,9 +50,6 @@ public class SymbolsController
     public static final Color hiddenColor = Color.white;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------------//
-    // SymbolsController //
-    //-------------------//
     /**
      * Create a handler dedicated to symbol glyphs
      *

@@ -44,10 +44,6 @@ public class RunTableFactory
     private final Filter filter;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    // ----------------//
-    // RunTableFactory //
-    // ----------------//
     /**
      * Create an RunsTableFactory, with its specified orientation and no filtering.
      *

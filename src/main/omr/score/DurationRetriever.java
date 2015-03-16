@@ -14,7 +14,6 @@ package omr.score;
 import omr.math.Rational;
 
 import omr.score.entity.Page;
-import omr.score.entity.TimeSignature.InvalidTimeSignature;
 
 import omr.sheet.MeasureStack;
 import omr.sheet.SystemInfo;
@@ -28,7 +27,9 @@ import java.util.TreeMap;
 
 /**
  * Class {@code DurationRetriever} can process a page hierarchy to compute
- * the actual duration of every measure
+ * the actual duration of every measure.
+ * <p>
+ * This class does not seem to be used anymore...
  *
  * @author Hervé Bitteur
  */
@@ -39,13 +40,12 @@ public class DurationRetriever
     private static final Logger logger = LoggerFactory.getLogger(DurationRetriever.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** Map of Measure id -> Measure duration, whatever the containing part. */
     private final Map<Integer, Rational> measureDurations = new TreeMap<Integer, Rational>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new DurationRetriever object.
+     * Creates a new {@code DurationRetriever} object.
      */
     public DurationRetriever ()
     {
@@ -64,7 +64,7 @@ public class DurationRetriever
     {
         // Delegate to system
         for (SystemInfo system : page.getSystems()) {
-            visit(system);
+            processSystem(system);
         }
     }
 
@@ -78,8 +78,9 @@ public class DurationRetriever
      */
     public void process (Score score)
     {
+        // Delegate to pages
         for (Page page : score.getPages()) {
-            DurationRetriever.this.process(page);
+            process(page);
         }
     }
 
@@ -87,17 +88,13 @@ public class DurationRetriever
     // process //
     //---------//
     /**
-     * Visit the measure stack.
+     * Process the measure stack.
      *
      * @param stack measure stack to process
      */
     public void process (MeasureStack stack)
     {
         try {
-            if (stack.getPageId().equals("18")) {
-                logger.debug("Visiting {}", stack);
-            }
-
             Rational measureDur = stack.getCurrentDuration();
 
             if (!measureDur.equals(Rational.ZERO)) {
@@ -142,21 +139,20 @@ public class DurationRetriever
                     }
                 }
             }
-        } catch (InvalidTimeSignature ex) {
         } catch (Exception ex) {
             logger.warn(getClass().getSimpleName() + " Error visiting " + stack, ex);
         }
     }
 
-    //--------------//
-    // process System //
-    //--------------//
+    //---------------//
+    // processSystem //
+    //---------------//
     /**
      * System processing. The rest of processing is directly delegated to the measures
      *
-     * @param system process the system to export
+     * @param system the system to process
      */
-    private void visit (SystemInfo system)
+    private void processSystem (SystemInfo system)
     {
         logger.debug("Visiting {}", system);
 

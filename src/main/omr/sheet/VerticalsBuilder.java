@@ -30,7 +30,6 @@ import omr.grid.FilamentsFactory;
 import omr.lag.Section;
 
 import omr.math.LineUtil;
-
 import static omr.run.Orientation.*;
 
 import omr.selection.GlyphEvent;
@@ -115,9 +114,6 @@ public class VerticalsBuilder
     private final SeedCheckSuite suite = new SeedCheckSuite();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // VerticalsBuilder //
-    //------------------//
     /**
      * Creates a new VerticalsBuilder object.
      *

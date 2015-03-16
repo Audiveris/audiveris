@@ -47,10 +47,6 @@ public class RunsRetriever
     private final Adapter adapter;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //---------------//
-    // RunsRetriever //
-    //---------------//
     /**
      * Creates a new RunsRetriever object.
      *

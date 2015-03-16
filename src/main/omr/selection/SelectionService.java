@@ -45,9 +45,6 @@ public class SelectionService
     private final Class[] allowedEvents;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // SelectionService //
-    //------------------//
     /**
      * Creates a new SelectionService object.
      *

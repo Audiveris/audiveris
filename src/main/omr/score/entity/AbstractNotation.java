@@ -37,7 +37,7 @@ public abstract class AbstractNotation
      * start and the stop)
      *
      * @param measure the containing measure
-     * @param point
+     * @param point   element location
      * @param chord   the related chord
      * @param glyph   the underlying glyph
      */

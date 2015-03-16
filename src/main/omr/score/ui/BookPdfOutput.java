@@ -29,6 +29,9 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Class {@code BookPdfOutput} produces a physical PDF output of a book.
@@ -63,16 +66,25 @@ public class BookPdfOutput
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    public void write ()
+    /**
+     * Write the PDF output for the provided sheet if any, otherwise for the whole book.
+     *
+     * @param sheet desired sheet or null
+     * @throws Exception if printing goes wrong
+     */
+    public void write (Sheet sheet)
             throws Exception
     {
-        FileOutputStream fos = new FileOutputStream(file);
+        FileOutputStream fos = null;
         Document document = null;
         PdfWriter writer = null;
 
         try {
-            for (Sheet sheet : book.getSheets()) {
-                Dimension dim = sheet.getDimension();
+            final List<Sheet> sheets = (sheet != null) ? Arrays.asList(sheet) : book.getSheets();
+            fos = new FileOutputStream(file);
+
+            for (Sheet sh : sheets) {
+                Dimension dim = sh.getDimension();
 
                 if (document == null) {
                     document = new Document(new Rectangle(dim.width, dim.height));
@@ -96,7 +108,7 @@ public class BookPdfOutput
 
                 // Painting
                 SheetResultPainter painter = new SheetResultPainter(
-                        sheet,
+                        sh,
                         g2,
                         false, // No voice painting
                         true, // Paint staff lines
@@ -108,15 +120,17 @@ public class BookPdfOutput
                 // This is the end...
                 g2.dispose();
             }
-        } catch (Exception ex) {
-            logger.warn("Error printing " + book.getRadix(), ex);
-            throw ex;
         } finally {
             if (document != null) {
                 document.close();
             }
-        }
 
-        fos.close();
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
     }
 }

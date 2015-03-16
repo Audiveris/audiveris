@@ -44,9 +44,6 @@ public class TextTask
     private final String content;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // TextTask //
-    //----------//
     /**
      * Creates a new TextTask object.
      *
@@ -65,10 +62,7 @@ public class TextTask
         this.content = content;
     }
 
-    //----------//
-    // TextTask //
-    //----------//
-    /** No-arg constructor for JAXB only */
+    /** No-arg constructor for JAXB only. */
     private TextTask ()
     {
         roleInfo = null;

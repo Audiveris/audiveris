@@ -37,8 +37,7 @@ public class GaussianGrayFilter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new GaussianGrayFilter object with a default radius
-     * value.
+     * Creates a new GaussianGrayFilter object with a default radius value.
      */
     public GaussianGrayFilter ()
     {

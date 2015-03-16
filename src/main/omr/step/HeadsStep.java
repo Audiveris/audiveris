@@ -43,9 +43,6 @@ public class HeadsStep
     private static final Logger logger = LoggerFactory.getLogger(HeadsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // HeadsStep //
-    //-----------//
     /**
      * Creates a new {@code HeadsStep} object.
      */

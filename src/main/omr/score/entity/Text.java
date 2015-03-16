@@ -43,14 +43,10 @@ import java.util.List;
  * van Beethoven" is meaningful as a Creator Text, but the individual words "Ludwig", "van",
  * "Beethoven" are not.
  * For lyrics, since we can have very long sentences, and since the positioning of every syllable
- * must be done with precision, we handle one LyricsItem Text entity per isolated word.</p>
+ * must be done with precision, we handle one LyricsItem Text entity per isolated word.
  * <p>
  * Working at the sentence level also allows a better accuracy in the setting of parameters (such as
- * baseline or font) for the whole sentence.</p>
- *
- * <h4>Synoptic of Text Translation:<br/>
- * <img src="doc-files/TextTranslation.png"/>
- * </h4>
+ * baseline or font) for the whole sentence.
  *
  * @author Hervé Bitteur
  */
@@ -67,9 +63,6 @@ public abstract class Text
     private final TextLine sentence;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------//
-    // Text //
-    //------//
     /**
      * Creates a new Text object.
      *
@@ -80,9 +73,6 @@ public abstract class Text
         this(sentence, sentence.getLocation());
     }
 
-    //------//
-    // Text //
-    //------//
     /**
      * Creates a new Text object, with a specific location, different from the sentence
      * location.
@@ -387,8 +377,7 @@ public abstract class Text
     //-------------//
     // CreatorText //
     //-------------//
-    /** Subclass of Text, dedicated to a Creator (composer, lyricist,
-     * etc...). */
+    /** Subclass of Text, dedicated to a Creator (composer, lyricist, etc...). */
     public static class CreatorText
             extends Text
     {

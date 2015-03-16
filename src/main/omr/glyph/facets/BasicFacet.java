@@ -19,7 +19,7 @@ import omr.util.Navigable;
  * @author Hervé Bitteur
  */
 public class BasicFacet
-    implements GlyphFacet
+        implements GlyphFacet
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -28,10 +28,6 @@ public class BasicFacet
     protected final Glyph glyph;
 
     //~ Constructors -------------------------------------------------------------------------------
-
-    //------------//
-    // BasicFacet //
-    //------------//
     /**
      * Create a new BasicFacet object
      *
@@ -43,7 +39,6 @@ public class BasicFacet
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //--------//
     // dumpOf //
     //--------//

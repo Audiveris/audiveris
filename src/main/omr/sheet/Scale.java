@@ -96,9 +96,6 @@ public class Scale
     private final Range secondInterlineRange;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------//
-    // Scale //
-    //-------//
     /**
      * Create a degenerated scale entity, meant for computing
      * scale-dependent parameters.

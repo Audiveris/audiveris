@@ -46,9 +46,6 @@ public class LogSlider
     private final double base;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // LogSlider //
-    //-----------//
     /**
      * Creates a new {@code LogSlider} instance.
      *

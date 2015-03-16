@@ -55,10 +55,6 @@ public abstract class AbstractGlyphMenu
     protected boolean initDone = false;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //-------------------//
-    // AbstractGlyphMenu //
-    //-------------------//
     /**
      * Creates a new AbstractGlyphMenu object.
      *
@@ -93,6 +89,7 @@ public abstract class AbstractGlyphMenu
     /**
      * Update the menu according to the currently selected glyphs.
      *
+     * @param glyphs the selected glyphs
      * @return the number of selected glyphs
      */
     public int updateMenu (Set<Glyph> glyphs)

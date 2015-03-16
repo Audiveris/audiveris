@@ -14,7 +14,6 @@ package omr.math;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code GeoUtil} gathers simple utilities related to geometry.
@@ -24,20 +23,6 @@ import java.awt.geom.Rectangle2D;
 public abstract class GeoUtil
 {
     //~ Methods ------------------------------------------------------------------------------------
-
-    /**
-     * Report whether the two provided rectangles are identical
-     *
-     * @param one first provided rectangle
-     * @param two the other provided rectangle
-     * @return true if identical
-     */
-    public static boolean areIdentical (Rectangle one,
-                                        Rectangle two)
-    {
-        return (one.x == two.x) && (one.y == two.y) && (one.width == two.width)
-               && (one.height == two.height);
-    }
 
     //----------//
     // centerOf //

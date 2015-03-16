@@ -30,9 +30,6 @@ public class JunctionDeltaPolicy
     private final int maxDeltaLength;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------------//
-    // JunctionDeltaPolicy //
-    //---------------------//
     /**
      * Creates an instance of policy based on delta run length.
      *

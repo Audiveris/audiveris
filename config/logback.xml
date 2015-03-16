@@ -42,7 +42,8 @@
     </root>
     
     <!-- Define DEBUG loggers here below: -->
-<!--    <logger name="omr.score.DurationRetriever" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.SlotsBuilder" level="DEBUG"/>-->
+<!--    <logger name="omr.score.PartwiseBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.text.tesseract.TesseractOrder" level="DEBUG"/>-->
 <!--    <logger name="omr.image.ImageLoading" level="DEBUG"/>-->
 <!--    <logger name="omr.score.PartwiseBuilder" level="DEBUG"/>-->
@@ -66,8 +67,9 @@
 <!--    <logger name="omr.sheet.ui.SheetAssembly" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.ui.SheetsController" level="DEBUG"/>-->
 <!--    <logger name="omr.step.Stepping" level="DEBUG"/>-->
+<!--    <logger name="omr.step.StepMonitor" level="DEBUG"/>-->
 <!--    <logger name="omr.script.Script" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.picture.PictureLoader" level="DEBUG"/>-->
-<!--    <logger name="omr.CLI" level="DEBUG"/>-->
+    <logger name="omr.CLI" level="DEBUG"/>
 
 </configuration>

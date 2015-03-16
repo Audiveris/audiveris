@@ -35,8 +35,10 @@ import java.util.List;
  * Abstract class {@code AbstractBeamInter} is the basis for {@link FullBeamInter},
  * {@link BeamHookInter} and {@link SmallBeamInter} classes.
  * <p>
- * The following image shows two beams (a full beam and a beam hook):<br/>
- * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Beamed_notes.svg/220px-Beamed_notes.svg.png" />
+ * The following image shows two beams (a full beam and a beam hook):
+ * <p>
+ * <img alt="Beam image"
+ * src="http://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Beamed_notes.svg/220px-Beamed_notes.svg.png">
  *
  * @author Hervé Bitteur
  */

@@ -41,10 +41,6 @@ public class PatternsChecker
     private final SystemInfo system;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //-----------------//
-    // PatternsChecker //
-    //-----------------//
     /**
      * Creates a new PatternsChecker object.
      *

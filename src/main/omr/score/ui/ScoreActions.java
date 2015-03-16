@@ -17,17 +17,18 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.score.Score;
-import omr.score.entity.ScorePart;
+import omr.score.entity.LogicalPart;
 
 import omr.script.Script;
 
 import omr.sheet.Book;
 import omr.sheet.BookManager;
+import static omr.sheet.BookManager.PDF_EXTENSION;
 import omr.sheet.Sheet;
 import omr.sheet.ui.BookController;
+import omr.sheet.ui.SheetDependent;
 import omr.sheet.ui.SheetsController;
 
-import omr.step.ExportStep;
 import omr.step.Stepping;
 import omr.step.Steps;
 
@@ -49,6 +50,8 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import javax.swing.JDialog;
@@ -60,7 +63,7 @@ import javax.swing.JOptionPane;
  * @author Hervé Bitteur
  */
 public class ScoreActions
-        extends ScoreDependent
+        extends SheetDependent
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -77,6 +80,24 @@ public class ScoreActions
     /** Singleton */
     private static ScoreActions INSTANCE;
 
+    /** The book manager. */
+    private static final BookManager bookManager = BookManager.getInstance();
+
+    /** .mxl filter for user selection. */
+    private static final OmrFileFilter MXL_FILTER = new OmrFileFilter(
+            "MXL files",
+            new String[]{BookManager.COMPRESSED_SCORE_EXTENSION});
+
+    /** .xml filter for user selection. */
+    private static final OmrFileFilter XML_FILTER = new OmrFileFilter(
+            "XML files",
+            new String[]{BookManager.SCORE_EXTENSION});
+
+    /** .pdf filter for user selection. */
+    private static final OmrFileFilter PDF_FILTER = new OmrFileFilter(
+            "PDF files",
+            new String[]{BookManager.PDF_EXTENSION});
+
     //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Flag to allow automatic book rebuild on every user edition action */
@@ -86,10 +107,6 @@ public class ScoreActions
     private boolean manualPersisted = false;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //--------------//
-    // ScoreActions //
-    //--------------//
     /**
      * Creates a new ScoreActions object.
      */
@@ -110,12 +127,34 @@ public class ScoreActions
      */
     public static boolean checkParameters (Sheet sheet)
     {
-        if (constants.promptParameters.getValue()) {
-            return applyUserSettings(sheet);
-        } else {
-            return true; /////////////////////////////////////////////////////////////////////////////////////////////
-            ///return fillParametersWithDefaults(sheet.getBook());
-        }
+        //        if (constants.promptParameters.getValue()) {
+        //            return applyUserSettings(sheet);
+        //        } else {
+        //            return true; /////////////////////////////////////////////////////////////////////////////////////////////
+        //            ///return fillParametersWithDefaults(sheet.getBook());
+        //        }
+        return true;
+    }
+
+    //-----------------//
+    // checkParameters //
+    //-----------------//
+    /**
+     * Make sure that the book parameters are properly set up, even by
+     * prompting the user for them, otherwise return false
+     *
+     * @param sheet the provided sheet
+     * @return true if OK, false otherwise
+     */
+    public static boolean checkParameters (Book book)
+    {
+        //        if (constants.promptParameters.getValue()) {
+        //            return applyUserSettings(sheet);
+        //        } else {
+        //            return true; /////////////////////////////////////////////////////////////////////////////////////////////
+        //            ///return fillParametersWithDefaults(sheet.getBook());
+        //        }
+        return true;
     }
 
     //-------------//
@@ -135,43 +174,87 @@ public class ScoreActions
         return INSTANCE;
     }
 
-    //
-    //-------------//
-    // browseScore //
-    //-------------//
+    //------------//
+    // browseBook //
+    //------------//
     /**
      * Launch the tree display of the current book.
      *
      * @param e
      */
-    @Action(enabledProperty = SCORE_AVAILABLE)
-    public void browseScore (ActionEvent e)
+    @Action(enabledProperty = SHEET_AVAILABLE)
+    public void browseBook (ActionEvent e)
     {
         MainGui.getInstance().show(BookController.getCurrentBook().getBrowserFrame());
     }
 
-    //------------//
-    // buildScore //
-    //------------//
+    //-----------//
+    // buildBook //
+    //-----------//
     /**
-     * Translate all sheet glyphs to book entities, or rebuild the
-     * sheet at end if SCORE step has already been reached.
-     * Actually, it's just a convenient way to launch the SCORE step
-     * or relaunch from the SYMBOLS step.
+     * Launch or complete the transcription of all sheets and merge them at book level.
      *
      * @param e the event that triggered this action
      * @return the task to launch in background
      */
-    @Action(enabledProperty = SCORE_IDLE)
-    public Task<Void, Void> buildScore (ActionEvent e)
+    @Action(enabledProperty = BOOK_IDLE)
+    public Task<Void, Void> buildBook (ActionEvent e)
+    {
+        Sheet sheet = SheetsController.getCurrentSheet();
+        Book book = sheet.getBook();
+
+        return new BuildBookTask(book);
+    }
+
+    //------------//
+    // buildSheet //
+    //------------//
+    /**
+     * Launch sheet transcription.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = SHEET_IDLE)
+    public Task<Void, Void> buildSheet (ActionEvent e)
     {
         Sheet sheet = SheetsController.getCurrentSheet();
 
-        if (sheet.isDone(Steps.valueOf(Steps.SCORE))) {
+        if (sheet.isDone(Steps.valueOf(Steps.PAGE))) {
             return new RebuildTask(sheet);
         } else {
-            return new BuildTask(sheet);
+            return new BuildSheetTask(sheet);
         }
+    }
+
+    //-----------//
+    // cleanBook //
+    //-----------//
+    /**
+     * Delete the exported MusicXML for the whole current book.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = SHEET_AVAILABLE)
+    public void cleanBook (ActionEvent e)
+    {
+        Sheet sheet = SheetsController.getCurrentSheet();
+        bookManager.cleanBook(sheet.getBook(), null);
+    }
+
+    //------------//
+    // cleanSheet //
+    //------------//
+    /**
+     * Delete the exported MusicXML for the current sheet.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = SHEET_AVAILABLE)
+    public void cleanSheet (ActionEvent e)
+    {
+        Sheet sheet = SheetsController.getCurrentSheet();
+        bookManager.cleanSheet(sheet, null);
     }
 
     //------------------//
@@ -192,20 +275,23 @@ public class ScoreActions
     // dumpBook //
     //----------//
     /**
-     * Dump the internals of a book to system output
+     * Dump the internals of a book to system output.
      *
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = SCORE_AVAILABLE)
+    @Action(enabledProperty = SHEET_AVAILABLE)
     public void dumpBook (ActionEvent e)
     {
-        logger.warn("dumpBook not yet implemented");
+        logger.error("dumpBook() is not yet implemented.");
 
         ///BookController.getCurrentBook().dump();
     }
 
+    //-------------------//
+    // dumpCurrentScript //
+    //-------------------//
     /**
-     * Dump the script of the sheet currently selected
+     * Dump the script of the sheet currently selected.
      */
     @Action(enabledProperty = "sheetAvailable")
     public void dumpCurrentScript ()
@@ -219,6 +305,149 @@ public class ScoreActions
                 script.dump();
             }
         }
+    }
+
+    //------------//
+    // exportBook //
+    //------------//
+    /**
+     * Export the currently selected book using MusicXML format
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = BOOK_IDLE)
+    public Task<Void, Void> exportBook (ActionEvent e)
+    {
+        final Book book = BookController.getCurrentBook();
+
+        if (book == null) {
+            return null;
+        }
+
+        final Path exportPath = book.getExportPath();
+
+        if (exportPath != null) {
+            return new ExportBookTask(book, exportPath);
+        } else {
+            return exportBookAs(e);
+        }
+    }
+
+    //--------------//
+    // exportBookAs //
+    //--------------//
+    /**
+     * Export the currently selected book, using MusicXML format, to a user-provided
+     * location.
+     * <p>
+     * NOTA: This action is disabled for any single-sheet book, see exportSheetAs() instead.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = BOOK_IDLE)
+    public Task<Void, Void> exportBookAs (ActionEvent e)
+    {
+        final Book book = BookController.getCurrentBook();
+
+        if (book == null) {
+            return null;
+        }
+
+        // Select book folder name to be used as radix (since this method assumes a multi-sheet book)
+        final File defaultBookFile = bookManager.getDefaultExportPath(book).toFile();
+        final String ext = BookManager.getExportExtension();
+        String title = "Choose target book radix [no extension]";
+        final File bookFile = UIUtil.directoryChooser(null, defaultBookFile, title);
+
+        if (bookFile == null) {
+            return null;
+        }
+
+        // Remove .mxl/.xml extension if any
+        final Path bookPath = FileUtil.avoidExtension(bookFile.toPath(), ext);
+
+        return new ExportBookTask(book, bookPath);
+    }
+
+    //-------------//
+    // exportSheet //
+    //-------------//
+    /**
+     * Export the currently selected sheet using MusicXML format.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = SHEET_IDLE)
+    public Task<Void, Void> exportSheet (ActionEvent e)
+    {
+        final Sheet sheet = SheetsController.getCurrentSheet();
+
+        if (sheet == null) {
+            return null;
+        }
+
+        final Path exportPath = sheet.getBook().getExportPath();
+
+        if (exportPath != null) {
+            return new ExportSheetTask(sheet, exportPath);
+        } else {
+            return exportSheetAs(e);
+        }
+    }
+
+    //---------------//
+    // exportSheetAs //
+    //---------------//
+    /**
+     * Export the currently selected sheet using MusicXML format, to a user-provided
+     * location.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = SHEET_IDLE)
+    public Task<Void, Void> exportSheetAs (ActionEvent e)
+    {
+        final Sheet sheet = SheetsController.getCurrentSheet();
+
+        if (sheet == null) {
+            return null;
+        }
+
+        // Let the user select book output
+        final Book book = sheet.getBook();
+        final File defaultBookFile = bookManager.getDefaultExportPath(book).toFile();
+        final String ext = BookManager.getExportExtension();
+        final File bookFile;
+
+        if (book.isMultiSheet()) {
+            // Select book folder name (to be used as radix)
+            String title = "Choose target book radix [no extension]";
+            bookFile = UIUtil.directoryChooser(null, defaultBookFile, title);
+        } else {
+            // Select book file name
+            final OmrFileFilter filter = BookManager.useCompression() ? MXL_FILTER : XML_FILTER;
+            final String title = "Choose target book radix [" + ext
+                                 + " extension is optional]";
+            bookFile = UIUtil.fileChooser(true, null, defaultBookFile, filter, title);
+        }
+
+        if (bookFile == null) {
+            return null;
+        }
+
+        // Remove .mxl/.xml extension if any
+        final Path bookPath = FileUtil.avoidExtension(bookFile.toPath(), ext);
+
+        // Make sure book folder is created
+        if (book.isMultiSheet() && !checkBookFolder(bookPath)) {
+            return null;
+        }
+
+        return new ExportSheetTask(sheet, bookPath);
     }
 
     //-------------------//
@@ -235,6 +464,145 @@ public class ScoreActions
     public boolean isRebuildAllowed ()
     {
         return rebuildAllowed;
+    }
+
+    //-----------//
+    // printBook //
+    //-----------//
+    /**
+     * Write the currently selected book, as a PDF file
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = BOOK_IDLE)
+    public Task<Void, Void> printBook (ActionEvent e)
+    {
+        final Book book = BookController.getCurrentBook();
+
+        if (book == null) {
+            return null;
+        }
+
+        final Path bookPrintPath = book.getPrintPath();
+
+        if (bookPrintPath != null) {
+            return new PrintBookTask(book, bookPrintPath);
+        } else {
+            return printBookAs(e);
+        }
+    }
+
+    //-------------//
+    // printBookAs //
+    //-------------//
+    /**
+     * Write the currently selected book, using PDF format, to a user-provided file.
+     * <p>
+     * NOTA: This action is disabled for any single-sheet book, see printSheetAs() instead.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = BOOK_IDLE)
+    public Task<Void, Void> printBookAs (ActionEvent e)
+    {
+        final Book book = BookController.getCurrentBook();
+
+        if (book == null) {
+            return null;
+        }
+
+        // Select book folder name (to be used as radix)
+        // (since this method assumes a multi-sheet book)
+        final File defaultBookFile = bookManager.getDefaultPrintPath(book).toFile();
+        String title = "Choose target book radix [no extension]";
+        final File bookFile = UIUtil.directoryChooser(null, defaultBookFile, title);
+
+        if (bookFile == null) {
+            return null;
+        }
+
+        // Remove .pdf extension if any
+        final Path bookPath = FileUtil.avoidExtension(bookFile.toPath(), PDF_EXTENSION);
+
+        return new PrintBookTask(book, bookPath);
+    }
+
+    //------------//
+    // printSheet //
+    //------------//
+    /**
+     * Write the currently selected sheet, as a PDF file
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = SHEET_IDLE)
+    public Task<Void, Void> printSheet (ActionEvent e)
+    {
+        final Sheet sheet = SheetsController.getCurrentSheet();
+
+        if (sheet == null) {
+            return null;
+        }
+
+        final Book book = sheet.getBook();
+        final Path bookPdfPath = book.getPrintPath();
+
+        if (bookPdfPath != null) {
+            return new PrintSheetTask(sheet, bookPdfPath);
+        } else {
+            return printSheetAs(e);
+        }
+    }
+
+    //--------------//
+    // printSheetAs //
+    //--------------//
+    /**
+     * Write the currently selected sheet, using PDF format, to a user-provided location.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = SHEET_IDLE)
+    public Task<Void, Void> printSheetAs (ActionEvent e)
+    {
+        final Sheet sheet = SheetsController.getCurrentSheet();
+
+        if (sheet == null) {
+            return null;
+        }
+
+        // Let the user select a PDF output file
+        final Book book = sheet.getBook();
+        final File defaultBookFile = bookManager.getDefaultPrintPath(book).toFile();
+        final File bookFile;
+
+        if (book.isMultiSheet()) {
+            // Select book folder name (to be used as radix)
+            String title = "Choose target book radix [no extension]";
+            bookFile = UIUtil.directoryChooser(null, defaultBookFile, title);
+        } else {
+            // Select book file name
+            String title = "Choose target book radix [.pdf extension is optional]";
+            bookFile = UIUtil.fileChooser(true, null, defaultBookFile, PDF_FILTER, title);
+        }
+
+        if (bookFile == null) {
+            return null;
+        }
+
+        // Remove .pdf extension if any
+        final Path bookPath = FileUtil.avoidExtension(bookFile.toPath(), PDF_EXTENSION);
+
+        // Make sure book folder is created
+        if (book.isMultiSheet() && !checkBookFolder(bookPath)) {
+            return null;
+        }
+
+        return new PrintSheetTask(sheet, bookPath);
     }
 
     //--------------------//
@@ -255,88 +623,6 @@ public class ScoreActions
         boolean oldValue = this.rebuildAllowed;
         this.rebuildAllowed = value;
         firePropertyChange(REBUILD_ALLOWED, oldValue, value);
-    }
-
-    //------------//
-    // storeScore //
-    //------------//
-    /**
-     * Export the currently selected book, using compressed or standard MusicXML format
-     *
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = SCORE_AVAILABLE)
-    public Task<Void, Void> storeScore (ActionEvent e)
-    {
-        final Sheet sheet = SheetsController.getCurrentSheet();
-
-        if (sheet == null) {
-            return null;
-        }
-
-        final Path exportPath = sheet.getBook().getExportPath();
-
-        if (exportPath != null) {
-            return new StoreBookTask(sheet, exportPath);
-        } else {
-            return storeScoreAs(e);
-        }
-    }
-
-    //--------------//
-    // storeScoreAs //
-    //--------------//
-    /**
-     * Export the currently selected book, using compressed or standard MusicXML format,
-     * to a user-provided file
-     *
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = SCORE_AVAILABLE)
-    public Task<Void, Void> storeScoreAs (ActionEvent e)
-    {
-        final Sheet sheet = SheetsController.getCurrentSheet();
-
-        if (sheet == null) {
-            return null;
-        }
-
-        // Let the user select a book output file
-        final boolean compressed = ExportStep.useCompression();
-        final OmrFileFilter filter = compressed
-                ? new OmrFileFilter(
-                        "MXL files",
-                        new String[]{BookManager.COMPRESSED_SCORE_EXTENSION})
-                : new OmrFileFilter(
-                        "XML files",
-                        new String[]{BookManager.SCORE_EXTENSION});
-        File exportFile = UIUtil.fileChooser(
-                true,
-                null,
-                BookManager.getInstance().getDefaultExportPath(sheet.getBook()).toFile(),
-                filter);
-
-        if (exportFile != null) {
-            final Path filePath = exportFile.toPath();
-
-            // Remove .xml or .mxl extension is any
-            final Path exportPath;
-            final String ext = FileUtil.getExtension(exportFile);
-
-            if (ext.equalsIgnoreCase(BookManager.SCORE_EXTENSION)
-                || ext.equalsIgnoreCase(BookManager.COMPRESSED_SCORE_EXTENSION)) {
-                String filename = FileUtil.getNameSansExtension(filePath);
-                exportPath = filePath.resolveSibling(filename);
-            } else {
-                exportPath = filePath;
-            }
-
-            return new StoreBookTask(sheet, exportPath);
-        } else {
-            return null;
-        }
     }
 
     //---------------//
@@ -364,66 +650,6 @@ public class ScoreActions
     @Action(selectedProperty = REBUILD_ALLOWED)
     public void toggleRebuild (ActionEvent e)
     {
-    }
-
-    //------------------//
-    // writePhysicalPdf //
-    //------------------//
-    /**
-     * Write the currently selected book, as a PDF file
-     *
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = SCORE_AVAILABLE)
-    public Task<Void, Void> writeSheetPdf (ActionEvent e)
-    {
-        final Book book = BookController.getCurrentBook();
-
-        if (book == null) {
-            return null;
-        }
-
-        final Path pdfPath = book.getPrintPath();
-
-        if (pdfPath != null) {
-            return new WriteSheetPdfTask(book, pdfPath);
-        } else {
-            return writeSheetPdfAs(e);
-        }
-    }
-
-    //-----------------//
-    // writeSheetPdfAs //
-    //-----------------//
-    /**
-     * Write the currently selected book, using PDF format,
-     * to a user-provided file
-     *
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = SCORE_AVAILABLE)
-    public Task<Void, Void> writeSheetPdfAs (ActionEvent e)
-    {
-        final Book book = BookController.getCurrentBook();
-
-        if (book == null) {
-            return null;
-        }
-
-        // Let the user select a PDF output file
-        File pdfFile = UIUtil.fileChooser(
-                true,
-                null,
-                BookManager.getInstance().getDefaultPrintPath(book).toFile(),
-                new OmrFileFilter("PDF files", new String[]{".pdf"}));
-
-        if (pdfFile != null) {
-            return new WriteSheetPdfTask(book, pdfFile.toPath());
-        } else {
-            return null;
-        }
     }
 
     //-------------------//
@@ -494,6 +720,22 @@ public class ScoreActions
         }
     }
 
+    private boolean checkBookFolder (Path bookPath)
+    {
+        // Make sure book folder is created
+        try {
+            if (!Files.exists(bookPath)) {
+                Files.createDirectories(bookPath);
+            }
+        } catch (IOException ex) {
+            logger.warn("Could not create folder " + bookPath, ex);
+
+            return false;
+        }
+
+        return true;
+    }
+
     //----------------------------//
     // fillParametersWithDefaults //
     //----------------------------//
@@ -506,16 +748,16 @@ public class ScoreActions
      */
     private static boolean fillParametersWithDefaults (Score score)
     {
-        if (score.getPartList() != null) {
-            for (ScorePart scorePart : score.getPartList()) {
+        if (score.getLogicalParts() != null) {
+            for (LogicalPart logicalPart : score.getLogicalParts()) {
                 // Part name
-                if (scorePart.getName() == null) {
-                    scorePart.setName(scorePart.getDefaultName());
+                if (logicalPart.getName() == null) {
+                    logicalPart.setName(logicalPart.getDefaultName());
                 }
 
                 // Part midi program
-                if (scorePart.getMidiProgram() == null) {
-                    scorePart.setMidiProgram(scorePart.getDefaultProgram());
+                if (logicalPart.getMidiProgram() == null) {
+                    logicalPart.setMidiProgram(logicalPart.getDefaultProgram());
                 }
             }
         }
@@ -529,24 +771,24 @@ public class ScoreActions
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-------------------//
-    // WriteSheetPdfTask //
-    //-------------------//
-    public static class WriteSheetPdfTask
+    //---------------//
+    // PrintBookTask //
+    //---------------//
+    public static class PrintBookTask
             extends BasicTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         final Book book;
 
-        final Path pdfPath;
+        final Path bookPrintPath;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public WriteSheetPdfTask (Book book,
-                                  Path pdfPath)
+        public PrintBookTask (Book book,
+                              Path bookPrintPath)
         {
             this.book = book;
-            this.pdfPath = pdfPath;
+            this.bookPrintPath = bookPrintPath;
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -554,17 +796,88 @@ public class ScoreActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
-            Stepping.ensureBookStep(Steps.valueOf(Steps.SCORE), book);
-            BookManager.getInstance().writePhysicalPdf(book, pdfPath);
+            book.setPrintPath(bookPrintPath);
+
+            for (Sheet sheet : book.getSheets()) {
+                Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
+            }
+
+            bookManager.printBook(book, null);
 
             return null;
         }
     }
 
-    //-----------//
-    // BuildTask //
-    //-----------//
-    private static class BuildTask
+    //----------------//
+    // PrintSheetTask //
+    //----------------//
+    public static class PrintSheetTask
+            extends BasicTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Sheet sheet;
+
+        final Path bookPrintPath;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public PrintSheetTask (Sheet sheet,
+                               Path bookPrintPath)
+        {
+            this.sheet = sheet;
+            this.bookPrintPath = bookPrintPath;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            sheet.getBook().setPrintPath(bookPrintPath);
+            Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
+            bookManager.printSheet(sheet, null);
+
+            return null;
+        }
+    }
+
+    //---------------//
+    // BuildBookTask //
+    //---------------//
+    private static class BuildBookTask
+            extends BasicTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Book book;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public BuildBookTask (Book book)
+        {
+            this.book = book;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            try {
+                for (Sheet sheet : book.getSheets()) {
+                    Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
+                }
+            } catch (Exception ex) {
+                logger.warn("Could not build book", ex);
+            }
+
+            return null;
+        }
+    }
+
+    //----------------//
+    // BuildSheetTask //
+    //----------------//
+    private static class BuildSheetTask
             extends BasicTask
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -572,7 +885,7 @@ public class ScoreActions
         private final Sheet sheet;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public BuildTask (Sheet sheet)
+        public BuildSheetTask (Sheet sheet)
         {
             this.sheet = sheet;
         }
@@ -583,10 +896,9 @@ public class ScoreActions
                 throws InterruptedException
         {
             try {
-                Book book = sheet.getBook();
-                Stepping.ensureBookStep(Steps.valueOf(Steps.SCORE), book);
+                Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
             } catch (Exception ex) {
-                logger.warn("Could not build score", ex);
+                logger.warn("Could not build page", ex);
             }
 
             return null;
@@ -604,6 +916,79 @@ public class ScoreActions
         Constant.Boolean promptParameters = new Constant.Boolean(
                 false,
                 "Should we prompt the user for score parameters?");
+    }
+
+    //----------------//
+    // ExportBookTask //
+    //----------------//
+    private static class ExportBookTask
+            extends BasicTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Book book;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create an asynchronous task to export the book.
+         *
+         * @param book           the book to export
+         * @param bookExportPath (non-null) the target export book path
+         */
+        public ExportBookTask (Book book,
+                               Path bookExportPath)
+        {
+            this.book = book;
+            book.setExportPath(bookExportPath);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            if (checkParameters(book)) {
+                bookManager.exportBook(book, null, null);
+            }
+
+            return null;
+        }
+    }
+
+    //-----------------//
+    // ExportSheetTask //
+    //-----------------//
+    private static class ExportSheetTask
+            extends BasicTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Sheet sheet;
+
+        final Path bookExportPath;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ExportSheetTask (Sheet sheet,
+                                Path bookExportPath)
+        {
+            this.sheet = sheet;
+            this.bookExportPath = bookExportPath;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            sheet.getBook().setExportPath(bookExportPath);
+
+            if (checkParameters(sheet)) {
+                Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
+                bookManager.exportSheet(sheet, null, null);
+            }
+
+            return null;
+        }
     }
 
     //-------------//
@@ -631,44 +1016,6 @@ public class ScoreActions
                 Stepping.reprocessSheet(Steps.valueOf(Steps.SYMBOLS), sheet, null, true);
             } catch (Exception ex) {
                 logger.warn("Could not refresh score", ex);
-            }
-
-            return null;
-        }
-    }
-
-    //---------------//
-    // StoreBookTask //
-    //---------------//
-    private static class StoreBookTask
-            extends BasicTask
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final Sheet sheet;
-
-        final Book book;
-
-        final Path exportPath;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public StoreBookTask (Sheet sheet,
-                              Path exportPath)
-        {
-            this.sheet = sheet;
-            this.book = sheet.getBook();
-            this.exportPath = exportPath;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected Void doInBackground ()
-                throws InterruptedException
-        {
-            book.setExportPath(exportPath);
-
-            if (checkParameters(sheet)) {
-                Stepping.ensureBookStep(Steps.valueOf(Steps.EXPORT), book);
             }
 
             return null;

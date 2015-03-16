@@ -38,9 +38,6 @@ public abstract class AbstractGhostDropListener<A>
     protected JComponent component;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------------------//
-    // AbstractGhostDropListener //
-    //---------------------------//
     /**
      * Create a new AbstractGhostDropListener object
      *

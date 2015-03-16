@@ -28,9 +28,6 @@ public class JunctionAllPolicy
     public static final JunctionAllPolicy INSTANCE = new JunctionAllPolicy();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------------//
-    // JunctionAllPolicy //
-    //-------------------//
     /**
      * Creates an instance of this policy.
      */

@@ -45,10 +45,6 @@ public class CheckBoard<C extends Checkable>
     private final CheckPanel<C> checkPanel;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //------------//
-    // CheckBoard //
-    //------------//
     /**
      * Create a Check Board.
      *

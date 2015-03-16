@@ -37,9 +37,6 @@ public class StopWatch
     private long total;
 
     //~ Constructors -----------------------------------------------------------
-    //-----------//
-    // StopWatch //
-    //-----------//
     /**
      * Creates a new StopWatch object.
      *

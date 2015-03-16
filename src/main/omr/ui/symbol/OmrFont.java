@@ -62,9 +62,6 @@ public abstract class OmrFont
     private static final Map<String, Font> fontCache = new HashMap<String, Font>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------//
-    // OmrFont //
-    //---------//
     /**
      * Creates a new OmrFont object.
      *

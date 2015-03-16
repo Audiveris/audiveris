@@ -28,9 +28,6 @@ public class SheetEvent
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // SheetEvent //
-    //------------//
     /**
      * Creates a new SheetEvent object.
      *

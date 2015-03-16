@@ -115,9 +115,6 @@ public class ShapeFocusBoard
     private JPopupMenu pm = new JPopupMenu();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // ShapeFocusBoard //
-    //-----------------//
     /**
      * Create the instance to handle the shape focus, with pointers to
      * needed companions.
@@ -125,6 +122,7 @@ public class ShapeFocusBoard
      * @param sheet          the related sheet
      * @param controller     the related glyph controller
      * @param filterListener the action linked to filter button
+     * @param expanded       true for pre-expanded board
      */
     public ShapeFocusBoard (Sheet sheet,
                             GlyphsController controller,
@@ -168,13 +166,13 @@ public class ShapeFocusBoard
         ShapeSet.addAllShapes(
                 pm,
                 new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                JMenuItem source = (JMenuItem) e.getSource();
-                setCurrentShape(Shape.valueOf(source.getText()));
-            }
+                {
+                    @Override
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        JMenuItem source = (JMenuItem) e.getSource();
+                        setCurrentShape(Shape.valueOf(source.getText()));
+                    }
                 });
 
         defineLayout();
@@ -419,9 +417,6 @@ public class ShapeFocusBoard
         JSpinner spinner = new JSpinner(new SpinnerListModel());
 
         //~ Constructors ---------------------------------------------------------------------------
-        //---------//
-        // Browser //
-        //---------//
         public Browser ()
         {
             resetIds();

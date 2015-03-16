@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.step;
 
-import omr.script.StepTask;
+import omr.script.BookStepTask;
+import omr.script.SheetStepTask;
 
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
@@ -50,12 +51,8 @@ public class StepMenu
     private final JMenu menu;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // StepMenu //
-    //----------//
     /**
-     * Generates the menu to be inserted in the application pull-down
-     * menus.
+     * Generates the menu to be inserted in the application pull-down menus.
      *
      * @param menu the hosting menu, or null
      */
@@ -102,7 +99,9 @@ public class StepMenu
 
         // List of Steps classes in proper order
         for (Step step : Steps.values()) {
-            if ((prevStep != null) && (prevStep.isMandatory() != step.isMandatory())) {
+            if ((prevStep != null)
+                && ((prevStep.isMandatory() != step.isMandatory())
+                    || (prevStep.isBookLevel() != step.isBookLevel()))) {
                 menu.addSeparator();
             }
 
@@ -116,8 +115,7 @@ public class StepMenu
     // MyMenuListener //
     //----------------//
     /**
-     * Class {@code MyMenuListener} is triggered when the whole sub-menu
-     * is entered.
+     * Class {@code MyMenuListener} is triggered when the whole sub-menu is entered.
      * This is done with respect to currently displayed sheet.
      * The steps already done are flagged as such.
      */
@@ -187,14 +185,18 @@ public class StepMenu
                 protected Void doInBackground ()
                         throws Exception
                 {
-                    Step sofar = Stepping.getLatestMandatoryStep(sheet);
-
-                    if ((sofar == null) || (Steps.compare(sofar, step) <= 0)) {
-                        // Here we progress on all sheets of the book (BINGO)
-                        new StepTask(step).run(sheet);
+                    if (step.isBookLevel()) {
+                        new BookStepTask(step).run(sheet);
                     } else {
-                        // There we rebuild just the current sheet
-                        Stepping.reprocessSheet(step, sheet, null, true);
+                        Step sofar = Stepping.getLatestMandatoryStep(sheet);
+
+                        if ((sofar == null) || (Steps.compare(sofar, step) <= 0)) {
+                            // Here work on the sheet
+                            new SheetStepTask(step).run(sheet);
+                        } else {
+                            // There we rebuild just the current sheet
+                            Stepping.reprocessSheet(step, sheet, null, true);
+                        }
                     }
 
                     return null;
@@ -216,8 +218,7 @@ public class StepMenu
     // StepItem //
     //----------//
     /**
-     * Class {@code StepItem} implements a checkable menu item linked
-     * to a given step.
+     * Class {@code StepItem} implements a checkable menu item linked to a given step.
      */
     private static class StepItem
             extends JCheckBoxMenuItem

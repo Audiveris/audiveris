@@ -43,9 +43,6 @@ public class MultipleRunsViewer
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // RunsViewer //
-    //------------//
     /**
      * Creates a new MultipleRunsViewer object.
      *

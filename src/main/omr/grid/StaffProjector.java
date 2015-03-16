@@ -67,23 +67,28 @@ import javax.swing.WindowConstants;
  * The potential bar portions outside staff height are much less typical of a bar line.
  * <p>
  * A peak in staff projection can result from:<ol>
- * <li>A thick or thin <b>bar line</b>:
- * <br><img
- * src="http://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Barlines.svg/400px-Barlines.svg.png"/>
- * <li>A <b>bracket</b> portion:
- * <br><img src="http://donrathjr.com/wp-content/uploads/2010/08/Brackets-and-Braces-4a.png"
- * width="250" height="216"/>.
- * <li>A <b>brace</b> portion:
- * <br><img
- * src="http://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Brace_(music).png/240px-Brace_(music).png"/>
- * <br>The brace peak is rather similar to a thick bar line, although its first derivative is lower
+ * <li>A thick or thin <b>bar line</b>:<br>
+ * <img alt="Image of bar lines"
+ * src="http://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Barlines.svg/400px-Barlines.svg.png">
+ *
+ * <li>A <b>bracket</b> portion:<br>
+ * <img alt="Image of bracket"  width="250" height="216"
+ * src="http://donrathjr.com/wp-content/uploads/2010/08/Brackets-and-Braces-4a.png">
+ *
+ * <li>A <b>brace</b> portion:<br>
+ * <img alt="Image of brace"
+ * src="http://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Brace_(music).png/240px-Brace_(music).png">
+ * <p>
+ * The brace peak is rather similar to a thick bar line, although its first derivative is lower
  * and similarly the inter-staff connection is of low quality.
- * <li>An Alto <b>C-clef</b> portion:
- * <br><img
- * src="http://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Alto_clef_with_ref.svg/90px-Alto_clef_with_ref.svg.png"
- * />
- * <br>Such C-clef artifacts are detected later, based on their abscissa offset from the measure
+ *
+ * <li>An Alto <b>C-clef</b> portion:<br>
+ * <img alt="Image of alto clef"
+ * src="http://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Alto_clef_with_ref.svg/90px-Alto_clef_with_ref.svg.png">
+ * <br>
+ * Such C-clef artifacts are detected later, based on their abscissa offset from the measure
  * start (be it bar-based start or lines-only start).
+ *
  * <li>A <b>stem</b> (with note heads located outside the staff height).
  * </ol>
  * <p>

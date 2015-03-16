@@ -155,9 +155,6 @@ class GlyphBrowser
     private GlyphBoard glyphBoard;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // GlyphBrowser //
-    //--------------//
     /**
      * Create an instance, with back-reference to SampleVerifier.
      *
@@ -683,9 +680,6 @@ class GlyphBrowser
         LTextField nameField = new LTextField("", "File where glyph is stored");
 
         //~ Constructors ---------------------------------------------------------------------------
-        //-----------//
-        // Navigator //
-        //-----------//
         Navigator ()
         {
             super(Board.SAMPLE, null, null, false, true);

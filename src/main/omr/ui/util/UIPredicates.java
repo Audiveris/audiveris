@@ -22,13 +22,10 @@ import javax.swing.SwingUtilities;
  *
  * @author Hervé Bitteur
  */
-public class UIPredicates
+public abstract class UIPredicates
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //--------------//
-    // UIPredicates //
-    //--------------//
     /**
      * Not meant to be instantiated.
      */

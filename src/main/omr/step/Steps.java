@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.step;
 
-import omr.plugin.Plugin;
-import omr.plugin.PluginManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +36,8 @@ public class Steps
 
     private static final Logger logger = LoggerFactory.getLogger(Steps.class);
 
-    // Mandatory step names
-    // --------------------
+    // Mandatory step names (sheet level)
+    // ----------------------------------
     public static final String LOAD = "LOAD";
 
     public static final String BINARY = "BINARY";
@@ -75,29 +72,21 @@ public class Steps
 
     public static final String MEASURES = "MEASURES";
 
-    public static final String RHYTHM = "RHYTHM";
+    public static final String RHYTHMS = "RHYTHMS";
 
     public static final String SYMBOL_REDUCTION = "SYMBOL_REDUCTION";
 
     public static final String PAGE = "PAGE";
 
-    public static final String SCORE = "SCORE";
+    // Optional step names (book level)
+    // ---------------------------------
+    public static final String EXPORT_BOOK = "EXPORT_BOOK";
 
-    // Optional step names
-    // -------------------
     public static final String DELTA = "DELTA";
 
-    public static final String PRINT = "PRINT";
-
-    public static final String PAGE_EXPORT = "PAGE_EXPORT";
-
-    public static final String EXPORT = "EXPORT";
-
-    public static final String EXPORT_SHEET = "EXPORT_SHEET";
+    public static final String TEST = "TEST";
 
     public static final String PLUGIN = "PLUGIN";
-
-    public static final String TEST = "TEST";
 
     /** Ordered sequence of steps. */
     private static final List<Step> steps = new ArrayList<Step>();
@@ -115,7 +104,7 @@ public class Steps
         addStep(new ScaleStep()); // Sheet scale (line thickness, interline, beam thickness)
         addStep(new GridStep()); // Staff lines, bar-lines, systems & parts
         addStep(new HeadersStep()); // Clef, Key & Time signature in system headers
-        addStep(new StemSeedsStep()); // Vertical seeds for stems
+        addStep(new StemSeedsStep()); // Stem thickness, seeds for stems
         addStep(new BeamsStep()); // Beams detection
         addStep(new LedgersStep()); // Ledgers detection
         addStep(new HeadsStep()); // Note heads detection
@@ -127,25 +116,9 @@ public class Steps
         addStep(new ChordsStep()); // Head-based chords (including mirror heads & stems)
         addStep(new SymbolsStep()); // Rests, dots, fermata, etc. Rest-based chords.
         addStep(new MeasuresStep()); // Raw measures from grouped bar-lines
-        addStep(new RhythmStep()); // Tuplets, slots, time sigs inference, measure adjustments
-        addStep(new SymbolReductionStep()); // Final interpretations filtering
+        addStep(new SymbolReductionStep()); // Final interpretations reduction
+        addStep(new RhythmsStep()); // Tuplets, slots, time sigs inference, measure adjustments
         addStep(new PageStep()); // Connections between systems in page (parts, slurs, voices)
-        addStep(new ScoreStep()); // Connections between pages in score (parts, slurs, voices)
-
-        // 2/ Optional steps, in any order
-        // -------------------------------
-        addStep(new DeltaStep());
-        addStep(new PrintStep());
-        addStep(new ExportSheetStep());
-        addStep(new ExportStep());
-        addStep(new TestStep());
-
-        // Plugin step depends on default plugin
-        Plugin plugin = PluginManager.getInstance().getDefaultPlugin();
-
-        if (plugin != null) {
-            addStep(new PluginStep(plugin));
-        }
     }
 
     /** Compare steps according to their position in the sequence of defined steps. */
@@ -164,12 +137,10 @@ public class Steps
     public static final Step FIRST_STEP = steps.get(0);
 
     /** Last step. */
-    public static final Step LAST_STEP = valueOf(SCORE);
+    public static final Step LAST_STEP = valueOf(PAGE);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------//
-    // Steps // Not meant to be instantiated
-    //-------//
+    /** Not meant to be instantiated. */
     private Steps ()
     {
     }
@@ -205,7 +176,7 @@ public class Steps
         Step step = stepMap.get(str);
 
         if (step == null) {
-            String msg = "Step not found: " + str;
+            final String msg = "Unknown step: " + str;
             logger.warn(msg);
             throw new IllegalArgumentException(msg);
         }

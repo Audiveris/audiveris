@@ -12,7 +12,7 @@
 package omr.sheet;
 
 import omr.score.entity.Page;
-import omr.score.entity.ScorePart;
+import omr.score.entity.LogicalPart;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,34 +60,34 @@ public class PageVoiceFixer
      */
     public void refine ()
     {
-        // Number of voice IDs for each ScorePart within this page
-        final Map<ScorePart, Integer> globalMap = new LinkedHashMap<ScorePart, Integer>();
+        // Number of voice IDs for each LogicalPart within this page
+        final Map<LogicalPart, Integer> globalMap = new LinkedHashMap<LogicalPart, Integer>();
 
         for (SystemInfo system : page.getSystems()) {
-            for (Part part : system.getAllParts()) {
+            for (Part part : system.getParts()) {
                 // Voice IDs that start within this part
                 final SortedSet<Integer> incomings = part.getVoiceIds();
 
                 // Number of Global IDs already assigned in this part
-                Integer globals = globalMap.get(part.getScorePart());
+                Integer globals = globalMap.get(part.getLogicalPart());
 
                 if ((globals == null) || (globals < incomings.size())) {
-                    globalMap.put(part.getScorePart(), incomings.size());
+                    globalMap.put(part.getLogicalPart(), incomings.size());
                 }
             }
         }
 
         int voiceOffset = 0; // Offset for voice ids in current part
 
-        for (ScorePart scorePart : page.getPartList()) {
-            logger.info("{} voices:{}", scorePart, globalMap.get(scorePart));
+        for (LogicalPart logicalPart : page.getLogicalParts()) {
+            logger.info("{} voices:{}", logicalPart, globalMap.get(logicalPart));
 
             for (SystemInfo system : page.getSystems()) {
                 for (MeasureStack stack : system.getMeasureStacks()) {
                     Collections.sort(stack.getVoices(), Voice.byId);
                 }
 
-                Part part = system.getPartByModel(scorePart);
+                Part part = system.getPhysicalPart(logicalPart);
                 final List<Integer> partVoices = new ArrayList<Integer>(part.getVoiceIds());
 
                 for (int i = 0; i < partVoices.size(); i++) {
@@ -100,7 +100,7 @@ public class PageVoiceFixer
                 }
             }
 
-            voiceOffset += globalMap.get(scorePart);
+            voiceOffset += globalMap.get(logicalPart);
         }
     }
 }

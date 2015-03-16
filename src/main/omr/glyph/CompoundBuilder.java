@@ -45,9 +45,6 @@ public class CompoundBuilder
     protected final SystemInfo system;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // CompoundBuilder //
-    //-----------------//
     /**
      * Creates a new CompoundBuilder object.
      *

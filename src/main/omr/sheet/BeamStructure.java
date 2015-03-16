@@ -92,9 +92,6 @@ public class BeamStructure
     private boolean vip;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // BeamStructure //
-    //---------------//
     /**
      * Creates a new BeamItems object.
      *

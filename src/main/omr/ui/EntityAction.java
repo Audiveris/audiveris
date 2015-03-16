@@ -43,9 +43,6 @@ public class EntityAction
     private Action delegate = null;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // OmrAction //
-    //-----------//
     /**
      * Creates an action, and registers the action in the provided menu as
      * well as in the toolbar (if so desired)

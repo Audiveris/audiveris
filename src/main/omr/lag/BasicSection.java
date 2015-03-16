@@ -124,9 +124,6 @@ public class BasicSection
     protected Line orientedLine;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // BasicSection //
-    //--------------//
     /**
      * Creates a new BasicSection.
      */
@@ -134,11 +131,10 @@ public class BasicSection
     {
     }
 
-    //--------------//
-    // BasicSection //
-    //--------------//
     /**
      * Creates a new BasicSection.
+     *
+     * @param orientation provided orientation for the section
      */
     public BasicSection (Orientation orientation)
     {
@@ -175,6 +171,7 @@ public class BasicSection
      *
      * @param table the filled table
      * @param box   the table limits in the image
+     * @return the drawing as a string
      */
     public static String drawingOfTable (char[][] table,
                                          Rectangle box)
@@ -1270,7 +1267,7 @@ public class BasicSection
     /**
      * (package access from graph)
      *
-     * @param lag
+     * @param lag the containing lag
      */
     @Override
     public void setGraph (Lag lag)
@@ -1410,6 +1407,8 @@ public class BasicSection
     /**
      * Compute the arrays of points needed to draw the section runs.
      * This is an absolute definition.
+     *
+     * @return the created polygon that represents the section geometry
      */
     protected Polygon computePolygon ()
     {

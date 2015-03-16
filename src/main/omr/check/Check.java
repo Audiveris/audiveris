@@ -64,9 +64,6 @@ public abstract class Check<C extends Checkable>
     private final boolean covariant;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------//
-    // Check //
-    //-------//
     /**
      * Creates a new Check object.
      *

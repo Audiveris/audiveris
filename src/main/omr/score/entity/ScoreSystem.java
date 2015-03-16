@@ -35,6 +35,7 @@ import java.util.List;
  *
  * @author Hervé Bitteur
  */
+@Deprecated
 public class ScoreSystem
         extends SystemNode
 {
@@ -57,9 +58,6 @@ public class ScoreSystem
     private final SystemInfo info;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // ScoreSystem //
-    //-------------//
     /**
      * Create a system with all needed parameters.
      *
@@ -116,7 +114,7 @@ public class ScoreSystem
             return;
         }
 
-        ScoreSystem precedingSystem = getPage().getPrecedingInScore().getLastScoreSystem();
+        ScoreSystem precedingSystem = getPage().getPrecedingInScore(null).getLastScoreSystem();
 
         if (precedingSystem != null) {
             // Examine every part in sequence
@@ -177,9 +175,9 @@ public class ScoreSystem
     public void fillMissingParts ()
     {
         // Check we have all the defined parts in this system
-        for (ScorePart scorePart : getPage().getPartList()) {
-            if (getPart(scorePart.getId()) == null) {
-                getFirstRealPart().createDummyPart(scorePart.getId());
+        for (LogicalPart logicalPart : getPage().getLogicalParts()) {
+            if (getPart(logicalPart.getId()) == null) {
+                getFirstRealPart().createDummyPart(logicalPart.getId());
                 Collections.sort(getParts(), OldSystemPart.idComparator);
             }
         }

@@ -32,9 +32,6 @@ class BasicTranslation
     private final Set<PartNode> translations = new HashSet<PartNode>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // BasicTranslation //
-    //------------------//
     /**
      * Create a new BasicTranslation object
      *

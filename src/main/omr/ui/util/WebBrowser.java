@@ -52,10 +52,6 @@ public class WebBrowser
     private static WebBrowser instance;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //------------//
-    // WebBrowser //
-    //------------//
     private WebBrowser ()
     {
     }

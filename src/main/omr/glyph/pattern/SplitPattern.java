@@ -59,9 +59,6 @@ public class SplitPattern
     private final double minChunkWeight;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // SplitPattern //
-    //--------------//
     /**
      * Creates a new SplitPattern object.
      *

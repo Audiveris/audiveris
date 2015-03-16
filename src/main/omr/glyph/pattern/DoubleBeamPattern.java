@@ -42,9 +42,6 @@ public class DoubleBeamPattern
     private static final Logger logger = LoggerFactory.getLogger(DoubleBeamPattern.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------------//
-    // DoubleBeamPattern //
-    //-------------------//
     /**
      * Creates a new DoubleBeamPattern object.
      *

@@ -27,9 +27,6 @@ public class GlyphEvent
     private final Glyph glyph;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // GlyphEvent //
-    //------------//
     /**
      * Creates a new GlyphEvent object.
      *

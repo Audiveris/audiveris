@@ -85,9 +85,6 @@ public class LineCluster
     private boolean vip = false;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // LineCluster //
-    //-------------//
     /**
      * Creates a new LineCluster object.
      *

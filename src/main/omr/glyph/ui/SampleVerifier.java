@@ -111,9 +111,6 @@ public class SampleVerifier
     private final File samplesFolder = repository.getSamplesFolder();
 
     //~ Constructors -----------------------------------------------------------
-    //----------------//
-    // SampleVerifier //
-    //----------------//
     /**
      * Create an instance of SampleVerifier.
      */
@@ -482,9 +479,6 @@ public class SampleVerifier
         protected JScrollPane scrollPane = new JScrollPane(list);
 
         //~ Constructors -------------------------------------------------------
-        //----------//
-        // Selector //
-        //----------//
         /**
          * Create a selector.
          *

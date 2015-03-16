@@ -36,9 +36,6 @@ public abstract class KeySymbol
     protected final int key;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // KeySymbol //
-    //-----------//
     /**
      * Creates a new KeySymbol object.
      *

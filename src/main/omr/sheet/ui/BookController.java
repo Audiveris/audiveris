@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Hervé Bitteur
  */
-public class BookController
+public abstract class BookController
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

@@ -77,9 +77,6 @@ public class GeometricMoments
     private final double[] k = new double[size];
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // GeometricMoments //
-    //------------------//
     /**
      * Creates a new GeometricMoments object.
      *

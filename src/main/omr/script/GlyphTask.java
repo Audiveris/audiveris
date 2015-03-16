@@ -55,9 +55,6 @@ public abstract class GlyphTask
     protected SortedSet<SystemInfo> initialSystems;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // GlyphTask //
-    //-----------//
     /**
      * Creates a new GlyphTask object.
      *
@@ -79,9 +76,6 @@ public abstract class GlyphTask
         this.glyphs.addAll(glyphs);
     }
 
-    //-----------//
-    // GlyphTask //
-    //-----------//
     /**
      * Creates a new GlyphTask object
      *
@@ -92,10 +86,7 @@ public abstract class GlyphTask
         super(sheet);
     }
 
-    //-----------//
-    // GlyphTask //
-    //-----------//
-    /** No-arg constructor for JAXB only */
+    /** No-arg constructor for JAXB only. */
     protected GlyphTask ()
     {
     }

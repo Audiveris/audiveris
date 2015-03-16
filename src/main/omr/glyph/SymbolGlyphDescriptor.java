@@ -86,11 +86,8 @@ public class SymbolGlyphDescriptor
     private Point refPoint;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------------//
-    // SymbolGlyphDescriptor //
-    //-----------------------//
     /**
-     * No-arg constructor for the XML mapper
+     * No-arg constructor for the XML mapper.
      */
     private SymbolGlyphDescriptor ()
     {

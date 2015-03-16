@@ -33,9 +33,6 @@ public class NumDenSymbol
     private final int[] denCodes;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // NumDenSymbol //
-    //--------------//
     /**
      * Creates a new NumDenSymbol object.
      *

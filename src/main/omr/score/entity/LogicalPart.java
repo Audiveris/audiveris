@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                       S c o r e P a r t                                        //
+//                                      L o g i c a l P a r t                                     //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -14,33 +14,32 @@ package omr.score.entity;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
- * Class {@code ScorePart} defines a part at score level.
+ * Class {@code LogicalPart} describes a part at score or page level.
+ * It is "instantiated" in each SystemInfo by a {@link omr.sheet.Part}.
  * <p>
- * TODO: rename this class as PartModel? or PartDescriptor?
- * It is instantiated in each SystemInfo by a Part.
- * <p>
- * There is an intermediate ScorePart instance at Page level, which records the merge of system
- * parts at page level, and which is then used when merging the part information from pages to
- * score.</p>
+ * There is an intermediate LogicalPart instance at Page level, which abstracts the system parts at
+ * page level, and which is then used when abstracting the part information from pages to score.</p>
  *
  * @author Hervé Bitteur
  */
-public class ScorePart
+public class LogicalPart
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(ScorePart.class);
+    private static final Logger logger = LoggerFactory.getLogger(LogicalPart.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /**
-     * Distinguished id for this part.
-     * (the same id is used by the corresponding SystemPart in each System)
+     * Distinguished id for this logical part.
+     * (the same id is used by the corresponding physical Part in each System)
      */
     private int id;
 
@@ -57,43 +56,27 @@ public class ScorePart
     private Integer midiProgram;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // ScorePart //
-    //-----------//
     /**
      * Creates a new instance of ScorePart
      *
      * @param id         the id for this part
      * @param staffCount the count of staves within this part
      */
-    public ScorePart (int id,
-                      int staffCount)
+    public LogicalPart (int id,
+                        int staffCount)
     {
         setId(id);
         this.staffCount = staffCount;
     }
 
     /** Meant for XML binder only */
-    private ScorePart ()
+    private LogicalPart ()
     {
         setId(0);
         staffCount = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Set the id of this part
-     *
-     * @param id the distinguished part id
-     */
-    public final void setId (int id)
-    {
-        this.id = id;
-    }
-
     //-----------------//
     // getAbbreviation //
     //-----------------//
@@ -221,6 +204,19 @@ public class ScorePart
     public void setAbbreviation (String abbreviation)
     {
         this.abbreviation = abbreviation;
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Set the id of this part
+     *
+     * @param id the distinguished part id
+     */
+    public final void setId (int id)
+    {
+        this.id = id;
     }
 
     //----------------//

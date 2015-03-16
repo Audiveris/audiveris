@@ -68,9 +68,6 @@ public class GlyphRegression
     private EnumMap<Shape, Range[]> constraintMap = new EnumMap<Shape, Range[]>(Shape.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // GlyphRegression //
-    //-----------------//
     /**
      * Private constructor
      */

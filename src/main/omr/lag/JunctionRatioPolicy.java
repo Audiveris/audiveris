@@ -43,9 +43,6 @@ public class JunctionRatioPolicy
     private final double minLengthRatio;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------------//
-    // JunctionRatioPolicy //
-    //---------------------//
     /**
      * Creates a policy based on default length ratio.
      */
@@ -54,9 +51,6 @@ public class JunctionRatioPolicy
         this(constants.maxLengthRatio.getValue());
     }
 
-    //---------------------//
-    // JunctionRatioPolicy //
-    //---------------------//
     /**
      * Creates a policy based on ratio of run length versus mean length
      * of section runs.

@@ -134,9 +134,6 @@ public class ConstantManager
             new File(WellKnowns.CONFIG_FOLDER, USER_FILE_NAME));
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // ConstantManager //
-    //-----------------//
     private ConstantManager ()
     {
     }

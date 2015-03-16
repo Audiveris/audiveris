@@ -60,9 +60,6 @@ public class NameSet
     private final int maxNameNb;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------//
-    // NameSet //
-    //---------//
     /**
      * Creates a new set of names, with some customizing parameters.
      *

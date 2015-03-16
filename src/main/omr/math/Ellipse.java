@@ -100,9 +100,6 @@ public class Ellipse
     protected Double minor;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------//
-    // Ellipse //
-    //---------//
     /**
      * Creates a new instance of Ellipse, defined by a set of points
      *

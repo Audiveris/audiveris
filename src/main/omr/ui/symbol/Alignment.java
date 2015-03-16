@@ -218,9 +218,6 @@ public class Alignment
     public final Horizontal horizontal;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // Alignment //
-    //-----------//
     /**
      * Create an Alignment instance
      *

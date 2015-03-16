@@ -176,9 +176,6 @@ public class Options
     };
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------//
-    // Options //
-    //---------//
     /**
      * Creates a new Options object.
      */

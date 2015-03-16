@@ -29,9 +29,6 @@ public class GeoPath
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //---------//
-    // GeoPath //
-    //---------//
     /**
      * Creates a new GeoPath object.
      */
@@ -39,9 +36,6 @@ public class GeoPath
     {
     }
 
-    //---------//
-    // GeoPath //
-    //---------//
     /**
      * Creates a new GeoPath object.
      *
@@ -52,9 +46,6 @@ public class GeoPath
         this(s, null);
     }
 
-    //---------//
-    // GeoPath //
-    //---------//
     /**
      * Creates a new GeoPath object.
      *

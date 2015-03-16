@@ -91,9 +91,6 @@ public class LinearEvaluator
     private boolean dataModified = false;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // LinearEvaluator //
-    //-----------------//
     /**
      * Creates a new LinearEvaluator object.
      *
@@ -795,7 +792,7 @@ public class LinearEvaluator
         //~ Constructors ---------------------------------------------------------------------------
 
         /**
-         * Meant to please JAXB
+         * Meant to please JAXB.
          */
         public CategoryMapAdapter ()
         {

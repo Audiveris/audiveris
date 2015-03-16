@@ -147,10 +147,6 @@ public class Picture
     private BufferedImage initialImage;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //---------//
-    // Picture //
-    //---------//
     /**
      * Build a picture instance from a given original image.
      *

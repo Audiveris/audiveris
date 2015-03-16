@@ -100,9 +100,6 @@ public class SheetAssembly
     private ViewTab previousTab = null;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // SheetAssembly //
-    //---------------//
     /**
      * Create a new {@code SheetAssembly} instance dedicated to one sheet.
      *

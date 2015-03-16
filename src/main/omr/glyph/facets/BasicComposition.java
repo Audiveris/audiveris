@@ -60,9 +60,6 @@ class BasicComposition
     private Glyph partOf;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // BasicComposition //
-    //------------------//
     /**
      * Create a new BasicComposition object.
      *

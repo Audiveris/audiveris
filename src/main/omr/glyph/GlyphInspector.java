@@ -56,9 +56,6 @@ public class GlyphInspector
     private final SystemInfo system;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // GlyphInspector //
-    //----------------//
     /**
      * Create an GlyphInspector instance.
      *

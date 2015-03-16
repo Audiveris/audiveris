@@ -30,9 +30,6 @@ public class WeakPropertyChangeListener
     protected final WeakReference<PropertyChangeListener> weakListener;
 
     //~ Constructors -----------------------------------------------------------
-    //----------------------------//
-    // WeakPropertyChangeListener //
-    //----------------------------//
     /**
      * Creates a new WeakPropertyChangeListener object from a concrete listener
      *

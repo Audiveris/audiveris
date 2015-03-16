@@ -13,6 +13,8 @@ package omr.action;
 
 import omr.WellKnowns;
 
+import omr.action.Actions.Domain;
+
 import omr.ui.MainGui;
 import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtil;
@@ -32,13 +34,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.AbstractButton;
-import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Box;
 import javax.swing.JMenu;
@@ -59,22 +58,16 @@ public class ActionManager
 
     private static final Logger logger = LoggerFactory.getLogger(ActionManager.class);
 
-    /** Class loader */
+    /** Class loader. */
     private static final ClassLoader classLoader = ActionManager.class.getClassLoader();
 
-    /** Singleton */
+    /** Singleton. */
     private static volatile ActionManager INSTANCE;
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The map of all menus, so that we can directly provide some. */
     private final Map<String, JMenu> menuMap = new HashMap<String, JMenu>();
-
-    /** Collection of actions enabled only when a sheet is selected. */
-    private final Collection<Action> sheetDependentActions = new ArrayList<Action>();
-
-    /** Collection of actions enabled only when current score is available. */
-    private final Collection<Action> scoreDependentActions = new ArrayList<Action>();
 
     /** The tool bar that hosts some actions. */
     private final JToolBar toolBar = new JToolBar();
@@ -83,10 +76,6 @@ public class ActionManager
     private final JMenuBar menuBar = new JMenuBar();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //---------------//
-    // ActionManager //
-    //---------------//
     /**
      * Meant to be instantiated at most once.
      */
@@ -95,6 +84,23 @@ public class ActionManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single action manager instance.
+     *
+     * @return the unique instance of this class
+     */
+    public static ActionManager getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new ActionManager();
+        }
+
+        return INSTANCE;
+    }
+
     //-------------------//
     // getActionInstance //
     //-------------------//
@@ -111,23 +117,6 @@ public class ActionManager
         ActionMap actionMap = MainGui.getInstance().getContext().getActionMap(instance);
 
         return (ApplicationAction) actionMap.get(methodName);
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single action manager instance.
-     *
-     * @return the unique instance of this class
-     */
-    public static ActionManager getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new ActionManager();
-        }
-
-        return INSTANCE;
     }
 
     //---------//
@@ -202,8 +191,7 @@ public class ActionManager
     // loadAllDescriptors //
     //--------------------//
     /**
-     * Load all descriptors as found in system and user configuration
-     * files.
+     * Load all descriptors as found in system and user configuration files.
      */
     public void loadAllDescriptors ()
     {
@@ -219,7 +207,7 @@ public class ActionManager
             try {
                 URL url = uri.toURL();
                 InputStream input = url.openStream();
-                Actions.loadActionsFrom(input);
+                Actions.loadActionDescriptors(input);
             } catch (IOException ex) {
                 // Item does not exist
                 if (i == 0) {
@@ -236,8 +224,8 @@ public class ActionManager
     // registerAllActions //
     //--------------------//
     /**
-     * Register all actions as listed in the descriptor files, and
-     * organize them according to the various domains defined.
+     * Register all actions as listed in the descriptor files, and organize them
+     * according to the various domains defined.
      * There is one pull-down menu generated for each domain found.
      */
     public void registerAllActions ()
@@ -245,6 +233,7 @@ public class ActionManager
         // Insert an initial separator, to let user easily grab the toolBar
         toolBar.addSeparator();
 
+        DomainLoop:
         for (String domain : Actions.getDomainNames()) {
             // Create dedicated menu for this range, if not already existing
             JMenu menu = menuMap.get(domain);
@@ -264,17 +253,25 @@ public class ActionManager
 
             // Register all actions in the given domain
             registerDomainActions(domain, menu);
-            resource.injectComponents(menu);
+            resource.injectComponents(menu); // Localized
 
-            toolBar.addSeparator();
+            SeparableMenu.trimSeparator(menu); // No separator at end of menu
+
+            // Do not include sub-menus
+            for (Domain domainEnum : Actions.Domain.values()) {
+                if (domainEnum.name().equals(domain) && !domainEnum.isTop) {
+                    continue DomainLoop;
+                }
+            }
 
             // Smart insertion of the menu into the menu bar
+            toolBar.addSeparator();
+
             if (menu.getItemCount() > 0) {
                 if (domain.equalsIgnoreCase("help")) {
                     menuBar.add(Box.createHorizontalStrut(50));
                 }
 
-                SeparableMenu.trimSeparator(menu); // No separator at end
                 menuBar.add(menu);
             }
         }
@@ -284,9 +281,8 @@ public class ActionManager
     // registerAction //
     //----------------//
     /**
-     * Allocate and dress an instance of the provided class, then
-     * register the action in the UI structure (menus and buttons)
-     * according to the action descriptor parameters.
+     * Allocate and dress an instance of the provided class, then register the action in
+     * the UI structure (menus and buttons) according to the action descriptor parameters.
      *
      * @param action the provided action class
      * @return the registered and decorated instance of the action class
@@ -361,7 +357,7 @@ public class ActionManager
                     logger.debug("Registering {}", desc);
 
                     try {
-                        Class<? extends JMenuItem> itemClass;
+                        final Class<? extends JMenuItem> itemClass;
 
                         if (desc.itemClassName != null) {
                             itemClass = (Class<? extends JMenuItem>) classLoader.loadClass(

@@ -50,10 +50,6 @@ public class TextFont
     public static final float TO_POINT = 72f / 300f;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //----------//
-    // TextFont //
-    //----------//
     /**
      * Creates a new TextFont object.
      *
@@ -70,9 +66,6 @@ public class TextFont
         super(fontName, style, size);
     }
 
-    //----------//
-    // TextFont //
-    //----------//
     /**
      * Creates a font based on OCR font information.
      *
@@ -86,9 +79,6 @@ public class TextFont
                 info.pointsize);
     }
 
-    //----------//
-    // TextFont //
-    //----------//
     /**
      * Creates a new TextFont object.
      *

@@ -88,10 +88,6 @@ public class OldVoice
     private TimeRational inferredTimeSig;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //-------//
-    // Voice //
-    //-------//
     /**
      * Creates a new Voice object.
      *

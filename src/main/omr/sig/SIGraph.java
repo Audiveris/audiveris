@@ -24,7 +24,6 @@ import omr.run.Orientation;
 
 import omr.selection.InterListEvent;
 
-import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
@@ -60,17 +59,16 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * Class {@code SIGraph} represents the Symbol Interpretation Graph that aims at
  * finding the best global interpretation of all symbols in a system.
- * <p>
- * A special instance is created at sheet level for the time when the systems have not yet been
- * defined. This sheet-level instance has its system pointer at null.
  *
  * @author Hervé Bitteur
  */
@@ -96,18 +94,11 @@ public class SIGraph
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Dedicated sheet */
-    @Navigable(false)
-    private final Sheet sheet;
-
-    /** Dedicated system */
+    /** Dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------//
-    // SIGraph //
-    //---------//
     /**
      * Creates a new SIGraph object at system level.
      *
@@ -115,33 +106,9 @@ public class SIGraph
      */
     public SIGraph (SystemInfo system)
     {
-        this(system.getSheet(), system);
-    }
-
-    //---------//
-    // SIGraph //
-    //---------//
-    /**
-     * Creates a new SIGraph object at sheet level.
-     *
-     * @param sheet the containing sheet
-     */
-    public SIGraph (Sheet sheet)
-    {
-        this(sheet, null);
-    }
-
-    //---------//
-    // SIGraph //
-    //---------//
-    /**
-     * Creates a new SIGraph object.
-     */
-    private SIGraph (Sheet sheet,
-                     SystemInfo system)
-    {
         super(Relation.class);
-        this.sheet = sheet;
+
+        Objects.requireNonNull(system, "A sig needs a non-null system");
         this.system = system;
     }
 
@@ -173,6 +140,38 @@ public class SIGraph
         return null;
     }
 
+    //-------------------//
+    // intersectedGlyphs //
+    //-------------------//
+    /**
+     * Lookup the provided list of glyph instances which intersect the
+     * given box.
+     *
+     * @param glyphs           the list of glyph instances to search for
+     * @param sortedByAbscissa true if the list is already sorted by abscissa,
+     *                         in order to speedup the search
+     * @param box              the intersecting box
+     * @return the intersected glyph instances found
+     */
+    public static List<Glyph> intersectedGlyphs (List<Glyph> glyphs,
+                                                 boolean sortedByAbscissa,
+                                                 Rectangle2D box)
+    {
+        List<Glyph> found = new ArrayList<Glyph>();
+
+        for (Glyph glyph : glyphs) {
+            Rectangle glyphBox = glyph.getBounds();
+
+            if (box.intersects(glyphBox)) {
+                found.add(glyph);
+            } else if (sortedByAbscissa && (glyphBox.x >= box.getMaxX())) {
+                break;
+            }
+        }
+
+        return found;
+    }
+
     //-----------//
     // addVertex //
     //-----------//
@@ -192,8 +191,8 @@ public class SIGraph
         boolean res = super.addVertex(inter);
         inter.setSig(this);
 
-        if ((system == null) || (inter.getId() == 0)) {
-            sheet.getSigManager().register(inter);
+        if (inter.getId() == 0) {
+            system.getSheet().getSigManager().register(inter);
         }
 
         return res;
@@ -618,10 +617,10 @@ public class SIGraph
     //-------------//
     /**
      * Check whether the provided Inter is involved in a relation of one of the
-     * specified relation classes.
+     * provided relation classes.
      *
-     * @param inter
-     * @param relationClasses
+     * @param inter           the inter instance to check
+     * @param relationClasses the provided classes
      * @return true if such relation is found, false otherwise
      */
     public boolean hasRelation (Inter inter,
@@ -744,28 +743,6 @@ public class SIGraph
     // inters //
     //--------//
     /**
-     * Lookup for interpretations for which the provided predicate applies.
-     *
-     * @param predicate the predicate to apply, or null
-     * @return the list of compliant interpretations
-     */
-    public List<Inter> inters (Predicate<Inter> predicate)
-    {
-        List<Inter> found = new ArrayList<Inter>();
-
-        for (Inter inter : vertexSet()) {
-            if ((predicate == null) || predicate.check(inter)) {
-                found.add(inter);
-            }
-        }
-
-        return found;
-    }
-
-    //--------//
-    // inters //
-    //--------//
-    /**
      * Lookup for interpretations of the provided shape.
      *
      * @param shape the shape to check for
@@ -802,6 +779,59 @@ public class SIGraph
                     public boolean check (Inter inter)
                     {
                         return !inter.isDeleted() && (classe.isInstance(inter));
+                    }
+                });
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations of the specified class within the provided collection.
+     *
+     * @param collection the provided collection to browse
+     * @param classe     the class to search for
+     * @return the interpretations of desired class
+     */
+    public List<Inter> inters (Collection<? extends Inter> collection,
+                               final Class classe)
+    {
+        return inters(
+                collection,
+                new Predicate<Inter>()
+                {
+                    @Override
+                    public boolean check (Inter inter)
+                    {
+                        return !inter.isDeleted() && (classe.isInstance(inter));
+                    }
+                });
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations of the provided classes.
+     *
+     * @param classes array of desired classes
+     * @return the interpretations of desired classes
+     */
+    public List<Inter> inters (final Class[] classes)
+    {
+        return inters(
+                new Predicate<Inter>()
+                {
+                    @Override
+                    public boolean check (Inter inter)
+                    {
+                        for (Class classe : classes) {
+                            if (classe.isInstance(inter)) {
+                                return true;
+                            }
+                        }
+
+                        return false;
                     }
                 });
     }
@@ -867,32 +897,39 @@ public class SIGraph
         return inters(staff, vertexSet());
     }
 
-    //-------------------//
-    // intersectedGlyphs //
-    //-------------------//
+    //--------//
+    // inters //
+    //--------//
     /**
-     * Lookup the provided list of glyph instances which intersect the
-     * given box.
+     * Lookup for interpretations for which the provided predicate applies.
      *
-     * @param glyphs           the list of glyph instances to search for
-     * @param sortedByAbscissa true if the list is already sorted by abscissa,
-     *                         in order to speedup the search
-     * @param box              the intersecting box
-     * @return the intersected glyph instances found
+     * @param predicate the predicate to apply, or null
+     * @return the list of compliant interpretations
      */
-    public static List<Glyph> intersectedGlyphs (List<Glyph> glyphs,
-                                                 boolean sortedByAbscissa,
-                                                 Rectangle2D box)
+    public List<Inter> inters (Predicate<Inter> predicate)
     {
-        List<Glyph> found = new ArrayList<Glyph>();
+        return inters(vertexSet(), predicate);
+    }
 
-        for (Glyph glyph : glyphs) {
-            Rectangle glyphBox = glyph.getBounds();
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations for which the provided predicate applies within the
+     * provided collection.
+     *
+     * @param collection the collection of inters to browse
+     * @param predicate  the predicate to apply, or null
+     * @return the list of compliant interpretations
+     */
+    public List<Inter> inters (Collection<? extends Inter> collection,
+                               Predicate<Inter> predicate)
+    {
+        List<Inter> found = new ArrayList<Inter>();
 
-            if (box.intersects(glyphBox)) {
-                found.add(glyph);
-            } else if (sortedByAbscissa && (glyphBox.x >= box.getMaxX())) {
-                break;
+        for (Inter inter : collection) {
+            if ((predicate == null) || predicate.check(inter)) {
+                found.add(inter);
             }
         }
 
@@ -1029,6 +1066,27 @@ public class SIGraph
         return found;
     }
 
+    //------------//
+    // exclusions //
+    //------------//
+    /**
+     * Report the set of exclusion relations currently present in SIG
+     *
+     * @return the set of exclusions
+     */
+    public Set<Relation> exclusions ()
+    {
+        Set<Relation> exclusions = new HashSet<Relation>();
+
+        for (Relation rel : edgeSet()) {
+            if (rel instanceof Exclusion) {
+                exclusions.add(rel);
+            }
+        }
+
+        return exclusions;
+    }
+
     //-----------//
     // noSupport //
     //-----------//
@@ -1072,21 +1130,21 @@ public class SIGraph
      * target vertex of lower contextual grade.
      * <pre>
      * Strategy is as follows:
-     * - Pick up among all current exclusions the one whose high inter has the
-     *   highest contextual grade contribution among all exclusions.
-     * - Remove the low inter of this chosen exclusion.
-     * - Recompute all CG values.
+     * - Pick up among all current exclusions the one whose high inter has the highest contextual
+     * grade contribution among all exclusions.
+     * - Remove the weaker inter in this chosen exclusion relation.
+     * - Recompute all impacted contextual grades values.
      * - Iterate until no more exclusion is left.
      * </pre>
      *
-     * @param minDelta  minimum delta value to decide on conflict
-     * @param warning   true to issue a warning on tight exclusion
-     * @param relations the collection to process
+     * @param minDelta   minimum delta value to decide on conflict
+     * @param warning    true to issue a warning on tight exclusion
+     * @param exclusions the collection of exclusions to process
      * @return the set of vertices removed
      */
     public Set<Inter> reduceExclusions (double minDelta,
                                         boolean warning,
-                                        Collection<? extends Relation> relations)
+                                        Collection<? extends Relation> exclusions)
     {
         final Set<Inter> removed = new HashSet<Inter>();
         final Set<Relation> tiedExclusions = new HashSet<Relation>();
@@ -1097,54 +1155,35 @@ public class SIGraph
             double bestCP = 0;
             bestRel = null;
 
-            for (Relation rel : relations) {
-                if (rel instanceof Exclusion) {
+            for (Iterator<? extends Relation> it = exclusions.iterator(); it.hasNext();) {
+                Relation rel = it.next();
+
+                if (containsEdge(rel)) {
                     final Inter source = getEdgeSource(rel);
+                    final double scp = source.getBestGrade();
                     final Inter target = getEdgeTarget(rel);
+                    final double tcp = target.getBestGrade();
+                    final double cp = Math.max(scp, tcp);
 
-                    if ((source != null) && (target != null)) {
-                        Double scp = source.getContextualGrade();
-
-                        if (scp == null) {
-                            scp = source.getGrade();
-                        }
-
-                        Double tcp = target.getContextualGrade();
-
-                        if (tcp == null) {
-                            tcp = target.getGrade();
-                        }
-
-                        final double cp = Math.max(scp, tcp);
-
-                        if (bestCP < cp) {
-                            bestCP = cp;
-                            bestRel = rel;
-                        }
+                    if (bestCP < cp) {
+                        bestCP = cp;
+                        bestRel = rel;
                     }
+                } else {
+                    it.remove();
                 }
             }
 
             // Remove the weaker branch of the selected exclusion (if grade delta is significant)
             if (bestRel != null) {
                 final Inter source = getEdgeSource(bestRel);
-                Double scp = source.getContextualGrade();
-
-                if (scp == null) {
-                    scp = source.getGrade();
-                }
-
+                final double scp = source.getBestGrade();
                 final Inter target = getEdgeTarget(bestRel);
-                Double tcp = target.getContextualGrade();
-
-                if (tcp == null) {
-                    tcp = target.getGrade();
-                }
-
-                double delta = Math.abs(tcp - scp);
+                final double tcp = target.getBestGrade();
+                final double delta = Math.abs(tcp - scp);
 
                 if (delta >= minDelta) {
-                    Inter weaker = (scp < tcp) ? source : target;
+                    final Inter weaker = (scp < tcp) ? source : target;
 
                     if (weaker.isVip()) {
                         logger.info(
@@ -1153,15 +1192,14 @@ public class SIGraph
                                 weaker);
                     }
 
-                    Set<Relation> edges = edgesOf(weaker);
-                    Set<Inter> involved = involvedInters(edges);
-
-                    relations.removeAll(edges);
-                    removed.add(weaker);
-                    weaker.delete();
+                    // Which inters were involved in some support relation with this weaker inter?
+                    final Set<Inter> involved = involvedInters(getSupports(weaker));
                     involved.remove(weaker);
 
-                    // Update contextual values
+                    removed.add(weaker);
+                    weaker.delete();
+
+                    // Update contextual values for involved inters
                     for (Inter inter : involved) {
                         computeContextualGrade(inter, false);
                     }
@@ -1173,7 +1211,7 @@ public class SIGraph
                     }
 
                     tiedExclusions.add(bestRel);
-                    relations.remove(bestRel);
+                    exclusions.remove(bestRel);
                 }
             }
         } while (bestRel != null);
@@ -1189,45 +1227,76 @@ public class SIGraph
     // reduceExclusions //
     //------------------//
     /**
-     * Reduce the provided exclusions as much as possible by removing the source or
-     * target vertex of lower contextual grade.
-     * <pre>
-     * Strategy is as follows:
-     * - Pick up among all current exclusions the one whose high inter has the
-     *   highest contextual grade contribution among all exclusions.
-     * - Remove the low inter of this chosen exclusion.
-     * - Recompute all CG values.
-     * - Iterate until no more exclusion is left.
-     * </pre>
+     * Reduce the provided exclusions.
      *
-     * @param mode      selected reduction mode
-     * @param relations the collection to process
+     * @param mode       selected reduction mode
+     * @param exclusions the collection of exclusions to reduce
      * @return the set of vertices removed
      */
     public Set<Inter> reduceExclusions (ReductionMode mode,
-                                        Collection<? extends Relation> relations)
+                                        Collection<? extends Relation> exclusions)
     {
-        // Which threshold we use for exclusions
+        // Which threshold we should use for exclusions?
         final double minDelta = (mode == ReductionMode.STRICT)
                 ? constants.deltaGradeStrict.getValue()
                 : constants.deltaGradeRelaxed.getValue();
 
-        return reduceExclusions(minDelta, mode == ReductionMode.STRICT, relations);
+        return reduceExclusions(minDelta, mode == ReductionMode.STRICT, exclusions);
     }
 
     //------------------//
     // reduceExclusions //
     //------------------//
     /**
-     * Process each exclusion in the SIG by removing the source or target vertex of
-     * lower contextual grade.
+     * Reduce each exclusion in the SIG.
      *
      * @param mode selected reduction mode
      * @return the set of vertices removed
      */
     public Set<Inter> reduceExclusions (ReductionMode mode)
     {
-        return reduceExclusions(mode, new HashSet<Relation>(edgeSet()));
+        return reduceExclusions(mode, exclusions());
+    }
+
+    //--------------//
+    // removeVertex //
+    //--------------//
+    @Override
+    public boolean removeVertex (Inter inter)
+    {
+        if (!inter.isDeleted()) {
+            logger.error("Do not use removeVertex() directly. Use inter.delete() instead.");
+            throw new IllegalStateException("Do not use removeVertex() directly");
+        }
+
+        return super.removeVertex(inter);
+    }
+
+    //--------------//
+    // sortBySource //
+    //--------------//
+    /**
+     * Sort the provided list of relations by decreasing contextual grade of the
+     * relations sources.
+     *
+     * @param rels the relations to sort
+     */
+    public void sortBySource (List<Relation> rels)
+    {
+        Collections.sort(
+                rels,
+                new Comparator<Relation>()
+                {
+                    @Override
+                    public int compare (Relation r1,
+                                        Relation r2)
+                    {
+                        Inter s1 = getEdgeSource(r1);
+                        Inter s2 = getEdgeSource(r2);
+
+                        return Double.compare(s2.getBestGrade(), s1.getBestGrade());
+                    }
+                });
     }
 
     //----------//

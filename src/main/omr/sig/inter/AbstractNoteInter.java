@@ -16,6 +16,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.math.Rational;
 
+import omr.sheet.Measure;
 import omr.sheet.Staff;
 import omr.sheet.Voice;
 
@@ -51,6 +52,35 @@ public abstract class AbstractNoteInter
     /** All shape-based intrinsic durations. */
     private static final Map<Shape, Rational> shapeDurations = buildShapeDurations();
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /** Names of the various note steps. */
+    public static enum Step
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        /** La */
+        A,
+        /** Si */
+        B,
+        /** Do */
+        C,
+        /** Ré */
+        D,
+        /** Mi */
+        E,
+        /** Fa */
+        F,
+        /** Sol */
+        G;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    /** Note step. */
+    protected Step step;
+
+    /** Octave. */
+    protected Integer octave;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractNoteInter object.
@@ -67,7 +97,7 @@ public abstract class AbstractNoteInter
                               Shape shape,
                               GradeImpacts impacts,
                               Staff staff,
-                              int pitch)
+                              double pitch)
     {
         super(glyph, box, shape, impacts, staff, pitch);
     }
@@ -87,12 +117,80 @@ public abstract class AbstractNoteInter
                               Shape shape,
                               double grade,
                               Staff staff,
-                              int pitch)
+                              double pitch)
     {
         super(glyph, box, shape, grade, staff, pitch);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // getChord //
+    //----------//
+    public ChordInter getChord ()
+    {
+        return (ChordInter) getEnsemble();
+    }
+
+    //-------------//
+    // getDotCount //
+    //-------------//
+    /**
+     * Report the number of augmentation dots (0, 1 or 2) that apply to this note.
+     *
+     * @return the count of augmentation dots
+     */
+    public int getDotCount ()
+    {
+        AugmentationDotInter firstDot = getFirstAugmentationDot();
+
+        if (firstDot != null) {
+            if (sig.hasRelation(firstDot, DoubleDotRelation.class)) {
+                return 2;
+            }
+
+            return 1;
+        }
+
+        return 0;
+    }
+
+    //-------------------------//
+    // getFirstAugmentationDot //
+    //-------------------------//
+    /**
+     * Report the first augmentation dot, if any, that is linked to this note.
+     *
+     * @return the first dot, if any
+     */
+    public AugmentationDotInter getFirstAugmentationDot ()
+    {
+        for (Relation dn : sig.getRelations(this, AugmentationRelation.class)) {
+            return (AugmentationDotInter) sig.getOppositeInter(this, dn);
+        }
+
+        return null;
+    }
+
+    //-----------//
+    // getOctave //
+    //-----------//
+    /**
+     * Report the octave for this note, using the current clef, and the pitch position
+     * of the note.
+     *
+     * @return the related octave
+     */
+    public int getOctave ()
+    {
+        if (octave == null) {
+            ChordInter chord = (ChordInter) getEnsemble();
+            Measure measure = chord.getMeasure();
+            octave = ClefInter.octaveOf(measure.getClefBefore(getCenter(), getStaff()), pitch);
+        }
+
+        return octave;
+    }
+
     //------------------//
     // getShapeDuration //
     //------------------//
@@ -108,35 +206,25 @@ public abstract class AbstractNoteInter
         return shapeDurations.get(shape);
     }
 
-    //----------//
-    // getChord //
-    //----------//
-    public ChordInter getChord ()
-    {
-        return (ChordInter) getEnsemble();
-    }
-
-    //-------------//
-    // getDotCount //
-    //-------------//
+    //---------//
+    // getStep //
+    //---------//
     /**
-     * Report the number of augmentation dot (0,1 or 2) that apply to this note.
+     * Report the note step (within the octave)
      *
-     * @return the count of augmentation dots
+     * @return the note step
      */
-    public int getDotCount ()
+    public Step getStep ()
     {
-        for (Relation dn : sig.getRelations(this, AugmentationRelation.class)) {
-            Inter dot = sig.getOppositeInter(this, dn);
-
-            if (sig.hasRelation(dot, DoubleDotRelation.class)) {
-                return 2;
-            }
-
-            return 1;
+        if (step == null) {
+            ChordInter chord = (ChordInter) getEnsemble();
+            Measure measure = chord.getMeasure();
+            step = ClefInter.noteStepOf(
+                    measure.getClefBefore(getCenter(), staff),
+                    (int) Math.rint(pitch));
         }
 
-        return 0;
+        return step;
     }
 
     //----------//

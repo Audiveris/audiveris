@@ -54,14 +54,11 @@ public class UnitTreeTable
     private static final Color zebraColor = new Color(248, 248, 255);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    private TableCellRenderer valueRenderer = new ValueRenderer();
+    private final TableCellRenderer valueRenderer = new ValueRenderer();
 
-    private TableCellRenderer pixelRenderer = new PixelRenderer();
+    private final TableCellRenderer pixelRenderer = new PixelRenderer();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // UnitTreeTable //
-    //---------------//
     /**
      * Create a User Interface JTreeTable dedicated to the handling of
      * unit constants.

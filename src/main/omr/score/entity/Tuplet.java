@@ -54,10 +54,6 @@ public class Tuplet
     private final SortedSet<OldChord> chords;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //--------//
-    // Tuplet //
-    //--------//
     /**
      * Creates a new instance of Tuplet event
      *

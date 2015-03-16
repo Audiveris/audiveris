@@ -78,9 +78,6 @@ public class ErrorsEditor
     private final DefaultListModel<Record> model = new DefaultListModel<Record>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // ErrorsEditor //
-    //--------------//
     /**
      * Create an instance of ErrorsEditor (one per sheet / score).
      *
@@ -266,21 +263,13 @@ public class ErrorsEditor
     //----------------//
     /**
      * Retrieve the step being performed on the sheet.
-     * Beware, during SCORE step and following stepq, just the first sheet
-     * has a current step assigned.
+     * Beware, during SCORE step and following steps, just the first sheet has a current step assigned.
      *
      * @return the step being done
      */
     private Step getCurrentStep ()
     {
-        Step step = sheet.getCurrentStep();
-
-        if (step == null) {
-            ///step = sheet.getScore().getFirstPage().getSheet().getCurrentStep();
-            step = Steps.valueOf(Steps.SCORE);
-        }
-
-        return step;
+        return sheet.getCurrentStep();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

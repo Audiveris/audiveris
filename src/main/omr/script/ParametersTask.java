@@ -71,11 +71,7 @@ public class ParametersTask
     private List<SheetParameters> sheets = new ArrayList<SheetParameters>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //----------------//
-    // ParametersTask //
-    //----------------//
-    /** No-arg constructor needed by JAXB */
+    /** No-arg constructor needed by JAXB. */
     public ParametersTask ()
     {
     }
@@ -138,14 +134,14 @@ public class ParametersTask
         //        // Score Parts
         //        for (int i = 0; i < parts.size(); i++) {
         //            try {
-        //                ScorePart scorePart = book.getPartList().get(i);
+        //                ScorePart logicalPart = book.getPartList().get(i);
         //                PartData data = parts.get(i);
         //
         //                // Part name
-        //                scorePart.setName(data.name);
+        //                logicalPart.setName(data.name);
         //
         //                // Part midi program
-        //                scorePart.setMidiProgram(data.program);
+        //                logicalPart.setMidiProgram(data.program);
         //            } catch (Exception ex) {
         //                logger.warn("Error in script Parameters part#" + (i + 1), ex);
         //            }
@@ -191,7 +187,7 @@ public class ParametersTask
         final Step binaryStep = Steps.valueOf(Steps.BINARY);
         final Step textsStep = Steps.valueOf(Steps.TEXTS);
         final Step symbolsStep = Steps.valueOf(Steps.SYMBOLS);
-        final Step scoreStep = Steps.valueOf(Steps.SCORE);
+        final Step pageStep = Steps.valueOf(Steps.PAGE);
 
         Step latestStep = Stepping.getLatestMandatoryStep(sheet);
 
@@ -229,9 +225,9 @@ public class ParametersTask
             Stepping.reprocessSheet(from, sheet, null, true, false);
         }
 
-        // Final SCORE (merge) step?
-        if (latestStep == scoreStep) {
-            Stepping.reprocessSheet(scoreStep, sheet, null, true, true);
+        // Final PAGE step?
+        if (latestStep == pageStep) {
+            Stepping.reprocessSheet(pageStep, sheet, null, true, true);
         }
 
         super.epilog(sheet);
@@ -408,7 +404,7 @@ public class ParametersTask
 
         //~ Constructors ---------------------------------------------------------------------------
         //
-        /** No-arg constructor needed by JAXB */
+        /** No-arg constructor needed by JAXB. */
         public SheetParameters ()
         {
         }

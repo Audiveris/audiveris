@@ -90,10 +90,6 @@ public class SystemTranslator
     private OldMeasure currentMeasure;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //------------------//
-    // SystemTranslator //
-    //------------------//
     /**
      * Creates a new SystemTranslator object.
      *

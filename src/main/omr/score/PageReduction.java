@@ -14,7 +14,7 @@ package omr.score;
 import omr.score.PartConnection.Candidate;
 import omr.score.PartConnection.Result;
 import omr.score.entity.Page;
-import omr.score.entity.ScorePart;
+import omr.score.entity.LogicalPart;
 
 import omr.sheet.Part;
 
@@ -65,15 +65,15 @@ public class PageReduction
         PartConnection connection = PartConnection.connectPageSystems(page);
 
         // Build logical part list and store it in page
-        List<ScorePart> scoreParts = new ArrayList<ScorePart>();
+        List<LogicalPart> logicalParts = new ArrayList<LogicalPart>();
 
         for (Result result : connection.getResultMap().keySet()) {
-            scoreParts.add((ScorePart) result.getUnderlyingObject());
+            logicalParts.add((LogicalPart) result.getUnderlyingObject());
         }
 
-        page.setPartList(scoreParts);
+        page.setLogicalParts(logicalParts);
 
-        // Make the connections: (system) Part -> (page) ScorePart
+        // Make the connections: (system) Part -> (page) LogicalPart
         Map<Candidate, Result> candidateMap = connection.getCandidateMap();
         logger.debug("Candidates:{}", candidateMap.size());
 
@@ -82,13 +82,13 @@ public class PageReduction
             Part systemPart = (Part) candidate.getUnderlyingObject();
 
             Result result = entry.getValue();
-            ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
+            LogicalPart logicalPart = (LogicalPart) result.getUnderlyingObject();
 
-            // Connect (system) part -> (page) ScorePart
-            systemPart.setScorePart(scorePart);
+            // Connect (system) part -> (page) LogicalPart
+            systemPart.setLogicalPart(logicalPart);
 
             // Use same ID
-            systemPart.setId(scorePart.getId());
+            systemPart.setId(logicalPart.getId());
         }
     }
 }

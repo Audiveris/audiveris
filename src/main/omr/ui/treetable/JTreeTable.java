@@ -59,9 +59,6 @@ public class JTreeTable
     protected TreeTableCellRenderer tree;
 
     //~ Constructors -----------------------------------------------------------
-    //------------//
-    // JTreeTable //
-    //------------//
     /**
      * Creates a new JTreeTable object.
      *
@@ -120,6 +117,8 @@ public class JTreeTable
 
     /**
      * Returns the tree that is being shared between the model.
+     *
+     * @return the model tree
      */
     //---------//
     // getTree //
@@ -197,9 +196,7 @@ public class JTreeTable
         /**
          * Overridden to return false, and if the event is a mouse event it is
          * forwarded to the tree.
-         * <p/>
-         * <
-         * p/>
+         * <p>
          * The behavior for this is debatable, and should really be offered as
          * a property. By returning false, all keyboard actions are
          * implemented in terms of the table. By returning true, the tree
@@ -210,12 +207,10 @@ public class JTreeTable
          * implemented in terms of the table. By returning false this also has
          * the added benefit that clicking outside of the bounds of the tree
          * node, but still in the tree column will select the row, whereas if
-         * this returned true that wouldn't be the case. </p>
-         * <p/>
-         * <
-         * p/>
+         * this returned true that wouldn't be the case.
+         * <p>
          * By returning false we are also enforcing the policy that the tree
-         * will never be editable (at least by a key sequence). </p>
+         * will never be editable (at least by a key sequence).
          */
         @Override
         public boolean isCellEditable (EventObject e)
@@ -391,6 +386,8 @@ public class JTreeTable
          * Returns the list selection model. ListToTreeSelectionModelWrapper
          * listens for changes to this model and updates the selected paths
          * accordingly.
+         *
+         * @return the list selection model
          */
         public ListSelectionModel getListSelectionModel ()
         {
@@ -424,6 +421,8 @@ public class JTreeTable
 
         /**
          * Creates and returns an instance of ListSelectionHandler.
+         *
+         * @return the created ListSelectionHandler
          */
         protected ListSelectionListener createListSelectionListener ()
         {

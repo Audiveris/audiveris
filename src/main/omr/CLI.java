@@ -14,29 +14,34 @@ package omr;
 import omr.step.Step;
 import omr.step.Steps;
 
+import omr.util.Dumping;
+
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.FieldSetter;
+import org.kohsuke.args4j.spi.Messages;
+import org.kohsuke.args4j.spi.OptionHandler;
+import org.kohsuke.args4j.spi.Setter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.File;
 import java.io.StringReader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code CLI} parses and holds the parameters of the command
- * line interface.
+ * Class {@code CLI} parses and holds the parameters of the command line interface.
  *
  * <p>
  * The command line parameters can be (order and case are not relevant):
@@ -48,7 +53,7 @@ import java.util.TreeSet;
  * <dt> <b>-batch</b> </dt> <dd> to run in batch mode, with no user
  * interface. </dd>
  *
- * <dt> <b>-step (STEPNAME | &#64;STEPLIST)+</b> </dt> <dd> to run all the
+ * <dt> <b>-steps (STEPNAME | &#64;STEPLIST)+</b> </dt> <dd> to run all the
  * specified steps (including the steps which are mandatory to get to the
  * specified ones). 'STEPNAME' can be any one of the step names (the case is
  * irrelevant) as defined in the {@link Steps} class. These steps will
@@ -100,121 +105,28 @@ public class CLI
 
     private static final Logger logger = LoggerFactory.getLogger(CLI.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /** For handling cardinality of command parameters */
-    private static enum Card
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /** No parameter expected */
-        NONE,
-        /** Just a single parameter is
-         * expected */
-        SINGLE,
-        /** One or several
-         * parameters are expected */
-        MULTIPLE;
-    }
-
-    /** For command analysis */
-    private static enum Command
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        HELP("Prints help about application arguments then stops", Card.NONE, null),
-        BATCH("Specifies to run with no graphic user interface", Card.NONE, null),
-        STEP("Defines a series of target steps", Card.MULTIPLE, "(STEPNAME|@STEPLIST)+"),
-        OPTION(
-                "Defines a series of key=value constant pairs",
-                Card.MULTIPLE,
-                "(KEY=VALUE|@OPTIONLIST)+"),
-        SCRIPT(
-                "Defines a series of script files to run",
-                Card.MULTIPLE,
-                "(SCRIPTNAME|@SCRIPTLIST)+"),
-        INPUT(
-                "Defines a series of input image files to process",
-                Card.MULTIPLE,
-                "(FILENAME|@FILELIST)+"),
-        PAGES("Defines a set of specific pages to process", Card.MULTIPLE, "(PAGE|@PAGELIST)+"),
-        BENCH(
-                "Defines an output path to bench data file (or directory)",
-                Card.SINGLE,
-                "(DIRNAME|FILENAME)"),
-
-        //        MIDI(
-        //            "Defines an output path to MIDI file (or directory)",
-        //            Card.SINGLE,
-        //            "(DIRNAME|FILENAME)"),
-        PRINT(
-                "Defines an output path to PDF file (or directory)",
-                Card.SINGLE,
-                "(DIRNAME|FILENAME)"),
-        EXPORT(
-                "Defines an output path to MusicXML file (or directory)",
-                Card.SINGLE,
-                "(DIRNAME|FILENAME)");
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Info about command itself */
-        public final String description;
-
-        /** Cardinality of the expected parameters */
-        public final Card card;
-
-        /** Info about expected command parameters */
-        public final String params;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Creates a Command object.
-         *
-         * @param description description of the command
-         * @param params      description of command expected parameters, or
-         *                    null
-         */
-        Command (String description,
-                 Card card,
-                 String params)
-        {
-            this.description = description;
-            this.card = card;
-            this.params = params;
-        }
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Name of the program */
+    /** Name of the program. */
     private final String toolName;
 
-    /** The CLI arguments */
-    private final String[] args;
+    /** Actual sequence of arguments for this run. */
+    private String[] actualArgs;
 
-    /** The parameters to fill */
-    private final Parameters parameters;
+    /** Parameters structure to be populated. */
+    private final Parameters params = new Parameters();
+
+    /** CLI parser. */
+    private final CmdLineParser parser = new CmdLineParser(params);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----//
-    // CLI //
-    //-----//
     /**
      * Creates a new CLI object.
      *
      * @param toolName the program name
-     * @param args     the CLI arguments
      */
-    public CLI (final String toolName,
-                final String... args)
+    public CLI (final String toolName)
     {
         this.toolName = toolName;
-        this.args = Arrays.copyOf(args, args.length);
-        logger.debug("CLI args: {}", Arrays.toString(args));
-
-        parameters = parse();
-
-        if (parameters != null) {
-            parameters.setImpliedSteps();
-        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -222,291 +134,27 @@ public class CLI
     // getParameters //
     //---------------//
     /**
-     * Parse the CLI arguments and return the populated parameters
-     * structure.
+     * Parse the CLI arguments and return the populated parameters structure.
      *
+     * @param args the CLI arguments
      * @return the parsed parameters, or null if failed
+     * @throws org.kohsuke.args4j.CmdLineException
      */
-    public Parameters getParameters ()
+    public Parameters getParameters (final String... args)
+            throws CmdLineException
     {
-        return parameters;
-    }
+        logger.debug("CLI args: {}", Arrays.toString(args));
+        actualArgs = args;
 
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder();
+        parser.parseArgument(args);
 
-        for (String arg : args) {
-            sb.append(" ").append(arg);
+        if (logger.isDebugEnabled()) {
+            new Dumping().dump(params);
         }
 
-        return sb.toString();
-    }
-
-    //---------//
-    // addItem //
-    //---------//
-    /**
-     * Add an item to a provided list, while handling indirections if
-     * needed.
-     *
-     * @param item the item to add, which can be a plain string (which is
-     *             simply added to the list) or an indirection
-     *             (a string starting by the '&#64;' character)
-     *             which denotes a file of items to be recursively added
-     * @param list the collection of items to be augmented
-     */
-    private void addItem (String item,
-                          List<String> list)
-    {
-        // The item may be a plain string or the name of a pack that lists
-        // item(s). This is signalled by a starting '@' character in string
-        if (item.startsWith("@")) {
-            // File with other items inside
-            String pack = item.substring(1);
-            BufferedReader br = null;
-
-            try {
-                br = new BufferedReader(new FileReader(pack));
-
-                String newRef;
-
-                try {
-                    while ((newRef = br.readLine()) != null) {
-                        addItem(newRef.trim(), list);
-                    }
-
-                    br.close();
-                } catch (IOException ex) {
-                    logger.warn("IO error while reading file ''{}''", pack);
-                }
-            } catch (FileNotFoundException ex) {
-                logger.warn("Cannot find file ''{}''", pack);
-            } finally {
-                if (br != null) {
-                    try {
-                        br.close();
-                    } catch (Exception ignored) {
-                    }
-                }
-            }
-        } else if (item.length() > 0) {
-            // Plain item
-            list.add(item);
+        if (params.helpMode) {
+            printUsage();
         }
-    }
-
-    //-----------------//
-    // decodeConstants //
-    //-----------------//
-    /**
-     * Retrieve properties out of the flat sequence of "key = value"
-     * pairs.
-     *
-     * @param constantPairs the flat sequence of key = value pairs
-     * @return the resulting constant properties
-     */
-    private Properties decodeConstants (List<String> constantPairs)
-            throws IOException
-    {
-        Properties props = new Properties();
-
-        // Use a simple string buffer in memory
-        StringBuilder sb = new StringBuilder();
-
-        for (String pair : constantPairs) {
-            sb.append(pair).append("\n");
-        }
-
-        props.load(new StringReader(sb.toString()));
-
-        return props;
-    }
-
-    //-------//
-    // parse //
-    //-------//
-    /**
-     * Parse the CLI arguments and populate the parameters structure.
-     *
-     * @return the populated parameters structure, or null if failed
-     */
-    private Parameters parse ()
-    {
-        // Status of the finite state machine
-        boolean paramNeeded = false; // Are we expecting a param?
-        boolean paramForbidden = false; // Are we not expecting a param?
-        Command command = Command.INPUT; // By default
-        Parameters params = new Parameters();
-        List<String> optionPairs = new ArrayList<String>();
-        List<String> stepStrings = new ArrayList<String>();
-        List<String> pageStrings = new ArrayList<String>();
-
-        // Parse all arguments from command line
-        for (int i = 0; i < args.length; i++) {
-            String token = args[i];
-
-            if (token.startsWith("-")) {
-                // This is a new command
-                // Check that we were not expecting param(s)
-                if (paramNeeded) {
-                    printCommandLine();
-                    stopUsage("Found no parameter after command '" + command + "'");
-
-                    return null;
-                }
-
-                // Remove leading minus sign and switch to uppercase
-                // To recognize command
-                token = token.substring(1).toUpperCase(Locale.ENGLISH);
-
-                boolean found = false;
-
-                for (Command cmd : Command.values()) {
-                    if (token.equals(cmd.name())) {
-                        command = cmd;
-                        paramNeeded = command.card != Card.NONE;
-                        paramForbidden = !paramNeeded;
-                        found = true;
-
-                        break;
-                    }
-                }
-
-                // No command recognized
-                if (!found) {
-                    printCommandLine();
-                    stopUsage("Unknown command '-" + token + "'");
-
-                    return null;
-                }
-
-                // Commands with no parameters
-                switch (command) {
-                case HELP: {
-                    stopUsage(null);
-
-                    return null;
-                }
-
-                case BATCH:
-                    params.batchMode = true;
-
-                    break;
-                }
-            } else {
-                // This is a parameter for the current command
-                // Check we can accept a parameter
-                if (paramForbidden) {
-                    printCommandLine();
-                    stopUsage(
-                            "Extra parameter '" + token + "' found after command '" + command + "'");
-
-                    return null;
-                }
-
-                switch (command) {
-                case STEP:
-                    addItem(token, stepStrings);
-
-                    break;
-
-                case OPTION:
-                    addItem(token, optionPairs);
-
-                    break;
-
-                case SCRIPT:
-                    addItem(token, params.scriptNames);
-
-                    break;
-
-                case INPUT:
-                    addItem(token, params.inputNames);
-
-                    break;
-
-                case PAGES:
-                    addItem(token, pageStrings);
-
-                    break;
-
-                case BENCH:
-                    params.benchPath = Paths.get(token);
-
-                    break;
-
-                case EXPORT:
-                    params.exportPath = Paths.get(token);
-
-                    break;
-
-                case PRINT:
-                    params.printPath = Paths.get(token);
-
-                    break;
-
-                default:
-                }
-
-                paramNeeded = false;
-                paramForbidden = command.card == Card.SINGLE;
-            }
-        }
-
-        // Additional error checking
-        if (paramNeeded) {
-            printCommandLine();
-            stopUsage("Expecting a token after command '" + command + "'");
-
-            return null;
-        }
-
-        // Decode option pairs
-        try {
-            params.options = decodeConstants(optionPairs);
-        } catch (Exception ex) {
-            logger.warn("Error decoding -option ", ex);
-        }
-
-        // Check step names
-        for (String stepString : stepStrings) {
-            try {
-                // Read a step name
-                params.desiredSteps.add(Steps.valueOf(stepString.toUpperCase()));
-            } catch (Exception ex) {
-                printCommandLine();
-                stopUsage("Step name expected, found '" + stepString + "' instead");
-
-                return null;
-            }
-        }
-
-        // Check page ids
-        for (String pageString : pageStrings) {
-            try {
-                // Read a page id (counted from 1)
-                int id = Integer.parseInt(pageString);
-
-                if (params.pages == null) {
-                    params.pages = new TreeSet<Integer>();
-                }
-
-                params.pages.add(id);
-            } catch (Exception ex) {
-                printCommandLine();
-                stopUsage("Page id expected, found '" + pageString + "' instead");
-
-                return null;
-            }
-        }
-
-        // Results
-        logger.debug(Main.dumping.dumpOf(params));
 
         return params;
     }
@@ -517,7 +165,7 @@ public class CLI
     /**
      * Printout the command line with its actual parameters.
      */
-    private void printCommandLine ()
+    public void printCommandLine ()
     {
         StringBuilder sb = new StringBuilder("Command line parameters: ");
 
@@ -525,48 +173,33 @@ public class CLI
             sb.append(toolName).append(" ");
         }
 
-        sb.append(this);
+        sb.append(actualArgs);
         logger.info(sb.toString());
     }
 
-    //-----------//
-    // stopUsage //
-    //-----------//
+    //------------//
+    // printUsage //
+    //------------//
     /**
-     * Printout a message if any, followed by the general syntax for
-     * the command line.
-     *
-     * @param msg the message to print if non null
+     * Printout the general syntax for the command line.
      */
-    private void stopUsage (String msg)
+    public void printUsage ()
     {
-        // Print message if any
-        if (msg != null) {
-            logger.warn(msg);
-        }
-
         StringBuilder buf = new StringBuilder();
 
         // Print version
-        buf.append("\nVersion:");
+        buf.append("\n").append(toolName).append(" Version:");
         buf.append("\n   ").append(WellKnowns.TOOL_REF);
 
         // Print arguments syntax
-        buf.append("\nArguments syntax:");
+        buf.append("\nSyntax:\n");
 
-        for (Command command : Command.values()) {
-            buf.append(
-                    String.format(
-                            "%n  %-36s %s",
-                            String.format(
-                                    " [-%s%s]",
-                                    command.toString().toLowerCase(),
-                                    ((command.params != null) ? (" " + command.params) : "")),
-                            command.description));
-        }
+        StringWriter writer = new StringWriter();
+        parser.printUsage(writer, null);
+        buf.append(writer.toString());
 
         // Print all mandatory steps
-        buf.append("\n\nMandatory steps are in order (non case-sensitive):");
+        buf.append("\nMandatory steps are in order (non case-sensitive):");
 
         for (Step step : Steps.values()) {
             if (step.isMandatory()) {
@@ -590,43 +223,113 @@ public class CLI
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------------------//
+    // IntArrayOptionHandler //
+    //-----------------------//
+    public static class IntArrayOptionHandler
+            extends OptionHandler<Integer>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public IntArrayOptionHandler (CmdLineParser parser,
+                                      OptionDef option,
+                                      Setter<Integer> setter)
+        {
+            super(parser, option, setter);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String getDefaultMetaVariable ()
+        {
+            return "int[]";
+        }
+
+        @Override
+        public int parseArguments (org.kohsuke.args4j.spi.Parameters params)
+                throws CmdLineException
+        {
+            int counter = 0;
+
+            for (; counter < params.size(); counter++) {
+                String param = params.getParameter(counter);
+
+                if (param.startsWith("-")) {
+                    break;
+                }
+
+                for (String p : param.split(" ")) {
+                    if (!p.isEmpty()) {
+                        setter.addValue(Integer.parseInt(p));
+                    }
+                }
+            }
+
+            return counter;
+        }
+    }
+
     //------------//
     // Parameters //
     //------------//
     /**
-     * A structure that collects the various parameters parsed out of
-     * the command line.
+     * The structure that collects the various parameters parsed out of the command line.
      */
     public static class Parameters
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Flag that indicates a batch mode */
-        boolean batchMode = false;
+        /** Help mode. */
+        @Option(name = "-help", help = true, usage = "Displays help about application then stops")
+        boolean helpMode;
 
-        /** The set of desired steps */
-        final Set<Step> desiredSteps = new LinkedHashSet<Step>();
+        /** Batch mode. */
+        @Option(name = "-batch", usage = "Runs with no graphic user interface")
+        boolean batchMode;
 
-        /** The map of options */
-        Properties options = null;
+        /** List of specific steps. */
+        @Option(name = "-steps", usage = "Defines specific transcription steps", handler = StepArrayOptionHandler.class)
+        private final List<Step> steps = new ArrayList<Step>();
 
-        /** The list of script file names to execute */
-        final List<String> scriptNames = new ArrayList<String>();
+        /** The map of application options. */
+        @Option(name = "-option", usage = "Defines an application constant", handler = PropertyOptionHandler.class)
+        Properties options;
 
-        /** The list of input image file names to load */
-        final List<String> inputNames = new ArrayList<String>();
+        /** The list of script files to execute. */
+        @Option(name = "-script", usage = "Runs the provided script file", metaVar = "<script-file>")
+        final List<File> scriptFiles = new ArrayList<File>();
 
-        /** The set of page ids to load */
-        SortedSet<Integer> pages = null;
+        /** The list of input image file names to load. */
+        @Option(name = "-input", usage = "Reads the provided input image file", metaVar = "<input-file>")
+        final List<File> inputFiles = new ArrayList<File>();
 
-        /** Where bench data is to be saved */
-        Path benchPath = null;
+        /** The set of page IDs to load. */
+        @Option(name = "-pages", usage = "Defines specific pages (counted from 1) to process", handler = IntArrayOptionHandler.class)
+        private final List<Integer> pages = new ArrayList<Integer>();
 
-        /** Where exported score data (MusicXML) is to be saved */
-        Path exportPath = null;
+        /** Should bench data be produced?. */
+        @Option(name = "-bench", usage = "Outputs bench data (to default directory)")
+        boolean bench;
 
-        /** Where printed score (PDF) is to be saved */
-        Path printPath = null;
+        /** Target directory for bench data. */
+        @Option(name = "-benchDir", usage = "Outputs bench data to provided directory", metaVar = "<bench-folder>")
+        File benchFolder;
+
+        /** Should MusicXML data be produced?. */
+        @Option(name = "-export", usage = "Outputs MusicXML data (to default directory)")
+        boolean export;
+
+        /** Target directory for MusicXML data. */
+        @Option(name = "-exportDir", usage = "Outputs MusicXML data to provided directory", metaVar = "<export-folder>")
+        File exportFolder;
+
+        /** Should book be printed?. */
+        @Option(name = "-print", usage = "Prints out score (to default directory)")
+        boolean print;
+
+        /** Target directory for print. */
+        @Option(name = "-printDir", usage = "Prints out score to provided directory", metaVar = "<print-folder>")
+        File printFolder;
 
         //~ Constructors ---------------------------------------------------------------------------
         private Parameters ()
@@ -634,21 +337,143 @@ public class CLI
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        //-----------------//
-        // setImpliedSteps //
-        //-----------------//
+        //-------------//
+        // getPagesIds //
+        //-------------//
         /**
-         * Some output parameters require their related step to be set.
+         * Report the set of page ids if present on the CLI
+         *
+         * @return the CLI page ids, perhaps empty but not null
          */
-        private void setImpliedSteps ()
+        public SortedSet<Integer> getPageIds ()
         {
-            if (exportPath != null) {
-                desiredSteps.add(Steps.valueOf(Steps.EXPORT));
+            return new TreeSet(pages);
+        }
+
+        //----------//
+        // getSteps //
+        //----------//
+        /**
+         * Report the set of steps
+         *
+         * @return the set of steps, perhaps empty but not null
+         */
+        public Set<Step> getSteps ()
+        {
+            Set<Step> allSteps = new LinkedHashSet<Step>(steps);
+
+            //
+            //            if ((exportFolder != null) || (printFolder != null)) {
+            //                allSteps.add(Steps.valueOf(Steps.PAGE));
+            //            }
+            //
+            return allSteps;
+        }
+    }
+
+    //-----------------------/:
+    // PropertyOptionHandler //
+    //-----------------------/:
+    public static class PropertyOptionHandler
+            extends OptionHandler<Properties>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public PropertyOptionHandler (CmdLineParser parser,
+                                      OptionDef option,
+                                      Setter<? super Properties> setter)
+        {
+            super(parser, option, setter);
+
+            if (setter.asFieldSetter() == null) {
+                throw new IllegalArgumentException(
+                        "PropertyOptionHandler can only work with fields");
+            }
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String getDefaultMetaVariable ()
+        {
+            return "key=value";
+        }
+
+        @Override
+        public int parseArguments (org.kohsuke.args4j.spi.Parameters params)
+                throws CmdLineException
+        {
+            String name = params.getParameter(-1);
+            String pair = params.getParameter(0);
+            FieldSetter fs = setter.asFieldSetter();
+            Properties props = (Properties) fs.getValue();
+
+            if (props == null) {
+                props = new Properties();
+                fs.addValue(props);
             }
 
-            if (printPath != null) {
-                desiredSteps.add(Steps.valueOf(Steps.PRINT));
+            try {
+                props.load(new StringReader(pair));
+            } catch (Exception ex) {
+                throw new CmdLineException(owner, "Error in " + name + " " + pair, ex);
             }
+
+            return 1;
+        }
+    }
+
+    //------------------------//
+    // StepArrayOptionHandler //
+    //------------------------//
+    public static class StepArrayOptionHandler
+            extends OptionHandler<Step>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public StepArrayOptionHandler (CmdLineParser parser,
+                                       OptionDef option,
+                                       Setter<Step> setter)
+        {
+            super(parser, option, setter);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String getDefaultMetaVariable ()
+        {
+            return "Step[]";
+        }
+
+        @Override
+        public int parseArguments (org.kohsuke.args4j.spi.Parameters params)
+                throws CmdLineException
+        {
+            int counter = 0;
+
+            for (; counter < params.size(); counter++) {
+                String param = params.getParameter(counter);
+
+                if (param.startsWith("-")) {
+                    break;
+                }
+
+                for (String p : param.split(" ")) {
+                    String s = p.replaceAll("-", "_");
+                    Step value = Steps.valueOf(s.toUpperCase());
+
+                    if (value == null) {
+                        throw new CmdLineException(
+                                owner,
+                                Messages.ILLEGAL_OPERAND,
+                                params.getParameter(-1),
+                                s);
+                    }
+
+                    setter.addValue(value);
+                }
+            }
+
+            return counter;
         }
     }
 }

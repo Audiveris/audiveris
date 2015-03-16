@@ -37,9 +37,6 @@ public class DoubleBarlineSymbol
     private final ShapeSymbol thinSymbol = Symbols.getSymbol(Shape.THIN_BARLINE);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------------//
-    // DoubleBarlineSymbol //
-    //---------------------//
     /**
      * Create a DoubleBarlineSymbol
      *

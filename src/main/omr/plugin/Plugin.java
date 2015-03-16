@@ -77,9 +77,6 @@ public class Plugin
     private String tip;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------//
-    // Plugin //
-    //--------//
     /**
      * Creates a new Plugin object.
      *
@@ -164,8 +161,7 @@ public class Plugin
     public Void runPlugin (Book book)
     {
         // Make sure we have the export file
-        Stepping.ensureBookStep(Steps.valueOf(Steps.SCORE), book);
-        Stepping.ensureBookStep(Steps.valueOf(Steps.EXPORT), book);
+        Stepping.ensureBookStep(Steps.valueOf(Steps.EXPORT_BOOK), book);
 
         final Path exportPath = book.getExportPath();
 

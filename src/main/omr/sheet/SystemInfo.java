@@ -21,7 +21,6 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.pattern.PatternsChecker;
 
-import omr.grid.BarInfo;
 import omr.grid.LineInfo;
 import omr.grid.PartGroup;
 
@@ -29,8 +28,8 @@ import omr.lag.Section;
 
 import omr.score.Score;
 import omr.score.SystemTranslator;
+import omr.score.entity.LogicalPart;
 import omr.score.entity.Page;
-import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemNode;
 
@@ -91,7 +90,7 @@ public class SystemInfo
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Related sheet. */
+    /** Containing sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
@@ -116,8 +115,8 @@ public class SystemInfo
     /** Real staves of this system (no dummy staves included). */
     private List<Staff> staves = new ArrayList<Staff>();
 
-    /** All parts in this system, including any dummy ones. */
-    private final List<Part> allParts = new ArrayList<Part>();
+    /** Real parts in this system (no dummy parts included). */
+    private final List<Part> parts = new ArrayList<Part>();
 
     /** Measure stacks in this system. */
     private final List<MeasureStack> stacks = new ArrayList<MeasureStack>();
@@ -127,12 +126,6 @@ public class SystemInfo
 
     /** Related System in Score hierarchy */
     private ScoreSystem scoreSystem;
-
-    /** Left system bar, if any */
-    private BarInfo leftBar;
-
-    /** Right system bar, if any */
-    private BarInfo rightBar;
 
     /** Horizontal sections. */
     private final List<Section> hSections = new ArrayList<Section>();
@@ -157,7 +150,7 @@ public class SystemInfo
     /** Used to assign a unique ID to system sentences */
     private int sentenceCount = 0;
 
-    /** Unique Id for this system (in the sheet). */
+    /** Unique Id (sequential vertical number starting from 1 in containing sheet). */
     private final int id;
 
     /** Area that encloses all items related to this system. */
@@ -188,9 +181,6 @@ public class SystemInfo
     private boolean indented;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // SystemInfo //
-    //------------//
     /**
      * Create a SystemInfo entity, to register the provided parameters.
      *
@@ -219,13 +209,13 @@ public class SystemInfo
     // addPart //
     //---------//
     /**
-     * Add a real or dummy part (set of staves) in this system.
+     * Add a (real) part to this system.
      *
      * @param partInfo the part to add
      */
     public void addPart (Part partInfo)
     {
-        allParts.add(partInfo);
+        parts.add(partInfo);
     }
 
     //-----------------------//
@@ -285,8 +275,9 @@ public class SystemInfo
     /**
      * For this system, retrieve the connections between the (orphan) slurs at the
      * beginning of this page and the (orphan) slurs at the end of the previous page.
+     * @param score the containing score
      */
-    public void connectPageInitialSlurs ()
+    public void connectPageInitialSlurs (Score score)
     {
         // Containing page
         final Page page = getPage();
@@ -298,21 +289,19 @@ public class SystemInfo
         }
 
         // If very first page, we are done
-        Score score = page.getScore();
-
         if (score.getFirstPage() == page) {
             return;
         }
 
-        SystemInfo precedingSystem = page.getPrecedingInScore().getLastSystem();
+        SystemInfo precedingSystem = page.getPrecedingInScore(score).getLastSystem();
 
         if (precedingSystem != null) {
             // Examine every part in sequence
-            for (int index = 0; index < allParts.size(); index++) {
-                final Part part = allParts.get(index);
+            for (int index = 0; index < parts.size(); index++) {
+                final Part part = parts.get(index);
 
                 // Find out the proper preceding part (across pages)
-                Part precedingPart = precedingSystem.getAllParts().get(index);
+                Part precedingPart = precedingSystem.getParts().get(index);
 
                 // Ending orphans in preceding system/part (if such part exists)
                 part.connectSlursWith(precedingPart);
@@ -381,48 +370,6 @@ public class SystemInfo
         }
     }
 
-    //------------------//
-    // fillMissingParts //
-    //------------------//
-    /**
-     * Check for missing parts in this system, and if needed create dummy parts filled
-     * with whole rests.
-     */
-    public void fillMissingParts ()
-    {
-        boolean insertionDone = false;
-
-        // Check we have all the defined parts in this system
-        for (ScorePart scorePart : getPage().getPartList()) {
-            if (getPartById(scorePart.getId()) == null) {
-                getFirstRealPart().createDummyPart(scorePart.getId());
-                insertionDone = true;
-            }
-        }
-
-        // Ensure dummy measures are correctly positionned within their stack
-        if (insertionDone) {
-            Collections.sort(getAllParts(), Part.byId);
-
-            for (MeasureStack stack : stacks) {
-                stack.sortMeasures();
-            }
-        }
-    }
-
-    //-------------//
-    // getAllParts //
-    //-------------//
-    /**
-     * Reports all the parts of this system, perhaps including dummy ones.
-     *
-     * @return all the parts, real or dummy (non-null)
-     */
-    public List<Part> getAllParts ()
-    {
-        return allParts;
-    }
-
     //---------//
     // getArea //
     //---------//
@@ -448,22 +395,17 @@ public class SystemInfo
         }
     }
 
-    //--------//
-    // getBar //
-    //--------//
+    //-----------//
+    // getBottom //
+    //-----------//
     /**
-     * Report the system bar-line, if any, on the provided side.
+     * Report the ordinate of the bottom of this system.
      *
-     * @param side proper horizontal side
-     * @return the system bar on this side, or null
+     * @return the bottom ordinate, expressed in pixels
      */
-    public BarInfo getBar (HorizontalSide side)
+    public int getBottom ()
     {
-        if (side == HorizontalSide.LEFT) {
-            return leftBar;
-        } else {
-            return rightBar;
-        }
+        return bottom;
     }
 
     //-----------//
@@ -540,18 +482,17 @@ public class SystemInfo
         return stacks.get(0);
     }
 
-    //------------------//
-    // getFirstRealPart //
-    //------------------//
+    //--------------//
+    // getFirstPart //
+    //--------------//
     /**
-     * Report the first non-dummy part in this system.
+     * Report the first (real) part in this system.
      *
-     * @return the real first part entity
-     * @see #getFirstPart()
+     * @return the first part entity
      */
-    public Part getFirstRealPart ()
+    public Part getFirstPart ()
     {
-        for (Part part : allParts) {
+        for (Part part : parts) {
             if (!part.isDummy()) {
                 return part;
             }
@@ -631,9 +572,10 @@ public class SystemInfo
     // getId //
     //-------//
     /**
-     * Report the id (debugging info) of the system info.
+     * Report the id of this system, a sequential number starting from 1 in containing
+     * sheet, regardless of containing part.
      *
-     * @return the id
+     * @return the system id within sheet
      */
     public int getId ()
     {
@@ -663,27 +605,6 @@ public class SystemInfo
         }
 
         return stacks.get(stacks.size() - 1);
-    }
-
-    //-----------------//
-    // getLastRealPart //
-    //-----------------//
-    /**
-     * Report the last non-dummy part in this system.
-     *
-     * @return the last non-dummy part entity
-     */
-    public Part getLastRealPart ()
-    {
-        for (int i = allParts.size() - 1; i >= 0; i--) {
-            Part part = allParts.get(i);
-
-            if (!part.isDummy()) {
-                return part;
-            }
-        }
-
-        return null;
     }
 
     //--------------//
@@ -746,6 +667,9 @@ public class SystemInfo
         return sb.toString();
     }
 
+    //------------------//
+    // getMeasureStacks //
+    //------------------//
     /**
      * @return the measureStacks
      */
@@ -883,6 +807,26 @@ public class SystemInfo
         return page;
     }
 
+    //--------------//
+    // getPartAbove //
+    //--------------//
+    /**
+     * Determine the (real) part which is above the given point.
+     *
+     * @param point the given point
+     * @return the part above
+     */
+    public Part getPartAbove (Point point)
+    {
+        Staff staff = getStaffAbove(point);
+
+        if (staff == null) {
+            return getFirstPart();
+        } else {
+            return getPartOf(staff);
+        }
+    }
+
     //-------------//
     // getPartById //
     //-------------//
@@ -894,7 +838,7 @@ public class SystemInfo
      */
     public Part getPartById (int id)
     {
-        for (Part part : allParts) {
+        for (Part part : parts) {
             if (part.getId() == id) {
                 return part;
             }
@@ -905,24 +849,24 @@ public class SystemInfo
         return null;
     }
 
-    //----------------//
-    // getPartByModel //
-    //----------------//
+    //-----------------//
+    // getPhysicalPart //
+    //-----------------//
     /**
-     * Report the system part which implements the provided ScorePart in this system.
+     * Report the system part which implements the provided LogicalPart in this system.
      *
-     * @param scorePart the provided part model
+     * @param logicalPart the provided part model
      * @return the corresponding system part, if any
      */
-    public Part getPartByModel (ScorePart scorePart)
+    public Part getPhysicalPart (LogicalPart logicalPart)
     {
-        for (Part part : allParts) {
-            if (part.getScorePart() == scorePart) {
+        for (Part part : parts) {
+            if (part.getLogicalPart() == logicalPart) {
                 return part;
             }
         }
 
-        logger.debug("{} No system part for {}", this, scorePart);
+        logger.debug("{} No system part for {}", this, logicalPart);
 
         return null;
     }
@@ -949,13 +893,26 @@ public class SystemInfo
             return null;
         }
 
-        for (Part part : allParts) {
+        for (Part part : parts) {
             if (part.getStaves().contains(staff)) {
                 return part;
             }
         }
 
         return null;
+    }
+
+    //----------//
+    // getParts //
+    //----------//
+    /**
+     * Reports the parts of this system.
+     *
+     * @return all the real parts
+     */
+    public List<Part> getParts ()
+    {
+        return parts;
     }
 
     //--------------------//
@@ -982,26 +939,6 @@ public class SystemInfo
         }
 
         return null;
-    }
-
-    //------------------//
-    // getRealPartAbove //
-    //------------------//
-    /**
-     * Determine the real part which is above the given point.
-     *
-     * @param point the given point
-     * @return the part above
-     */
-    public Part getRealPartAbove (Point point)
-    {
-        Staff staff = getStaffAbove(point);
-
-        if (staff == null) {
-            return getFirstRealPart();
-        } else {
-            return getPartOf(staff);
-        }
     }
 
     //----------//
@@ -1084,7 +1021,7 @@ public class SystemInfo
     // getStaffAbove //
     //---------------//
     /**
-     * Determine the real staff which is just above the given point.
+     * Determine the (real) staff which is just above the given point.
      *
      * @param point the given point
      * @return the staff above
@@ -1110,7 +1047,7 @@ public class SystemInfo
     // getStaffBelow //
     //---------------//
     /**
-     * Determine the real staff which is just below the given point.
+     * Determine the (real) staff which is just below the given point.
      *
      * @param point the given point
      * @return the staff below
@@ -1383,7 +1320,6 @@ public class SystemInfo
     //---------------//
     /**
      * Register a brand new glyph in proper system (and nest).
-     *
      * <p>
      * <b>Note</b>: The caller must use the returned glyph since it may be
      * different from the provided glyph (this happens when an original glyph
@@ -1463,23 +1399,6 @@ public class SystemInfo
         }
     }
 
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * @param staves the range of staves
-     */
-    public final void setStaves (List<Staff> staves)
-    {
-        this.staves = staves;
-
-        for (Staff staff : staves) {
-            staff.setSystem(this);
-        }
-
-        updateCoordinates();
-    }
-
     //----------------//
     // resetSentences //
     //----------------//
@@ -1544,25 +1463,6 @@ public class SystemInfo
         }
     }
 
-    //--------//
-    // setBar //
-    //--------//
-    /**
-     * Assign system barline on the provided side.
-     *
-     * @param side proper horizontal side
-     * @param bar  the bar to set
-     */
-    public void setBar (HorizontalSide side,
-                        BarInfo bar)
-    {
-        if (side == HorizontalSide.LEFT) {
-            this.leftBar = bar;
-        } else {
-            this.rightBar = bar;
-        }
-    }
-
     //-------------//
     // setIndented //
     //-------------//
@@ -1588,6 +1488,66 @@ public class SystemInfo
     public void setPage (Page page)
     {
         this.page = page;
+    }
+
+    //-----------//
+    // setStaves //
+    //-----------//
+    /**
+     * @param staves the range of staves
+     */
+    public final void setStaves (List<Staff> staves)
+    {
+        this.staves = staves;
+
+        for (Staff staff : staves) {
+            staff.setSystem(this);
+        }
+
+        updateCoordinates();
+    }
+
+    //
+    //    //-------------//
+    //    // swapVoiceId //
+    //    //-------------//
+    //    /**
+    //     * Change the id of the provided voice to the provided id
+    //     * (and change the other voice, if any, which owned the provided id).
+    //     *
+    //     * @param voice the voice whose id must be changed
+    //     * @param id    the new id
+    //     */
+    //    public void swapVoiceId (Voice voice,
+    //                             int id)
+    //    {
+    //        for (MeasureStack stack : stacks) {
+    //            stack.swapVoiceId(voice, id);
+    //        }
+    //    }
+    //
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Report a readable description.
+     *
+     * @return a description based on staff indices
+     */
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{System#").append(id);
+        sb.append(" T").append(getFirstStaff().getId());
+
+        if (staves.size() > 1) {
+            sb.append("..T").append(getLastStaff().getId());
+        }
+
+        sb.append("}");
+
+        return sb.toString();
     }
 
     //----------------//
@@ -1666,57 +1626,6 @@ public class SystemInfo
         }
 
         sb.append("]");
-
-        return sb.toString();
-    }
-
-    //
-    //    //-------------//
-    //    // swapVoiceId //
-    //    //-------------//
-    //    /**
-    //     * Change the id of the provided voice to the provided id
-    //     * (and change the other voice, if any, which owned the provided id).
-    //     *
-    //     * @param voice the voice whose id must be changed
-    //     * @param id    the new id
-    //     */
-    //    public void swapVoiceId (Voice voice,
-    //                             int id)
-    //    {
-    //        for (MeasureStack stack : stacks) {
-    //            stack.swapVoiceId(voice, id);
-    //        }
-    //    }
-    //
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Report a readable description.
-     *
-     * @return a description based on staff indices
-     */
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{System#").append(id);
-        sb.append(" T").append(getFirstStaff().getId());
-
-        if (staves.size() > 1) {
-            sb.append("..T").append(getLastStaff().getId());
-        }
-
-        if (leftBar != null) {
-            sb.append(" leftBar:").append(leftBar);
-        }
-
-        if (rightBar != null) {
-            sb.append(" rightBar:").append(rightBar);
-        }
-
-        sb.append("}");
 
         return sb.toString();
     }

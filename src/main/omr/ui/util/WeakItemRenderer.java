@@ -27,9 +27,6 @@ public class WeakItemRenderer
     protected final WeakReference<ItemRenderer> weakRenderer;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // WeakItemRenderer //
-    //------------------//
     /**
      * Creates a new WeakItemRenderer object.
      *

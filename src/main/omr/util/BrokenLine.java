@@ -73,11 +73,10 @@ public class BrokenLine
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    
     private static final Constants constants = new Constants();
 
-    
-    private static final Logger logger = LoggerFactory.getLogger(BrokenLine.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            BrokenLine.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
@@ -89,10 +88,6 @@ public class BrokenLine
     private final List<PointFacade> xps = new ArrayList<PointFacade>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //------------//
-    // BrokenLine //
-    //------------//
     /**
      * Creates a new BrokenLine object with an initially empty sequence of points.
      */
@@ -100,9 +95,6 @@ public class BrokenLine
     {
     }
 
-    //------------//
-    // BrokenLine //
-    //------------//
     /**
      * Creates a new BrokenLine object with a few initial points.
      *
@@ -113,9 +105,6 @@ public class BrokenLine
         resetPoints(Arrays.asList(points));
     }
 
-    //------------//
-    // BrokenLine //
-    //------------//
     /**
      * Creates a new BrokenLine object with a few initial points.
      *

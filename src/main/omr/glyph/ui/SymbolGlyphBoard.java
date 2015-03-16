@@ -60,9 +60,8 @@ import javax.swing.KeyStroke;
  * Glyphs whose shape is set to {@link omr.glyph.Shape#NOISE}, that is too small glyphs, are not
  * included in this spinner.</ul>
  *
- * <h4>Layout of an instance of SymbolGlyphBoard:<br/>
- * <img src="doc-files/SymbolGlyphBoard.png"/>
- * </h4>
+ * <p>
+ * <img alt="Image of SymbolGlyphBoard" src="doc-files/SymbolGlyphBoard.png">
  *
  * @author Hervé Bitteur
  */
@@ -127,9 +126,6 @@ public class SymbolGlyphBoard
     private boolean selfUpdatingText;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // SymbolGlyphBoard //
-    //------------------//
     /**
      * Create the symbol glyph board.
      *
@@ -189,7 +185,7 @@ public class SymbolGlyphBoard
     /**
      * Triggered by VIP check box.
      *
-     * @param e
+     * @param e triggering event
      */
     @Override
     public void actionPerformed (ActionEvent e)

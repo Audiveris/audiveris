@@ -42,9 +42,6 @@ public abstract class GhostDropAdapter<A>
     protected BufferedImage image;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // GhostDropAdapter //
-    //------------------//
     /**
      * Create a new GhostDropAdapter object
      *

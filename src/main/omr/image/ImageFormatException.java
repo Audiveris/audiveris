@@ -23,8 +23,7 @@ public class ImageFormatException
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Construct an {@code ImageFormatException} with provided detail
-     * message.
+     * Construct an {@code ImageFormatException} with provided detail message.
      */
     public ImageFormatException (String message)
     {

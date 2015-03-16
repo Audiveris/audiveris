@@ -51,9 +51,6 @@ public class QuantizedARTMoments
     private final short[][] values = new short[ANGULAR][RADIAL];
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------------//
-    // QuantizedARTMoments //
-    //---------------------//
     /**
      * Creates a new QuantizedARTMoments object.
      */

@@ -66,11 +66,10 @@ public class FilamentAlignment
     protected Double meanDistance;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------------//
-    // FilamentAlignment //
-    //-------------------//
     /**
      * Creates a new FilamentAlignment object.
+     *
+     * @param glyph the related glyph
      */
     public FilamentAlignment (Glyph glyph)
     {

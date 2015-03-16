@@ -87,9 +87,6 @@ public class NestView
     protected final Collection<ItemRenderer> itemRenderers;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // NestView //
-    //----------//
     /**
      * Create a nest view.
      *

@@ -44,15 +44,15 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public class DotPattern
-    extends GlyphPattern
+        extends GlyphPattern
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
-    private static final Logger    logger = LoggerFactory.getLogger(DotPattern.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(DotPattern.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     //
     /** Max dx from sentence end to dot. */
     private final int maxLineDx;
@@ -61,11 +61,6 @@ public class DotPattern
     private final int maxLineDy;
 
     //~ Constructors -------------------------------------------------------------------------------
-
-    //
-    //------------//
-    // DotPattern //
-    //------------//
     /**
      * Creates a new DotPattern object.
      *
@@ -81,7 +76,6 @@ public class DotPattern
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //
     //------------//
     // runPattern //
@@ -94,7 +88,7 @@ public class DotPattern
     @Override
     public int runPattern ()
     {
-        int    nb = 0;
+        int nb = 0;
         String language = system.getSheet().getTextParam().getTarget();
 
         for (Glyph glyph : getQuestionableDots()) {
@@ -185,23 +179,24 @@ public class DotPattern
     private Set<Glyph> getQuestionableDots ()
     {
         Set<Glyph> dots = Glyphs.lookupGlyphs(
-            system.getGlyphs(),
-            new Predicate<Glyph>() {
+                system.getGlyphs(),
+                new Predicate<Glyph>()
+                {
                     @Override
                     public boolean check (Glyph glyph)
                     {
                         Shape shape = glyph.getShape();
 
-                        return (shape != null) && ShapeSet.Dots.contains(shape) &&
-                               !glyph.isManualShape() && glyph.isActive();
+                        return (shape != null) && ShapeSet.Dots.contains(shape)
+                               && !glyph.isManualShape() && glyph.isActive();
                     }
                 });
 
         if (logger.isDebugEnabled()) {
             logger.debug(
-                "{} Questionable {}",
-                system.getLogPrefix(),
-                Glyphs.toString("dots", dots));
+                    "{} Questionable {}",
+                    system.getLogPrefix(),
+                    Glyphs.toString("dots", dots));
         }
 
         return dots;
@@ -222,22 +217,23 @@ public class DotPattern
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Ratio minAspect = new Constant.Ratio(2, "Minimum width / height ratio for a dash");
+
         Scale.Fraction maxLineDx = new Scale.Fraction(
-            10,
-            "Maximum abscissa offset from line to dash");
+                10,
+                "Maximum abscissa offset from line to dash");
+
         Scale.Fraction maxLineDy = new Scale.Fraction(
-            2,
-            "Maximum ordinate offset from line to dash");
+                2,
+                "Maximum ordinate offset from line to dash");
     }
 }

@@ -59,9 +59,6 @@ public class Articulation
     private static final Logger logger = LoggerFactory.getLogger(Articulation.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // Articulation //
-    //--------------//
     /**
      * Creates a new instance of Articulation event
      *

@@ -65,11 +65,8 @@ public class LedgersFilter
     final List<Integer> vipSections;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // LedgersFilter //
-    //---------------//
     /**
-     * Creates a new HorizontalsFilter object.
+     * Creates a new LedgersFilter object.
      *
      * @param sheet the related sheet
      */

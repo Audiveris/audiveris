@@ -33,9 +33,6 @@ public class Segno
     private static final Logger logger = LoggerFactory.getLogger(Segno.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------//
-    // Segno //
-    //-------//
     /**
      * Creates a new instance of Segno event
      *

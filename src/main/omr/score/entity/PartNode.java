@@ -54,9 +54,6 @@ public abstract class PartNode
     private Point referencePoint;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // PartNode //
-    //----------//
     /**
      * Create a PartNode.
      *

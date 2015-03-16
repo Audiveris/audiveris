@@ -28,9 +28,6 @@ public class LComboBox<E>
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //-----------//
-    // LComboBox //
-    //-----------//
     /**
      * Create an editable labeled combo with provided
      * characteristics.

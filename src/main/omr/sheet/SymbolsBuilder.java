@@ -249,7 +249,7 @@ public class SymbolsBuilder
                 // Use just the subgraph for this set
                 SimpleGraph<Glyph, GlyphLink> clusterGraph = getClusterGraph(set, systemGraph);
 
-                new GlyphCluster(new MyAdapter(clusterGraph)).decompose();
+                new GlyphCluster(new SymbolAdapter(clusterGraph)).decompose();
             } else {
                 // The set is just an isolated glyph, to be evaluated directly
                 Glyph glyph = set.iterator().next();
@@ -287,10 +287,10 @@ public class SymbolsBuilder
                 "Maximum height for a symbol (when found within staff abscissa range)");
     }
 
-    //-----------//
-    // MyAdapter //
-    //-----------//
-    private class MyAdapter
+    //---------------//
+    // SymbolAdapter //
+    //---------------//
+    private class SymbolAdapter
             implements GlyphCluster.Adapter
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -301,7 +301,7 @@ public class SymbolsBuilder
         private final Scale scale = sheet.getScale();
 
         //~ Constructors ---------------------------------------------------------------------------
-        public MyAdapter (SimpleGraph<Glyph, GlyphLink> graph)
+        public SymbolAdapter (SimpleGraph<Glyph, GlyphLink> graph)
         {
             this.graph = graph;
         }

@@ -104,9 +104,6 @@ public class BasicGlyph
     final Set<GlyphFacet> facets = new LinkedHashSet<GlyphFacet>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // BasicGlyph //
-    //------------//
     /**
      * Create a new BasicGlyph object.
      *

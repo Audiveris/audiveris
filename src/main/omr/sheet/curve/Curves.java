@@ -81,9 +81,6 @@ public class Curves
     private SlursBuilder slursBuilder;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------//
-    // Curves //
-    //--------//
     /**
      * Creates a new Curves object.
      *

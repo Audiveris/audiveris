@@ -30,9 +30,6 @@ public class SlantedSymbol
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //---------------//
-    // SlantedSymbol //
-    //---------------//
     /**
      * Creates a new SlantedSymbol object, standard size
      *
@@ -45,9 +42,6 @@ public class SlantedSymbol
         this(false, shape, codes);
     }
 
-    //---------------//
-    // SlantedSymbol //
-    //---------------//
     /**
      * Creates a new SlantedSymbol object.
      *

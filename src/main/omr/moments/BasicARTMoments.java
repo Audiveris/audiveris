@@ -36,9 +36,6 @@ public class BasicARTMoments
     private final double[][] reals = new double[ANGULAR][RADIAL];
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // BasicARTMoments //
-    //-----------------//
     /**
      * Creates a new BasicARTMoments object.
      */

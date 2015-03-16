@@ -32,9 +32,6 @@ class GlyphAction
     private final Glyph glyph;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // GlyphAction //
-    //-------------//
     /**
      * Creates a new GlyphAction object.
      *
@@ -45,9 +42,6 @@ class GlyphAction
         this(glyph, null);
     }
 
-    //-------------//
-    // GlyphAction //
-    //-------------//
     /**
      * Creates a new GlyphAction object.
      *

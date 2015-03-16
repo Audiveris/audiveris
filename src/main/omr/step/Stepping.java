@@ -17,7 +17,7 @@ import omr.constant.ConstantSet;
 
 import omr.score.ui.ScoreActions;
 
-import omr.script.StepTask;
+import omr.script.BookStepTask;
 
 import omr.sheet.Book;
 import omr.sheet.Sheet;
@@ -47,12 +47,14 @@ import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code Stepping} handles the scheduling of step(s) on a score or a sheet,
- * with notification to the user interface when running in interactive mode.
+ * Class {@code Stepping} handles the scheduling of step(s) on a book or a sheet.
+ * When running in interactive mode, progress is notified to the user interface.
+ * <p>
+ * <img src="doc-files/Stepping.png" />
  *
  * @author Hervé Bitteur
  */
-public class Stepping
+public abstract class Stepping
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -72,7 +74,19 @@ public class Stepping
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //
+    //---------//
+    // animate //
+    //---------//
+    /**
+     * When running interactively, animate the progress bar.
+     */
+    public static void animate ()
+    {
+        if (monitor != null) {
+            monitor.animate();
+        }
+    }
+
     //---------------//
     // createMonitor //
     //---------------//
@@ -100,6 +114,23 @@ public class Stepping
     {
         if (!book.getFirstSheet().isDone(step)) {
             processBook(Collections.singleton(step), null, book);
+        }
+    }
+
+    //-----------------//
+    // ensureSheetStep //
+    //-----------------//
+    /**
+     * Make sure the provided step has been reached on the sheet at hand
+     *
+     * @param step  the step to check
+     * @param sheet the sheet to process, if so needed
+     */
+    public static void ensureSheetStep (Step step,
+                                        Sheet sheet)
+    {
+        if (!sheet.isDone(step)) {
+            processSheet(Collections.singleton(step), sheet);
         }
     }
 
@@ -133,6 +164,7 @@ public class Stepping
     /**
      * Report the latest step done so far with the related sheet.
      *
+     * @param sheet the sheet concerned
      * @return the latest step done, or null
      */
     public static Step getLatestStep (Sheet sheet)
@@ -149,28 +181,13 @@ public class Stepping
         return null;
     }
 
-    //----------------//
-    // notifyProgress //
-    //----------------//
-    /**
-     * When running interactively, move slightly the progress bar
-     * animation.
-     */
-    public static void notifyProgress ()
-    {
-        if (monitor != null) {
-            monitor.animate();
-        }
-    }
-
     //-------------//
     // processBook //
     //-------------//
     /**
-     * At book level, perform the desired steps (as well as all needed intermediate
-     * steps).
+     * At book level, perform the desired steps (and all needed intermediate steps).
      * <p>
-     * This method is used from the CLI, from a script or from the Step menu (via the StepTask),
+     * This method is used from the CLI, from a script or from the Step menu (via the BookStepTask),
      * and from the drag&drop handler.
      *
      * @param desiredSteps the desired steps
@@ -181,7 +198,7 @@ public class Stepping
                                     SortedSet<Integer> indices,
                                     Book book)
     {
-        logger.debug("processScore {} on {}", desiredSteps, book);
+        logger.debug("processBook {} on {}", desiredSteps, book);
 
         // Sanity checks
         if (book == null) {
@@ -193,14 +210,14 @@ public class Stepping
         orderedSteps.addAll(desiredSteps);
 
         try {
-            // Determine starting step and stopping step
-            final Step start;
-            final Step stop;
-
             if (book.getSheets().isEmpty()) {
                 // Create book sheets if not yet done
                 // This will usually trigger the early step on first sheet in synchronous mode
                 book.createSheets(indices);
+            }
+
+            if (desiredSteps.isEmpty()) {
+                return; // No explicit step to perform
             }
 
             // Find the first step across all book sheets
@@ -221,34 +238,15 @@ public class Stepping
                 }
             }
 
-            start = (first == null) ? FIRST_STEP : next(first);
-            stop = (Steps.compare(first, orderedSteps.last()) >= 0) ? first : orderedSteps.last();
+            // Determine starting step and stopping step
+            final Step start = (first == null) ? FIRST_STEP : next(first);
+            final Step stop = (Steps.compare(first, orderedSteps.last()) >= 0) ? first
+                    : orderedSteps.last();
 
             // Add all intermediate mandatory steps?
             if (constants.generateIntermediateSteps.isSet()) {
                 for (Step step : range(start, stop)) {
-                    if (step.isMandatory()) {
-                        orderedSteps.add(step);
-                    }
-                }
-            } else {
-                // Insert steps only until last desired mandatory step
-                Step lastMandatory = null;
-                Step scoreStep = Steps.valueOf(Steps.SCORE); // BINGO
-
-                for (Step step : orderedSteps) {
-                    ///if (step.isMandatory()) {
-                    if (step.isMandatory() && (step != scoreStep)) {
-                        lastMandatory = step;
-                    }
-                }
-
-                if (lastMandatory != null) {
-                    for (Step step : range(start, lastMandatory)) {
-                        if (step.isMandatory()) {
-                            orderedSteps.add(step);
-                        }
-                    }
+                    orderedSteps.add(step);
                 }
             }
 
@@ -257,7 +255,7 @@ public class Stepping
 
             // Record the step tasks to script
             for (Step step : desiredSteps) {
-                book.getScript().addTask(new StepTask(step));
+                book.getScript().addTask(new BookStepTask(step));
             }
         } catch (ProcessingCancellationException pce) {
             throw pce;
@@ -270,11 +268,10 @@ public class Stepping
     // processSheet //
     //--------------//
     /**
-     * At sheet level, perform the desired steps (as well as all needed intermediate
-     * steps).
+     * At sheet level, perform the desired steps (with all needed intermediate steps).
      * <p>
-     * This method is used from the CLI, from a script or from the Step menu (via the StepTask),
-     * and from the drag&drop handler.
+     * This method is used from the CLI, from a script or from the Step menu (via the
+     * SheetStepTask), and from the drag&drop handler. ???
      *
      * @param desiredSteps the desired steps
      * @param sheet        the processed sheet
@@ -293,6 +290,8 @@ public class Stepping
         // Determine the precise ordered collection of steps to perform
         SortedSet<Step> orderedSteps = new TreeSet<Step>(comparator);
         orderedSteps.addAll(desiredSteps);
+
+        notifyStart();
 
         try {
             // Determine starting step and stopping step
@@ -317,11 +316,11 @@ public class Stepping
             } else {
                 // Insert steps only until last desired mandatory step
                 Step lastMandatory = null;
-                Step scoreStep = Steps.valueOf(Steps.SCORE); // BINGO
+                Step pageStep = Steps.valueOf(Steps.PAGE);
 
                 for (Step step : orderedSteps) {
                     ///if (step.isMandatory()) {
-                    if (step.isMandatory() && (step != scoreStep)) {
+                    if (step.isMandatory() && (step != pageStep)) {
                         lastMandatory = step;
                     }
                 }
@@ -346,7 +345,7 @@ public class Stepping
 
             //            // Record the step tasks to script
             //            for (Step step : desiredSteps) {
-            //                sheet.getScript().addTask(new StepTask(step));
+            //                sheet.getScript().addTask(new BookStepTask(step));
             //            }
             return true;
         } catch (ProcessingCancellationException pce) {
@@ -355,6 +354,8 @@ public class Stepping
             logger.warn(sheet.getLogPrefix() + " Error in performing " + orderedSteps, ex);
 
             return false;
+        } finally {
+            notifyStop();
         }
     }
 
@@ -369,8 +370,7 @@ public class Stepping
      *
      * @param step            the step to restart from
      * @param sheet           the sheet to process
-     * @param impactedSystems the ordered set of systems to rebuild, or null if all systems must be
-     *                        rebuilt
+     * @param impactedSystems the ordered set of systems to rebuild, or null for all systems
      * @param imposed         flag to indicate that update is imposed
      */
     public static void reprocessSheet (Step step,
@@ -392,8 +392,7 @@ public class Stepping
      *
      * @param step            the step to restart from
      * @param sheet           the sheet to process
-     * @param impactedSystems the ordered set of systems to rebuild, or null if all systems must be
-     *                        rebuilt
+     * @param impactedSystems the ordered set of systems to rebuild, or null for all systems
      * @param imposed         flag to indicate that update is imposed
      * @param merge           true if step SCORE (merge of pages) is allowed
      */
@@ -432,13 +431,6 @@ public class Stepping
 
         // Rebuild from specified step, if needed
         Step latest = getLatestMandatoryStep(sheet);
-
-        // Avoid SCORE step?
-        Step scoreStep = Steps.valueOf(Steps.SCORE);
-
-        if (!merge && (latest == scoreStep)) {
-            latest = Steps.previous(latest);
-        }
 
         if ((latest == null) || (compare(latest, step) >= 0)) {
             // The range of steps to re-perform
@@ -735,37 +727,7 @@ public class Stepping
         notifyStart();
 
         try {
-            // Perform the remaining steps at sheet level, if any
-            SortedSet<Step> sheetSet = new TreeSet<Step>(comparator);
-
-            for (Step step : stepSet) {
-                if (!step.isScoreLevel()) {
-                    sheetSet.add(step);
-                }
-            }
-
-            stepSet.removeAll(sheetSet);
-            doBookStepSet(sheetSet, book);
-
-            // Finally, perform steps that must be done at book level
-            // SCORE step if present, must be done first, and in case of failure
-            // must prevent the following book-level steps to run.
-            Step scoreStep = Steps.valueOf(Steps.SCORE);
-
-            if (stepSet.contains(scoreStep)) {
-                stepSet.remove(scoreStep);
-                doOneBookStep(scoreStep, book);
-            }
-
-            // Perform the other book-level steps, if any
-            for (Step step : stepSet) {
-                try {
-                    doOneBookStep(step, book);
-                } catch (StepException ignored) {
-                }
-            }
-        } catch (StepException se) {
-            logger.info("Processing stopped. {}", se.getMessage());
+            doBookStepSet(stepSet, book);
         } finally {
             notifyStop();
         }
@@ -783,11 +745,11 @@ public class Stepping
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final omr.constant.Constant.Boolean printWatch = new omr.constant.Constant.Boolean(
+        final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        private final omr.constant.Constant.Boolean generateIntermediateSteps = new omr.constant.Constant.Boolean(
+        final Constant.Boolean generateIntermediateSteps = new Constant.Boolean(
                 true,
                 "Should we generate intermediate steps?");
     }

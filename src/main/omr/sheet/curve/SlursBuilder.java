@@ -19,17 +19,17 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 
 import omr.grid.FilamentLine;
-import omr.sheet.Staff;
 
 import omr.math.Circle;
 
 import omr.sheet.Scale;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 
 import omr.sig.GradeImpacts;
-import omr.sig.inter.Inter;
 import omr.sig.SIGraph;
+import omr.sig.inter.Inter;
 import omr.sig.inter.SlurInter;
 
 import omr.ui.util.UIUtil;
@@ -46,13 +46,11 @@ import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.toRadians;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -474,7 +472,8 @@ public class SlursBuilder
     // weed //
     //------//
     @Override
-    protected void weed (Set<Curve> clump)
+    protected void weed (Set<Curve> clump,
+                         boolean reverse)
     {
         // Compute grades
         List<SlurInter> inters = new ArrayList<SlurInter>();
@@ -490,6 +489,10 @@ public class SlursBuilder
         }
 
         clump.clear();
+
+        // In the provided clump, all candidates start from the same point.
+        // If several candidates stop at the same point, keep the one with best grade.
+        purgeIdenticalEndings(inters, reverse);
 
         // Discard the ones with too short distance from one end to the other
         SlurInter longest = purgeShortests(inters);
@@ -684,6 +687,40 @@ public class SlursBuilder
         Collections.sort(list, Arc.byReverseLength);
 
         return list;
+    }
+
+    //-----------------------//
+    // purgeIdenticalEndings //
+    //-----------------------//
+    /**
+     * Purge the inters with identical ending point (keeping the best grade)
+     *
+     * @param inters  the collection to purge
+     * @param reverse extension orientation
+     */
+    private void purgeIdenticalEndings (List<SlurInter> inters,
+                                        boolean reverse)
+    {
+        Collections.sort(inters, Inter.byReverseGrade);
+
+        for (int i = 0; i < inters.size(); i++) {
+            SlurInter slur = inters.get(i);
+            Point end = slur.getInfo().getEnd(reverse);
+
+            List<SlurInter> toDelete = new ArrayList<SlurInter>();
+
+            for (SlurInter otherSlur : inters.subList(i + 1, inters.size())) {
+                Point otherEnd = otherSlur.getInfo().getEnd(reverse);
+
+                if (end.equals(otherEnd)) {
+                    toDelete.add(otherSlur);
+                }
+            }
+
+            if (!toDelete.isEmpty()) {
+                inters.removeAll(toDelete);
+            }
+        }
     }
 
     /**

@@ -58,9 +58,6 @@ public class LogPane
     private final SimpleAttributeSet attributes = new SimpleAttributeSet();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------//
-    // LogPane //
-    //---------//
     /**
      * Create the log pane, with a standard mailbox.
      */

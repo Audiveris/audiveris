@@ -274,7 +274,7 @@ public class EditorMenu
             setVisible(stack != null);
 
             if (stack != null) {
-                setText("Measure #" + stack.getScoreId() + " ...");
+                setText("Measure #" + stack.getPageId() + " ...");
             }
         }
 

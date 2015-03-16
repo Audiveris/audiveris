@@ -29,9 +29,6 @@ public class LHexaSpinner
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //--------------//
-    // LHexaSpinner //
-    //--------------//
     /**
      * Create an editable labeled hexa spinner with provided
      * characteristics.

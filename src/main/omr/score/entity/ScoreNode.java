@@ -31,9 +31,6 @@ public abstract class ScoreNode
     private static final Logger logger = LoggerFactory.getLogger(ScoreNode.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // ScoreNode //
-    //-----------//
     /**
      * Create a node in the tree, given its container
      *

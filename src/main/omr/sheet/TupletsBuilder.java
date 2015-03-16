@@ -428,12 +428,12 @@ public class TupletsBuilder
         public void include (ChordInter chord)
         {
             if (chords.add(chord)) {
-                Rational duration = chord.getRawDuration();
-                total = total.plus(duration);
+                Rational sansTuplet = chord.getDurationSansTuplet();
+                total = total.plus(sansTuplet);
 
                 // If this is a shorter chord, let's update the base
-                if (duration.compareTo(base) < 0) {
-                    base = duration;
+                if (sansTuplet.compareTo(base) < 0) {
+                    base = sansTuplet;
                     expectedTotal = base.times(expectedCount);
                 }
 

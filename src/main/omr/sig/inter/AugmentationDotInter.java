@@ -43,6 +43,24 @@ public class AugmentationDotInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------------------//
+    // getSecondAugmentationDot //
+    //--------------------------//
+    /**
+     * Report the second augmentation dot, if any, that is linked to this (first)
+     * augmentation dot.
+     *
+     * @return the second dot, if any, or null
+     */
+    public AugmentationDotInter getSecondAugmentationDot ()
+    {
+        for (Relation dd : sig.getRelations(this, DoubleDotRelation.class)) {
+            return (AugmentationDotInter) sig.getOppositeInter(this, dd);
+        }
+
+        return null;
+    }
+
     //----------//
     // getVoice //
     //----------//

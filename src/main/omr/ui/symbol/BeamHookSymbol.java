@@ -23,9 +23,6 @@ public class BeamHookSymbol
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //----------------//
-    // BeamHookSymbol //
-    //----------------//
     /**
      * Create a BeamHookSymbol
      */
@@ -34,9 +31,6 @@ public class BeamHookSymbol
         this(false);
     }
 
-    //----------------//
-    // BeamHookSymbol //
-    //----------------//
     /**
      * Create a BeamHookSymbol
      *

@@ -35,9 +35,6 @@ public class LField<C extends JComponent>
     private final C field;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------//
-    // LField //
-    //--------//
     /**
      * Creates a new LField object.
      *

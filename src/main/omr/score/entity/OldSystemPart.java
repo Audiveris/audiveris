@@ -75,8 +75,8 @@ public class OldSystemPart
     /** The related information */
     private final Part info;
 
-    /** The corresponding ScorePart */
-    private ScorePart scorePart;
+    /** The corresponding LogicalPart */
+    private LogicalPart logicalPart;
 
     /** A brace (or bracket) attached if any */
     private Glyph brace;
@@ -103,9 +103,6 @@ public class OldSystemPart
     private boolean dummy;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // OldSystemPart //
-    //------------//
     /**
      * Create a new instance of SystemPart.
      *
@@ -631,9 +628,9 @@ public class OldSystemPart
     //--------------//
     // getScorePart //
     //--------------//
-    public ScorePart getScorePart ()
+    public LogicalPart getScorePart ()
     {
-        return scorePart;
+        return logicalPart;
     }
 
     //----------//
@@ -951,9 +948,9 @@ public class OldSystemPart
     //--------------//
     // setScorePart //
     //--------------//
-    public void setScorePart (ScorePart scorePart)
+    public void setScorePart (LogicalPart logicalPart)
     {
-        this.scorePart = scorePart;
+        this.logicalPart = logicalPart;
     }
 
     //--------------------//

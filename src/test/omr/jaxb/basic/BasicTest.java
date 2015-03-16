@@ -66,6 +66,8 @@ public class BasicTest
 
         waiter.setDays(Arrays.asList(d1, d2));
 
+        waiter.path = new File("PathToMyFile.txt");
+
         waiter.purse = new Purse();
 
         waiter.titles = new String[]{"One", "Two", "Three"};

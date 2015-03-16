@@ -124,10 +124,6 @@ public class BasicNest
     private GlyphLayer currentLayer = GlyphLayer.DEFAULT;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //-----------//
-    // BasicNest //
-    //-----------//
     /**
      * Create a glyph nest.
      *

@@ -128,9 +128,6 @@ public class BeamsBuilder
     private final Population vGaps;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // BeamsBuilder //
-    //--------------//
     /**
      * Creates a new BeamsBuilder object.
      *

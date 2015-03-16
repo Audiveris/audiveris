@@ -69,9 +69,6 @@ public class GlyphsController
     protected final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // GlyphsController //
-    //------------------//
     /**
      * Create an instance of GlyphsController, with its underlying
      * GlyphsModel instance.

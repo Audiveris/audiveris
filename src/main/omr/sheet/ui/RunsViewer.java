@@ -37,10 +37,6 @@ public class RunsViewer
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
-
-    //------------//
-    // RunsViewer //
-    //------------//
     /**
      * Creates a new RunsViewer object.
      *
@@ -52,7 +48,6 @@ public class RunsViewer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //---------//
     // display //
     //---------//
@@ -68,15 +63,14 @@ public class RunsViewer
         view.setPreferredSize(table.getDimension());
 
         BoardsPane boards = new BoardsPane(
-            new PixelBoard(sheet),
-            new BinarizationBoard(sheet),
-            new RunBoard(table, true));
+                new PixelBoard(sheet),
+                new BinarizationBoard(sheet),
+                new RunBoard(table, true));
 
         sheet.getAssembly().addViewTab(table.getName(), new ScrollView(view), boards);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //-----------------//
     // MyRunsTableView //
     //-----------------//
@@ -85,7 +79,7 @@ public class RunsViewer
      * on top of the runs.
      */
     private class MyRunsTableView
-        extends RunTableView
+            extends RunTableView
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -95,7 +89,6 @@ public class RunsViewer
         }
 
         //~ Methods --------------------------------------------------------------------------------
-
         @Override
         protected void renderItems (Graphics2D g)
         {

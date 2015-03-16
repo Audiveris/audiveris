@@ -24,9 +24,6 @@ public class FlatSymbol
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //------------//
-    // FlatSymbol //
-    //------------//
     /**
      * Creates a new FlatSymbol object.
      *
@@ -39,9 +36,6 @@ public class FlatSymbol
         this(false, shape, codes);
     }
 
-    //------------//
-    // FlatSymbol //
-    //------------//
     /**
      * Creates a new FlatSymbol object.
      *

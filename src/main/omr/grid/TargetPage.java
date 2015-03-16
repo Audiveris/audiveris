@@ -33,9 +33,6 @@ public class TargetPage
     public final List<TargetSystem> systems = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
-    //------------//
-    // TargetPage //
-    //------------//
     /**
      * Creates a new TargetPage object.
      *

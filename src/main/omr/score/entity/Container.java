@@ -27,9 +27,6 @@ public class Container
     private final String name;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // Container //
-    //-----------//
     /**
      * Creates a new Container object.
      *

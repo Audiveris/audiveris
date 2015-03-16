@@ -33,9 +33,6 @@ public class StemsStep
     private static final Logger logger = LoggerFactory.getLogger(StemsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // StemsStep //
-    //-----------//
     /**
      * Creates a new StemsStep object.
      */

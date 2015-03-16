@@ -17,7 +17,6 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.grid.FilamentLine;
-import omr.sheet.Staff;
 
 import omr.math.BasicLine;
 import omr.math.PointUtil;
@@ -25,9 +24,10 @@ import omr.math.PointUtil;
 import omr.run.Run;
 import omr.run.RunTable;
 
+import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-
+import omr.sheet.Staff;
 import static omr.sheet.curve.Skeleton.*;
 
 import omr.util.Navigable;
@@ -36,16 +36,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
-
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
-
 import java.util.Collections;
 import java.util.List;
-import omr.sheet.Picture;
 
 /**
  * Class {@code ArcRetriever} retrieves all arcs and store the interesting ones in
@@ -582,9 +579,7 @@ public class ArcRetriever
         cx = xStart;
         cy = yStart;
 
-        Status status;
-
-        while (Status.CONTINUE == (status = move(arc, cx, cy, reverse))) {
+        while (move(arc, cx, cy, reverse) == Status.CONTINUE) {
             // Check vertical run length at current point
             Run run = verticalRuns.getRunAt(cx, cy);
 

@@ -26,9 +26,6 @@ public class LongRestSymbol
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //----------------//
-    // LongRestSymbol //
-    //----------------//
     /**
      * Create a LongRestSymbol (with decoration?)
      *
@@ -39,9 +36,6 @@ public class LongRestSymbol
         this(false, decorated);
     }
 
-    //----------------//
-    // LongRestSymbol //
-    //----------------//
     /**
      * Create a LongRestSymbol (with decoration?)
      *

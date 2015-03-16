@@ -39,9 +39,6 @@ public class BeamsStep
     private static final Logger logger = LoggerFactory.getLogger(BeamsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // BeamsStep //
-    //-----------//
     /**
      * Creates a new BeamsStep object.
      */

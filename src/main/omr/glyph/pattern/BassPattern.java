@@ -47,9 +47,6 @@ public class BassPattern
     private static final Logger logger = LoggerFactory.getLogger(BassPattern.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // BassPattern //
-    //-------------//
     /**
      * Creates a new BassPattern object.
      *

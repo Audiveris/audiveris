@@ -31,9 +31,6 @@ public class ChordsStep
     private static final Logger logger = LoggerFactory.getLogger(ChordsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // ChordsStep //
-    //-----------//
     /**
      * Creates a new ChordsStep object.
      */

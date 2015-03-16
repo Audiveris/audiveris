@@ -36,9 +36,6 @@ public class RestSymbol
     protected static final BasicSymbol linesSymbol = Symbols.SYMBOL_STAFF_LINES;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // RestSymbol //
-    //------------//
     /**
      * Create a RestSymbol (with decoration?) standard size.
      *
@@ -53,9 +50,6 @@ public class RestSymbol
         this(false, shape, decorated, codes);
     }
 
-    //------------//
-    // RestSymbol //
-    //------------//
     /**
      * Create a RestSymbol (with decoration?).
      *

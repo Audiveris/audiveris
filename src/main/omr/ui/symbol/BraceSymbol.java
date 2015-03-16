@@ -38,9 +38,6 @@ public class BraceSymbol
     private static final BasicSymbol lowerSymbol = Symbols.SYMBOL_BRACE_LOWER_HALF;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // BraceSymbol //
-    //-------------//
     /**
      * Create a BraceSymbol (which is mad of upper and lower parts)
      *

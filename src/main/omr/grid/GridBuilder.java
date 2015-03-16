@@ -68,9 +68,6 @@ public class GridBuilder
     public final BarsRetriever barsRetriever;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // GridBuilder //
-    //-------------//
     /**
      * Retrieve the frames of all staff lines.
      *
@@ -96,7 +93,7 @@ public class GridBuilder
     /**
      * Compute and display the system frames of the sheet picture.
      *
-     * @throws StepException
+     * @throws StepException if step was stopped
      */
     public void buildInfo ()
             throws StepException

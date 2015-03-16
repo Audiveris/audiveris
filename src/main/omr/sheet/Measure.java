@@ -17,9 +17,6 @@ import omr.grid.FilamentLine;
 
 import omr.math.Rational;
 
-import omr.score.entity.Page;
-import omr.score.entity.TimeSignature.InvalidTimeSignature;
-
 import omr.sig.inter.ChordInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.Inter;
@@ -41,7 +38,7 @@ import java.util.List;
 
 /**
  * Class {@code Measure} represents a measure in a system part, it vertically embraces
- * all the staves of the part.
+ * all the staves (usually 1 or 2) of the containing part.
  *
  * @author Hervé Bitteur
  */
@@ -51,16 +48,6 @@ public class Measure
 
     private static final Logger logger = LoggerFactory.getLogger(Measure.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    public enum Special
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        PICKUP,
-        FIRST_HALF,
-        SECOND_HALF;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
     /** To flag a dummy measure. */
     private boolean dummy;
@@ -69,18 +56,8 @@ public class Measure
     @Navigable(false)
     private final Part part;
 
-    /** The containing page. */
-    @Navigable(false)
-    private final Page page;
-
     /** The containing measure stack. */
     private MeasureStack stack;
-
-    /** (Page-based) measure Id. */
-    private Integer id;
-
-    /** Flag for special measure. */
-    private Special special;
 
     /** Left bar-line, if any. */
     private PartBarline leftBarline;
@@ -91,19 +68,6 @@ public class Measure
     /** Right bar-line, if any. */
     private PartBarline barline;
 
-    /** Theoretical measure duration, based on current time signature. */
-    private Rational expectedDuration;
-
-    /** Actual measure duration, based on durations of contained chords. */
-    private Rational actualDuration;
-
-    /** Excess duration, if any. */
-    private Rational excess;
-
-    //
-    //    /** Sequence of time slots within the measure. */
-    //    private final List<Slot> slots = new ArrayList<Slot>();
-    //
     /** Voices within this measure, sorted by increasing voice id. */
     private final List<Voice> voices = new ArrayList<Voice>();
 
@@ -111,16 +75,13 @@ public class Measure
     private final List<ClefInter> clefs = new ArrayList<ClefInter>();
 
     /** Possibly several Key signatures per staff. */
-    private final List<KeyInter> keysigs = new ArrayList<KeyInter>();
+    private final List<KeyInter> keySigs = new ArrayList<KeyInter>();
 
     /** Potential one Time signature per staff. */
-    private final List<TimeInter> timesigs = new ArrayList<TimeInter>();
+    private final List<TimeInter> timeSigs = new ArrayList<TimeInter>();
 
     /** Possibly several Chords per staff. */
     private final List<ChordInter> chords = new ArrayList<ChordInter>();
-
-    /** Other rhythm inters, relevant for this measure. */
-    private final List<Inter> otherTimings = new ArrayList<Inter>();
 
     /**
      * Chords of just whole rest (thus handled outside time slots).
@@ -129,10 +90,6 @@ public class Measure
     private final List<ChordInter> wholeChords = new ArrayList<ChordInter>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //    /** Groups of beams in this measure. */
-    //    private final List<BeamGroup> beamGroups = new ArrayList<BeamGroup>();
-    //
     /**
      * Creates a new {@code Measure} object.
      *
@@ -141,10 +98,33 @@ public class Measure
     public Measure (Part part)
     {
         this.part = part;
-        page = part.getSystem().getPage();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------------//
+    // addDummyWholeRest //
+    //-------------------//
+    /**
+     * Insert a whole rest, with related chord, on provided staff in this measure.
+     *
+     * @param staff specified staff in measure
+     * @return the whole rest created
+     */
+    public RestInter addDummyWholeRest (Staff staff)
+    {
+        RestChordInter chord = new RestChordInter(0);
+        chord.setStaff(staff);
+        chord.setStartTime(Rational.ZERO);
+
+        RestInter whole = new RestInter(null, Shape.WHOLE_REST, 0, staff, -1);
+        chord.addMember(whole);
+        wholeChords.add(chord);
+
+        Voice.createWholeVoice(chord, this);
+
+        return whole;
+    }
+
     //----------//
     // addInter //
     //----------//
@@ -154,17 +134,15 @@ public class Measure
             ChordInter chord = (ChordInter) inter;
             chords.add(chord);
 
-            if (chord.isWholeDuration()) {
+            if (chord.isWholeRest()) {
                 wholeChords.add(chord);
             }
         } else if (inter instanceof ClefInter) {
             clefs.add((ClefInter) inter);
         } else if (inter instanceof KeyInter) {
-            keysigs.add((KeyInter) inter);
+            keySigs.add((KeyInter) inter);
         } else if (inter instanceof TimeInter) {
-            timesigs.add((TimeInter) inter);
-        } else if (!otherTimings.contains(inter)) {
-            otherTimings.add(inter);
+            timeSigs.add((TimeInter) inter);
         }
     }
 
@@ -174,45 +152,6 @@ public class Measure
     public void addVoice (Voice voice)
     {
         voices.add(voice);
-    }
-
-    //--------------//
-    // addWholeRest //
-    //--------------//
-    /**
-     * Insert a whole rest, with related chord, on provided staff in this measure.
-     *
-     * @param staff specified staff in measure
-     * @return the whole rest created
-     */
-    public RestInter addWholeRest (Staff staff)
-    {
-        RestChordInter chord = new RestChordInter(0);
-        chord.setStaff(staff);
-        chord.setStartTime(Rational.ZERO);
-
-        RestInter whole = new RestInter(null, Shape.WHOLE_REST, 0, staff, -1);
-        chord.addMember(whole);
-        stack.addInter(chord);
-
-        Voice.createWholeVoice(chord, this);
-
-        return whole;
-    }
-
-    //---------------//
-    // checkDuration //
-    //---------------//
-    /**
-     * Check the duration as computed in this measure from its contained voices,
-     * compared to its theoretical duration.
-     */
-    public void checkDuration ()
-    {
-        // Check duration of each voice
-        for (Voice voice : voices) {
-            voice.checkDuration(this);
-        }
     }
 
     //-------------//
@@ -251,23 +190,6 @@ public class Measure
 
             // Use end of staff
             return staff.getAbscissa(RIGHT);
-        }
-    }
-
-    //-------------------//
-    // getActualDuration //
-    //-------------------//
-    /**
-     * Report the duration of this measure, as computed from its contained voices.
-     *
-     * @return the (actual) measure duration, or 0 if no rest / note exists in this measure
-     */
-    public Rational getActualDuration ()
-    {
-        if (actualDuration != null) {
-            return actualDuration;
-        } else {
-            return Rational.ZERO;
         }
     }
 
@@ -381,6 +303,17 @@ public class Measure
         return null; // No clef previously defined
     }
 
+    //----------//
+    // getClefs //
+    //----------//
+    /**
+     * @return the clefs
+     */
+    public List<ClefInter> getClefs ()
+    {
+        return clefs;
+    }
+
     //-------------------------//
     // getCurrentTimeSignature //
     //-------------------------//
@@ -397,7 +330,6 @@ public class Measure
     {
         // Backward from this measure to the beginning of the score
         Measure measure = this;
-        Page page = getPage();
 
         while (measure != null) {
             // Check in the measure
@@ -423,55 +355,6 @@ public class Measure
         }
 
         return null; // Not found !!!
-    }
-
-    //-----------//
-    // getExcess //
-    //-----------//
-    /**
-     * Report the excess duration of this measure, if any.
-     *
-     * @return the duration in excess, or null
-     */
-    public Rational getExcess ()
-    {
-        return excess;
-    }
-
-    //---------------------//
-    // getExpectedDuration //
-    //---------------------//
-    /**
-     * Report the theoretical duration of this measure, based on
-     * current time signature.
-     *
-     * @return the expected measure duration
-     * @throws InvalidTimeSignature
-     */
-    public Rational getExpectedDuration ()
-            throws InvalidTimeSignature
-    {
-        try {
-            if (expectedDuration == null) {
-                int numerator;
-                int denominator;
-                TimeInter ts = getCurrentTimeSignature();
-
-                if (ts != null) {
-                    numerator = ts.getNumerator();
-                    denominator = ts.getDenominator();
-                } else {
-                    numerator = 4;
-                    denominator = 4;
-                }
-
-                expectedDuration = new Rational(numerator, denominator);
-            }
-
-            return expectedDuration;
-        } catch (NullPointerException npe) {
-            throw new InvalidTimeSignature();
-        }
     }
 
     //---------------------//
@@ -508,13 +391,95 @@ public class Measure
      */
     public KeyInter getFirstMeasureKey (int staffIndexInPart)
     {
-        for (KeyInter key : keysigs) {
+        for (KeyInter key : keySigs) {
             if (key.getStaff().getIndexInPart() == staffIndexInPart) {
                 return key;
             }
         }
 
         return null;
+    }
+
+    //--------------//
+    // getKeyBefore //
+    //--------------//
+    /**
+     * Report the key signature which applies in this measure, whether a key signature
+     * actually starts this measure in the same staff, or whether a key signature was
+     * found in a previous measure, for the same staff.
+     *
+     * @param point the point before which to look
+     * @param staff the containing staff (cannot be null)
+     * @return the current key signature, or null if not found
+     */
+    public KeyInter getKeyBefore (Point point,
+                                  Staff staff)
+    {
+        if (point == null) {
+            throw new NullPointerException();
+        }
+
+        int staffIndexInPart = staff.getIndexInPart();
+
+        // Look in this measure, with same staff, going backwards
+        // TODO: make sure keysigs is sorted by abscissa !!!!!
+        for (int ik = keySigs.size() - 1; ik >= 0; ik--) {
+            final KeyInter ks = keySigs.get(ik);
+
+            if ((ks.getStaff() == staff) && (ks.getCenter().x < point.x)) {
+                return ks;
+            }
+        }
+
+        // Look in previous measures in the system part and the preceding ones
+        Measure measure = this;
+
+        while ((measure = measure.getPrecedingInPage()) != null) {
+            final KeyInter ks = measure.getLastMeasureKey(staffIndexInPart);
+
+            if (ks != null) {
+                return ks;
+            }
+        }
+
+        return null; // Not found (in this page)
+    }
+
+    //-----------------//
+    // getKeySignature //
+    //-----------------//
+    /**
+     * Report the potential key signature in this measure (whatever the staff).
+     *
+     * @return the measure key signature, or null if not found
+     */
+    public KeyInter getKeySignature ()
+    {
+        if (!keySigs.isEmpty()) {
+            return keySigs.get(0);
+        }
+
+        return null; // Not found
+    }
+
+    //-----------------//
+    // getKeySignature //
+    //-----------------//
+    /**
+     * Report the potential key signature in this measure for the specified staff index.
+     *
+     * @param staffIndexInPart imposed part-based staff index
+     * @return the staff key signature, or null if not found
+     */
+    public KeyInter getKeySignature (int staffIndexInPart)
+    {
+        for (KeyInter ks : keySigs) {
+            if (ks.getStaff().getId() == staffIndexInPart) {
+                return ks;
+            }
+        }
+
+        return null; // Not found
     }
 
     //--------------------//
@@ -554,8 +519,8 @@ public class Measure
     public KeyInter getLastMeasureKey (int staffIndexInPart)
     {
         // Going backwards
-        for (int ik = keysigs.size() - 1; ik >= 0; ik--) {
-            KeyInter key = keysigs.get(ik);
+        for (int ik = keySigs.size() - 1; ik >= 0; ik--) {
+            KeyInter key = keySigs.get(ik);
 
             if (key.getStaff().getIndexInPart() == staffIndexInPart) {
                 return key;
@@ -601,14 +566,6 @@ public class Measure
         }
 
         return null; // No clef previously defined in this measure and staff
-    }
-
-    //---------//
-    // getPage //
-    //---------//
-    public Page getPage ()
-    {
-        return page;
     }
 
     //---------//
@@ -752,14 +709,6 @@ public class Measure
         }
     }
 
-    //------------//
-    // getSpecial //
-    //------------//
-    public Special getSpecial ()
-    {
-        return special;
-    }
-
     //----------//
     // getStack //
     //----------//
@@ -775,17 +724,14 @@ public class Measure
     // getTimeSignature //
     //------------------//
     /**
-     * Report the potential time signature in this measure for the specified staff index.
+     * Report the potential time signature in this measure (whatever the staff).
      *
-     * @param staffIndexInPart imposed part-based staff index
-     * @return the time signature, or null if not found
+     * @return the measure time signature, or null if not found
      */
-    public TimeInter getTimeSignature (int staffIndexInPart)
+    public TimeInter getTimeSignature ()
     {
-        for (TimeInter ts : timesigs) {
-            if (ts.getStaff().getId() == staffIndexInPart) {
-                return ts;
-            }
+        if (!timeSigs.isEmpty()) {
+            return timeSigs.get(0);
         }
 
         return null; // Not found
@@ -795,15 +741,17 @@ public class Measure
     // getTimeSignature //
     //------------------//
     /**
-     * Report the potential time signature in this measure
-     * (whatever the staff).
+     * Report the potential time signature in this measure for the specified staff index.
      *
-     * @return the time signature, or null if not found
+     * @param staffIndexInPart imposed part-based staff index
+     * @return the staff time signature, or null if not found
      */
-    public TimeInter getTimeSignature ()
+    public TimeInter getTimeSignature (int staffIndexInPart)
     {
-        if (!timesigs.isEmpty()) {
-            return timesigs.get(0);
+        for (TimeInter ts : timeSigs) {
+            if (ts.getStaff().getId() == staffIndexInPart) {
+                return ts;
+            }
         }
 
         return null; // Not found
@@ -838,12 +786,67 @@ public class Measure
         return wholeChords;
     }
 
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the measure width
+     *
+     * @return measure width (at first staff in measure part)
+     */
+    public int getWidth ()
+    {
+        final Staff firstStaff = part.getFirstStaff();
+        final int left = getAbscissa(LEFT, firstStaff);
+        final int right = getAbscissa(RIGHT, firstStaff);
+
+        return right - left;
+    }
+
     //---------//
     // isDummy //
     //---------//
     public boolean isDummy ()
     {
         return dummy;
+    }
+
+    //---------------//
+    // isMeasureRest //
+    //---------------//
+    /**
+     * Check whether the provided chord is a measure rest.
+     *
+     * @param chord the provided chord
+     * @return true if chord is actually a measure rest, false otherwise
+     */
+    public boolean isMeasureRest (ChordInter chord)
+    {
+        Inter noteInter = chord.getMembers().get(0);
+        Shape shape = noteInter.getShape();
+
+        if (!shape.isWholeRest()) {
+            return false;
+        }
+
+        if ((shape == Shape.BREVE_REST) || (shape == Shape.LONG_REST)) {
+            return true;
+        }
+
+        // Here we have a WHOLE_REST shape
+        RestInter rest = (RestInter) noteInter;
+
+        // Check pitch?
+        int pitch2 = (int) Math.rint(2.0 * rest.getPitch());
+
+        if (pitch2 != -3) {
+            return false;
+        }
+
+        // Check other chords in same staff-measure?
+        List<Inter> staffChords = filterByStaff(chords, chord.getStaff());
+
+        return staffChords.size() == 1;
     }
 
     //----------------//
@@ -857,8 +860,8 @@ public class Measure
     public void mergeWithRight (Measure right)
     {
         clefs.addAll(right.clefs);
-        keysigs.addAll(right.keysigs);
-        timesigs.addAll(right.timesigs);
+        keySigs.addAll(right.keySigs);
+        timeSigs.addAll(right.timeSigs);
         chords.addAll(right.chords);
         ///beamGroups.addAll(right.beamGroups);
 
@@ -883,23 +886,8 @@ public class Measure
     public Measure replicate (Part targetPart)
     {
         Measure replicate = new Measure(targetPart);
-        replicate.id = id;
-        replicate.special = special;
 
         return replicate;
-    }
-
-    //-------------------//
-    // setActualDuration //
-    //-------------------//
-    /**
-     * Register in this measure its actual duration.
-     *
-     * @param actualDuration the duration value
-     */
-    public void setActualDuration (Rational actualDuration)
-    {
-        this.actualDuration = actualDuration;
     }
 
     //------------//
@@ -923,78 +911,12 @@ public class Measure
         dummy = true;
     }
 
-    //-----------//
-    // setExcess //
-    //-----------//
-    /**
-     * Assign an excess duration for this measure.
-     *
-     * @param excess the duration in excess
-     */
-    public void setExcess (Rational excess)
-    {
-        this.excess = excess;
-    }
-
-    //---------------------//
-    // setExpectedDuration //
-    //---------------------//
-    public void setExpectedDuration (Rational expectedDuration)
-    {
-        this.expectedDuration = expectedDuration;
-    }
-
-    //--------------//
-    // setFirstHalf //
-    //--------------//
-    public void setFirstHalf ()
-    {
-        special = Special.FIRST_HALF;
-    }
-
-    //------------//
-    // setIdValue //
-    //------------//
-    /**
-     * Assign the proper page-based id value to this measure.
-     *
-     * @param id the proper page-based measure id value
-     */
-    public void setIdValue (int id)
-    {
-        this.id = id;
-    }
-
     //----------------//
     // setLeftBarline //
     //----------------//
     public void setLeftBarline (PartBarline leftBarline)
     {
         this.leftBarline = leftBarline;
-    }
-
-    //-----------//
-    // setPickup //
-    //-----------//
-    public void setPickup ()
-    {
-        special = Special.PICKUP;
-    }
-
-    //---------------//
-    // setSecondHalf //
-    //---------------//
-    public void setSecondHalf ()
-    {
-        special = Special.SECOND_HALF;
-    }
-
-    //------------//
-    // setSpecial //
-    //------------//
-    public void setSpecial (Special special)
-    {
-        this.special = special;
     }
 
     //----------//
@@ -1006,58 +928,6 @@ public class Measure
     public void setStack (MeasureStack stack)
     {
         this.stack = stack;
-    }
-
-    //---------//
-    // shorten //
-    //---------//
-    /**
-     * Flag this measure as partial (shorter than expected duration).
-     *
-     * @param shortening how much the measure duration is to be reduced
-     */
-    public void shorten (Rational shortening)
-    {
-        // Remove any final forward mark consistent with the shortening
-        for (Voice voice : voices) {
-            Rational duration = voice.getTermination();
-
-            if (duration != null) {
-                //                if (duration.equals(shortening)) {
-                //                    if (!voice.isWhole()) {
-                //                        // Remove the related mark
-                //                        ChordInter chord = voice.getLastChord();
-                //
-                //                        if (chord != null) {
-                //                            int nbMarks = chord.getMarks().size();
-                //
-                //                            if (nbMarks > 0) {
-                //                                Mark mark = chord.getMarks().get(nbMarks - 1);
-                //                                logger.debug(
-                //                                        "{} Removing final forward: {}",
-                //                                        getContextString(),
-                //                                        (Rational) mark.getData());
-                //                                chord.getMarks().remove(mark);
-                //                            } else {
-                //                                chord.addError("No final mark to remove in a partial measure");
-                //
-                //                                return;
-                //                            }
-                //                        } else {
-                //                            addError("No final chord in " + voice);
-                //
-                //                            return;
-                //                        }
-                //                    }
-                //                } else {
-                //                    addError(
-                //                            "Non consistent partial measure shortening:" + shortening.opposite() + " "
-                //                            + voice + ": " + duration.opposite());
-                //
-                //                    return;
-                //                }
-            }
-        }
     }
 
     //-------------//
@@ -1101,6 +971,30 @@ public class Measure
     public String toString ()
     {
         return "{Measure#" + stack.getPageId() + "P" + part.getId() + "}";
+    }
+
+    //---------------//
+    // filterByStaff //
+    //---------------//
+    /**
+     * Filter the inters that relate to the provided staff.
+     *
+     * @param inters the input collection of inters
+     * @param staff  the imposed staff
+     * @return the inters that related to staff
+     */
+    private List<Inter> filterByStaff (List<? extends Inter> inters,
+                                       Staff staff)
+    {
+        List<Inter> found = new ArrayList<Inter>();
+
+        for (Inter inter : inters) {
+            if (inter.getStaff() == staff) {
+                found.add(inter);
+            }
+        }
+
+        return found;
     }
 
     //

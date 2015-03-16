@@ -54,10 +54,6 @@ public class DotTranslation
             new AugmentationTrial());
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //----------------//
-    // DotTranslation //
-    //----------------//
     private DotTranslation ()
     {
     }
@@ -163,7 +159,7 @@ public class DotTranslation
                 for (TreeNode n : chord.getNotes()) {
                     Note note = (Note) n;
 
-                    if (!note.getShape().isMeasureRest()) {
+                    if (!note.getShape().isWholeRest()) {
                         Point noteRef = note.getCenterRight();
                         Point toDot = new Point(dotCenter.x - noteRef.x, dotCenter.y - noteRef.y);
 

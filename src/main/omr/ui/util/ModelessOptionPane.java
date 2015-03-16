@@ -61,7 +61,7 @@ public class ModelessOptionPane
      *                        {@code YES_NO_OPTION}, {@code YES_NO_CANCEL_OPTION}, or
      *                        {@code OK_CANCEL_OPTION}
      * @return an int indicating the option selected by the user
-     * @exception HeadlessException if {@code GraphicsEnvironment}/code> returns {@code true}
+     * @exception HeadlessException if {@code GraphicsEnvironment}/code} returns {@code true}
      * @see java.awt.GraphicsEnvironment#isHeadless
      */
     public static int showModelessConfirmDialog (Component parentComponent,

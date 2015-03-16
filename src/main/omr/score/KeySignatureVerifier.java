@@ -66,9 +66,6 @@ public class KeySignatureVerifier
     private final int staffNb;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------------//
-    // KeySignatureVerifier //
-    //----------------------//
     /**
      * Creates a new KeySignatureVerifier object.
      *

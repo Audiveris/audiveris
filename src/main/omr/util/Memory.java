@@ -12,19 +12,19 @@
 package omr.util;
 
 /**
- * Class {@code Memory} is a collection of static methods to ease the
- * interaction with the memory characteristics.
+ * Class {@code Memory} is a collection of static methods to ease the interaction with
+ * the memory characteristics.
  *
  * @author Hervé Bitteur
  */
-public class Memory
+public abstract class Memory
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static Runtime rt = Runtime.getRuntime();
+    private static final Runtime rt = Runtime.getRuntime();
 
     //~ Constructors -------------------------------------------------------------------------------
-    // Not meant to be instantiated
+    /** Not meant to be instantiated. */
     private Memory ()
     {
     }

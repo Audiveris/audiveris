@@ -29,9 +29,6 @@ public class GhostDropEvent<A>
     private final A action;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // GhostDropEvent //
-    //----------------//
     /**
      * Create a new GhostDropEvent object.
      *

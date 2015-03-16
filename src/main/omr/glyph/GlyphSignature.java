@@ -32,12 +32,9 @@ public class GlyphSignature
     private final int weight;
 
     /** Glyph normalized moments */
-    private GeometricMoments moments;
+    private final GeometricMoments moments;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // GlyphSignature //
-    //----------------//
     /**
      * Creates a new GlyphSignature object.
      *

@@ -26,9 +26,6 @@ public class Failure
     public final String comment;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------//
-    // Failure //
-    //---------//
     /**
      * Create a new Failure object.
      *

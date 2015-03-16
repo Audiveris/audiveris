@@ -22,7 +22,8 @@ import java.awt.geom.Line2D;
 /**
  * Class {@code WedgeInter} represents a wedge (crescendo or diminuendo).
  * <p>
- * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Music_hairpins.svg/296px-Music_hairpins.svg.png" />
+ * <img alt="Wedge image"
+ * src="http://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Music_hairpins.svg/296px-Music_hairpins.svg.png">
  *
  * @author Hervé Bitteur
  */

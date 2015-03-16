@@ -47,9 +47,6 @@ public class FermataDotPattern
             Shape.STACCATO);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------------//
-    // FermataDotPattern //
-    //-------------------//
     /**
      * Creates a new FermataDotPattern object.
      *

@@ -34,9 +34,6 @@ public class Barycenter
     private double yy;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // Barycenter //
-    //------------//
     /**
      * Creates a new Barycenter object.
      */

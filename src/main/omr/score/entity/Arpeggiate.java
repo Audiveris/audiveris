@@ -28,7 +28,7 @@ import java.util.List;
 
 /**
  * Class {@code Arpeggiate} represents a arpeggiate event.
- * For the time being we don't handle up & down variations
+ * For the time being we don't handle up and down variations
  *
  * @author Hervé Bitteur
  */
@@ -42,9 +42,6 @@ public class Arpeggiate
     private static final Logger logger = LoggerFactory.getLogger(Arpeggiate.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // Arpeggiate //
-    //------------//
     /**
      * Creates a new instance of Arpeggiate event
      *

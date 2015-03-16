@@ -30,9 +30,6 @@ public class TextSymbol
     private final String str;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // TextSymbol //
-    //------------//
     /**
      * Create an TextSymbol
      *
@@ -45,9 +42,6 @@ public class TextSymbol
         this(false, shape, str);
     }
 
-    //------------//
-    // TextSymbol //
-    //------------//
     /**
      * Create an TextSymbol
      *

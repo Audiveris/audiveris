@@ -56,9 +56,6 @@ public abstract class Worker<T>
     private long startTime = System.currentTimeMillis();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------//
-    // Worker //
-    //--------//
     /**
      * Prepare a Worker with a specified stack size
      *
@@ -89,9 +86,6 @@ public abstract class Worker<T>
         logger.debug("{} created", getClass().getName());
     }
 
-    //--------//
-    // Worker //
-    //--------//
     /**
      * Prepare a thread that will call the {@code construct} method
      * and then exit. You need to start() this worker.

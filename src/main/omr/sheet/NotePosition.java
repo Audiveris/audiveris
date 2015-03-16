@@ -33,9 +33,6 @@ public class NotePosition
     private final IndexedLedger indexedLedger;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // NotePosition //
-    //--------------//
     /**
      * Creates a new NotePosition object.
      *

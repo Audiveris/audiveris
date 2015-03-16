@@ -27,9 +27,6 @@ public class LTextField
     private static final int FIELD_WIDTH = 6;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // LTextField //
-    //------------//
     /**
      * Creates a new LTextField object.
      *

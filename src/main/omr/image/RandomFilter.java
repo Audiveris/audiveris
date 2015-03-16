@@ -39,10 +39,6 @@ public class RandomFilter
     private static final Logger logger = LoggerFactory.getLogger(RandomFilter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //--------------//
-    // RandomFilter //
-    //--------------//
     /**
      * Create an adaptive wrapper on a raw pixel source.
      *

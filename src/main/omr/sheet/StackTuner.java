@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                     S t a c k B u i l d e r                                    //
+//                                       S t a c k T u n e r                                      //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -15,11 +15,11 @@ import omr.math.Combinations;
 import omr.math.Rational;
 
 import omr.score.entity.StaffBarline;
-import omr.score.entity.TimeSignature;
 
 import omr.sig.SIGraph;
 import omr.sig.SigAttic;
 import omr.sig.SigReducer;
+import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.ChordInter;
@@ -28,19 +28,20 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.InterEnsemble;
 import omr.sig.inter.Inters;
 import omr.sig.inter.RepeatDotInter;
-import omr.sig.inter.TimeInter;
+import omr.sig.inter.RestInter;
 import omr.sig.inter.TupletInter;
+import omr.sig.relation.AugmentationRelation;
+import omr.sig.relation.DoubleDotRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.RepeatDotBarRelation;
 
 import omr.util.HorizontalSide;
-import static omr.util.HorizontalSide.LEFT;
-import static omr.util.HorizontalSide.RIGHT;
+
+import static omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +50,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code StackBuilder} builds the rhythm content of a MeasureStack.
+ * Class {@code StackTuner} adjusts the rhythm content of a given MeasureStack.
  * <ol>
  * <li>Rhythm data brought by head-based chords and beam groups are considered as solid.</li>
  * <li>Rhythm data brought by symbol-based items (rest-based chords, flags, augmentation dots,
@@ -63,22 +64,29 @@ import java.util.Set;
  *
  * @author Hervé Bitteur
  */
-public class StackBuilder
+public class StackTuner
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(StackBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(StackTuner.class);
 
     /** Relevant rhythm classes. */
-    public static final Class<?>[] timingClasses = new Class<?>[]{
-        TimeInter.class, ChordInter.class,
-        FlagInter.class, TupletInter.class,
-        AugmentationDotInter.class
+    public static final Class<?>[] rhythmClasses = new Class<?>[]{
+        ChordInter.class, // Chords (heads & rests)
+        FlagInter.class, // Flags
+        TupletInter.class, // Tuplet signs
+        AugmentationDotInter.class // Augmentation dots
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated measure stack. */
     private final MeasureStack stack;
+
+    /** Full mode (or raw mode). */
+    private final boolean fullMode;
+
+    /** If not null, the initial duration for this stack. */
+    private Rational initialDuration;
 
     /** To temporarily save inters and their relations, outside of the standard sig. */
     private final StackBackup backup;
@@ -92,18 +100,22 @@ public class StackBuilder
     /** Current index in candidates. */
     private int candidateIndex;
 
-    /** Current config in stack. */
+    /** Current configuration in stack. */
     private Config config;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StackBuilder} object.
+     * Creates a new {@code StackTuner} object.
      *
-     * @param stack the measure stack to process
+     * @param stack    the measure stack to process
+     * @param fullMode true for full processing, false for raw processing
      */
-    public StackBuilder (MeasureStack stack)
+    public StackTuner (MeasureStack stack,
+                       boolean fullMode)
     {
         this.stack = stack;
+        this.fullMode = fullMode;
+
         backup = new StackBackup(stack);
     }
 
@@ -114,10 +126,15 @@ public class StackBuilder
     /**
      * Process the stack to find out a suitable configuration of rhythm data.
      *
-     * @param systemInters The collection of relevant rhythm inters in containing system
+     * @param systemInters    The collection of relevant rhythm inters in containing system
+     * @param initialDuration The expected duration for this stack, or null
      */
-    public void process (List<Inter> systemInters)
+    public void process (List<Inter> systemInters,
+                         Rational initialDuration)
     {
+        stack.setExpectedDuration(initialDuration);
+        stack.clearInters();
+
         // Populate stack with relevant rhythm data
         populate(systemInters);
 
@@ -132,10 +149,18 @@ public class StackBuilder
         // Backup all stack rhythm data
         backup.save(vars);
 
+        // Determine possible partitions of rhythm data
         List<List<Inter>> partitions = sig.getPartitions(null, vars);
 
         for (List<Inter> partition : partitions) {
-            candidates.add(new Config(partition));
+            // Make sure that all inters are relevant in this partition
+            filterPartition(partition);
+
+            Config cfg = new Config(partition);
+
+            if (!candidates.contains(cfg)) {
+                candidates.add(cfg);
+            }
         }
 
         Config goodConfig = null; // The very first good config found, if any
@@ -167,6 +192,36 @@ public class StackBuilder
         }
     }
 
+    //---------------//
+    // resetInitials //
+    //---------------//
+    public void resetInitials()
+    {
+        backup.resetInitials();
+    }
+
+    //-------------//
+    // removeChord //
+    //-------------//
+    /**
+     * Post a candidate, based on current config with the provided chord removed
+     *
+     * @param chord the chord to "remove" before posting a new candidate
+     */
+    void removeChord (ChordInter chord)
+    {
+        if (logger.isDebugEnabled() || chord.isVip()) {
+            logger.info("VIP removing {} causing close slots", chord);
+        }
+
+        Config newConfig = new Config(config.inters);
+        newConfig.inters.remove(chord);
+
+        if (!failures.contains(newConfig) && !candidates.contains(newConfig)) {
+            candidates.add(candidateIndex + 1, newConfig);
+        }
+    }
+
     //-------------//
     // checkConfig //
     //-------------//
@@ -184,15 +239,22 @@ public class StackBuilder
         logger.info("Chk{} {}", newConfig.ids(), newConfig);
 
         if (!newConfig.equals(config)) {
-            backup.install(newConfig.inters);
             config = newConfig;
+
+            // Installation computes the time slots, and may fail
+            if (!backup.install(config.inters)) {
+                failures.add(config);
+
+                return null;
+            }
         }
 
-        if (!checkVoices()) {
+        // Check that each voice looks correct
+        if (fullMode && checkVoices()) {
+            return newConfig;
+        } else {
             return null;
         }
-
-        return newConfig;
     }
 
     //-------------//
@@ -219,7 +281,10 @@ public class StackBuilder
                 }
             }
 
-            ///stack.printVoices(null);
+            // Compute voices terminations
+            stack.checkDuration();
+            stack.printVoices(null);
+
             Rational actualDuration = stack.getActualDuration();
             logger.info(
                     "{} expected:{} actual:{} current:{}",
@@ -230,7 +295,12 @@ public class StackBuilder
 
             for (Voice voice : stack.getVoices()) {
                 Rational voiceDur = voice.getDuration();
-                logger.info("{} ends at {}", voice, voiceDur);
+
+                logger.info(
+                        "{} ends at {} ts: {}",
+                        voice,
+                        voiceDur,
+                        voice.getInferredTimeSignature());
 
                 if (voiceDur != null) {
                     Rational delta = voiceDur.minus(actualDuration);
@@ -279,7 +349,6 @@ public class StackBuilder
             }
 
             return true; // Success!
-        } catch (TimeSignature.InvalidTimeSignature ex) {
         } catch (Exception ex) {
             logger.warn(getClass().getSimpleName() + " Error visiting " + stack, ex);
         }
@@ -287,30 +356,106 @@ public class StackBuilder
         return false;
     }
 
-    //------------//
-    // pickupRest //
-    //------------//
+    //-----------------//
+    // filterPartition //
+    //-----------------//
     /**
-     * Choose a rest within the provided collection.
+     * Filter the content of a partition for irrelevant inters.
+     * Augmentation dots need their augmented entity (head/rest or first dot)
      *
-     * @param rests the (non-empty) collection of rests to select from
-     * @param delta the precise duration excess
-     * @return the chosen rest
+     * @param partition the partition to check and reduce if needed
      */
-    private ChordInter pickupRest (List<ChordInter> rests,
-                                   Rational delta)
+    private void filterPartition (List<Inter> partition)
     {
-        // Look for the first rest with duration equal to provided delta, if any
-        for (ChordInter rest : rests) {
-            if (rest.getDuration().equals(delta)) {
-                return rest;
+        final SIGraph sig = stack.getSystem().getSig();
+        final List<Inter> allDots = sig.inters(partition, AugmentationDotInter.class);
+        final List<Inter> secondDots = new ArrayList<Inter>();
+        logger.debug("filterPartition on {}", allDots);
+
+        // Pass #1 for simple augmentation of a rest
+        // Make sure the rest augmented by a dot is contained by the partition
+        for (Inter dot : allDots) {
+            Set<Relation> simpleRels = sig.getRelations(dot, AugmentationRelation.class);
+
+            if (simpleRels.isEmpty()) {
+                secondDots.add(dot); // Since this dot must be a second dot
+            } else {
+                boolean augFound = false;
+
+                for (Relation rel : simpleRels) {
+                    Inter augInter = sig.getOppositeInter(dot, rel);
+
+                    // If the augmented entity is a note head, it's OK
+                    if (augInter instanceof AbstractHeadInter) {
+                        augFound = true;
+
+                        break;
+                    }
+
+                    // Here, the augmented entity is a rest, make sure its chord is in the partition
+                    Inter restChord = augInter.getEnsemble();
+
+                    if (partition.contains(restChord)) {
+                        augFound = true;
+
+                        break;
+                    }
+                }
+
+                if (!augFound) {
+                    logger.debug("Isolated first {} removed from partition", dot);
+                    partition.remove(dot);
+                }
             }
         }
 
-        // None found, select the lowest grade
-        return rests.get(rests.size() - 1);
+        // Pass #2 for double augmentation
+        // Make sure the first dot (augmented by a second dot) is contained by the partition
+        // If not, remove the second dot.
+        for (Inter dot : secondDots) {
+            Set<Relation> doubleRels = sig.getRelations(dot, DoubleDotRelation.class);
+            boolean augFound = false;
+
+            for (Relation rel : doubleRels) {
+                Inter firstDot = sig.getOppositeInter(dot, rel);
+
+                if (partition.contains(firstDot)) {
+                    augFound = true;
+                }
+            }
+
+            if (!augFound) {
+                logger.debug("Isolated second {} removed from partition", dot);
+                partition.remove(dot);
+            }
+        }
     }
 
+    //
+    //    //------------//
+    //    // pickupRest //
+    //    //------------//
+    //    /**
+    //     * Choose a rest within the provided collection.
+    //     *
+    //     * @param rests the (non-empty) collection of rests to select from
+    //     * @param delta the precise duration excess
+    //     * @return the chosen rest
+    //     */
+    //    private ChordInter pickupRest (List<ChordInter> rests,
+    //                                   Rational delta)
+    //    {
+    //        // Look for the first rest with duration equal to provided delta, if any
+    //        for (ChordInter rest : rests) {
+    //            if (rest.getDuration().equals(delta)) {
+    //                return rest;
+    //            }
+    //        }
+    //
+    //        // None found, select the lowest grade
+    //        return rests.get(rests.size() - 1);
+    //    }
+    //
     //----------//
     // populate //
     //----------//
@@ -321,45 +466,11 @@ public class StackBuilder
      */
     private void populate (List<Inter> systemInters)
     {
-        final SystemInfo system = stack.getSystem();
+        // Populate (system) measure stack
+        final List<Inter> stackInters = stack.filter(systemInters);
 
-        // Rough stack abscissa limits
-        int left = Integer.MAX_VALUE;
-        int right = 0;
-
-        for (Measure measure : stack.getMeasures()) {
-            for (Staff staff : measure.getPart().getStaves()) {
-                left = Math.min(left, measure.getAbscissa(LEFT, staff));
-                right = Math.max(right, measure.getAbscissa(RIGHT, staff));
-            }
-        }
-
-        // Use staff & location of system inter to determine if it relates to stack at hand
-        for (Inter inter : systemInters) {
-            Point center = inter.getCenter();
-
-            // Rough limits
-            if ((center.x < left) || (center.x > right)) {
-                continue;
-            }
-
-            List<Staff> stavesArounds = system.getStavesAround(center); // 1 or 2 staves
-            Staff staff1 = stavesArounds.get(0);
-            Measure m1 = stack.getMeasureAt(staff1);
-
-            if ((m1.getAbscissa(LEFT, staff1) <= center.x)
-                && (center.x <= m1.getAbscissa(RIGHT, staff1))) {
-                // Populate (system) measure stack
-                stack.addInter(inter);
-
-                // Populate (part) measure as well if possible (TODO: what for?)
-                Staff staff = inter.getStaff();
-
-                if (staff != null) {
-                    Measure measure = staff.getPart().getMeasureAt(center);
-                    measure.addInter(inter);
-                }
-            }
+        for (Inter inter : stackInters) {
+            stack.addInter(inter);
         }
 
         // Allocate beam groups
@@ -384,6 +495,7 @@ public class StackBuilder
     private void postRests (List<ChordInter> rests,
                             Rational delta)
     {
+        final SIGraph sig = stack.getSystem().getSig();
         final int n = rests.size();
 
         // This should be used only for rather small sizes of rests collection ...
@@ -395,7 +507,23 @@ public class StackBuilder
 
             for (int i = 0; i < n; i++) {
                 if (!vector[i]) {
-                    newConfig.inters.remove(rests.get(i));
+                    ChordInter restChord = rests.get(i);
+                    // Delete rest chord from config
+                    newConfig.inters.remove(restChord);
+
+                    // As well as its augmentation dot(s) if any
+                    RestInter rest = (RestInter) restChord.getNotes().get(0);
+                    AugmentationDotInter firstDot = rest.getFirstAugmentationDot();
+
+                    if (firstDot != null) {
+                        newConfig.inters.remove(firstDot);
+
+                        AugmentationDotInter secondDot = firstDot.getSecondAugmentationDot();
+
+                        if (secondDot != null) {
+                            newConfig.inters.remove(secondDot);
+                        }
+                    }
                 }
             }
 
@@ -420,7 +548,8 @@ public class StackBuilder
     //------------------//
     /**
      * Look for repeat sign on each side of the measure stack.
-     * If positive, flag the related stack bar-line(s) as such and delete any other interpretations
+     * If positive, flag the related stack bar-line(s) as such and delete any other
+     * interpretations
      * for these repeat dots.
      */
     private void verifyRepeatDots ()
@@ -573,7 +702,7 @@ public class StackBuilder
      * <li>It can freeze the stack when a final good configuration has been chosen.</li>
      * </ol>
      */
-    private static class StackBackup
+    private class StackBackup
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -583,8 +712,10 @@ public class StackBuilder
         /** Initial rhythm data. */
         private List<Inter> initials;
 
+        /** The SIG where work is done. */
         private final SIGraph sig;
 
+        /** The attic where data can be saved to and restored from. */
         private final SigAttic attic = new SigAttic();
 
         //~ Constructors ---------------------------------------------------------------------------
@@ -595,6 +726,9 @@ public class StackBuilder
         }
 
         //~ Methods --------------------------------------------------------------------------------
+        //--------//
+        // freeze //
+        //--------//
         public void freeze (List<Inter> keptInters)
         {
             // For those chords that have not been kept, delete the member notes
@@ -622,7 +756,16 @@ public class StackBuilder
             }
         }
 
-        public void install (List<Inter> config)
+        //---------//
+        // install //
+        //---------//
+        /**
+         * Try to install the provided configuration.
+         *
+         * @param config the configuration to install
+         * @return true if successful, false if an error was detected
+         */
+        public boolean install (List<Inter> config)
         {
             // Clear the stack
             for (Inter inter : initials) {
@@ -651,9 +794,26 @@ public class StackBuilder
             }
 
             // Build slots & voices
-            new SlotsBuilder(stack).process();
+            return new SlotsBuilder(stack, StackTuner.this).process();
         }
 
+        //---------------//
+        // resetInitials //
+        //---------------//
+        public void resetInitials()
+        {
+            // Clear any inter from initials
+            for (Inter inter : initials) {
+                stack.removeInter(inter);
+            }
+
+            // Restore the initial config
+            attic.restore(sig, initials);
+        }
+
+        //------//
+        // save //
+        //------//
         public void save (List<Inter> inters)
         {
             // Copy the initial rhythm data

@@ -14,11 +14,10 @@ package omr.score;
 import omr.score.PartConnection.Candidate;
 import omr.score.PartConnection.Result;
 import omr.score.entity.Page;
-import omr.score.entity.ScorePart;
-import omr.score.entity.ScoreSystem;
-import omr.score.entity.OldSystemPart;
+import omr.score.entity.LogicalPart;
 
-import omr.util.TreeNode;
+import omr.sheet.Part;
+import omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,8 +83,7 @@ public class ScoreReduction
     {
         this.score = score;
 
-        for (TreeNode pn : score.getScorePages()) {
-            Page page = (Page) pn;
+        for (Page page : score.getPages()) {
             pages.put(page.getSheet().getIndex(), page);
         }
     }
@@ -102,7 +100,7 @@ public class ScoreReduction
         /* Connect parts across the pages */
         connection = PartConnection.connectScorePages(pages);
 
-        // Force the ids of all ScorePart's
+        // Force the ids of all LogicalPart's
         numberResults();
 
         // Create score part-list and connect to pages and systems parts
@@ -118,37 +116,31 @@ public class ScoreReduction
     // addPartList //
     //-------------//
     /**
-     * Build the part-list as the sequence of Result/ScorePart instances, and map each
+     * Build the part-list as the sequence of Result/LogicalPart instances, and map each
      * of them to a Part.
      */
     private void addPartList ()
     {
-        // Map (page) ScorePart -> (score) ScorePart data
-        List<ScorePart> partList = new ArrayList<ScorePart>();
+        // Map (page) LogicalPart -> (score) LogicalPart data
+        List<LogicalPart> partList = new ArrayList<LogicalPart>();
 
         for (Result result : connection.getResultMap().keySet()) {
-            ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
-            partList.add(scorePart);
+            LogicalPart logicalPart = (LogicalPart) result.getUnderlyingObject();
+            partList.add(logicalPart);
         }
 
         // Need map: pagePart instance -> set of related systemPart instances
         // (Since we only have the reverse link)
-        Map<ScorePart, List<OldSystemPart>> page2syst = new LinkedHashMap<ScorePart, List<OldSystemPart>>();
+        Map<LogicalPart, List<Part>> page2syst = new LinkedHashMap<LogicalPart, List<Part>>();
 
-        for (TreeNode pn : score.getScorePages()) {
-            Page page = (Page) pn;
-
-            for (TreeNode sn : page.getScoreSystems()) {
-                ScoreSystem system = (ScoreSystem) sn;
-
-                for (TreeNode n : system.getParts()) {
-                    OldSystemPart systPart = (OldSystemPart) n;
-
-                    ScorePart pagePart = systPart.getScorePart();
-                    List<OldSystemPart> cousins = page2syst.get(pagePart);
+        for (Page page : score.getPages()) {
+            for (SystemInfo system : page.getSystems()) {
+                for (Part systPart : system.getParts()) {
+                    LogicalPart pagePart = systPart.getLogicalPart();
+                    List<Part> cousins = page2syst.get(pagePart);
 
                     if (cousins == null) {
-                        cousins = new ArrayList<OldSystemPart>();
+                        cousins = new ArrayList<Part>();
                         page2syst.put(pagePart, cousins);
                     }
 
@@ -159,22 +151,22 @@ public class ScoreReduction
 
         // Align each candidate to its related result (System -> Page -> Score)
         for (Result result : connection.getResultMap().keySet()) {
-            ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
-            int newId = scorePart.getId();
+            LogicalPart logicalPart = (LogicalPart) result.getUnderlyingObject();
+            int newId = logicalPart.getId();
 
             for (Candidate candidate : connection.getResultMap().get(result)) {
-                ScorePart pagePart = (ScorePart) candidate.getUnderlyingObject();
+                LogicalPart pagePart = (LogicalPart) candidate.getUnderlyingObject();
                 // Update (page) part id
                 pagePart.setId(newId);
 
                 // Update all related (system) part id
-                for (OldSystemPart systPart : page2syst.get(pagePart)) {
+                for (Part systPart : page2syst.get(pagePart)) {
                     systPart.setId(newId);
                 }
             }
         }
 
-        score.setPartList(partList);
+        score.setLogicalParts(partList);
     }
 
     //-------------------//
@@ -198,15 +190,15 @@ public class ScoreReduction
     // numberResults //
     //---------------//
     /**
-     * Force the id of each result (score-part) as 1, 2, ...
+     * Force the id of each result (logical-part) as 1, 2, ...
      */
     private void numberResults ()
     {
         int partIndex = 0;
 
         for (Result result : connection.getResultMap().keySet()) {
-            ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
-            scorePart.setId(++partIndex);
+            LogicalPart logicalPart = (LogicalPart) result.getUnderlyingObject();
+            logicalPart.setId(++partIndex);
         }
     }
 }

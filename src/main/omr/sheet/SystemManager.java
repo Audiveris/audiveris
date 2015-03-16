@@ -86,9 +86,6 @@ public class SystemManager
     private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // SystemManager //
-    //---------------//
     /**
      * Creates a new SystemManager object.
      *
@@ -383,8 +380,6 @@ public class SystemManager
      */
     private void allocatePages ()
     {
-        final Book book = sheet.getBook();
-        Score score = book.getLastScore();
         Page page = null;
 
         // Look at left indentation of (deskewed) systems
@@ -393,31 +388,21 @@ public class SystemManager
         // Allocate systems per page
         for (SystemInfo system : systems) {
             if (system.isIndented()) {
+                final int systId = system.getId();
+
                 // We have a movement start
-                if (page == null) {
-                    // Sheet start
-                    if (score.getLastPage() != null) {
-                        // Score break
-                        book.addScore(score = new Score());
-                    }
-
-                    sheet.addPage(page = new Page(score, sheet, null));
-                    score.addPage(page);
-                } else {
-                    // Sheet middle => Score break
-                    // Finish current page
-                    page.setLastSystemId(system.getId() - 1);
+                if (page != null) {
+                    // Sheet middle => Score break, finish current page
+                    page.setLastSystemId(systId - 1);
                     page.setSystems(systems);
-
-                    // Start a new page (in a new score)
-                    book.addScore(score = new Score());
-                    sheet.addPage(page = new Page(score, sheet, system.getId()));
-                    score.addPage(page);
                 }
+
+                // Start a new page
+                sheet.addPage(page = new Page(sheet, (systId == 1) ? null : systId));
+                page.setMovementStart(true);
             } else if (page == null) {
                 // Start first page in sheet
-                sheet.addPage(page = new Page(score, sheet, null));
-                score.addPage(page);
+                sheet.addPage(page = new Page(sheet, null));
             }
 
             system.setPage(page);
@@ -432,7 +417,7 @@ public class SystemManager
     // checkIndentations //
     //-------------------//
     /**
-     * Check all (deskewed) systems for indentation that would signal a new movement.
+     * Check all (de-skewed) systems for indentation that would signal a new movement.
      */
     private void checkIndentations ()
     {
@@ -671,7 +656,7 @@ public class SystemManager
             int partNb = 0;
 
             for (SystemInfo system : systems) {
-                partNb = Math.max(partNb, system.getAllParts().size());
+                partNb = Math.max(partNb, system.getParts().size());
             }
 
             if (partNb > 0) {

@@ -59,9 +59,6 @@ public class ScrollView
     private final JScrollPane component = new JScrollPane();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // ScrollView //
-    //------------//
     /**
      * Create a bare view pane.
      * Other related entities, such as view, pixel monitor or zoom, can be added later
@@ -81,9 +78,6 @@ public class ScrollView
         bindKeys(component);
     }
 
-    //------------//
-    // ScrollView //
-    //------------//
     /**
      * Create a view pane, with pre-built view.
      *

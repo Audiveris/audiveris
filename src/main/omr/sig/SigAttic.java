@@ -22,7 +22,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code SigAttic} is a graph used as a temporary storage for some inters of a sig.
+ * Class {@code SigAttic} is a graph used as a temporary storage for some inters of a
+ * sig, as well as all the relations these inters are involved in.
  *
  * @author Hervé Bitteur
  */
@@ -50,19 +51,19 @@ public class SigAttic
      * Restore from this attic to sig the provided collection of Inter instances, as
      * well as the relations they are involved in.
      *
-     * @param sig the sig to partially restore
-     * @param seq the collection of primary Inter instances to restore
+     * @param sig    the sig to partially restore
+     * @param inters the collection of primary Inter instances to restore
      */
     public void restore (SIGraph sig,
-                         Collection<Inter> seq)
+                         Collection<Inter> inters)
     {
         // Restore primary inter instances
-        for (Inter inter : seq) {
+        for (Inter inter : inters) {
             sig.addVertex(inter);
         }
 
         // Restore relations
-        for (Inter inter : seq) {
+        for (Inter inter : inters) {
             for (Relation rel : edgesOf(inter)) {
                 Inter source = getEdgeSource(rel);
                 Inter target = getEdgeTarget(rel);

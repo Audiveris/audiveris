@@ -44,17 +44,16 @@ public class Actions
 
     private static final Logger logger = LoggerFactory.getLogger(Actions.class);
 
-    /** Context for JAXB unmarshalling */
+    /** Context for JAXB un-marshaling. */
     private static volatile JAXBContext jaxbContext;
 
-    /** The collection of all actions loaded so far */
+    /** The collection of all actions loaded so far. */
     private static final Set<ActionDescriptor> allDescriptors = new LinkedHashSet<ActionDescriptor>();
 
     //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Predefined list of domain names.
-     * Through the action list files, the user will be able to add new domain
-     * names.
+     * Through the action list files, the user will be able to add new domain names.
      * This classification is mainly used to define the related pull-down menus.
      */
     public static enum Domain
@@ -62,11 +61,15 @@ public class Actions
         //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Domain of file actions */
+
+        /** Domain of file actions */
         FILE,
         /** Domain of individual steps */
         STEP,
-        /** Domain of score actions */
-        SCORE,
+        /** Domain of sheet actions */
+        SHEET,
+        /** Domain of book actions (sub-menu) */
+        BOOK(false),
         /** Domain of MIDI features */
         MIDI,
         /** Domain of various view features */
@@ -77,20 +80,35 @@ public class Actions
         PLUGIN,
         /** Domain of help information */
         HELP;
+        //~ Instance fields ------------------------------------------------------------------------
+
+        public final boolean isTop;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        Domain ()
+        {
+            this(true);
+        }
+
+        /**
+         * Defines a unique domain for a menu
+         *
+         * @param isTop indicates a top-level menu (rather than a sub-menu)
+         */
+        Domain (boolean isTop)
+        {
+            this.isTop = isTop;
+        }
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
-    /** Collection of descriptors loaded by unmarshalling one file. */
+    /** Collection of descriptors loaded by un-marshaling one file. */
     @XmlElement(name = "action")
     private List<ActionDescriptor> descriptors = new ArrayList<ActionDescriptor>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //---------//
-    // Actions //
-    //---------//
-    /** Not meant to be instantiated */
+    /** No-arg constructor meant for JAXB. */
     private Actions ()
     {
     }
@@ -147,8 +165,7 @@ public class Actions
     // getSections //
     //-------------//
     /**
-     * Report the whole collection of sections, the predefined ones
-     * and the added ones.
+     * Report the whole collection of sections, the predefined ones and the added ones.
      *
      * @return the collection of sections
      */
@@ -163,18 +180,18 @@ public class Actions
         return sections;
     }
 
-    //-----------------//
-    // loadActionsFrom //
-    //-----------------//
+    //-----------------------//
+    // loadActionDescriptors //
+    //-----------------------//
     /**
-     * Unmarshal the provided XML stream to allocate the corresponding
-     * collection of action descriptors.
+     * Un-marshal the provided XML stream to allocate the corresponding collection of
+     * action descriptors.
      *
      * @param in the input stream that contains the collection of action
      *           descriptors in XML format. The stream is not closed by this method
      * @throws javax.xml.bind.JAXBException
      */
-    public static void loadActionsFrom (InputStream in)
+    public static void loadActionDescriptors (InputStream in)
             throws JAXBException
     {
         if (jaxbContext == null) {

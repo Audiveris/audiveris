@@ -84,9 +84,6 @@ public class RubberPanel
     protected SelectionService locationService;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // RubberPanel //
-    //-------------//
     /**
      * Create a bare RubberPanel, assuming zoom and rubber will be
      * assigned later.
@@ -96,9 +93,6 @@ public class RubberPanel
         logger.debug("new RubberPanel");
     }
 
-    //-------------//
-    // RubberPanel //
-    //-------------//
     /**
      * Create a RubberPanel, with the specified Rubber to interact via the
      * mouse, and a specified Zoom instance
@@ -116,45 +110,6 @@ public class RubberPanel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // setRubber //
-    //-----------//
-    /**
-     * Allows to provide the rubber instance, only after this RubberPanel
-     * has been built. This can be used to solve circular elaboration problems.
-     *
-     * @param rubber the rubber instance to be used
-     */
-    public final void setRubber (Rubber rubber)
-    {
-        this.rubber = rubber;
-
-        rubber.setZoom(zoom);
-        rubber.connectComponent(this);
-        rubber.setMouseMonitor(this);
-    }
-
-    //---------//
-    // setZoom //
-    //---------//
-    /**
-     * Assign a zoom to this panel
-     *
-     * @param zoom the zoom assigned
-     */
-    public final void setZoom (final Zoom zoom)
-    {
-        // Clean up if needed
-        unsetZoom(this.zoom);
-
-        this.zoom = zoom;
-
-        if (zoom != null) {
-            // Add a listener on this zoom
-            zoom.addChangeListener(this);
-        }
-    }
-
     //--------------//
     // contextAdded //
     //--------------//
@@ -423,6 +378,45 @@ public class RubberPanel
     public void setModelSize (Dimension modelSize)
     {
         this.modelSize = new Dimension(modelSize);
+    }
+
+    //-----------//
+    // setRubber //
+    //-----------//
+    /**
+     * Allows to provide the rubber instance, only after this RubberPanel
+     * has been built. This can be used to solve circular elaboration problems.
+     *
+     * @param rubber the rubber instance to be used
+     */
+    public final void setRubber (Rubber rubber)
+    {
+        this.rubber = rubber;
+
+        rubber.setZoom(zoom);
+        rubber.connectComponent(this);
+        rubber.setMouseMonitor(this);
+    }
+
+    //---------//
+    // setZoom //
+    //---------//
+    /**
+     * Assign a zoom to this panel
+     *
+     * @param zoom the zoom assigned
+     */
+    public final void setZoom (final Zoom zoom)
+    {
+        // Clean up if needed
+        unsetZoom(this.zoom);
+
+        this.zoom = zoom;
+
+        if (zoom != null) {
+            // Add a listener on this zoom
+            zoom.addChangeListener(this);
+        }
     }
 
     //-------------------//

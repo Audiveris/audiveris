@@ -43,9 +43,6 @@ public class TargetLine
     private final double cos;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // TargetLine //
-    //------------//
     /**
      * Creates a new TargetLine object.
      *

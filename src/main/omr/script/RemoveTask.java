@@ -26,10 +26,6 @@ public class RemoveTask
         extends SheetTask
 {
     //~ Constructors -------------------------------------------------------------------------------
-
-    //------------//
-    // RemoveTask //
-    //------------//
     /**
      * Create a task to remove a page from its score
      *
@@ -40,10 +36,7 @@ public class RemoveTask
         super(sheet);
     }
 
-    //------------//
-    // RemoveTask //
-    //------------//
-    /** No-arg constructor for JAXB only */
+    /** No-arg constructor for JAXB only. */
     private RemoveTask ()
     {
     }

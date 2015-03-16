@@ -54,9 +54,6 @@ class BasicEnvironment
     private boolean withLedger;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // BasicEnvironment //
-    //------------------//
     /**
      * Create a new BasicEnvironment object
      *

@@ -29,9 +29,6 @@ public class SlurSymbol
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //------------//
-    // SlurSymbol //
-    //------------//
     /**
      * Create a SlurSymbol
      */
@@ -40,9 +37,6 @@ public class SlurSymbol
         this(false);
     }
 
-    //------------//
-    // SlurSymbol //
-    //------------//
     /**
      * Create a SlurSymbol
      *

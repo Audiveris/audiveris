@@ -54,9 +54,6 @@ public class SymbolsModel
     private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // SymbolsModel //
-    //--------------//
     /**
      * Creates a new SymbolsModel object.
      *

@@ -164,10 +164,6 @@ public class StemsBuilder
     private VerticalsBuilder verticalsBuilder;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //--------------//
-    // StemsBuilder //
-    //--------------//
     /**
      * Creates a new StemsBuilder object.
      *

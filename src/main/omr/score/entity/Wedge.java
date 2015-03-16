@@ -39,9 +39,6 @@ public class Wedge
     private final int spread;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------//
-    // Wedge //
-    //-------//
     /**
      * Creates a new instance of Wedge edge.
      * (there must be one for the wedge start, and one for the wedge stop).

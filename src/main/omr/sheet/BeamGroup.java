@@ -24,8 +24,10 @@ import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.ChordInter;
 import omr.sig.inter.HeadChordInter;
 import omr.sig.inter.Inter;
+import omr.sig.inter.StemInter;
 import omr.sig.relation.BeamHeadRelation;
 import omr.sig.relation.BeamStemRelation;
+import omr.sig.relation.NoExclusion;
 import omr.sig.relation.Relation;
 
 import omr.util.Navigable;
@@ -81,9 +83,6 @@ public class BeamGroup
     private Voice voice;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // BeamGroup //
-    //-----------//
     /**
      * Creates a new instance of BeamGroup.
      *
@@ -224,31 +223,16 @@ public class BeamGroup
     //-------------//
     /**
      * Report the total duration of the sequence of chords within this group.
+     * Beware, there may be rests inserted within beam-grouped notes.
      *
      * @return the total group duration, perhaps null
      */
     public Rational getDuration ()
     {
-        Rational duration = null;
-        SortedSet<ChordInter> chords = new TreeSet<ChordInter>(ChordInter.byAbscissa);
-
-        for (AbstractBeamInter beam : beams) {
-            for (ChordInter chord : beam.getChords()) {
-                chords.add(chord);
-            }
-        }
-
-        for (ChordInter chord : chords) {
-            Rational dur = chord.getDuration();
-
-            if (dur != null) {
-                if (duration != null) {
-                    duration = duration.plus(dur);
-                } else {
-                    duration = dur;
-                }
-            }
-        }
+        final ChordInter first = getFirstChord();
+        final ChordInter last = getLastChord();
+        Rational duration = last.getStartTime().minus(first.getStartTime()).plus(
+                last.getDuration());
 
         return duration;
     }
@@ -264,6 +248,25 @@ public class BeamGroup
     public int getId ()
     {
         return id;
+    }
+
+    //---------------//
+    // getFirstChord //
+    //---------------//
+    /**
+     * Report the first chord on the left.
+     *
+     * @return the first chord
+     */
+    public ChordInter getFirstChord ()
+    {
+        List<ChordInter> chords = getChords();
+
+        if (!chords.isEmpty()) {
+            return chords.get(0);
+        } else {
+            return null;
+        }
     }
 
     //--------------//
@@ -807,23 +810,36 @@ public class BeamGroup
          * At this point, each beam has been moved to its proper group, either this (old) group or
          * the (new) alienGroup. What remains to be done is to split the pivot chord between the
          * two groups.
+         * <p>
+         * Also we have to void exclusion between any beam and the opposite (mirror) chord/stem
          */
         private void splitChord ()
         {
             logger.debug("splitChord: {}", pivotChord);
 
+            final SIGraph sig = pivotChord.getSig();
+
             // Create a clone of pivotChord (w/o any beam initially)
             HeadChordInter mirrorChord = pivotChord.duplicate(true);
 
+            // Avoid exclusion between (old) group beams and (new) mirrorChord stem
+            for (AbstractBeamInter beam : beams) {
+                sig.addEdge(beam, mirrorChord.getStem(), new NoExclusion());
+            }
+
             // Update alienBeams
             alienBeams = alienGroup.getBeams();
+
+            // Avoid exclusion between (new) alien beams and (old) pivotChord stem
+            for (AbstractBeamInter beam : alienBeams) {
+                sig.addEdge(beam, pivotChord.getStem(), new NoExclusion());
+            }
 
             for (Iterator<AbstractBeamInter> bit = pivotChord.getBeams().iterator(); bit.hasNext();) {
                 AbstractBeamInter beam = bit.next();
 
                 if (alienBeams.contains(beam)) {
                     // Move BeamStem relation from pivot to mirror
-                    SIGraph sig = beam.getSig();
                     Relation bs = sig.getRelation(
                             beam,
                             pivotChord.getStem(),
@@ -853,7 +869,7 @@ public class BeamGroup
                 }
             }
 
-            measure.addInter(mirrorChord);
+            measure.getStack().addInter(mirrorChord);
         }
     }
 }

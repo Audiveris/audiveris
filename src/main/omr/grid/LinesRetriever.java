@@ -67,7 +67,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -144,10 +143,6 @@ public class LinesRetriever
     private ByteProcessor binaryBuffer;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //----------------//
-    // LinesRetriever //
-    //----------------//
     /**
      * Retrieve the frames of all staff lines.
      *

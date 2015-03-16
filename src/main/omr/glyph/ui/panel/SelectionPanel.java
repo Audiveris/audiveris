@@ -124,9 +124,6 @@ class SelectionPanel
             "Number of selected glyph files to load");
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // SelectionPanel //
-    //----------------//
     /**
      * Creates a new SelectionPanel object.
      *

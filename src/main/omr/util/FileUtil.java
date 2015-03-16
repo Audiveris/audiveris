@@ -20,7 +20,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class {@code FileUtil} gathers convenient utility methods for files (and paths).
@@ -34,6 +44,28 @@ public abstract class FileUtil
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // avoidExtension //
+    //----------------//
+    /**
+     * Remove the undesired extension from provided path
+     *
+     * @param path    the path to check and perhaps shorten
+     * @param toAvoid the extension to avoid
+     * @return the path without the undesired extension, if any
+     */
+    public static Path avoidExtension (Path path,
+                                       String toAvoid)
+    {
+        final String ext = getExtension(path.toString());
+
+        if (!ext.equalsIgnoreCase(toAvoid)) {
+            return path;
+        }
+
+        return path.resolveSibling(getNameSansExtension(path));
+    }
+
     //------//
     // copy //
     //------//
@@ -75,19 +107,27 @@ public abstract class FileUtil
     /**
      * Recursively delete the provided files and directories
      *
-     * @param files the array of files/dir to delete
+     * @param files the array of files/directories to delete
+     * @return the number of items (files or directories) actually deleted
      */
-    public static void deleteAll (File[] files)
+    public static int deleteAll (File... files)
     {
+        int deletions = 0;
+
         for (File file : files) {
             if (file.isDirectory()) {
-                deleteAll(file.listFiles());
+                deletions += deleteAll(file.listFiles());
             }
 
             if (!file.delete()) {
-                logger.warn("Could not delete file {}", file);
+                String kind = file.isDirectory() ? "directory" : "file";
+                logger.warn("Could not delete {} {}", kind, file);
+            } else {
+                deletions++;
             }
         }
+
+        return deletions;
     }
 
     //--------------//
@@ -178,6 +218,39 @@ public abstract class FileUtil
         return sansExtension(path.getFileName().toString());
     }
 
+    //--------------------//
+    // newDirectoryStream //
+    //--------------------//
+    /**
+     * Opens a directory stream on provided 'dir' folder, filtering file names according
+     * to the provided glob syntax.
+     * <p>
+     * See http://blog.eyallupu.com/2011/11/java-7-working-with-directories.html
+     *
+     * @param dir  the directory to read from
+     * @param glob the glob matching
+     * @return the opened DirectoryStream (remaining to be closed)
+     * @throws IOException
+     */
+    public static DirectoryStream newDirectoryStream (Path dir,
+                                                      String glob)
+            throws IOException
+    {
+        // create a matcher and return a filter that uses it.
+        final FileSystem fs = dir.getFileSystem();
+        final PathMatcher matcher = fs.getPathMatcher("glob:" + glob);
+        final DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>()
+        {
+            @Override
+            public boolean accept (Path entry)
+            {
+                return matcher.matches(entry.getFileName());
+            }
+        };
+
+        return fs.provider().newDirectoryStream(dir, filter);
+    }
+
     //---------------//
     // sansExtension //
     //---------------//
@@ -190,5 +263,80 @@ public abstract class FileUtil
         } else {
             return name;
         }
+    }
+
+    //----------//
+    // walkDown //
+    //----------//
+    /**
+     * Browse a file tree for retrieving relevant directories and files.
+     *
+     * @param folder   the folder where browsing starts
+     * @param dirGlob  glob pattern for relevant directories
+     * @param fileGlob glob pattern for relevant files
+     * @return the list of paths found
+     */
+    public static List<Path> walkDown (final Path folder,
+                                       final String dirGlob,
+                                       final String fileGlob)
+    {
+        logger.debug(" dirGlob is {}", dirGlob);
+        logger.debug("fileGlob is {}", fileGlob);
+
+        final FileSystem fs = FileSystems.getDefault();
+        final PathMatcher dirMatcher = fs.getPathMatcher(dirGlob);
+        final PathMatcher fileMatcher = fs.getPathMatcher(fileGlob);
+        final List<Path> pathsFound = new ArrayList<Path>();
+
+        if (!Files.exists(folder)) {
+            return pathsFound;
+        }
+
+        try {
+            Files.walkFileTree(
+                    folder,
+                    new SimpleFileVisitor<Path>()
+                    {
+                        @Override
+                        public FileVisitResult preVisitDirectory (Path dir,
+                                                                  BasicFileAttributes attrs)
+                        throws IOException
+                        {
+                            if (dir.equals(folder) || dirMatcher.matches(dir)) {
+                                return FileVisitResult.CONTINUE;
+                            } else {
+                                return FileVisitResult.SKIP_SUBTREE;
+                            }
+                        }
+
+                        @Override
+                        public FileVisitResult visitFile (Path file,
+                                                          BasicFileAttributes attrs)
+                        throws IOException
+                        {
+                            if (fileMatcher.matches(file)) {
+                                pathsFound.add(file);
+                            }
+
+                            return FileVisitResult.CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult postVisitDirectory (Path dir,
+                                                                   IOException exc)
+                        throws IOException
+                        {
+                            if (dirMatcher.matches(dir)) {
+                                pathsFound.add(dir);
+                            }
+
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+        } catch (IOException ex) {
+            logger.warn("Error in browsing " + folder + " " + ex, ex);
+        }
+
+        return pathsFound;
     }
 }

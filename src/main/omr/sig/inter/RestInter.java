@@ -42,7 +42,7 @@ public class RestInter
                       Shape shape,
                       double grade,
                       Staff staff,
-                      int pitch)
+                      double pitch)
     {
         super(glyph, null, shape, grade, staff, pitch);
     }
@@ -68,9 +68,8 @@ public class RestInter
         // Determine pitch according to glyph centroid
         Point centroid = glyph.getCentroid();
         double measuredPitch = staff.pitchPositionOf(centroid);
-        int pitch = (int) Math.rint(measuredPitch);
 
-        return new RestInter(glyph, shape, grade, staff, pitch);
+        return new RestInter(glyph, shape, grade, staff, measuredPitch);
     }
 
     //--------//

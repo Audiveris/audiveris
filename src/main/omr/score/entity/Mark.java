@@ -57,9 +57,6 @@ public class Mark
     private final Object data;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------//
-    // Mark //
-    //------//
     /**
      * Creates a new instance of Mark
      *

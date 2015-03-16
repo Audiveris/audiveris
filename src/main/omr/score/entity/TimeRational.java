@@ -48,9 +48,6 @@ public class TimeRational
     public final int num;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // TimeRational //
-    //--------------//
     /**
      * Creates a new TimeRational object.
      *
@@ -64,10 +61,7 @@ public class TimeRational
         this.den = den;
     }
 
-    //--------------//
-    // TimeRational //
-    //--------------//
-    /** Zero-argument constructor to please JAXB */
+    /** Zero-argument constructor to please JAXB. */
     private TimeRational ()
     {
         den = num = 0;

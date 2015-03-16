@@ -34,9 +34,6 @@ public class Fermata
     private static final Logger logger = LoggerFactory.getLogger(Fermata.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------//
-    // Fermata //
-    //---------//
     /**
      * Creates a new instance of Fermata event.
      *

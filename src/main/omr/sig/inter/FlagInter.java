@@ -26,6 +26,7 @@ import omr.sheet.SystemInfo;
 import omr.sheet.Voice;
 
 import omr.sig.SIGraph;
+import omr.sig.SigReducer;
 import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.Relation;
 
@@ -85,6 +86,7 @@ public class FlagInter
     /**
      * (Try to) create a Flag inter.
      * A flag is created only if it can be related to one or several stems.
+     * And if it is correctly located WRT note heads on the stem (since note heads are validated)
      *
      * @param glyph       the flag glyph
      * @param shape       flag shape
@@ -117,15 +119,16 @@ public class FlagInter
         final Point refPt = new Point(
                 flagBox.x,
                 isFlagUp ? section.getStartCoord() : section.getStopCoord());
-        final int midFlagY = (section.getStartCoord() + section.getStopCoord()) / 2;
+        final int midFootY = (section.getStartCoord() + section.getStopCoord()) / 2;
 
         //TODO: -1 is used to cope with stem margin when erased (To be improved)
         final Rectangle luBox = new Rectangle((flagBox.x - 1) - stemWidth, y, stemWidth, height);
         glyph.addAttachment("fs", luBox);
 
-        final List<Inter> stems = sig.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
+        List<Inter> stems = SIGraph.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
 
-        for (Inter stem : stems) {
+        for (Inter inter : stems) {
+            StemInter stem = (StemInter) inter;
             Glyph stemGlyph = stem.getGlyph();
             Point2D start = stemGlyph.getStartPoint(VERTICAL);
             Point2D stop = stemGlyph.getStopPoint(VERTICAL);
@@ -152,14 +155,23 @@ public class FlagInter
                                 isFlagUp ? ((flagBox.y + flagBox.height) - 1) : flagBox.y));
 
                 // Check consistency between flag direction and vertical position on stem
+                // As well as stem direction as indicated by heds on stem
                 double midStemY = (start.getY() + stop.getY()) / 2;
 
                 if (isFlagUp) {
-                    if (midFlagY <= midStemY) {
+                    if (midFootY <= midStemY) {
+                        continue;
+                    }
+
+                    if (stem.getDirection() == -1) {
                         continue;
                     }
                 } else {
-                    if (midFlagY >= midStemY) {
+                    if (midFootY >= midStemY) {
+                        continue;
+                    }
+
+                    if (stem.getDirection() == 1) {
                         continue;
                     }
                 }

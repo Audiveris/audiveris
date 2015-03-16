@@ -52,9 +52,6 @@ public class BinaryStep
     private static final Logger logger = LoggerFactory.getLogger(BinaryStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // BinaryStep //
-    //------------//
     /**
      * Creates a new BinaryStep object.
      */

@@ -28,10 +28,6 @@ public class LiveParam<E>
     private E actual;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //-----------//
-    // LiveParam //
-    //-----------//
     /**
      * Creates a LiveParam object.
      *
@@ -43,15 +39,6 @@ public class LiveParam<E>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //
-    //-------------//
-    // needsUpdate //
-    //-------------//
-    public boolean needsUpdate ()
-    {
-        return !getTarget().equals(actual);
-    }
-
     //-----------//
     // getActual //
     //-----------//
@@ -61,6 +48,15 @@ public class LiveParam<E>
     public E getActual ()
     {
         return actual;
+    }
+
+    //
+    //-------------//
+    // needsUpdate //
+    //-------------//
+    public boolean needsUpdate ()
+    {
+        return !getTarget().equals(actual);
     }
 
     //-----------//

@@ -30,9 +30,6 @@ public class JunctionShiftPolicy
     private final int maxShift;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------------//
-    // JunctionShiftPolicy //
-    //---------------------//
     /**
      * Creates an instance of policy based on shift of runs.
      *

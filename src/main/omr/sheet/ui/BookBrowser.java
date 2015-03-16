@@ -96,9 +96,6 @@ public class BookBrowser
     private JFrame frame;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // BookBrowser //
-    //-------------//
     /**
      * Creates a new {@code BookBrowser} object.
      *

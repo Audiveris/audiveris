@@ -76,9 +76,6 @@ public class Circle
     private CubicCurve2D curve;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------//
-    // Circle //
-    //--------//
     /**
      * Clone a circle
      *
@@ -99,9 +96,6 @@ public class Circle
         curve = that.curve;
     }
 
-    //--------//
-    // Circle //
-    //--------//
     /**
      * Creates a new instance of Circle, defined by a set of points.
      *
@@ -117,9 +111,6 @@ public class Circle
         distance = computeDistance(xx, yy);
     }
 
-    //--------//
-    // Circle //
-    //--------//
     /**
      * Creates a new instance of Circle, defined by a set of points.
      *
@@ -146,9 +137,6 @@ public class Circle
         computeAngles(first, middle, last);
     }
 
-    //--------//
-    // Circle //
-    //--------//
     /**
      * Creates a new instance of Circle, fitted to 3 defining points.
      * The provided collection of coordinates is used only to compute the
@@ -172,9 +160,6 @@ public class Circle
         distance = computeDistance(xx, yy);
     }
 
-    //--------//
-    // Circle //
-    //--------//
     /**
      * Creates a new instance of Circle, fitted to 3 defining points.
      *

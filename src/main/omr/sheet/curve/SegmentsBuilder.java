@@ -16,6 +16,8 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.facets.Glyph;
+
 import omr.grid.FilamentLine;
 
 import omr.math.LineUtil;
@@ -45,7 +47,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import omr.glyph.facets.Glyph;
 
 /**
  * Class {@code SegmentsBuilder} retrieves straight segments that can be used to build
@@ -206,6 +207,7 @@ public class SegmentsBuilder
         if (impacts != null) {
             SegmentInter inter = new SegmentInter(segment, impacts);
             Glyph glyph = segment.retrieveGlyph(sheet, params.maxRunDistance);
+
             if (glyph != null) {
                 segment.setGlyph(glyph);
                 inters.add(inter);
@@ -238,7 +240,8 @@ public class SegmentsBuilder
     }
 
     @Override
-    protected void weed (Set<Curve> clump)
+    protected void weed (Set<Curve> clump,
+                         boolean reverse)
     {
         // Simply keep the one with longest X range.
         List<Curve> list = new ArrayList<Curve>(clump);
@@ -359,7 +362,6 @@ public class SegmentsBuilder
         final Scale.Fraction maxRunDistance = new Scale.Fraction(
                 0.2,
                 "Maximum distance from any run end to curve points");
-
     }
 
     //------------//

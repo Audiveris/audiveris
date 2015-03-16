@@ -56,9 +56,6 @@ public class InterMenu
     private final InterListener interListener = new InterListener();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // InterMenu //
-    //-----------//
     /**
      * Creates a new InterMenu object.
      *
@@ -109,7 +106,7 @@ public class InterMenu
         }
 
         for (List<Inter> list : interMap.values()) {
-            Collections.sort(list, Inter.byReverseContextualGrade);
+            Collections.sort(list, Inter.byReverseBestGrade);
         }
 
         try {

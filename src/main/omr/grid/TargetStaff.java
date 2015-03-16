@@ -40,9 +40,6 @@ public class TargetStaff
     public final TargetSystem system;
 
     //~ Constructors -----------------------------------------------------------
-    //-------------//
-    // TargetStaff //
-    //-------------//
     /**
      * Creates a new TargetStaff object.
      *

@@ -12,6 +12,7 @@
 package omr.jaxb.basic;
 
 import java.awt.Point;
+import java.io.File;
 import java.util.List;
 
 import javax.xml.bind.annotation.*;
@@ -62,6 +63,9 @@ public class Waiter
     ///@XmlElementWrapper(name = "days")
     @XmlElement(name = "day")
     private List<Day> days;
+
+    @XmlElement(name="path")
+    public File path;
 
     /** not accessed directly */
     public String[] titles;

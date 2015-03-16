@@ -64,9 +64,6 @@ public abstract class SystemNode
     protected Point center;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // SystemNode //
-    //------------//
     /**
      * Create a SystemNode
      *

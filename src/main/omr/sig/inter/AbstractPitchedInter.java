@@ -32,7 +32,7 @@ public abstract class AbstractPitchedInter
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** The assigned pitch. */
-    protected int pitch;
+    protected double pitch;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -50,7 +50,7 @@ public abstract class AbstractPitchedInter
                                  Shape shape,
                                  GradeImpacts impacts,
                                  Staff staff,
-                                 int pitch)
+                                 double pitch)
     {
         super(glyph, box, shape, impacts);
         setStaff(staff);
@@ -72,7 +72,7 @@ public abstract class AbstractPitchedInter
                                  Shape shape,
                                  double grade,
                                  Staff staff,
-                                 int pitch)
+                                 double pitch)
     {
         super(glyph, box, shape, grade);
         setStaff(staff);
@@ -80,13 +80,28 @@ public abstract class AbstractPitchedInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // getIntegerPitch //
+    //-----------------//
+    /**
+     * Report the rounded integer pitch value
+     *
+     * @return the pitch
+     */
+    public int getIntegerPitch ()
+    {
+        return (int) Math.rint(pitch);
+    }
+
     //----------//
     // getPitch //
     //----------//
     /**
+     * Report the precise (double) pitch value
+     *
      * @return the pitch
      */
-    public int getPitch ()
+    public double getPitch ()
     {
         return pitch;
     }
@@ -97,7 +112,7 @@ public abstract class AbstractPitchedInter
     /**
      * @param pitch the pitch to set
      */
-    public void setPitch (int pitch)
+    public void setPitch (double pitch)
     {
         this.pitch = pitch;
     }

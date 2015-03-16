@@ -131,28 +131,6 @@ public abstract class Curve
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------------//
-    // getAbscissaComparator //
-    //-----------------------//
-    /**
-     * Report a comparator on abscissa
-     *
-     * @param reverse which side is concerned
-     * @return the comparator ready for use
-     */
-    public static Comparator<Curve> getAbscissaComparator (final boolean reverse)
-    {
-        return new Comparator<Curve>()
-        {
-            @Override
-            public int compare (Curve a1,
-                                Curve a2)
-            {
-                return Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
-            }
-        };
-    }
-
     //---------------//
     // addAttachment //
     //---------------//
@@ -180,6 +158,28 @@ public abstract class Curve
         for (Arc part : parts) {
             part.setAssigned(true);
         }
+    }
+
+    //-----------------------//
+    // getAbscissaComparator //
+    //-----------------------//
+    /**
+     * Report a comparator on abscissa
+     *
+     * @param reverse which side is concerned
+     * @return the comparator ready for use
+     */
+    public static Comparator<Curve> getAbscissaComparator (final boolean reverse)
+    {
+        return new Comparator<Curve>()
+        {
+            @Override
+            public int compare (Curve a1,
+                                Curve a2)
+            {
+                return Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
+            }
+        };
     }
 
     //    //------------//
@@ -468,8 +468,13 @@ public abstract class Curve
         }
 
         SystemInfo system = relevants.get(0);
-        Collection<Section> hSections = system.getHorizontalSections();
-        Collection<Section> vSections = system.getVerticalSections();
+        Rectangle bounds = getRealBounds();
+        Collection<Section> hSections = Sections.intersectedSections(
+                bounds,
+                system.getHorizontalSections());
+        Collection<Section> vSections = Sections.intersectedSections(
+                bounds,
+                system.getVerticalSections());
         Section prevSection = null; // Cached section to speed up search
 
         for (int index = 0; index < points.size(); index++) {
@@ -639,6 +644,38 @@ public abstract class Curve
         sb.append(super.internals());
 
         return sb.toString();
+    }
+
+    private Rectangle getRealBounds ()
+    {
+        int xMin = Integer.MAX_VALUE;
+        int xMax = Integer.MIN_VALUE;
+        int yMin = Integer.MAX_VALUE;
+        int yMax = Integer.MIN_VALUE;
+
+        for (Point p : points) {
+            final int x = p.x;
+
+            if (x < xMin) {
+                xMin = x;
+            }
+
+            if (x > xMax) {
+                xMax = x;
+            }
+
+            final int y = p.y;
+
+            if (y < yMin) {
+                yMin = y;
+            }
+
+            if (y > yMax) {
+                yMax = y;
+            }
+        }
+
+        return new Rectangle(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
     }
 
     //----------------//

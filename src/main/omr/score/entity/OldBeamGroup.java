@@ -112,9 +112,6 @@ public class OldBeamGroup
     private OldVoice voice;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // OldBeamGroup //
-    //-----------//
     /**
      * Creates a new instance of BeamGroup.
      *

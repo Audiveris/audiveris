@@ -38,7 +38,7 @@ import java.util.jar.JarFile;
  *
  * @author Hervé Bitteur
  */
-public class WellKnowns
+public abstract class WellKnowns
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -202,10 +202,7 @@ public class WellKnowns
     }
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //------------//
-    // WellKnowns // Not meant to be instantiated
-    //------------//
+    /** Not meant to be instantiated. */
     private WellKnowns ()
     {
     }

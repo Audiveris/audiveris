@@ -61,9 +61,6 @@ public class GlyphValue
     final SortedSet<Section> members;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // GlyphValue //
-    //------------//
     /**
      * Create a new GlyphValue object from scratch
      *

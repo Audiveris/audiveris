@@ -16,7 +16,6 @@ import omr.run.Orientation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.Collection;

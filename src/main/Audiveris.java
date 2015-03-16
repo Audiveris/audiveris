@@ -22,10 +22,7 @@ public final class Audiveris
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //-----------//
-    // Audiveris //
-    //-----------//
-    /** To avoid instantiation */
+    /** To avoid instantiation. */
     private Audiveris ()
     {
     }

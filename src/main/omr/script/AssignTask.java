@@ -16,9 +16,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.sheet.Sheet;
 
-import omr.step.Stepping;
-import omr.step.Steps;
-
 import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -46,13 +43,10 @@ public class AssignTask
     private final boolean compound;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //------------//
-    // AssignTask //
-    //------------//
     /**
      * Create an assignment task
      *
+     * @param sheet    the containing sheet
      * @param shape    the assigned shape (or null for a de-assignment)
      * @param compound true if all glyphs are to be merged into one compound
      *                 which is assigned to the given shape, false if each and
@@ -69,12 +63,10 @@ public class AssignTask
         this.compound = compound;
     }
 
-    //------------//
-    // AssignTask //
-    //------------//
     /**
      * Convenient way to create an deassignment task
      *
+     * @param sheet  the containing sheet
      * @param glyphs the collection of glyphs to deassign
      */
     public AssignTask (Sheet sheet,
@@ -83,9 +75,6 @@ public class AssignTask
         this(sheet, null, false, glyphs);
     }
 
-    //------------//
-    // AssignTask //
-    //------------//
     /** No-arg constructor for JAXB only */
     protected AssignTask ()
     {
@@ -118,11 +107,11 @@ public class AssignTask
     public void epilog (Sheet sheet)
     {
         // We rebuild from SYMBOLS
-//        Stepping.reprocessSheet(
-//                Steps.valueOf(Steps.SYMBOLS),
-//                sheet,
-//                getImpactedSystems(sheet),
-//                false);
+        //        Stepping.reprocessSheet(
+        //                Steps.valueOf(Steps.SYMBOLS),
+        //                sheet,
+        //                getImpactedSystems(sheet),
+        //                false);
     }
 
     //------------------//

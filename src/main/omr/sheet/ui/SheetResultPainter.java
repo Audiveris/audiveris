@@ -439,7 +439,7 @@ public class SheetResultPainter
             final Color oldColor = g.getColor();
 
             // Write the score-based measure id, on first real part only
-            String mid = stack.getScoreId();
+            String mid = stack.getPageId();
 
             if (mid != null) {
                 g.setColor(Colors.ANNOTATION);

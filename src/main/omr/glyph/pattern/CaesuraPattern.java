@@ -39,9 +39,6 @@ public class CaesuraPattern
     private static final Logger logger = LoggerFactory.getLogger(CaesuraPattern.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // CaesuraPattern //
-    //----------------//
     /**
      * Creates a new CaesuraPattern object.
      *

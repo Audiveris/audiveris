@@ -101,6 +101,8 @@ public class SeparableToolBar
     //----------------//
     /**
      * Remove any potential orphan separator at the end of the tool bar
+     *
+     * @param toolBar the toolBar to purge
      */
     public static void purgeSeparator (JToolBar toolBar)
     {

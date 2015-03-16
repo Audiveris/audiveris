@@ -26,9 +26,6 @@ public class DecrescendoSymbol
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //-------------------//
-    // DecrescendoSymbol //
-    //-------------------//
     /**
      * Creates a new DecrescendoSymbol object.
      *

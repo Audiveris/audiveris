@@ -56,9 +56,6 @@ public class SymbolGlyph
     private final BufferedImage image;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // SymbolGlyph //
-    //-------------//
     /**
      * Build an (artificial) glyph out of a symbol icon.
      * This construction is meant to populate and train on glyph shapes for

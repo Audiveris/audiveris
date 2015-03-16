@@ -41,9 +41,6 @@ public abstract class SheetTask
     protected volatile boolean stepDone;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // SheetTask //
-    //-----------//
     /**
      * Creates a task at sheet level
      *

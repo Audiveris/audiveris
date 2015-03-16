@@ -30,9 +30,6 @@ public class SectionSetEvent
     private final Set<Section> sections;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // SectionSetEvent //
-    //-----------------//
     /**
      * Creates a new SectionSetEvent object.
      *

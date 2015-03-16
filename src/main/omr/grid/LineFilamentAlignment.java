@@ -43,10 +43,6 @@ public class LineFilamentAlignment
     private static final Logger logger = LoggerFactory.getLogger(LineFilamentAlignment.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //-----------------------//
-    // LineFilamentAlignment //
-    //-----------------------//
     /**
      * Creates a new LineFilamentAlignment object.
      *

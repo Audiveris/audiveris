@@ -53,10 +53,6 @@ public class DeleteTask
     private PointFacade[] points;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //------------//
-    // DeleteTask //
-    //------------//
     /**
      * Create an glyph deletion task
      *
@@ -76,10 +72,7 @@ public class DeleteTask
         }
     }
 
-    //------------//
-    // DeleteTask //
-    //------------//
-    /** No-arg constructor needed for JAXB */
+    /** No-arg constructor needed for JAXB. */
     private DeleteTask ()
     {
     }

@@ -15,6 +15,10 @@ import omr.constant.Constant;
 import omr.constant.Constant.Ratio;
 import omr.constant.ConstantSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Color;
 import java.awt.Graphics;
 
 import javax.swing.JProgressBar;
@@ -22,7 +26,7 @@ import javax.swing.SwingUtilities;
 
 /**
  * Class {@code StepMonitor} is the user interface entity that allows to monitor step
- * progression, and to require manually that a step be performed.
+ * progression.
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
@@ -33,25 +37,19 @@ public class StepMonitor
 
     private static final Constants constants = new Constants();
 
+    private static final Logger logger = LoggerFactory.getLogger(StepMonitor.class);
+
     //~ Instance fields ----------------------------------------------------------------------------
-    //
-    /** Progress bar for actions performed on sheet */
+    /** Progress bar for actions performed on sheet. */
     private final JProgressBar bar = new MyJProgressBar();
 
-    /** Total active demands */
+    /** Total active actions. */
     private int actives = 0;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //-------------//
-    // StepMonitor //
-    //-------------//
     /**
      * Create a user monitor on step processing.
-     * This also starts a background working task to take care of all lengthy
-     * processing.
-     * There is exactly one instance of this class (and no instance when
-     * running in batch mode)
+     * There is exactly one instance of this class (and no instance when running in batch mode)
      */
     public StepMonitor ()
     {
@@ -59,6 +57,7 @@ public class StepMonitor
         bar.setStringPainted(true);
         displayAnimation(false);
         bar.setString("");
+        bar.setForeground(Color.ORANGE);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -86,6 +85,7 @@ public class StepMonitor
      */
     public void notifyMsg (final String msg)
     {
+        logger.debug("notifyMsg '{}'", msg);
         SwingUtilities.invokeLater(
                 new Runnable()
                 {
@@ -103,12 +103,13 @@ public class StepMonitor
     /**
      * Switch on or off the display of the progress bar
      *
-     * @param animating If false, deactivates all animation of the progress
-     *                  bar. If true, activates an indeterminate or
-     *                  pseudo-indeterminate animation.
+     * @param animating If false, deactivates all animation of the progress bar.
+     *                  If true, activates an indeterminate or pseudo-indeterminate animation.
      */
     final synchronized void displayAnimation (final boolean animating)
     {
+        logger.debug("displayAnimation animating:{}", animating);
+
         if (animating) {
             actives++;
             setBar(constants.ratio.getValue());
@@ -132,20 +133,20 @@ public class StepMonitor
     // animate //
     //---------//
     /**
-     * Sets the progress bar to show a percentage a certain amount above
-     * the previous percentage value (or above 0 if the bar had been
-     * indeterminate).
+     * Sets the progress bar to show a percentage a certain amount above the previous
+     * percentage value (or above 0 if the bar had been indeterminate).
      * This method is called on every message logged (see LogStepMonitorHandler)
      */
     void animate ()
     {
-        SwingUtilities.invokeLater(
-                new Runnable()
-                {
-                    @Override
-                    public void run ()
+        if (!constants.useIndeterminate.isSet()) {
+            logger.debug("animate");
+            SwingUtilities.invokeLater(
+                    new Runnable()
                     {
-                        if (!constants.useIndeterminate.isSet()) {
+                        @Override
+                        public void run ()
+                        {
                             int old = bar.getValue();
 
                             if (old > bar.getMinimum()) {
@@ -155,8 +156,8 @@ public class StepMonitor
                                 bar.setValue(old + increment);
                             }
                         }
-                    }
-                });
+                    });
+        }
     }
 
     //--------//
@@ -169,6 +170,7 @@ public class StepMonitor
      */
     private void setBar (final double amount)
     {
+        logger.debug("setBar amount:{}", amount);
         SwingUtilities.invokeLater(
                 new Runnable()
                 {

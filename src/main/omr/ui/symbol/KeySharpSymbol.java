@@ -24,9 +24,6 @@ public class KeySharpSymbol
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //----------------//
-    // KeySharpSymbol //
-    //----------------//
     /**
      * Creates a new KeySharpSymbol object.
      *

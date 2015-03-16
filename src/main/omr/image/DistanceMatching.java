@@ -32,12 +32,8 @@ public class DistanceMatching
     private final DistanceTable distances;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // DistanceMatching //
-    //-----------------//
     /**
-     * Creates a new DistanceMatching object from a distant transform
-     * image.
+     * Creates a new DistanceMatching object from a distant transform image.
      *
      * @param distances the distance transform image
      */

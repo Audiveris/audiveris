@@ -75,10 +75,6 @@ public class GlyphNetwork
     private NeuralNetwork engine;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //--------------//
-    // GlyphNetwork //
-    //--------------//
     /**
      * Private constructor, to create a glyph neural network.
      */

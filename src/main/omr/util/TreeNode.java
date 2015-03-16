@@ -48,9 +48,6 @@ public abstract class TreeNode
     protected TreeNode parent;
 
     //~ Constructors -----------------------------------------------------------
-    //----------//
-    // TreeNode //
-    //----------//
     /**
      * Create a node in the tree, given its parent.
      *

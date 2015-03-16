@@ -32,7 +32,7 @@ import java.util.zip.ZipOutputStream;
  *
  * @author Hervé Bitteur
  */
-public class Zip
+public abstract class Zip
 {
     //~ Constructors -------------------------------------------------------------------------------
 

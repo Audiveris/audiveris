@@ -35,10 +35,6 @@ public class GlobalDescriptor
     public final int threshold;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //------------------//
-    // GlobalDescriptor //
-    //------------------//
     /**
      * Creates a new GlobalDescriptor object.
      *
@@ -49,9 +45,7 @@ public class GlobalDescriptor
         this.threshold = threshold;
     }
 
-    //------------------//
-    // GlobalDescriptor // No-arg constructor meant for JAXB
-    //------------------//
+    /** No-arg constructor meant for JAXB. */
     private GlobalDescriptor ()
     {
         threshold = 0;

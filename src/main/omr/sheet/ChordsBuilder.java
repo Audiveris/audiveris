@@ -103,7 +103,7 @@ public class ChordsBuilder
     //-----------------//
     public void buildHeadChords ()
     {
-        for (Part part : system.getAllParts()) {
+        for (Part part : system.getParts()) {
             for (Staff staff : part.getStaves()) {
                 List<ChordInter> staffChords = new ArrayList<ChordInter>(); // Chords in staff
                 List<Inter> notes = sig.inters(staff, AbstractNoteInter.class); // Notes in staff

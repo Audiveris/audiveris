@@ -30,9 +30,6 @@ public class GlyphSetEvent
     private final Set<Glyph> glyphs;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // GlyphSetEvent //
-    //---------------//
     /**
      * Creates a new GlyphSetEvent object.
      *

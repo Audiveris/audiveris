@@ -81,9 +81,6 @@ public class BasicLine
     private double yMax = Double.MIN_VALUE;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // BasicLine //
-    //-----------//
     /**
      * Creates a line, with no data.
      * The line is no yet usable, except for including further defining points.
@@ -93,9 +90,6 @@ public class BasicLine
         reset();
     }
 
-    //-----------//
-    // BasicLine //
-    //-----------//
     /**
      * Creates a line, for which we already know the coefficients.
      * The coefficients don't have to be normalized, the constructor takes care of this.
@@ -122,9 +116,6 @@ public class BasicLine
         checkLineParameters();
     }
 
-    //-----------//
-    // BasicLine //
-    //-----------//
     /**
      * Create a line (and immediately compute its coefficients), as the least square
      * fitted line on the provided points.
@@ -160,9 +151,6 @@ public class BasicLine
         checkLineParameters();
     }
 
-    //-----------//
-    // BasicLine //
-    //-----------//
     /**
      * Create a line (and immediately compute its coefficients), as the least square
      * fitted line on the provided points.
@@ -186,9 +174,6 @@ public class BasicLine
         checkLineParameters();
     }
 
-    //-----------//
-    // BasicLine //
-    //-----------//
     /**
      * Creates a new BasicLine object from a Line2D segment.
      *

@@ -51,7 +51,6 @@ public abstract class AbstractStep
     protected final String description;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
     /**
      * Creates a new {@code AbstractStep} object.
      *
@@ -182,13 +181,13 @@ public abstract class AbstractStep
         return mandatory == Step.Mandatory.MANDATORY;
     }
 
-    //--------------//
-    // isScoreLevel //
-    //--------------//
+    //-------------//
+    // isBookLevel //
+    //-------------//
     @Override
-    public boolean isScoreLevel ()
+    public boolean isBookLevel ()
     {
-        return level == Step.Level.SCORE_LEVEL;
+        return level == Step.Level.BOOK_LEVEL;
     }
 
     //---------//

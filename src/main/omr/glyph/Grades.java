@@ -19,7 +19,7 @@ import omr.constant.ConstantSet;
  *
  * @author Hervé Bitteur
  */
-public class Grades
+public abstract class Grades
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

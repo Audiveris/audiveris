@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  * Class {@code VisitableNode} is a node which can accept a score visitor for itself
  * and for its children.
  *
- * <img src="doc-files/Visitable-Hierarchy.png" />
+ * <img alt="Image of hierarchy" src="doc-files/Visitable-Hierarchy.png" >
  *
  * @see ScoreVisitor
  *

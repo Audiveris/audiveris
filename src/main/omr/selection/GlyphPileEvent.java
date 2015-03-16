@@ -31,9 +31,6 @@ public class GlyphPileEvent
     private final Set<Glyph> glyphs;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // GlyphPileEvent //
-    //---------------//
     /**
      * Creates a new GlyphPileEvent object.
      *

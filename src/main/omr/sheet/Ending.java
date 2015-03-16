@@ -13,7 +13,6 @@ package omr.sheet;
 
 import omr.glyph.facets.Glyph;
 
-
 /**
  * Class {@code Ending} is a physical {@link Dash} that is the
  * horizontal part of an alternate ending.
@@ -23,11 +22,9 @@ import omr.glyph.facets.Glyph;
 public class Ending
         extends Dash
 {
+
     //~ Constructors -------------------------------------------------------------------------------
 
-    //--------//
-    // Ending //
-    //--------//
     /**
      * Create an Ending entity, with its underlying horizontal stick.
      *

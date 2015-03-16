@@ -371,13 +371,13 @@ public class ScoreXmlReduction
         global.setPartList(partList);
 
         for (Result result : connection.getResultMap().keySet()) {
-            ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
-            partList.getPartGroupOrScorePart().add(scorePart);
+            ScorePart logicalPart = (ScorePart) result.getUnderlyingObject();
+            partList.getPartGroupOrScorePart().add(logicalPart);
 
             Part globalPart = factory.createScorePartwisePart();
-            globalPart.setId(scorePart);
+            globalPart.setId(logicalPart);
             global.getPart().add(globalPart);
-            partData.put(scorePart, globalPart);
+            partData.put(logicalPart, globalPart);
         }
 
         // Align each candidate to its related result */
@@ -723,9 +723,9 @@ public class ScoreXmlReduction
         int partIndex = 0;
 
         for (Result result : connection.getResultMap().keySet()) {
-            ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
+            ScorePart logicalPart = (ScorePart) result.getUnderlyingObject();
             String partId = "P" + ++partIndex;
-            scorePart.setId(partId);
+            logicalPart.setId(partId);
         }
     }
 

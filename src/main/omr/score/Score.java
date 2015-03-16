@@ -14,12 +14,9 @@ package omr.score;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.math.Rational;
-
-import omr.score.entity.MeasureId.MeasureRange;
+import omr.score.entity.LogicalPart;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreNode;
-import omr.score.entity.ScorePart;
 import omr.score.entity.Tempo;
 import omr.score.visitor.ScoreVisitor;
 
@@ -61,17 +58,11 @@ public class Score
     /** Score id, within containing book. */
     private int id;
 
-    /** Greatest duration divisor. */
-    private Integer durationDivisor;
+    /** Contained pages. */
+    private final List<Page> pages = new ArrayList<Page>();
 
-    /** ScorePart list for the whole score. */
-    private List<ScorePart> partList;
-
-    /** The specified sound volume, if any. */
-    private Integer volume;
-
-    /** Potential measure range, if not all score is to be played */
-    private MeasureRange measureRange;
+    /** LogicalPart list for the whole score. */
+    private List<LogicalPart> logicalParts;
 
     /** Handling of parts name and program. */
     private final Param<List<PartData>> partsParam = new PartsParam();
@@ -79,13 +70,10 @@ public class Score
     /** Handling of tempo parameter. */
     private final Param<Integer> tempoParam = new Param<Integer>(Tempo.defaultTempo);
 
-    /** Contained pages. */
-    private final List<Page> pages = new ArrayList<Page>();
+    /** The specified sound volume, if any. */
+    private Integer volume;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------//
-    // Score //
-    //-------//
     /**
      * Create a Score.
      */
@@ -180,23 +168,6 @@ public class Score
         return constants.defaultVolume.getValue();
     }
 
-    //--------------------//
-    // getDurationDivisor //
-    //--------------------//
-    /**
-     * Report the common divisor used for this score when simplifying the durations.
-     *
-     * @return the computed divisor (GCD), or null if not computable
-     */
-    public Integer getDurationDivisor ()
-    {
-        if (durationDivisor == null) {
-            accept(new ScoreReductor());
-        }
-
-        return durationDivisor;
-    }
-
     //--------------//
     // getFirstPage //
     //--------------//
@@ -209,6 +180,9 @@ public class Score
         }
     }
 
+    //-------//
+    // getId //
+    //-------//
     /**
      * @return the id
      */
@@ -229,12 +203,25 @@ public class Score
         }
     }
 
+    //-----------------//
+    // getLogicalParts //
+    //-----------------//
+    /**
+     * Report the score list of logical parts.
+     *
+     * @return partList the list of logical parts
+     */
+    public List<LogicalPart> getLogicalParts ()
+    {
+        return logicalParts;
+    }
+
     //--------------------//
     // getMeasureIdOffset //
     //--------------------//
     /**
-     * Report the offset to add to page-based measure ids of the
-     * provided page to get absolute (score-based) ids.
+     * Report the offset to add to page-based measure IDs of the provided page to get
+     * absolute (score-based) IDs.
      *
      * @param page the provided page
      * @return the measure id offset for the page
@@ -286,19 +273,6 @@ public class Score
         throw new IllegalArgumentException(page + " not found in score");
     }
 
-    //-----------------//
-    // getMeasureRange //
-    //-----------------//
-    /**
-     * Report the potential range of selected measures.
-     *
-     * @return the selected measure range, perhaps null
-     */
-    public MeasureRange getMeasureRange ()
-    {
-        return measureRange;
-    }
-
     //----------//
     // getPages //
     //----------//
@@ -312,19 +286,6 @@ public class Score
         return pages;
     }
 
-    //-------------//
-    // getPartList //
-    //-------------//
-    /**
-     * Report the global list of parts.
-     *
-     * @return partList the list of score parts
-     */
-    public List<ScorePart> getPartList ()
-    {
-        return partList;
-    }
-
     //---------------//
     // getPartsParam //
     //---------------//
@@ -333,9 +294,9 @@ public class Score
         return partsParam;
     }
 
-    //----------//
+    //---------------//
     // getScorePages //
-    //----------//
+    //---------------//
     /**
      * Report the collection of pages in that score.
      *
@@ -349,7 +310,7 @@ public class Score
 
     //----------------//
     // getTempoParam //
-    //----------------//
+    //---------------//
     public Param<Integer> getTempoParam ()
     {
         return tempoParam;
@@ -423,19 +384,9 @@ public class Score
         constants.defaultVolume.setValue(volume);
     }
 
-    //--------------------//
-    // setDurationDivisor //
-    //--------------------//
-    /**
-     * Remember the common divisor used for this score when simplifying the durations.
-     *
-     * @param durationDivisor the computed divisor (GCD), or null
-     */
-    public void setDurationDivisor (Integer durationDivisor)
-    {
-        this.durationDivisor = durationDivisor;
-    }
-
+    //-------//
+    // setId //
+    //-------//
     /**
      * @param id the id to set
      */
@@ -445,29 +396,16 @@ public class Score
     }
 
     //-----------------//
-    // setMeasureRange //
+    // setLogicalParts //
     //-----------------//
-    /**
-     * Remember a range of measure for this score.
-     *
-     * @param measureRange the range of selected measures
-     */
-    public void setMeasureRange (MeasureRange measureRange)
-    {
-        this.measureRange = measureRange;
-    }
-
-    //-------------//
-    // setPartList //
-    //-------------//
     /**
      * Assign a part list valid for the whole score.
      *
-     * @param partList the list of score parts
+     * @param logicalParts the list of logical parts
      */
-    public void setPartList (List<ScorePart> partList)
+    public void setLogicalParts (List<LogicalPart> logicalParts)
     {
-        this.partList = partList;
+        this.logicalParts = logicalParts;
     }
 
     //-----------//
@@ -483,21 +421,22 @@ public class Score
         this.volume = volume;
     }
 
-    //------------------//
-    // simpleDurationOf //
-    //------------------//
-    /**
-     * Export a duration to its simplest form, based on the greatest duration divisor of
-     * the score.
-     *
-     * @param value the raw duration
-     * @return the simple duration expression, in the param of proper divisions
-     */
-    public int simpleDurationOf (Rational value)
-    {
-        return value.num * (getDurationDivisor() / value.den);
-    }
-
+    //
+    //    //------------------//
+    //    // simpleDurationOf //
+    //    //------------------//
+    //    /**
+    //     * Export a duration to its simplest form, based on the greatest duration divisor of
+    //     * the score.
+    //     *
+    //     * @param value the raw duration
+    //     * @return the simple duration expression, in the param of proper divisions
+    //     */
+    //    public int simpleDurationOf (Rational value)
+    //    {
+    //        return value.num * (getDurationDivisor() / value.den);
+    //    }
+    //
     //----------//
     // toString //
     //----------//
@@ -508,6 +447,60 @@ public class Score
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //
+    //    //------------------------//
+    //    // computeDurationDivisor //
+    //    //------------------------//
+    //    /**
+    //     * Browse the whole score to determine the global duration divisor.
+    //     * <p>
+    //     * TODO: Here we retrieve divisor for the whole score. We could work on each part only.
+    //     *
+    //     * @return the score duration divisor
+    //     */
+    //    private int computeDurationDivisor ()
+    //    {
+    //        try {
+    //            final SortedSet<Rational> durations = new TreeSet<Rational>();
+    //
+    //            // Collect duration values for each chord in score
+    //            for (Page page : getPages()) {
+    //                for (SystemInfo system : page.getSystems()) {
+    //                    for (MeasureStack stack : system.getMeasureStacks()) {
+    //                        for (ChordInter chord : stack.getChords()) {
+    //                            try {
+    //                                final Rational duration = chord.isWholeDuration()
+    //                                        ? stack.getExpectedDuration()
+    //                                        : chord.getDuration();
+    //
+    //                                if (duration != null) {
+    //                                    durations.add(duration);
+    //                                }
+    //                            } catch (TimeSignature.InvalidTimeSignature ex) {
+    //                                // Ignored here (TBC)
+    //                            } catch (Exception ex) {
+    //                                logger.warn(
+    //                                        getClass().getSimpleName() + " Error visiting " + chord,
+    //                                        ex);
+    //                            }
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //
+    //            // Compute greatest duration divisor for the score
+    //            Rational[] durationArray = durations.toArray(new Rational[durations.size()]);
+    //            Rational divisor = Rational.gcd(durationArray);
+    //            logger.debug("durations={} divisor={}", Arrays.deepToString(durationArray), divisor);
+    //
+    //            return divisor.den;
+    //        } catch (Exception ex) {
+    //            logger.warn(getClass().getSimpleName() + " Error visiting " + this, ex);
+    //
+    //            return 0;
+    //        }
+    //    }
+    //
     //-----------//
     // Constants //
     //-----------//
@@ -538,17 +531,17 @@ public class Score
         @Override
         public List<PartData> getSpecific ()
         {
-            List<ScorePart> list = getPartList();
+            List<LogicalPart> list = getLogicalParts();
 
             if (list != null) {
                 List<PartData> data = new ArrayList<PartData>();
 
-                for (ScorePart scorePart : list) {
+                for (LogicalPart logicalPart : list) {
                     // Initial setting for part midi program
-                    int prog = (scorePart.getMidiProgram() != null) ? scorePart.getMidiProgram()
-                            : scorePart.getDefaultProgram();
+                    int prog = (logicalPart.getMidiProgram() != null)
+                            ? logicalPart.getMidiProgram() : logicalPart.getDefaultProgram();
 
-                    data.add(new PartData(scorePart.getName(), prog));
+                    data.add(new PartData(logicalPart.getName(), prog));
                 }
 
                 return data;
@@ -563,13 +556,13 @@ public class Score
             try {
                 for (int i = 0; i < specific.size(); i++) {
                     PartData data = specific.get(i);
-                    ScorePart scorePart = getPartList().get(i);
+                    LogicalPart logicalPart = getLogicalParts().get(i);
 
                     // Part name
-                    scorePart.setName(data.name);
+                    logicalPart.setName(data.name);
 
                     // Part midi program
-                    scorePart.setMidiProgram(data.program);
+                    logicalPart.setMidiProgram(data.program);
                 }
 
                 logger.info("Score parts have been updated");

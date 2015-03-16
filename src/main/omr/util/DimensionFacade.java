@@ -34,19 +34,13 @@ public class DimensionFacade
     private Dimension dimension;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // DimensionFacade //
-    //-----------------//
     /**
-     * Creates a new instance of DimensionFacade
+     * Creates a new instance of DimensionFacade.
      */
     public DimensionFacade ()
     {
     }
 
-    //-----------------//
-    // DimensionFacade //
-    //-----------------//
     /**
      * Creates a new DimensionFacade object.
      *

@@ -31,9 +31,6 @@ public class HeadsSymbol
     private final int count;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // HeadsSymbol //
-    //-------------//
     /**
      * Creates a new HeadsSymbol object.
      *

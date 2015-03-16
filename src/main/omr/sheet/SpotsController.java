@@ -61,9 +61,6 @@ public class SpotsController
     private MyView view;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // SpotsController //
-    //-----------------//
     /**
      * Creates a new SpotsController object.
      *

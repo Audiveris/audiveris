@@ -12,6 +12,9 @@
 package omr.ui.util;
 
 import java.io.File;
+import java.io.FilenameFilter;
+
+import javax.swing.filechooser.FileFilter;
 
 /**
  * Class {@code OmrFileFilter} is a special file filter, based on file extensions
@@ -19,8 +22,8 @@ import java.io.File;
  * @author Hervé Bitteur
  */
 public class OmrFileFilter
-        extends javax.swing.filechooser.FileFilter
-        implements java.io.FilenameFilter
+        extends FileFilter
+        implements FilenameFilter
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -31,9 +34,6 @@ public class OmrFileFilter
     private final String[] extensions;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // OmrFileFilter //
-    //---------------//
     /**
      * Create a file filter, with only one file extension to consider
      *
@@ -44,9 +44,6 @@ public class OmrFileFilter
         this(null, extension);
     }
 
-    //---------------//
-    // OmrFileFilter //
-    //---------------//
     /**
      * Create a file filter, with only one file extension to consider, and
      * a related description.
@@ -60,9 +57,6 @@ public class OmrFileFilter
         this(description, new String[]{extension});
     }
 
-    //---------------//
-    // OmrFileFilter //
-    //---------------//
     /**
      * Create a file filter with a whole array of file name extensions, and
      * the related user description.

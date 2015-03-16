@@ -54,9 +54,6 @@ public class DeltaView
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // DeltaView //
-    //-----------//
     /**
      * Create a new {@code DeltaView} instance, dedicated to a sheet.
      *

@@ -16,8 +16,10 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.math.GeoOrder;
+import omr.math.Rational;
 
 import omr.sig.SIGraph;
+import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.FermataDotInter;
@@ -136,6 +138,64 @@ public class DotFactory
         // Run instant checks
         instantCheckRepeat(dot); // Repeat dot (relation between the two repeat dots is postponed)
         instantCheckStaccato(dot); // Staccato dot
+    }
+
+    //-------------------//
+    // filterMirrorHeads //
+    //-------------------//
+    /**
+     * If the collection of (dot-related) heads contains mirrored heads, keep only the
+     * head with longer duration
+     *
+     * @param heads the heads looked up near a candidate augmentation dot
+     */
+    private void filterMirrorHeads (List<Inter> heads)
+    {
+        if (heads.size() < 2) {
+            return;
+        }
+
+        Collections.sort(heads, Inter.byId);
+
+        boolean modified;
+
+        do {
+            modified = false;
+
+            InterLoop:
+            for (Inter inter : heads) {
+                AbstractHeadInter head = (AbstractHeadInter) inter;
+                Inter mirrorInter = head.getMirror();
+
+                if ((mirrorInter != null) && heads.contains(mirrorInter)) {
+                    AbstractHeadInter mirror = (AbstractHeadInter) mirrorInter;
+                    Rational hDur = head.getChord().getDurationSansDotOrTuplet();
+                    Rational mDur = mirror.getChord().getDurationSansDotOrTuplet();
+
+                    switch (mDur.compareTo(hDur)) {
+                    case -1:
+                        heads.remove(mirror);
+                        modified = true;
+
+                        break InterLoop;
+
+                    case +1:
+                        heads.remove(head);
+                        modified = true;
+
+                        break InterLoop;
+
+                    case 0:
+                        // Same duration (but we don't have flags yet!)
+                        // Keep the one with lower ID
+                        heads.remove(mirror);
+                        modified = true;
+
+                        break InterLoop;
+                    }
+                }
+            }
+        } while (modified);
     }
 
     //--------------------//
@@ -379,6 +439,10 @@ public class DotFactory
      */
     private void lateFirstAugmentationCheck (Dot dot)
     {
+        if (dot.glyph.getLocation().equals(new Point(1341, 596))) {
+            logger.info("VIP lateFirstAugmentationCheck for dot {}", dot);
+        }
+
         // Look for entities (notes and rests) reachable from this glyph
         final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum());
         final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum());
@@ -388,13 +452,16 @@ public class DotFactory
         luBox.x -= maxDx;
         luBox.width += maxDx;
 
-        final List<Inter> entities = sig.intersectedInters(
+        final List<Inter> entities = SIGraph.intersectedInters(
                 symbolFactory.getSystemHeads(),
                 GeoOrder.BY_ABSCISSA,
                 luBox);
 
+        // Beware of mirrored heads: link only to the head with longer duration
+        filterMirrorHeads(entities);
+
         entities.addAll(
-                sig.intersectedInters(symbolFactory.getSystemRests(), GeoOrder.BY_ABSCISSA, luBox));
+                SIGraph.intersectedInters(symbolFactory.getSystemRests(), GeoOrder.BY_ABSCISSA, luBox));
 
         if (entities.isEmpty()) {
             return;
@@ -403,7 +470,7 @@ public class DotFactory
         // Heads have already been reduced, but not the rests (created as symbols)
         // So we have to set a relation with all acceptable entities
         // This will be later solved by the sig reducer.
-        AugmentationDotInter aug = null;
+        AugmentationDotInter augInter = null;
 
         for (Inter entity : entities) {
             // Select proper entity reference point (center right)
@@ -416,16 +483,17 @@ public class DotFactory
                 rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
-                    if (aug == null) {
+                    if (augInter == null) {
                         double grade = Inter.intrinsicRatio * dot.eval.grade;
-                        aug = new AugmentationDotInter(dot.glyph, grade);
-                        sig.addVertex(aug);
-                        logger.debug("Created {}", aug);
+                        augInter = new AugmentationDotInter(dot.glyph, grade);
+                        sig.addVertex(augInter);
+                        logger.debug("Created {}", augInter);
                     }
 
-                    sig.addEdge(aug, entity, rel);
+                    sig.addEdge(augInter, entity, rel);
 
                     // We cannot yet safely assign a containing staff to the augmentation dot
+                    // (Plus it would be useless!)
                 }
             }
         }
@@ -445,7 +513,7 @@ public class DotFactory
 
         for (int i = 0; i < repeatDots.size(); i++) {
             RepeatDotInter dot = (RepeatDotInter) repeatDots.get(i);
-            int dotPitch = dot.getPitch();
+            int dotPitch = dot.getIntegerPitch();
             Rectangle luBox = dot.getBounds();
             luBox.y -= (scale.getInterline() * dotPitch);
 

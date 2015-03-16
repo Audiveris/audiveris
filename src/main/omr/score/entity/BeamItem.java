@@ -89,10 +89,6 @@ public class BeamItem
     private Point right;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //----------//
-    // BeamItem //
-    //----------//
     /** Create a new instance of beam item, as part of a beam item pack.
      *
      * @param Beam      the containing beam instance
@@ -172,6 +168,7 @@ public class BeamItem
     /**
      * Report the point that defines the desired edge of the beam item.
      *
+     * @param side desired side
      * @return (a copy) of the point on desired side
      */
     public Point getPoint (HorizontalSide side)
@@ -189,6 +186,7 @@ public class BeamItem
     /**
      * Report the stem (if any) of this beam item on the desired side.
      *
+     * @param side desired side
      * @return the found stem or null
      */
     public Glyph getStem (HorizontalSide side)

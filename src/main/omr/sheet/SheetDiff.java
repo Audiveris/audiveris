@@ -92,9 +92,6 @@ public class SheetDiff
     private Integer inputCount;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // SheetDiff //
-    //-----------//
     public SheetDiff (Sheet sheet)
     {
         this.sheet = sheet;

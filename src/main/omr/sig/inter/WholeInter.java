@@ -33,9 +33,6 @@ public class WholeInter
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //------------//
-    // WholeInter //
-    //------------//
     /**
      * Creates a new WholeInter object.
      *

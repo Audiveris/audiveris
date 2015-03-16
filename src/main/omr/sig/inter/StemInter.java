@@ -14,13 +14,27 @@ package omr.sig.inter;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.sheet.Scale;
 import omr.sheet.Voice;
 
 import omr.sig.GradeImpacts;
+import omr.sig.SIGraph;
+import omr.sig.relation.BeamStemRelation;
+import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
+import omr.sig.relation.StemConnection;
+import omr.sig.relation.StemPortion;
+import static omr.sig.relation.StemPortion.STEM_BOTTOM;
+import static omr.sig.relation.StemPortion.STEM_TOP;
 
 import omr.util.HorizontalSide;
+import static omr.util.HorizontalSide.LEFT;
+import static omr.util.HorizontalSide.RIGHT;
+
+import java.awt.geom.Line2D;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class {@code StemInter} represents Stem interpretations.
@@ -45,14 +59,6 @@ public class StemInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    public static double getMinGrade ()
-    {
-        return AbstractInter.getMinGrade();
-    }
-
     //--------//
     // accept //
     //--------//
@@ -73,6 +79,78 @@ public class StemInter
         setMirror(clone);
 
         return clone;
+    }
+
+    //--------------//
+    // getDirection //
+    //--------------//
+    /**
+     * Report the direction (from head to tail) of this stem.
+     * <p>
+     * For this, we check what is found on each stem end (is it a tail: beam/flag or is it a head)
+     * and use contextual grade to pick up the best reference.
+     *
+     * @return -1 for stem up, +1 for stem down, 0 for unknown
+     */
+    public int getDirection ()
+    {
+        Scale scale = sig.getSystem().getSheet().getScale();
+        final Line2D stemLine = sig.getStemLine(this);
+        final List<Relation> links = new ArrayList<Relation>(
+                sig.getRelations(this, StemConnection.class));
+        sig.sortBySource(links);
+
+        for (Relation rel : links) {
+            Inter source = sig.getEdgeSource(rel); // Source is a head, a beam or a flag
+
+            // Retrieve the stem portion for this link
+            if (rel instanceof HeadStemRelation) {
+                // Head -> Stem
+                HeadStemRelation link = (HeadStemRelation) rel;
+                StemPortion portion = link.getStemPortion(source, stemLine, scale);
+
+                if (portion == STEM_BOTTOM) {
+                    if (link.getHeadSide() == RIGHT) {
+                        return -1;
+                    }
+                } else if (portion == STEM_TOP) {
+                    if (link.getHeadSide() == LEFT) {
+                        return 1;
+                    }
+                }
+            } else {
+                // Tail (Beam or Flag) -> Stem
+                if (rel instanceof BeamStemRelation) {
+                    // Beam -> Stem
+                    BeamStemRelation link = (BeamStemRelation) rel;
+                    StemPortion portion = link.getStemPortion(source, stemLine, scale);
+
+                    return (portion == STEM_TOP) ? (-1) : 1;
+                } else {
+                    // Flag -> Stem
+                    FlagStemRelation link = (FlagStemRelation) rel;
+                    StemPortion portion = link.getStemPortion(source, stemLine, scale);
+
+                    if (portion == STEM_TOP) {
+                        return -1;
+                    }
+
+                    if (portion == STEM_BOTTOM) {
+                        return 1;
+                    }
+                }
+            }
+        }
+
+        return 0; // Cannot decide!
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    public static double getMinGrade ()
+    {
+        return AbstractInter.getMinGrade();
     }
 
     //----------//
@@ -119,7 +197,7 @@ public class StemInter
                 // Check pitch
                 AbstractHeadInter head = (AbstractHeadInter) sig.getEdgeSource(rel);
 
-                if (head.getPitch() == pitch) {
+                if (head.getIntegerPitch() == pitch) {
                     return head;
                 }
             }

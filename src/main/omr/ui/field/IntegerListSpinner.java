@@ -25,9 +25,6 @@ public class IntegerListSpinner
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //--------------------//
-    // IntegerListSpinner //
-    //--------------------//
     /**
      * Creates a new IntegerListSpinner object.
      */

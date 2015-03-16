@@ -44,9 +44,6 @@ public class TargetSystem
     public final List<TargetStaff> staves = new ArrayList<TargetStaff>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // TargetSystem //
-    //--------------//
     /**
      * Creates a new TargetSystem object.
      *

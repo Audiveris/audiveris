@@ -33,9 +33,6 @@ public class VoidHeadInter
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //---------------//
-    // VoidHeadInter //
-    //---------------//
     /**
      * Creates a new VoidHeadInter object.
      *
@@ -53,7 +50,7 @@ public class VoidHeadInter
                           Rectangle box,
                           GradeImpacts impacts,
                           Staff staff,
-                          int pitch)
+                          double pitch)
     {
         super(descriptor, pivot, anchor, box, Shape.NOTEHEAD_VOID, impacts, staff, pitch);
     }

@@ -69,9 +69,6 @@ public class CheckSuite<C extends Checkable>
     private double totalWeight = 0.0d;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // CheckSuite //
-    //------------//
     /**
      * Create a suite of checks with standard threshold values.
      *

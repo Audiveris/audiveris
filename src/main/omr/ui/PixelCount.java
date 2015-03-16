@@ -21,9 +21,6 @@ public class PixelCount
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //------------//
-    // PixelCount //
-    //------------//
     /**
      * Specific constructor, where 'unit' and 'name' are assigned later.
      *

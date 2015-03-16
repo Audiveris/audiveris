@@ -47,9 +47,6 @@ public class SymbolsStep
     private static final Logger logger = LoggerFactory.getLogger(SymbolsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // SymbolsStep //
-    //-------------//
     /**
      * Creates a new SymbolsStep object.
      */

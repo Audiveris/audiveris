@@ -121,9 +121,6 @@ public class KeySignature
     private List<Integer> refList;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // KeySignature //
-    //--------------//
     /**
      * Create a key signature, with containing measure
      *

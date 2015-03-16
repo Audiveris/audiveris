@@ -117,9 +117,6 @@ public class PagePhysicalPainter
     private static final Logger logger = LoggerFactory.getLogger(PagePhysicalPainter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------------//
-    // PagePhysicalPainter //
-    //---------------------//
     /**
      * Creates a new PagePhysicalPainter object.
      *

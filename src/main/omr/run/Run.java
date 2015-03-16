@@ -36,9 +36,6 @@ public class Run
     private int length;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----//
-    // Run //
-    //-----//
     /**
      * Creates a new {@code Run} instance.
      *
@@ -52,9 +49,6 @@ public class Run
         this.length = length;
     }
 
-    //-----//
-    // Run //
-    //-----//
     /**
      * Creates a new {@code Run} object from an existing one.
      *
@@ -66,10 +60,7 @@ public class Run
         this.length = that.length;
     }
 
-    //-----//
-    // Run //
-    //-----//
-    /** Meant for XML unmarshalling only */
+    /** Meant for XML unmarshalling only. */
     private Run ()
     {
         this(0, 0);

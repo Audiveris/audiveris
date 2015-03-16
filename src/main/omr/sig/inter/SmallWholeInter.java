@@ -31,11 +31,9 @@ import java.awt.Rectangle;
 public class SmallWholeInter
         extends AbstractHeadInter
 {
+
     //~ Constructors -------------------------------------------------------------------------------
 
-    //-----------------//
-    // SmallWholeInter //
-    //-----------------//
     /**
      * Creates a new SmallWholeInter object.
      *

@@ -32,9 +32,6 @@ public class SymbolsBlackList
     private static final Logger logger = LoggerFactory.getLogger(SymbolsBlackList.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // SymbolsBlackList //
-    //------------------//
     /**
      * Creates a new SymbolsBlackList object.
      */

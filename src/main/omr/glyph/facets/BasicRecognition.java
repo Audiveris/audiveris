@@ -47,9 +47,6 @@ class BasicRecognition
     private TimeRational timeRational;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // BasicRecognition //
-    //------------------//
     /**
      * Creates a new BasicRecognition object.
      *

@@ -78,16 +78,17 @@ public abstract class UIUtil
      * Let the user select a directory.
      *
      * @param parent   the parent component for the dialog
-     * @param startDir the default directory
+     * @param startDir the starting directory
+     * @param title    specific dialog title if any, null otherwise
      * @return the chosen directory, or null
      */
     public static File directoryChooser (Component parent,
-                                         File startDir)
+                                         File startDir,
+                                         String title)
     {
-        String oldMacProperty = System.getProperty("apple.awt.fileDialogForDirectories", "false");
-        System.setProperty("apple.awt.fileDialogForDirectories", "true");
-
-        OmrFileFilter directoryFilter = new OmrFileFilter("directory", new String[]{})
+        //        String oldMacProperty = System.getProperty("apple.awt.fileDialogForDirectories", "false");
+        //        System.setProperty("apple.awt.fileDialogForDirectories", "true");
+        OmrFileFilter filter = new OmrFileFilter("Directories", new String[]{})
         {
             @Override
             public boolean accept (File f)
@@ -96,10 +97,32 @@ public abstract class UIUtil
             }
         };
 
-        File file = fileChooser(false, parent, startDir, directoryFilter);
-        System.setProperty("apple.awt.fileDialogForDirectories", oldMacProperty);
+        final JFileChooser fc = new JFileChooser();
+        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES); // FILES needed if dir doesn't exist
+        fc.addChoosableFileFilter(filter); // To display directories list
+        fc.setFileFilter(filter); // To display this list by default
+        ///fc.setAcceptAllFileFilterUsed(false); // Don't display the AllFiles list
 
-        return file;
+        if (title != null) {
+            fc.setDialogTitle(title);
+        }
+
+        ///
+        if (startDir != null) {
+            // Pre-select the proposed directory
+            File parentDir = startDir.getParentFile();
+            fc.setCurrentDirectory(parentDir);
+            fc.setSelectedFile(startDir);
+        }
+
+        final int result = fc.showSaveDialog(parent);
+
+        //        System.setProperty("apple.awt.fileDialogForDirectories", oldMacProperty);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            return fc.getSelectedFile();
+        } else {
+            return null;
+        }
     }
 
     //---------------//
@@ -133,11 +156,11 @@ public abstract class UIUtil
     // fileChooser //
     //-------------//
     /**
-     * A replacement for standard JFileChooser, to allow better
-     * look & feel on the Mac platform.
+     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
+     * platform.
      *
      * @param save      true for a SAVE dialog, false for a LOAD dialog
-     * @param parent    the parent component for the dialog
+     * @param parent    the parent component for the dialog, if any
      * @param startFile default file, or just default directory, or null
      * @param filter    a filter to by applied on files
      * @return the selected file, or null
@@ -146,6 +169,29 @@ public abstract class UIUtil
                                     Component parent,
                                     File startFile,
                                     OmrFileFilter filter)
+    {
+        return fileChooser(save, parent, startFile, filter, null);
+    }
+
+    //-------------//
+    // fileChooser //
+    //-------------//
+    /**
+     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
+     * platform.
+     *
+     * @param save      true for a SAVE dialog, false for a LOAD dialog
+     * @param parent    the parent component for the dialog, if any
+     * @param startFile default file, or just default directory, or null
+     * @param filter    a filter to by applied on files
+     * @param title     a specific dialog title or null
+     * @return the selected file, or null
+     */
+    public static File fileChooser (boolean save,
+                                    Component parent,
+                                    File startFile,
+                                    OmrFileFilter filter,
+                                    String title)
     {
         File file = null;
 
@@ -156,7 +202,7 @@ public abstract class UIUtil
 
             Component parentFrame = parent;
 
-            while (!(parentFrame instanceof Frame) && (parentFrame.getParent() != null)) {
+            while (parentFrame.getParent() != null) {
                 parentFrame = parentFrame.getParent();
             }
 
@@ -171,10 +217,12 @@ public abstract class UIUtil
                 fd.setMode(save ? FileDialog.SAVE : FileDialog.LOAD);
                 fd.setFilenameFilter(filter);
 
-                String title = save ? "Saving: " : "Loading: ";
-                title += filter.getDescription();
-                fd.setTitle(title);
+                if (title == null) {
+                    title = save ? "Saving: " : "Loading: ";
+                    title += filter.getDescription();
+                }
 
+                fd.setTitle(title);
                 fd.setVisible(true);
 
                 String fileName = fd.getFile();
@@ -212,6 +260,11 @@ public abstract class UIUtil
             }
 
             fc.addChoosableFileFilter(filter);
+            fc.setFileFilter(filter);
+
+            if (title != null) {
+                fc.setDialogTitle(title);
+            }
 
             int result = save ? fc.showSaveDialog(parent) : fc.showOpenDialog(parent);
 
@@ -263,9 +316,8 @@ public abstract class UIUtil
     // setAbsoluteStroke //
     //-------------------//
     /**
-     * Whatever the current scaling of a graphic context, set the stroke
-     * to the desired absolute width, and return the saved stroke for
-     * later restore.
+     * Whatever the current scaling of a graphic context, set the stroke to the desired
+     * absolute width, and return the saved stroke for later restore.
      *
      * @param g     the current graphics context
      * @param width the absolute stroke width desired
@@ -288,8 +340,9 @@ public abstract class UIUtil
     // suppressBorders //
     //-----------------//
     /**
-     * Browse the whole hierarchy of components and nullify their
-     * borders.
+     * Browse the whole hierarchy of components and nullify their borders.
+     *
+     * @param container top of hierarchy
      */
     public static void suppressBorders (Container container)
     {
@@ -306,8 +359,9 @@ public abstract class UIUtil
     // suppressBorders //
     //-----------------//
     /**
-     * Nullify the border of this JComponent, as well as its
-     * subcomponents.
+     * Nullify the border of this JComponent, as well as its subcomponents.
+     *
+     * @param comp top of hierarchy
      */
     public static void suppressBorders (JComponent comp)
     {

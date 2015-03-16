@@ -34,9 +34,6 @@ public class LedgerSymbol
     private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // LedgerSymbol //
-    //--------------//
     /**
      * Create a LedgerSymbol (with decoration?) standard size
      *

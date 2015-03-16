@@ -11,19 +11,15 @@
 // </editor-fold>
 package omr.step;
 
-import omr.score.entity.Page;
-
+import omr.sheet.Book;
 import omr.sheet.Sheet;
 import omr.sheet.SheetDiff;
 import omr.sheet.SystemInfo;
-
-import omr.util.TreeNode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import omr.sheet.Book;
 
 /**
  * Class {@code DeltaStep} computes the delta value as a kind of recognition level on a
@@ -39,15 +35,12 @@ public class DeltaStep
     private static final Logger logger = LoggerFactory.getLogger(DeltaStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // DeltaStep //
-    //-----------//
     /**
      * Creates a new DeltaStep object.
      */
     public DeltaStep ()
     {
-        super(Steps.DELTA, Level.SCORE_LEVEL, Mandatory.OPTIONAL, DATA_TAB, "Compute page delta");
+        super(Steps.DELTA, Level.BOOK_LEVEL, Mandatory.OPTIONAL, DATA_TAB, "Compute page delta");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

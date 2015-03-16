@@ -346,21 +346,121 @@ public abstract class ChordInter
      * tuplet impact if any, with null value for whole/multi rest.
      *
      * @return the real chord/note duration, or null for a whole rest chord
-     * @see #getRawDuration
+     * @see AbstractNoteInter#getShapeDuration
+     * @see #getDurationSansDotOrTuplet
+     * @see #getDurationSansTuplet
      */
     public Rational getDuration ()
     {
-        if (this.isWholeDuration()) {
+        if (isWholeRest()) {
             return null;
         } else {
-            Rational raw = getRawDuration();
+            Rational sansTuplet = getDurationSansTuplet();
 
             if (tupletFactor == null) {
-                return raw;
+                return sansTuplet;
             } else {
-                return raw.times(tupletFactor);
+                return sansTuplet.times(tupletFactor);
             }
         }
+    }
+
+    //----------------------------//
+    // getDurationSansDotOrTuplet //
+    //----------------------------//
+    /**
+     * Report the duration of this chord, taking flag/beams into account, but not the
+     * dot or tuplet impacts if any.
+     * <p>
+     * The duration is assumed to be the same for all notes of this chord, otherwise the chord must
+     * be split.
+     * A specific value (WHOLE_DURATION) indicates the whole/multi rest chord.
+     * <p>
+     * Nota: this value is not cached, but computed on every call.
+     *
+     * @return the chord duration, with beam/flag but without dot and tuplet
+     * @see AbstractNoteInter#getShapeDuration
+     * @see #getDurationSansTuplet
+     * @see #getDuration
+     */
+    public Rational getDurationSansDotOrTuplet ()
+    {
+        Rational dur = null;
+
+        if (!notes.isEmpty()) {
+            // All note heads are assumed to be the same within one chord
+            AbstractNoteInter note = notes.get(0);
+            Shape noteShape = note.getShape();
+
+            // Duration from note shape
+            dur = AbstractNoteInter.getShapeDuration(noteShape);
+
+            if (!noteShape.isWholeRest()) {
+                // Apply flags/beams for non-rests
+                if (!noteShape.isRest()) {
+                    final int fbn = getFlagsNumber() + beams.size();
+
+                    if (fbn > 0) {
+                        /**
+                         * Beware, some mirrored notes exhibit a void note head
+                         * because the same head is shared by a half-note and at
+                         * the same time by a beam group.
+                         * In the case of the beam/flag side of the mirror, strictly
+                         * speaking, the note head should be considered as black.
+                         */
+
+                        //                        if ((shape == NOTEHEAD_VOID) && (getMirroredNote() != null)) {
+                        //                            dur = AbstractNoteInter.getShapeDuration(NOTEHEAD_BLACK);
+                        //                        }
+                        for (int i = 0; i < fbn; i++) {
+                            dur = dur.divides(2);
+                        }
+                    }
+                }
+            }
+        }
+
+        return dur;
+    }
+
+    //-----------------------//
+    // getDurationSansTuplet //
+    //-----------------------//
+    /**
+     * Report the intrinsic duration of this chord, taking flag/beams and dots into
+     * account, but not the tuplet impact if any.
+     * <p>
+     * The duration is assumed to be the same for all notes of this chord, otherwise the chord must
+     * be split.
+     * A specific value (WHOLE_DURATION) indicates the whole/multi rest chord.
+     * <p>
+     * Nota: this value is not cached, but computed on every call.
+     *
+     * @return the intrinsic chord duration (no tuplet)
+     * @see AbstractNoteInter#getShapeDuration
+     * @see #getDurationSansDotOrTuplet
+     * @see #getDuration
+     */
+    public Rational getDurationSansTuplet ()
+    {
+        Rational sansDot = getDurationSansDotOrTuplet();
+
+        if ((sansDot != null) && !notes.isEmpty()) {
+            // All note heads are assumed to be the same within one chord
+            AbstractNoteInter note = notes.get(0);
+            Shape noteShape = note.getShape();
+
+            if (!noteShape.isWholeRest()) {
+                // Apply dotaugmentation
+                if (dotsNumber == 1) {
+                    return sansDot.times(new Rational(3, 2));
+                } else if (dotsNumber == 2) {
+                    return sansDot.times(new Rational(7, 4));
+                }
+            }
+        }
+
+        return sansDot;
     }
 
     //------------//
@@ -373,7 +473,7 @@ public abstract class ChordInter
      */
     public Rational getEndTime ()
     {
-        if (isWholeDuration()) {
+        if (isWholeRest()) {
             return null;
         }
 
@@ -399,7 +499,10 @@ public abstract class ChordInter
         int count = 0;
 
         if (stem != null) {
-            final SIGraph sig = getSig();
+            if (stem.isDeleted()) {
+                logger.warn("BINGO stem {} is deleted!", stem);
+            }
+
             final Set<Relation> rels = sig.getRelations(stem, FlagStemRelation.class);
 
             for (Relation rel : rels) {
@@ -525,70 +628,6 @@ public abstract class ChordInter
     public List<? extends Inter> getNotes ()
     {
         return getMembers();
-    }
-
-    //----------------//
-    // getRawDuration //
-    //----------------//
-    /**
-     * Report the intrinsic duration of this chord, taking flag/beams and dots into
-     * account, but not the tuplet impact if any.
-     * <p>
-     * The duration is assumed to be the same for all notes of this chord, otherwise the chord must
-     * be split.
-     * This includes the local information (flags, dots) but not the tuplet impact if any.
-     * A specific value (WHOLE_DURATION) indicates the whole/multi rest chord.
-     * <p>
-     * Nota: this value is not cached, but computed on every call.
-     *
-     * @return the intrinsic chord duration
-     * @see #getDuration
-     */
-    public Rational getRawDuration ()
-    {
-        Rational dur = null;
-
-        if (!notes.isEmpty()) {
-            // All note heads are assumed to be the same within one chord
-            AbstractNoteInter note = notes.get(0);
-            Shape noteShape = note.getShape();
-
-            if (!noteShape.isMeasureRest()) {
-                // Duration from note shape
-                dur = AbstractNoteInter.getShapeDuration(noteShape);
-
-                // Apply flags/beams for non-rests
-                if (!noteShape.isRest()) {
-                    final int fbn = getFlagsNumber() + beams.size();
-
-                    if (fbn > 0) {
-                        /**
-                         * Beware, some mirrored notes exhibit a void note head
-                         * because the same head is shared by a half-note and at
-                         * the same time by a beam group.
-                         * In the case of the beam/flag side of the mirror, strictly
-                         * speaking, the note head should be considered as black.
-                         */
-
-                        //                        if ((shape == NOTEHEAD_VOID) && (getMirroredNote() != null)) {
-                        //                            dur = AbstractNoteInter.getShapeDuration(NOTEHEAD_BLACK);
-                        //                        }
-                        for (int i = 0; i < fbn; i++) {
-                            dur = dur.divides(2);
-                        }
-                    }
-                }
-
-                // Apply augmentation
-                if (dotsNumber == 1) {
-                    dur = dur.times(new Rational(3, 2));
-                } else if (dotsNumber == 2) {
-                    dur = dur.times(new Rational(7, 4));
-                }
-            }
-        }
-
-        return dur;
     }
 
     //---------//
@@ -730,18 +769,18 @@ public abstract class ChordInter
         return false;
     }
 
-    //-----------------//
-    // isWholeDuration //
-    //-----------------//
+    //-------------//
+    // isWholeRest //
+    //-------------//
     /**
-     * Check whether the chord/note is a whole rest
+     * Check whether the chord/note is a whole rest (not necessarily a measure rest)
      *
-     * @return true if whole
+     * @return true if whole rest
      */
-    public boolean isWholeDuration ()
+    public boolean isWholeRest ()
     {
         if (!notes.isEmpty()) {
-            return notes.get(0).getShape().isMeasureRest();
+            return notes.get(0).getShape().isWholeRest();
         }
 
         return false;
@@ -852,7 +891,7 @@ public abstract class ChordInter
             this.voice = voice;
 
             // Update the voice entity
-            if (!isWholeDuration()) {
+            if (!isWholeRest()) {
                 if (slot != null) {
                     voice.startChord(slot, this);
                 }
@@ -896,7 +935,7 @@ public abstract class ChordInter
                     "{} Attempt to reassign voice from " + this.voice.getId() + " to " + voice.getId(),
                     this);
         } else {
-            if (!isWholeDuration()) {
+            if (!isWholeRest()) {
                 if (slot != null) {
                     voice.startChord(slot, this);
                 }
@@ -911,10 +950,10 @@ public abstract class ChordInter
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());
-        Rational rawDur = getRawDuration();
+        Rational sansTuplet = getDurationSansTuplet();
 
-        if (rawDur != null) {
-            sb.append(" dur:").append(rawDur);
+        if (sansTuplet != null) {
+            sb.append(" dur:").append(sansTuplet);
         } else {
             sb.append(" noDur");
         }

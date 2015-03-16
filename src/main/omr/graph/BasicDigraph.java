@@ -48,9 +48,6 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
     private final AtomicInteger globalVertexId = new AtomicInteger(0);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // BasicDigraph //
-    //--------------//
     /**
      * Construct a BasicDigraph object.
      *

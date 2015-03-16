@@ -76,9 +76,6 @@ public class Zoom
     private int id = ++globalId;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------//
-    // Zoom //
-    //------//
     /**
      * Create a zoom entity, with a default ratio value of 1.
      */
@@ -87,9 +84,6 @@ public class Zoom
         this(1);
     }
 
-    //------//
-    // Zoom //
-    //------//
     /**
      * Create a zoom entity, with the provided initial ratio value.
      *
@@ -101,9 +95,6 @@ public class Zoom
         setRatio(ratio);
     }
 
-    //------//
-    // Zoom //
-    //------//
     /**
      * Create a zoom entity, with the provided initial ratio value. and a
      * related slider

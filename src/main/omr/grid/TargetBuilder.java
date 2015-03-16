@@ -97,9 +97,6 @@ public class TargetBuilder
     private final List<Point2D> dstPoints = new ArrayList<Point2D>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // TargetBuilder //
-    //---------------//
     /**
      * Creates a new TargetBuilder object.
      *

@@ -77,9 +77,6 @@ class BasicGeometry
     private Circle circle;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // BasicGeometry //
-    //---------------//
     /**
      * Create a new BasicGeometry object.
      *

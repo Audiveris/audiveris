@@ -112,10 +112,6 @@ public class TimeSignature
     private TimeRational timeRational;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //---------------//
-    // TimeSignature //
-    //--------------//
     /**
      * Create a time signature, with containing measure and related staff
      *
@@ -177,7 +173,7 @@ public class TimeSignature
     /**
      * Check whether the provided value is a rather common time signature
      *
-     * @param timeRational
+     * @param timeRational provided value
      * @return true if the provided sig is acceptable
      */
     public static boolean isAcceptable (TimeRational timeRational)
@@ -239,7 +235,7 @@ public class TimeSignature
      * Report the bottom part of the time signature.
      *
      * @return the bottom part
-     * @throws InvalidTimeSignature
+     * @throws InvalidTimeSignature if TS invalid
      */
     public Integer getDenominator ()
             throws InvalidTimeSignature
@@ -283,7 +279,7 @@ public class TimeSignature
      * Report the top part of the time signature.
      *
      * @return the top part
-     * @throws InvalidTimeSignature
+     * @throws InvalidTimeSignature if invalid TS
      */
     public Integer getNumerator ()
             throws InvalidTimeSignature
@@ -327,7 +323,7 @@ public class TimeSignature
      * Report the shape of this time signature.
      *
      * @return the (lazily determined) shape, which may be null
-     * @throws omr.score.entity.TimeSignature.InvalidTimeSignature
+     * @throws InvalidTimeSignature if invalid TS
      */
     public Shape getShape ()
             throws InvalidTimeSignature
@@ -346,6 +342,7 @@ public class TimeSignature
      * Report the time signature as a rational
      *
      * @return the num/den time rational, or null
+     * @throws InvalidTimeSignature if invalid TS
      */
     public TimeRational getTimeRational ()
             throws InvalidTimeSignature

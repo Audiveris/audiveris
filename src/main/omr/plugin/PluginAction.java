@@ -40,9 +40,6 @@ class PluginAction
     private final Plugin plugin;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // PluginAction //
-    //--------------//
     /**
      * Creates a new PluginAction object.
      *

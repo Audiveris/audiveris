@@ -37,9 +37,6 @@ public class FilamentComb
     private boolean processed = false;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // FilamentComb //
-    //--------------//
     /**
      * Creates a new FilamentComb object.
      *

@@ -41,11 +41,8 @@ public class Population
     private int n = 0;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // Population //
-    //------------//
     /**
-     * Construct a structure to cumulate the measured values
+     * Construct a structure to cumulate the measured values.
      */
     public Population ()
     {

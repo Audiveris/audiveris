@@ -73,9 +73,6 @@ public class PixelBoard
     protected final LIntegerField level = new LIntegerField(false, "Level", "Pixel level");
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // PixelBoard //
-    //------------//
     /**
      * Create a PixelBoard.
      *

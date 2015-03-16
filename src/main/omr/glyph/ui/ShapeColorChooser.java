@@ -71,24 +71,21 @@ public class ShapeColorChooser
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The classic color chooser utility */
-    private JColorChooser colorChooser;
+    private final JColorChooser colorChooser;
 
     /** Color chosen in the JColorChooser utility */
     private Color chosenColor;
 
     /** UI component */
-    private JPanel component;
+    private final JPanel component;
 
     /** To select shape range */
-    private RangesPane ranges;
+    private final RangesPane ranges;
 
     /** To select shape (within selected range) */
-    private ShapesPane shapes;
+    private final ShapesPane shapes;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------------//
-    // ShapeColorChooser //
-    //-------------------//
     /**
      * Create an instance of ShapeColorChooser (should be improved to always
      * reuse the same instance. TODO)
@@ -352,15 +349,15 @@ public class ShapeColorChooser
             }
         };
 
-        private CopyAction copy = new CopyAction();
+        private final CopyAction copy = new CopyAction();
 
-        private CutAction cut = new CutAction();
+        private final CutAction cut = new CutAction();
 
-        private PasteAction paste = new PasteAction();
+        private final PasteAction paste = new PasteAction();
 
-        private SelectAction select = new SelectAction();
+        private final SelectAction select = new SelectAction();
 
-        private JButton selectButton = new JButton(select);
+        private final JButton selectButton = new JButton(select);
 
         private boolean isSpecific;
 

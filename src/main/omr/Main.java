@@ -11,15 +11,20 @@
 // </editor-fold>
 package omr;
 
+import omr.CLI.Parameters;
+
 import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
 
+import omr.script.ExportTask;
+import omr.script.PrintTask;
 import omr.script.ScriptManager;
 
 import omr.sheet.Book;
 
 import omr.step.ProcessingCancellationException;
+import omr.step.Step;
 import omr.step.Stepping;
 
 import omr.ui.MainGui;
@@ -32,17 +37,19 @@ import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
 
+import org.kohsuke.args4j.CmdLineException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -74,15 +81,12 @@ public class Main
     private static MainGui gui;
 
     /** Parameters read from CLI */
-    private static CLI.Parameters parameters;
+    private static Parameters parameters;
 
     /** The application dumping service */
     public static final Dumping dumping = new Dumping(Main.class.getPackage());
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------//
-    // Main //
-    //------//
     private Main ()
     {
     }
@@ -196,17 +200,21 @@ public class Main
         }
     }
 
-    //--------------//
-    // getBenchPath //
-    //--------------//
+    //----------------//
+    // getBenchFolder //
+    //----------------//
     /**
-     * Report the bench path if present on the CLI
+     * Report the bench folder if present on the CLI
      *
-     * @return the CLI bench path, or null
+     * @return the CLI bench folder, or null
      */
-    public static Path getBenchPath ()
+    public static Path getBenchFolder ()
     {
-        return parameters.benchPath;
+        if (parameters.benchFolder == null) {
+            return null;
+        }
+
+        return parameters.benchFolder.toPath();
     }
 
     //-----------------//
@@ -226,24 +234,29 @@ public class Main
         }
     }
 
-    //---------------//
-    // getExportPath //
-    //---------------//
+    //-----------------//
+    // getExportFolder //
+    //-----------------//
     /**
-     * Report the export path if present on the CLI
+     * Report the export folder if present on the CLI
      *
      * @return the CLI export path, or null
      */
-    public static Path getExportPath ()
+    public static Path getExportFolder ()
     {
-        return parameters.exportPath;
+        if (parameters.exportFolder == null) {
+            return null;
+        }
+
+        return parameters.exportFolder.toPath();
     }
 
     //---------------//
     // getFilesTasks //
     //---------------//
     /**
-     * Prepare the processing of image files listed on command line
+     * Prepare the processing of image files listed on command line.
+     * On each input file, we apply the actions specified if any via -step, -print, -export.
      *
      * @return the collection of proper callable instances
      */
@@ -252,8 +265,8 @@ public class Main
         List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
         // Launch desired step on each book
-        for (final String name : parameters.inputNames) {
-            final Path path = Paths.get(name);
+        for (final File input : parameters.inputFiles) {
+            final Path path = input.toPath();
 
             tasks.add(
                     new Callable<Void>()
@@ -262,22 +275,37 @@ public class Main
                         public Void call ()
                         throws Exception
                         {
-                            if (!parameters.desiredSteps.isEmpty()) {
+                            final Set<Step> steps = parameters.getSteps();
+                            final SortedSet<Integer> pages = parameters.getPageIds();
+
+                            if (!steps.isEmpty()) {
                                 logger.info(
                                         "Launching {} on {} {}",
-                                        parameters.desiredSteps,
-                                        name,
-                                        (parameters.pages != null) ? ("pages " + parameters.pages) : "");
+                                        steps,
+                                        input,
+                                        (!pages.isEmpty()) ? ("pages " + pages) : "");
                             }
 
                             if (Files.exists(path)) {
                                 final Book book = new Book(path);
 
                                 try {
-                                    Stepping.processBook(
-                                            parameters.desiredSteps,
-                                            parameters.pages,
-                                            book);
+                                    // Create book sheets and perform desired steps if any
+                                    Stepping.processBook(steps, pages, book);
+
+                                    // Book print output?
+                                    if (parameters.print || (parameters.printFolder != null)) {
+                                        logger.debug("Print output");
+                                        new PrintTask(parameters.printFolder).core(
+                                                book.getFirstSheet());
+                                    }
+
+                                    // Book export output?
+                                    if (parameters.export || (parameters.exportFolder != null)) {
+                                        logger.debug("Export output");
+                                        new ExportTask(parameters.exportFolder).core(
+                                                book.getFirstSheet());
+                                    }
                                 } catch (ProcessingCancellationException pce) {
                                     logger.warn("Cancelled " + book, pce);
                                     book.getBench().recordCancellation();
@@ -290,9 +318,9 @@ public class Main
                                     if (gui == null) {
                                         book.close();
                                     }
-
-                                    return null;
                                 }
+
+                                return null;
                             } else {
                                 String msg = "Could not find file " + path;
                                 logger.warn(msg);
@@ -334,20 +362,24 @@ public class Main
      */
     public static SortedSet<Integer> getPageIds ()
     {
-        return parameters.pages;
+        return parameters.getPageIds();
     }
 
-    //--------------//
-    // getPrintPath //
-    //--------------//
+    //----------------//
+    // getPrintFolder //
+    //----------------//
     /**
-     * Report the print path if present on the CLI
+     * Report the print folder if present on the CLI
      *
      * @return the CLI print path, or null
      */
-    public static Path getPrintPath ()
+    public static Path getPrintFolder ()
     {
-        return parameters.printPath;
+        if (parameters.printFolder == null) {
+            return null;
+        }
+
+        return parameters.printFolder.toPath();
     }
 
     //-----------------//
@@ -363,9 +395,7 @@ public class Main
         List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
         // Launch desired scripts in parallel
-        for (String name : parameters.scriptNames) {
-            final String scriptName = name;
-
+        for (File script : parameters.scriptFiles) {
             tasks.add(
                     new Callable<Void>()
                     {
@@ -373,7 +403,7 @@ public class Main
                         public Void call ()
                         throws Exception
                         {
-                            ScriptManager.getInstance().loadAndRun(new File(scriptName));
+                            ScriptManager.getInstance().loadAndRun(script);
 
                             return null;
                         }
@@ -381,7 +411,7 @@ public class Main
                         @Override
                         public String toString ()
                         {
-                            return "Script " + scriptName;
+                            return "Script " + script;
                         }
                     });
         }
@@ -495,33 +525,34 @@ public class Main
     //---------//
     private static void process (String[] args)
     {
-        // First get the provided arguments if any
-        parameters = new CLI(WellKnowns.TOOL_NAME, args).getParameters();
+        try {
+            // First get the provided arguments if any
+            parameters = new CLI(WellKnowns.TOOL_NAME).getParameters(args);
 
-        if (parameters == null) {
+            // Interactive or Batch mode ?
+            if (parameters.batchMode) {
+                logger.info("Running in batch mode");
+
+                ///System.setProperty("java.awt.headless", "true");
+                //            // Check MIDI output is not asked for
+                //            Step midiStep = Steps.valueOf(Steps.MIDI);
+                //
+                //            if ((midiStep != null) &&
+                //                parameters.steps.contains(midiStep)) {
+                //                logger.warn(
+                //                    "MIDI output is not compatible with -batch mode." +
+                //                    " MIDI output is ignored.");
+                //                parameters.steps.remove(midiStep);
+                //            }
+            } else {
+                logger.debug("Running in interactive mode");
+            }
+        } catch (CmdLineException ex) {
+            logger.warn("Error in command line: " + ex.getLocalizedMessage(), ex);
             logger.warn("Exiting ...");
 
             // Stop the JVM, with failure status (1)
             Runtime.getRuntime().exit(1);
-        }
-
-        // Interactive or Batch mode ?
-        if (parameters.batchMode) {
-            logger.info("Running in batch mode");
-
-            ///System.setProperty("java.awt.headless", "true");
-            //            // Check MIDI output is not asked for
-            //            Step midiStep = Steps.valueOf(Steps.MIDI);
-            //
-            //            if ((midiStep != null) &&
-            //                parameters.desiredSteps.contains(midiStep)) {
-            //                logger.warn(
-            //                    "MIDI output is not compatible with -batch mode." +
-            //                    " MIDI output is ignored.");
-            //                parameters.desiredSteps.remove(midiStep);
-            //            }
-        } else {
-            logger.debug("Running in interactive mode");
         }
     }
 

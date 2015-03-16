@@ -44,7 +44,6 @@ public class GlyphsModel
     private static final Logger logger = LoggerFactory.getLogger(GlyphsModel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     /** Underlying glyph nest */
     protected final GlyphNest nest;
 
@@ -58,10 +57,6 @@ public class GlyphsModel
     protected Shape latestShape;
 
     //~ Constructors -------------------------------------------------------------------------------
-
-    //-------------//
-    // GlyphsModel //
-    //-------------//
     /**
      * Create an instance of GlyphsModel, with its underlying glyph lag.
      *
@@ -69,16 +64,16 @@ public class GlyphsModel
      * @param nest  the related nest (cannot be null)
      * @param step  the step after which update should be perform (can be null)
      */
-    public GlyphsModel (Sheet     sheet,
+    public GlyphsModel (Sheet sheet,
                         GlyphNest nest,
-                        Step      step)
+                        Step step)
     {
         // Null sheet is allowed (for GlyphVerifier use)
         this.sheet = sheet;
 
         if (nest == null) {
             throw new IllegalArgumentException(
-                "Attempt to create a GlyphsModel with null underlying nest");
+                    "Attempt to create a GlyphsModel with null underlying nest");
         } else {
             this.nest = nest;
         }
@@ -87,7 +82,6 @@ public class GlyphsModel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //--------------//
     // assignGlyphs //
     //--------------//
@@ -101,9 +95,9 @@ public class GlyphsModel
      * @param grade    the grade we have wrt the assigned shape
      */
     public void assignGlyphs (Collection<Glyph> glyphs,
-                              Shape             shape,
-                              boolean           compound,
-                              double            grade)
+                              Shape shape,
+                              boolean compound,
+                              double grade)
     {
         if (compound) {
             // Build & insert one compound
@@ -241,8 +235,8 @@ public class GlyphsModel
      * @param grade the grade about shape
      * @return the assigned glyph (perhaps an original glyph)
      */
-    protected Glyph assignGlyph (Glyph  glyph,
-                                 Shape  shape,
+    protected Glyph assignGlyph (Glyph glyph,
+                                 Shape shape,
                                  double grade)
     {
         if (glyph == null) {
@@ -261,10 +255,10 @@ public class GlyphsModel
             //            }
             boolean isTransient = glyph.isTransient();
             logger.debug(
-                "Assign {}{} to {}",
-                isTransient ? "compound " : "",
-                glyph.idString(),
-                shape);
+                    "Assign {}{} to {}",
+                    isTransient ? "compound " : "",
+                    glyph.idString(),
+                    shape);
 
             // Remember the latest shape assigned
             setLatestShape(shape);
@@ -274,10 +268,10 @@ public class GlyphsModel
         glyph.setShape(shape, grade);
 
         // Should we persist the assigned glyph?
-        if ((shape != null) &&
-            (grade == Evaluation.MANUAL) &&
-            (Main.getGui() != null) &&
-            ScoreActions.getInstance().isManualPersisted()) {
+        if ((shape != null)
+            && (grade == Evaluation.MANUAL)
+            && (Main.getGui() != null)
+            && ScoreActions.getInstance().isManualPersisted()) {
             // Record the glyph description to disk
             GlyphRepository.getInstance().recordOneGlyph(glyph, sheet);
         }

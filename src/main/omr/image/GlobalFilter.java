@@ -38,10 +38,6 @@ public class GlobalFilter
     private final int threshold;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //--------------//
-    // GlobalFilter //
-    //--------------//
     /**
      * Create a binary wrapper on a raw pixel source.
      *

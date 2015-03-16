@@ -76,9 +76,6 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     protected List<VertexView> views;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------//
-    // Vertex //
-    //--------//
     /**
      * Create a Vertex.
      */
@@ -87,9 +84,6 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
         logger.debug("new vertex");
     }
 
-    //--------//
-    // Vertex //
-    //--------//
     /**
      * Create a Vertex in a graph.
      *

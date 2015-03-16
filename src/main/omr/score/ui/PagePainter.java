@@ -209,9 +209,6 @@ public abstract class PagePainter
     protected SystemInfo systemInfo;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // PagePainter //
-    //-------------//
     /**
      * Creates a new PagePainter object.
      *

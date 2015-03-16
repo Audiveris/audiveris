@@ -44,12 +44,8 @@ public class NaturalSpline
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //---------------//
-    // NaturalSpline //
-    //---------------//
     /**
-     * Creates a new NaturalSpline object from a sequence of connected
-     * shapes.
+     * Creates a new NaturalSpline object from a sequence of connected shapes.
      *
      * @param curves the smooth sequence of shapes (cubic curves expected)
      */

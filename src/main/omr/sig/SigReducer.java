@@ -35,6 +35,7 @@ import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.BeamHookInter;
 import omr.sig.inter.BlackHeadInter;
+import omr.sig.inter.ChordInter;
 import omr.sig.inter.FullBeamInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.LedgerInter;
@@ -169,6 +170,23 @@ public class SigReducer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------------//
+    // contextualize //
+    //---------------//
+    /**
+     * Compute contextual grades of all SIG inters based on their supporting partners.
+     */
+    public void contextualize ()
+    {
+        try {
+            for (Inter inter : sig.vertexSet()) {
+                sig.computeContextualGrade(inter, false);
+            }
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+        }
+    }
+
     //----------------//
     // detectOverlaps //
     //----------------//
@@ -193,6 +211,15 @@ public class SigReducer
 
             final Rectangle leftBox = left.getBounds();
             final Inter leftMirror = left.getMirror();
+
+            final List<? extends Inter> mirrorNotes;
+
+            if (leftMirror instanceof ChordInter) {
+                mirrorNotes = ((ChordInter) leftMirror).getNotes();
+            } else {
+                mirrorNotes = null;
+            }
+
             final double xMax = leftBox.getMaxX();
 
             for (Inter right : inters.subList(i + 1, inters.size())) {
@@ -202,6 +229,10 @@ public class SigReducer
 
                 // Mirror entities do not exclude one another
                 if (leftMirror == right) {
+                    continue;
+                }
+
+                if ((mirrorNotes != null) && mirrorNotes.contains(right)) {
                     continue;
                 }
 
@@ -241,23 +272,6 @@ public class SigReducer
                     break; // Since inters list is sorted by abscissa
                 }
             }
-        }
-    }
-
-    //---------------//
-    // contextualize //
-    //---------------//
-    /**
-     * Compute contextual grades of all SIG inters based on their supporting partners.
-     */
-    public void contextualize ()
-    {
-        try {
-            for (Inter inter : sig.vertexSet()) {
-                sig.computeContextualGrade(inter, false);
-            }
-        } catch (Throwable ex) {
-            ex.printStackTrace();
         }
     }
 
@@ -354,100 +368,6 @@ public class SigReducer
                 logger.info("S#{} reductions: {}", system.getId(), reductions);
             }
         } while ((reductions > 0) || (deletions > 0));
-    }
-
-    //---------------------//
-    // analyzeFrozenInters //
-    //---------------------//
-    /**
-     * Browse all the frozen inters and simply delete any inter that conflicts with them.
-     */
-    private void analyzeFrozenInters ()
-    {
-        List<Inter> toDelete = new ArrayList<Inter>();
-
-        for (Inter inter : sig.vertexSet()) {
-            if (inter.isFrozen()) {
-                for (Relation rel : sig.getRelations(inter, Exclusion.class)) {
-                    Inter other = sig.getOppositeInter(inter, rel);
-
-                    if (other.isFrozen()) {
-                        logger.error("Conflicting frozen inters {} & {}", inter, other);
-                    } else {
-                        toDelete.add(other);
-
-                        if (other.isVip()) {
-                            logger.info("VIP deleting {} conflicting with frozen {}", other, inter);
-                        }
-                    }
-                }
-            }
-        }
-
-        sig.deleteInters(toDelete);
-    }
-
-    //------------//
-    // compatible //
-    //------------//
-    /**
-     * Check whether the two provided Inter instance can overlap.
-     *
-     * @param inters array of exactly 2 instances
-     * @return true if overlap is accepted, false otherwise
-     */
-    private static boolean compatible (Inter[] inters)
-    {
-        for (int i = 0; i <= 1; i++) {
-            Inter inter = inters[i];
-            Inter other = inters[1 - i];
-
-            if (inter instanceof AbstractBeamInter) {
-                if (other instanceof AbstractBeamInter) {
-                    return true;
-                }
-
-                if (beamCompShapes.contains(other.getShape())) {
-                    return true;
-                }
-            } else if (inter instanceof SlurInter) {
-                if (slurCompShapes.contains(other.getShape())) {
-                    return true;
-                }
-            } else if (inter instanceof StemInter) {
-                if (stemCompShapes.contains(other.getShape())) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    //-------------------//
-    // wordMatchesSymbol //
-    //-------------------//
-    /**
-     * Check whether the word and the symbol might represent the same thing, after all.
-     *
-     * @param wordInter text word
-     * @param symbol    symbol
-     */
-    private static boolean wordMatchesSymbol (WordInter wordInter,
-                                              StringSymbolInter symbol)
-    {
-        logger.debug("Comparing {} and {}", wordInter, symbol);
-
-        final String symbolString = symbol.getSymbolString();
-
-        if (wordInter.getValue().equalsIgnoreCase(symbolString)) {
-            logger.debug("Math found");
-
-            //TODO: Perhaps more checks on word/sentence?
-            return true;
-        }
-
-        return false;
     }
 
     //---------------//
@@ -814,7 +734,7 @@ public class SigReducer
             StemInter stem = (StemInter) sig.getEdgeTarget(rel);
 
             // What is the stem direction? (up: dir < 0, down: dir > 0, unknown: 0)
-            int dir = stemDirection(stem);
+            int dir = stem.getDirection();
 
             if (dir == 0) {
                 if (stem.isVip()) {
@@ -835,7 +755,7 @@ public class SigReducer
             }
 
             // Pitch of the note head
-            int pitch = ((AbstractHeadInter) head).getPitch();
+            int pitch = ((AbstractHeadInter) head).getIntegerPitch();
 
             // Target side and target pitches of other head
             // Look for presence of head on other side with target pitch
@@ -1199,6 +1119,43 @@ public class SigReducer
         return 0;
     }
 
+    //------------//
+    // compatible //
+    //------------//
+    /**
+     * Check whether the two provided Inter instance can overlap.
+     *
+     * @param inters array of exactly 2 instances
+     * @return true if overlap is accepted, false otherwise
+     */
+    private static boolean compatible (Inter[] inters)
+    {
+        for (int i = 0; i <= 1; i++) {
+            Inter inter = inters[i];
+            Inter other = inters[1 - i];
+
+            if (inter instanceof AbstractBeamInter) {
+                if (other instanceof AbstractBeamInter) {
+                    return true;
+                }
+
+                if (beamCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            } else if (inter instanceof SlurInter) {
+                if (slurCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            } else if (inter instanceof StemInter) {
+                if (stemCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     //---------//
     // exclude //
     //---------//
@@ -1216,6 +1173,196 @@ public class SigReducer
                 sig.insertExclusion(i1, i2, Exclusion.Cause.INCOMPATIBLE);
             }
         }
+    }
+
+    //-----------------//
+    // purgeWeakInters //
+    //-----------------//
+    /**
+     * Update the contextual grade of each Inter in SIG, and remove the weak ones if so
+     * desired.
+     *
+     * @param purge true for removing the inters with weak contextual grade
+     * @return the number of inters removed
+     */
+    private int purgeWeakInters (boolean purge)
+    {
+        contextualize();
+
+        if (purge) {
+            return sig.deleteWeakInters().size();
+        }
+
+        return 0;
+    }
+
+    //---------------------//
+    // reduceAugmentations //
+    //---------------------//
+    /**
+     * Reduce the number of augmentation relations to one.
+     *
+     * @param rels the augmentation links for the same entity
+     * @return the number of relation deleted
+     */
+    private int reduceAugmentations (Set<Relation> rels)
+    {
+        int modifs = 0;
+
+        // Simply select the relation with best grade
+        double bestGrade = 0;
+        AbstractConnection bestLink = null;
+
+        for (Relation rel : rels) {
+            AbstractConnection link = (AbstractConnection) rel;
+            double grade = link.getGrade();
+
+            if (grade > bestGrade) {
+                bestGrade = grade;
+                bestLink = link;
+            }
+        }
+
+        for (Relation rel : rels) {
+            if (rel != bestLink) {
+                sig.removeEdge(rel);
+                modifs++;
+            }
+        }
+
+        return modifs;
+    }
+
+    //------------------//
+    // stemHasHeadAtEnd //
+    //------------------//
+    /**
+     * Check if the stem has at least a head at some end.
+     *
+     * @param stem the stem inter
+     * @return true if OK
+     */
+    private boolean stemHasHeadAtEnd (StemInter stem)
+    {
+        if (stem.isVip()) {
+            logger.info("VIP stemHasHeadAtEnd for {}", stem);
+        }
+
+        final Line2D stemLine = sig.getStemLine(stem);
+
+        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
+            // Check stem portion
+            HeadStemRelation hsRel = (HeadStemRelation) rel;
+            Inter head = sig.getOppositeInter(stem, rel);
+
+            if (hsRel.getStemPortion(head, stemLine, scale) != STEM_MIDDLE) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //----------------------//
+    // stemHasSingleHeadEnd //
+    //----------------------//
+    /**
+     * Check if the stem does not have heads at both ends.
+     * <p>
+     * If heads are found at the "tail side" of the stem, their relations to the stem are removed.
+     *
+     * @param stem the stem inter
+     * @return true if OK
+     */
+    private boolean stemHasSingleHeadEnd (StemInter stem)
+    {
+        final Line2D stemLine = sig.getStemLine(stem);
+        final int stemDir = stem.getDirection();
+
+        if (stemDir == 0) {
+            return true; // We cannot decide
+        }
+
+        final StemPortion forbidden = (stemDir > 0) ? STEM_BOTTOM : STEM_TOP;
+        final List<Relation> toRemove = new ArrayList<Relation>();
+
+        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
+            // Check stem portion
+            HeadStemRelation hsRel = (HeadStemRelation) rel;
+            Inter head = sig.getOppositeInter(stem, rel);
+            StemPortion portion = hsRel.getStemPortion(head, stemLine, scale);
+
+            if (portion == forbidden) {
+                if (stem.isVip() || logger.isDebugEnabled()) {
+                    logger.info("Cutting relation between {} and {}", stem, sig.getEdgeSource(rel));
+                }
+
+                toRemove.add(rel);
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            sig.removeAllEdges(toRemove);
+        }
+
+        return toRemove.isEmpty();
+    }
+
+    //-------------------//
+    // wordMatchesSymbol //
+    //-------------------//
+    /**
+     * Check whether the word and the symbol might represent the same thing, after all.
+     *
+     * @param wordInter text word
+     * @param symbol    symbol
+     */
+    private static boolean wordMatchesSymbol (WordInter wordInter,
+                                              StringSymbolInter symbol)
+    {
+        logger.debug("Comparing {} and {}", wordInter, symbol);
+
+        final String symbolString = symbol.getSymbolString();
+
+        if (wordInter.getValue().equalsIgnoreCase(symbolString)) {
+            logger.debug("Math found");
+
+            //TODO: Perhaps more checks on word/sentence?
+            return true;
+        }
+
+        return false;
+    }
+
+    //---------------------//
+    // analyzeFrozenInters //
+    //---------------------//
+    /**
+     * Browse all the frozen inters and simply delete any inter that conflicts with them.
+     */
+    private void analyzeFrozenInters ()
+    {
+        List<Inter> toDelete = new ArrayList<Inter>();
+
+        for (Inter inter : sig.vertexSet()) {
+            if (inter.isFrozen()) {
+                for (Relation rel : sig.getRelations(inter, Exclusion.class)) {
+                    Inter other = sig.getOppositeInter(inter, rel);
+
+                    if (other.isFrozen()) {
+                        logger.error("Conflicting frozen inters {} & {}", inter, other);
+                    } else {
+                        toDelete.add(other);
+
+                        if (other.isVip()) {
+                            logger.info("VIP deleting {} conflicting with frozen {}", other, inter);
+                        }
+                    }
+                }
+            }
+        }
+
+        sig.deleteInters(toDelete);
     }
 
     //
@@ -1292,7 +1439,7 @@ public class SigReducer
 
         for (Inter inter : heads) {
             final AbstractHeadInter head = (AbstractHeadInter) inter;
-            final int notePitch = head.getPitch();
+            final int notePitch = head.getIntegerPitch();
 
             if ((notePitch == ledgerPitch) || (notePitch == nextPitch)) {
                 return true;
@@ -1300,230 +1447,6 @@ public class SigReducer
         }
 
         return false;
-    }
-
-    //-----------------//
-    // purgeWeakInters //
-    //-----------------//
-    /**
-     * Update the contextual grade of each Inter in SIG, and remove the weak ones if so
-     * desired.
-     *
-     * @param purge true for removing the inters with weak contextual grade
-     * @return the number of inters removed
-     */
-    private int purgeWeakInters (boolean purge)
-    {
-        contextualize();
-
-        if (purge) {
-            return sig.deleteWeakInters().size();
-        }
-
-        return 0;
-    }
-
-    //---------------------//
-    // reduceAugmentations //
-    //---------------------//
-    /**
-     * Reduce the number of augmentation relations to one.
-     *
-     * @param rels the augmentation links for the same entity
-     * @return the number of relation deleted
-     */
-    private int reduceAugmentations (Set<Relation> rels)
-    {
-        int modifs = 0;
-
-        // Simply select the relation with best grade
-        double bestGrade = 0;
-        AbstractConnection bestLink = null;
-
-        for (Relation rel : rels) {
-            AbstractConnection link = (AbstractConnection) rel;
-            double grade = link.getGrade();
-
-            if (grade > bestGrade) {
-                bestGrade = grade;
-                bestLink = link;
-            }
-        }
-
-        for (Relation rel : rels) {
-            if (rel != bestLink) {
-                sig.removeEdge(rel);
-                modifs++;
-            }
-        }
-
-        return modifs;
-    }
-
-    //--------------//
-    // sortBySource //
-    //--------------//
-    /**
-     * Sort the provided list of relations by decreasing contextual grade of the
-     * relations sources.
-     *
-     * @param rels the relations to sort
-     */
-    private void sortBySource (List<Relation> rels)
-    {
-        Collections.sort(
-                rels,
-                new Comparator<Relation>()
-                {
-                    @Override
-                    public int compare (Relation r1,
-                                        Relation r2)
-                    {
-                        Inter s1 = sig.getEdgeSource(r1);
-                        Inter s2 = sig.getEdgeSource(r2);
-
-                        return Double.compare(s2.getContextualGrade(), s1.getContextualGrade());
-                    }
-                });
-    }
-
-    //---------------//
-    // stemDirection //
-    //---------------//
-    /**
-     * Report the direction (from head to tail) of the provided stem.
-     * <p>
-     * For this, we check what is found on each stem end (is it a tail: beam/flag or is it a head)
-     * and use contextual grade to pick up the best reference.
-     *
-     * @param stem the stem to check
-     * @return -1 for stem up, +1 for stem down, 0 for unknown
-     */
-    private int stemDirection (StemInter stem)
-    {
-        final Line2D stemLine = sig.getStemLine(stem);
-        final List<Relation> links = new ArrayList<Relation>(
-                sig.getRelations(stem, StemConnection.class));
-        sortBySource(links);
-
-        for (Relation rel : links) {
-            Inter source = sig.getEdgeSource(rel); // Source is a head, a beam or a flag
-
-            // Retrieve the stem portion for this link
-            if (rel instanceof HeadStemRelation) {
-                // Head -> Stem
-                HeadStemRelation link = (HeadStemRelation) rel;
-                StemPortion portion = link.getStemPortion(source, stemLine, scale);
-
-                if (portion == STEM_BOTTOM) {
-                    if (link.getHeadSide() == RIGHT) {
-                        return -1;
-                    }
-                } else if (portion == STEM_TOP) {
-                    if (link.getHeadSide() == LEFT) {
-                        return 1;
-                    }
-                }
-            } else {
-                // Tail (Beam or Flag) -> Stem
-                if (rel instanceof BeamStemRelation) {
-                    // Beam -> Stem
-                    BeamStemRelation link = (BeamStemRelation) rel;
-                    StemPortion portion = link.getStemPortion(source, stemLine, scale);
-
-                    return (portion == STEM_TOP) ? (-1) : 1;
-                } else {
-                    // Flag -> Stem
-                    FlagStemRelation link = (FlagStemRelation) rel;
-                    StemPortion portion = link.getStemPortion(source, stemLine, scale);
-
-                    if (portion == STEM_TOP) {
-                        return -1;
-                    }
-
-                    if (portion == STEM_BOTTOM) {
-                        return 1;
-                    }
-                }
-            }
-        }
-
-        return 0; // Cannot decide!
-    }
-
-    //------------------//
-    // stemHasHeadAtEnd //
-    //------------------//
-    /**
-     * Check if the stem has at least a head at some end.
-     *
-     * @param stem the stem inter
-     * @return true if OK
-     */
-    private boolean stemHasHeadAtEnd (StemInter stem)
-    {
-        if (stem.isVip()) {
-            logger.info("VIP stemHasHeadAtEnd for {}", stem);
-        }
-
-        final Line2D stemLine = sig.getStemLine(stem);
-
-        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
-            // Check stem portion
-            HeadStemRelation hsRel = (HeadStemRelation) rel;
-            Inter head = sig.getOppositeInter(stem, rel);
-
-            if (hsRel.getStemPortion(head, stemLine, scale) != STEM_MIDDLE) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    //----------------------//
-    // stemHasSingleHeadEnd //
-    //----------------------//
-    /**
-     * Check if the stem does not have heads at both ends.
-     * <p>
-     * If heads are found at the "tail side" of the stem, their relations to the stem are removed.
-     *
-     * @param stem the stem inter
-     * @return true if OK
-     */
-    private boolean stemHasSingleHeadEnd (StemInter stem)
-    {
-        final Line2D stemLine = sig.getStemLine(stem);
-        final int stemDir = stemDirection(stem);
-
-        if (stemDir == 0) {
-            return true; // We cannot decide
-        }
-
-        final StemPortion forbidden = (stemDir > 0) ? STEM_BOTTOM : STEM_TOP;
-        final List<Relation> toRemove = new ArrayList<Relation>();
-
-        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
-            // Check stem portion
-            HeadStemRelation hsRel = (HeadStemRelation) rel;
-            Inter head = sig.getOppositeInter(stem, rel);
-            StemPortion portion = hsRel.getStemPortion(head, stemLine, scale);
-
-            if (portion == forbidden) {
-                if (stem.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Cutting relation between {} and {}", stem, sig.getEdgeSource(rel));
-                }
-
-                toRemove.add(rel);
-            }
-        }
-
-        if (!toRemove.isEmpty()) {
-            sig.removeAllEdges(toRemove);
-        }
-
-        return toRemove.isEmpty();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

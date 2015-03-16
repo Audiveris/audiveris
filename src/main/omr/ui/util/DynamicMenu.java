@@ -60,9 +60,6 @@ public abstract class DynamicMenu
     };
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // DynamicMenu //
-    //-------------//
     /**
      * Create the dynamic menu.
      *
@@ -84,9 +81,6 @@ public abstract class DynamicMenu
         }
     }
 
-    //-------------//
-    // DynamicMenu //
-    //-------------//
     /**
      * Creates a new DynamicMenu object.
      *

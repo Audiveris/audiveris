@@ -18,10 +18,7 @@ import omr.image.GlobalDescriptor;
 
 import omr.plugin.PluginManager;
 
-import omr.score.Score;
-import omr.score.entity.Page;
-import omr.score.entity.ScorePart;
-import omr.score.entity.Tempo;
+import omr.score.entity.LogicalPart;
 import omr.score.midi.MidiAbstractions;
 
 import omr.script.ParametersTask;
@@ -141,10 +138,6 @@ public class ScoreParameters
     private ParametersTask task;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //-----------------//
-    // ScoreParameters //
-    //-----------------//
     /**
      * Create a ScoreParameters object.
      *
@@ -176,7 +169,6 @@ public class ScoreParameters
                 null,
                 FilterDescriptor.defaultFilter);
         ///TempoPane defaultTempoPane = new TempoPane(null, null, Tempo.defaultTempo);
-
         defaultPanel = new MyPanel(
                 "Default settings",
                 defaultTextPane,
@@ -207,15 +199,14 @@ public class ScoreParameters
                     book.getFilterParam());
             panes.add(scoreFilterPane);
 
-//            // Tempo: depends on page
-//            panes.add(new TempoPane(book, defaultTempoPane, book.getTempoParam()));
-//
-//            // Parts: depends on score
-//            if (book.getPartList() != null) {
-//                // Part by part information
-//                panes.add(new PartsPane(book));
-//            }
-
+            //            // Tempo: depends on page
+            //            panes.add(new TempoPane(book, defaultTempoPane, book.getTempoParam()));
+            //
+            //            // Parts: depends on score
+            //            if (book.getPartList() != null) {
+            //                // Part by part information
+            //                panes.add(new PartsPane(book));
+            //            }
             scorePanel = new MyPanel("Score settings", panes);
             component.addTab(book.getRadix(), null, scorePanel, scorePanel.getName());
 
@@ -722,7 +713,6 @@ public class ScoreParameters
         private final String title;
 
         //~ Constructors ---------------------------------------------------------------------------
-        //
         public Pane (String title,
                      Book book,
                      Sheet sheet,
@@ -993,12 +983,12 @@ public class ScoreParameters
                 MidiAbstractions.getProgramNames());
 
         //~ Constructors ---------------------------------------------------------------------------
-        public PartPanel (ScorePart scorePart)
+        public PartPanel (LogicalPart logicalPart)
         {
-            label = new JLabel("Part #" + scorePart.getId());
+            label = new JLabel("Part #" + logicalPart.getId());
 
             // Let's impose the id!
-            id.setText(scorePart.getPid());
+            id.setText(logicalPart.getPid());
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -1061,97 +1051,97 @@ public class ScoreParameters
             midiBox.setEnabled(sel);
         }
     }
-//
-//    //-----------//
-//    // PartsPane //
-//    //-----------//
-//    /**
-//     * Pane to define the details for every part of the score.
-//     * Scope can be: score.
-//     */
-//    private class PartsPane
-//            extends Pane<List<PartData>>
-//    {
-//        //~ Instance fields ------------------------------------------------------------------------
-//
-//        /** All score part panes */
-//        private final List<PartPanel> partPanels = new ArrayList<PartPanel>();
-//
-//        //~ Constructors ---------------------------------------------------------------------------
-//        public PartsPane (Score score)
-//        {
-//            super("Parts", score, null, null, score.getPartsParam());
-//        }
-//
-//        //~ Methods --------------------------------------------------------------------------------
-//        @Override
-//        public int defineLayout (PanelBuilder builder,
-//                                 CellConstraints cst,
-//                                 int r)
-//        {
-//            r = super.defineLayout(builder, cst, r);
-//
-//            for (ScorePart scorePart : book.getPartList()) {
-//                PartPanel partPanel = new PartPanel(scorePart);
-//                r = partPanel.defineLayout(builder, cst, r);
-//                partPanels.add(partPanel);
-//                builder.add(partPanel, cst.xy(1, r));
-//                r += 2;
-//            }
-//
-//            return r;
-//        }
-//
-//        @Override
-//        public int getLogicalRowCount ()
-//        {
-//            return 2 + (PartPanel.logicalRowCount * book.getPartList().size());
-//        }
-//
-//        @Override
-//        public boolean isValid ()
-//        {
-//            // Each score part
-//            for (PartPanel partPanel : partPanels) {
-//                if (!partPanel.checkPart()) {
-//                    return false;
-//                }
-//            }
-//
-//            return true;
-//        }
-//
-//        @Override
-//        protected void display (List<PartData> content)
-//        {
-//            for (int i = 0; i < content.size(); i++) {
-//                PartPanel partPanel = partPanels.get(i);
-//                PartData partData = content.get(i);
-//                partPanel.display(partData);
-//            }
-//        }
-//
-//        @Override
-//        protected List<PartData> read ()
-//        {
-//            List<PartData> data = new ArrayList<PartData>();
-//
-//            for (PartPanel partPanel : partPanels) {
-//                data.add(partPanel.getData());
-//            }
-//
-//            return data;
-//        }
-//
-//        @Override
-//        protected void setEnabled (boolean bool)
-//        {
-//            for (PartPanel partPanel : partPanels) {
-//                partPanel.setItemsEnabled(bool);
-//            }
-//        }
-//    }
 
+    //
+    //    //-----------//
+    //    // PartsPane //
+    //    //-----------//
+    //    /**
+    //     * Pane to define the details for every part of the score.
+    //     * Scope can be: score.
+    //     */
+    //    private class PartsPane
+    //            extends Pane<List<PartData>>
+    //    {
+    //        //~ Instance fields ------------------------------------------------------------------------
+    //
+    //        /** All score part panes */
+    //        private final List<PartPanel> partPanels = new ArrayList<PartPanel>();
+    //
+    //        //~ Constructors ---------------------------------------------------------------------------
+    //        public PartsPane (Score score)
+    //        {
+    //            super("Parts", score, null, null, score.getPartsParam());
+    //        }
+    //
+    //        //~ Methods --------------------------------------------------------------------------------
+    //        @Override
+    //        public int defineLayout (PanelBuilder builder,
+    //                                 CellConstraints cst,
+    //                                 int r)
+    //        {
+    //            r = super.defineLayout(builder, cst, r);
+    //
+    //            for (LogicalPart logicalPart : book.getPartList()) {
+    //                PartPanel partPanel = new PartPanel(logicalPart);
+    //                r = partPanel.defineLayout(builder, cst, r);
+    //                partPanels.add(partPanel);
+    //                builder.add(partPanel, cst.xy(1, r));
+    //                r += 2;
+    //            }
+    //
+    //            return r;
+    //        }
+    //
+    //        @Override
+    //        public int getLogicalRowCount ()
+    //        {
+    //            return 2 + (PartPanel.logicalRowCount * book.getPartList().size());
+    //        }
+    //
+    //        @Override
+    //        public boolean isValid ()
+    //        {
+    //            // Each score part
+    //            for (PartPanel partPanel : partPanels) {
+    //                if (!partPanel.checkPart()) {
+    //                    return false;
+    //                }
+    //            }
+    //
+    //            return true;
+    //        }
+    //
+    //        @Override
+    //        protected void display (List<PartData> content)
+    //        {
+    //            for (int i = 0; i < content.size(); i++) {
+    //                PartPanel partPanel = partPanels.get(i);
+    //                PartData partData = content.get(i);
+    //                partPanel.display(partData);
+    //            }
+    //        }
+    //
+    //        @Override
+    //        protected List<PartData> read ()
+    //        {
+    //            List<PartData> data = new ArrayList<PartData>();
+    //
+    //            for (PartPanel partPanel : partPanels) {
+    //                data.add(partPanel.getData());
+    //            }
+    //
+    //            return data;
+    //        }
+    //
+    //        @Override
+    //        protected void setEnabled (boolean bool)
+    //        {
+    //            for (PartPanel partPanel : partPanels) {
+    //                partPanel.setItemsEnabled(bool);
+    //            }
+    //        }
+    //    }
     //------------//
     // PluginPane //
     //------------//
@@ -1289,81 +1279,81 @@ public class ScoreParameters
             spinner.setVisible(bool);
         }
     }
-//
-//    //-----------//
-//    // Tempopane //
-//    //-----------//
-//    /**
-//     * Pane to set the dominant tempo value.
-//     * Scope can be: default, score.
-//     */
-//    private class TempoPane
-//            extends Pane<Integer>
-//    {
-//        //~ Instance fields ------------------------------------------------------------------------
-//
-//        // Tempo value
-//        private final SpinData tempo = new SpinData(
-//                "Quarters/Min",
-//                "Tempo in quarters per minute",
-//                new SpinnerNumberModel(20, 20, 400, 1));
-//
-//        //~ Constructors ---------------------------------------------------------------------------
-//        public TempoPane (Score score,
-//                          Pane parent,
-//                          Param<Integer> backup)
-//        {
-//            super("Tempo", score, null, parent, backup);
-//        }
-//
-//        //~ Methods --------------------------------------------------------------------------------
-//        @Override
-//        public int defineLayout (PanelBuilder builder,
-//                                 CellConstraints cst,
-//                                 int r)
-//        {
-//            r = super.defineLayout(builder, cst, r);
-//
-//            return tempo.defineLayout(builder, cst, r);
-//        }
-//
-//        @Override
-//        public boolean isValid ()
-//        {
-//            task.setTempo(read());
-//
-//            return true;
-//        }
-//
-//        @Override
-//        protected void display (Integer content)
-//        {
-//            tempo.spinner.setValue(content);
-//        }
-//
-//        @Override
-//        protected Integer read ()
-//        {
-//            commitSpinners();
-//
-//            return (int) tempo.spinner.getValue();
-//        }
-//
-//        @Override
-//        protected void setEnabled (boolean bool)
-//        {
-//            tempo.setEnabled(bool);
-//        }
-//
-//        private void commitSpinners ()
-//        {
-//            try {
-//                tempo.spinner.commitEdit();
-//            } catch (ParseException ignored) {
-//            }
-//        }
-//    }
 
+    //
+    //    //-----------//
+    //    // Tempopane //
+    //    //-----------//
+    //    /**
+    //     * Pane to set the dominant tempo value.
+    //     * Scope can be: default, score.
+    //     */
+    //    private class TempoPane
+    //            extends Pane<Integer>
+    //    {
+    //        //~ Instance fields ------------------------------------------------------------------------
+    //
+    //        // Tempo value
+    //        private final SpinData tempo = new SpinData(
+    //                "Quarters/Min",
+    //                "Tempo in quarters per minute",
+    //                new SpinnerNumberModel(20, 20, 400, 1));
+    //
+    //        //~ Constructors ---------------------------------------------------------------------------
+    //        public TempoPane (Score score,
+    //                          Pane parent,
+    //                          Param<Integer> backup)
+    //        {
+    //            super("Tempo", score, null, parent, backup);
+    //        }
+    //
+    //        //~ Methods --------------------------------------------------------------------------------
+    //        @Override
+    //        public int defineLayout (PanelBuilder builder,
+    //                                 CellConstraints cst,
+    //                                 int r)
+    //        {
+    //            r = super.defineLayout(builder, cst, r);
+    //
+    //            return tempo.defineLayout(builder, cst, r);
+    //        }
+    //
+    //        @Override
+    //        public boolean isValid ()
+    //        {
+    //            task.setTempo(read());
+    //
+    //            return true;
+    //        }
+    //
+    //        @Override
+    //        protected void display (Integer content)
+    //        {
+    //            tempo.spinner.setValue(content);
+    //        }
+    //
+    //        @Override
+    //        protected Integer read ()
+    //        {
+    //            commitSpinners();
+    //
+    //            return (int) tempo.spinner.getValue();
+    //        }
+    //
+    //        @Override
+    //        protected void setEnabled (boolean bool)
+    //        {
+    //            tempo.setEnabled(bool);
+    //        }
+    //
+    //        private void commitSpinners ()
+    //        {
+    //            try {
+    //                tempo.spinner.commitEdit();
+    //            } catch (ParseException ignored) {
+    //            }
+    //        }
+    //    }
     //----------//
     // TextPane //
     //----------//

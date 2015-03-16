@@ -119,7 +119,7 @@ public class Sheet
     /** Sheet ID. */
     private final String id;
 
-    /** Corresponding page(s). Some sheets may relate to several pages. */
+    /** Corresponding page(s). A single sheet may relate to several pages. */
     private final List<Page> pages = new ArrayList<Page>();
 
     /**
@@ -137,7 +137,7 @@ public class Sheet
     /** Related errors editor, if any. */
     private final ErrorsEditor errorsEditor;
 
-    /** SIG manager for all systems. */
+    /** SIG manager for all systems in this sheet. */
     private final SigManager sigManager = new SigManager();
 
     //-- resettable members ----------------------------------------------------
@@ -175,7 +175,7 @@ public class Sheet
     private final StaffManager staffManager;
 
     /** Systems management. */
-    private SystemManager systemManager;
+    private final SystemManager systemManager;
 
     /** Specific builder dealing with glyphs */
     private volatile SymbolsController symbolsController;
@@ -199,9 +199,6 @@ public class Sheet
     private final LiveParam<String> textContext;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------//
-    // Sheet //
-    //-------//
     /**
      * Create a new {@code Sheet} instance within a book.
      *
@@ -413,20 +410,6 @@ public class Sheet
         return bench;
     }
 
-    //
-    //    //----------//
-    //    // getScore //
-    //    //----------//
-    //    /**
-    //     * Return the eventual Score that gathers in a score the information
-    //     * retrieved from this sheet.
-    //     *
-    //     * @return the related score, or null if not available
-    //     */
-    //    public Score getScore ()
-    //    {
-    //        return score;
-    //    }
     //---------//
     // getBook //
     //---------//
@@ -507,7 +490,7 @@ public class Sheet
     // getIndex //
     //----------//
     /**
-     * @return the sheet index in containing book
+     * @return the sheet index (1-based) in containing book
      */
     public int getIndex ()
     {

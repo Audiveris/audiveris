@@ -70,10 +70,6 @@ public class Slot
     private Rational startTime;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //------//
-    // Slot //
-    //------//
     /**
      * Creates a new Slot object.
      *
@@ -132,7 +128,7 @@ public class Slot
             for (int i = 0; i < links.length; i++) {
                 int index = links[i];
 
-                // Map new chord to an free ending chord?
+                // Map new chord to a free ending chord?
                 if (index < freeEndings.size()) {
                     Voice voice = freeEndings.get(index).getVoice();
                     logger.debug("Slot#{} Reusing voice#{}", getId(), voice.getId());

@@ -133,9 +133,6 @@ public class Note
     private SortedSet<LyricsItem> syllables;
 
     //~ Constructors -----------------------------------------------------------
-    //------//
-    // Note //
-    //------//
     /** Create a new instance of an isolated Note
      *
      * @param chord the containing chord

@@ -30,9 +30,6 @@ public class BeamHookPattern
     private static final Logger logger = LoggerFactory.getLogger(BeamHookPattern.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // BeamHookPattern //
-    //-----------------//
     /**
      * Creates a new BeamHookPattern object.
      *

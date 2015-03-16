@@ -50,9 +50,6 @@ public class SpinnerGlyphModel
     private Integer currentId;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------------//
-    // SpinnerGlyphModel //
-    //-------------------//
     /**
      * Creates a new SpinnerGlyphModel object, on all nest glyph
      * instances.
@@ -64,9 +61,6 @@ public class SpinnerGlyphModel
         this(nest, null);
     }
 
-    //-------------------//
-    // SpinnerGlyphModel //
-    //-------------------//
     /**
      * Creates a new SpinnerGlyphModel object, with a related glyph
      * predicate.

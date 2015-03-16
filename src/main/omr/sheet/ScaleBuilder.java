@@ -138,9 +138,6 @@ public class ScaleBuilder
     private Scale scale;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // ScaleBuilder //
-    //--------------//
     /**
      * Constructor to enable scale computation on a given sheet.
      *

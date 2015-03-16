@@ -109,7 +109,7 @@ public class ClefInter
                       Shape shape,
                       double grade,
                       Staff staff,
-                      int pitch,
+                      double pitch,
                       ClefKind kind)
     {
         super(glyph, null, shape, grade, staff, pitch);
@@ -297,17 +297,17 @@ public class ClefInter
      * assuming we are governed by the provided clef, otherwise (if clef is null)
      * we use the default clef (G_CLEF)
      *
-     * @param clef          the current clef if any
-     * @param pitchPosition the pitch position of the note
+     * @param clef  the current clef if any
+     * @param pitch the pitch position of the note
      * @return the corresponding octave
      */
     public static int octaveOf (ClefInter clef,
-                                int pitchPosition)
+                                double pitch)
     {
         if (clef == null) {
-            return defaultClef.octaveOf(pitchPosition);
+            return defaultClef.octaveOf(pitch);
         } else {
-            return clef.octaveOf(pitchPosition);
+            return clef.octaveOf(pitch);
         }
     }
 
@@ -362,29 +362,29 @@ public class ClefInter
      * Report the note step corresponding to a note at the provided pitch position,
      * assuming we are governed by this clef
      *
-     * @param pitchPosition the pitch position of the note
+     * @param pitch the pitch position of the note
      * @return the corresponding note step
      */
-    private AbstractHeadInter.Step noteStepOf (int pitchPosition)
+    private AbstractHeadInter.Step noteStepOf (int pitch)
     {
         switch (shape) {
         case G_CLEF:
         case G_CLEF_SMALL:
         case G_CLEF_8VA:
         case G_CLEF_8VB:
-            return AbstractHeadInter.Step.values()[(71 - pitchPosition) % 7];
+            return AbstractHeadInter.Step.values()[(71 - pitch) % 7];
 
         case C_CLEF:
 
             // Depending on precise clef position, we can have
             // an Alto C-clef (pp=0) or a Tenor C-clef (pp=+2) [or other stuff]
-            return AbstractHeadInter.Step.values()[(72 - this.pitch - pitchPosition) % 7];
+            return AbstractHeadInter.Step.values()[(72 - (int) Math.rint(this.pitch) - pitch) % 7];
 
         case F_CLEF:
         case F_CLEF_SMALL:
         case F_CLEF_8VA:
         case F_CLEF_8VB:
-            return AbstractHeadInter.Step.values()[(73 - pitchPosition) % 7];
+            return AbstractHeadInter.Step.values()[(73 - pitch) % 7];
 
         case PERCUSSION_CLEF:
             return null;
@@ -403,37 +403,39 @@ public class ClefInter
      * Report the octave corresponding to a note at the provided pitch position,
      * assuming we are governed by this clef
      *
-     * @param pitchPosition the pitch position of the note
+     * @param pitch the pitch position of the note
      * @return the corresponding octave
      */
-    private int octaveOf (int pitchPosition)
+    private int octaveOf (double pitchPosition)
     {
+        int pitch = (int) Math.rint(pitchPosition);
+
         switch (shape) {
         case G_CLEF:
         case G_CLEF_SMALL:
-            return (34 - pitchPosition) / 7;
+            return (34 - pitch) / 7;
 
         case G_CLEF_8VA:
-            return ((34 - pitchPosition) / 7) + 1;
+            return ((34 - pitch) / 7) + 1;
 
         case G_CLEF_8VB:
-            return ((34 - pitchPosition) / 7) - 1;
+            return ((34 - pitch) / 7) - 1;
 
         case C_CLEF:
 
             // Depending on precise clef position, we can have
             // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
-            return (28 - this.pitch - pitchPosition) / 7;
+            return (28 - (int) Math.rint(this.pitch) - pitch) / 7;
 
         case F_CLEF:
         case F_CLEF_SMALL:
-            return (22 - pitchPosition) / 7;
+            return (22 - pitch) / 7;
 
         case F_CLEF_8VA:
-            return ((22 - pitchPosition) / 7) + 1;
+            return ((22 - pitch) / 7) + 1;
 
         case F_CLEF_8VB:
-            return ((22 - pitchPosition) / 7) - 1;
+            return ((22 - pitch) / 7) - 1;
 
         case PERCUSSION_CLEF:
             return 0;

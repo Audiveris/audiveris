@@ -72,9 +72,6 @@ public class TimeSignatureRetriever
     private int yOffset;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------------//
-    // TimeSignatureRetriever //
-    //------------------------//
     /**
      * Creates a new TimeSignatureRetriever object.
      */

@@ -109,9 +109,6 @@ public class FilamentsFactory
     private final Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // FilamentsFactory //
-    //------------------//
     /**
      * Create a factory of filaments.
      *

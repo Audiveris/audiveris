@@ -34,7 +34,7 @@ public class LogStepAppender
     protected void append (ILoggingEvent event)
     {
         if (event.getLevel().toInt() >= Level.INFO_INT) {
-            Stepping.notifyProgress();
+            Stepping.animate();
         }
     }
 }

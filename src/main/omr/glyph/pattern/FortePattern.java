@@ -46,9 +46,6 @@ public class FortePattern
 //            Shape.DYNAMICS_CHAR_S);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // FortePattern //
-    //--------------//
     /**
      * Creates a new FortePattern object.
      *

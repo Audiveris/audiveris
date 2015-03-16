@@ -60,9 +60,6 @@ public abstract class SheetPainter
     protected SigPainter sigPainter;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // SheetPainter //
-    //--------------//
     /**
      * Creates a new SheetPainter object.
      *

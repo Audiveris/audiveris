@@ -97,10 +97,6 @@ public abstract class AdaptiveFilter
     protected Tile sqrTile;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //----------------//
-    // AdaptiveFilter //
-    //----------------//
     /**
      * Create an adaptive wrapper on a pixel source.
      *

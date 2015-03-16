@@ -15,8 +15,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.sheet.Sheet;
 
-import omr.sig.inter.Inter;
-
 import omr.ui.util.AbstractMouseListener;
 import omr.ui.util.UIUtil;
 import omr.ui.view.LocationDependentMenu;
@@ -28,7 +26,6 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
 
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
@@ -49,9 +46,6 @@ public class GlyphMenu
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // GlyphMenu //
-    //-----------//
     /**
      * Creates a new GlyphMenu object.
      *

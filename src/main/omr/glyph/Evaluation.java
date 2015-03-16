@@ -44,9 +44,6 @@ public class Evaluation
     public Failure failure;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // Evaluation //
-    //------------//
     /**
      * Create an initialized evaluation instance.
      *

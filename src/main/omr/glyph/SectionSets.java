@@ -58,9 +58,6 @@ public class SectionSets
     private Collection<SectionDescSet> descSets;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // SectionSets //
-    //-------------//
     /**
      * Creates a new SectionSets object.
      *

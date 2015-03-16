@@ -15,7 +15,6 @@ import omr.Main;
 
 import omr.plugin.Plugin;
 
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -43,17 +42,13 @@ public class PluginStep
     private Plugin plugin;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // PluginStep //
-    //------------//
     /**
      * Creates a new PluginStep object.
      */
     public PluginStep (Plugin plugin)
     {
-        super(
-                Steps.PLUGIN,
-                Level.SCORE_LEVEL,
+        super(Steps.PLUGIN,
+                Level.BOOK_LEVEL,
                 Mandatory.OPTIONAL,
                 DATA_TAB,
                 "Launch the default plugin");

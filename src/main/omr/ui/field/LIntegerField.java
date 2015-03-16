@@ -22,9 +22,6 @@ public class LIntegerField
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //---------------//
-    // LIntegerField //
-    //---------------//
     /**
      * Create a (constant) integer labeled field
      *
@@ -37,9 +34,6 @@ public class LIntegerField
         super(true, label, tip);
     }
 
-    //---------------//
-    // LIntegerField //
-    //---------------//
     /**
      * Create an integer labeled field
      *

@@ -32,9 +32,6 @@ public class LDoubleField
     private final String format;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // LDoubleField //
-    //--------------//
     /**
      * Create an (initially) editable double labeled field with proper
      * characteristics

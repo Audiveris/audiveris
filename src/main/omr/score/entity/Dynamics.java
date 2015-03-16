@@ -125,9 +125,6 @@ public class Dynamics
     }
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // Dynamics //
-    //----------//
     /**
      * Creates a new instance of Dynamics event.
      *

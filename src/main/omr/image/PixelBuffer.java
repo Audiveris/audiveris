@@ -46,9 +46,6 @@ public class PixelBuffer
     private static final Logger logger = LoggerFactory.getLogger(PixelBuffer.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // PixelBuffer //
-    //-------------//
     /**
      * Creates a new PixelBuffer object.
      *

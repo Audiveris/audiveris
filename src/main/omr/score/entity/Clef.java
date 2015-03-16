@@ -32,9 +32,9 @@ import java.awt.Point;
  * These informations are used by methods {@link #octaveOf(omr.score.entity.Clef, int)} and
  * {@link #noteStepOf(omr.score.entity.Clef, int)}.</p>
  * <p>
- * <img
+ * <img alt="image for C Clef"
  * src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Middle_C_in_four_clefs.svg/600px-Middle_C_in_four_clefs.svg.png"
- * />
+ * >
  *
  * @author Hervé Bitteur
  */
@@ -61,9 +61,6 @@ public class Clef
     private int pitchPosition;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------//
-    // Clef //
-    //------//
     /**
      * Create a Clef instance
      *

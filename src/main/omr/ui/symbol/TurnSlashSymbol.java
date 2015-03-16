@@ -33,9 +33,6 @@ public class TurnSlashSymbol
     private final ShapeSymbol turnSymbol = Symbols.getSymbol(Shape.TURN);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // TurnSlashSymbol //
-    //-----------------//
     /**
      * Creates a new TurnSlashSymbol object.
      *

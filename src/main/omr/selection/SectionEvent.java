@@ -27,9 +27,6 @@ public class SectionEvent
     private final Section section;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // SectionEvent //
-    //--------------//
     /**
      * Creates a new SectionEvent object.
      *

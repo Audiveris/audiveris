@@ -15,12 +15,12 @@
      
 <actions>
     
-    <action domain="FILE" section="10" class="omr.sheet.ui.SheetActions" method="openImageFile"                                           button="javax.swing.JButton"/>
+    <action domain="FILE" section="10" class="omr.sheet.ui.SheetActions" method="openImageFile"         button="javax.swing.JButton"/>
     <action domain="FILE" section="20" class="omr.script.ScriptActions"  method="loadScript"/>
     <action domain="FILE" section="20" class="omr.script.ScriptActions"  method="storeScript"/>
     <action domain="FILE" section="20" class="omr.script.ScriptActions"  method="storeScriptAs"/>
-    <action domain="FILE" section="30" class="omr.sheet.ui.SheetActions" method="zoomWidth"                                               button="javax.swing.JButton"/>
-    <action domain="FILE" section="30" class="omr.sheet.ui.SheetActions" method="zoomHeight"                                              button="javax.swing.JButton"/>
+    <action domain="FILE" section="30" class="omr.sheet.ui.SheetActions" method="zoomWidth"             button="javax.swing.JButton"/>
+    <action domain="FILE" section="30" class="omr.sheet.ui.SheetActions" method="zoomHeight"            button="javax.swing.JButton"/>
     <action domain="FILE" section="40" class="omr.sheet.ui.SheetActions" method="plotScale"/>
     <action domain="FILE" section="40" class="omr.sheet.ui.SheetActions" method="plotStem"/>
     <action domain="FILE" section="40" class="omr.sheet.ui.SheetActions" method="plotStaves"/>
@@ -28,13 +28,21 @@
     <action domain="FILE" section="65" class="omr.sheet.ui.SheetActions" method="closeBook"/>
     <action domain="FILE" section="70" class="omr.ui.GuiActions"         method="exit"/>
 
-    <action domain="SCORE" section="10" class="omr.score.ui.ScoreActions" method="buildScore"                                             button="javax.swing.JButton"/>
-    <action domain="SCORE" section="10" class="omr.score.ui.ScoreActions" method="toggleRebuild"    item="javax.swing.JCheckBoxMenuItem" />
-    <action domain="SCORE" section="20" class="omr.score.ui.ScoreActions" method="defineParameters"                                       button="javax.swing.JButton"/>
-    <action domain="SCORE" section="30" class="omr.score.ui.ScoreActions" method="writeSheetPdf"                                          button="javax.swing.JButton"/>
-    <action domain="SCORE" section="30" class="omr.score.ui.ScoreActions" method="writeSheetPdfAs"/>
-    <action domain="SCORE" section="40" class="omr.score.ui.ScoreActions" method="storeScore"                                             button="javax.swing.JButton"/>
-    <action domain="SCORE" section="40" class="omr.score.ui.ScoreActions" method="storeScoreAs"/>
+    <action domain="SHEET" section="10" class="omr.score.ui.ScoreActions" method="buildSheet"           button="javax.swing.JButton"/>
+    <action domain="SHEET" section="30" class="omr.score.ui.ScoreActions" method="printSheet"           button="javax.swing.JButton"/>
+    <action domain="SHEET" section="30" class="omr.score.ui.ScoreActions" method="printSheetAs"/>
+    <action domain="SHEET" section="40" class="omr.score.ui.ScoreActions" method="cleanSheet"/>
+    <action domain="SHEET" section="40" class="omr.score.ui.ScoreActions" method="exportSheet"          button="javax.swing.JButton"/>
+    <action domain="SHEET" section="40" class="omr.score.ui.ScoreActions" method="exportSheetAs"/>
+
+    <action domain="BOOK" section="10" class="omr.score.ui.ScoreActions" method="buildBook"         />
+<!--    <action domain="BOOK" section="10" class="omr.score.ui.ScoreActions" method="toggleRebuild"    item="javax.swing.JCheckBoxMenuItem" />-->
+    <action domain="BOOK" section="20" class="omr.score.ui.ScoreActions" method="defineParameters"     button="javax.swing.JButton"/>
+    <action domain="BOOK" section="30" class="omr.score.ui.ScoreActions" method="printBook"  />
+    <action domain="BOOK" section="30" class="omr.score.ui.ScoreActions" method="printBookAs"/>
+    <action domain="BOOK" section="40" class="omr.score.ui.ScoreActions" method="cleanBook"/>
+    <action domain="BOOK" section="40" class="omr.score.ui.ScoreActions" method="exportBook"/>
+    <action domain="BOOK" section="40" class="omr.score.ui.ScoreActions" method="exportBookAs"/>
 <!--    
     <action domain="MIDI" section="20"  class="omr.score.midi.MidiActions" method="playMidi"                                              button="javax.swing.JButton"/>
     <action domain="MIDI" section="30"  class="omr.score.midi.MidiActions" method="writeMidi" />
@@ -66,7 +74,7 @@
 
     <action domain="PLUGIN" section="10" class="omr.plugin.PluginManager" method="invokeDefaultPlugin" button="javax.swing.JButton" />
 
-    <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="browseScore"/>
+    <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="browseBook"/>
     
     <action domain="HELP" section="20"  class="omr.ui.GuiActions" method="showManual" />
     <action domain="HELP" section="20"  class="omr.ui.GuiActions" method="visitWebSite" />

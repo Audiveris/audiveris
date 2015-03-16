@@ -29,9 +29,6 @@ public class LedgersStep
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //-------------//
-    // LedgersStep //
-    //-------------//
     /**
      * Creates a new LedgersStep object.
      */

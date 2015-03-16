@@ -55,9 +55,6 @@ public abstract class ConstantSet
     private volatile SortedMap<String, Constant> map;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // ConstantSet //
-    //-------------//
     /**
      * A new ConstantSet instance is created, and registered at the
      * UnitManager singleton, but its map of internal constants will

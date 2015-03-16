@@ -25,7 +25,6 @@ import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
-import omr.util.VerticalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,9 +49,6 @@ public class ArticulationPattern
     private static final Logger logger = LoggerFactory.getLogger(ArticulationPattern.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------------//
-    // ArticulationPattern //
-    //---------------------//
     /**
      * Creates a new ArticulationPattern object.
      *

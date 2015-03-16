@@ -29,9 +29,6 @@ public class GhostComponentAdapter<A>
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //-----------------------//
-    // GhostComponentAdapter //
-    //-----------------------//
     /**
      * Create a new GhostComponentAdapter object
      *

@@ -56,9 +56,6 @@ public class ShapeSymbol
     protected final boolean decorated;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // ShapeSymbol //
-    //-------------//
     /**
      * Create a ShapeSymbol with the provided shape and codes
      *
@@ -77,9 +74,6 @@ public class ShapeSymbol
         this.decorated = decorated;
     }
 
-    //-------------//
-    // ShapeSymbol //
-    //-------------//
     /**
      * Create a non decorated standard ShapeSymbol with the provided
      * shape and codes.

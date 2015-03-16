@@ -38,9 +38,6 @@ public class LSpinner
     protected JSpinner spinner;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // LSpinner //
-    //----------//
     /**
      * Create an editable labeled spinner with provided
      * characteristics.

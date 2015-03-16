@@ -12,15 +12,25 @@
 package omr.sig.relation;
 
 /**
- * Class {@code NoExclusion}
+ * Class {@code NoExclusion} is used to formalize that two Inters, generally originating
+ * from mirrored entities do not exclude each other, although they overlap.
+ * This occurs with beams of mirrored stems.
  *
  * @author Hervé Bitteur
  */
 public class NoExclusion
         extends BasicSupport
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
+    /**
+     * Creates a new {@code NoExclusion} object.
+     */
+    public NoExclusion ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getName //
     //---------//

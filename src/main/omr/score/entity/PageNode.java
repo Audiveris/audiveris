@@ -25,11 +25,9 @@ import omr.util.TreeNode;
 public abstract class PageNode
         extends ScoreNode
 {
+
     //~ Constructors -------------------------------------------------------------------------------
 
-    //----------//
-    // PageNode //
-    //----------//
     /**
      * Create a node in the tree, given its container
      *

@@ -54,9 +54,6 @@ public abstract class MeasureNode
     };
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // MeasureNode //
-    //-------------//
     /**
      * Create a MeasureNode
      *

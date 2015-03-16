@@ -29,9 +29,6 @@ public class SymbolImage
     private final Point refPoint;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // SymbolImage //
-    //-------------//
     /**
      * Creates a new SymbolImage object.
      *

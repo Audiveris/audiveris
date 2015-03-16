@@ -29,9 +29,6 @@ public class VirtualGlyph
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //--------------//
-    // VirtualGlyph //
-    //--------------//
     /**
      * Create a new VirtualGlyph object
      *

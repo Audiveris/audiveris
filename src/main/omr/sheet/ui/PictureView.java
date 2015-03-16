@@ -63,9 +63,6 @@ public class PictureView
     private final PageMenu pageMenu;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // PictureView //
-    //-------------//
     /**
      * Create a new {@code PictureView} instance, dedicated to a sheet.
      *

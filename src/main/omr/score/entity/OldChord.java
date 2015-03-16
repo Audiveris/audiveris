@@ -210,10 +210,6 @@ public class OldChord
     };
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //-------//
-    // Chord //
-    //-------//
     /**
      * Creates a new instance of Chord
      *
@@ -756,7 +752,7 @@ public class OldChord
             // All note heads are assumed to be the same within one chord
             Note note = (Note) getNotes().get(0);
 
-            if (!note.getShape().isMeasureRest()) {
+            if (!note.getShape().isWholeRest()) {
                 // Duration (with flags/beams applied for non-rests)
                 rawDuration = note.getNoteDuration();
 
@@ -988,7 +984,7 @@ public class OldChord
             Note.createPack(chord, glyph, assigned, true);
 
             // Keep track of measure rests (linked to no time slot)
-            if (glyph.getShape().isMeasureRest()) {
+            if (glyph.getShape().isWholeRest()) {
                 measure.addWholeChord(chord);
             }
         }
@@ -1167,7 +1163,7 @@ public class OldChord
         if (!getNotes().isEmpty()) {
             Note note = (Note) getNotes().get(0);
 
-            return note.getShape().isMeasureRest();
+            return note.getShape().isWholeRest();
         }
 
         return false;

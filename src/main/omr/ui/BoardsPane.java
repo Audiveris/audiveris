@@ -67,12 +67,9 @@ public class BoardsPane
     private String name;
 
     /** Mouse listener */
-    private MouseAdapter mouseAdapter = new MyMouseAdapter();
+    private final MouseAdapter mouseAdapter = new MyMouseAdapter();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // BoardsPane //
-    //------------//
     /**
      * Create a BoardsPane, with initial boards.
      *

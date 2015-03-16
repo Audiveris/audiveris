@@ -87,10 +87,6 @@ public class CheckPanel<C extends Checkable>
     private C checkable;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //------------//
-    // CheckPanel //
-    //------------//
     /**
      * Create a check panel for a given suite.
      *

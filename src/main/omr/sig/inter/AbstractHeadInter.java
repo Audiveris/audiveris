@@ -31,10 +31,14 @@ import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
 import omr.sheet.Measure;
+import omr.sheet.MeasureStack;
+import omr.sheet.Slot;
 import omr.sheet.Staff;
 
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;
+import omr.sig.relation.AccidHeadRelation;
+import omr.sig.relation.Relation;
 
 import ij.process.ByteProcessor;
 
@@ -45,6 +49,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Class {@code AbstractHeadInter} is the base class for notes heads, that is
@@ -63,28 +68,6 @@ public abstract class AbstractHeadInter
 
     private static final Constants constants = new Constants();
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /** Names of the various note steps. */
-    public static enum Step
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /** La */
-        A,
-        /** Si */
-        B,
-        /** Do */
-        C,
-        /** Ré */
-        D,
-        /** Mi */
-        E,
-        /** Fa */
-        F,
-        /** Sol */
-        G;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
     /** Shape template descriptor. */
     protected final ShapeDescriptor descriptor;
@@ -94,12 +77,6 @@ public abstract class AbstractHeadInter
 
     /** Relative pivot position WRT head. */
     protected final Anchor anchor;
-
-    /** Note step. */
-    protected Step step;
-
-    /** Octave. */
-    protected Integer octave;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -121,7 +98,7 @@ public abstract class AbstractHeadInter
                               Shape shape,
                               GradeImpacts impacts,
                               Staff staff,
-                              int pitch)
+                              double pitch)
     {
         super(null, box, shape, impacts, staff, pitch);
         this.descriptor = descriptor;
@@ -176,6 +153,85 @@ public abstract class AbstractHeadInter
         visitor.visit(this);
     }
 
+    //---------------//
+    // getAccidental //
+    //---------------//
+    /**
+     * Report the (local) accidental, if any, related to this head.
+     *
+     * @return the related accidental, or null
+     */
+    public AlterInter getAccidental ()
+    {
+        for (Relation rel : sig.getRelations(this, AccidHeadRelation.class)) {
+            return (AlterInter) sig.getOppositeInter(this, rel);
+        }
+
+        return null;
+    }
+
+    //----------//
+    // getAlter //
+    //----------//
+    /**
+     * Report the actual alteration of this note, taking into account the accidental of
+     * this note if any, the accidental of previous note with same step within the same
+     * measure, and finally the current key signature.
+     *
+     * @return the actual alteration
+     */
+    public int getAlter ()
+    {
+        // Look for local accidental
+        AlterInter accidental = getAccidental();
+
+        if (accidental != null) {
+            return alterationOf(accidental);
+        }
+
+        // Look for previous accidental with same note step in the measure
+        Measure measure = getChord().getMeasure();
+        MeasureStack stack = measure.getStack();
+        List<Slot> slots = stack.getSlots();
+
+        boolean started = false;
+
+        for (ListIterator<Slot> it = slots.listIterator(slots.size()); it.hasPrevious();) {
+            Slot slot = it.previous();
+
+            // Inspect all notes of all chords
+            for (ChordInter chord : slot.getChords()) {
+                if (chord.isRest() || (chord.getMeasure() != measure)) {
+                    continue;
+                }
+
+                for (Inter inter : chord.getNotes()) {
+                    AbstractHeadInter note = (AbstractHeadInter) inter;
+
+                    if (note == this) {
+                        started = true;
+                    } else if (started && (note.getStep() == getStep())) {
+                        AlterInter accid = note.getAccidental();
+
+                        if (accid != null) {
+                            return alterationOf(accid);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Finally, use the current key signature
+        KeyInter ks = measure.getKeyBefore(getCenter(), getStaff());
+
+        if (ks != null) {
+            return ks.getAlterFor(getStep());
+        }
+
+        // Nothing found, so...
+        return 0;
+    }
+
     //----------//
     // getChord //
     //----------//
@@ -202,45 +258,6 @@ public abstract class AbstractHeadInter
         return descriptor;
     }
 
-    //-----------//
-    // getOctave //
-    //-----------//
-    /**
-     * Report the octave for this note, using the current clef, and the pitch position
-     * of the note.
-     *
-     * @return the related octave
-     */
-    public int getOctave ()
-    {
-        if (octave == null) {
-            ChordInter chord = (ChordInter) getEnsemble();
-            Measure measure = chord.getMeasure();
-            octave = ClefInter.octaveOf(measure.getClefBefore(getCenter(), getStaff()), pitch);
-        }
-
-        return octave;
-    }
-
-    //---------//
-    // getStep //
-    //---------//
-    /**
-     * Report the note step (within the octave)
-     *
-     * @return the note step
-     */
-    public Step getStep ()
-    {
-        if (step == null) {
-            ChordInter chord = (ChordInter) getEnsemble();
-            Measure measure = chord.getMeasure();
-            step = ClefInter.noteStepOf(measure.getClefBefore(getCenter(), staff), pitch);
-        }
-
-        return step;
-    }
-
     //----------//
     // overlaps //
     //----------//
@@ -248,7 +265,7 @@ public abstract class AbstractHeadInter
      * Specific overlap implementation between notes, based on their pitch value.
      * <p>
      * TODO: A clean overlap check might use true distance tables around each of the heads.
-     * For the time being, we simply play with the width & area of intersection rectangle.
+     * For the time being, we simply play with the width and area of intersection rectangle.
      *
      * @param that another inter (perhaps a note)
      * @return true if overlap is detected
@@ -261,7 +278,7 @@ public abstract class AbstractHeadInter
             AbstractHeadInter thatNote = (AbstractHeadInter) that;
 
             // Check vertical distance
-            if (Math.abs(thatNote.getPitch() - pitch) > 1) {
+            if (Math.abs(thatNote.getIntegerPitch() - getIntegerPitch()) > 1) {
                 return false;
             }
 
@@ -335,6 +352,43 @@ public abstract class AbstractHeadInter
         }
 
         glyph = nest.buildGlyph(sections, GlyphLayer.DEFAULT, true, Glyph.Linking.NO_LINK);
+    }
+
+    //--------------//
+    // alterationOf //
+    //--------------//
+    /**
+     * Report the pitch alteration that corresponds to the provided accidental.
+     *
+     * @param accidental the provided accidental
+     * @return the pitch impact
+     */
+    private int alterationOf (AlterInter accidental)
+    {
+        switch (accidental.getShape()) {
+        case SHARP:
+            return 1;
+
+        case DOUBLE_SHARP:
+            return 2;
+
+        case FLAT:
+            return -1;
+
+        case DOUBLE_FLAT:
+            return -2;
+
+        case NATURAL:
+            return 0;
+
+        default:
+            logger.warn(
+                    "Weird shape {} for accidental {}",
+                    accidental.getShape(),
+                    accidental.getId());
+
+            return 0; // Should not happen
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

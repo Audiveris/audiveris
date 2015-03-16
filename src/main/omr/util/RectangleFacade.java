@@ -34,20 +34,14 @@ public class RectangleFacade
     private final Rectangle rectangle;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // RectangleFacade //
-    //-----------------//
     /**
-     * Creates a new instance of RectangleFacade
+     * Creates a new instance of RectangleFacade.
      */
     public RectangleFacade ()
     {
         rectangle = new Rectangle();
     }
 
-    //-----------------//
-    // RectangleFacade //
-    //-----------------//
     /**
      * Creates a new RectangleFacade object.
      *

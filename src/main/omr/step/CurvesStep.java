@@ -27,9 +27,6 @@ public class CurvesStep
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //-----------//
-    // CurvesStep //
-    //-----------//
     /**
      * Creates a new SlursStep object.
      */

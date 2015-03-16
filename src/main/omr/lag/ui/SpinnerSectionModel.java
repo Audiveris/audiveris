@@ -42,9 +42,6 @@ public class SpinnerSectionModel
     private Integer currentId;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------------//
-    // SpinnerSectionModel //
-    //---------------------//
     /**
      * Creates a new SpinnerSectionModel object, on all lag sections
      *

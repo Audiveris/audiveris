@@ -26,7 +26,7 @@ public class SectionSignature
     private final int weight;
 
     /** Section bounds */
-    private Rectangle bounds;
+    private final Rectangle bounds;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

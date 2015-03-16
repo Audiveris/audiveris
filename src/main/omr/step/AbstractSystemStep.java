@@ -41,9 +41,6 @@ public abstract class AbstractSystemStep<C>
     private static final Logger logger = LoggerFactory.getLogger(AbstractSystemStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------------//
-    // AbstractSystemStep //
-    //--------------------//
     /**
      * Creates a new AbstractSystemStep object.
      *
@@ -77,8 +74,8 @@ public abstract class AbstractSystemStep<C>
     // doSystem //
     //----------//
     /**
-     * Actually perform the step on the given system. This method must be
-     * actually defined for any concrete system step.
+     * Actually perform the step on the given system.
+     * This method must be actually defined for any concrete system step.
      *
      * @param system  the system to process
      * @param context the sheet context
@@ -107,8 +104,7 @@ public abstract class AbstractSystemStep<C>
     // doEpilog //
     //----------//
     /**
-     * Final processing for this step, once all systems have been
-     * processed.
+     * Final processing for this step, once all systems have been processed.
      *
      * @param systems the systems which have been updated
      * @param sheet   the containing sheet
@@ -127,8 +123,7 @@ public abstract class AbstractSystemStep<C>
     // doProlog //
     //----------//
     /**
-     * Do preliminary common work before all systems processing are
-     * launched in parallel.
+     * Do preliminary common work before all systems processing are launched in parallel.
      *
      * @param systems the systems which will be updated
      * @param sheet   the containing sheet

@@ -23,7 +23,7 @@ import java.util.Locale;
  *
  * @author Hervé Bitteur
  */
-public class Clock
+public abstract class Clock
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -32,35 +32,31 @@ public class Clock
 
     /** General date formatting */
     private static final DateFormat dateFormatter = DateFormat.getDateTimeInstance(
-        DateFormat.FULL,
-        DateFormat.FULL,
-        Locale.US);
+            DateFormat.FULL,
+            DateFormat.FULL,
+            Locale.US);
 
     /** General time formatting. Locale to be used, could be: //Locale.US;
      * //Locale.FRANCE; */
-    private static Locale locale = Locale.getDefault();
+    private static final Locale locale = Locale.getDefault();
 
     /** Corresponding number format */
-    private static NumberFormat nf = NumberFormat.getNumberInstance(locale);
+    private static final NumberFormat nf = NumberFormat.getNumberInstance(locale);
 
     /** Decimal format */
-    private static DecimalFormat timeFormatter = (DecimalFormat) nf;
+    private static final DecimalFormat timeFormatter = (DecimalFormat) nf;
 
     static {
         timeFormatter.applyPattern("000,000.00");
     }
 
     //~ Constructors -------------------------------------------------------------------------------
-
-    //-------//
-    // Clock // To prevent instantiation
-    //-------//
+    /** To prevent instantiation. */
     private Clock ()
     {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //---------//
     // getDate //
     //---------//

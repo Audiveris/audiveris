@@ -28,45 +28,43 @@ public class ActionDescriptor
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Class name */
+    /** Class name. */
     @XmlAttribute(name = "class")
     public String className;
 
-    /** Name of method within class */
+    /** Name of method within class. */
     @XmlAttribute(name = "method")
     public String methodName;
 
-    /** Which UI domain (menu) should host this action */
+    /** Which UI domain (menu) should host this action. */
     @XmlAttribute(name = "domain")
     public String domain;
 
+    /** Menu level, 0 for pull-down menu, 1 for sub-menu. */
+    @XmlAttribute(name = "level")
+    public Integer level;
+
     /**
      * Which UI section should host this action.
-     * Any value is OK, but items with the same section value will be gathered
-     * together in the menu, while different sections will be separated by a
-     * menu separator
+     * Any value is OK, but items with the same section value will be gathered together in the menu,
+     * while different sections will be separated by a menu separator
      */
     @XmlAttribute(name = "section")
     public Integer section;
 
     /**
-     * Which kind of menu item should be generated for this action,
-     * default is JMenuItem
+     * Which kind of menu item should be generated for this action, default is JMenuItem.
      */
     @XmlAttribute(name = "item")
     public String itemClassName;
 
     /**
-     * Which kind of (toolbar) button should be generated for this action,
-     * default is null
+     * Which kind of (toolbar) button should be generated for this action, default is null.
      */
     @XmlAttribute(name = "button")
     public String buttonClassName;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // ActionDescriptor //
-    //------------------//
     /**
      * To force instantiation through JAXB unmarshalling only.
      */

@@ -39,9 +39,6 @@ public abstract class Node
     private final String name;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------//
-    // Node //
-    //------//
     /**
      * Create a new Node.
      *

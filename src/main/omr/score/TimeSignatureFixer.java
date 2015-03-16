@@ -28,11 +28,12 @@ import omr.util.WrappedBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
  * Class {@code TimeSignatureFixer} can visit the score hierarchy to check whether each
@@ -44,24 +45,9 @@ public class TimeSignatureFixer
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            TimeSignatureFixer.class);
-
-    /** Used to sort integers by decreasing value */
-    protected static final Comparator<Integer> reverseIntComparator = new Comparator<Integer>()
-    {
-        @Override
-        public int compare (Integer e1,
-                            Integer e2)
-        {
-            return Integer.compare(e2, e1);
-        }
-    };
+    private static final Logger logger = LoggerFactory.getLogger(TimeSignatureFixer.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------------//
-    // TimeSignatureFixer //
-    //--------------------//
     /**
      * Creates a new TimeSignatureFixer object.
      */
@@ -148,9 +134,8 @@ public class TimeSignatureFixer
      * significant intrinsic time sig as determined by measures chords.
      * Based on this "intrinsic" time information, modify the explicit time signatures accordingly.
      *
-     * startStack startMeasure beginning of the measure range
-     *
-     * @param stopStack end of the measure range
+     * @param startStack beginning of the measure range
+     * @param stopStack  end of the measure range
      */
     private void checkTimeSigs (MeasureStack startStack,
                                 MeasureStack stopStack)
@@ -161,16 +146,30 @@ public class TimeSignatureFixer
                 stopStack.getPageId());
 
         // Retrieve the best possible time signature(s)
-        SortedMap<Integer, TimeRational> bestSigs = retrieveBestSigs(startStack, stopStack);
+        final Map<TimeRational, Integer> sigMap = retrieveBestSigs(startStack, stopStack);
+
+        // Sort them by decreasing occurrences
+        List<TimeRational> sigs = new ArrayList<TimeRational>(sigMap.keySet());
+        Collections.sort(
+                sigs,
+                new Comparator<TimeRational>()
+                {
+                    @Override
+                    public int compare (TimeRational t1,
+                                        TimeRational t2)
+                    {
+                        return Integer.compare(sigMap.get(t2), sigMap.get(t1));
+                    }
+                });
         logger.debug(
                 "{}Best inferred time sigs in [M#{},M#{}]: {}",
                 startStack.getSystem().getPage().getSheet().getLogPrefix(),
                 startStack.getIdValue(),
                 stopStack.getIdValue(),
-                bestSigs);
+                sigs);
 
-        if (!bestSigs.isEmpty()) {
-            TimeRational bestRational = bestSigs.get(bestSigs.firstKey());
+        if (!sigs.isEmpty()) {
+            TimeRational bestRational = sigs.get(0);
 
             if (!TimeSignature.isAcceptable(bestRational)) {
                 logger.debug("Time sig too uncommon: {}", bestRational);
@@ -193,7 +192,7 @@ public class TimeSignatureFixer
                             if ((timeRational == null) || !timeRational.equals(bestRational)) {
                                 logger.info(
                                         "{}Measure#{} {}T{} {}->{}",
-                                        measure.getPage().getSheet().getLogPrefix(),
+                                        measure.getPart().getSystem().getSheet().getLogPrefix(),
                                         measure.getStack().getPageId(),
                                         staff.getId(),
                                         staff.getId(),
@@ -256,10 +255,10 @@ public class TimeSignatureFixer
      *
      * @param startStack beginning of the stack range
      * @param stopStack  end of the stack range
-     * @return a map, sorted by decreasing count, of possible time signatures
+     * @return a map of possible time signatures, with their occurrence number
      */
-    private SortedMap<Integer, TimeRational> retrieveBestSigs (MeasureStack startStack,
-                                                               MeasureStack stopStack)
+    private Map<TimeRational, Integer> retrieveBestSigs (MeasureStack startStack,
+                                                         MeasureStack stopStack)
     {
         // Retrieve the significant measure informations
         final Map<TimeRational, Integer> sigs = new LinkedHashMap<TimeRational, Integer>();
@@ -295,18 +294,10 @@ public class TimeSignatureFixer
             if (stack == stopStack) {
                 break; // We are through
             } else {
-                stack = stack.getFollowingInPage(); // Move to next measure
+                stack = stack.getFollowingInPage(); // Move to next measure stack
             }
         }
 
-        // Sort info by decreasing counts
-        SortedMap<Integer, TimeRational> bestSigs = new TreeMap<Integer, TimeRational>(
-                reverseIntComparator);
-
-        for (Map.Entry<TimeRational, Integer> entry : sigs.entrySet()) {
-            bestSigs.put(entry.getValue(), entry.getKey());
-        }
-
-        return bestSigs;
+        return sigs;
     }
 }

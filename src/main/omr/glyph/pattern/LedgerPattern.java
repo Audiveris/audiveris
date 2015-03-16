@@ -68,9 +68,6 @@ public class LedgerPattern
     final int interChunkDy;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // LedgerPattern //
-    //---------------//
     /**
      * Creates a new LedgerPattern object.
      *

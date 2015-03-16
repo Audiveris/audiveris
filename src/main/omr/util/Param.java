@@ -30,10 +30,6 @@ public class Param<E>
     protected E specific;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //-------//
-    // Param //
-    //-------//
     /**
      * Creates a Param object, with no parent.
      */
@@ -42,9 +38,6 @@ public class Param<E>
         this(null);
     }
 
-    //-------//
-    // Param //
-    //-------//
     /**
      * Creates a Param object.
      *

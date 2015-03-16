@@ -31,9 +31,6 @@ public class PixelDistance
     public final double d;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // PixelDistance //
-    //---------------//
     /**
      * Creates a new PixelDistance object.
      *

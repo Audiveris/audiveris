@@ -45,9 +45,6 @@ class BasicAdministration
     protected String idString = "glyph#" + 0;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------------//
-    // BasicAdministration //
-    //---------------------//
     /**
      * Create a new BasicAdministration object
      *

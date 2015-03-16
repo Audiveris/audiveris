@@ -15,8 +15,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.math.Circle;
-
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -42,7 +40,7 @@ import java.util.List;
 /**
  * Class {@code Slur} encapsulates a slur (a curve) in a system.
  * <p>
- * A slur is used for a tie (2 notes with the same octave & step) or for
+ * A slur is used for a tie (2 notes with the same octave and step) or for
  * just a phrase embracing several notes.
  *
  * @author Hervé Bitteur
@@ -154,9 +152,6 @@ public class Slur
     private boolean tie;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------//
-    // Slur //
-    //------//
     /**
      * Create a slur with all the specified parameters.
      *
@@ -195,144 +190,6 @@ public class Slur
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Given a glyph (potentially representing a Slur), allocate the Slur
-     * entity that corresponds to this glyph.
-     *
-     * @param glyph  The glyph to process
-     * @param system The system which will contain the allocated Slur
-     */
-    public static void populate (Glyph glyph,
-                                 ScoreSystem system)
-    {
-//        if (glyph.isVip()) {
-//            logger.info("Slur. populate {}", glyph.idString());
-//        }
-//
-//        // Compute the approximating circle
-//        Circle circle = system.getInfo().getSlurInspector().getCircle(glyph);
-//        CubicCurve2D curve = circle.getCurve();
-//
-//        // Safer
-//        if (curve == null) {
-//            logger.debug("No curve found for slur candidate #{}", glyph.getId());
-//
-//            return;
-//        }
-//
-//        // Retrieve & sort nodes (notes or chords) on both ends of the slur
-//        List<MeasureNode> leftNodes = new ArrayList<MeasureNode>();
-//        List<MeasureNode> rightNodes = new ArrayList<MeasureNode>();
-//
-//        boolean below = retrieveEmbracedNotes(
-//                glyph,
-//                system,
-//                curve,
-//                leftNodes,
-//                rightNodes);
-//
-//        // Now choose the most relevant note, if any, on each slur end
-//        End leftEnd = null;
-//        End rightEnd = null;
-//
-//        switch (leftNodes.size()) {
-//        case 0:
-//
-//            switch (rightNodes.size()) {
-//            case 0:
-//                break;
-//
-//            case 1:
-//                rightEnd = new End(rightNodes.get(0));
-//
-//                break;
-//
-//            default:
-//                rightEnd = new End(rightNodes.get(0)); // Why not?
-//            }
-//
-//            break;
-//
-//        case 1:
-//            leftEnd = new End(leftNodes.get(0));
-//
-//            switch (rightNodes.size()) {
-//            case 0:
-//                break;
-//
-//            case 1:
-//                rightEnd = new End(rightNodes.get(0));
-//
-//                break;
-//
-//            default:
-//
-//                for (MeasureNode node : rightNodes) {
-//                    rightEnd = new End(node);
-//
-//                    if (leftEnd.stemDir == rightEnd.stemDir) {
-//                        break;
-//                    }
-//                }
-//            }
-//
-//            break;
-//
-//        default:
-//
-//            switch (rightNodes.size()) {
-//            case 0:
-//                leftEnd = new End(leftNodes.get(0)); // Why not?
-//
-//                break;
-//
-//            case 1:
-//                rightEnd = new End(rightNodes.get(0));
-//
-//                for (MeasureNode node : leftNodes) {
-//                    leftEnd = new End(node);
-//
-//                    if (leftEnd.stemDir == rightEnd.stemDir) {
-//                        break;
-//                    }
-//                }
-//
-//                break;
-//
-//            default: // N left & P right
-//                leftEnd = new End(leftNodes.get(0)); // Why not?
-//                rightEnd = new End(rightNodes.get(0)); // Why not?
-//            }
-//        }
-//
-//        // Should we allocate the slur entity?
-//        if ((leftEnd != null) || (rightEnd != null)) {
-//            OldSystemPart part = (leftEnd != null) ? leftEnd.note.getPart() : rightEnd.note.getPart();
-//
-//            if ((leftEnd != null) && (rightEnd != null) && (leftEnd.note == rightEnd.note)) {
-//                // Slur looping on the same note!
-//                logger.debug("Looping slur {}", glyph.idString());
-//                glyph.setShape(null);
-//            } else {
-//                Slur slur = new Slur(
-//                        part,
-//                        glyph,
-//                        curve,
-//                        below,
-//                        (leftEnd != null) ? leftEnd.note : null,
-//                        (rightEnd != null) ? rightEnd.note : null);
-//                glyph.setTranslation(slur);
-//
-//                logger.debug(slur.toString());
-//            }
-//        } else {
-//            system.addError(glyph, "Slur with no embraced notes");
-//        }
-    }
-
     //--------//
     // accept //
     //--------//
@@ -545,6 +402,144 @@ public class Slur
         return tie;
     }
 
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Given a glyph (potentially representing a Slur), allocate the Slur
+     * entity that corresponds to this glyph.
+     *
+     * @param glyph  The glyph to process
+     * @param system The system which will contain the allocated Slur
+     */
+    public static void populate (Glyph glyph,
+                                 ScoreSystem system)
+    {
+        //        if (glyph.isVip()) {
+        //            logger.info("Slur. populate {}", glyph.idString());
+        //        }
+        //
+        //        // Compute the approximating circle
+        //        Circle circle = system.getInfo().getSlurInspector().getCircle(glyph);
+        //        CubicCurve2D curve = circle.getCurve();
+        //
+        //        // Safer
+        //        if (curve == null) {
+        //            logger.debug("No curve found for slur candidate #{}", glyph.getId());
+        //
+        //            return;
+        //        }
+        //
+        //        // Retrieve & sort nodes (notes or chords) on both ends of the slur
+        //        List<MeasureNode> leftNodes = new ArrayList<MeasureNode>();
+        //        List<MeasureNode> rightNodes = new ArrayList<MeasureNode>();
+        //
+        //        boolean below = retrieveEmbracedNotes(
+        //                glyph,
+        //                system,
+        //                curve,
+        //                leftNodes,
+        //                rightNodes);
+        //
+        //        // Now choose the most relevant note, if any, on each slur end
+        //        End leftEnd = null;
+        //        End rightEnd = null;
+        //
+        //        switch (leftNodes.size()) {
+        //        case 0:
+        //
+        //            switch (rightNodes.size()) {
+        //            case 0:
+        //                break;
+        //
+        //            case 1:
+        //                rightEnd = new End(rightNodes.get(0));
+        //
+        //                break;
+        //
+        //            default:
+        //                rightEnd = new End(rightNodes.get(0)); // Why not?
+        //            }
+        //
+        //            break;
+        //
+        //        case 1:
+        //            leftEnd = new End(leftNodes.get(0));
+        //
+        //            switch (rightNodes.size()) {
+        //            case 0:
+        //                break;
+        //
+        //            case 1:
+        //                rightEnd = new End(rightNodes.get(0));
+        //
+        //                break;
+        //
+        //            default:
+        //
+        //                for (MeasureNode node : rightNodes) {
+        //                    rightEnd = new End(node);
+        //
+        //                    if (leftEnd.stemDir == rightEnd.stemDir) {
+        //                        break;
+        //                    }
+        //                }
+        //            }
+        //
+        //            break;
+        //
+        //        default:
+        //
+        //            switch (rightNodes.size()) {
+        //            case 0:
+        //                leftEnd = new End(leftNodes.get(0)); // Why not?
+        //
+        //                break;
+        //
+        //            case 1:
+        //                rightEnd = new End(rightNodes.get(0));
+        //
+        //                for (MeasureNode node : leftNodes) {
+        //                    leftEnd = new End(node);
+        //
+        //                    if (leftEnd.stemDir == rightEnd.stemDir) {
+        //                        break;
+        //                    }
+        //                }
+        //
+        //                break;
+        //
+        //            default: // N left & P right
+        //                leftEnd = new End(leftNodes.get(0)); // Why not?
+        //                rightEnd = new End(rightNodes.get(0)); // Why not?
+        //            }
+        //        }
+        //
+        //        // Should we allocate the slur entity?
+        //        if ((leftEnd != null) || (rightEnd != null)) {
+        //            OldSystemPart part = (leftEnd != null) ? leftEnd.note.getPart() : rightEnd.note.getPart();
+        //
+        //            if ((leftEnd != null) && (rightEnd != null) && (leftEnd.note == rightEnd.note)) {
+        //                // Slur looping on the same note!
+        //                logger.debug("Looping slur {}", glyph.idString());
+        //                glyph.setShape(null);
+        //            } else {
+        //                Slur slur = new Slur(
+        //                        part,
+        //                        glyph,
+        //                        curve,
+        //                        below,
+        //                        (leftEnd != null) ? leftEnd.note : null,
+        //                        (rightEnd != null) ? rightEnd.note : null);
+        //                glyph.setTranslation(slur);
+        //
+        //                logger.debug(slur.toString());
+        //            }
+        //        } else {
+        //            system.addError(glyph, "Slur with no embraced notes");
+        //        }
+    }
+
     //--------------------//
     // resetLeftExtension //
     //--------------------//
@@ -699,81 +694,6 @@ public class Slur
         return power < 0;
     }
 
-    //------------------//
-    // isCompatibleWith //
-    //------------------//
-    /**
-     * Check whether two slurs to-be-connected are roughly compatible
-     * with each other (same staff id, and pitch positions not too
-     * different).
-     *
-     * @param prevSlur the previous slur
-     * @return true if found compatible
-     */
-    private boolean isCompatibleWith (Slur prevSlur)
-    {
-        // Retrieve prev staff, using the left point of the prev slur
-        OldStaff prevStaff = prevSlur.getPart().getStaffAt(
-                new Point((int) prevSlur.curve.getX1(), (int) prevSlur.curve.getY1()));
-
-        // Retrieve staff, using the right point of the slur
-        OldStaff staff = getPart().getStaffAt(new Point((int) curve.getX2(), (int) curve.getY2()));
-
-        if (prevStaff.getId() != staff.getId()) {
-            logger.debug(
-                    "prevSlur#{} prevStaff:{} slur#{} staff:{} different staff id",
-                    prevSlur.getId(),
-                    prevStaff.getId(),
-                    getId(),
-                    staff.getId());
-
-            return false;
-        }
-
-        // Retrieve prev position, using the right point of the prev slur
-        double prevPp = prevStaff.pitchPositionOf(
-                new Point((int) prevSlur.curve.getX2(), (int) prevSlur.curve.getY2()));
-
-        // Retrieve position, using the left point of the slur
-        Point pt = new Point((int) curve.getX1(), (int) curve.getY1());
-        double pp = staff.pitchPositionOf(pt);
-
-        // Compare staves and pitch positions (very roughly)
-        double deltaPitch = pp - prevPp;
-        boolean res = Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2);
-        logger.debug(
-                "prevSlur#{} slur#{} deltaPitch:{} res:{}",
-                prevSlur.getId(),
-                this.getId(),
-                deltaPitch,
-                res);
-
-        return res;
-    }
-
-    //-------//
-    // isTie //
-    //-------//
-    private boolean isTie (Note leftNote,
-                           Note rightNote)
-    {
-        if (!haveSameHeight(leftNote, rightNote)) {
-            return false;
-        }
-
-        // Check that we are not embracing several chords of the same beam group
-        OldChord leftChord = leftNote.getChord();
-        OldBeamGroup leftGroup = leftChord.getBeamGroup();
-        OldChord rightChord = rightNote.getChord();
-        OldBeamGroup rightGroup = rightChord.getBeamGroup();
-
-        if ((leftGroup != null) && (leftGroup == rightGroup)) {
-            return false;
-        }
-
-        return true;
-    }
-
     //-----------------------//
     // retrieveEmbracedNotes //
     //-----------------------//
@@ -862,6 +782,81 @@ public class Slur
         return below;
     }
 
+    //------------------//
+    // isCompatibleWith //
+    //------------------//
+    /**
+     * Check whether two slurs to-be-connected are roughly compatible
+     * with each other (same staff id, and pitch positions not too
+     * different).
+     *
+     * @param prevSlur the previous slur
+     * @return true if found compatible
+     */
+    private boolean isCompatibleWith (Slur prevSlur)
+    {
+        // Retrieve prev staff, using the left point of the prev slur
+        OldStaff prevStaff = prevSlur.getPart().getStaffAt(
+                new Point((int) prevSlur.curve.getX1(), (int) prevSlur.curve.getY1()));
+
+        // Retrieve staff, using the right point of the slur
+        OldStaff staff = getPart().getStaffAt(new Point((int) curve.getX2(), (int) curve.getY2()));
+
+        if (prevStaff.getId() != staff.getId()) {
+            logger.debug(
+                    "prevSlur#{} prevStaff:{} slur#{} staff:{} different staff id",
+                    prevSlur.getId(),
+                    prevStaff.getId(),
+                    getId(),
+                    staff.getId());
+
+            return false;
+        }
+
+        // Retrieve prev position, using the right point of the prev slur
+        double prevPp = prevStaff.pitchPositionOf(
+                new Point((int) prevSlur.curve.getX2(), (int) prevSlur.curve.getY2()));
+
+        // Retrieve position, using the left point of the slur
+        Point pt = new Point((int) curve.getX1(), (int) curve.getY1());
+        double pp = staff.pitchPositionOf(pt);
+
+        // Compare staves and pitch positions (very roughly)
+        double deltaPitch = pp - prevPp;
+        boolean res = Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2);
+        logger.debug(
+                "prevSlur#{} slur#{} deltaPitch:{} res:{}",
+                prevSlur.getId(),
+                this.getId(),
+                deltaPitch,
+                res);
+
+        return res;
+    }
+
+    //-------//
+    // isTie //
+    //-------//
+    private boolean isTie (Note leftNote,
+                           Note rightNote)
+    {
+        if (!haveSameHeight(leftNote, rightNote)) {
+            return false;
+        }
+
+        // Check that we are not embracing several chords of the same beam group
+        OldChord leftChord = leftNote.getChord();
+        OldBeamGroup leftGroup = leftChord.getBeamGroup();
+        OldChord rightChord = rightNote.getChord();
+        OldBeamGroup rightGroup = rightChord.getBeamGroup();
+
+        if ((leftGroup != null) && (leftGroup == rightGroup)) {
+            return false;
+        }
+
+        return true;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -886,37 +881,6 @@ public class Slur
         Scale.Fraction maxDeltaY = new Scale.Fraction(
                 4,
                 "Maximum difference in interlines between connecting slurs");
-    }
-
-    //-----//
-    // End //
-    //-----//
-    /**
-     * Note information on one end of a slur.
-     */
-    private static class End
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        // The precise note embraced by the slur on this side
-        final Note note;
-
-        // The related chord stem direction
-        final int stemDir;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public End (MeasureNode node)
-        {
-            if (node instanceof Note) {
-                note = (Note) node;
-            } else {
-                OldChord chord = (OldChord) node;
-                // Take the last note (closest to the tail)
-                note = (Note) chord.getNotes().get(chord.getNotes().size() - 1);
-            }
-
-            stemDir = note.getChord().getStemDir();
-        }
     }
 
     //----------------//
@@ -949,6 +913,37 @@ public class Slur
             Point p2 = (n2 instanceof OldChord) ? ((OldChord) n2).getTailLocation() : n2.getCenter();
 
             return Double.compare(p1.distance(ref), p2.distance(ref));
+        }
+    }
+
+    //-----//
+    // End //
+    //-----//
+    /**
+     * Note information on one end of a slur.
+     */
+    private static class End
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        // The precise note embraced by the slur on this side
+        final Note note;
+
+        // The related chord stem direction
+        final int stemDir;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public End (MeasureNode node)
+        {
+            if (node instanceof Note) {
+                note = (Note) node;
+            } else {
+                OldChord chord = (OldChord) node;
+                // Take the last note (closest to the tail)
+                note = (Note) chord.getNotes().get(chord.getNotes().size() - 1);
+            }
+
+            stemDir = note.getChord().getStemDir();
         }
     }
 }

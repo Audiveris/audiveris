@@ -117,9 +117,6 @@ public class OldMeasure
     private List<OldVoice> voices;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------//
-    // OldMeasure //
-    //---------//
     /**
      * Create a measure with the specified parameters.
      *
@@ -781,7 +778,7 @@ public class OldMeasure
             measure = measure.getPrecedingInPage();
 
             if (measure == null) {
-                page = page.getPrecedingInScore();
+                page = page.getPrecedingInScore(null);
 
                 if (page == null) {
                     return null;
@@ -874,7 +871,7 @@ public class OldMeasure
      * current time signature.
      *
      * @return the expected measure duration
-     * @throws InvalidTimeSignature
+     * @throws InvalidTimeSignature invalid TS found
      */
     public Rational getExpectedDuration ()
             throws InvalidTimeSignature

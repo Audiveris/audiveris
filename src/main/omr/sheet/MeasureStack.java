@@ -30,6 +30,10 @@ import omr.sig.inter.TimeInter;
 import omr.sig.inter.TupletInter;
 
 import omr.util.HorizontalSide;
+
+import static omr.util.HorizontalSide.LEFT;
+import static omr.util.HorizontalSide.RIGHT;
+
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -40,11 +44,10 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import omr.score.Score;
 
 /**
  * Class {@code MeasureStack} represents a vertical stack of measures, embracing all
@@ -78,6 +81,16 @@ public class MeasureStack
     /** String prefix for a second half id. */
     private static final String SH_STRING = "X";
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    public enum Special
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        PICKUP,
+        FIRST_HALF,
+        SECOND_HALF;
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** The containing system. */
     @Navigable(false)
@@ -89,8 +102,14 @@ public class MeasureStack
     /** (Page-based) measure Id. */
     private Integer id;
 
+    /** Minimum left abscissa. */
+    private int left;
+
+    /** Maximum right abscissa. */
+    private int right;
+
     /** Flag for special measure. */
-    private Measure.Special special;
+    private Special special;
 
     /** Repeat sign on either side of the measure stack. */
     private Set<HorizontalSide> repeat;
@@ -116,8 +135,8 @@ public class MeasureStack
     /** Additional relevant rhythm inters for this stack. */
     private final List<Inter> rhythms = new ArrayList<Inter>();
 
-    //-- Resettable rhythm data ---
-    //-----------------------------
+    //-- Resettable rhythm data --
+    //----------------------------
     //
     /** Sequence of time slots within the measure. */
     private final List<Slot> slots = new ArrayList<Slot>();
@@ -127,6 +146,9 @@ public class MeasureStack
 
     /** Actual measure stack duration, based on durations of contained chords. */
     private Rational actualDuration;
+
+    /** Excess duration, if any. */
+    private Rational excess;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -162,7 +184,7 @@ public class MeasureStack
             ChordInter chord = (ChordInter) inter;
             Staff staff = chord.getStaff();
             Part part = staff.getPart();
-            int partIndex = system.getAllParts().indexOf(part);
+            int partIndex = system.getParts().indexOf(part);
             Measure measure = measures.get(partIndex);
             chord.setMeasure(measure);
 
@@ -181,10 +203,26 @@ public class MeasureStack
                     wholeRestChords.add(chord);
                 }
             }
-        } else if (inter instanceof TimeInter) {
-            // Nothing, leave it to measure only
         } else if (!rhythms.contains(inter)) {
             rhythms.add(inter);
+        }
+    }
+
+    //------------//
+    // addMeasure //
+    //------------//
+    public void addMeasure (Measure measure)
+    {
+        if (measures.isEmpty()) {
+            left = Integer.MAX_VALUE;
+            right = 0;
+        }
+
+        measures.add(measure);
+
+        for (Staff staff : measure.getPart().getStaves()) {
+            left = Math.min(left, measure.getAbscissa(LEFT, staff));
+            right = Math.max(right, measure.getAbscissa(RIGHT, staff));
         }
     }
 
@@ -198,6 +236,45 @@ public class MeasureStack
         }
 
         repeat.add(side);
+    }
+
+    //------------------//
+    // addTimeSignature //
+    //------------------//
+    public void addTimeSignature (TimeInter ts)
+    {
+        // Populate (part) measure with provided time signature
+        Staff staff = ts.getStaff();
+        Point center = ts.getCenter();
+        Measure measure = staff.getPart().getMeasureAt(center);
+        measure.addInter(ts);
+    }
+
+    //---------------//
+    // checkDuration //
+    //---------------//
+    /**
+     * Check the duration as computed in this measure from its contained voices,
+     * compared to its theoretical duration.
+     */
+    public void checkDuration ()
+    {
+        // Check duration of each voice
+        for (Voice voice : voices) {
+            voice.checkDuration(this);
+        }
+    }
+
+    //-------------//
+    // clearInters //
+    //-------------//
+    public void clearInters ()
+    {
+        graceChords.clear();
+        chords.clear();
+        restChords.clear();
+        wholeRestChords.clear();
+        rhythms.clear();
     }
 
     //-------------------//
@@ -251,6 +328,41 @@ public class MeasureStack
         //                rightChord.getMeasure().swapVoiceId(rightVoice, leftVoice.getId());
         //            }
         //        }
+    }
+
+    //--------//
+    // filter //
+    //--------//
+    public List<Inter> filter (List<Inter> systemInters)
+    {
+        List<Inter> kept = new ArrayList<Inter>();
+
+        for (Inter inter : systemInters) {
+            Point center = inter.getCenter();
+
+            // Rough limits
+            if ((center.x < left) || (center.x > right)) {
+                continue;
+            }
+
+            Staff staff = inter.getStaff();
+            final Measure measure;
+
+            if (staff != null) {
+                measure = staff.getPart().getMeasureAt(center);
+            } else {
+                List<Staff> stavesArounds = system.getStavesAround(center); // 1 or 2 staves
+                staff = stavesArounds.get(0);
+                measure = getMeasureAt(staff);
+            }
+
+            if ((measure.getAbscissa(LEFT, staff) <= center.x)
+                && (center.x <= measure.getAbscissa(RIGHT, staff))) {
+                kept.add(inter);
+            }
+        }
+
+        return kept;
     }
 
     //-------------------//
@@ -396,39 +508,52 @@ public class MeasureStack
         return null; // Not found !!!
     }
 
+    //-----------//
+    // getExcess //
+    //-----------//
+    /**
+     * Report the excess duration of this stack, if any.
+     *
+     * @return the duration in excess, or null
+     */
+    public Rational getExcess ()
+    {
+        return excess;
+    }
+
     //---------------------//
     // getExpectedDuration //
     //---------------------//
     /**
-     * Report the theoretical duration of this measure, based on current time signature.
+     * Report the theoretical duration of this stack.
      *
-     * @return the expected measure duration
-     * @throws InvalidTimeSignature
+     * @return the expected measure stack duration
      */
     public Rational getExpectedDuration ()
-            throws TimeSignature.InvalidTimeSignature
     {
-        try {
-            if (expectedDuration == null) {
-                int numerator;
-                int denominator;
-                TimeInter ts = getCurrentTimeSignature();
+        return expectedDuration;
 
-                if (ts != null) {
-                    numerator = ts.getNumerator();
-                    denominator = ts.getDenominator();
-                } else {
-                    numerator = 4;
-                    denominator = 4;
-                }
-
-                expectedDuration = new Rational(numerator, denominator);
-            }
-
-            return expectedDuration;
-        } catch (NullPointerException npe) {
-            throw new TimeSignature.InvalidTimeSignature();
-        }
+        //        try {
+        //            if (expectedDuration == null) {
+        //                int numerator;
+        //                int denominator;
+        //                TimeInter ts = getCurrentTimeSignature();
+        //
+        //                if (ts != null) {
+        //                    numerator = ts.getNumerator();
+        //                    denominator = ts.getDenominator();
+        //                } else {
+        //                    numerator = 4;
+        //                    denominator = 4;
+        //                }
+        //
+        //                expectedDuration = new Rational(numerator, denominator);
+        //            }
+        //
+        //            return expectedDuration;
+        //        } catch (NullPointerException npe) {
+        //            throw new TimeSignature.InvalidTimeSignature();
+        //        }
     }
 
     //-----------------//
@@ -542,11 +667,7 @@ public class MeasureStack
     public String getPageId ()
     {
         if (id != null) {
-            if (special == Measure.Special.SECOND_HALF) {
-                return SH_STRING + id;
-            }
-
-            return Integer.toString(id);
+            return ((special == Special.SECOND_HALF) ? SH_STRING : "") + id;
         }
 
         // No id defined yet
@@ -631,22 +752,19 @@ public class MeasureStack
     /**
      * Report the character string of the score-based measure id.
      *
+     * @param score the containing score
      * @return the (absolute) score-based measure id string
      */
-    public String getScoreId ()
+    public String getScoreId (Score score)
     {
         if (id == null) {
             return null;
         }
 
         final Page page = system.getPage();
-        final int pageMeasureIdOffset = page.getScore().getMeasureIdOffset(page);
+        final int pageMeasureIdOffset = score.getMeasureIdOffset(page);
 
-        if (special == Measure.Special.SECOND_HALF) {
-            return SH_STRING + (pageMeasureIdOffset + id);
-        } else {
-            return Integer.toString(pageMeasureIdOffset + id);
-        }
+        return ((special == Special.SECOND_HALF) ? SH_STRING : "") + (pageMeasureIdOffset + id);
     }
 
     //----------//
@@ -693,6 +811,27 @@ public class MeasureStack
     public SystemInfo getSystem ()
     {
         return system;
+    }
+
+    //------------------//
+    // getTimeSignature //
+    //------------------//
+    /**
+     * Report the potential time signature in this stack (whatever the staff).
+     *
+     * @return the stack time signature, or null if not found
+     */
+    public TimeInter getTimeSignature ()
+    {
+        for (Measure measure : measures) {
+            TimeInter ts = measure.getTimeSignature();
+
+            if (ts != null) {
+                return ts;
+            }
+        }
+
+        return null; // Not found
     }
 
     //------------//
@@ -796,6 +935,19 @@ public class MeasureStack
         }
     }
 
+    //-------------//
+    // isFirstHalf //
+    //-------------//
+    /**
+     * Report whether this measure stack is a repeat first half.
+     *
+     * @return true if measure is firstHalf
+     */
+    public boolean isFirstHalf ()
+    {
+        return special == Special.FIRST_HALF;
+    }
+
     //------------//
     // isImplicit //
     //------------//
@@ -806,7 +958,7 @@ public class MeasureStack
      */
     public boolean isImplicit ()
     {
-        return (special == Measure.Special.PICKUP) || (special == Measure.Special.SECOND_HALF);
+        return (special == Special.PICKUP) || (special == Special.SECOND_HALF);
     }
 
     //----------//
@@ -859,6 +1011,32 @@ public class MeasureStack
         }
 
         return null;
+    }
+
+    //----------------//
+    // mergeWithRight //
+    //----------------//
+    /**
+     * Merge this stack with the content of the following stack on the right.
+     *
+     * @param rightStack the following measure stack
+     */
+    public void mergeWithRight (MeasureStack rightStack)
+    {
+        // Merge the measures, part by part
+        for (int iLine = 0; iLine < rightStack.getMeasures().size(); iLine++) {
+            measures.get(iLine).mergeWithRight(rightStack.measures.get(iLine));
+        }
+
+        // Merge the stacks data
+        right = rightStack.right;
+        actualDuration = this.getActualDuration().plus(rightStack.getActualDuration());
+        chords.addAll(rightStack.chords);
+        slots.addAll(rightStack.slots);
+        wholeRestChords.addAll(rightStack.wholeRestChords);
+        voices.addAll(rightStack.voices);
+
+        ///beamGroups.addAll(rightStack.beamGroups); ???
     }
 
     //------------//
@@ -949,6 +1127,35 @@ public class MeasureStack
         this.actualDuration = actualDuration;
     }
 
+    //-----------//
+    // setExcess //
+    //-----------//
+    /**
+     * Assign an excess duration for this stack.
+     *
+     * @param excess the duration in excess
+     */
+    public void setExcess (Rational excess)
+    {
+        this.excess = excess;
+    }
+
+    //---------------------//
+    // setExpectedDuration //
+    //---------------------//
+    public void setExpectedDuration (Rational expectedDuration)
+    {
+        this.expectedDuration = expectedDuration;
+    }
+
+    //--------------//
+    // setFirstHalf //
+    //--------------//
+    public void setFirstHalf ()
+    {
+        special = Special.FIRST_HALF;
+    }
+
     //------------//
     // setIdValue //
     //------------//
@@ -962,25 +1169,80 @@ public class MeasureStack
         this.id = id;
     }
 
-    //--------------//
-    // sortMeasures //
-    //--------------//
-    /**
-     * Sort measures vertically (meant to be done after insertion of dummy part(s)).
-     */
-    public void sortMeasures ()
+    //-----------//
+    // setPickup //
+    //-----------//
+    public void setPickup ()
     {
-        Collections.sort(
-                measures,
-                new Comparator<Measure>()
-                {
-                    @Override
-                    public int compare (Measure m1,
-                                        Measure m2)
-                    {
-                        return Part.byId.compare(m1.getPart(), m2.getPart());
-                    }
-                });
+        special = Special.PICKUP;
+    }
+
+    //---------------//
+    // setSecondHalf //
+    //---------------//
+    public void setSecondHalf ()
+    {
+        special = Special.SECOND_HALF;
+    }
+
+    //------------//
+    // setSpecial //
+    //------------//
+    public void setSpecial (Special special)
+    {
+        this.special = special;
+    }
+
+    //---------//
+    // shorten //
+    //---------//
+    /**
+     * Flag this measure stack as partial (shorter than expected duration).
+     *
+     * @param shortening how much the measure stack duration is to be reduced
+     */
+    public void shorten (Rational shortening)
+    {
+        // Remove any final forward mark consistent with the shortening
+        for (Voice voice : voices) {
+            Rational duration = voice.getTermination();
+
+            if (duration != null) {
+                //                if (duration.equals(shortening)) {
+                //                    if (!voice.isWhole()) {
+                //                        // Remove the related mark
+                //                        ChordInter chord = voice.getLastChord();
+                //
+                //                        if (chord != null) {
+                //                            int nbMarks = chord.getMarks().size();
+                //
+                //                            if (nbMarks > 0) {
+                //                                Mark mark = chord.getMarks().get(nbMarks - 1);
+                //                                logger.debug(
+                //                                        "{} Removing final forward: {}",
+                //                                        getContextString(),
+                //                                        (Rational) mark.getData());
+                //                                chord.getMarks().remove(mark);
+                //                            } else {
+                //                                chord.addError("No final mark to remove in a partial measure");
+                //
+                //                                return;
+                //                            }
+                //                        } else {
+                //                            addError("No final chord in " + voice);
+                //
+                //                            return;
+                //                        }
+                //                    }
+                //                } else {
+                //                    addError(
+                //                            "Non consistent partial measure shortening:" + shortening.opposite() + " "
+                //                            + voice + ": " + duration.opposite());
+                //
+                //                    return;
+                //                }
+            }
+        }
     }
 
     //-------------//

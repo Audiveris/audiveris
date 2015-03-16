@@ -19,10 +19,9 @@ import omr.glyph.facets.Glyph;
 
 import omr.image.TemplateFactory;
 
-import omr.score.ui.ScoreDependent;
-
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
+import omr.sheet.ui.SheetDependent;
 import omr.sheet.ui.SheetsController;
 
 import org.jdesktop.application.Action;
@@ -45,7 +44,7 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class Debug
-        extends ScoreDependent
+        extends SheetDependent
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

@@ -31,9 +31,6 @@ public class UnitNode
     private Logger logger;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // UnitNode //
-    //----------//
     /**
      * Create a new UnitNode.
      *

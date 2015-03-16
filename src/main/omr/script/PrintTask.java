@@ -11,11 +11,12 @@
 // </editor-fold>
 package omr.script;
 
+import omr.sheet.Book;
 import omr.sheet.BookManager;
 import omr.sheet.Sheet;
 
+import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -32,28 +33,22 @@ public class PrintTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The path used for print */
-    @XmlAttribute(name = "path")
-    private String pathString;
+    /** The folder used for print. */
+    @XmlAttribute(name = "folder")
+    private File folder;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // PrintTask //
-    //------------//
     /**
      * Create a task to print the score to a PDF file
      *
-     * @param path the full path of the PDF file
+     * @param folder the full path of the PDF file folder
      */
-    public PrintTask (Path path)
+    public PrintTask (File folder)
     {
-        setPath(path.toString());
+        this.folder = folder;
     }
 
-    //------------//
-    // PrintTask //
-    //------------//
-    /** No-arg constructor needed by JAXB */
+    /** No-arg constructor needed by JAXB. */
     private PrintTask ()
     {
     }
@@ -65,12 +60,9 @@ public class PrintTask
     @Override
     public void core (Sheet sheet)
     {
-        BookManager.getInstance().writePhysicalPdf(sheet.getBook(), getPath());
-    }
-
-    public Path getPath ()
-    {
-        return Paths.get(pathString);
+        Book book = sheet.getBook();
+        Path bookPath = (folder != null) ? new File(folder, book.getRadix()).toPath() : null;
+        BookManager.getInstance().printBook(sheet.getBook(), bookPath);
     }
 
     //-----------//
@@ -80,13 +72,12 @@ public class PrintTask
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" print ").append(pathString);
+        sb.append(" print ");
+
+        if (folder != null) {
+            sb.append(" folder=").append(folder);
+        }
 
         return sb.toString();
-    }
-
-    private void setPath (String pathString)
-    {
-        this.pathString = pathString;
     }
 }

@@ -40,9 +40,6 @@ public class ChordSymbol
     public ChordInfo info;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // ChordSymbol //
-    //-------------//
     /**
      * Creates a new instance of ChordSymbol event
      *

@@ -32,9 +32,6 @@ public class BarlineTask
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //-------------//
-    // BarlineTask //
-    //-------------//
     /**
      * Create a barline assignment task.
      *
@@ -53,9 +50,6 @@ public class BarlineTask
         super(sheet, shape, compound, glyphs);
     }
 
-    //-------------//
-    // BarlineTask //
-    //-------------//
     /**
      * Convenient way to create a barline deassignment task.
      *
@@ -67,10 +61,7 @@ public class BarlineTask
         super(sheet, glyphs);
     }
 
-    //-------------//
-    // BarlineTask //
-    //-------------//
-    /** No-arg constructor for JAXB only */
+    /** No-arg constructor for JAXB only. */
     protected BarlineTask ()
     {
     }

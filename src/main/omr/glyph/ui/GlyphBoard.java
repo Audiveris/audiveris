@@ -136,9 +136,6 @@ public class GlyphBoard
     protected boolean selfUpdating = false;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // GlyphBoard //
-    //------------//
     /**
      * Basic constructor, to set common characteristics.
      *

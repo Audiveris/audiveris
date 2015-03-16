@@ -12,7 +12,7 @@
 package omr.score;
 
 import omr.score.entity.Page;
-import omr.score.entity.ScorePart;
+import omr.score.entity.LogicalPart;
 
 import omr.sheet.Part;
 import omr.sheet.SystemInfo;
@@ -84,9 +84,6 @@ public class PartConnection
     private final Map<Candidate, Result> candidateMap = new LinkedHashMap<Candidate, Result>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // PartConnection //
-    //----------------//
     /**
      * Creates a new PartConnection object.
      * Not meant to be called directly, use proper static methods instead:
@@ -124,7 +121,7 @@ public class PartConnection
         for (SystemInfo system : page.getSystems()) {
             List<Candidate> parts = new ArrayList<Candidate>();
 
-            for (Part systemPart : system.getAllParts()) {
+            for (Part systemPart : system.getParts()) {
                 parts.add(new PartCandidate(systemPart));
             }
 
@@ -149,7 +146,7 @@ public class PartConnection
      */
     public static PartConnection connectProxyPages (SortedMap<Integer, ScorePartwise> pages)
     {
-        // Build candidates (here a candidate is a ScorePart)
+        // Build candidates (here a candidate is a LogicalPart)
         Set<List<Candidate>> sequences = new LinkedHashSet<List<Candidate>>();
 
         for (Entry<Integer, ScorePartwise> entry : pages.entrySet()) {
@@ -161,8 +158,8 @@ public class PartConnection
             for (Object obj : partList.getPartGroupOrScorePart()) {
                 // TODO: For the time being, we ignore part-group elements.
                 if (obj instanceof com.audiveris.proxymusic.ScorePart) {
-                    com.audiveris.proxymusic.ScorePart scorePart = (com.audiveris.proxymusic.ScorePart) obj;
-                    parts.add(new PMScorePartCandidate(scorePart, page, index));
+                    com.audiveris.proxymusic.ScorePart logicalPart = (com.audiveris.proxymusic.ScorePart) obj;
+                    parts.add(new PMScorePartCandidate(logicalPart, page, index));
                 }
             }
 
@@ -186,17 +183,17 @@ public class PartConnection
      */
     public static PartConnection connectScorePages (SortedMap<Integer, Page> pages)
     {
-        // Build candidates (here a candidate is a ScorePart)
+        // Build candidates (here a candidate is a LogicalPart)
         Set<List<Candidate>> sequences = new LinkedHashSet<List<Candidate>>();
 
         for (Entry<Integer, Page> entry : pages.entrySet()) {
             Page page = entry.getValue();
             List<Candidate> parts = new ArrayList<Candidate>();
-            List<ScorePart> partList = page.getPartList();
+            List<LogicalPart> partList = page.getLogicalParts();
 
             if (partList != null) {
-                for (ScorePart scorePart : partList) {
-                    parts.add(new ScorePartCandidate(scorePart, page));
+                for (LogicalPart logicalPart : partList) {
+                    parts.add(new LogicalPartCandidate(logicalPart, page));
                 }
             }
 
@@ -319,7 +316,7 @@ public class PartConnection
             }
         }
 
-        // Reverse and number ScorePart instances
+        // Reverse and number LogicalPart instances
         Collections.reverse(results);
 
         for (int i = 0; i < results.size(); i++) {
@@ -327,7 +324,7 @@ public class PartConnection
             int id = i + 1;
             result.setId(id);
 
-            // Forge a ScorePart name if none has been assigned
+            // Forge a LogicalPart name if none has been assigned
             if (result.getName() == null) {
                 result.setName("Part_" + id);
             }
@@ -369,7 +366,7 @@ public class PartConnection
      * <ul>
      * <li>as Audiveris {@link omr.sheet.Part} instances
      * (produced by the scanning of just one page)</li>
-     * <li>as Audiveris {@link omr.score.entity.ScorePart}
+     * <li>as Audiveris {@link omr.score.entity.LogicalPart}
      * (when merging Audiveris pages)</li>
      * <li>as ProxyMusic {@link com.audiveris.proxymusic.ScorePart} instances
      * (used when merging MusicXML files).</li>
@@ -385,7 +382,7 @@ public class PartConnection
         /** Report the abbreviation, if any, that relates to this part */
         String getAbbreviation ();
 
-        /** Index of the input: System # for Part, Page # for ScorePart */
+        /** Index of the input: System # for Part, Page # for LogicalPart */
         int getInputIndex ();
 
         /** Report the name of the part, if any */
@@ -402,8 +399,8 @@ public class PartConnection
     // Result //
     //--------//
     /**
-     * Interface {@code Result} is used to process resulting ScorePart instances,
-     * regardless whether they are instances of standard Audiveris {@link ScorePart}
+     * Interface {@code Result} is used to process resulting LogicalPart instances,
+ regardless whether they are instances of standard Audiveris {@link LogicalPart}
      * or instances of ProxyMusic {@link com.audiveris.proxymusic.ScorePart}.
      */
     public static interface Result
@@ -495,14 +492,14 @@ public class PartConnection
     // PMScorePartCandidate //
     //----------------------//
     /**
-     * Wrapping class meant for a proxymusic ScorePart instance candidate.
+     * Wrapping class meant for a proxymusic LogicalPart instance candidate.
      */
     private static class PMScorePartCandidate
             implements Candidate
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final com.audiveris.proxymusic.ScorePart scorePart;
+        private final com.audiveris.proxymusic.ScorePart logicalPart;
 
         private final ScorePartwise scorePartwise;
 
@@ -511,11 +508,11 @@ public class PartConnection
         private Integer staffCount;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public PMScorePartCandidate (com.audiveris.proxymusic.ScorePart scorePart,
+        public PMScorePartCandidate (com.audiveris.proxymusic.ScorePart logicalPart,
                                      ScorePartwise scorePartwise,
                                      int inputIndex)
         {
-            this.scorePart = scorePart;
+            this.logicalPart = logicalPart;
             this.scorePartwise = scorePartwise;
             this.inputIndex = inputIndex;
         }
@@ -545,7 +542,7 @@ public class PartConnection
         @Override
         public String getAbbreviation ()
         {
-            PartName partName = scorePart.getPartAbbreviation();
+            PartName partName = logicalPart.getPartAbbreviation();
 
             if (partName != null) {
                 return partName.getValue();
@@ -563,7 +560,7 @@ public class PartConnection
         @Override
         public String getName ()
         {
-            PartName partName = scorePart.getPartName();
+            PartName partName = logicalPart.getPartName();
 
             if (partName != null) {
                 return partName.getValue();
@@ -580,11 +577,11 @@ public class PartConnection
                 // We have to dig into the first measure of the part itself
                 staffCount = 1; // Default value
 
-                String id = scorePart.getId();
+                String id = logicalPart.getId();
 
-                ///logger.debug("scorePart id:" + id);
+                ///logger.debug("logicalPart id:" + id);
                 for (ScorePartwise.Part part : scorePartwise.getPart()) {
-                    if (part.getId() != scorePart) {
+                    if (part.getId() != logicalPart) {
                         continue;
                     }
 
@@ -617,7 +614,7 @@ public class PartConnection
         @Override
         public Object getUnderlyingObject ()
         {
-            return scorePart;
+            return logicalPart;
         }
 
         @Override
@@ -643,7 +640,7 @@ public class PartConnection
     // PMScorePartResult //
     //-------------------//
     /**
-     * Wrapping class meant for a proxymusic ScorePart instance result.
+     * Wrapping class meant for a proxymusic LogicalPart instance result.
      */
     private static class PMScorePartResult
             extends AbstractResult
@@ -652,25 +649,25 @@ public class PartConnection
 
         private final int staffCount;
 
-        private final com.audiveris.proxymusic.ScorePart scorePart;
+        private final com.audiveris.proxymusic.ScorePart logicalPart;
 
         private int id;
 
         //~ Constructors ---------------------------------------------------------------------------
         public PMScorePartResult (Candidate candidate,
                                   int staffCount,
-                                  com.audiveris.proxymusic.ScorePart scorePart)
+                                  com.audiveris.proxymusic.ScorePart logicalPart)
         {
             super(candidate);
             this.staffCount = staffCount;
-            this.scorePart = scorePart;
+            this.logicalPart = logicalPart;
         }
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getAbbreviation ()
         {
-            PartName partName = scorePart.getPartAbbreviation();
+            PartName partName = logicalPart.getPartAbbreviation();
 
             if (partName != null) {
                 return partName.getValue();
@@ -688,7 +685,7 @@ public class PartConnection
         @Override
         public String getName ()
         {
-            PartName partName = scorePart.getPartName();
+            PartName partName = logicalPart.getPartName();
 
             if (partName != null) {
                 return partName.getValue();
@@ -706,7 +703,7 @@ public class PartConnection
         @Override
         public com.audiveris.proxymusic.ScorePart getUnderlyingObject ()
         {
-            return scorePart;
+            return logicalPart;
         }
 
         @Override
@@ -714,7 +711,7 @@ public class PartConnection
         {
             com.audiveris.proxymusic.ObjectFactory factory = new com.audiveris.proxymusic.ObjectFactory();
             PartName partName = factory.createPartName();
-            scorePart.setPartAbbreviation(partName);
+            logicalPart.setPartAbbreviation(partName);
             partName.setValue(abbreviation);
         }
 
@@ -722,7 +719,7 @@ public class PartConnection
         public void setId (int id)
         {
             this.id = id;
-            scorePart.setId("P" + id);
+            logicalPart.setId("P" + id);
         }
 
         @Override
@@ -730,7 +727,7 @@ public class PartConnection
         {
             com.audiveris.proxymusic.ObjectFactory factory = new com.audiveris.proxymusic.ObjectFactory();
             com.audiveris.proxymusic.PartName partName = factory.createPartName();
-            scorePart.setPartName(partName);
+            logicalPart.setPartName(partName);
             partName.setValue(name);
         }
     }
@@ -756,11 +753,11 @@ public class PartConnection
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public ScorePartResult createResult ()
+        public LogicalPartResult createResult ()
         {
             // Create a brand new score part for this candidate
             // Id is irrelevant for the time being
-            ScorePartResult result = new ScorePartResult(this, new ScorePart(0, getStaffCount()));
+            LogicalPartResult result = new LogicalPartResult(this, new LogicalPart(0, getStaffCount()));
             result.setName(getName());
             result.setAbbreviation(getAbbreviation());
             logger.debug("Created {} from {}", result, this);
@@ -805,36 +802,36 @@ public class PartConnection
         }
     }
 
-    //--------------------//
-    // ScorePartCandidate //
-    //--------------------//
+    //----------------------//
+    // LogicalPartCandidate //
+    //----------------------//
     /**
-     * Wrapping class meant for a ScorePart instance candidate.
+     * Wrapping class meant for a LogicalPart instance candidate.
      */
-    private static class ScorePartCandidate
+    private static class LogicalPartCandidate
             implements Candidate
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final ScorePart scorePart;
+        private final LogicalPart logicalPart;
 
         private final Page page;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public ScorePartCandidate (ScorePart scorePart,
+        public LogicalPartCandidate (LogicalPart logicalPart,
                                    Page page)
         {
-            this.scorePart = scorePart;
+            this.logicalPart = logicalPart;
             this.page = page;
         }
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public ScorePartResult createResult ()
+        public LogicalPartResult createResult ()
         {
             // Create a brand new score part for this candidate
             // Id is irrelevant for the time being
-            ScorePartResult result = new ScorePartResult(this, new ScorePart(0, getStaffCount()));
+            LogicalPartResult result = new LogicalPartResult(this, new LogicalPart(0, getStaffCount()));
             result.setName(getName());
             result.setAbbreviation(getAbbreviation());
             logger.debug("Created {} from {}", result, this);
@@ -845,7 +842,7 @@ public class PartConnection
         @Override
         public String getAbbreviation ()
         {
-            return scorePart.getAbbreviation();
+            return logicalPart.getAbbreviation();
         }
 
         @Override
@@ -857,19 +854,19 @@ public class PartConnection
         @Override
         public String getName ()
         {
-            return scorePart.getName();
+            return logicalPart.getName();
         }
 
         @Override
         public int getStaffCount ()
         {
-            return scorePart.getStaffCount();
+            return logicalPart.getStaffCount();
         }
 
         @Override
         public Object getUnderlyingObject ()
         {
-            return scorePart;
+            return logicalPart;
         }
 
         @Override
@@ -891,74 +888,74 @@ public class PartConnection
         }
     }
 
-    //-----------------//
-    // ScorePartResult //
-    //-----------------//
+    //-------------------//
+    // LogicalPartResult //
+    //-------------------//
     /**
-     * Wrapping class meant for a ScorePart instance result.
+     * Wrapping class meant for a LogicalPart instance result.
      */
-    private static class ScorePartResult
+    private static class LogicalPartResult
             extends AbstractResult
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final ScorePart scorePart;
+        private final LogicalPart logicalPart;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public ScorePartResult (Candidate candidate,
-                                ScorePart scorePart)
+        public LogicalPartResult (Candidate candidate,
+                                LogicalPart logicalPart)
         {
             super(candidate);
-            this.scorePart = scorePart;
+            this.logicalPart = logicalPart;
         }
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getAbbreviation ()
         {
-            return scorePart.getAbbreviation();
+            return logicalPart.getAbbreviation();
         }
 
         @Override
         public int getId ()
         {
-            return scorePart.getId();
+            return logicalPart.getId();
         }
 
         @Override
         public String getName ()
         {
-            return scorePart.getName();
+            return logicalPart.getName();
         }
 
         @Override
         public int getStaffCount ()
         {
-            return scorePart.getStaffCount();
+            return logicalPart.getStaffCount();
         }
 
         @Override
-        public ScorePart getUnderlyingObject ()
+        public LogicalPart getUnderlyingObject ()
         {
-            return scorePart;
+            return logicalPart;
         }
 
         @Override
         public void setAbbreviation (String abbreviation)
         {
-            scorePart.setAbbreviation(abbreviation);
+            logicalPart.setAbbreviation(abbreviation);
         }
 
         @Override
         public void setId (int id)
         {
-            scorePart.setId(id);
+            logicalPart.setId(id);
         }
 
         @Override
         public void setName (String name)
         {
-            scorePart.setName(name);
+            logicalPart.setName(name);
         }
     }
 }

@@ -25,7 +25,7 @@ import java.util.EnumMap;
  *
  * @author Hervé Bitteur
  */
-public class Symbols
+public abstract class Symbols
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -88,9 +88,7 @@ public class Symbols
     }
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------//
-    // Symbols // This is just a functional class, no instance is needed
-    //---------//
+    /** This is just a functional class, no instance is needed. */
     private Symbols ()
     {
     }
@@ -176,9 +174,9 @@ public class Symbols
         // Instances to be defined first, because others depend on them
         map(DYNAMICS_F, 102);
         map(DYNAMICS_FF, 196);
-//        map(DYNAMICS_FFF, 236);
-//        map(DYNAMICS_FZ, 90);
-//        map(DYNAMICS_SF, 83);
+        //        map(DYNAMICS_FFF, 236);
+        //        map(DYNAMICS_FZ, 90);
+        map(DYNAMICS_SF, 83);
         map(NOTEHEAD_BLACK, 207);
         small(NOTEHEAD_BLACK_SMALL, 207);
         map(TIME_ZERO, 48);
@@ -227,10 +225,10 @@ public class Symbols
         sym.put(DOUBLE_BARLINE, new DoubleBarlineSymbol(false));
         sym.put(DOUBLE_FLAT, new FlatSymbol(DOUBLE_FLAT, 186));
         map(DOUBLE_SHARP, 220);
-//        map(DYNAMICS_CHAR_M, 189);
-//        map(DYNAMICS_CHAR_R, 243);
-//        map(DYNAMICS_CHAR_S, 115);
-//        map(DYNAMICS_CHAR_Z, 122);
+        //        map(DYNAMICS_CHAR_M, 189);
+        //        map(DYNAMICS_CHAR_R, 243);
+        //        map(DYNAMICS_CHAR_S, 115);
+        //        map(DYNAMICS_CHAR_Z, 122);
         //        slanted(DYNAMICS_FFFF, 236, 102);
         //        slanted(DYNAMICS_FFFFF, 236, 196);
         //        slanted(DYNAMICS_FFFFFF, 236, 236);
@@ -239,15 +237,15 @@ public class Symbols
         map(DYNAMICS_MP, 80);
         map(DYNAMICS_P, 112);
         map(DYNAMICS_PP, 185);
-//        map(DYNAMICS_PPP, 184);
+        //        map(DYNAMICS_PPP, 184);
         //        slanted(DYNAMICS_PPPP, 184, 112);
         //        slanted(DYNAMICS_PPPPP, 184, 185);
         //        slanted(DYNAMICS_PPPPPP, 184, 184);
-//        slanted(DYNAMICS_RF, 243, 102);
-//        slanted(DYNAMICS_RFZ, 243, 102, 122);
-//        slanted(DYNAMICS_SFFZ, 83, 90);
-//        slanted(DYNAMICS_SFP, 83, 112);
-//        slanted(DYNAMICS_SFPP, 83, 185);
+        //        slanted(DYNAMICS_RF, 243, 102);
+        //        slanted(DYNAMICS_RFZ, 243, 102, 122);
+        //        slanted(DYNAMICS_SFFZ, 83, 90);
+        //        slanted(DYNAMICS_SFP, 83, 112);
+        //        slanted(DYNAMICS_SFPP, 83, 185);
         slanted(DYNAMICS_SFZ, 83, 122);
 
         //        map(ENDING_HORIZONTAL);
@@ -358,12 +356,12 @@ public class Symbols
         sym.put(DIGIT_2, new TextSymbol(DIGIT_2, "2"));
         sym.put(DIGIT_3, new TextSymbol(DIGIT_3, "3"));
         sym.put(DIGIT_4, new TextSymbol(DIGIT_4, "4"));
-//        sym.put(DIGIT_5, new TextSymbol(DIGIT_5, "5"));
-//        sym.put(DIGIT_6, new TextSymbol(DIGIT_6, "6"));
-//        sym.put(DIGIT_7, new TextSymbol(DIGIT_7, "7"));
-//        sym.put(DIGIT_8, new TextSymbol(DIGIT_8, "8"));
-//        sym.put(DIGIT_9, new TextSymbol(DIGIT_9, "9"));
-//
+        //        sym.put(DIGIT_5, new TextSymbol(DIGIT_5, "5"));
+        //        sym.put(DIGIT_6, new TextSymbol(DIGIT_6, "6"));
+        //        sym.put(DIGIT_7, new TextSymbol(DIGIT_7, "7"));
+        //        sym.put(DIGIT_8, new TextSymbol(DIGIT_8, "8"));
+        //        sym.put(DIGIT_9, new TextSymbol(DIGIT_9, "9"));
+        //
         // Romans
         sym.put(ROMAN_I, new TextSymbol(ROMAN_I, "I"));
         sym.put(ROMAN_II, new TextSymbol(ROMAN_II, "II"));

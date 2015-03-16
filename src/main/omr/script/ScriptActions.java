@@ -65,11 +65,8 @@ public class ScriptActions
     public static final Param<Boolean> defaultPrompt = new Default();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // ScriptActions //
-    //---------------//
     /**
-     * Not meant to be instantiated
+     * Not meant to be instantiated.
      */
     protected ScriptActions ()
     {
@@ -227,13 +224,11 @@ public class ScriptActions
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Default directory for saved scripts */
-        Constant.String defaultScriptDirectory = new Constant.String(
+        final Constant.String defaultScriptDirectory = new Constant.String(
                 WellKnowns.DEFAULT_SCRIPTS_FOLDER.toString(),
                 "Default directory for saved scripts");
 
-        /** User confirmation for closing unsaved script */
-        Constant.Boolean closeConfirmation = new Constant.Boolean(
+        final Constant.Boolean closeConfirmation = new Constant.Boolean(
                 true,
                 "Should we ask confirmation for closing a sheet with unsaved script?");
     }

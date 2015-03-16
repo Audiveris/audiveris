@@ -123,9 +123,6 @@ public class InterBoard
     private boolean selfUpdating = false;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // InterBoard //
-    //------------//
     /**
      * Creates a new InterBoard object.
      *

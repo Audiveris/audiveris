@@ -44,9 +44,6 @@ public class LeftOverPattern
     private static final Logger logger = LoggerFactory.getLogger(LeftOverPattern.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // LeftOverPattern //
-    //-----------------//
     /**
      * Creates a new LeftOverPattern object.
      *

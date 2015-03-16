@@ -33,9 +33,6 @@ public class OttavaClefSymbol
     private final boolean isAlta;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // OttavaClefSymbol //
-    //------------------//
     /**
      * Creates a new OttavaClefSymbol object.
      *

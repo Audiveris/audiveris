@@ -57,9 +57,6 @@ public class OldStaff
     private boolean dummy;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------//
-    // Staff //
-    //-------//
     /**
      * Build a staff, given all its parameters.
      *

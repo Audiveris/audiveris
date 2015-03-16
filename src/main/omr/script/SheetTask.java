@@ -33,9 +33,6 @@ public abstract class SheetTask
     protected Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // SheetTask //
-    //-----------//
     /**
      * Creates a new SheetTask object.
      *
@@ -46,10 +43,7 @@ public abstract class SheetTask
         index = sheet.getIndex();
     }
 
-    //-----------//
-    // SheetTask //
-    //-----------//
-    /** No-arg constructor for JAXB only */
+    /** No-arg constructor for JAXB only. */
     protected SheetTask ()
     {
     }

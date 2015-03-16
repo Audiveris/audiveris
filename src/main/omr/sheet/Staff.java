@@ -184,6 +184,51 @@ public class Staff
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------------//
+    // getLedgerLineIndex //
+    //--------------------//
+    /**
+     * Compute staff-based line index, based on provided pitch position
+     *
+     * @param pitchPosition the provided pitch position
+     * @return the computed line index
+     */
+    public static int getLedgerLineIndex (double pitchPosition)
+    {
+        if (pitchPosition > 0) {
+            return (int) Math.rint(pitchPosition / 2) - 2;
+        } else {
+            return (int) Math.rint(pitchPosition / 2) + 2;
+        }
+    }
+
+    //------------------------//
+    // getLedgerPitchPosition //
+    //------------------------//
+    /**
+     * Report the pitch position of a ledger WRT the related staff.
+     * <p>
+     * TODO: This implementation assumes a 5-line staff.
+     * But can we have ledgers on a staff with more (of less) than 5 lines?
+     *
+     * @param lineIndex the ledger line index
+     * @return the ledger pitch position
+     */
+    public static int getLedgerPitchPosition (int lineIndex)
+    {
+        //        // Safer, for the time being...
+        //        if (getStaff()
+        //                .getLines()
+        //                .size() != 5) {
+        //            throw new RuntimeException("Only 5-line staves are supported");
+        //        }
+        if (lineIndex > 0) {
+            return 4 + (2 * lineIndex);
+        } else {
+            return -4 + (2 * lineIndex);
+        }
+    }
+
     //
     //---------------//
     // addAttachment //
@@ -519,51 +564,6 @@ public class Staff
         return lines.get(0);
     }
 
-    //--------------------//
-    // getLedgerLineIndex //
-    //--------------------//
-    /**
-     * Compute staff-based line index, based on provided pitch position
-     *
-     * @param pitchPosition the provided pitch position
-     * @return the computed line index
-     */
-    public static int getLedgerLineIndex (double pitchPosition)
-    {
-        if (pitchPosition > 0) {
-            return (int) Math.rint(pitchPosition / 2) - 2;
-        } else {
-            return (int) Math.rint(pitchPosition / 2) + 2;
-        }
-    }
-
-    //------------------------//
-    // getLedgerPitchPosition //
-    //------------------------//
-    /**
-     * Report the pitch position of a ledger WRT the related staff.
-     * <p>
-     * TODO: This implementation assumes a 5-line staff.
-     * But can we have ledgers on a staff with more (of less) than 5 lines?
-     *
-     * @param lineIndex the ledger line index
-     * @return the ledger pitch position
-     */
-    public static int getLedgerPitchPosition (int lineIndex)
-    {
-        //        // Safer, for the time being...
-        //        if (getStaff()
-        //                .getLines()
-        //                .size() != 5) {
-        //            throw new RuntimeException("Only 5-line staves are supported");
-        //        }
-        if (lineIndex > 0) {
-            return 4 + (2 * lineIndex);
-        } else {
-            return -4 + (2 * lineIndex);
-        }
-    }
-
     //-----------//
     // getHeader //
     //-----------//
@@ -618,7 +618,8 @@ public class Staff
     // getId //
     //-------//
     /**
-     * Report the staff id, counted from 1 in the sheet.
+     * Report the staff id, counted from 1 in the sheet, regardless of containing system
+     * and part.
      *
      * @return the staff id
      */
@@ -689,6 +690,20 @@ public class Staff
     public SortedSet<LedgerInter> getLedgers (int lineIndex)
     {
         return ledgerMap.get(lineIndex);
+    }
+
+    //----------//
+    // getLeftY //
+    //----------//
+    /**
+     * Report the ordinate at left side of staff for the desired vertical line
+     *
+     * @param verticalSide TOP or BOTTOM
+     * @return the top of bottom ordinate on left side of staff
+     */
+    public int getLeftY (VerticalSide verticalSide)
+    {
+        return getLine(verticalSide).yAt(left);
     }
 
     //---------//

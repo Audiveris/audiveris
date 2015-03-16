@@ -49,9 +49,6 @@ public class GridStep
     private static final Logger logger = LoggerFactory.getLogger(GridStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // GridStep //
-    //----------//
     /**
      * Creates a new GridStep object.
      */

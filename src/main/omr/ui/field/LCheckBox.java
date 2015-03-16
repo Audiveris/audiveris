@@ -26,9 +26,6 @@ public class LCheckBox
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //-----------//
-    // LCheckBox //
-    //-----------//
     /**
      * Creates a new LCheckBox object.
      *

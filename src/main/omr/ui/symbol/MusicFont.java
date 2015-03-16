@@ -85,9 +85,6 @@ public class MusicFont
     private final int fontInterline;
 
     //~ Constructors -----------------------------------------------------------
-    //-----------//
-    // MusicFont //
-    //-----------//
     /**
      * Creates a new MusicFont object.
      *

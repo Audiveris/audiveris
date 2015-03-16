@@ -96,7 +96,7 @@ public class MeasuresBuilder
      */
     public void buildMeasures ()
     {
-        for (Part part : system.getAllParts()) {
+        for (Part part : system.getParts()) {
             // Determine groups of BarlineInter's for each staff within part
             Map<Staff, List<List<BarlineInter>>> staffMap = new TreeMap<Staff, List<List<BarlineInter>>>(
                     Staff.byId);
@@ -109,7 +109,7 @@ public class MeasuresBuilder
             // TODO
             //
             // Allocate measures in part
-            buildStructure(part, staffMap);
+            buildPartMeasures(part, staffMap);
         }
     }
 
@@ -131,9 +131,9 @@ public class MeasuresBuilder
         }
     }
 
-    //----------------//
-    // buildStructure //
-    //----------------//
+    //-------------------//
+    // buildPartMeasures //
+    //-------------------//
     /**
      * Here, we build the sequence of PartBarlines in parallel with the StaffBarline
      * sequence of each staff within part.
@@ -153,8 +153,8 @@ public class MeasuresBuilder
      * @param staffMap the StaffBarline sequences per staff
      * @return the PartBarline sequence
      */
-    private void buildStructure (Part part,
-                                 Map<Staff, List<List<BarlineInter>>> staffMap)
+    private void buildPartMeasures (Part part,
+                                    Map<Staff, List<List<BarlineInter>>> staffMap)
     {
         // TODO: Simplistic implementation: use only the first staff
         Staff firstStaff = part.getFirstStaff();
@@ -172,13 +172,8 @@ public class MeasuresBuilder
                 final int im = part.getMeasures().size() - 1;
 
                 while (system.getMeasureStacks().size() <= im) {
-                    MeasureStack stack = new MeasureStack(system);
-                    system.getMeasureStacks().add(stack);
+                    system.getMeasureStacks().add(new MeasureStack(system));
                 }
-
-                MeasureStack stack = system.getMeasureStacks().get(im);
-                stack.getMeasures().add(measure);
-                measure.setStack(stack);
             }
 
             if ((measure != null) && (leftBarPending != null)) {
@@ -206,6 +201,11 @@ public class MeasuresBuilder
                 part.setStartingBarline(partBar);
             } else {
                 measure.setBarline(partBar);
+
+                final int im = part.getMeasures().size() - 1;
+                MeasureStack stack = system.getMeasureStacks().get(im);
+                measure.setStack(stack);
+                stack.addMeasure(measure);
             }
 
             if (firstGroup.size() > 2) {

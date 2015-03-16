@@ -25,9 +25,6 @@ public class KeyFlatSymbol
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //---------------//
-    // KeyFlatSymbol //
-    //---------------//
     /**
      * Creates a new KeyFlatSymbol object.
      *

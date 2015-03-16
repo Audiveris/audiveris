@@ -166,9 +166,6 @@ public class BarsRetriever
     private final Set<BarConnection> connections = new LinkedHashSet<BarConnection>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // BarsRetriever //
-    //---------------//
     /**
      * Retrieve the bar lines of all staves.
      *
@@ -837,7 +834,7 @@ public class BarsRetriever
             }
         }
 
-        part.setId(-1 - system.getAllParts().size());
+        part.setId(-1 - system.getParts().size());
         system.addPart(part);
 
         return part;
@@ -855,7 +852,7 @@ public class BarsRetriever
     //    private void createParts (Integer[] partTops)
     //    {
     //        for (SystemInfo system : sheet.getSystems()) {
-    //            system.getAllParts().clear(); // Start from scratch
+    //            system.getParts().clear(); // Start from scratch
     //
     //            int partTop = -1;
     //            Part part = null;
@@ -1014,7 +1011,7 @@ public class BarsRetriever
      */
     private List<SystemInfo> createSystems (Integer[] systemTops)
     {
-        List<SystemInfo> newSystems = new ArrayList<SystemInfo>();
+        final List<SystemInfo> newSystems = new ArrayList<SystemInfo>();
         Integer staffTop = null;
         int systemId = 0;
         SystemInfo system = null;

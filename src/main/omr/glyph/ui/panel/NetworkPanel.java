@@ -141,9 +141,6 @@ class NetworkPanel
     private long startTime;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // NetworkPanel //
-    //--------------//
     /**
      * Creates a new NetworkPanel object.
      *

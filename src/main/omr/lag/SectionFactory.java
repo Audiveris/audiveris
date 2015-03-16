@@ -68,9 +68,6 @@ public class SectionFactory
     private final JunctionPolicy junctionPolicy;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // SectionFactory //
-    //----------------//
     /**
      * Create an instance of SectionFactory with a target lag.
      *
@@ -86,9 +83,6 @@ public class SectionFactory
         orientation = lag.getOrientation();
     }
 
-    //----------------//
-    // SectionFactory //
-    //----------------//
     /**
      * Create an instance of SectionFactory, with no target lag.
      *

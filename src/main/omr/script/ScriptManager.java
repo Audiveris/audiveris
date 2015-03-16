@@ -49,11 +49,8 @@ public class ScriptManager
     private static volatile JAXBContext jaxbContext;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // ScriptManager //
-    //---------------//
     /**
-     * Not meant to be instantiated
+     * Not meant to be publicly instantiated.
      */
     private ScriptManager ()
     {

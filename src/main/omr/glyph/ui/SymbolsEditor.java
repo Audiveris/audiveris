@@ -105,9 +105,6 @@ public class SymbolsEditor
     private final ShapeFocusBoard focus;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // SymbolsEditor //
-    //---------------//
     /**
      * Create a view in the sheet assembly tabs, dedicated to the
      * display and handling of glyphs.

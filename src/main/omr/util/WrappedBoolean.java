@@ -22,9 +22,6 @@ public class WrappedBoolean
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //----------------//
-    // WrappedBoolean //
-    //----------------//
     /**
      * Creates a new WrappedBoolean object.
      *

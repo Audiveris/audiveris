@@ -187,9 +187,6 @@ public class ClustersRetriever
     private final List<LineCluster> clusters = new ArrayList<LineCluster>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------------//
-    // ClustersRetriever //
-    //-------------------//
     /**
      * Creates a new ClustersRetriever object, for a given staff
      * interline.

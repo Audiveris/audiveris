@@ -73,7 +73,6 @@ public enum Shape
      * won't detect this and you'll have to retrain them on your own.
      * =============================================================================================
      */
-
     //
     // Sets --------------------------------------------------------------------
     //
@@ -178,14 +177,13 @@ public enum Shape
     //
     //    DYNAMICS_CHAR_M("m character"),
     //    DYNAMICS_CHAR_R("r character"),
-    //    DYNAMICS_CHAR_S("c character"),
+    //    DYNAMICS_CHAR_S("s character"),
     //    DYNAMICS_CHAR_Z("z character"),
     //    DYNAMICS_FFF("Fortississimo"),
     //    DYNAMICS_FZ("Forzando"),
     //    DYNAMICS_PPP("Pianississimo"),
     //    DYNAMICS_RF,
     //    DYNAMICS_RFZ("Rinforzando"),
-    //    DYNAMICS_SF,
     //    DYNAMICS_SFFZ,
     //    DYNAMICS_SFP("Subito fortepiano"),
     //    DYNAMICS_SFPP,
@@ -196,6 +194,7 @@ public enum Shape
     DYNAMICS_FF("Fortissimo"),
     DYNAMICS_MF("Mezzo forte"),
     DYNAMICS_FP("FortePiano"),
+    DYNAMICS_SF,
     DYNAMICS_SFZ("Sforzando"),
 
     //
@@ -480,17 +479,16 @@ public enum Shape
                 "Color for shape " + name());
     }
 
-    //--------------------------------------------------------------------------
-    //---------------//
-    // isMeasureRest //
-    //---------------//
+    //-------------//
+    // isWholeRest //
+    //-------------//
     /**
-     * Check whether the shape is a whole (or multi) rest, for which
-     * no duration can be specified.
+     * Check whether the shape is a whole (or multi) rest, for which no duration can be
+     * specified.
      *
-     * @return true if whole or multi rest
+     * @return true if whole / multi rest
      */
-    public boolean isMeasureRest ()
+    public boolean isWholeRest ()
     {
         return (this == WHOLE_REST) || (this == BREVE_REST) || (this == LONG_REST);
     }

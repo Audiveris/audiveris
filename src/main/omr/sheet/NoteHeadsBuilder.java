@@ -203,8 +203,8 @@ public class NoteHeadsBuilder
     // buildNotes //
     //------------//
     /**
-     * Retrieve all void heads, black heads and whole notes in the
-     * system both for standard and small (cue/grace) sizes.
+     * Retrieve all void heads, black heads and whole notes in the system
+     * both for standard and small (cue/grace) sizes.
      */
     public void buildNotes ()
     {

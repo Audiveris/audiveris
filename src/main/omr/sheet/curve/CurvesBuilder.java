@@ -16,7 +16,6 @@ import omr.Main;
 import omr.constant.ConstantSet;
 
 import omr.grid.FilamentLine;
-
 import static omr.image.PixelSource.BACKGROUND;
 
 import omr.math.AreaUtil;
@@ -28,10 +27,10 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
-
 import static omr.sheet.curve.Skeleton.*;
 
 import omr.sig.inter.Inter;
+
 import omr.ui.util.ItemRenderer;
 
 import omr.util.Navigable;
@@ -191,7 +190,7 @@ public abstract class CurvesBuilder
             extend(trunk, trunk.getParts(), clump);
 
             if (clump.size() > 1) {
-                weed(clump); // Filter out the least interesting candidates
+                weed(clump, rev); // Filter out the least interesting candidates
             }
         }
 
@@ -435,9 +434,11 @@ public abstract class CurvesBuilder
     /**
      * Among the clump of curves built from a common trunk, weed out some of them.
      *
-     * @param clump the competing curves on the same side of a given seed
+     * @param clump   the competing curves on the same side of a given seed
+     * @param reverse browsing orientation
      */
-    protected abstract void weed (Set<Curve> clump);
+    protected abstract void weed (Set<Curve> clump,
+                                  boolean reverse);
 
     //-------------//
     // createCurve //

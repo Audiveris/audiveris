@@ -33,9 +33,6 @@ public class BlackHeadInter
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //----------------//
-    // BlackHeadInter //
-    //----------------//
     /**
      * Creates a new BlackHeadInter object.
      *
@@ -53,7 +50,7 @@ public class BlackHeadInter
                            Rectangle box,
                            GradeImpacts impacts,
                            Staff staff,
-                           int pitch)
+                           double pitch)
     {
         super(descriptor, pivot, anchor, box, Shape.NOTEHEAD_BLACK, impacts, staff, pitch);
     }

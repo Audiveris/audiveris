@@ -95,9 +95,6 @@ public class Template
     private final Map<Anchor, Point> offsets = new EnumMap<Anchor, Point>(Anchor.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // Template //
-    //----------//
     /**
      * Creates a new Template object with a provided set of points.
      *

@@ -17,6 +17,7 @@ import omr.image.FilterDescriptor;
 import omr.image.ImageLoading;
 
 import omr.score.Score;
+import omr.score.entity.Page;
 
 import omr.script.Script;
 import omr.script.ScriptActions;
@@ -70,13 +71,13 @@ public class Book
     private static final Logger logger = LoggerFactory.getLogger(Book.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Input path of the related image(s), if any. */
+    /** Input path of the related image(s) file, if any. */
     private final Path imagePath;
 
     /** Dedicated image loader. */
     private ImageLoading.Loader loader;
 
-    /** Sheet offset of imageFile with respect to full work. */
+    /** Sheet offset of image file with respect to full work. */
     private int offset;
 
     /** The related file radix (name w/o extension). */
@@ -126,11 +127,8 @@ public class Book
     private final Param<String> textParam = new Param<String>(Language.defaultSpecification);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------//
-    // Book //
-    //------//
     /**
-     * Create a Book with a path to an input image path.
+     * Create a Book with a path to an input images file.
      *
      * @param imagePath the input image path (which may contain several images)
      */
@@ -147,16 +145,10 @@ public class Book
 
         bench = new BookBench(this);
 
-        // Start a score
-        addScore(new Score());
-
         // Register this book instance
         BookManager.getInstance().addInstance(this);
     }
 
-    //------//
-    // Book //
-    //------//
     /**
      * Create a meta Book, to be later populated with sub-books.
      *
@@ -201,7 +193,7 @@ public class Book
     //----------//
     // addScore //
     //----------//
-    public final void addScore (Score score)
+    public final synchronized void addScore (Score score)
     {
         scores.add(score);
         scores.get(scores.size() - 1).setId(scores.size());
@@ -258,11 +250,13 @@ public class Book
 
         if (loader != null) {
             Sheet firstSheet = null;
-            multiSheet = loader.getImageCount() > 1; // Several images in the file
+            multiSheet = loader.getImageCount() > 1; // Several images in file
 
             if (sheetIds == null) {
                 sheetIds = new TreeSet<Integer>();
+            }
 
+            if (sheetIds.isEmpty()) {
                 for (int i = 1; i <= loader.getImageCount(); i++) {
                     sheetIds.add(i);
                 }
@@ -335,7 +329,7 @@ public class Book
     }
 
     //---------------//
-    // getExportPath //
+    // getExportFolder //
     //---------------//
     /**
      * Report the abstract path (sans extension) for export
@@ -383,7 +377,7 @@ public class Book
     //--------------//
     // getLastScore //
     //--------------//
-    public Score getLastScore ()
+    public synchronized Score getLastScore ()
     {
         if (scores.isEmpty()) {
             return null;
@@ -421,6 +415,9 @@ public class Book
         }
     }
 
+    //-----------//
+    // getOffset //
+    //-----------//
     /**
      * @return the offset
      */
@@ -430,7 +427,7 @@ public class Book
     }
 
     //--------------//
-    // getPrintPath //
+    // getPrintFolder //
     //--------------//
     /**
      * Report to which path, if any, the sheet PDF data is to be written.
@@ -626,6 +623,33 @@ public class Book
         return sheets.remove(sheet);
     }
 
+    //----------------//
+    // retrieveScores //
+    //----------------//
+    /**
+     * Determine scores by gathering pages.
+     */
+    public void retrieveScores ()
+    {
+        scores.clear();
+
+        // Current score
+        Score score = null;
+
+        // Group all sheets pages into scores
+        for (Sheet sheet : sheets) {
+            for (Page page : sheet.getPages()) {
+                if (page.isMovementStart()) {
+                    scores.add(score = new Score());
+                } else if (score == null) {
+                    scores.add(score = new Score());
+                }
+
+                score.addPage(page);
+            }
+        }
+    }
+
     /**
      * @param closing the closing to set
      */
@@ -660,6 +684,9 @@ public class Book
         this.language = language;
     }
 
+    //-----------//
+    // setOffset //
+    //-----------//
     /**
      * @param offset the offset to set
      */

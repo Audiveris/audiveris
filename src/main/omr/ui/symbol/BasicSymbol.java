@@ -98,9 +98,6 @@ public class BasicSymbol
     protected Point2D centroidOffset;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // BasicSymbol //
-    //-------------//
     /**
      * Creates a new BasicSymbol object.
      *
@@ -114,9 +111,6 @@ public class BasicSymbol
         this.codes = shiftedCodesOf(codes);
     }
 
-    //-------------//
-    // BasicSymbol //
-    //-------------//
     /**
      * Creates a new BasicSymbol object, standard size.
      *

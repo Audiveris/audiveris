@@ -50,10 +50,6 @@ public class LineFilament
     private int clusterPos;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //--------------//
-    // LineFilament //
-    //--------------//
     /**
      * Creates a new LineFilament object.
      * Nota: this constructor is needed for FilamentFactory which calls this

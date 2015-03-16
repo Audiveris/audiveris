@@ -45,15 +45,15 @@ public abstract class Inters
         public int compare (Collection<Inter> c1,
                             Collection<Inter> c2)
         {
-            return Double.compare(getMeanContextualGrade(c2), getMeanContextualGrade(c1));
+            return Double.compare(getMeanBestGrade(c2), getMeanBestGrade(c1));
         }
     };
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------------------//
-    // getMeanContextualGrade //
-    //------------------------//
-    public static double getMeanContextualGrade (Collection<Inter> col)
+    //------------------//
+    // getMeanBestGrade //
+    //------------------//
+    public static double getMeanBestGrade (Collection<Inter> col)
     {
         if (col.isEmpty()) {
             throw new IllegalArgumentException("Provided collection is empty");
@@ -62,13 +62,7 @@ public abstract class Inters
         double sum = 0;
 
         for (Inter inter : col) {
-            Double cg = inter.getContextualGrade();
-
-            if (cg != null) {
-                sum += cg;
-            } else {
-                sum += inter.getGrade();
-            }
+            sum += inter.getBestGrade();
         }
 
         return sum / col.size();

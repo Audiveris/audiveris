@@ -12,6 +12,7 @@
 package omr.sig.inter;
 
 import omr.sheet.Staff;
+import static omr.sig.inter.AbstractNoteInter.Step.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ public class KeyInter
 
     private static final Logger logger = LoggerFactory.getLogger(KeyInter.class);
 
-    /** Standard (in G clef) pitch positions for the members of the sharp keys */
+    /** Standard (in G clef) pitch positions for the members of the sharp keys. */
     private static final int[] sharpPitches = new int[]{
         -4, // F - Fa
         -1, // C - Do
@@ -41,6 +42,16 @@ public class KeyInter
         +1, // A - La
         -3, // E - Mi
         0 // B - Si
+    };
+
+    /** Note steps according to sharps key. */
+    private static final AbstractNoteInter.Step[] sharpSteps = new AbstractNoteInter.Step[]{
+        F, C, G, D, A, E, B
+    };
+
+    /** Note steps according to flats key. */
+    private static final AbstractNoteInter.Step[] flatSteps = new AbstractNoteInter.Step[]{
+        B, E, A, D, G, C, F
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -77,6 +88,28 @@ public class KeyInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-------------//
+    // getAlterFor //
+    //-------------//
+    public int getAlterFor (AbstractNoteInter.Step step)
+    {
+        if (signature > 0) {
+            for (int k = 0; k < signature; k++) {
+                if (step == sharpSteps[k]) {
+                    return 1;
+                }
+            }
+        } else {
+            for (int k = 0; k < -signature; k++) {
+                if (step == flatSteps[k]) {
+                    return -1;
+                }
+            }
+        }
+
+        return 0;
     }
 
     //------------//

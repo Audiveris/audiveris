@@ -34,9 +34,6 @@ public class Pedal
     private static final Logger logger = LoggerFactory.getLogger(Pedal.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------//
-    // Pedal //
-    //-------//
     /**
      * Creates a new instance of Pedal event
      *

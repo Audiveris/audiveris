@@ -58,9 +58,6 @@ public class Filament
     private final Scale scale;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // Filament //
-    //----------//
     /**
      * Creates a new Filament object.
      *
@@ -73,14 +70,12 @@ public class Filament
         this(scale, layer, FilamentAlignment.class);
     }
 
-    //----------//
-    // Filament //
-    //----------//
     /**
      * Creates a new Filament object.
      *
      * @param scale scaling data
      * @param layer the layer related to the glyph
+     * @param alignmentClass specific class to be used for alignment facet
      */
     public Filament (Scale scale,
                      GlyphLayer layer,

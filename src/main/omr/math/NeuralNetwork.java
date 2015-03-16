@@ -103,9 +103,6 @@ public class NeuralNetwork
     private transient volatile int epochs = 1000;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // NeuralNetwork //
-    //---------------//
     /**
      * Create a neural network, with specified number of cells in each
      * layer, and default values.
@@ -156,9 +153,6 @@ public class NeuralNetwork
         logger.debug("Network created");
     }
 
-    //---------------//
-    // NeuralNetwork //
-    //---------------//
     /**
      * Create a neural network, with specified number of cells in each
      * layer, and specific parameters
@@ -194,10 +188,7 @@ public class NeuralNetwork
         this.epochs = epochs;
     }
 
-    //---------------//
-    // NeuralNetwork //
-    //---------------//
-    /** Private no-arg constructor meant for the JAXB compiler only */
+    /** Private no-arg constructor meant for the JAXB compiler only. */
     private NeuralNetwork ()
     {
         inputSize = -1;

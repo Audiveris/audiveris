@@ -31,9 +31,6 @@ public class DurationFactor
     public final int actualDen;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // DurationFactor //
-    //----------------//
     /**
      * Creates a new instance of DurationFactor
      *

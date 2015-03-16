@@ -35,9 +35,6 @@ public class FlagPattern
     private static final Logger logger = LoggerFactory.getLogger(FlagPattern.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // FlagPattern //
-    //-------------//
     /**
      * Creates a new FlagPattern object.
      *

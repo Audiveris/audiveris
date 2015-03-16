@@ -33,9 +33,6 @@ public class Coda
     private static final Logger logger = LoggerFactory.getLogger(Coda.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------//
-    // Coda //
-    //-------//
     /**
      * Creates a new instance of Coda event
      *

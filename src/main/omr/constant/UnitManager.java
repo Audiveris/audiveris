@@ -77,9 +77,6 @@ public class UnitManager
     private volatile boolean storeIt = false;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // UnitManager //
-    //-------------//
     /** This is a singleton. */
     private UnitManager ()
     {

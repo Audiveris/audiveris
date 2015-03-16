@@ -45,30 +45,46 @@ public interface TreeTableModel
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Returns the type for column number {@code column}.
+     * Returns the type for column number.
+     *
+     * @param column provided column
+     * @return the column type
      */
     public Class<?> getColumnClass (int column);
 
     /**
-     * Returns the number ofs availible column.
+     * Returns the number of available columns.
+     *
+     * @return number of columns
      */
     public int getColumnCount ();
 
     /**
-     * Returns the name for column number {@code column}.
+     * Returns the name for column number.
+     *
+     * @param column provided column
+     * @return column name
      */
     public String getColumnName (int column);
 
     /**
      * Returns the value to be displayed for node {@code node}, at column
      * number {@code column}.
+     *
+     * @param node   provided node
+     * @param column desired column number
+     * @return value at that location
      */
     public Object getValueAt (Object node,
                               int column);
 
     /**
-     * Indicates whether the the value for node {@code node}, at column
+     * Indicates whether the cell for node {@code node}, at column
      * number {@code column} is editable.
+     *
+     * @param node   provided node
+     * @param column provided column number
+     * @return true if the cell at this location is editable
      */
     public boolean isCellEditable (Object node,
                                    int column);
@@ -76,6 +92,10 @@ public interface TreeTableModel
     /**
      * Sets the value for node {@code node}, at column number
      * {@code column}.
+     *
+     * @param aValue new value
+     * @param column specified column number
+     * @param node   specified node
      */
     public void setValueAt (Object aValue,
                             Object node,

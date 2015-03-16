@@ -443,11 +443,7 @@ public class SymbolsFilter
         @Override
         protected boolean canHide (Inter inter)
         {
-            Double ctxGrade = inter.getContextualGrade();
-
-            if (ctxGrade == null) {
-                ctxGrade = inter.getGrade();
-            }
+            double ctxGrade = inter.getBestGrade();
 
             if (inter instanceof StemInter) {
                 return ctxGrade >= 0.7; // TODO

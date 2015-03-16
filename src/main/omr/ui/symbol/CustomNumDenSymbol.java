@@ -28,9 +28,6 @@ public class CustomNumDenSymbol
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //--------------------//
-    // CustomNumDenSymbol //
-    //--------------------//
     /**
      * Creates a new CustomNumDenSymbol object, standard size
      */
@@ -39,9 +36,6 @@ public class CustomNumDenSymbol
         this(false);
     }
 
-    //--------------------//
-    // CustomNumDenSymbol //
-    //--------------------//
     /**
      * Creates a new CustomNumDenSymbol object.
      *

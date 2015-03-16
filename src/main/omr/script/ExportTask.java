@@ -11,10 +11,12 @@
 // </editor-fold>
 package omr.script;
 
+import omr.sheet.Book;
 import omr.sheet.BookManager;
 import omr.sheet.Sheet;
 
-import java.nio.file.Paths;
+import java.io.File;
+import java.nio.file.Path;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -31,39 +33,26 @@ public class ExportTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The file used for export. */
+    /** The folder used for exports. */
     @XmlAttribute
-    private String path;
+    private File folder;
 
     /** Should we add our signature?. */
     @XmlAttribute(name = "signed")
     private Boolean signed;
 
-    /** Should we compress the output?. */
-    @XmlAttribute
-    private boolean compressed;
-
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // ExportTask //
-    //------------//
     /**
      * Create a task to export the related score entities of a sheet
      *
-     * @param path       the path sans extension to the export file
-     * @param compressed true for a compressed output (mxl) rather than uncompressed (xml)
+     * @param folder the folder for export files
      */
-    public ExportTask (String path,
-                       boolean compressed)
+    public ExportTask (File folder)
     {
-        this.path = path;
-        this.compressed = compressed;
+        this.folder = folder;
     }
 
-    //------------//
-    // ExportTask //
-    //------------//
-    /** No-arg constructor needed by JAXB */
+    /** No-arg constructor needed by JAXB. */
     private ExportTask ()
     {
     }
@@ -75,11 +64,9 @@ public class ExportTask
     @Override
     public void core (Sheet sheet)
     {
-        BookManager.getInstance().export(
-                sheet.getBook(),
-                (path != null) ? Paths.get(path) : null,
-                signed,
-                compressed);
+        Book book = sheet.getBook();
+        Path bookPath = (folder != null) ? new File(folder, book.getRadix()).toPath() : null;
+        BookManager.getInstance().exportBook(sheet.getBook(), bookPath, signed);
     }
 
     //-----------//
@@ -91,11 +78,9 @@ public class ExportTask
         StringBuilder sb = new StringBuilder(super.internals());
         sb.append(" export");
 
-        if (compressed) {
-            sb.append(" compressed");
+        if (folder != null) {
+            sb.append(" folder=").append(folder);
         }
-
-        sb.append(" ").append(path);
 
         return sb.toString();
     }

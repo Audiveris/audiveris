@@ -48,9 +48,6 @@ public class BackToBackSymbol
     private final ShapeSymbol dotsSymbol = Symbols.getSymbol(REPEAT_DOT_PAIR);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------------//
-    // BackToBackSymbol //
-    //------------------//
     /**
      * Create a BackToBackSymbol
      *

@@ -46,9 +46,6 @@ public class InterAction
     private final Inter inter;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // InterAction //
-    //-------------//
     /**
      * Creates a new InterAction object.
      *
@@ -59,9 +56,6 @@ public class InterAction
         this(inter, null);
     }
 
-    //-------------//
-    // InterAction //
-    //-------------//
     /**
      * Creates a new InterAction object.
      *

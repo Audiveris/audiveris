@@ -82,10 +82,6 @@ public abstract class Constant
     private AtomicReference<Tuple> tuple = new AtomicReference<Tuple>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //----------//
-    // Constant //
-    //----------//
     /**
      * Creates a constant instance, while providing a default value,
      * in case the external property is not yet defined.

@@ -186,7 +186,7 @@ public interface Lag
     /**
      * Inject dependency about other services for lag.
      *
-     * @param locationService the location service to read & write
+     * @param locationService the location service to read and write
      */
     void setServices (SelectionService locationService);
 }

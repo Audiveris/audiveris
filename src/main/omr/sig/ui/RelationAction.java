@@ -47,9 +47,6 @@ class RelationAction
     private final Inter other;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // RelationAction //
-    //----------------//
     /**
      * Creates a new RelationAction object.
      *

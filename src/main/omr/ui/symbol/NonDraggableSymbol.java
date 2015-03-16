@@ -33,9 +33,6 @@ public class NonDraggableSymbol
     private static final AffineTransform at = AffineTransform.getScaleInstance(2, 2);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------------//
-    // NonDraggableSymbol //
-    //--------------------//
     /**
      * Create an NonDraggableSymbol
      */
@@ -44,9 +41,6 @@ public class NonDraggableSymbol
         this(false, codes);
     }
 
-    //--------------------//
-    // NonDraggableSymbol //
-    //--------------------//
     /**
      * Create an NonDraggableSymbol
      *

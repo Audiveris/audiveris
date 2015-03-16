@@ -22,13 +22,13 @@ public enum SelectionHint
 
     /**
      * Designation is by location pointing, so we keep the original location
-     * information, and try to lookup for designated Run, Section & Glyph
+     * information, and try to lookup for designated Run, Section and Glyph
      */
     LOCATION_INIT,
     /**
      * Designation is by location pointing while adding to the existing
      * selection(s), so we keep the original location information, and try to
-     * lookup for designated Run, Section & Glyph
+     * lookup for designated Run, Section and Glyph
      */
     LOCATION_ADD,
     /**
@@ -49,7 +49,7 @@ public enum SelectionHint
     SECTION_INIT,
     /**
      * Designation is at Glyph level, so we display the pixel contour of the
-     * Glyph, as well as Glyph information, but Run & Section informations are
+     * Glyph, as well as Glyph information, but Run and Section informations are
      * not available
      */
     GLYPH_INIT,
@@ -70,9 +70,16 @@ public enum SelectionHint
     //
     //------------//
     // isLocation //
+    //------------////
+    //------------//
+    // isLocation //
     //------------//
 
-    /** Predicate for LOCATION_XXX. */
+    /**
+     * Predicate for LOCATION_XXX.
+     *
+     * @return true for location-related hints
+     */
     public boolean isLocation ()
     {
         switch (this) {
@@ -87,7 +94,11 @@ public enum SelectionHint
     //-----------//
     // isContext //
     //-----------//
-    /** Predicate for CONTEXT_XXX. */
+    /**
+     * Predicate for CONTEXT_XXX.
+     *
+     * @return true for context-related hints
+     */
     public boolean isContext ()
     {
         switch (this) {
@@ -102,7 +113,11 @@ public enum SelectionHint
     //-----------//
     // isSection //
     //-----------//
-    /** Predicate for SECTION_XXX. */
+    /**
+     * Predicate for SECTION_XXX.
+     *
+     * @return true for section-related hints
+     */
     public boolean isSection ()
     {
         switch (this) {
@@ -116,7 +131,11 @@ public enum SelectionHint
     //---------//
     // isGlyph //
     //---------//
-    /** Predicate for GLYPH_XXX. */
+    /**
+     * Predicate for GLYPH_XXX.
+     *
+     * @return true for glyph-related hints
+     */
     public boolean isGlyph ()
     {
         switch (this) {

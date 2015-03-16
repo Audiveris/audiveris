@@ -60,9 +60,6 @@ public class InsertTask
     private PointFacade[] points;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // InsertTask //
-    //------------//
     /**
      * Create an glyph insertion task.
      *
@@ -92,10 +89,7 @@ public class InsertTask
         this.locations = new ArrayList<Point>(locations);
     }
 
-    //------------//
-    // InsertTask //
-    //------------//
-    /** No-arg constructor for JAXB only */
+    /** No-arg constructor for JAXB only. */
     private InsertTask ()
     {
         shape = null; // Dummy value

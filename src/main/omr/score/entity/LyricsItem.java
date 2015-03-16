@@ -126,9 +126,6 @@ public class LyricsItem
     private OldChord mappedChord;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // LyricsItem //
-    //------------//
     /**
      * Creates a new LyricsItem object.
      *

@@ -28,7 +28,7 @@ import javax.media.jai.JAI;
  * @author Brenton Partridge
  * @author Hervé Bitteur
  */
-public class JaiLoader
+public abstract class JaiLoader
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -49,9 +49,6 @@ public class JaiLoader
     //            return null;
     //        }
     //    });
-    //-----------//
-    // JaiLoader //
-    //-----------//
     private JaiLoader ()
     {
     }

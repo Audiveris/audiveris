@@ -81,10 +81,6 @@ public class BarPainter
     private final BarItem[] items;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //------------//
-    // BarPainter //
-    //------------//
     private BarPainter (BarItem... items)
     {
         this.items = items;

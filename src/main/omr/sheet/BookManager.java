@@ -20,11 +20,16 @@ import omr.constant.ConstantSet;
 import omr.score.OpusExporter;
 import omr.score.Score;
 import omr.score.ScoreExporter;
+import omr.score.ScoreReduction;
 import omr.score.entity.Page;
 import omr.score.ui.BookPdfOutput;
 
 import omr.script.ScriptActions;
 
+import omr.step.Stepping;
+import omr.step.Steps;
+
+import omr.util.FileUtil;
 import omr.util.NameSet;
 
 import org.jdesktop.application.Application.ExitListener;
@@ -52,9 +57,10 @@ import java.util.List;
  * <p>
  * It handles where and how to export, print, bench books and sheets.
  * <p>
- * The way books and sheets are exported depends on whether we allow the use of MusicXML Opus:
+ * The way books and sheets are exported depends on whether we allow the use of MusicXML
+ * <b>Opus</b>:
  * An opus provides gathering features like an archive which is convenient when several items must
- * be exported. Without opus notion, we have to set up on some ad-hoc sub-folders organization.
+ * be exported. Without opus notion, we have to set up some ad-hoc sub-folders organization.
  * However, as of this writing, opus notion is supported by very few software products.
  * <p>
  * For example, Mozart 40th symphony as available on IMSLP web site is made of one PDF file
@@ -66,9 +72,26 @@ import java.util.List;
  * <li>Allegro Assai, starting on sheet #33, system #2 (middle of the sheet)</li>
  * </ol>
  * <p>
- * We could process all the 49 sheets in memory (although this is not really feasible) with a single
- * book, discovering the 4 movements one after the other, and finally creating one MusicXML Opus
- * containing 4 {@link Score} instances, one for each movement.
+ * Assuming Opus is supported, the final result would be a single opus file:
+ * <blockquote>
+ * <pre>
+ * Mozart_S40.opus.mxl (with each of the 4 movements included in this opus file)
+ * </pre>
+ * </blockquote>
+ * Assuming Opus is NOT supported, the final result would be something like:
+ * <blockquote>
+ * <pre>
+ * Mozart_S40/
+ * Mozart_S40/mvt1.mxl
+ * Mozart_S40/mvt2.mxl
+ * Mozart_S40/mvt3.mxl
+ * Mozart_S40/mvt4.mxl
+ * </pre>
+ * </blockquote>
+ * <p>
+ * We could process all the 49 sheets in memory (although this is not practically feasible) with a
+ * single book, discovering the 4 movements one after the other, and finally creating one MusicXML
+ * Opus containing 4 {@link Score} instances, one for each movement.
  * <p>
  * In practice, we will rather process input by physical chunks, say 1 sheet (or 5 sheets) at a
  * time, and assemble the logical items in a second phase.
@@ -76,47 +99,52 @@ import java.util.List;
  * Book and Score instances.
  * <p>
  * Intermediate items, with book chunks of 1 sheet, could be structured as follows:
+ * <blockquote>
  * <pre>
  * Mozart_S40/
- * Mozart_S40/book-1/sheet#1.xml
- * Mozart_S40/book-2/sheet#2.xml
+ * Mozart_S40/book-1/sheet#1.mxl
+ * Mozart_S40/book-2/sheet#2.mxl
  * [...]
- * Mozart_S40/book-33/sheet#33.mvt1.xml
- * Mozart_S40/book-33/sheet#33.mvt2.xml
+ * Mozart_S40/book-33/sheet#33.mvt1.mxl
+ * Mozart_S40/book-33/sheet#33.mvt2.mxl
  * [...]
- * Mozart_S40/book-49/sheet#49.xml
+ * Mozart_S40/book-49/sheet#49.mxl
  * </pre>
- * <p>
+ * </blockquote>
  * Intermediate items, with book chunks of 5 sheets, could be structured as follows:
+ * <blockquote>
  * <pre>
  * Mozart_S40/
- * Mozart_S40/book-1-5/sheet#1.xml
- * Mozart_S40/book-1-5/sheet#2.xml
- * Mozart_S40/book-1-5/sheet#3.xml
- * Mozart_S40/book-1-5/sheet#4.xml
- * Mozart_S40/book-1-5/sheet#5.xml
+ * Mozart_S40/book-1-5/sheet#1.mxl
+ * Mozart_S40/book-1-5/sheet#2.mxl
+ * Mozart_S40/book-1-5/sheet#3.mxl
+ * Mozart_S40/book-1-5/sheet#4.mxl
+ * Mozart_S40/book-1-5/sheet#5.mxl
  *
- * Mozart_S40/book-6-10/sheet#6.xml
- * Mozart_S40/book-6-10/sheet#7.xml
+ * Mozart_S40/book-6-10/sheet#6.mxl
+ * Mozart_S40/book-6-10/sheet#7.mxl
  * [...]
- * Mozart_S40/book-26-30/sheet#30.xml
+ * Mozart_S40/book-26-30/sheet#30.mxl
  *
- * Mozart_S40/book-31-35/sheet#31.xml
- * Mozart_S40/book-31-35/sheet#32.xml
- * Mozart_S40/book-31-35/sheet#33.mvt1.xml
- * Mozart_S40/book-31-35/sheet#33.mvt2.xml
- * Mozart_S40/book-31-35/sheet#34.xml
- * Mozart_S40/book-31-35/sheet#35.xml
+ * Mozart_S40/book-31-35/sheet#31.mxl
+ * Mozart_S40/book-31-35/sheet#32.mxl
+ * Mozart_S40/book-31-35/sheet#33.mvt1.mxl
+ * Mozart_S40/book-31-35/sheet#33.mvt2.mxl
+ * Mozart_S40/book-31-35/sheet#34.mxl
+ * Mozart_S40/book-31-35/sheet#35.mxl
  *
- * Mozart_S40/book-36-40/sheet#36.xml
+ * Mozart_S40/book-36-40/sheet#36.mxl
  * [...]
- * Mozart_S40/book-41-45/sheet#45.xml
+ * Mozart_S40/book-41-45/sheet#45.mxl
  *
- * Mozart_S40/book-46-49/sheet#46.xml
- * Mozart_S40/book-46-49/sheet#47.xml
- * Mozart_S40/book-46-49/sheet#48.xml
- * Mozart_S40/book-46-49/sheet#49.xml
+ * Mozart_S40/book-46-49/sheet#46.mxl
+ * Mozart_S40/book-46-49/sheet#47.mxl
+ * Mozart_S40/book-46-49/sheet#48.mxl
+ * Mozart_S40/book-46-49/sheet#49.mxl
  * </pre>
+ * </blockquote>
+ * <p>
+ * <img alt="Cycle img" src="doc-files/Cycle.png">
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
@@ -129,14 +157,23 @@ public class BookManager
 
     private static final Logger logger = LoggerFactory.getLogger(BookManager.class);
 
-    /** The extension used for score output files: {@value} */
+    /** The extension used for score output files: {@value}. */
     public static final String SCORE_EXTENSION = ".xml";
 
-    /** The extension used for compressed score output files: {@value} */
+    /** The extension used for compressed score output files: {@value}. */
     public static final String COMPRESSED_SCORE_EXTENSION = ".mxl";
 
-    /** The (double) extension used for opus output files: {@value} */
+    /** The extension used for compressed score print files: {@value}. */
+    public static final String PDF_EXTENSION = ".pdf";
+
+    /** The (double) extension used for opus output files: {@value}. */
     public static final String OPUS_EXTENSION = ".opus.mxl";
+
+    /** The extension prefix used for movement output files: {@value}. */
+    public static final String MOVEMENT_EXTENSION = ".mvt";
+
+    /** The prefix used for sheet output files in a multi-sheet book: {@value}. */
+    public static final String SHEET_PREFIX = "sheet#";
 
     /** The extension used for bench files: {@value}. */
     public static final String BENCH_EXTENSION = ".bench.properties";
@@ -153,43 +190,13 @@ public class BookManager
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Private constructor for a singleton
+     * Private constructor for a singleton.
      */
     private BookManager ()
     {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this class.
-     *
-     * @return the single instance
-     */
-    public static BookManager getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new BookManager();
-        }
-
-        return INSTANCE;
-    }
-
-    //-------------//
-    // isMultiBook //
-    //-------------//
-    /**
-     * Report whether we are currently handling more than one book.
-     *
-     * @return true if more than one book
-     */
-    public static boolean isMultiBook ()
-    {
-        return getInstance().instances.size() > 1;
-    }
-
     //-------------//
     // addInstance //
     //-------------//
@@ -220,82 +227,190 @@ public class BookManager
         instances.add(book);
     }
 
-    //--------//
-    // export //
-    //--------//
+    //-----------//
+    // cleanBook //
+    //-----------//
     /**
-     * Export a book in MusicXML.
+     * Cleanup the existing outputs of provided book.
+     *
+     * @param book     the book whose outputs must be cleaned up
+     * @param bookPath export book path (sans extension) for a specific location, or null to let
+     *                 the program choose
+     */
+    public void cleanBook (Book book,
+                           Path bookPath)
+    {
+        // Determine the output path for the provided book
+        if (bookPath == null) {
+            bookPath = getDefaultExportPath(book);
+        }
+
+        // One-sheet book: <bookname>.mxl
+        // One-sheet book: <bookname>.mvt<M>.mxl
+        // One-sheet book: <bookname>/... (perhaps some day: 1 directory per book)
+        //
+        // Multi-sheet book: <bookname>/sheet#<N>.mxl
+        // Multi-sheet book: <bookname>/sheet#<N>.mvt<M>.mxl
+        // Multi-sheet book: <bookname>/sheet#<N>/... (perhaps some day: 1 directory per sheet)
+        final Path folder = book.isMultiSheet() ? bookPath : bookPath.getParent();
+        final Path bookName = bookPath.getFileName(); // bookname
+
+        final String dirGlob = "glob:**/" + bookName + "{/**,}";
+        final String filGlob = "glob:**/" + bookName + "{/**,.*}";
+        final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
+
+        if (!paths.isEmpty()) {
+            deletePaths(bookName + " deletion", paths);
+        } else {
+            logger.info("Nothing to delete");
+        }
+    }
+
+    //------------//
+    // cleanSheet //
+    //------------//
+    /**
+     * Cleanup the existing output of provided sheet.
+     *
+     * @param sheet    the sheet to clean up
+     * @param bookPath export book name (sans extension) for a specific location, or null to let
+     *                 the program choose
+     */
+    public void cleanSheet (Sheet sheet,
+                            Path bookPath)
+    {
+        final Book book = sheet.getBook();
+
+        if (!book.isMultiSheet()) {
+            cleanBook(book, null); // Simply delete the single-sheet book!
+        } else {
+            // path/to/scores/Book
+            bookPath = getActualPath(bookPath, getDefaultExportPath(book));
+
+            // Determine the output path (sans extension) for the provided sheet
+            final Path sheetPathSansExt = getSheetExportPath(bookPath, sheet);
+
+            // Multi-sheet book: <bookname>/sheet#<N>.mvt<M>.mxl
+            // Multi-sheet book: <bookname>/sheet#<N>.mxl
+            // Multi-sheet book: <bookname>/sheet#<N>/... (perhaps some day: 1 directory per sheet)
+            final Path folder = sheetPathSansExt.getParent();
+            final Path bookName = folder.getFileName(); // bookname
+            final Path sheetName = sheetPathSansExt.getFileName(); // sheet#N
+
+            final String dirGlob = "glob:**/" + bookName + "/" + sheetName + "{/**,}";
+            final String filGlob = "glob:**/" + bookName + "/" + sheetName + "{/**,.*}";
+            final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
+
+            if (!paths.isEmpty()) {
+                deletePaths(bookName + "/" + sheetName + " deletion", paths);
+            }
+        }
+    }
+
+    //------------//
+    // exportBook //
+    //------------//
+    /**
+     * Export a whole book in MusicXML.
      * <p>
      * The output is structured differently according to whether the book contains one or several
      * scores.<ul>
      * <li>A single-score book results in one score output.</li>
-     * <li>A multi-score book results in one opus output (if useOpus is set) or a folder of scores
+     * <li>A multi-score book results in one opus output (if useOpus is set) or a series of scores
      * (is useOpus is not set).</li>
      * </ul>
      *
-     * @param book       the book to export
-     * @param targetPath target path name (sans extension) for a specific location, or null to let
-     *                   the program choose (based on book, previous or default location)
-     * @param signed     should we inject our signature?, may be null to use default
-     * @param compressed true for (compressed) MXL, false for (standard) XML
+     * @param book     the book to export
+     * @param bookPath target book path (sans extension) for a specific location, or null to let
+     *                 the program choose
+     * @param signed   should we inject our signature?, may be null to use default
      */
-    public void export (Book book,
-                        Path targetPath,
-                        Boolean signed,
-                        boolean compressed)
+    public void exportBook (Book book,
+                            Path bookPath,
+                            Boolean signed)
     {
-        final List<Score> scores = book.getScores();
-
-        if (scores.isEmpty()) {
-            return;
+        // Make sure all sheets have been transcribed
+        for (Sheet sheet : book.getSheets()) {
+            Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
         }
 
-        // Determine the output path (sans extension) for the provided book
-        final Path pathSansExt = getActualPath(targetPath, getDefaultExportPath(book));
-        final boolean sig = (signed != null) ? signed : constants.defaultSigned.isSet();
-        final String rootName = pathSansExt.getFileName().toString();
+        // Group book pages into scores
+        book.retrieveScores();
 
-        try {
-            if (scores.size() > 1) {
-                if (constants.useOpus.isSet()) {
-                    // Export the book multiple scores as one opus
-                    final Path opusPath = pathSansExt.resolveSibling(rootName + OPUS_EXTENSION);
-                    new OpusExporter(book).export(opusPath, rootName, sig);
-                } else {
-                    // Export the book multiple scores as separate scores in folder 'pathSansExt'
-                    final String ext = compressed ? COMPRESSED_SCORE_EXTENSION : SCORE_EXTENSION;
-                    Files.createDirectories(pathSansExt);
+        final List<Score> scores = book.getScores();
 
-                    for (Score score : scores) {
-                        final int idx = 1 + scores.indexOf(score);
-                        final String scoreName = rootName + ".mvt" + idx;
-                        final Path scorePath = pathSansExt.resolve(scoreName + ext);
-                        new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
-                    }
-                }
-            } else {
-                // Single score to export (compressed or not)
-                final Score score = book.getLastScore();
-                final String ext = compressed ? COMPRESSED_SCORE_EXTENSION : SCORE_EXTENSION;
-                final Path scorePath = pathSansExt.resolveSibling(rootName + ext);
-                new ScoreExporter(score).export(scorePath, rootName, sig, compressed);
+        for (Score score : scores) {
+            // Merges pages into their containing movement score (connecting the parts across pages)
+            // TODO: this may need the addition of dummy parts in some pages
+            new ScoreReduction(score).reduce();
+
+            for (Page page : score.getPages()) {
+                //                // - Retrieve the actual duration of every measure
+                //                page.accept(new DurationRetriever());
+                //
+                //                // - Check all voices timing, assign forward items if needed.
+                //                // - Detect special measures and assign proper measure ids
+                //                // If needed, we can trigger a reprocessing of this page
+                //                page.accept(new MeasureFixer());
+                //
+                // Check whether time signatures are consistent accross all pages in score
+                // TODO: to be implemented
+                //
+                // Connect slurs across pages
+                page.getFirstSystem().connectPageInitialSlurs(score);
             }
+        }
 
-            // Remember the book path in the book itself
-            book.setExportPath(pathSansExt);
+        // path/to/scores/Book
+        bookPath = getActualPath(bookPath, getDefaultExportPath(book));
 
-            // Remember (even across runs) the selected directory for books
-            constants.defaultExportDirectory.setValue(pathSansExt.getParent().toString());
-        } catch (Exception ex) {
-            logger.warn("Error storing " + book + ", " + ex, ex);
+        final boolean compressed = useCompression();
+        final String ext = compressed ? COMPRESSED_SCORE_EXTENSION : SCORE_EXTENSION;
+        final boolean sig = (signed != null) ? signed : constants.defaultSigned.isSet();
+
+        // Export each movement score
+        String bookName = bookPath.getFileName().toString();
+        final boolean multiMovements = scores.size() > 1;
+
+        if (constants.useOpus.isSet()) {
+            // Export the book as one opus
+            final Path opusPath = bookPath.resolveSibling(bookName + OPUS_EXTENSION);
+
+            try {
+                if (!confirmed(opusPath)) {
+                    return;
+                }
+
+                new OpusExporter(book).export(opusPath, bookName, sig);
+                constants.defaultExportDirectory.setValue(bookPath.getParent().toString());
+            } catch (Exception ex) {
+                logger.warn("Could not export opus " + opusPath, ex);
+            }
+        } else {
+            for (Score score : scores) {
+                final String scoreName = (!multiMovements) ? bookName
+                        : (bookName + MOVEMENT_EXTENSION + score.getId());
+                final Path scorePath = bookPath.resolveSibling(scoreName + ext);
+
+                try {
+                    if (!confirmed(scorePath)) {
+                        return;
+                    }
+
+                    new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
+                    constants.defaultExportDirectory.setValue(bookPath.getParent().toString());
+                } catch (Exception ex) {
+                    logger.warn("Could not export score " + scoreName, ex);
+                }
+            }
         }
     }
 
-    //--------//
-    // export //
-    //--------//
+    //-------------//
+    // exportSheet //
+    //-------------//
     /**
-     * Export a sheet in MusicXML.
+     * Export a single sheet in MusicXML.
      * <p>
      * The output is structured differently according to whether the sheet contains one or several
      * pages.<ul>
@@ -304,16 +419,15 @@ public class BookManager
      * (is useOpus is not set).</li>
      * </ul>
      *
-     * @param sheet      the sheet to export
-     * @param targetPath target path name (sans extension) for a specific location, or null to let
-     *                   the program choose (based on sheet, previous or default location)
-     * @param signed     should we inject ProxyMusic signature?, null to use default
-     * @param compressed true for compressed output (.mxl) rather than (.xml)
+     * @param sheet    the sheet to export
+     * @param bookPath export book path (sans extension) for a specific location, or null to let
+     *                 the program choose (based on book or default location).
+     *                 Typically, assuming book name is "Book", something like: path/to/scores/Book
+     * @param signed   should we inject ProxyMusic signature?, null to use default
      */
-    public void export (Sheet sheet,
-                        Path targetPath,
-                        Boolean signed,
-                        boolean compressed)
+    public void exportSheet (Sheet sheet,
+                             Path bookPath,
+                             Boolean signed)
     {
         final List<Page> pages = sheet.getPages();
 
@@ -321,58 +435,54 @@ public class BookManager
             return;
         }
 
+        final boolean compressed = useCompression();
+        final Book book = sheet.getBook();
+
+        // path/to/scores/Book
+        bookPath = getActualPath(bookPath, getDefaultExportPath(book));
+
         // Determine the output path (sans extension) for the provided sheet
-        final Path pathSansExt = getActualPath(targetPath, getDefaultExportPath(sheet));
-        final String rootName = pathSansExt.getFileName().toString();
-        final boolean sig = (signed != null) ? signed : constants.defaultSigned.isSet();
+        final Path sheetPathSansExt = getSheetExportPath(bookPath, sheet);
 
         try {
+            if (book.isMultiSheet() && !Files.exists(bookPath)) {
+                Files.createDirectories(bookPath);
+            }
+
+            final String rootName = sheetPathSansExt.getFileName().toString();
+            final boolean sig = (signed != null) ? signed : constants.defaultSigned.isSet();
+
             if (pages.size() > 1) {
-                if (constants.useOpus.isSet()) {
-                    // Export the sheet multiple pages as one opus
-                    final int offset = sheet.getBook().getOffset() + (sheet.getIndex() - 1);
-                    final Book book = new Book(sheet, offset);
+                // Export the sheet multiple pages as separate scores in folder 'pathSansExt'
+                final String ext = compressed ? COMPRESSED_SCORE_EXTENSION : SCORE_EXTENSION;
+                Files.createDirectories(sheetPathSansExt);
 
-                    for (Page page : sheet.getPages()) {
-                        Score score = new Score();
-                        score.addChild(page);
-                        book.addScore(score);
-                    }
+                for (Page page : pages) {
+                    final Score score = new Score();
+                    score.addPage(page);
 
-                    final Path opusPath = pathSansExt.resolveSibling(rootName + OPUS_EXTENSION);
-                    new OpusExporter(book).export(opusPath, rootName, sig);
-                } else {
-                    // Export the sheet multiple pages as separate scores in folder 'pathSansExt'
-                    final String ext = compressed ? COMPRESSED_SCORE_EXTENSION : SCORE_EXTENSION;
-                    Files.createDirectories(pathSansExt);
+                    final int idx = 1 + pages.indexOf(page);
+                    score.setId(idx);
 
-                    for (Page page : pages) {
-                        final Score score = new Score();
-                        score.addChild(page);
-
-                        final int idx = 1 + pages.indexOf(page);
-                        final String scoreName = rootName + ".mvt" + idx;
-                        final Path scorePath = pathSansExt.resolve(scoreName + ext);
-                        new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
-                    }
+                    final String scoreName = rootName + MOVEMENT_EXTENSION + idx;
+                    final Path scorePath = sheetPathSansExt.resolve(scoreName + ext);
+                    new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
                 }
             } else {
                 // Export the sheet single page as a score
                 final Score score = new Score();
-                score.addChild(sheet.getLastPage());
+                score.setId(1);
+                score.addPage(sheet.getLastPage());
 
                 final String ext = compressed ? COMPRESSED_SCORE_EXTENSION : SCORE_EXTENSION;
-                final Path scorePath = pathSansExt.resolveSibling(rootName + ext);
+                final Path scorePath = sheetPathSansExt.resolveSibling(rootName + ext);
                 new ScoreExporter(score).export(scorePath, rootName, sig, compressed);
             }
 
             // Remember the book path in the book itself
-            final Path bookPath = pathSansExt.getParent();
             sheet.getBook().setExportPath(bookPath);
 
-            // Remember (even across runs) the selected directory for books
-            final Path exportsPath = bookPath.getParent();
-            constants.defaultExportDirectory.setValue(exportsPath.toString());
+            constants.defaultExportDirectory.setValue(bookPath.getParent().toString());
         } catch (Exception ex) {
             logger.warn("Error storing " + sheet + ", " + ex, ex);
         }
@@ -389,16 +499,11 @@ public class BookManager
      */
     public Path getDefaultBenchPath (Book book)
     {
-        Path mainPath = Main.getBenchPath();
-
-        String child = book.getRadix() + BENCH_EXTENSION;
+        final String child = book.getRadix() + BENCH_EXTENSION;
+        final Path mainPath = Main.getBenchFolder();
 
         if (mainPath != null) {
-            if (Files.isDirectory(mainPath)) {
-                return mainPath.resolve(child);
-            } else {
-                return mainPath;
-            }
+            return mainPath.resolve(child);
         }
 
         return Paths.get(constants.defaultBenchDirectory.getValue(), child);
@@ -424,7 +529,7 @@ public class BookManager
      * Report the path to which the book would be written by default.
      *
      * @param book the book to export
-     * @return the default book path
+     * @return the default book path for export
      */
     public Path getDefaultExportPath (Book book)
     {
@@ -432,7 +537,7 @@ public class BookManager
             return book.getExportPath();
         }
 
-        Path mainPath = Main.getExportPath();
+        Path mainPath = Main.getExportFolder();
 
         if (mainPath != null) {
             if (Files.isDirectory(mainPath)) {
@@ -443,23 +548,6 @@ public class BookManager
         }
 
         return Paths.get(constants.defaultExportDirectory.getValue(), book.getRadix());
-    }
-
-    //----------------------//
-    // getDefaultExportPath //
-    //----------------------//
-    /**
-     * Report the path to which the sheet would be written by default.
-     *
-     * @param sheet the sheet to export
-     * @return the default sheet path
-     */
-    public Path getDefaultExportPath (Sheet sheet)
-    {
-        final Book book = sheet.getBook();
-        final Path bookPath = getDefaultExportPath(book);
-
-        return bookPath.resolve("sheet#" + (book.getOffset() + sheet.getIndex()));
     }
 
     //--------------------------//
@@ -482,7 +570,7 @@ public class BookManager
      * Report the path to which the book PDF data would be written by default.
      *
      * @param book the book to export
-     * @return the default file
+     * @return the default book path for print
      */
     public Path getDefaultPrintPath (Book book)
     {
@@ -490,18 +578,17 @@ public class BookManager
             return book.getPrintPath();
         }
 
-        final String child = book.getRadix() + ".sheet.pdf";
-        final Path mainPath = Main.getPrintPath();
+        final Path mainPath = Main.getPrintFolder();
 
         if (mainPath != null) {
             if (Files.isDirectory(mainPath)) {
-                return mainPath.resolve(child);
+                return mainPath.resolve(book.getRadix());
             } else {
                 return mainPath;
             }
         }
 
-        return Paths.get(constants.defaultPrintDirectory.getValue(), child);
+        return Paths.get(constants.defaultPrintDirectory.getValue(), book.getRadix());
     }
 
     //-----------------//
@@ -538,6 +625,24 @@ public class BookManager
         };
     }
 
+    //--------------------//
+    // getExportExtension //
+    //--------------------//
+    /**
+     * Report the extension to use for exported score, depending on the use (or not) of
+     * compression.
+     *
+     * @return the file extension to use.
+     */
+    public static String getExportExtension ()
+    {
+        if (useCompression()) {
+            return COMPRESSED_SCORE_EXTENSION;
+        } else {
+            return SCORE_EXTENSION;
+        }
+    }
+
     //------------//
     // getHistory //
     //------------//
@@ -556,6 +661,155 @@ public class BookManager
         }
 
         return history;
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class.
+     *
+     * @return the single instance
+     */
+    public static BookManager getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new BookManager();
+        }
+
+        return INSTANCE;
+    }
+
+    //--------------------//
+    // getSheetExportPath //
+    //--------------------//
+    /**
+     * Report the path (sans extension) to which the sheet will be written.
+     * <ul>
+     * <li>If this sheet is the only one in the containing book, we use:<br/>
+     * &lt;book-name&gt;</li>
+     * <li>If the book contains several sheets, we use:<br/>
+     * &lt;book-name&gt;/sheet#&lt;N&gt;</li>
+     * </ul>
+     *
+     * @param bookPath the non-null bookPath
+     * @param sheet    the sheet to export
+     * @return the sheet path
+     */
+    public Path getSheetExportPath (Path bookPath,
+                                    Sheet sheet)
+    {
+        final Book book = sheet.getBook();
+
+        // Determine the output path (sans extension) for the provided sheet
+        // path/to/scores/Book            (for a single-sheet book)
+        // path/to/scores/Book/sheet#N    (for a multi-sheet book)
+        if (!book.isMultiSheet()) {
+            return bookPath;
+        } else {
+            return bookPath.resolve(SHEET_PREFIX + (book.getOffset() + sheet.getIndex()));
+        }
+    }
+
+    //-------------//
+    // isMultiBook //
+    //-------------//
+    /**
+     * Report whether we are currently handling more than one book.
+     *
+     * @return true if more than one book
+     */
+    public static boolean isMultiBook ()
+    {
+        return getInstance().instances.size() > 1;
+    }
+
+    //-----------//
+    // printBook //
+    //-----------//
+    /**
+     * Print the book physical appearance into the provided PDF file.
+     *
+     * @param book     the provided book
+     * @param bookPath print book path (sans extension) for a specific location, or null to let
+     *                 the program choose (based on book or default location).
+     *                 Typically, assuming book name is "Book", something like: path/to/prints/Book
+     */
+    public void printBook (Book book,
+                           Path bookPath)
+    {
+        // Make sure all sheets have been transcribed
+        for (Sheet sheet : book.getSheets()) {
+            Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
+        }
+
+        // path/to/prints/Book
+        bookPath = getActualPath(bookPath, getDefaultPrintPath(book));
+
+        final String rootName = bookPath.getFileName().toString();
+        final Path pdfPath = bookPath.resolveSibling(rootName + ".pdf");
+
+        // Actually write the PDF
+        try {
+            // Prompt for overwrite?
+            if (!confirmed(pdfPath)) {
+                return;
+            }
+
+            new BookPdfOutput(book, pdfPath.toFile()).write(null);
+            logger.info("Book printed to {}", pdfPath);
+
+            // Remember (even across runs) the selected print directory
+            book.setPrintPath(bookPath);
+            constants.defaultPrintDirectory.setValue(bookPath.getParent().toString());
+        } catch (Exception ex) {
+            logger.warn("Cannot write PDF to " + pdfPath, ex);
+        }
+    }
+
+    //------------//
+    // printSheet //
+    //------------//
+    /**
+     * Print the sheet physical appearance into the provided PDF file.
+     *
+     * @param sheet    the provided sheet
+     * @param bookPath print book path (sans extension) for a specific location, or null to let
+     *                 the program choose (based on book or default location).
+     *                 Typically, assuming book name is "Book", something like: path/to/prints/Book
+     */
+    public void printSheet (Sheet sheet,
+                            Path bookPath)
+    {
+        final Book book = sheet.getBook();
+        // path/to/prints/Book
+        bookPath = getActualPath(bookPath, getDefaultPrintPath(book));
+
+        // Determine the output path (sans extension) for the provided sheet
+        final Path sheetPathSansExt = getSheetExportPath(bookPath, sheet);
+        final String rootName = sheetPathSansExt.getFileName().toString();
+        final Path pdfPath = sheetPathSansExt.resolveSibling(rootName + ".pdf");
+
+        // Actually write the PDF
+        try {
+            // Prompt for overwrite?
+            if (!confirmed(pdfPath)) {
+                return;
+            }
+
+            if (book.isMultiSheet() && !Files.exists(bookPath)) {
+                Files.createDirectories(bookPath);
+            }
+
+            new BookPdfOutput(book, pdfPath.toFile()).write(sheet);
+            logger.info("Sheet printed to {}", pdfPath);
+
+            // Remember (even across runs) the selected print directory
+            book.setPrintPath(bookPath);
+            constants.defaultPrintDirectory.setValue(bookPath.getParent().toString());
+        } catch (Exception ex) {
+            logger.warn("Cannot write PDF to " + pdfPath, ex);
+        }
     }
 
     //----------------//
@@ -598,7 +852,7 @@ public class BookManager
                             boolean complete)
     {
         // Check if we do save bench data
-        if ((Main.getBenchPath() == null) && !constants.saveBenchToDisk.isSet()) {
+        if ((Main.getBenchFolder() == null) && !constants.saveBenchToDisk.isSet()) {
             return;
         }
 
@@ -629,31 +883,17 @@ public class BookManager
         }
     }
 
-    //------------------//
-    // writePhysicalPdf //
-    //------------------//
+    //----------------//
+    // useCompression //
+    //----------------//
     /**
-     * Print the book physical appearance into the provided PDF file.
+     * Report whether we should use compression (to .MXL files) or not (to .XML files).
      *
-     * @param book   the provided book
-     * @param target the PDF path to write
+     * @return true for compression
      */
-    public void writePhysicalPdf (Book book,
-                                  Path target)
+    public static boolean useCompression ()
     {
-        target = getActualPath(target, getDefaultPrintPath(book));
-
-        // Actually write the PDF
-        try {
-            new BookPdfOutput(book, target.toFile()).write();
-            book.setPrintPath(target);
-            logger.info("Score printed to {}", target);
-
-            // Remember (even across runs) the selected directory
-            constants.defaultPrintDirectory.setValue(target.getParent().toString());
-        } catch (Exception ex) {
-            logger.warn("Cannot write PDF to " + target, ex);
-        }
+        return constants.useCompression.getValue();
     }
 
     //---------------//
@@ -673,6 +913,70 @@ public class BookManager
         }
 
         logger.debug("{} book(s) closed", count);
+    }
+
+    //-----------//
+    // confirmed //
+    //-----------//
+    /**
+     * Check whether we have user confirmation to overwrite the target path.
+     * This is a no-op is there is no Gui or if target does not already exist.
+     *
+     * @param target the path to be checked
+     * @return false if explicitly not confirmed, true otherwise
+     */
+    private boolean confirmed (Path target)
+    {
+        return ((Main.getGui() == null) || !Files.exists(target))
+               || Main.getGui().displayConfirmation("Overwrite " + target + "?");
+    }
+
+    //-------------//
+    // deletePaths //
+    //-------------//
+    /**
+     * Delete the provided files & dirs.
+     * If interactive mode, prompt user for confirmation beforehand.
+     *
+     * @param title scope indication for deletion
+     * @param paths the paths to delete
+     */
+    private void deletePaths (String title,
+                              List<Path> paths)
+    {
+        if (!paths.isEmpty()) {
+            if (Main.getGui() != null) {
+                StringBuilder sb = new StringBuilder();
+
+                for (Path p : paths) {
+                    if (Files.isDirectory(p)) {
+                        sb.append("\ndir  ");
+                    } else {
+                        sb.append("\nfile ");
+                    }
+
+                    sb.append(p);
+                }
+
+                if (!Main.getGui().displayConfirmation("Confirm " + title + "?\n" + sb)) {
+                    return;
+                }
+            }
+
+            // Do delete
+            int count = 0;
+
+            for (Path path : paths) {
+                try {
+                    Files.delete(path);
+                    count++;
+                } catch (IOException ex) {
+                    logger.warn("Error deleting " + path + " " + ex, ex);
+                }
+            }
+
+            logger.info("{} path(s) deleted.", count);
+        }
     }
 
     //---------------//
@@ -721,8 +1025,12 @@ public class BookManager
         //~ Instance fields ------------------------------------------------------------------------
 
         final Constant.Boolean useOpus = new Constant.Boolean(
+                false,
+                "Should we use Opus notion for export (rather than separate files)?");
+
+        final Constant.Boolean useCompression = new Constant.Boolean(
                 true,
-                "Should we use Opus notion for export (rather than sub-folders)?");
+                "Should we compress the MusicXML output?");
 
         Constant.String defaultExportDirectory = new Constant.String(
                 WellKnowns.DEFAULT_SCORES_FOLDER.toString(),

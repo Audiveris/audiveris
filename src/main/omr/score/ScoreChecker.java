@@ -103,9 +103,6 @@ public class ScoreChecker
     private final WrappedBoolean modified;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // ScoreChecker //
-    //--------------//
     /**
      * Creates a new ScoreChecker object.
      *

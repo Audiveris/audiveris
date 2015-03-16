@@ -79,9 +79,6 @@ public class BasicLag
     protected final SelectionService lagService;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // BasicLag //
-    //----------//
     /**
      * Constructor with specified orientation
      *

@@ -280,6 +280,7 @@ public class ShapeSet
                     DYNAMICS_FF,
                     DYNAMICS_MF,
                     DYNAMICS_FP,
+                    DYNAMICS_SF,
                     DYNAMICS_SFZ,
                     CRESCENDO,
                     DIMINUENDO));
@@ -461,9 +462,6 @@ public class ShapeSet
     private Constant.Color constantColor;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // ShapeSet //
-    //----------//
     /**
      * Creates a new ShapeSet object from a collection of shapes.
      *

@@ -53,9 +53,6 @@ public class SheetBench
     private final Date date = new Date(startTime);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // SheetBench //
-    //------------//
     /**
      * Creates a new SheetBench object.
      *

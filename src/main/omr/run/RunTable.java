@@ -88,9 +88,6 @@ public class RunTable
     private SelectionService runService;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // RunTable //
-    //----------//
     /**
      * Creates a new RunTable object.
      *
@@ -590,7 +587,7 @@ public class RunTable
     // onEvent //
     //---------//
     /**
-     * Interest on Location => Run
+     * Interest on Location =&gt; Run
      *
      * @param locationEvent the interesting event
      */

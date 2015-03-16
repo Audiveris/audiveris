@@ -50,8 +50,7 @@ public class BasicARTExtractor
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new BasicARTExtractor object and process
-     * the provided foreground points.
+     * Creates a new BasicARTExtractor object and process the provided foreground points.
      */
     public BasicARTExtractor ()
     {

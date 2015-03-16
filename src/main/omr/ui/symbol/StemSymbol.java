@@ -38,9 +38,6 @@ public class StemSymbol
     private static final BasicSymbol stem = Symbols.SYMBOL_STEM;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------------//
-    // StemSymbol //
-    //------------//
     /**
      * Create a StemSymbol
      */
@@ -49,9 +46,6 @@ public class StemSymbol
         this(false);
     }
 
-    //------------//
-    // StemSymbol //
-    //------------//
     /**
      * Create a StemSymbol
      *

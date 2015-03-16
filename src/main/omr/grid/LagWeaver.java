@@ -118,13 +118,10 @@ public class LagWeaver
     private final List<Point> pointsBelow = new ArrayList<Point>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // LagWeaver //
-    //-----------//
     /**
      * Creates a new LagWeaver object.
      *
-     * @param sheet the related sheet, which holds the v & h lags
+     * @param sheet the related sheet, which holds the v and h lags
      */
     public LagWeaver (Sheet sheet)
     {

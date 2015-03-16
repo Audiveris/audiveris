@@ -38,9 +38,6 @@ public class RationalTask
     private final TimeRational timeRational;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // RationalTask //
-    //--------------//
     /**
      * Creates a new RationalTask object.
      *
@@ -56,10 +53,7 @@ public class RationalTask
         this.timeRational = timeRational;
     }
 
-    //--------------//
-    // RationalTask //
-    //--------------//
-    /** No-arg constructor for JAXB only */
+    /** No-arg constructor for JAXB only. */
     private RationalTask ()
     {
         timeRational = null;

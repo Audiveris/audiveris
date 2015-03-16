@@ -108,9 +108,6 @@ class TrainingPanel
     private GlyphNetwork network = GlyphNetwork.getInstance();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------------//
-    // TrainingPanel //
-    //---------------//
     /**
      * Creates a new TrainingPanel object.
      *

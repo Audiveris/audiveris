@@ -285,6 +285,21 @@ public abstract class AbstractInter
         }
     }
 
+    //--------------//
+    // getBestGrade //
+    //--------------//
+    @Override
+    public double getBestGrade ()
+    {
+        Double cg = getContextualGrade();
+
+        if (cg != null) {
+            return cg;
+        }
+
+        return getGrade();
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -587,8 +602,15 @@ public abstract class AbstractInter
     @Override
     public boolean isSameAs (Inter that)
     {
-        return ((this.getShape() == that.getShape())
-                && GeoUtil.areIdentical(this.getBounds(), that.getBounds()));
+        if ((this.getShape() != that.getShape()) || !this.getBounds().equals(that.getBounds())) {
+            return false;
+        }
+
+        if ((this.getGlyph() != null) && (that.getGlyph() != null)) {
+            return this.getGlyph().getSignature().equals(that.getGlyph().getSignature());
+        }
+
+        return true;
     }
 
     //-------//
@@ -623,38 +645,18 @@ public abstract class AbstractInter
             }
 
             ///if (!(this instanceof InterMutableEnsemble)) {
-                for (Inter thisMember : thisEnsemble.getMembers()) {
-                    if (thisMember.overlaps(that) && sig.noSupport(thisMember, that)) {
-                        return true;
-                    }
+            for (Inter thisMember : thisEnsemble.getMembers()) {
+                if (thisMember.overlaps(that)
+                    && that.overlaps(thisMember)
+                    && sig.noSupport(thisMember, that)) {
+                    return true;
                 }
-            ///}
+            }
 
+            ///}
             return false;
         }
 
-        //
-        //        // this <--> Ensemble?
-        //        if (that instanceof InterEnsemble) {
-        //            InterEnsemble thatEnsemble = (InterEnsemble) that;
-        //
-        //            if (thatEnsemble.getMembers().contains(this)) {
-        //                return false;
-        //            }
-        //
-        //            if (that instanceof InterCompound) {
-        //                for (Inter thatItem : thatEnsemble.getMembers()) {
-        //                    if (this.overlaps(thatItem)
-        //                        && sig.getAllEdges(this, thatItem).isEmpty()
-        //                        && sig.getAllEdges(thatItem, this).isEmpty()) {
-        //                        return true;
-        //                    }
-        //                }
-        //            }
-        //
-        //            return false;
-        //        }
-        //
         if ((this.getGlyph() != null) && (that.getGlyph() != null)) {
             // Slur involved
             if (this instanceof SlurInter || that instanceof SlurInter) {
@@ -685,14 +687,6 @@ public abstract class AbstractInter
             }
         }
 
-        //
-        //        // this <--> Area?
-        //        if (that.getArea() != null) {
-        //            if (this.getGlyph() != null) {
-        //                // Glyph <--> Area
-        //                return this.getGlyph().intersects(that.getArea());
-        //            }
-        //        }
         return true;
     }
 
@@ -847,6 +841,10 @@ public abstract class AbstractInter
     @Override
     public void undelete ()
     {
+        if (isVip()) {
+            logger.info("VIP undelete {}", this);
+        }
+
         deleted = false;
 
         if (glyph != null) {

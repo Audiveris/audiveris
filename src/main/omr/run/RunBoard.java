@@ -57,11 +57,8 @@ public class RunBoard
             "Pixel coordinate at start of run");
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // RunBoard //
-    //----------//
     /**
-     * Create a Run Board.
+     * Create a Run Board on the RunTable of a provided ag
      *
      * @param lag      the lag that encapsulates the runs table
      * @param expanded true for expanded, false for collapsed
@@ -72,32 +69,13 @@ public class RunBoard
         this(lag.getRunTable(), expanded);
     }
 
-    //----------//
-    // RunBoard //
-    //----------//
     /**
-     * Create a Run Board.
+     * Create a Run Board on the provided RunTable
      *
      * @param runsTable the table of runs
      * @param expanded  true for expanded, false for collapsed
      */
     public RunBoard (RunTable runsTable,
-                     boolean expanded)
-    {
-        this("", runsTable, expanded);
-    }
-
-    //----------//
-    // RunBoard //
-    //----------//
-    /**
-     * Create a Run Board.
-     *
-     * @param runsTable the table of runs
-     * @param expanded  true for expanded, false for collapsed
-     */
-    public RunBoard (String suffix,
-                     RunTable runsTable,
                      boolean expanded)
     {
         super(

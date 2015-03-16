@@ -33,8 +33,8 @@ import java.util.Map;
  * @author Hervé Bitteur
  */
 class BasicDisplay
-    extends BasicFacet
-    implements GlyphDisplay
+        extends BasicFacet
+        implements GlyphDisplay
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -42,10 +42,6 @@ class BasicDisplay
     protected AttachmentHolder attachments;
 
     //~ Constructors -------------------------------------------------------------------------------
-
-    //--------------//
-    // BasicDisplay //
-    //--------------//
     /**
      * Create a new BasicDisplay object.
      *
@@ -57,12 +53,11 @@ class BasicDisplay
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //---------------//
     // addAttachment //
     //---------------//
     @Override
-    public void addAttachment (String         id,
+    public void addAttachment (String id,
                                java.awt.Shape attachment)
     {
         if (attachment != null) {
@@ -153,7 +148,7 @@ class BasicDisplay
     public ByteProcessor getImage ()
     {
         // Determine the bounding box
-        final Rectangle     box = glyph.getBounds();
+        final Rectangle box = glyph.getBounds();
         final ByteProcessor image = new ByteProcessor(box.width, box.height);
         image.invert();
 

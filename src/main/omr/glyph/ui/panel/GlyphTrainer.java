@@ -105,9 +105,6 @@ public class GlyphTrainer
     private String frameTitle;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // GlyphTrainer //
-    //--------------//
     /**
      * Create an instance of Glyph Trainer (there should be just one)
      */

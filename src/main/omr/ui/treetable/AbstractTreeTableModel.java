@@ -44,9 +44,6 @@ public abstract class AbstractTreeTableModel
     protected Object root;
 
     //~ Constructors -----------------------------------------------------------
-    //------------------------//
-    // AbstractTreeTableModel //
-    //------------------------//
     /**
      * Creates a new AbstractTreeTableModel object.
      *

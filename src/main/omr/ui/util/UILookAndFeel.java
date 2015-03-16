@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.UIManager;
 
 /**
- * Class {@code UILookAndFeel} enables to select the UI Look & Feel to be used in this
+ * Class {@code UILookAndFeel} enables to select the UI Look and Feel to be used in this
  * application.
  *
  * @author Hervé Bitteur and Brenton Partridge
@@ -88,9 +88,9 @@ public class UILookAndFeel
     // setUI //
     //-------//
     /**
-     * Set the UI look & feel. If a non-null class name is provided, it is
-     * used (and remembered in the related constant), otherwise the related
-     * constant is used.
+     * Set the UI look and feel.
+     * If a non-null class name is provided, it is used (and remembered in the related constant),
+     * otherwise the related constant is used.
      *
      * @param className the full path to the desired UI class name
      */

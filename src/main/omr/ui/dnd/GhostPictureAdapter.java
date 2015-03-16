@@ -37,9 +37,6 @@ public class GhostPictureAdapter<A>
      * @param action    the carried action
      * @param picture   the path to the image resource
      */
-    //---------------------//
-    // GhostPictureAdapter //
-    //---------------------//
     public GhostPictureAdapter (GhostGlassPane glassPane,
                                 A action,
                                 String picture)

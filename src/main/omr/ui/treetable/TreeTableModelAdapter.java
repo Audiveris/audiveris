@@ -47,9 +47,6 @@ public class TreeTableModelAdapter
     TreeTableModel treeTableModel;
 
     //~ Constructors -----------------------------------------------------------
-    //-----------------------//
-    // TreeTableModelAdapter //
-    //-----------------------//
     /**
      * Creates a new TreeTableModelAdapter object.
      *

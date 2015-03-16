@@ -105,9 +105,6 @@ public class UnitModel
         private final int width;
 
         //~ Constructors ---------------------------------------------------------------------------
-        //--------//
-        // Column //
-        //--------//
         Column (String header,
                 boolean editable,
                 int width,
@@ -130,9 +127,6 @@ public class UnitModel
     }
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // UnitModel //
-    //-----------//
     /**
      * Builds the model.
      */

@@ -66,7 +66,7 @@ public class OpusExporter
      * @param path     full target path to write (cannot be null)
      * @param rootName opus root name
      * @param signed   should we inject ProxyMusic signature?
-     * @throws java.lang.Exception
+     * @throws Exception if something goes wrong
      */
     public void export (Path path,
                         String rootName,
@@ -113,12 +113,13 @@ public class OpusExporter
             rootName = "opus"; // Fall-back value
         }
 
-        List<Score> scores = book.getScores();
+        final List<Score> scores = book.getScores();
+        final boolean multi = scores.size() > 1; // Is this a multi-movement book?
 
         for (Score score : scores) {
             // Reference each score/movement in opus
-            int idx = 1 + scores.indexOf(score);
-            String entryName = rootName + ".mvt" + idx
+            String entryName = rootName
+                               + (multi ? (".mvt" + score.getId()) : "")
                                + SCORE_EXTENSION;
             com.audiveris.proxymusic.opus.Score oScore = opusFactory.createScore();
             oScore.setHref(entryName);

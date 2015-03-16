@@ -118,9 +118,6 @@ public class SectionBoard
     private boolean updating = false;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // SectionBoard //
-    //--------------//
     /**
      * Create a Section Board
      *

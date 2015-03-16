@@ -79,10 +79,6 @@ public class Beam
     private Line line;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //------//
-    // Beam //
-    //------//
     /** Creates a new instance of Beam.
      *
      * @param measure the enclosing measure
@@ -385,8 +381,9 @@ public class Beam
     // getPoint //
     //----------//
     /**
-     * Report the point that define the desired edge of the beam.
+     * Report the point that defines the desired side of the beam.
      *
+     * @param side left or right side
      * @return the Point coordinates of the point on desired side
      */
     public Point getPoint (HorizontalSide side)

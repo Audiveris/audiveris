@@ -182,9 +182,6 @@ public class ChordInfo
     private final List<Degree> degrees;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // ChordInfo //
-    //-----------//
     /**
      * Creates a new ChordInfo object, with all parameters.
      *

@@ -113,7 +113,7 @@ public abstract class TimeInter
      *
      * @param glyph        underlying glyph
      * @param box          bounding box
-     * @param timeRational the pair of num & den numbers
+     * @param timeRational the pair of num and den numbers
      * @param grade        evaluation grade
      */
     public TimeInter (Glyph glyph,

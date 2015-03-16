@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.score.entity.ScorePart;
+import omr.score.entity.LogicalPart;
 import omr.score.entity.SystemNode;
 
 import omr.sig.inter.ClefInter;
@@ -37,7 +37,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import omr.sig.inter.RestInter;
 
 /**
  * Class {@code Part} is the <b>physical</b> gathering of {@link Staff} instances in an
@@ -47,14 +46,14 @@ import omr.sig.inter.RestInter;
  * (2 staves).
  * <p>
  * Since the instrument usually persists from one system to the next, we can define the notion of
- * "logical" part, named {@link ScorePart}.
+ * "logical" part, named {@link LogicalPart}.
  * <p>
- * Generally, such (logical) ScorePart corresponds to a separate (physical) Part instance in each
+ * Generally, such LogicalPart corresponds to a separate (physical) Part instance in each
  * system but not always. For example, a singer part may not appear at the very beginning of a
  * score, but only after one or several systems played by the piano part.
  * <p>
  * We assume that the configuration of staves within the physical Part instances of the same logical
- * ScorePart do not vary (in number of staves or in relative positions of staves within the part).
+ * LogicalPart do not vary (in number of staves or in relative positions of staves within the part).
  * However, the part as a whole may appear (or disappear?) from one system to the next.
  * <p>
  * During step {@link PageStep}, dummy parts (and dummy staves and measures) can be inserted in the
@@ -65,7 +64,7 @@ import omr.sig.inter.RestInter;
  * within the containing system.
  * After {@link PageStep} is run, part IDs are defined as positive numbers, starting from 1 and,
  * because of dummy parts, may not be exactly the position within the containing system. But all the
- * (physical) Parts related to the same (logical) ScorePart share the same ID.
+ * (physical) Parts related to the same (logical) LogicalPart share the same ID.
  *
  * @author Hervé Bitteur
  */
@@ -100,8 +99,8 @@ public class Part
     /** Name, if any, that faces this system part. */
     private String name;
 
-    /** The corresponding ScorePart. */
-    private ScorePart scorePart;
+    /** The corresponding LogicalPart. */
+    private LogicalPart logicalPart;
 
     /** Staves in this part. */
     private final List<Staff> staves = new ArrayList<Staff>();
@@ -203,16 +202,18 @@ public class Part
     /**
      * Create a dummy system part, parallel to this part in the same system, just to
      * fill needed measures for another logical part.
+     * This is only meant to ease the MusicXML export of the page.
      * <ul>
-     * <li>Clef is taken from first real measure of part to be extended (this part, called the
-     * refPart, has the provided id and is found in a following system, or in a preceding
-     * system)</li>
+     * <li>Clef is taken from first measure of part to be extended (this part, called the refPart,
+     * has the provided id and is found in a following system, or in a preceding system)</li>
      * <li>Key sig is taken from this part</li>
      * <li>Time sig is taken from this part</li>
      * <li>Measures are defined as parallel to this part, and filled with just one whole rest</li>
      * </ul>
      * <p>
-     * The (dummy) measures of such dummy parts are not inserted in MeasureStack instances that play
+     * The created dummy part is not inserted in system list of parts.
+     * <p>
+     * The (dummy) measures of this dummy part are not inserted in MeasureStack instances that play
      * only with real measures.
      *
      * @param id the id for the desired dummy part
@@ -224,15 +225,13 @@ public class Part
 
         // Find some concrete system part for the provided id
         Part refPart = findRefPart(id);
-
         Part dummyPart = new Part(system);
-        system.addPart(dummyPart);
 
         dummyPart.setId(id);
         dummyPart.setDummy();
-        dummyPart.setScorePart(refPart.getScorePart());
+        dummyPart.setLogicalPart(refPart.getLogicalPart());
 
-        Measure nextMeasure = refPart.getFirstMeasure();
+        Measure refMeasure = refPart.getFirstMeasure();
 
         // Loop on measures
         boolean isFirstMeasure = true;
@@ -241,10 +240,7 @@ public class Part
             Measure dummyMeasure = measure.replicate(dummyPart);
             dummyMeasure.setDummy();
             dummyPart.addMeasure(dummyMeasure);
-
-            MeasureStack stack= measure.getStack();
-            stack.getMeasures().add(dummyMeasure);
-            dummyMeasure.setStack(stack);
+            dummyMeasure.setStack(measure.getStack());
 
             // Loop on staves found in reference part
             for (int staffIndex = 0; staffIndex < refPart.getStaves().size(); staffIndex++) {
@@ -257,8 +253,8 @@ public class Part
                     dummyPart.addStaff(dummyStaff);
                     dummyStaff.setSystem(system);
 
-                    // Create dummy Clef (from refPart first measure)
-                    ClefInter nextClef = nextMeasure.getFirstMeasureClef(staffIndex);
+                    // Replicate Clef (from refPart first measure)
+                    ClefInter nextClef = refMeasure.getFirstMeasureClef(staffIndex);
 
                     if (nextClef != null) {
                         ClefInter dummyClef = nextClef.replicate(dummyStaff);
@@ -285,7 +281,7 @@ public class Part
                 }
 
                 // Create dummy Whole rest (w/ no precise location)
-                dummyMeasure.addWholeRest(dummyStaff);
+                dummyMeasure.addDummyWholeRest(dummyStaff);
             }
 
             isFirstMeasure = false;
@@ -441,12 +437,12 @@ public class Part
         return prevSystem.getPartById(id);
     }
 
-    //--------------//
-    // getScorePart //
-    //--------------//
-    public ScorePart getScorePart ()
+    //----------------//
+    // getLogicalPart //
+    //----------------//
+    public LogicalPart getLogicalPart ()
     {
-        return scorePart;
+        return logicalPart;
     }
 
     //----------//
@@ -614,12 +610,12 @@ public class Part
         this.name = name;
     }
 
-    //--------------//
-    // setScorePart //
-    //--------------//
-    public void setScorePart (ScorePart scorePart)
+    //----------------//
+    // setLogicalPart //
+    //----------------//
+    public void setLogicalPart (LogicalPart logicalPart)
     {
-        this.scorePart = scorePart;
+        this.logicalPart = logicalPart;
     }
 
     //--------------------//

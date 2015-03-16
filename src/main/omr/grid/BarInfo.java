@@ -32,9 +32,6 @@ public class BarInfo
     private List<Glyph> sticks;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //---------//
-    // BarInfo //
-    //---------//
     /**
      * Creates a new BarInfo object.
      *
@@ -45,9 +42,6 @@ public class BarInfo
         this(Arrays.asList(sticks));
     }
 
-    //---------//
-    // BarInfo //
-    //---------//
     /**
      * Creates a new BarInfo object.
      *

@@ -57,9 +57,6 @@ public abstract class UserEvent
     public MouseMovement movement;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------//
-    // UserEvent //
-    //-----------//
     /**
      * Creates a new UserEvent object.
      *
@@ -78,9 +75,6 @@ public abstract class UserEvent
         this.source = source;
         this.hint = hint;
         this.movement = movement;
-
-        //        logger.warn(
-        //            ClassUtil.nameOf(this) + " created by:" + source);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

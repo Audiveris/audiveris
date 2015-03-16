@@ -38,9 +38,6 @@ public class TransformedSymbol
     private final AffineTransform at;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------------//
-    // TransformedSymbol //
-    //-------------------//
     /**
      * Creates a new TransformedSymbol object.
      *

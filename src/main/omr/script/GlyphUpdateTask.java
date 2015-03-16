@@ -59,9 +59,6 @@ public abstract class GlyphUpdateTask
     protected final SectionSets sectionSets;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // GlyphUpdateTask //
-    //-----------------//
     /**
      * Creates a new GlyphUpdateTask object.
      *
@@ -75,10 +72,7 @@ public abstract class GlyphUpdateTask
         sectionSets = SectionSets.createFromGlyphs(glyphs);
     }
 
-    //-----------------//
-    // GlyphUpdateTask //
-    //-----------------//
-    /** No-arg constructor for JAXB only */
+    /** No-arg constructor for JAXB only. */
     protected GlyphUpdateTask ()
     {
         sectionSets = null; // Dummy value

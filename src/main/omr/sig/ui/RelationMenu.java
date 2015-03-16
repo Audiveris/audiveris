@@ -38,9 +38,6 @@ public class RelationMenu
     private final Listener listener = new Listener();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // RelationMenu //
-    //--------------//
     /**
      * Creates a new RelationMenu object.
      *

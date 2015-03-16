@@ -40,9 +40,6 @@ public class BasicRoi
     final Rectangle absContour;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // BasicRoi //
-    //----------//
     /**
      * Define a region of interest
      *

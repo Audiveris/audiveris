@@ -35,9 +35,6 @@ public class DirectionStatement
     private final Text.DirectionText text;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------------//
-    // DirectionStatement //
-    //--------------------//
     /**
      * Creates a new instance of DirectionStatement event
      *

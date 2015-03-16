@@ -16,10 +16,9 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.sheet.ui.BookController;
-import omr.score.ui.ScoreDependent;
-
 import omr.sheet.Book;
+import omr.sheet.ui.BookController;
+import omr.sheet.ui.SheetDependent;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.PluginStep;
@@ -61,7 +60,7 @@ import javax.swing.event.MenuListener;
  * @author Hervé Bitteur
  */
 public class PluginManager
-        extends ScoreDependent
+        extends SheetDependent
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -104,10 +103,6 @@ public class PluginManager
     private Plugin defaultPlugin;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //----------------//
-    // PluginManager //
-    //----------------//
     /**
      * Generates the menu to be inserted in the plugin menu hierarchy,
      * based on the script files discovered in the plugin folder.
@@ -135,53 +130,6 @@ public class PluginManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------------//
-    // getDefaultPlugin //
-    //------------------//
-    /**
-     * Return the default plugin if any.
-     *
-     * @return the default plugin, or null if none is defined
-     */
-    public Plugin getDefaultPlugin ()
-    {
-        return defaultPlugin;
-    }
-
-    //------------------//
-    // setDefaultPlugin //
-    //------------------//
-    /**
-     * Assign the default plugin.
-     */
-    public final void setDefaultPlugin (String pluginId)
-    {
-        Plugin plugin = findDefaultPlugin(pluginId);
-
-        if (!pluginId.isEmpty() && (plugin == null)) {
-            logger.warn("Could not find default plugin {}", pluginId);
-        } else {
-            setDefaultPlugin(plugin);
-        }
-    }
-
-    //------------------//
-    // setDefaultPlugin //
-    //------------------//
-    /**
-     * Assign the default plugin.
-     */
-    public final void setDefaultPlugin (Plugin defaultPlugin)
-    {
-        Plugin oldDefaultPlugin = this.defaultPlugin;
-        this.defaultPlugin = defaultPlugin;
-
-        if (oldDefaultPlugin != null) {
-            PluginStep pluginStep = (PluginStep) Steps.valueOf(Steps.PLUGIN);
-            pluginStep.setPlugin(defaultPlugin);
-        }
-    }
-
     //-------------//
     // getInstance //
     //-------------//
@@ -247,7 +195,7 @@ public class PluginManager
      *
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = SCORE_AVAILABLE)
+    @Action(enabledProperty = SHEET_IDLE)
     public Task<Void, Void> invokeDefaultPlugin (ActionEvent e)
     {
         if (defaultPlugin == null) {
@@ -264,6 +212,53 @@ public class PluginManager
         } else {
             return defaultPlugin.getTask(book);
         }
+    }
+
+    //------------------//
+    // setDefaultPlugin //
+    //------------------//
+    /**
+     * Assign the default plugin.
+     */
+    public final void setDefaultPlugin (String pluginId)
+    {
+        Plugin plugin = findDefaultPlugin(pluginId);
+
+        if (!pluginId.isEmpty() && (plugin == null)) {
+            logger.warn("Could not find default plugin {}", pluginId);
+        } else {
+            setDefaultPlugin(plugin);
+        }
+    }
+
+    //------------------//
+    // setDefaultPlugin //
+    //------------------//
+    /**
+     * Assign the default plugin.
+     */
+    public final void setDefaultPlugin (Plugin defaultPlugin)
+    {
+        Plugin oldDefaultPlugin = this.defaultPlugin;
+        this.defaultPlugin = defaultPlugin;
+
+        if (oldDefaultPlugin != null) {
+            PluginStep pluginStep = (PluginStep) Steps.valueOf(Steps.PLUGIN);
+            pluginStep.setPlugin(defaultPlugin);
+        }
+    }
+
+    //------------------//
+    // getDefaultPlugin //
+    //------------------//
+    /**
+     * Return the default plugin if any.
+     *
+     * @return the default plugin, or null if none is defined
+     */
+    public Plugin getDefaultPlugin ()
+    {
+        return defaultPlugin;
     }
 
     //-------------------//

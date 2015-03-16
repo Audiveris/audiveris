@@ -28,9 +28,6 @@ public class EndingSymbol
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //--------------//
-    // EndingSymbol //
-    //--------------//
     /**
      * Create an EndingSymbol
      */
@@ -39,9 +36,6 @@ public class EndingSymbol
         this(false);
     }
 
-    //--------------//
-    // EndingSymbol //
-    //--------------//
     /**
      * Create an EndingSymbol
      *

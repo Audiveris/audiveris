@@ -15,8 +15,10 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
 import omr.score.entity.LyricsItem;
-import omr.score.entity.Note;
-import omr.score.entity.OldBarline;
+
+import omr.sheet.PartBarline;
+
+import omr.sig.inter.AbstractNoteInter;
 
 import com.audiveris.proxymusic.AccidentalText;
 import com.audiveris.proxymusic.AccidentalValue;
@@ -100,7 +102,7 @@ public abstract class MusicXML
      * @param style the Audiveris barline style
      * @return the MusicXML bar style
      */
-    public static BarStyle barStyleOf (OldBarline.Style style)
+    public static BarStyle barStyleOf (PartBarline.Style style)
     {
         try {
             return BarStyle.valueOf(style.name());
@@ -251,11 +253,11 @@ public abstract class MusicXML
      * @param note the note whose type name is needed
      * @return proper note type name
      */
-    public static String getNoteTypeName (Note note)
+    public static String getNoteTypeName (AbstractNoteInter note)
     {
         // Since quarter is at index 6 in noteTypeNames, use 2**6 = 64
-        ///int dur = (64 * note.getNoteDuration()) / Note.QUARTER_DURATION;
-        double dur = 64 * note.getNoteDuration().divides(Note.QUARTER_DURATION).toDouble();
+        double dur = 64 * note.getChord().getDurationSansDotOrTuplet().divides(
+                AbstractNoteInter.QUARTER_DURATION).doubleValue();
         int index = (int) Math.rint(Math.log(dur) / Math.log(2));
 
         return noteTypeNames[index];
@@ -322,7 +324,7 @@ public abstract class MusicXML
      * @param step Audiveris enum step
      * @return Proxymusic enum step
      */
-    public static Step stepOf (omr.score.entity.Note.Step step)
+    public static Step stepOf (omr.sig.inter.AbstractHeadInter.Step step)
     {
         return Step.fromValue(step.toString());
     }

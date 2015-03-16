@@ -31,11 +31,9 @@ import java.awt.Rectangle;
 public class SmallBlackHeadInter
         extends AbstractHeadInter
 {
+
     //~ Constructors -------------------------------------------------------------------------------
 
-    //---------------------//
-    // SmallBlackHeadInter //
-    //---------------------//
     /**
      * Creates a new SmallBlackHeadInter object.
      *

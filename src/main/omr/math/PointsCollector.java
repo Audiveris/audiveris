@@ -35,9 +35,6 @@ public class PointsCollector
     private int[] yy;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-----------------//
-    // PointsCollector //
-    //-----------------//
     /**
      * Creates a new PointsCollector object, with absolute roi area
      * taken as capacity.
@@ -49,9 +46,6 @@ public class PointsCollector
         this(roi, roi.width * roi.height);
     }
 
-    //-----------------//
-    // PointsCollector //
-    //-----------------//
     /**
      * Creates a new PointsCollector object.
      *

@@ -24,7 +24,6 @@ import static omr.util.HorizontalSide.*;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -45,13 +44,10 @@ public class FilamentLine
     LineFilament fil;
 
     /** Imposed ending points, if any. */
-    private Map<HorizontalSide, Point2D> endPoints = new EnumMap<HorizontalSide, Point2D>(
+    private final Map<HorizontalSide, Point2D> endPoints = new EnumMap<HorizontalSide, Point2D>(
             HorizontalSide.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // FilamentLine //
-    //--------------//
     /**
      * Creates a new FilamentLine object.
      *

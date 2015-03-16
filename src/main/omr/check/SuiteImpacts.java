@@ -24,12 +24,11 @@ import java.util.List;
 public class SuiteImpacts
         extends BasicImpacts
 {
-    private final String suiteName;
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
-    //--------------//
-    // SuiteImpacts //
-    //--------------//
+    private final String suiteName;
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SuiteImpacts object.
      *

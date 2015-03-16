@@ -28,9 +28,6 @@ public class DoubleValue
     protected final double value;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // DoubleValue //
-    //-------------//
     /**
      * Creates a new DoubleValue object.
      *
@@ -41,9 +38,6 @@ public class DoubleValue
         this.value = value;
     }
 
-    //-------------//
-    // DoubleValue //
-    //-------------//
     /**
      * Creates a new DoubleValue object.
      *
@@ -54,9 +48,6 @@ public class DoubleValue
         this.value = value.doubleValue();
     }
 
-    //-------------//
-    // DoubleValue //
-    //-------------//
     /**
      * Creates a new DoubleValue object.
      *
@@ -67,9 +58,6 @@ public class DoubleValue
         this(Double.valueOf(str));
     }
 
-    //-------------//
-    // DoubleValue //
-    //-------------//
     /**
      * Creates a new DoubleValue object, initialized at zero. Meant for JAXB
      */

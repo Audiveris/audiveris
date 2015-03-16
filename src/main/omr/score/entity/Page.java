@@ -11,15 +11,18 @@
 // </editor-fold>
 package omr.score.entity;
 
+import omr.math.Rational;
+
 import omr.score.Score;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.Measure;
 import omr.sheet.MeasureStack;
 import omr.sheet.Part;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import omr.sig.inter.ChordInter;
 
 import omr.util.Navigable;
 import omr.util.TreeNode;
@@ -28,13 +31,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.util.Arrays;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class {@code Page} represents a page in the score hierarchy, and corresponds to a
  * (part of) {@link Sheet}.
  * <p>
- * One or several Page instances compose a {@link Score}.
+ * One or several Page instances compose a {@link Score}. But a page has no fixed link to its
+ * containing score since the set of scores may evolve while sheets/pages are transcribed in any
+ * order.
  *
  * @author Hervé Bitteur
  */
@@ -49,15 +57,14 @@ public class Page
     /** Containing (physical) sheet. */
     private final Sheet sheet;
 
-    /** Containing (logical) score. */
-    @Navigable(false)
-    private final Score score;
-
     /** Page ID. */
     private String id;
 
-    /** ScorePart list for the page. */
-    private List<ScorePart> partList;
+    /** Does this page start a movement?. */
+    private boolean movementStart;
+
+    /** LogicalPart list for the page. */
+    private List<LogicalPart> logicalParts;
 
     /** Number of measures in this page. */
     private Integer measureCount;
@@ -74,25 +81,22 @@ public class Page
     /** (Sub)list of systems, within sheet systems. */
     private List<SystemInfo> systems;
 
+    /** Greatest duration divisor (in this page). */
+    private Integer durationDivisor;
+
     //~ Constructors -------------------------------------------------------------------------------
-    //------//
-    // Page //
-    //------//
     /**
      * Creates a new Page object.
      *
-     * @param score         the containing score
      * @param sheet         the containing sheet
      * @param firstSystemId id of first system in sheet, if any
      */
-    public Page (Score score,
-                 Sheet sheet,
+    public Page (Sheet sheet,
                  Integer firstSystemId)
     {
         super(null);
 
         this.sheet = sheet;
-        this.score = score;
         this.firstSystemId = firstSystemId;
 
         // Define id
@@ -120,7 +124,7 @@ public class Page
         int count = 0;
 
         for (SystemInfo system : systems) {
-            count += system.getLastRealPart().getMeasures().size();
+            count += system.getFirstPart().getMeasures().size();
         }
 
         measureCount = count;
@@ -138,7 +142,7 @@ public class Page
         StringBuilder sb = new StringBuilder();
 
         for (SystemInfo sys : systems) {
-            Part part = sys.getLastRealPart();
+            Part part = sys.getFirstPart();
 
             if (sb.length() > 0) {
                 sb.append(", ");
@@ -185,6 +189,23 @@ public class Page
     public Dimension getDimension ()
     {
         return sheet.getDimension();
+    }
+
+    //--------------------//
+    // getDurationDivisor //
+    //--------------------//
+    /**
+     * Report the common divisor used for this page when simplifying the durations.
+     *
+     * @return the computed divisor (GCD), or null if not computable
+     */
+    public Integer getDurationDivisor ()
+    {
+        if (durationDivisor == null) {
+            durationDivisor = computeDurationDivisor();
+        }
+
+        return durationDivisor;
     }
 
     //----------------//
@@ -274,6 +295,19 @@ public class Page
         return lastSystemId;
     }
 
+    //-----------------//
+    // getLogicalParts //
+    //-----------------//
+    /**
+     * Report the page list of logical parts.
+     *
+     * @return partList the list of parts
+     */
+    public List<LogicalPart> getLogicalParts ()
+    {
+        return logicalParts;
+    }
+
     //--------------------//
     // getMeanStaffHeight //
     //--------------------//
@@ -301,32 +335,17 @@ public class Page
         return measureCount;
     }
 
-    //-------------//
-    // getPartList //
-    //-------------//
-    /**
-     * Report the global list of parts.
-     *
-     * @return partList the list of parts
-     */
-    public List<ScorePart> getPartList ()
-    {
-        return partList;
-    }
-
     //---------------------//
     // getPrecedingInScore //
     //---------------------//
     /**
      * Report the preceding page of this one within the score.
      *
+     * @param score the containing score
      * @return the preceding page, or null if none
      */
-    public Page getPrecedingInScore ()
+    public Page getPrecedingInScore (Score score)
     {
-        ///return (Page) getPreviousSibling();
-        Score score = getScore();
-
         if (score != null) {
             List<Page> pages = score.getPages();
             int index = pages.indexOf(this);
@@ -359,7 +378,7 @@ public class Page
     @Override
     public Score getScore ()
     {
-        return score;
+        throw new RuntimeException("NO getScore() implementation");
     }
 
     //------------//
@@ -397,11 +416,22 @@ public class Page
         return systems;
     }
 
+    //-----------------//
+    // isMovementStart //
+    //-----------------//
+    /**
+     * @return the movementStart
+     */
+    public boolean isMovementStart ()
+    {
+        return movementStart;
+    }
+
     //----------------//
     // numberMeasures //
     //----------------//
     /**
-     * Assign a very basic sequential id to each contained stack & measure.
+     * Assign a very basic sequential id to each contained stack.
      */
     public void numberMeasures ()
     {
@@ -414,10 +444,6 @@ public class Page
                 int mid = systemOffset + im + 1;
                 MeasureStack stack = stacks.get(im);
                 stack.setIdValue(mid);
-
-                for (Measure measure : stack.getMeasures()) {
-                    measure.setIdValue(mid);
-                }
             }
 
             systemOffset += system.getMeasureStacks().size();
@@ -426,6 +452,14 @@ public class Page
         // Very temporary raw values
         setDeltaMeasureId(systemOffset);
         computeMeasureCount();
+    }
+
+    //----------------------//
+    // resetDurationDivisor //
+    //----------------------//
+    public void resetDurationDivisor ()
+    {
+        durationDivisor = null;
     }
 
     //--------------//
@@ -441,8 +475,8 @@ public class Page
         getScoreSystems().clear();
 
         // Discard partlists
-        if (partList != null) {
-            partList.clear();
+        if (logicalParts != null) {
+            logicalParts.clear();
         }
     }
 
@@ -483,17 +517,28 @@ public class Page
         computeId();
     }
 
-    //-------------//
-    // setPartList //
-    //-------------//
+    //-----------------//
+    // setLogicalParts //
+    //-----------------//
     /**
      * Assign a part list valid for the page.
      *
-     * @param partList the list of parts
+     * @param logicalParts the list of logical parts
      */
-    public void setPartList (List<ScorePart> partList)
+    public void setLogicalParts (List<LogicalPart> logicalParts)
     {
-        this.partList = partList;
+        this.logicalParts = logicalParts;
+    }
+
+    //------------------//
+    // setMovementStart //
+    //------------------//
+    /**
+     * @param movementStart the movementStart to set
+     */
+    public void setMovementStart (boolean movementStart)
+    {
+        this.movementStart = movementStart;
     }
 
     //------------//
@@ -513,6 +558,21 @@ public class Page
         systems = sheetSystems.subList(first, last + 1);
     }
 
+    //------------------//
+    // simpleDurationOf //
+    //------------------//
+    /**
+     * Export a duration to its simplest form, based on the greatest duration divisor of
+     * the page.
+     *
+     * @param value the raw duration
+     * @return the simple duration expression, in the param of proper divisions
+     */
+    public int simpleDurationOf (Rational value)
+    {
+        return value.num * (getDurationDivisor() / value.den);
+    }
+
     //----------//
     // toString //
     //----------//
@@ -520,6 +580,55 @@ public class Page
     public String toString ()
     {
         return "{Page " + id + "}";
+    }
+
+    //------------------------//
+    // computeDurationDivisor //
+    //------------------------//
+    /**
+     * Browse this page to determine the global page duration divisor.
+     * <p>
+     * TODO: Here we retrieve divisor for the page. We could work on each part only.
+     *
+     * @return the page duration divisor
+     */
+    private int computeDurationDivisor ()
+    {
+        try {
+            final SortedSet<Rational> durations = new TreeSet<Rational>();
+
+            // Collect duration values for each chord in this page
+            for (SystemInfo system : getSystems()) {
+                for (MeasureStack stack : system.getMeasureStacks()) {
+                    for (ChordInter chord : stack.getChords()) {
+                        try {
+                            final Rational duration = chord.isWholeRest()
+                                    ? stack.getExpectedDuration()
+                                    : chord.getDuration();
+
+                            if (duration != null) {
+                                durations.add(duration);
+                            }
+                        } catch (Exception ex) {
+                            logger.warn(
+                                    getClass().getSimpleName() + " Error visiting " + chord,
+                                    ex);
+                        }
+                    }
+                }
+            }
+
+            // Compute greatest duration divisor for the page
+            Rational[] durationArray = durations.toArray(new Rational[durations.size()]);
+            Rational divisor = Rational.gcd(durationArray);
+            logger.debug("durations={} divisor={}", Arrays.deepToString(durationArray), divisor);
+
+            return divisor.den;
+        } catch (Exception ex) {
+            logger.warn(getClass().getSimpleName() + " Error visiting " + this, ex);
+
+            return 0;
+        }
     }
 
     //-----------//

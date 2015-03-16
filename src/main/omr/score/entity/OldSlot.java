@@ -71,10 +71,6 @@ public class OldSlot
     private Rational startTime;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //------//
-    // Slot //
-    //------//
     /**
      * Creates a new Slot object.
      *

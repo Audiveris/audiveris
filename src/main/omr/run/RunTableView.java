@@ -45,9 +45,6 @@ public class RunTableView
     private final RunTable table;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //--------------//
-    // RunTableView //
-    //--------------//
     /**
      * Creates a new {@code RunTableView} object.
      *
@@ -74,7 +71,7 @@ public class RunTableView
     /**
      * Notification about selection objects.
      * We catch:
-     * SheetLocation (-> Run)
+     * SheetLocation (-&gt; Run)
      *
      * @param event the notified event
      */

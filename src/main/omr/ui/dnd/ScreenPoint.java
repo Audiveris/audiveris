@@ -27,9 +27,6 @@ public class ScreenPoint
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //-------------//
-    // ScreenPoint //
-    //-------------//
     /**
      * Create a new ScreenPoint object.
      */
@@ -37,9 +34,6 @@ public class ScreenPoint
     {
     }
 
-    //-------------//
-    // ScreenPoint //
-    //-------------//
     /**
      * Creates a new ScreenPoint object, by cloning an untyped point
      *
@@ -52,9 +46,6 @@ public class ScreenPoint
         super(x, y);
     }
 
-    //-------------//
-    // ScreenPoint //
-    //-------------//
     /**
      * Creates a new ScreenPoint object, using a local component-based
      * point.

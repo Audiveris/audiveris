@@ -51,21 +51,18 @@ public abstract class Dash
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related staff */
-    private Staff staff;
+    private final Staff staff;
 
     /** Approximating line */
     private Line line;
 
     /** Contour box */
-    private Rectangle box;
+    private final Rectangle box;
 
     /** The underlying stick if any */
     private final Glyph stick;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //------//
-    // Dash //
-    //------//
     /**
      * Creates a new Dash object.
      *

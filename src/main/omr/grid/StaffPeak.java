@@ -11,22 +11,19 @@
 // </editor-fold>
 package omr.grid;
 
-import omr.sheet.Staff;
 import omr.glyph.facets.Glyph;
-
 import static omr.grid.StaffPeak.Attribute.*;
 
+import omr.sheet.Staff;
+
+import omr.sig.GradeImpacts;
 import omr.sig.inter.AbstractVerticalInter;
 import omr.sig.inter.BraceInter;
-import omr.sig.GradeImpacts;
 import omr.sig.inter.Inter;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.LEFT;
-
 import omr.util.VerticalSide;
-
 import static omr.util.VerticalSide.TOP;
 
 import java.awt.Rectangle;
@@ -266,6 +263,20 @@ public abstract class StaffPeak
         return isSet(BEYOND_TOP) || isSet(BEYOND_BOTTOM);
     }
 
+    //------------//
+    // isBraceEnd //
+    //------------//
+    /**
+     * Report whether this peak is the end portion of a brace on desired side.
+     *
+     * @param side desired side
+     * @return true if brace end on desired side
+     */
+    public boolean isBraceEnd (VerticalSide side)
+    {
+        return isSet((side == TOP) ? BRACE_TOP : BRACE_BOTTOM);
+    }
+
     //-----------//
     // isBracket //
     //-----------//
@@ -291,20 +302,6 @@ public abstract class StaffPeak
     public boolean isBracketEnd (VerticalSide side)
     {
         return isSet((side == TOP) ? BRACKET_TOP : BRACKET_BOTTOM);
-    }
-
-    //------------//
-    // isBraceEnd //
-    //------------//
-    /**
-     * Report whether this peak is the end portion of a brace on desired side.
-     *
-     * @param side desired side
-     * @return true if brace end on desired side
-     */
-    public boolean isBraceEnd (VerticalSide side)
-    {
-        return isSet((side == TOP) ? BRACE_TOP : BRACE_BOTTOM);
     }
 
     //-------//

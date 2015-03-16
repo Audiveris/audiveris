@@ -25,9 +25,6 @@ public class LIntegerSpinner
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //-----------------//
-    // LIntegerSpinner //
-    //-----------------//
     /**
      * Create an editable labeled spinner with provided
      * characteristics.
