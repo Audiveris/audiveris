@@ -383,6 +383,7 @@ Implementation-Version: ${version.revision}
             <fileset dir="${src.dir}" includes="**/*.properties"/>
             <fileset dir="${src.dir}" includes="**/icon*.png"/>
             <fileset dir="${basedir}" includes="res/**/*"/>
+            <fileset dir="${dev.dir}/icons" includes="crystal/**/*"/>
         </copy>
     </target>
     <!-- ==== -->
