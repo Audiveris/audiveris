@@ -28,6 +28,7 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.InterEnsemble;
 import omr.sig.inter.Inters;
 import omr.sig.inter.RepeatDotInter;
+import omr.sig.inter.RestChordInter;
 import omr.sig.inter.RestInter;
 import omr.sig.inter.TupletInter;
 import omr.sig.relation.AugmentationRelation;
@@ -36,15 +37,17 @@ import omr.sig.relation.Relation;
 import omr.sig.relation.RepeatDotBarRelation;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -195,7 +198,7 @@ public class StackTuner
     //---------------//
     // resetInitials //
     //---------------//
-    public void resetInitials()
+    public void resetInitials ()
     {
         backup.resetInitials();
     }
@@ -228,8 +231,8 @@ public class StackTuner
     /**
      * Check the provided config.
      * <p>
-     * If OK we return the config. If not OK we return null, perhaps after posting additional config
-     * candidates.
+     * If OK we return the config.
+     * If not OK we return null, perhaps after posting additional config candidates.
      *
      * @param config newConfig the config to consider
      * @return the config if successful, null otherwise
@@ -244,6 +247,10 @@ public class StackTuner
             // Installation computes the time slots, and may fail
             if (!backup.install(config.inters)) {
                 failures.add(config);
+
+                if (fullMode) {
+                    postAlternatives();
+                }
 
                 return null;
             }
@@ -480,6 +487,104 @@ public class StackTuner
         verifyRepeatDots();
     }
 
+    //------------------//
+    // postAlternatives //
+    //------------------//
+    /**
+     * Try to post relevant alternatives to the current config with incorrect slots.
+     * Slots were not correctly built, building stopped at wrong slot.
+     * Determine the possible culprits among rhythm inters, typically all rhythm inters until
+     * abscissa of wrong slot, plus any tuplet sign even located after wrong slot abscissa!
+     */
+    private void postAlternatives ()
+    {
+        // Determine the variables we can play with
+        Set<Inter> varSet = new HashSet<Inter>();
+        Slot lastSlot = stack.getLastSlot();
+
+        for (Slot slot : stack.getSlots()) {
+            for (ChordInter chord : slot.getChords()) {
+                if (chord instanceof RestChordInter) {
+                    varSet.add(chord);
+                }
+            }
+        }
+
+        for (Inter inter : config.inters) {
+            if (inter instanceof TupletInter) {
+                varSet.add(inter);
+            }
+        }
+
+        for (Inter inter : config.inters) {
+            Staff staff = inter.getStaff();
+            Point center = inter.getCenter();
+            final double xOffset;
+
+            if (staff != null) {
+                xOffset = stack.getXOffset(center, Arrays.asList(staff));
+            } else {
+                xOffset = stack.getXOffset(center);
+            }
+
+            if (xOffset <= lastSlot.getXOffset()) {
+                varSet.add(inter);
+            } else {
+                break;
+            }
+        }
+
+        final List<Inter> vars = new ArrayList<Inter>(varSet);
+        Collections.sort(vars, Inter.byCenterAbscissa);
+        final int n = vars.size();
+        // This should be used only for rather small sizes ...
+        final boolean[][] bools = Combinations.getVectors(n);
+        int targetIdx = candidateIndex + 1;
+
+        for (boolean[] vector : bools) {
+            Config newConfig = new Config(config.inters);
+
+            for (int i = 0; i < n; i++) {
+                if (!vector[i]) {
+                    Inter inter = vars.get(i);
+                    // Delete inter from config
+                    newConfig.inters.remove(inter);
+
+                    // As well as its augmentation dot(s) if relevant
+                    if (inter instanceof RestChordInter) {
+                        RestChordInter restChord = (RestChordInter) inter;
+                        RestInter rest = (RestInter) restChord.getNotes().get(0);
+                        AugmentationDotInter firstDot = rest.getFirstAugmentationDot();
+
+                        if (firstDot != null) {
+                            newConfig.inters.remove(firstDot);
+
+                            AugmentationDotInter secondDot = firstDot.getSecondAugmentationDot();
+
+                            if (secondDot != null) {
+                                newConfig.inters.remove(secondDot);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!failures.contains(newConfig)) {
+                if (!candidates.contains(newConfig)) {
+                    logger.info("Ins{}", newConfig.ids());
+                    candidates.add(targetIdx++, newConfig);
+                } else {
+                    int idx = candidates.indexOf(newConfig);
+
+                    if (idx > targetIdx) {
+                        Collections.swap(candidates, idx, targetIdx++);
+                        logger.info("Pro{}", newConfig.ids());
+                    }
+                }
+            }
+        }
+    }
+
     //-----------//
     // postRests //
     //-----------//
@@ -495,7 +600,6 @@ public class StackTuner
     private void postRests (List<ChordInter> rests,
                             Rational delta)
     {
-        final SIGraph sig = stack.getSystem().getSig();
         final int n = rests.size();
 
         // This should be used only for rather small sizes of rests collection ...
@@ -800,7 +904,7 @@ public class StackTuner
         //---------------//
         // resetInitials //
         //---------------//
-        public void resetInitials()
+        public void resetInitials ()
         {
             // Clear any inter from initials
             for (Inter inter : initials) {

@@ -140,7 +140,7 @@ public class MeasureFixer
      */
     private boolean isEmpty ()
     {
-        return stack.getActualDuration().equals(Rational.ZERO);
+        return stack.getCurrentDuration().equals(Rational.ZERO);
     }
 
     //----------//
@@ -169,7 +169,7 @@ public class MeasureFixer
      */
     private boolean isRealStart (int im)
     {
-        return (im == 1) && (prevStack.getActualDuration().equals(Rational.ZERO));
+        return (im == 1) && (prevStack.getCurrentDuration().equals(Rational.ZERO));
 
         ///&& (stackTermination != null); // Too strict!
     }

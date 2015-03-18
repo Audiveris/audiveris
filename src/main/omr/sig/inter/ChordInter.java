@@ -134,6 +134,35 @@ public abstract class ChordInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // getClosestChord //
+    //-----------------//
+    /**
+     * From a provided Chord collection, report the chord which has the
+     * closest abscissa to a provided point.
+     *
+     * @param chords the collection of chords to browse
+     * @param point  the reference point
+     * @return the abscissa-wise closest chord
+     */
+    public static ChordInter getClosestChord (Collection<ChordInter> chords,
+                                              Point point)
+    {
+        ChordInter bestChord = null;
+        int bestDx = Integer.MAX_VALUE;
+
+        for (ChordInter chord : chords) {
+            int dx = Math.abs(chord.getHeadLocation().x - point.x);
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestChord = chord;
+            }
+        }
+
+        return bestChord;
+    }
+
     //--------//
     // accept //
     //--------//
@@ -296,35 +325,6 @@ public abstract class ChordInter
         return super.getBounds();
     }
 
-    //-----------------//
-    // getClosestChord //
-    //-----------------//
-    /**
-     * From a provided Chord collection, report the chord which has the
-     * closest abscissa to a provided point.
-     *
-     * @param chords the collection of chords to browse
-     * @param point  the reference point
-     * @return the abscissa-wise closest chord
-     */
-    public static ChordInter getClosestChord (Collection<ChordInter> chords,
-                                              Point point)
-    {
-        ChordInter bestChord = null;
-        int bestDx = Integer.MAX_VALUE;
-
-        for (ChordInter chord : chords) {
-            int dx = Math.abs(chord.getHeadLocation().x - point.x);
-
-            if (dx < bestDx) {
-                bestDx = dx;
-                bestChord = chord;
-            }
-        }
-
-        return bestChord;
-    }
-
     //---------------//
     // getDotsNumber //
     //---------------//
@@ -401,17 +401,16 @@ public abstract class ChordInter
                     final int fbn = getFlagsNumber() + beams.size();
 
                     if (fbn > 0) {
-                        /**
-                         * Beware, some mirrored notes exhibit a void note head
-                         * because the same head is shared by a half-note and at
-                         * the same time by a beam group.
-                         * In the case of the beam/flag side of the mirror, strictly
-                         * speaking, the note head should be considered as black.
+                        /*
+                         * Some mirrored notes exhibit a void note head because the same
+                         * head is shared by a half-note and at the same time by a beam group.
+                         * In the case of the beam/flag side of the mirror, strictly speaking,
+                         * the note head should be considered as black.
                          */
+                        if ((noteShape == Shape.NOTEHEAD_VOID) && (note.getMirror() != null)) {
+                            dur = AbstractNoteInter.getShapeDuration(Shape.NOTEHEAD_BLACK);
+                        }
 
-                        //                        if ((shape == NOTEHEAD_VOID) && (getMirroredNote() != null)) {
-                        //                            dur = AbstractNoteInter.getShapeDuration(NOTEHEAD_BLACK);
-                        //                        }
                         for (int i = 0; i < fbn; i++) {
                             dur = dur.divides(2);
                         }
@@ -836,8 +835,9 @@ public abstract class ChordInter
      * Remember the starting time for this chord
      *
      * @param startTime chord starting time (counted within the measure)
+     * @return true if OK
      */
-    public void setStartTime (Rational startTime)
+    public boolean setStartTime (Rational startTime)
     {
         if (isVip()) {
             logger.info("VIP {} setStartTime from {} to {}", this, this.startTime, startTime);
@@ -848,7 +848,11 @@ public abstract class ChordInter
             this.startTime = startTime;
         } else if (!this.startTime.equals(startTime)) {
             logger.warn("{} Reassign startTime from {} to {}", this, this.startTime, startTime);
+
+            return false;
         }
+
+        return true;
     }
 
     //---------//

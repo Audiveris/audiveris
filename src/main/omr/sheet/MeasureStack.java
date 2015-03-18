@@ -17,6 +17,7 @@ import omr.grid.FilamentLine;
 
 import omr.math.Rational;
 
+import omr.score.Score;
 import omr.score.entity.Page;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
@@ -30,10 +31,8 @@ import omr.sig.inter.TimeInter;
 import omr.sig.inter.TupletInter;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
-
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -47,7 +46,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import omr.score.Score;
 
 /**
  * Class {@code MeasureStack} represents a vertical stack of measures, embracing all
@@ -607,6 +605,23 @@ public class MeasureStack
     public int getIdValue ()
     {
         return id;
+    }
+
+    //-------------//
+    // getLastSlot //
+    //-------------//
+    /**
+     * Report the last slot in stack.
+     *
+     * @return the last slot or null if none
+     */
+    public Slot getLastSlot ()
+    {
+        if (slots.isEmpty()) {
+            return null;
+        }
+
+        return slots.get(slots.size() - 1);
     }
 
     //--------------//

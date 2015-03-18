@@ -17,7 +17,6 @@ import omr.math.GeoUtil;
 import omr.math.Rational;
 import static omr.sheet.SlotsBuilder.Rel.*;
 
-import omr.sig.SIGraph;
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.ChordInter;
@@ -332,7 +331,7 @@ public class SlotsBuilder
      */
     private boolean buildSlots ()
     {
-        // The 'actives' collection gathers the chords that are "active" (not terminated) at the
+        // The 'actives' collection gathers the chords that are not terminated at the
         // time slot being considered. Initially, it contains just the whole chords.
         List<ChordInter> actives = new ArrayList<ChordInter>(stack.getWholeRestChords());
         Collections.sort(actives, ChordInter.byAbscissa);
@@ -365,10 +364,9 @@ public class SlotsBuilder
                 Slot slot = new Slot(slotId, stack);
                 stack.getSlots().add(slot);
                 slot.setChords(incomings);
-                slot.setStartTime(term);
 
-                // Check dx with previous slot if any
-                if (!checkInterSlot(slot)) {
+                // Check slots time so far are consistent & that dx with previous slot is wide enough
+                if (!slot.setStartTime(term) || !checkInterSlot(slot)) {
                     return false;
                 }
 
@@ -430,10 +428,8 @@ public class SlotsBuilder
                         if (nextChord instanceof RestChordInter) {
                             stackTuner.removeChord(nextChord);
                         }
-                    } else {
-                        if (nextChord instanceof HeadChordInter) {
-                            stackTuner.removeChord(prevChord);
-                        }
+                    } else if (nextChord instanceof HeadChordInter) {
+                        stackTuner.removeChord(prevChord);
                     }
                 }
             }

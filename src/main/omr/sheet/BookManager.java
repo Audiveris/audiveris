@@ -24,6 +24,8 @@ import omr.score.ScoreReduction;
 import omr.score.entity.Page;
 import omr.score.ui.BookPdfOutput;
 
+import omr.script.ExportTask;
+import omr.script.PrintTask;
 import omr.script.ScriptActions;
 
 import omr.step.Stepping;
@@ -404,6 +406,8 @@ public class BookManager
                 }
             }
         }
+
+        book.getScript().addTask(new ExportTask(bookPath.getParent().toFile()));
     }
 
     //-------------//
@@ -483,6 +487,11 @@ public class BookManager
             sheet.getBook().setExportPath(bookPath);
 
             constants.defaultExportDirectory.setValue(bookPath.getParent().toString());
+
+            if (!book.isMultiSheet()) {
+                book.getScript().addTask(new ExportTask(bookPath.getParent().toFile()));
+            }
+
         } catch (Exception ex) {
             logger.warn("Error storing " + sheet + ", " + ex, ex);
         }
@@ -759,9 +768,9 @@ public class BookManager
             new BookPdfOutput(book, pdfPath.toFile()).write(null);
             logger.info("Book printed to {}", pdfPath);
 
-            // Remember (even across runs) the selected print directory
             book.setPrintPath(bookPath);
             constants.defaultPrintDirectory.setValue(bookPath.getParent().toString());
+            book.getScript().addTask(new PrintTask(bookPath.getParent().toFile()));
         } catch (Exception ex) {
             logger.warn("Cannot write PDF to " + pdfPath, ex);
         }
@@ -804,9 +813,12 @@ public class BookManager
             new BookPdfOutput(book, pdfPath.toFile()).write(sheet);
             logger.info("Sheet printed to {}", pdfPath);
 
-            // Remember (even across runs) the selected print directory
             book.setPrintPath(bookPath);
             constants.defaultPrintDirectory.setValue(bookPath.getParent().toString());
+
+            if (!book.isMultiSheet()) {
+                book.getScript().addTask(new PrintTask(bookPath.getParent().toFile()));
+            }
         } catch (Exception ex) {
             logger.warn("Cannot write PDF to " + pdfPath, ex);
         }

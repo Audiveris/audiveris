@@ -1434,8 +1434,8 @@ public class PartwiseBuilder
             logger.debug("Processing {}", measure);
 
             // Very first measure in score?
-            final boolean isScoreFirstMeasure = isFirst.page && isFirst.system
-                                                && isFirst.measure;
+            final boolean isPageFirstMeasure = isFirst.system && isFirst.measure;
+            final boolean isScoreFirstMeasure = isFirst.page && isPageFirstMeasure;
             final MeasureStack stack = measure.getStack();
 
             // Make sure this measure is within the range to be exported
@@ -1484,7 +1484,7 @@ public class PartwiseBuilder
             }
 
             // Divisions?
-            if (isScoreFirstMeasure) {
+            if (isPageFirstMeasure) {
                 try {
                     getAttributes().setDivisions(
                             new BigDecimal(

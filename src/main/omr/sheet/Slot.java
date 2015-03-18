@@ -350,8 +350,9 @@ public class Slot
      * time slot.
      *
      * @param startTime time offset since measure start
+     * @return true if OK, false otherwise
      */
-    public void setStartTime (Rational startTime)
+    public boolean setStartTime (Rational startTime)
     {
         if (this.startTime == null) {
             logger.debug("setStartTime {} for Slot #{}", startTime, getId());
@@ -359,7 +360,9 @@ public class Slot
 
             // Assign to all chords of this slot first
             for (ChordInter chord : incomings) {
-                chord.setStartTime(startTime);
+                if (!chord.setStartTime(startTime)) {
+                    return false;
+                }
             }
 
             // Then, extend this information through the beamed chords if any
@@ -380,8 +383,12 @@ public class Slot
                 logger.warn(
                         "Reassigning startTime from " + this.startTime + " to " + startTime + " in "
                         + this);
+
+                return false;
             }
         }
+
+        return true;
     }
 
     //---------------//
