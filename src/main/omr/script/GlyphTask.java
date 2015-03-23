@@ -19,8 +19,8 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 
+import omr.step.Step;
 import omr.step.Stepping;
-import omr.step.Steps;
 
 import java.util.Collection;
 import java.util.List;
@@ -98,11 +98,7 @@ public abstract class GlyphTask
     @Override
     public void epilog (Sheet sheet)
     {
-        Stepping.reprocessSheet(
-                Steps.valueOf(Steps.SYMBOLS),
-                sheet,
-                getImpactedSystems(sheet),
-                false);
+        Stepping.reprocessSheet(Step.SYMBOLS, sheet, getImpactedSystems(sheet), false);
     }
 
     //--------------------//
@@ -163,15 +159,6 @@ public abstract class GlyphTask
 
         initialSystems = retrieveCurrentImpact(sheet);
     }
-
-    //----------------//
-    // retrieveGlyphs //
-    //----------------//
-    /**
-     * This method is in charge of retrieving the glyphs to be handled, using
-     * either their composing sections ids or their shape and locations.
-     */
-    protected abstract void retrieveGlyphs ();
 
     //-----------//
     // internals //
@@ -238,4 +225,13 @@ public abstract class GlyphTask
 
         return impactedSystems;
     }
+
+    //----------------//
+    // retrieveGlyphs //
+    //----------------//
+    /**
+     * This method is in charge of retrieving the glyphs to be handled, using
+     * either their composing sections ids or their shape and locations.
+     */
+    protected abstract void retrieveGlyphs ();
 }

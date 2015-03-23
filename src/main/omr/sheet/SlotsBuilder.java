@@ -315,7 +315,7 @@ public class SlotsBuilder
         // Finally, default location-based relationships
         inspectLocations();
 
-        if (logger.isDebugEnabled() || stack.getPageId().equals("7")) {
+        if (logger.isDebugEnabled()) {
             dumpRelationships();
         }
     }
@@ -545,8 +545,10 @@ public class SlotsBuilder
     private void dumpRelationships ()
     {
         // List BeamGroups
-        for (BeamGroup group : stack.getBeamGroups()) {
-            logger.info("  {}", group);
+        if (logger.isDebugEnabled()) {
+            for (BeamGroup group : stack.getBeamGroups()) {
+                logger.info("  {}", group);
+            }
         }
 
         // List chords relationships

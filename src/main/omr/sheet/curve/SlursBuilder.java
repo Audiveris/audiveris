@@ -138,7 +138,7 @@ public class SlursBuilder
                 }
             }
 
-            logger.info("Slurs: {}", pageSlurs.size());
+            logger.info("{}Slurs: {}", sheet.getLogPrefix(), pageSlurs.size());
         } catch (Throwable ex) {
             logger.warn("Error in SlursBuilder: " + ex, ex);
         }

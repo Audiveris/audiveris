@@ -11,20 +11,19 @@
 // </editor-fold>
 package omr.script;
 
-import java.util.Collections;
-import java.util.Locale;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
+import static omr.script.ScriptTask.logger;
+
 import omr.sheet.Sheet;
+
 import omr.step.Step;
 import omr.step.StepException;
 import omr.step.Stepping;
-import omr.step.Steps;
 
-import static omr.script.ScriptTask.logger;
+import java.util.Collections;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class {@code SheetStepTask} performs a step on a single sheet.
@@ -38,6 +37,7 @@ public class SheetStepTask
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** The step launched */
+    @XmlAttribute(name = "name")
     private Step step;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -93,24 +93,5 @@ public class SheetStepTask
     boolean isRecordable ()
     {
         return false;
-    }
-
-    //---------//
-    // getStep //
-    //---------//
-    @PreDestroy // Don't remove this method, invoked by JAXB through reflection
-    private String getStep ()
-    {
-        return step.getName();
-    }
-
-    //---------//
-    // setStep //
-    //---------//
-    @PostConstruct // Don't remove this method, invoked by JAXB through reflection
-    @XmlAttribute(name = "name")
-    private void setStep (String name)
-    {
-        step = Steps.valueOf(name.toUpperCase(Locale.ENGLISH));
     }
 }

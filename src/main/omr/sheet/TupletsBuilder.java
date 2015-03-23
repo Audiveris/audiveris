@@ -174,11 +174,11 @@ public class TupletsBuilder
             // Check we have collected the exact amount of time
             // TODO: Test is questionable for non-reliable candidates
             if (collector.isTooLong()) {
-                logger.info("{} {}", tuplet, collector.getStatusMessage());
+                logger.debug("{} {}", tuplet, collector.getStatusMessage());
 
                 return null;
             } else if (collector.isOutside()) {
-                logger.info("{} {}", tuplet, collector.getStatusMessage());
+                logger.debug("{} {}", tuplet, collector.getStatusMessage());
 
                 return null;
             } else if (collector.isOk()) {

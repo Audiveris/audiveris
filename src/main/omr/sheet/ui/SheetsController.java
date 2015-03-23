@@ -27,7 +27,6 @@ import omr.sheet.Sheet;
 
 import omr.step.Step;
 import omr.step.Stepping;
-import omr.step.Steps;
 
 import omr.ui.Colors;
 import omr.ui.util.SeparableMenu;
@@ -463,7 +462,7 @@ public class SheetsController
         Step currentStep = sheet.getCurrentStep();
 
         if (currentStep == null) {
-            final Step earlyStep = Steps.valueOf(constants.earlyStep.getValue());
+            final Step earlyStep = Step.valueOf(constants.earlyStep.getValue());
 
             if ((earlyStep != null) && !sheet.isDone(earlyStep)) {
                 // Process sheet asynchronously

@@ -38,14 +38,12 @@ import omr.sheet.Part;
 import omr.sheet.Sheet;
 import omr.sheet.Slot;
 import omr.sheet.Staff;
-import omr.sheet.SystemInfo;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetGradedPainter;
 import omr.sheet.ui.SheetResultPainter;
+import omr.sheet.ui.SheetTab;
 
 import omr.sig.inter.Inter;
-
-import omr.step.Step;
 
 import omr.ui.BoardsPane;
 import omr.ui.Colors;
@@ -153,7 +151,7 @@ public class SymbolsEditor
 
         // Create a hosting pane for the view
         ScrollView slv = new ScrollView(view);
-        sheet.getAssembly().addViewTab(Step.DATA_TAB, slv, boardsPane);
+        sheet.getAssembly().addViewTab(SheetTab.DATA_TAB, slv, boardsPane);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -223,7 +221,7 @@ public class SymbolsEditor
     //---------//
     /**
      * Refresh the UI display (resetRhythm the model values of all spinners,
- update the colors of the glyphs).
+     * update the colors of the glyphs).
      */
     public void refresh ()
     {

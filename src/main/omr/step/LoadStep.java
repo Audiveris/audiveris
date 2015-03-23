@@ -39,12 +39,6 @@ public class LoadStep
      */
     public LoadStep ()
     {
-        super(
-                Steps.LOAD,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                Step.PICTURE_TAB,
-                "Load the sheet picture");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

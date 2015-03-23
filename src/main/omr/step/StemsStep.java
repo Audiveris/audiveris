@@ -38,12 +38,6 @@ public class StemsStep
      */
     public StemsStep ()
     {
-        super(
-                Steps.STEMS,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Build stems for heads & beams");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

@@ -13,8 +13,12 @@ package omr.plugin;
 
 import omr.WellKnowns;
 
+import omr.sheet.Book;
+import omr.sheet.BookManager;
+import omr.sheet.Sheet;
+
+import omr.step.Step;
 import omr.step.Stepping;
-import omr.step.Steps;
 
 import omr.util.BasicTask;
 import omr.util.FileUtil;
@@ -32,8 +36,6 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import omr.sheet.Book;
-import omr.sheet.BookManager;
 
 /**
  * Class {@code Plugin} describes a plugin instance, encapsulating the relationship
@@ -160,9 +162,13 @@ public class Plugin
     //-----------//
     public Void runPlugin (Book book)
     {
-        // Make sure we have the export file
-        Stepping.ensureBookStep(Steps.valueOf(Steps.EXPORT_BOOK), book);
+        // Make sure all sheets have been transcribed
+        for (Sheet sheet : book.getSheets()) {
+            Stepping.ensureSheetStep(Step.PAGE, sheet);
+        }
 
+        // Make sure we have the export file
+        ///TODO: Stepping.ensureBookStep(Steps.valueOf(Steps.EXPORT_BOOK), book);
         final Path exportPath = book.getExportPath();
 
         if (exportPath == null) {

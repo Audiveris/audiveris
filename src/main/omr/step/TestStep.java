@@ -13,15 +13,13 @@ package omr.step;
 
 import omr.WellKnowns;
 
-import omr.score.entity.Page;
-
+import omr.sheet.Book;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.sig.SIGraph;
 import omr.sig.inter.BracketInter;
 import omr.sig.inter.Inter;
-import omr.sig.SIGraph;
-
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -32,15 +30,15 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import omr.sheet.Book;
 
 /**
  * Class {@code TestStep} is an attempt to add a pseudo step for specific tests.
  *
  * @author Hervé Bitteur
  */
+@Deprecated
 public class TestStep
-        extends AbstractStep
+    extends AbstractStep
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -49,18 +47,18 @@ public class TestStep
      */
     public TestStep ()
     {
-        super(Steps.TEST,
-                Level.BOOK_LEVEL,
-                Mandatory.OPTIONAL,
-                DATA_TAB,
-                "Placeholder for specific tests");
+//        super(
+//            Steps.TEST,
+//            DATA_TAB,
+//            "Placeholder for specific tests");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     protected void doit (Collection<SystemInfo> systems,
-                         Sheet aSheet)
-            throws StepException
+                         Sheet                  aSheet)
+        throws StepException
     {
         final Book book = aSheet.getBook();
 
@@ -68,8 +66,8 @@ public class TestStep
             boolean sheetStarted = false;
 
             for (SystemInfo system : sheet.getSystems()) {
-                boolean systemStarted = false;
-                SIGraph sig = system.getSig();
+                boolean     systemStarted = false;
+                SIGraph     sig = system.getSig();
                 List<Inter> brackets = sig.inters(BracketInter.class);
 
                 if (!brackets.isEmpty()) {
@@ -98,6 +96,45 @@ public class TestStep
         }
     }
 
+    //----------------//
+    // getPrintWriter //
+    //----------------//
+    private static PrintWriter getPrintWriter (File file)
+    {
+        try {
+            final BufferedWriter bw = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(file), WellKnowns.FILE_ENCODING));
+
+            return new PrintWriter(bw);
+        } catch (Exception ex) {
+            System.err.println("Error creating " + file + ex);
+
+            return null;
+        }
+    }
+
+    //-------------//
+    // getTestFile //
+    //-------------//
+    private static File getTestFile ()
+    {
+        String stamp = getTimeStamp();
+        File   file = new File(WellKnowns.TEMP_FOLDER, "TestFile " + stamp + ".txt");
+
+        return file;
+    }
+
+    //--------------//
+    // getTimeStamp //
+    //--------------//
+    private static String getTimeStamp ()
+    {
+        Date             now = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
+
+        return formatter.format(now);
+    }
+
     //---------//
     // getInfo //
     //---------//
@@ -115,46 +152,8 @@ public class TestStep
         return sb.toString();
     }
 
-    //----------------//
-    // getPrintWriter //
-    //----------------//
-    private static PrintWriter getPrintWriter (File file)
-    {
-        try {
-            final BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(file), WellKnowns.FILE_ENCODING));
-
-            return new PrintWriter(bw);
-        } catch (Exception ex) {
-            System.err.println("Error creating " + file + ex);
-
-            return null;
-        }
-    }
-
-    //-------------//
-    // getTestFile //
-    //-------------//
-    private static File getTestFile ()
-    {
-        String stamp = getTimeStamp();
-        File file = new File(WellKnowns.TEMP_FOLDER, "TestFile " + stamp + ".txt");
-
-        return file;
-    }
-
-    //--------------//
-    // getTimeStamp //
-    //--------------//
-    private static String getTimeStamp ()
-    {
-        Date now = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
-
-        return formatter.format(now);
-    }
-
     //~ Inner Interfaces ---------------------------------------------------------------------------
+
     //--------//
     // Holder //
     //--------//

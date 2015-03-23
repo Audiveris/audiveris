@@ -27,6 +27,7 @@ import java.util.Collection;
  *
  * @author Hervé Bitteur
  */
+@Deprecated
 public class DeltaStep
         extends AbstractStep
 {
@@ -40,7 +41,7 @@ public class DeltaStep
      */
     public DeltaStep ()
     {
-        super(Steps.DELTA, Level.BOOK_LEVEL, Mandatory.OPTIONAL, DATA_TAB, "Compute page delta");
+        ///super(Steps.DELTA, DATA_TAB, "Compute page delta");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

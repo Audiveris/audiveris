@@ -21,7 +21,6 @@ import omr.sheet.SystemInfo;
 
 import omr.step.Step;
 import omr.step.Stepping;
-import omr.step.Steps;
 
 import omr.util.LiveParam;
 
@@ -184,18 +183,13 @@ public class ParametersTask
     @Override
     public void epilog (Sheet sheet)
     {
-        final Step binaryStep = Steps.valueOf(Steps.BINARY);
-        final Step textsStep = Steps.valueOf(Steps.TEXTS);
-        final Step symbolsStep = Steps.valueOf(Steps.SYMBOLS);
-        final Step pageStep = Steps.valueOf(Steps.PAGE);
-
-        Step latestStep = Stepping.getLatestMandatoryStep(sheet);
+        Step latestStep = Stepping.getLatestStep(sheet);
 
         for (Sheet sh : sheet.getBook().getSheets()) {
             Step from = null;
 
             // Language
-            if (Steps.compare(latestStep, textsStep) >= 0) {
+            if (latestStep.compareTo(Step.TEXTS) >= 0) {
                 LiveParam<String> param = sh.getTextParam();
 
                 if (param.needsUpdate()) {
@@ -207,18 +201,18 @@ public class ParametersTask
                     }
 
                     // Reprocess this page from SYMBOLS step
-                    from = symbolsStep;
+                    from = Step.SYMBOLS; // TODO !!!!!!!!!!!!
                 }
             }
 
             // Binarization
-            if (Steps.compare(latestStep, binaryStep) >= 0) {
+            if (latestStep.compareTo(Step.BINARY) >= 0) {
                 LiveParam<FilterDescriptor> param = sh.getFilterParam();
 
                 if (param.needsUpdate()) {
                     logger.debug("Page {} needs BINARY with {}", sh.getId(), param.getTarget());
                     //  Reprocess this page from BINARY step
-                    from = binaryStep;
+                    from = Step.BINARY;
                 }
             }
 
@@ -226,8 +220,8 @@ public class ParametersTask
         }
 
         // Final PAGE step?
-        if (latestStep == pageStep) {
-            Stepping.reprocessSheet(pageStep, sheet, null, true, true);
+        if (latestStep == Step.PAGE) {
+            Stepping.reprocessSheet(Step.PAGE, sheet, null, true, true);
         }
 
         super.epilog(sheet);

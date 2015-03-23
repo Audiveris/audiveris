@@ -43,20 +43,9 @@ public abstract class AbstractSystemStep<C>
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractSystemStep object.
-     *
-     * @param name        step name
-     * @param level       score level only or sheet level
-     * @param mandatory   step must be done before any output
-     * @param label       The title of the related (or most relevant) view tab
-     * @param description A step description for the end user
      */
-    public AbstractSystemStep (String name,
-                               Level level,
-                               Mandatory mandatory,
-                               String label,
-                               String description)
+    public AbstractSystemStep ()
     {
-        super(name, level, mandatory, label, description);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -65,7 +54,8 @@ public abstract class AbstractSystemStep<C>
     // clearErrors //
     //-------------//
     @Override
-    public void clearErrors (Sheet sheet)
+    public void clearErrors (Step step,
+                             Sheet sheet)
     {
         // Void, since this is done system per system
     }
@@ -93,10 +83,11 @@ public abstract class AbstractSystemStep<C>
      *
      * @param system the system to clear of errors
      */
-    protected void clearSystemErrors (SystemInfo system)
+    protected void clearSystemErrors (Step step,
+                                      SystemInfo system)
     {
         if (Main.getGui() != null) {
-            system.getSheet().getErrorsEditor().clearSystem(this, system.getId());
+            system.getSheet().getErrorsEditor().clearSystem(step, system.getId());
         }
     }
 

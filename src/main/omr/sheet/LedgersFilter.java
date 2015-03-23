@@ -29,8 +29,7 @@ import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
 import omr.sheet.ui.LagController;
-
-import omr.step.Step;
+import omr.sheet.ui.SheetTab;
 
 import omr.util.IntUtil;
 
@@ -133,7 +132,7 @@ public class LedgersFilter
 
         if ((Main.getGui() != null) && constants.displayLedgers.isSet()) {
             // Display a view on this lag
-            new LagController(sheet, lag, Step.LEDGER_TAB).refresh();
+            new LagController(sheet, lag, SheetTab.LEDGER_TAB).refresh();
         }
     }
 

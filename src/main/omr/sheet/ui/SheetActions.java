@@ -31,7 +31,6 @@ import omr.sheet.StaffManager;
 import omr.sheet.StemScaler;
 
 import omr.step.Step;
-import omr.step.Steps;
 
 import omr.ui.MainGui;
 import omr.ui.util.OmrFileFilter;
@@ -165,9 +164,7 @@ public class SheetActions
         Sheet sheet = SheetsController.getCurrentSheet();
 
         if (sheet != null) {
-            Step scaleStep = Steps.valueOf(Steps.SCALE);
-
-            if (sheet.isDone(scaleStep)) {
+            if (sheet.isDone(Step.SCALE)) {
                 new ScaleBuilder(sheet).displayChart();
             } else {
                 logger.warn("Cannot display scale plot, for lack of scale data");
@@ -247,9 +244,7 @@ public class SheetActions
         Sheet sheet = SheetsController.getCurrentSheet();
 
         if (sheet != null) {
-            Step seedsStep = Steps.valueOf(Steps.STEM_SEEDS);
-
-            if (sheet.isDone(seedsStep)) {
+            if (sheet.isDone(Step.STEM_SEEDS)) {
                 new StemScaler(sheet).displayChart();
             } else {
                 logger.warn("Cannot display stem plot, for lack of stem data");
@@ -492,9 +487,7 @@ public class SheetActions
                 throws InterruptedException
         {
             Sheet sheet = SheetsController.getCurrentSheet();
-            GlyphRepository.getInstance().recordSheetGlyphs(
-                    sheet, /* emptyStructures => */
-                    sheet.isOnPatterns());
+            GlyphRepository.getInstance().recordSheetGlyphs(sheet, false);
 
             return null;
         }

@@ -100,7 +100,7 @@ public class TupletInter
         List<Inter> nearby = SIGraph.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
 
         if (nearby.isEmpty()) {
-            logger.info("Discarding isolated tuplet candidate glyph#{}", glyph.getId());
+            logger.debug("Discarding isolated tuplet candidate glyph#{}", glyph.getId());
 
             return null;
         }

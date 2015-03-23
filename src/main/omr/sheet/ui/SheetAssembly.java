@@ -133,19 +133,36 @@ public class SheetAssembly
      * Add a board into the BoardsPane corresponding to the provided
      * view tab title.
      *
-     * @param title the title of the targeted view tab
+     * @param tab   the tab of the targeted view
      * @param board the board to add dynamically
      */
-    public void addBoard (String title,
+    public void addBoard (SheetTab tab,
                           Board board)
     {
-        JScrollPane pane = getPane(title);
+        JScrollPane pane = getPane(tab.label);
 
         if (pane != null) {
             ViewTab viewTab = tabs.get(pane);
             ///logger.warn("Adding " + board + " to " + title);
             viewTab.boardsPane.addBoard(board);
         }
+    }
+
+    //------------//
+    // addViewTab //
+    //------------//
+    /**
+     * Add a new tab, that contains a new view on the sheet.
+     *
+     * @param tab        the label to use for the tab
+     * @param sv         the view on the sheet
+     * @param boardsPane the board pane associated to the tab
+     */
+    public void addViewTab (SheetTab tab,
+                            ScrollView sv,
+                            BoardsPane boardsPane)
+    {
+        addViewTab(tab.label, sv, boardsPane);
     }
 
     //------------//
@@ -176,9 +193,9 @@ public class SheetAssembly
                 Integer.toHexString(scroll.hashCode()));
 
         // Remove any existing viewTab with the same label
-        for (ViewTab tab : tabs.values()) {
-            if (tab.title.equals(label)) {
-                tab.remove();
+        for (ViewTab t : tabs.values()) {
+            if (t.title.equals(label)) {
+                t.remove();
 
                 break;
             }
@@ -316,10 +333,10 @@ public class SheetAssembly
      *
      * @param tab the tab to be selected
      */
-    public void selectViewTab (String tab)
+    public void selectViewTab (SheetTab tab)
     {
         for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
-            if (viewsPane.getTitleAt(i).equals(tab)) {
+            if (viewsPane.getTitleAt(i).equals(tab.label)) {
                 viewsPane.setSelectedIndex(i);
                 viewsPane.repaint();
 

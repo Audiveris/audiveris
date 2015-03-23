@@ -2021,10 +2021,10 @@ public class BarsRetriever
                 }
             }
 
-            logger.info("Thin peaks:{}, Thick peaks:{}", thins, thicks);
+            logger.info("{}Thin peaks:{}, Thick peaks:{}", sheet.getLogPrefix(), thins, thicks);
             threshold = (thins.lastKey() + thicks.firstKey()) / 2.0;
         } else {
-            logger.info("All thin peaks: {}", histo.dataString());
+            logger.info("{}All thin peaks: {}", sheet.getLogPrefix(), histo.dataString());
         }
 
         for (Staff staff : staffManager.getStaves()) {

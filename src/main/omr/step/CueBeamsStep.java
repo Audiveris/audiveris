@@ -23,19 +23,13 @@ import omr.sheet.SystemInfo;
 public class CueBeamsStep
         extends AbstractSystemStep<Void>
 {
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new CueBeamsStep object.
      */
     public CueBeamsStep ()
     {
-        super(
-                Steps.CUE_BEAMS,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Retrieve cue beams");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

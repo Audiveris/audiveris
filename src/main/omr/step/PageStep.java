@@ -11,9 +11,11 @@
 // </editor-fold>
 package omr.step;
 
+import omr.score.MeasureFixer;
 import omr.score.PageReduction;
 import omr.score.entity.Page;
 
+import omr.sheet.MeasureFiller;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -21,8 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import omr.score.MeasureFixer;
-import omr.sheet.MeasureFiller;
 
 /**
  * Class {@code PageStep} handles connections between systems in a page.
@@ -50,12 +50,6 @@ public class PageStep
      */
     public PageStep ()
     {
-        super(
-                Steps.PAGE,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Connect systems within page");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -77,7 +71,6 @@ public class PageStep
 
             // Refine voices ids (and thus colors) across all systems of the page
             ///new PageVoiceFixer(page).refine();
-
             // Merge / renumber measure stacks within the page
             new MeasureFixer().process(page);
 

@@ -116,8 +116,8 @@ public interface Inter
     };
 
     /**
-     * For comparing interpretations by abscissa, ensuring that only
-     * identical interpretations are found equal.
+     * For comparing interpretations by abscissa, ensuring that only identical
+     * interpretations are found equal.
      * This comparator can thus be used for a TreeSet.
      */
     public static final Comparator<Inter> byFullAbscissa = new Comparator<Inter>()

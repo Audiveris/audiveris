@@ -98,6 +98,6 @@ public class SystemVoiceFixer
             }
         }
 
-        logger.info("idMap: {}", globalMap);
+        logger.debug("idMap: {}", globalMap);
     }
 }

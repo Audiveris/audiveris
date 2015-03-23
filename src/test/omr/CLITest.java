@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr;
 
-import omr.step.Steps;
+import omr.step.Step;
 
 import omr.util.Dumping;
 import static junit.framework.Assert.assertEquals;
@@ -19,10 +19,6 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import junit.framework.TestCase;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.kohsuke.args4j.CmdLineException;
@@ -154,7 +150,7 @@ public class CLITest
         CLI.Parameters params = instance.getParameters(args);
         new Dumping().dump(params);
         assertEquals(
-                Arrays.asList(Steps.valueOf("RHYTHMS"), Steps.valueOf("PAGE")).toString(),
+                Arrays.asList(Step.RHYTHMS, Step.PAGE).toString(),
                 params.getSteps().toString());
     }
 

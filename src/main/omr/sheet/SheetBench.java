@@ -168,7 +168,7 @@ public class SheetBench
     public void recordStep (Step step,
                             long duration)
     {
-        addProp("step." + step.getName().toLowerCase() + ".duration", duration);
+        addProp("step." + step.name().toLowerCase() + ".duration", duration);
         flushBench();
     }
 

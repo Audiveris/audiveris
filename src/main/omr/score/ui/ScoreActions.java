@@ -29,8 +29,8 @@ import omr.sheet.ui.BookController;
 import omr.sheet.ui.SheetDependent;
 import omr.sheet.ui.SheetsController;
 
+import omr.step.Step;
 import omr.step.Stepping;
-import omr.step.Steps;
 
 import omr.ui.MainGui;
 import omr.ui.util.OmrFileFilter;
@@ -143,7 +143,7 @@ public class ScoreActions
      * Make sure that the book parameters are properly set up, even by
      * prompting the user for them, otherwise return false
      *
-     * @param sheet the provided sheet
+     * @param book the provided book
      * @return true if OK, false otherwise
      */
     public static boolean checkParameters (Book book)
@@ -220,7 +220,7 @@ public class ScoreActions
     {
         Sheet sheet = SheetsController.getCurrentSheet();
 
-        if (sheet.isDone(Steps.valueOf(Steps.PAGE))) {
+        if (sheet.isDone(Step.PAGE)) {
             return new RebuildTask(sheet);
         } else {
             return new BuildSheetTask(sheet);
@@ -799,7 +799,7 @@ public class ScoreActions
             book.setPrintPath(bookPrintPath);
 
             for (Sheet sheet : book.getSheets()) {
-                Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
+                Stepping.ensureSheetStep(Step.PAGE, sheet);
             }
 
             bookManager.printBook(book, null);
@@ -834,7 +834,7 @@ public class ScoreActions
                 throws InterruptedException
         {
             sheet.getBook().setPrintPath(bookPrintPath);
-            Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
+            Stepping.ensureSheetStep(Step.PAGE, sheet);
             bookManager.printSheet(sheet, null);
 
             return null;
@@ -864,7 +864,7 @@ public class ScoreActions
         {
             try {
                 for (Sheet sheet : book.getSheets()) {
-                    Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
+                    Stepping.ensureSheetStep(Step.PAGE, sheet);
                 }
             } catch (Exception ex) {
                 logger.warn("Could not build book", ex);
@@ -896,7 +896,7 @@ public class ScoreActions
                 throws InterruptedException
         {
             try {
-                Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
+                Stepping.ensureSheetStep(Step.PAGE, sheet);
             } catch (Exception ex) {
                 logger.warn("Could not build page", ex);
             }
@@ -983,7 +983,7 @@ public class ScoreActions
             sheet.getBook().setExportPath(bookExportPath);
 
             if (checkParameters(sheet)) {
-                Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
+                Stepping.ensureSheetStep(Step.PAGE, sheet);
                 bookManager.exportSheet(sheet, null, null);
             }
 
@@ -1012,12 +1012,13 @@ public class ScoreActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
-            try {
-                Stepping.reprocessSheet(Steps.valueOf(Steps.SYMBOLS), sheet, null, true);
-            } catch (Exception ex) {
-                logger.warn("Could not refresh score", ex);
-            }
-
+            // TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //            try {
+            //                Stepping.reprocessSheet(Step.SYMBOLS, sheet, null, true);
+            //            } catch (Exception ex) {
+            //                logger.warn("Could not refresh score", ex);
+            //            }
+            //
             return null;
         }
     }

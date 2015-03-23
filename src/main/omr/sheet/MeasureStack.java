@@ -130,7 +130,7 @@ public class MeasureStack
     /** Only whole rest-based chords (handled outside time slots). (subset of restChords) */
     private final List<ChordInter> wholeRestChords = new ArrayList<ChordInter>();
 
-    /** Additional relevant rhythm inters for this stack. */
+    /** Non-chord rhythm inters for this stack. */
     private final List<Inter> rhythms = new ArrayList<Inter>();
 
     //-- Resettable rhythm data --

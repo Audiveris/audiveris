@@ -21,8 +21,7 @@ import omr.lag.Lag;
 import omr.lag.ui.SectionBoard;
 
 import omr.sheet.ui.PixelBoard;
-
-import omr.step.Step;
+import omr.sheet.ui.SheetTab;
 
 import omr.ui.BoardsPane;
 import omr.ui.view.ScrollView;
@@ -89,7 +88,7 @@ public class HoriController
         view = new MyView(getNest());
 
         sheet.getAssembly().addViewTab(
-                Step.LEDGER_TAB,
+                SheetTab.LEDGER_TAB,
                 new ScrollView(view),
                 new BoardsPane(
                         new PixelBoard(sheet),

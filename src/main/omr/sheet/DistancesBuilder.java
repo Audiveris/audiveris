@@ -34,12 +34,11 @@ import omr.selection.SelectionService;
 
 import omr.sheet.ui.DistanceBoard;
 import omr.sheet.ui.ScrollImageView;
+import omr.sheet.ui.SheetTab;
 import omr.sheet.ui.TemplateBoard;
 import omr.sheet.ui.TemplateView;
 
 import omr.sig.inter.LedgerInter;
-
-import omr.step.Step;
 
 import omr.ui.BoardsPane;
 
@@ -108,7 +107,7 @@ public class DistancesBuilder
             BufferedImage img = table.getImage(sheet.getScale().getInterline() / 2);
             TemplateBoard templateBoard = new TemplateBoard(sheet, table, templateService);
             sheet.getAssembly().addViewTab(
-                    Step.TEMPLATE_TAB,
+                    SheetTab.TEMPLATE_TAB,
                     new ScrollImageView(sheet, new TemplateView(sheet, img, table, templateService)),
                     new BoardsPane(new DistanceBoard(sheet, table), templateBoard));
             templateBoard.stateChanged(null); // To feed template service

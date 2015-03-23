@@ -23,8 +23,7 @@ import omr.glyph.ui.SymbolGlyphBoard;
 import omr.lag.Lag;
 
 import omr.sheet.ui.PixelBoard;
-
-import omr.step.Step;
+import omr.sheet.ui.SheetTab;
 
 import omr.ui.BoardsPane;
 import omr.ui.view.ScrollView;
@@ -98,7 +97,8 @@ public class SpotsController
         // Specific rubber display
         view = new MyView(getNest(), Arrays.asList(lags));
 
-        sheet.getAssembly().addViewTab(Step.BEAM_SPOT_TAB,
+        sheet.getAssembly().addViewTab(
+                SheetTab.BEAM_SPOT_TAB,
                 new ScrollView(view),
                 new BoardsPane(new PixelBoard(sheet), new SymbolGlyphBoard(this, true, true)));
     }

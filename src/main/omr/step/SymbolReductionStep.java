@@ -15,7 +15,6 @@ import omr.sheet.SystemInfo;
 
 import omr.sig.SIGraph.ReductionMode;
 import omr.sig.SigReducer;
-import static omr.step.Step.DATA_TAB;
 
 /**
  * Class {@code SymbolReductionStep}implements <b>SYMBOL_REDUCTION</b> step, which tries
@@ -33,12 +32,6 @@ public class SymbolReductionStep
      */
     public SymbolReductionStep ()
     {
-        super(
-                Steps.SYMBOL_REDUCTION,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Reduce symbols");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

@@ -11,13 +11,13 @@
 // </editor-fold>
 package omr.step;
 
-import omr.sheet.NoteSpotsBuilder;
 import omr.glyph.facets.Glyph;
 
 import omr.image.DistanceTable;
 
 import omr.sheet.DistancesBuilder;
 import omr.sheet.NoteHeadsBuilder;
+import omr.sheet.NoteSpotsBuilder;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -48,11 +48,6 @@ public class HeadsStep
      */
     public HeadsStep ()
     {
-        super(Steps.HEADS,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Retrieve note heads & whole notes");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

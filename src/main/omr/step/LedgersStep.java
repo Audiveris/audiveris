@@ -15,6 +15,7 @@ import omr.sheet.LedgersBuilder;
 import omr.sheet.LedgersFilter;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.SheetTab;
 
 import java.util.Collection;
 
@@ -34,12 +35,6 @@ public class LedgersStep
      */
     public LedgersStep ()
     {
-        super(
-                Steps.LEDGERS,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Retrieve ledgers");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -47,7 +42,8 @@ public class LedgersStep
     // displayUI //
     //-----------//
     @Override
-    public void displayUI (Sheet sheet)
+    public void displayUI (Step step,
+                           Sheet sheet)
     {
         // Add ledger checkboard
         new LedgersBuilder(sheet.getSystems().get(0)).addCheckBoard();

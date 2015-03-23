@@ -28,8 +28,8 @@ import omr.script.ExportTask;
 import omr.script.PrintTask;
 import omr.script.ScriptActions;
 
+import omr.step.Step;
 import omr.step.Stepping;
-import omr.step.Steps;
 
 import omr.util.FileUtil;
 import omr.util.NameSet;
@@ -333,7 +333,7 @@ public class BookManager
     {
         // Make sure all sheets have been transcribed
         for (Sheet sheet : book.getSheets()) {
-            Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
+            Stepping.ensureSheetStep(Step.PAGE, sheet);
         }
 
         // Group book pages into scores
@@ -401,6 +401,7 @@ public class BookManager
 
                     new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
                     constants.defaultExportDirectory.setValue(bookPath.getParent().toString());
+                    book.getScript().addTask(new ExportTask(bookPath.getParent().toFile()));
                 } catch (Exception ex) {
                     logger.warn("Could not export score " + scoreName, ex);
                 }
@@ -491,7 +492,6 @@ public class BookManager
             if (!book.isMultiSheet()) {
                 book.getScript().addTask(new ExportTask(bookPath.getParent().toFile()));
             }
-
         } catch (Exception ex) {
             logger.warn("Error storing " + sheet + ", " + ex, ex);
         }
@@ -749,7 +749,7 @@ public class BookManager
     {
         // Make sure all sheets have been transcribed
         for (Sheet sheet : book.getSheets()) {
-            Stepping.ensureSheetStep(Steps.valueOf(Steps.PAGE), sheet);
+            Stepping.ensureSheetStep(Step.PAGE, sheet);
         }
 
         // path/to/prints/Book

@@ -12,7 +12,6 @@
 package omr;
 
 import omr.step.Step;
-import omr.step.Steps;
 
 import omr.util.Dumping;
 
@@ -56,7 +55,7 @@ import java.util.TreeSet;
  * <dt> <b>-steps (STEPNAME | &#64;STEPLIST)+</b> </dt> <dd> to run all the
  * specified steps (including the steps which are mandatory to get to the
  * specified ones). 'STEPNAME' can be any one of the step names (the case is
- * irrelevant) as defined in the {@link Steps} class. These steps will
+ * irrelevant) as defined in the {@link Step} class. These steps will
  * be performed on each sheet referenced from the command line.</dd>
  *
  * <dt> <b>-option (KEY=VALUE | &#64;OPTIONLIST)+</b> </dt> <dd> to specify
@@ -198,24 +197,11 @@ public class CLI
         parser.printUsage(writer, null);
         buf.append(writer.toString());
 
-        // Print all mandatory steps
-        buf.append("\nMandatory steps are in order (non case-sensitive):");
+        // Print all steps
+        buf.append("\nSteps are in order (non case-sensitive):");
 
-        for (Step step : Steps.values()) {
-            if (step.isMandatory()) {
-                buf.append(
-                        String.format("%n   %-16s : %s", step.toString(), step.getDescription()));
-            }
-        }
-
-        // Print all optional steps
-        buf.append("\n\nOptional steps are (non case-sensitive):");
-
-        for (Step step : Steps.values()) {
-            if (!step.isMandatory()) {
-                buf.append(
-                        String.format("%n   %-16s : %s", step.toString(), step.getDescription()));
-            }
+        for (Step step : Step.values()) {
+            buf.append(String.format("%n   %-16s : %s", step.toString(), step.getDescription()));
         }
 
         buf.append("\n");
@@ -459,17 +445,17 @@ public class CLI
 
                 for (String p : param.split(" ")) {
                     String s = p.replaceAll("-", "_");
-                    Step value = Steps.valueOf(s.toUpperCase());
 
-                    if (value == null) {
+                    try {
+                        Step value = Step.valueOf(s.toUpperCase());
+                        setter.addValue(value);
+                    } catch (IllegalArgumentException ex) {
                         throw new CmdLineException(
                                 owner,
                                 Messages.ILLEGAL_OPERAND,
                                 params.getParameter(-1),
                                 s);
                     }
-
-                    setter.addValue(value);
                 }
             }
 

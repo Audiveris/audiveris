@@ -37,9 +37,10 @@ import omr.selection.MouseMovement;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
+import omr.sheet.ui.SheetTab;
+
 import omr.sig.GradeImpacts;
 
-import omr.step.Step;
 import omr.step.StepException;
 
 import omr.util.Predicate;
@@ -139,7 +140,7 @@ public class VerticalsBuilder
     public void addCheckBoard ()
     {
         sheet.getAssembly().addBoard(
-                Step.DATA_TAB,
+                SheetTab.DATA_TAB,
                 new VertCheckBoard(sheet, sheet.getNest().getGlyphService(), eventClasses));
     }
 

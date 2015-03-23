@@ -16,6 +16,7 @@ import omr.sheet.StemScale;
 import omr.sheet.StemScaler;
 import omr.sheet.SystemInfo;
 import omr.sheet.VerticalsBuilder;
+import omr.sheet.ui.SheetTab;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,12 +42,6 @@ public class StemSeedsStep
      */
     public StemSeedsStep ()
     {
-        super(
-                Steps.STEM_SEEDS,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Retrieve stem seeds");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -54,7 +49,8 @@ public class StemSeedsStep
     // displayUI //
     //-----------//
     @Override
-    public void displayUI (Sheet sheet)
+    public void displayUI (Step step,
+                           Sheet sheet)
     {
         // We need a system of this sheet (any one)
         SystemInfo aSystem = sheet.getSystems().get(0);

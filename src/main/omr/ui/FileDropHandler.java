@@ -19,7 +19,6 @@ import omr.sheet.Book;
 
 import omr.step.Step;
 import omr.step.Stepping;
-import omr.step.Steps;
 
 import omr.util.BasicTask;
 import omr.util.Param;
@@ -134,8 +133,8 @@ public class FileDropHandler
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Steps.Constant defaultStep = new Steps.Constant(
-                Steps.valueOf(Steps.BINARY),
+        private final Step.Constant defaultStep = new Step.Constant(
+                Step.BINARY,
                 "Default step launched when an image file is dropped");
     }
 

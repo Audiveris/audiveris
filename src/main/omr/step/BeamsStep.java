@@ -44,7 +44,6 @@ public class BeamsStep
      */
     public BeamsStep ()
     {
-        super(Steps.BEAMS, Level.SHEET_LEVEL, Mandatory.MANDATORY, DATA_TAB, "Retrieve beams");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -76,7 +75,7 @@ public class BeamsStep
         }
 
         if (vGaps.getCardinality() > 0) {
-            logger.info("InterBeam gaps {}", vGaps);
+            logger.info("{}InterBeam gaps {}", sheet.getLogPrefix(), vGaps);
         }
 
         sheet.setBeamGaps(vGaps);

@@ -25,8 +25,7 @@ import omr.score.ui.PaintingParameters;
 
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetResultPainter;
-
-import omr.step.Step;
+import omr.sheet.ui.SheetTab;
 
 import omr.ui.BoardsPane;
 import omr.ui.view.RubberPanel;
@@ -165,7 +164,7 @@ public class SheetDiff
         // Display the filtered differences
         if (Main.getGui() != null) {
             sheet.getAssembly().addViewTab(
-                    Step.DIFF_TAB,
+                    SheetTab.DIFF_TAB,
                     new ScrollView(new MyView(xor)),
                     new BoardsPane(new PixelBoard(sheet)));
         }

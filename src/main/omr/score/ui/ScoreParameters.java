@@ -29,7 +29,6 @@ import omr.sheet.Book;
 import omr.sheet.Sheet;
 
 import omr.step.Step;
-import omr.step.Steps;
 
 import omr.text.Language;
 import omr.text.OCR.UnavailableOcrException;
@@ -455,7 +454,7 @@ public class ScoreParameters
             super("Drag n' Drop", null, null, null, FileDropHandler.defaultStep);
 
             // ComboBox for triggered step
-            stepCombo = new JComboBox<Step>(Steps.values().toArray(new Step[0]));
+            stepCombo = new JComboBox<Step>(Step.values());
             stepCombo.setToolTipText("Step to trigger on Drag n' Drop");
         }
 

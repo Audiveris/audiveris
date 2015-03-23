@@ -22,10 +22,10 @@ import omr.run.RunTable;
 
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
+import omr.sheet.ui.SheetTab;
 
 import omr.sig.ui.InterBoard;
 
-import omr.step.Step;
 import omr.step.StepException;
 
 import omr.util.Navigable;
@@ -110,7 +110,7 @@ public class GridBuilder
                 displayEditor();
 
                 // Inter board
-                sheet.getAssembly().addBoard(Step.DATA_TAB, new InterBoard(sheet));
+                sheet.getAssembly().addBoard(SheetTab.DATA_TAB, new InterBoard(sheet));
             }
 
             // Retrieve the horizontal staff lines filaments with long sections

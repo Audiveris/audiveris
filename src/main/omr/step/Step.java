@@ -13,81 +13,96 @@ package omr.step;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.SheetTab;
+import static omr.sheet.ui.SheetTab.*;
 
 import java.util.Collection;
 
 /**
- * Interface {@code Step} describes a sheet processing step.
+ * Enum {@code Step} describes a sheet processing step.
  * <p>
- * Implementation note: {@code Step} is no longer an enum type, to allow a better decoupling between
- * code parts of the application, since all steps no longer need to be available at the same build
- * time. To some extent, different steps could be provided by separate modules.
+ * <img src="doc-files/Step.png" alt="Step image" />
  *
  * @author Hervé Bitteur
  */
-public interface Step
+public enum Step
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Labels for view in tabbed panel. */
-    public static final String PICTURE_TAB = "Picture";
+    LOAD("Load the sheet (gray) picture", PICTURE_TAB, new LoadStep()),
+    BINARY("Binarize the sheet picture", BINARY_TAB, new BinaryStep()),
+    SCALE("Compute sheet line thickness, interline, beam thickness", BINARY_TAB, new ScaleStep()),
+    GRID("Retrieve Staff lines, bar-lines, systems & parts", DATA_TAB, new GridStep()),
+    HEADERS("Retrieve Clef-Key-Time systems headers", DATA_TAB, new HeadersStep()),
+    STEM_SEEDS("Retrieve Stem thickness & seeds for stems", DATA_TAB, new StemSeedsStep()),
+    BEAMS("Retrieve beams", DATA_TAB, new BeamsStep()),
+    LEDGERS("Retrieve ledgers", DATA_TAB, new LedgersStep()),
+    HEADS("Retrieve note heads & whole notes", DATA_TAB, new HeadsStep()),
+    STEMS("Build stems connected to heads & beams", DATA_TAB, new StemsStep()),
+    REDUCTION("Reduce structures of heads, stems & beams", DATA_TAB, new ReductionStep()),
+    CUE_BEAMS("Retrieve cue beams", DATA_TAB, new CueBeamsStep()),
+    TEXTS("Call OCR on textual items", DATA_TAB, new TextsStep()),
+    CURVES("Retrieve slurs, wedges & endings", DATA_TAB, new CurvesStep()),
+    CHORDS("Gather notes heads into chords", DATA_TAB, new ChordsStep()),
+    SYMBOLS("Retrieve fixed-shape symbols", DATA_TAB, new SymbolsStep()),
+    MEASURES("Retrieve raw measures from groups of bar lines", DATA_TAB, new MeasuresStep()),
+    SYMBOL_REDUCTION("Reduce symbols", DATA_TAB, new SymbolReductionStep()),
+    RHYTHMS("Handle rhythms within measures", DATA_TAB, new RhythmsStep()),
+    PAGE("Connect systems within page", DATA_TAB, new PageStep());
 
-    public static final String BINARY_TAB = "Binary";
+    /** Related short label. */
+    private final SheetTab tab;
 
-    public static final String DELTA_TAB = "Delta";
+    /** Description of the step. */
+    private final String description;
 
-    public static final String DIFF_TAB = "Diff";
+    /** Helper for step implementation. */
+    private final AbstractStep helper;
 
-    public static final String DATA_TAB = "Data";
-
-    public static final String BEAM_SPOT_TAB = "BeamSpots";
-
-    public static final String GRAY_SPOT_TAB = "GraySpots";
-
-    public static final String LEDGER_TAB = "Ledgers";
-
-    public static final String SKELETON_TAB = "Skeleton";
-
-    public static final String TEMPLATE_TAB = "Templates";
-
-    //~ Enumerations -------------------------------------------------------------------------------
-    /** Defines whether a step is mandatory or optional. */
-    public enum Mandatory
+    /**
+     * Create an instance of {@code Step}.
+     *
+     * @param description step description
+     * @param tab         tab for related sheet assembly
+     * @param helper      step implementation
+     */
+    private Step (String description,
+                  SheetTab tab,
+                  AbstractStep helper)
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /** Must be performed before any output. */
-        MANDATORY,
-        /** Non mandatory. */
-        OPTIONAL;
+        this.tab = tab;
+        this.description = description;
+        this.helper = helper;
     }
 
-    public enum Level
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /** Step makes sense at book level only. */
-        BOOK_LEVEL,
-        /** The step can be performed at sheet level. */
-        SHEET_LEVEL;
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //
+    //-------------//
+    // clearErrors //
+    //-------------//
     /**
      * Clear the errors that relate to this step on the provided sheet.
      *
      * @param sheet the sheet to work upon
      */
-    public void clearErrors (Sheet sheet);
+    public void clearErrors (Sheet sheet)
+    {
+        helper.clearErrors(this, sheet);
+    }
 
+    //-----------//
+    // displayUI //
+    //-----------//
     /**
      * Make the related user interface visible for this step.
      *
      * @param sheet the sheet to work upon
      */
-    public void displayUI (Sheet sheet);
+    public void displayUI (Sheet sheet)
+    {
+        helper.displayUI(this, sheet);
+    }
 
+    //--------//
+    // doStep //
+    //--------//
     /**
      * Run the step and mark it as started then done
      *
@@ -97,62 +112,74 @@ public interface Step
      */
     public void doStep (Collection<SystemInfo> systems,
                         Sheet sheet)
-            throws StepException;
+            throws StepException
+    {
+        helper.doStep(this, systems, sheet);
+    }
 
-    /**
-     * Flag this step as done for the provided sheet.
-     *
-     * @param sheet the sheet to work upon
-     */
-    public void done (Sheet sheet);
-
+    //----------------//
+    // getDescription //
+    //----------------//
     /**
      * Report a description of the step.
      *
      * @return a short description
      */
-    public String getDescription ();
+    public String getDescription ()
+    {
+        return description;
+    }
 
-    /**
-     * Name of the step.
-     *
-     * @return the name of the step
-     */
-    public String getName ();
-
+    //--------//
+    // getTab //
+    //--------//
     /**
      * Related assembly view tab, selected when steps completes
      *
      * @return the related view tab
      */
-    public String getTab ();
+    public SheetTab getTab ()
+    {
+        return tab;
+    }
 
+    //----------//
+    // Constant //
+    //----------//
     /**
-     * Check whether this step has been done for the specified sheet.
-     *
-     * @param sheet the specified sheet
-     * @return true if started/done, false otherwise
+     * Class {@code Constant} is a {@link omr.constant.Constant} meant to store a {@link
+     * Step} value.
      */
-    public boolean isDone (Sheet sheet);
+    public static class Constant
+            extends omr.constant.Constant
+    {
 
-    /**
-     * Is the step mandatory?.
-     *
-     * @return true for mandatory
-     */
-    public boolean isMandatory ();
+        public Constant (Step defaultValue,
+                         java.lang.String description)
+        {
+            super(null, defaultValue.toString(), description);
+        }
 
-    /**
-     * Does the step need to be performed at book level?
-     *
-     * @return true for book-level step, false for sheet-level step
-     */
-    public boolean isBookLevel ();
+        public Step getValue ()
+        {
+            return (Step) getCachedValue();
+        }
 
-    /**
-     * A detailed description.
-     *
-     * @return a tip for the step
-     */
-    public String toLongString ();
+        public void setValue (Step val)
+        {
+            setTuple(val.toString(), val);
+        }
+
+        @Override
+        public void setValue (java.lang.String string)
+        {
+            setValue(decode(string));
+        }
+
+        @Override
+        protected Step decode (java.lang.String str)
+        {
+            return Step.valueOf(str);
+        }
+    }
 }

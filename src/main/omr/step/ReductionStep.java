@@ -32,12 +32,6 @@ public class ReductionStep
      */
     public ReductionStep ()
     {
-        super(
-                Steps.REDUCTION,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Reduce structures of heads, stems & beams");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

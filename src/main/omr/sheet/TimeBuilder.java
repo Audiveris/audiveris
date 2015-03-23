@@ -867,7 +867,7 @@ public class TimeBuilder
                 grades.put(time, mean);
             }
 
-            logger.info("System#{} Header time sig grades {}", system.getId(), grades);
+            logger.debug("System#{} Header time sig grades {}", system.getId(), grades);
 
             // Keep the best time value
             bestTime = findBestTime(grades);

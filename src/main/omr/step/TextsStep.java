@@ -50,12 +50,6 @@ public class TextsStep
      */
     public TextsStep ()
     {
-        super(
-                Steps.TEXTS,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Retrieve texts items");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

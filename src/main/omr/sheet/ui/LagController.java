@@ -42,7 +42,7 @@ public class LagController
     private final Lag lag;
 
     /** Tab name. */
-    private final String tab;
+    private final SheetTab tab;
 
     /** Related user display if any */
     private MyView view;
@@ -57,7 +57,7 @@ public class LagController
      */
     public LagController (Sheet sheet,
                           Lag lag,
-                          String tab)
+                          SheetTab tab)
     {
         super(new GlyphsModel(sheet, sheet.getNest(), null));
         this.lag = lag;

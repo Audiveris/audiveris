@@ -20,6 +20,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.DeltaView;
 import omr.sheet.ui.PixelBoard;
+import omr.sheet.ui.SheetTab;
 
 import omr.ui.BoardsPane;
 
@@ -50,12 +51,6 @@ public class ScaleStep
      */
     public ScaleStep ()
     {
-        super(
-                Steps.SCALE,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                BINARY_TAB,
-                "Compute sheet scale");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -63,12 +58,13 @@ public class ScaleStep
     // displayUI //
     //-----------//
     @Override
-    public void displayUI (Sheet sheet)
+    public void displayUI (Step step,
+                           Sheet sheet)
     {
         if (constants.displayDelta.isSet()) {
             // Display delta view
             sheet.getAssembly().addViewTab(
-                    Step.DELTA_TAB,
+                    SheetTab.DELTA_TAB,
                     new DeltaView(sheet),
                     new BoardsPane(new PixelBoard(sheet)));
         }

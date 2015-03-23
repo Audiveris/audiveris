@@ -30,11 +30,6 @@ public class HeadersStep
      */
     public HeadersStep ()
     {
-        super(Steps.HEADERS,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Retrieve Clef-Key-Time systems headers");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

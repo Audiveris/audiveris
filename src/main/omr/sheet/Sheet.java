@@ -26,6 +26,8 @@ import omr.image.ImageFormatException;
 import omr.lag.Lag;
 import omr.lag.Lags;
 
+import omr.math.Population;
+
 import omr.score.entity.Page;
 import omr.score.entity.SystemNode;
 
@@ -43,6 +45,7 @@ import omr.sheet.ui.PictureView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.SheetsController;
+import omr.sheet.ui.SheetTab;
 
 import omr.sig.SIGraph;
 import omr.sig.SigManager;
@@ -50,8 +53,6 @@ import omr.sig.inter.Inter;
 
 import omr.step.Step;
 import omr.step.StepException;
-import omr.step.Stepping;
-import omr.step.Steps;
 
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
@@ -73,13 +74,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import omr.math.Population;
 
 /**
  * Class {@code Sheet} corresponds to an image in book image file.
@@ -146,7 +147,7 @@ public class Sheet
     private Picture picture;
 
     /** All steps already done on this sheet. */
-    private final Set<Step> doneSteps = new LinkedHashSet<Step>();
+    private final EnumSet<Step> doneSteps = EnumSet.noneOf(Step.class);
 
     /** The step being done on this sheet */
     private Step currentStep;
@@ -331,9 +332,7 @@ public class Sheet
      */
     public final void done (Step step)
     {
-        if (step.isMandatory()) {
-            doneSteps.add(step);
-        }
+        doneSteps.add(step);
     }
 
     //-----------------//
@@ -841,14 +840,14 @@ public class Sheet
             throws StepException
     {
         // Reset most of members
-        reset(Steps.valueOf(Steps.LOAD));
+        reset(Step.LOAD);
 
         try {
             picture = new Picture(this, image, locationService);
             setPicture(picture);
             getBench().recordImageDimension(picture.getWidth(), picture.getHeight());
 
-            done(Steps.valueOf(Steps.LOAD));
+            done(Step.LOAD);
         } catch (ImageFormatException ex) {
             String msg = "Unsupported image format in file " + getBook().getImagePath() + "\n"
                          + ex.getMessage();
@@ -929,19 +928,6 @@ public class Sheet
         return picture.getWidth();
     }
 
-    //--------------//
-    // isOnPatterns //
-    //--------------//
-    /**
-     * Check whether current step is SYMBOLS.
-     *
-     * @return true if on SYMBOLS
-     */
-    public boolean isOnPatterns ()
-    {
-        return Stepping.getLatestStep(this) == Steps.valueOf(Steps.SYMBOLS);
-    }
-
     //--------//
     // remove //
     //--------//
@@ -983,19 +969,19 @@ public class Sheet
      */
     public void reset (Step step)
     {
-        switch (step.getName()) {
-        case Steps.LOAD:
+        switch (step) {
+        case LOAD:
             picture = null;
             doneSteps.clear();
             currentStep = null;
 
         // Fall-through!
-        case Steps.BINARY:
-        case Steps.SCALE:
+        case BINARY:
+        case SCALE:
             scale = null;
 
         // Fall-through!
-        case Steps.GRID:
+        case GRID:
 
             if (nest != null) {
                 nest.cutServices(locationService);
@@ -1012,11 +998,11 @@ public class Sheet
             symbolsEditor = null;
 
         // Fall-through!
-        case Steps.LEDGERS:
+        case LEDGERS:
             setLag(Lags.LEDGER_LAG, null);
 
         // Fall-through!
-        case Steps.BEAMS:
+        case BEAMS:
             setLag(Lags.SPOT_LAG, null);
 
         default:
@@ -1222,7 +1208,7 @@ public class Sheet
         if (Main.getGui() != null) {
             PictureView pictureView = new PictureView(Sheet.this);
             assembly.addViewTab(
-                    Step.PICTURE_TAB,
+                    SheetTab.PICTURE_TAB,
                     pictureView,
                     new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
         }

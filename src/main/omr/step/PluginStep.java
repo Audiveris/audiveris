@@ -15,6 +15,7 @@ import omr.Main;
 
 import omr.plugin.Plugin;
 
+import omr.sheet.Book;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -22,13 +23,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import omr.sheet.Book;
 
 /**
  * Class {@code PluginStep} launches the default plugin.
+ * TODO: This should not be a step!
  *
  * @author Hervé Bitteur
  */
+@Deprecated
 public class PluginStep
         extends AbstractStep
 {
@@ -47,12 +49,7 @@ public class PluginStep
      */
     public PluginStep (Plugin plugin)
     {
-        super(Steps.PLUGIN,
-                Level.BOOK_LEVEL,
-                Mandatory.OPTIONAL,
-                DATA_TAB,
-                "Launch the default plugin");
-
+        ///super(Steps.PLUGIN, DATA_TAB, "Launch the default plugin");
         this.plugin = plugin;
     }
 
@@ -74,21 +71,21 @@ public class PluginStep
             plugin.runPlugin(book);
         }
     }
-
-    //----------------//
-    // getDescription //
-    //----------------//
-    /**
-     * Augment the description with the plugin title
-     *
-     * @return a named description
-     */
-    @Override
-    public String getDescription ()
-    {
-        return super.getDescription() + " (" + plugin.getTitle() + ")";
-    }
-
+//
+//    //----------------//
+//    // getDescription //
+//    //----------------//
+//    /**
+//     * Augment the description with the plugin title
+//     *
+//     * @return a named description
+//     */
+//    @Override
+//    public String getDescription ()
+//    {
+//        return super.getDescription() + " (" + plugin.getTitle() + ")";
+//    }
+//
     //-----------//
     // setPlugin //
     //-----------//

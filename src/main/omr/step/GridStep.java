@@ -25,6 +25,7 @@ import omr.sheet.SystemInfo;
 import omr.sheet.ui.ImageView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.ScrollImageView;
+import omr.sheet.ui.SheetTab;
 
 import omr.ui.BoardsPane;
 
@@ -54,12 +55,6 @@ public class GridStep
      */
     public GridStep ()
     {
-        super(
-                Steps.GRID,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Retrieve the grid of sheet systems");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -67,7 +62,8 @@ public class GridStep
     // displayUI //
     //-----------//
     @Override
-    public void displayUI (Sheet sheet)
+    public void displayUI (Step step,
+                           Sheet sheet)
     {
         SymbolsEditor editor = sheet.getSymbolsEditor();
 
@@ -77,7 +73,7 @@ public class GridStep
 
         if (constants.displayNoStaff.isSet()) {
             sheet.getAssembly().addViewTab(
-                    "NoStaff",
+                    SheetTab.NO_STAFF_TAB,
                     new ScrollImageView(
                             sheet,
                             new ImageView(

@@ -847,7 +847,7 @@ public abstract class ChordInter
         if (this.startTime == null) {
             this.startTime = startTime;
         } else if (!this.startTime.equals(startTime)) {
-            logger.warn("{} Reassign startTime from {} to {}", this, this.startTime, startTime);
+            logger.debug("{} Reassign startTime from {} to {}", this, this.startTime, startTime);
 
             return false;
         }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<!-- ======================================================================= -->
-<!--                                                                         -->
-<!--                 s y s t e m - a c t i o n s . x m l                     -->
-<!--                                                                         -->
-<!-- ======================================================================= -->
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!--                           s y s t e m - a c t i o n s . x m l                               -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
 
 <!--
      This file gathers the classes to be loaded as UI actions.
@@ -68,7 +68,7 @@
     <action domain="TOOL" section="10"  class="omr.sheet.ui.SheetActions" method="recordGlyphs" />
     <action domain="TOOL" section="10"  class="omr.ui.GuiActions"         method="verifyTrainingMaterial" />
     <action domain="TOOL" section="10"  class="omr.ui.GuiActions"         method="launchTrainer" />
-    <action domain="TOOL" section="20"  class="omr.ui.GuiActions" method="defineShapeColors" />
+<!--    <action domain="TOOL" section="20"  class="omr.ui.GuiActions" method="defineShapeColors" />-->
     <action domain="TOOL" section="40"  class="omr.ui.GuiActions" method="showMemory" />
     <action domain="TOOL" section="40"  class="omr.ui.GuiActions" method="defineOptions" />
 

@@ -70,6 +70,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import omr.sheet.ui.SheetTab;
 
 /**
  * Class {@code LedgersBuilder} retrieves ledgers for a system.
@@ -160,8 +161,8 @@ public class LedgersBuilder
     public void addCheckBoard ()
     {
         SheetAssembly assembly = sheet.getAssembly();
-        assembly.addBoard(Step.DATA_TAB, new LedgerCheckBoard(sheet));
-        assembly.addBoard(Step.LEDGER_TAB, new LedgerCheckBoard(sheet));
+        assembly.addBoard(SheetTab.DATA_TAB, new LedgerCheckBoard(sheet));
+        assembly.addBoard(SheetTab.LEDGER_TAB, new LedgerCheckBoard(sheet));
     }
 
     //--------------//

@@ -39,8 +39,7 @@ import omr.run.RunTableFactory;
 import omr.sheet.ui.ImageView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.ScrollImageView;
-
-import omr.step.Step;
+import omr.sheet.ui.SheetTab;
 
 import omr.ui.BoardsPane;
 
@@ -192,7 +191,7 @@ public class SpotsBuilder
                 }
 
                 sheet.getAssembly().addViewTab(
-                        Step.GRAY_SPOT_TAB,
+                        SheetTab.GRAY_SPOT_TAB,
                         new ScrollImageView(sheet, new ImageView(img)),
                         new BoardsPane(new PixelBoard(sheet)));
             }

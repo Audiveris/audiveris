@@ -40,12 +40,6 @@ public class MeasuresStep
      */
     public MeasuresStep ()
     {
-        super(
-                Steps.MEASURES,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Retrieve measures from bar lines");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

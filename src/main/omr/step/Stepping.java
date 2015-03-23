@@ -13,6 +13,7 @@ package omr.step;
 
 import omr.Main;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.score.ui.ScoreActions;
@@ -23,7 +24,6 @@ import omr.sheet.Book;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.SheetsController;
-import static omr.step.Steps.*;
 
 import omr.util.OmrExecutors;
 import omr.util.StopWatch;
@@ -35,9 +35,9 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities;
 
 /**
  * Class {@code Stepping} handles the scheduling of step(s) on a book or a sheet.
+ * <p>
  * When running in interactive mode, progress is notified to the user interface.
  * <p>
  * <img src="doc-files/Stepping.png" />
@@ -64,6 +65,12 @@ public abstract class Stepping
 
     /** Related progress monitor when used in interactive mode. */
     private static volatile StepMonitor monitor;
+
+    /** First value of Step. */
+    private static final Step FIRST_STEP = Step.values()[0];
+
+    /** Last value of Step. */
+    private static final Step LAST_STEP = Step.values()[Step.values().length - 1];
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -100,23 +107,6 @@ public abstract class Stepping
         return monitor = new StepMonitor();
     }
 
-    //----------------//
-    // ensureBookStep //
-    //----------------//
-    /**
-     * Make sure the provided step has been reached on the book at hand
-     *
-     * @param step the step to check
-     * @param book the book to process, if so needed
-     */
-    public static void ensureBookStep (Step step,
-                                       Book book)
-    {
-        if (!book.getFirstSheet().isDone(step)) {
-            processBook(Collections.singleton(step), null, book);
-        }
-    }
-
     //-----------------//
     // ensureSheetStep //
     //-----------------//
@@ -134,51 +124,26 @@ public abstract class Stepping
         }
     }
 
-    //------------------------//
-    // getLatestMandatoryStep //
-    //------------------------//
-    /**
-     * Report the latest mandatory step done so far with the related sheet.
-     *
-     * @param sheet the sheet concerned
-     * @return the latest mandatory step done, or null
-     */
-    public static Step getLatestMandatoryStep (Sheet sheet)
-    {
-        Step latest = null;
-
-        for (Step step : Steps.values()) {
-            if (step.isMandatory() && step.isDone(sheet)) {
-                latest = step;
-            } else {
-                break;
-            }
-        }
-
-        return latest;
-    }
-
     //---------------//
     // getLatestStep //
     //---------------//
     /**
-     * Report the latest step done so far with the related sheet.
+     * Report the latest step done so far on the provided sheet.
      *
      * @param sheet the sheet concerned
      * @return the latest step done, or null
      */
     public static Step getLatestStep (Sheet sheet)
     {
-        for (ListIterator<Step> it = Steps.values().listIterator(Steps.values().size());
-                it.hasPrevious();) {
-            Step step = it.previous();
+        Step latest = null;
 
-            if (step.isDone(sheet)) {
-                return step;
+        for (Step step : Step.values()) {
+            if (sheet.isDone(step)) {
+                latest = step;
             }
         }
 
-        return null;
+        return latest;
     }
 
     //-------------//
@@ -191,11 +156,11 @@ public abstract class Stepping
      * and from the drag&drop handler.
      *
      * @param desiredSteps the desired steps
-     * @param indices      specific set of sheet indices, if any
+     * @param sheetIndices specific set of sheet indices, if any
      * @param book         the processed book (and its sheets)
      */
     public static void processBook (Set<Step> desiredSteps,
-                                    SortedSet<Integer> indices,
+                                    SortedSet<Integer> sheetIndices,
                                     Book book)
     {
         logger.debug("processBook {} on {}", desiredSteps, book);
@@ -206,14 +171,13 @@ public abstract class Stepping
         }
 
         // Determine the precise ordered collection of steps to perform
-        SortedSet<Step> orderedSteps = new TreeSet<Step>(comparator);
-        orderedSteps.addAll(desiredSteps);
+        TreeSet<Step> orderedSteps = new TreeSet(desiredSteps);
 
         try {
             if (book.getSheets().isEmpty()) {
                 // Create book sheets if not yet done
                 // This will usually trigger the early step on first sheet in synchronous mode
-                book.createSheets(indices);
+                book.createSheets(sheetIndices);
             }
 
             if (desiredSteps.isEmpty()) {
@@ -224,7 +188,7 @@ public abstract class Stepping
             Step first = LAST_STEP;
 
             for (Sheet sheet : book.getSheets()) {
-                Step latest = getLatestMandatoryStep(sheet);
+                Step latest = getLatestStep(sheet);
 
                 if (latest == null) {
                     // This sheet has not been processed at all
@@ -233,25 +197,23 @@ public abstract class Stepping
                     break;
                 }
 
-                if (Steps.compare(latest, first) < 0) {
+                if (latest.compareTo(first) < 0) {
                     first = latest;
                 }
             }
 
             // Determine starting step and stopping step
             final Step start = (first == null) ? FIRST_STEP : next(first);
-            final Step stop = (Steps.compare(first, orderedSteps.last()) >= 0) ? first
+            final Step stop = (first.compareTo(orderedSteps.last()) >= 0) ? first
                     : orderedSteps.last();
 
-            // Add all intermediate mandatory steps?
-            if (constants.generateIntermediateSteps.isSet()) {
-                for (Step step : range(start, stop)) {
-                    orderedSteps.add(step);
-                }
+            // Add all intermediate steps
+            for (Step step : EnumSet.range(start, stop)) {
+                orderedSteps.add(step);
             }
 
-            // Schedule the steps on each sheet
-            scheduleBookStepSet(orderedSteps, book);
+            // Launch the steps on each sheet
+            doBookStepSet(orderedSteps, book);
 
             // Record the step tasks to script
             for (Step step : desiredSteps) {
@@ -288,56 +250,32 @@ public abstract class Stepping
         }
 
         // Determine the precise ordered collection of steps to perform
-        SortedSet<Step> orderedSteps = new TreeSet<Step>(comparator);
-        orderedSteps.addAll(desiredSteps);
+        TreeSet<Step> orderedSteps = new TreeSet(desiredSteps);
 
         notifyStart();
 
         try {
             // Determine starting step and stopping step
-            final Step loadStep = Steps.valueOf(Steps.LOAD);
             final Step start;
             final Step stop;
 
-            // Retrieve the latest mandatory step
-            Step latest = getLatestMandatoryStep(sheet);
+            // Retrieve the latest step done
+            Step latest = getLatestStep(sheet);
             Step firstDesired = orderedSteps.first();
             start = (latest == null) ? FIRST_STEP
                     : ((latest == firstDesired) ? firstDesired : next(latest));
-            stop = (Steps.compare(latest, orderedSteps.last()) >= 0) ? latest : orderedSteps.last();
+            stop = ((latest != null) && (latest.compareTo(orderedSteps.last()) >= 0)) ? latest
+                    : orderedSteps.last();
 
-            // Add all intermediate mandatory steps?
-            if (constants.generateIntermediateSteps.isSet()) {
-                for (Step step : range(start, stop)) {
-                    if (step.isMandatory()) {
-                        orderedSteps.add(step);
-                    }
-                }
-            } else {
-                // Insert steps only until last desired mandatory step
-                Step lastMandatory = null;
-                Step pageStep = Steps.valueOf(Steps.PAGE);
-
-                for (Step step : orderedSteps) {
-                    ///if (step.isMandatory()) {
-                    if (step.isMandatory() && (step != pageStep)) {
-                        lastMandatory = step;
-                    }
-                }
-
-                if (lastMandatory != null) {
-                    for (Step step : range(start, lastMandatory)) {
-                        if (step.isMandatory()) {
-                            orderedSteps.add(step);
-                        }
-                    }
-                }
+            // Add all intermediate steps
+            for (Step step : EnumSet.range(start, stop)) {
+                orderedSteps.add(step);
             }
 
             // Remove the LOAD step (unless it is explicitly desired)
             // LOAD step may appear only in reprocessSheet()
-            if (!desiredSteps.contains(loadStep)) {
-                orderedSteps.remove(loadStep);
+            if (!desiredSteps.contains(Step.LOAD)) {
+                orderedSteps.remove(Step.LOAD);
             }
 
             // Schedule the steps on the sheet
@@ -373,6 +311,7 @@ public abstract class Stepping
      * @param impactedSystems the ordered set of systems to rebuild, or null for all systems
      * @param imposed         flag to indicate that update is imposed
      */
+    @Deprecated
     public static void reprocessSheet (Step step,
                                        Sheet sheet,
                                        Collection<SystemInfo> impactedSystems,
@@ -396,6 +335,7 @@ public abstract class Stepping
      * @param imposed         flag to indicate that update is imposed
      * @param merge           true if step SCORE (merge of pages) is allowed
      */
+    @Deprecated
     public static void reprocessSheet (Step step,
                                        Sheet sheet,
                                        Collection<SystemInfo> impactedSystems,
@@ -430,11 +370,11 @@ public abstract class Stepping
                 SystemInfo.toString(impactedSystems));
 
         // Rebuild from specified step, if needed
-        Step latest = getLatestMandatoryStep(sheet);
+        Step latest = getLatestStep(sheet);
 
-        if ((latest == null) || (compare(latest, step) >= 0)) {
+        if ((latest == null) || (latest.compareTo(step) >= 0)) {
             // The range of steps to re-perform
-            SortedSet<Step> stepRange = range(step, latest);
+            EnumSet<Step> stepRange = EnumSet.range(step, latest);
 
             notifyStart();
 
@@ -504,75 +444,61 @@ public abstract class Stepping
      * @param book    the book to be processed
      * @throws StepException
      */
-    private static void doBookStepSet (final SortedSet<Step> stepSet,
+    private static void doBookStepSet (final Set<Step> stepSet,
                                        final Book book)
     {
-        if (book.isMultiSheet()) {
-            if (OmrExecutors.defaultParallelism.getTarget() == true) {
-                // Process all sheets in parallel
-                List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+        if (stepSet.isEmpty()) {
+            return;
+        }
 
-                for (final Sheet sheet : new ArrayList<Sheet>(book.getSheets())) {
-                    tasks.add(
-                            new Callable<Void>()
-                            {
-                                @Override
-                                public Void call ()
-                                throws StepException
+        logger.info("{}Book processing {}", book.getLogPrefix(), stepSet);
+
+        long startTime = System.currentTimeMillis();
+        notifyStart();
+
+        try {
+            if (book.isMultiSheet()) {
+                if (OmrExecutors.defaultParallelism.getTarget() == true) {
+                    // Process all sheets in parallel
+                    List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+
+                    for (final Sheet sheet : new ArrayList<Sheet>(book.getSheets())) {
+                        tasks.add(
+                                new Callable<Void>()
                                 {
-                                    doSheetStepSet(stepSet, sheet, null);
+                                    @Override
+                                    public Void call ()
+                                    throws StepException
+                                    {
+                                        doSheetStepSet(stepSet, sheet, null);
 
-                                    return null;
-                                }
-                            });
-                }
+                                        return null;
+                                    }
+                                });
+                    }
 
-                try {
-                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor().invokeAll(
-                            tasks);
-                } catch (InterruptedException ex) {
-                    logger.warn("Error in parallel doScoreStepSet", ex);
+                    try {
+                        List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor()
+                                .invokeAll(tasks);
+                    } catch (InterruptedException ex) {
+                        logger.warn("Error in parallel doScoreStepSet", ex);
+                    }
+                } else {
+                    // Process one sheet after the other
+                    for (Sheet sheet : new ArrayList<Sheet>(book.getSheets())) {
+                        doSheetStepSet(stepSet, sheet, null);
+                    }
                 }
             } else {
-                // Process one sheet after the other
-                for (Sheet sheet : new ArrayList<Sheet>(book.getSheets())) {
-                    doSheetStepSet(stepSet, sheet, null);
-                }
+                // Process the single sheet
+                doSheetStepSet(stepSet, book.getFirstSheet(), null);
             }
-        } else {
-            // Process the single sheet
-            doSheetStepSet(stepSet, book.getFirstSheet(), null);
+        } finally {
+            notifyStop();
         }
-    }
 
-    //---------------//
-    // doOneBookStep //
-    //---------------//
-    /**
-     * At book level, do just one specified step, synchronously, with display of
-     * related UI and recording of the step into the script.
-     *
-     * @param step the step to perform
-     * @param book the book to be processed
-     * @throws StepException
-     */
-    private static void doOneBookStep (final Step step,
-                                       final Book book)
-            throws StepException
-    {
-        long startTime = System.currentTimeMillis();
-        logger.debug("{} Starting", step);
-
-        // Standard processing (using first sheet)
-        Sheet sheet = book.getFirstSheet();
-        step.doStep(null, sheet);
-
-        final long stopTime = System.currentTimeMillis();
-        final long duration = stopTime - startTime;
-        logger.debug("{} completed in {} ms", step, duration);
-
-        // Record this in score bench
-        book.getBench().recordStep(step, duration);
+        long stopTime = System.currentTimeMillis();
+        logger.debug("End of step set in {} ms.", (stopTime - startTime));
     }
 
     //----------------//
@@ -617,7 +543,7 @@ public abstract class Stepping
      * @params systems the impacted systems (null for all of them)
      * @throws StepException if processing must stop
      */
-    private static void doSheetStepSet (SortedSet<Step> stepSet,
+    private static void doSheetStepSet (Set<Step> stepSet,
                                         Sheet sheet,
                                         Collection<SystemInfo> systems)
     {
@@ -637,7 +563,7 @@ public abstract class Stepping
 
         try {
             for (Step step : sheetStepSet) {
-                watch.start(step.getName());
+                watch.start(step.name());
                 notifyMsg(sheet.getLogPrefix() + step);
                 doOneSheetStep(step, sheet, systems);
             }
@@ -653,6 +579,24 @@ public abstract class Stepping
         if (constants.printWatch.isSet()) {
             watch.print();
         }
+    }
+
+    //------//
+    // next //
+    //------//
+    /**
+     * Report the step immediately after the provided one.
+     *
+     * @param step the provided step
+     * @return the next step if any, otherwise null
+     */
+    private static Step next (Step step)
+    {
+        if (step == LAST_STEP) {
+            return null;
+        }
+
+        return Step.values()[step.ordinal() + 1];
     }
 
     //-----------//
@@ -701,41 +645,6 @@ public abstract class Stepping
         }
     }
 
-    //---------------------//
-    // scheduleBookStepSet //
-    //---------------------//
-    /**
-     * Organize the scheduling of steps at book level among the sheets, since some
-     * steps have specific requirements
-     *
-     * @param orderedSet the sequence of steps
-     * @param book       the book to process
-     */
-    private static void scheduleBookStepSet (SortedSet<Step> orderedSet,
-                                             Book book)
-    {
-        // Make a copy, so that we can modify the step set locally
-        SortedSet<Step> stepSet = new TreeSet<Step>(orderedSet);
-
-        if (stepSet.isEmpty()) {
-            return;
-        }
-
-        logger.info("{}Book scheduling {}", book.getLogPrefix(), stepSet);
-
-        long startTime = System.currentTimeMillis();
-        notifyStart();
-
-        try {
-            doBookStepSet(stepSet, book);
-        } finally {
-            notifyStop();
-        }
-
-        long stopTime = System.currentTimeMillis();
-        logger.debug("End of step set in {} ms.", (stopTime - startTime));
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -748,9 +657,5 @@ public abstract class Stepping
         final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
-
-        final Constant.Boolean generateIntermediateSteps = new Constant.Boolean(
-                true,
-                "Should we generate intermediate steps?");
     }
 }

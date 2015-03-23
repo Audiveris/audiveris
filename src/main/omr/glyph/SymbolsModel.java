@@ -19,7 +19,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 
-import omr.step.Steps;
+import omr.step.Step;
 
 import omr.text.TextBuilder;
 import omr.text.TextLine;
@@ -61,7 +61,7 @@ public class SymbolsModel
      */
     public SymbolsModel (Sheet sheet)
     {
-        super(sheet, sheet.getNest(), Steps.valueOf(Steps.SYMBOLS));
+        super(sheet, sheet.getNest(), Step.SYMBOLS);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

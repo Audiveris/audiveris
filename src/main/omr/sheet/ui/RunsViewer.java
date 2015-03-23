@@ -67,6 +67,7 @@ public class RunsViewer
                 new BinarizationBoard(sheet),
                 new RunBoard(table, true));
 
+        // Here we create new tab with the name of the table
         sheet.getAssembly().addViewTab(table.getName(), new ScrollView(view), boards);
     }
 

@@ -104,7 +104,7 @@ public class SegmentsBuilder
             // Purge duplicates
             purgeDuplicates();
 
-            logger.info("Segments: {}", segments.size());
+            logger.info("{}Segments: {}", sheet.getLogPrefix(), segments.size());
         } catch (Throwable ex) {
             logger.warn("Error in SegmentsBuilder: " + ex, ex);
         }

@@ -13,8 +13,8 @@ package omr.ui;
 
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.OldMeasure;
 import omr.score.entity.MeasureNode;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.SystemNode;
 
 import omr.selection.GlyphEvent;
@@ -24,7 +24,6 @@ import omr.selection.SelectionHint;
 import omr.sheet.Sheet;
 
 import omr.step.Step;
-import omr.step.Steps;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -263,7 +262,8 @@ public class ErrorsEditor
     //----------------//
     /**
      * Retrieve the step being performed on the sheet.
-     * Beware, during SCORE step and following steps, just the first sheet has a current step assigned.
+     * Beware, during SCORE step and following steps, just the first sheet has a current step
+     * assigned.
      *
      * @return the step being done
      */
@@ -273,6 +273,65 @@ public class ErrorsEditor
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // Record //
+    //--------//
+    /**
+     * A structure to hold the various pieces of an error message.
+     */
+    private static class Record
+            implements Comparable<Record>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Step step;
+
+        final SystemNode node;
+
+        final Glyph glyph;
+
+        final String text;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Record (Step step,
+                       SystemNode node,
+                       Glyph glyph,
+                       String text)
+        {
+            this.step = step;
+            this.node = node;
+            this.glyph = glyph;
+            this.text = text;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public int compareTo (Record other)
+        {
+            // Very basic indeed !!!
+            return toString().compareTo(other.toString());
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(node.getContextString());
+
+            if (glyph != null) {
+                sb.append(" [").append(glyph.idString()).append("]");
+            }
+
+            if (step != null) {
+                sb.append(" ").append(step);
+            }
+
+            sb.append(" ").append(text);
+
+            return sb.toString();
+        }
+    }
+
     //------------//
     // MyListener //
     //------------//
@@ -331,65 +390,6 @@ public class ErrorsEditor
                     }
                 }
             }
-        }
-    }
-
-    //--------//
-    // Record //
-    //--------//
-    /**
-     * A structure to hold the various pieces of an error message.
-     */
-    private static class Record
-            implements Comparable<Record>
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final Step step;
-
-        final SystemNode node;
-
-        final Glyph glyph;
-
-        final String text;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Record (Step step,
-                       SystemNode node,
-                       Glyph glyph,
-                       String text)
-        {
-            this.step = step;
-            this.node = node;
-            this.glyph = glyph;
-            this.text = text;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public int compareTo (Record other)
-        {
-            // Very basic indeed !!!
-            return toString().compareTo(other.toString());
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append(node.getContextString());
-
-            if (glyph != null) {
-                sb.append(" [").append(glyph.idString()).append("]");
-            }
-
-            if (step != null) {
-                sb.append(" ").append(step);
-            }
-
-            sb.append(" ").append(text);
-
-            return sb.toString();
         }
     }
 }

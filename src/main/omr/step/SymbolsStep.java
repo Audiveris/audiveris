@@ -17,11 +17,13 @@ import omr.glyph.ui.SymbolsEditor;
 import omr.selection.GlyphEvent;
 import omr.selection.SelectionService;
 
+import omr.sheet.ChordsBuilder;
 import omr.sheet.Sheet;
 import omr.sheet.SymbolFactory;
 import omr.sheet.SymbolsBuilder;
 import omr.sheet.SymbolsFilter;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.SheetTab;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +32,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import omr.sheet.ChordsBuilder;
 
 /**
  * Class {@code SymbolsStep} retrieves fixed-shape symbols.
@@ -52,12 +53,6 @@ public class SymbolsStep
      */
     public SymbolsStep ()
     {
-        super(
-                Steps.SYMBOLS,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Retrieve fixed-shape symbols");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -65,7 +60,8 @@ public class SymbolsStep
     // displayUI //
     //-----------//
     @Override
-    public void displayUI (Sheet sheet)
+    public void displayUI (Step step,
+                           Sheet sheet)
     {
         SymbolsEditor editor = sheet.getSymbolsEditor();
 

@@ -12,8 +12,8 @@
 package omr.step;
 
 import omr.sheet.Sheet;
-import omr.sheet.curve.Curves;
 import omr.sheet.SystemInfo;
+import omr.sheet.curve.Curves;
 
 import java.util.Collection;
 
@@ -32,12 +32,6 @@ public class CurvesStep
      */
     public CurvesStep ()
     {
-        super(
-                Steps.CURVES,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Retrieve slurs, wedges & endings");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

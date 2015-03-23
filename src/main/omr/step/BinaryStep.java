@@ -26,6 +26,7 @@ import omr.sheet.Picture.SourceKey;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.SheetAssembly;
+import omr.sheet.ui.SheetTab;
 
 import omr.util.StopWatch;
 
@@ -57,12 +58,6 @@ public class BinaryStep
      */
     public BinaryStep ()
     {
-        super(
-                Steps.BINARY,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                BINARY_TAB,
-                "Binarize the sheet picture");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -70,11 +65,12 @@ public class BinaryStep
     // displayUI //
     //-----------//
     @Override
-    public void displayUI (Sheet sheet)
+    public void displayUI (Step step,
+                           Sheet sheet)
     {
         // Switch from Picture to Binary display
         SheetAssembly assembly = sheet.getAssembly();
-        assembly.renameTab(PICTURE_TAB, BINARY_TAB);
+        assembly.renameTab(SheetTab.PICTURE_TAB.label, SheetTab.BINARY_TAB.label);
     }
 
     //------//

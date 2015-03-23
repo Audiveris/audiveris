@@ -71,12 +71,6 @@ public class RhythmsStep
      */
     public RhythmsStep ()
     {
-        super(
-                Steps.RHYTHMS,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Handle rhythms within measures");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -94,7 +88,7 @@ public class RhythmsStep
             final Rational initialDuration;
 
             if ((firstStack == null) || (firstStack.getIdValue() > 1)) {
-                logger.info("No starting time signature in {}", page);
+                logger.info("{}No time signature to start {}", sheet.getLogPrefix(), page);
 
                 if (firstStack != null) {
                     logger.info("First time signature found in {}", firstStack);
@@ -115,7 +109,7 @@ public class RhythmsStep
                         }
 
                         try {
-                            logger.info("\n--- Raw processing {} ---", stack);
+                            logger.debug("\n--- Raw processing {} ---", stack);
 
                             StackTuner tuner = new StackTuner(stack, false);
                             tuners.put(stack, tuner);
@@ -157,7 +151,7 @@ public class RhythmsStep
                             }
                         }
 
-                        logger.info("\n--- Processing {} expectedDuration:{} ---", stack, duration);
+                        logger.debug("\n--- Processing {} expectedDuration:{} ---", stack, duration);
                         new StackTuner(stack, true).process(systemInters, duration);
                     } catch (Exception ex) {
                         logger.warn("Error on stack " + stack + " " + ex, ex);
@@ -293,7 +287,8 @@ public class RhythmsStep
 
         Rational topGuess = histo.getMaxBucket();
         logger.info(
-                "avgGuess:{} topGuess:{} avgValue:{} stacks:{} voices:{} {}",
+                "{}Durations avgGuess:{} topGuess:{} avgValue:{} stacks:{} voices:{} {}",
+                page.getSheet().getLogPrefix(),
                 avgGuess,
                 topGuess,
                 val,

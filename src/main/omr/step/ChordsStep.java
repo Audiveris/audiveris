@@ -36,12 +36,6 @@ public class ChordsStep
      */
     public ChordsStep ()
     {
-        super(
-                Steps.CHORDS,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Gather notes heads into chords");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

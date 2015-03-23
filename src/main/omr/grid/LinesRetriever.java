@@ -32,9 +32,7 @@ import omr.math.NaturalSpline;
 import omr.math.Population;
 
 import omr.run.Orientation;
-
 import static omr.run.Orientation.*;
-
 import omr.run.Run;
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
@@ -53,9 +51,7 @@ import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.IntUtil;
 import omr.util.Navigable;
 import omr.util.Predicate;
@@ -1003,7 +999,10 @@ public class LinesRetriever
         }
 
         if (!toRemove.isEmpty()) {
-            logger.info("Discarded curved line filaments: {}", toRemove.size());
+            logger.info(
+                    "{}Discarded curved line filaments: {}",
+                    sheet.getLogPrefix(),
+                    toRemove.size());
             filaments.removeAll(toRemove);
         }
     }
