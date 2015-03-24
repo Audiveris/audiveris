@@ -18,10 +18,6 @@ import omr.score.entity.Page;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.rhythm.MeasureStack;
-import omr.sheet.rhythm.StackTuner;
-import omr.sheet.rhythm.SystemVoiceFixer;
-import omr.sheet.rhythm.Voice;
 
 import omr.sig.inter.Inter;
 import omr.sig.inter.TimeInter;

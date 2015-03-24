@@ -15,8 +15,6 @@ import omr.math.Population;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.beam.BeamsBuilder;
-import omr.sheet.beam.SpotsBuilder;
 
 import omr.step.AbstractSystemStep;
 import omr.step.StepException;

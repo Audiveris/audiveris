@@ -13,7 +13,6 @@ package omr.sheet.curve;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.curve.Curves;
 
 import omr.step.AbstractStep;
 import omr.step.StepException;

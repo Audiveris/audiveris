@@ -17,8 +17,6 @@ import omr.image.DistanceTable;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.note.NoteHeadsBuilder;
-import omr.sheet.note.NoteSpotsBuilder;
 
 import omr.step.AbstractSystemStep;
 import omr.step.StepException;

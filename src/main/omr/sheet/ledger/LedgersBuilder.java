@@ -54,8 +54,6 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.LedgerInter;
 import omr.sig.relation.Exclusion;
 
-import omr.step.Step;
-
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.Predicate;
@@ -205,25 +203,6 @@ public class LedgersBuilder
     {
         return (stick.getLength(HORIZONTAL) <= scale.toPixels(constants.maxShortLength))
                 ? shortSuite : longSuite;
-    }
-
-    //-----------//
-    // getMiddle //
-    //-----------//
-    /**
-     * Retrieve the middle point of a stick, assumed rather horizontal.
-     *
-     * @param stick the stick to process
-     * @return the middle point
-     */
-    private static Point2D getMiddle (Glyph stick)
-    {
-        final Point2D startPoint = stick.getStartPoint(HORIZONTAL);
-        final Point2D stopPoint = stick.getStopPoint(HORIZONTAL);
-
-        return new Point2D.Double(
-                (startPoint.getX() + stopPoint.getX()) / 2,
-                (startPoint.getY() + stopPoint.getY()) / 2);
     }
 
     //-------------//
@@ -466,6 +445,25 @@ public class LedgersBuilder
         }
 
         return null;
+    }
+
+    //-----------//
+    // getMiddle //
+    //-----------//
+    /**
+     * Retrieve the middle point of a stick, assumed rather horizontal.
+     *
+     * @param stick the stick to process
+     * @return the middle point
+     */
+    private static Point2D getMiddle (Glyph stick)
+    {
+        final Point2D startPoint = stick.getStartPoint(HORIZONTAL);
+        final Point2D stopPoint = stick.getStopPoint(HORIZONTAL);
+
+        return new Point2D.Double(
+                (startPoint.getX() + stopPoint.getX()) / 2,
+                (startPoint.getY() + stopPoint.getY()) / 2);
     }
 
     //---------------//
@@ -819,62 +817,6 @@ public class LedgersBuilder
                 "High Minimum for ratio of white pixels above or below ledger");
     }
 
-    //----------------//
-    // ConvexityCheck //
-    //----------------//
-    private class ConvexityCheck
-            extends Check<GlyphContext>
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public ConvexityCheck ()
-        {
-            super(
-                    "Convex",
-                    "Check number of convex stick ends",
-                    constants.convexityLow,
-                    Constant.Double.TWO,
-                    true,
-                    TOO_CONCAVE);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        // Retrieve the density
-        @Override
-        protected double getValue (GlyphContext context)
-        {
-            ByteProcessor pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
-
-            Glyph stick = context.stick;
-            Rectangle box = stick.getBounds();
-            int convexities = 0;
-
-            // On each end of the stick, we check that pixels just above and
-            // just below are white, so that stick slightly points out.
-            // We use the stick bounds, regardless of the precise geometry inside.
-            //
-            //  X                                                         X
-            //  +---------------------------------------------------------+
-            //  |                                                         |
-            //  |                                                         |
-            //  +---------------------------------------------------------+
-            //  X                                                         X
-            //
-            for (HorizontalSide hSide : HorizontalSide.values()) {
-                int x = (hSide == LEFT) ? box.x : ((box.x + box.width) - 1);
-                boolean topFore = pixelFilter.get(x, box.y - 1) == 0;
-                boolean bottomFore = pixelFilter.get(x, box.y + box.height) == 0;
-                boolean isConvex = !(topFore || bottomFore);
-
-                if (isConvex) {
-                    convexities++;
-                }
-            }
-
-            return convexities;
-        }
-    }
-
     //--------------//
     // GlyphContext //
     //--------------//
@@ -1004,6 +946,62 @@ public class LedgersBuilder
             } catch (Exception ex) {
                 logger.warn(getClass().getName() + " onEvent error", ex);
             }
+        }
+    }
+
+    //----------------//
+    // ConvexityCheck //
+    //----------------//
+    private class ConvexityCheck
+            extends Check<GlyphContext>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public ConvexityCheck ()
+        {
+            super(
+                    "Convex",
+                    "Check number of convex stick ends",
+                    constants.convexityLow,
+                    Constant.Double.TWO,
+                    true,
+                    TOO_CONCAVE);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        // Retrieve the density
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            ByteProcessor pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
+
+            Glyph stick = context.stick;
+            Rectangle box = stick.getBounds();
+            int convexities = 0;
+
+            // On each end of the stick, we check that pixels just above and
+            // just below are white, so that stick slightly points out.
+            // We use the stick bounds, regardless of the precise geometry inside.
+            //
+            //  X                                                         X
+            //  +---------------------------------------------------------+
+            //  |                                                         |
+            //  |                                                         |
+            //  +---------------------------------------------------------+
+            //  X                                                         X
+            //
+            for (HorizontalSide hSide : HorizontalSide.values()) {
+                int x = (hSide == LEFT) ? box.x : ((box.x + box.width) - 1);
+                boolean topFore = pixelFilter.get(x, box.y - 1) == 0;
+                boolean bottomFore = pixelFilter.get(x, box.y + box.height) == 0;
+                boolean isConvex = !(topFore || bottomFore);
+
+                if (isConvex) {
+                    convexities++;
+                }
+            }
+
+            return convexities;
         }
     }
 

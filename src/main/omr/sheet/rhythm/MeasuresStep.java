@@ -15,7 +15,6 @@ import omr.score.entity.Page;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.rhythm.MeasuresBuilder;
 
 import omr.step.AbstractSystemStep;
 import omr.step.StepException;

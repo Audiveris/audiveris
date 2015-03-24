@@ -13,9 +13,6 @@ package omr.sheet.ledger;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.ledger.LedgersBuilder;
-import omr.sheet.ledger.LedgersFilter;
-import omr.sheet.ui.SheetTab;
 
 import omr.step.AbstractSystemStep;
 import omr.step.Step;

@@ -24,8 +24,6 @@ import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.beam.BeamGroup;
 import omr.sheet.grid.FilamentLine;
-import omr.sheet.rhythm.Slot;
-import omr.sheet.rhythm.Voice;
 
 import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.ChordInter;

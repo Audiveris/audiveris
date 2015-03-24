@@ -12,7 +12,6 @@
 package omr.sheet.header;
 
 import omr.sheet.SystemInfo;
-import omr.sheet.header.HeaderBuilder;
 
 import omr.step.AbstractSystemStep;
 import omr.step.StepException;

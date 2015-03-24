@@ -12,7 +12,6 @@
 package omr.sheet.beam;
 
 import omr.sheet.SystemInfo;
-import omr.sheet.beam.BeamsBuilder;
 
 import omr.step.AbstractSystemStep;
 import omr.step.StepException;

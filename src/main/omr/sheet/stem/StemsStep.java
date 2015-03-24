@@ -12,7 +12,6 @@
 package omr.sheet.stem;
 
 import omr.sheet.SystemInfo;
-import omr.sheet.stem.StemsBuilder;
 
 import omr.sig.SigReducer;
 

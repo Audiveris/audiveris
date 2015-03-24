@@ -13,10 +13,6 @@ package omr.sheet.stem;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.stem.StemScale;
-import omr.sheet.stem.StemScaler;
-import omr.sheet.stem.VerticalsBuilder;
-import omr.sheet.ui.SheetTab;
 
 import omr.step.AbstractSystemStep;
 import omr.step.Step;

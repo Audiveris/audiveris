@@ -15,7 +15,6 @@ import omr.Main;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.ui.SheetTab;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

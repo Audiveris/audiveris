@@ -12,8 +12,6 @@
 package omr.sheet.note;
 
 import omr.sheet.SystemInfo;
-import omr.sheet.note.ChordsBuilder;
-import omr.sheet.note.ChordsLinker;
 
 import omr.step.AbstractSystemStep;
 import omr.step.StepException;

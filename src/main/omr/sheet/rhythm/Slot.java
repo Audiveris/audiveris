@@ -19,7 +19,6 @@ import omr.sheet.Scale;
 import omr.sheet.beam.BeamGroup;
 
 import omr.sig.inter.ChordInter;
-import omr.sig.inter.HeadChordInter;
 
 import omr.util.Navigable;
 

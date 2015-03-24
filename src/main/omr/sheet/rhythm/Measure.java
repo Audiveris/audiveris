@@ -19,7 +19,6 @@ import omr.sheet.Part;
 import omr.sheet.PartBarline;
 import omr.sheet.Staff;
 import omr.sheet.grid.FilamentLine;
-import omr.sheet.rhythm.Voice;
 
 import omr.sig.inter.ChordInter;
 import omr.sig.inter.ClefInter;
