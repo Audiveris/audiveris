@@ -25,7 +25,6 @@ import omr.image.Template;
 import omr.lag.JunctionAllPolicy;
 import omr.lag.Section;
 import omr.lag.SectionFactory;
-
 import static omr.run.Orientation.VERTICAL;
 
 import omr.sheet.PageCleaner;
@@ -39,9 +38,9 @@ import omr.sheet.ui.ImageView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.ScrollImageView;
 
+import omr.sig.SIGraph;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.Inter;
-import omr.sig.SIGraph;
 
 import omr.ui.BoardsPane;
 import omr.ui.util.ItemRenderer;

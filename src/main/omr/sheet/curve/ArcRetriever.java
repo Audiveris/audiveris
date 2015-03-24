@@ -16,8 +16,6 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.grid.FilamentLine;
-
 import omr.math.BasicLine;
 import omr.math.PointUtil;
 
@@ -29,6 +27,7 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import static omr.sheet.curve.Skeleton.*;
+import omr.sheet.grid.FilamentLine;
 
 import omr.util.Navigable;
 

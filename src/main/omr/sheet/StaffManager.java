@@ -14,11 +14,11 @@ package omr.sheet;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.grid.FilamentLine;
-
 import omr.math.GeoPath;
 import omr.math.NaturalSpline;
 import omr.math.ReversePathIterator;
+
+import omr.sheet.grid.FilamentLine;
 
 import omr.ui.Colors;
 import omr.ui.util.ItemRenderer;

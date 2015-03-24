@@ -15,7 +15,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.sheet.Scale;
-import omr.sheet.Voice;
+import omr.sheet.rhythm.Voice;
 
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;

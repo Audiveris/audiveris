@@ -85,6 +85,7 @@ public class WedgesBuilder
     //-------------//
     /**
      * Wedges look like "hair pins", composed of two converging lines.
+     * <p>
      * The pair of lines of a wedge are of similar length (short or long) and rather horizontal.
      * By comparison, ending lines are isolated, long and strictly horizontal.
      */
@@ -99,7 +100,6 @@ public class WedgesBuilder
 
             for (int index = 0; index < segments.size(); index++) {
                 SegmentInter s1 = segments.get(index);
-                Point p = s1.getInfo().getEnd(rev);
 
                 // Define the lookup area
                 Rectangle area = getArea(s1.getInfo(), rev);
@@ -112,7 +112,7 @@ public class WedgesBuilder
                         // Check compatibility
                         GradeImpacts impacts = computeImpacts(s1, s2, rev);
 
-                        if (impacts != null && impacts.getGrade() >= WedgeInter.getMinGrade()) {
+                        if ((impacts != null) && (impacts.getGrade() >= WedgeInter.getMinGrade())) {
                             createWedgeInter(s1, s2, rev, impacts);
                             segments.remove(s1);
                             segments.remove(s2);

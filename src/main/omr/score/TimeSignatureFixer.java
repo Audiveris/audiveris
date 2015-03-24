@@ -15,11 +15,11 @@ import omr.score.entity.Page;
 import omr.score.entity.TimeRational;
 import omr.score.entity.TimeSignature;
 
-import omr.sheet.Measure;
-import omr.sheet.MeasureStack;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
-import omr.sheet.Voice;
+import omr.sheet.rhythm.Measure;
+import omr.sheet.rhythm.MeasureStack;
+import omr.sheet.rhythm.Voice;
 
 import omr.sig.inter.TimeInter;
 

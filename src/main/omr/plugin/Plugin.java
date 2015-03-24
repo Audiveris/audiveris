@@ -184,7 +184,9 @@ public class Plugin
             logger.debug("{} doInBackground on {}", Plugin.this, exportPath);
 
             Invocable inv = (Invocable) engine;
-            Object obj = inv.invokeFunction("pluginCli", exportPath + BookManager.COMPRESSED_SCORE_EXTENSION);
+            Object obj = inv.invokeFunction(
+                    "pluginCli",
+                    exportPath + BookManager.COMPRESSED_SCORE_EXTENSION);
 
             if (obj instanceof List) {
                 args = (List<String>) obj; // Unchecked by compiler
@@ -192,8 +194,7 @@ public class Plugin
             } else {
                 return null;
             }
-
-        } catch (ScriptException | NoSuchMethodException ex) {
+        } catch (Exception ex) {
             logger.warn(this + " error invoking javascript", ex);
 
             return null;
@@ -274,8 +275,7 @@ public class Plugin
                 // Retrieve information from script
                 title = (String) engine.get("pluginTitle");
                 tip = (String) engine.get("pluginTip");
-
-            } catch (FileNotFoundException | UnsupportedEncodingException | ScriptException ex) {
+            } catch (Exception ex) {
                 logger.warn(this + " error", ex);
             }
         } else {

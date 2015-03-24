@@ -40,12 +40,13 @@ import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
+import omr.sheet.stem.StemScale;
 import omr.sheet.ui.BinarizationBoard;
 import omr.sheet.ui.PictureView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetAssembly;
-import omr.sheet.ui.SheetsController;
 import omr.sheet.ui.SheetTab;
+import omr.sheet.ui.SheetsController;
 
 import omr.sig.SIGraph;
 import omr.sig.SigManager;

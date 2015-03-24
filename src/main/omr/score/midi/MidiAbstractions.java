@@ -21,7 +21,7 @@ import java.util.Arrays;
  *
  * @author Hervé Bitteur
  */
-public class MidiAbstractions
+public abstract class MidiAbstractions
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

@@ -78,14 +78,14 @@ import javax.swing.event.ListSelectionListener;
  */
 public class SampleVerifier
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleVerifier.class);
 
     /** The unique instance */
     private static volatile SampleVerifier INSTANCE;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Repository of known glyphs */
     private final GlyphRepository repository = GlyphRepository.getInstance();
 
@@ -110,7 +110,7 @@ public class SampleVerifier
     /** Samples folder */
     private final File samplesFolder = repository.getSamplesFolder();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of SampleVerifier.
      */
@@ -130,13 +130,11 @@ public class SampleVerifier
         frame.add(vertSplitPane);
 
         // Resource injection
-        ResourceMap resource = MainGui.getInstance().getContext().
-                getResourceMap(
-                        getClass());
+        ResourceMap resource = MainGui.getInstance().getContext().getResourceMap(getClass());
         resource.injectComponents(frame);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -195,7 +193,7 @@ public class SampleVerifier
         shapeSelector.selectAll();
 
         // Sheets / Icons folder
-        SortedSet<String> folderSet = new TreeSet<>();
+        SortedSet<String> folderSet = new TreeSet<String>();
 
         for (String gName : glyphNames) {
             File file = new File(gName);
@@ -247,20 +245,6 @@ public class SampleVerifier
     List<String> getGlyphNames ()
     {
         return glyphSelector.list.getSelectedValuesList();
-    }
-
-    //---------//
-    // radixOf //
-    //---------//
-    private static String radixOf (String path)
-    {
-        int i = path.indexOf('.');
-
-        if (i >= 0) {
-            return path.substring(0, i);
-        } else {
-            return "";
-        }
     }
 
     //--------------//
@@ -315,127 +299,21 @@ public class SampleVerifier
         return builder.getPanel();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-    //----------------//
-    // FolderSelector //
-    //----------------//
-    private class FolderSelector
-            extends Selector<String>
+    //---------//
+    // radixOf //
+    //---------//
+    private static String radixOf (String path)
     {
-        //~ Constructors -------------------------------------------------------
+        int i = path.indexOf('.');
 
-        public FolderSelector (ChangeListener listener)
-        {
-            super("Folders", listener, 300);
-            load.setEnabled(true);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        // Triggered by load button
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            model.removeAllElements();
-
-            // First insert the dedicated icons folder
-            model.addElement(WellKnowns.SYMBOLS_FOLDER.getName());
-
-            // Then the sheets folders
-            String root = repository.getSheetsFolder().getName();
-            ArrayList<String> folders = new ArrayList<>();
-
-            for (File file : repository.getSheetDirectories()) {
-                folders.add(root + File.separator + file.getName());
-            }
-
-            // Finally, the samples folders
-            root = repository.getSamplesFolder().getName();
-
-            for (File file : repository.getSampleDirectories()) {
-                folders.add(root + File.separator + file.getName());
-            }
-
-            Collections.sort(folders);
-
-            for (String folder : folders) {
-                model.addElement(folder);
-            }
-
-            updateCardinal();
+        if (i >= 0) {
+            return path.substring(0, i);
+        } else {
+            return "";
         }
     }
 
-    //---------------//
-    // GlyphSelector //
-    //---------------//
-    private class GlyphSelector
-            extends Selector<String>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public GlyphSelector (ChangeListener listener)
-        {
-            super("Glyphs", listener, 300);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        // Triggered by the load button
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            final List<String> folders = folderSelector.list.
-                    getSelectedValuesList();
-            final List<Shape> shapes = shapeSelector.list.
-                    getSelectedValuesList();
-
-            // Debug
-            if (logger.isDebugEnabled()) {
-                logger.debug("Glyph Selector. Got Folders:");
-
-                for (String fName : folders) {
-                    logger.debug(fName);
-                }
-
-                logger.debug("Glyph Selector. Got Shapes:");
-
-                for (Shape shape : shapes) {
-                    logger.debug(shape.toString());
-                }
-            }
-
-            if (shapes.isEmpty()) {
-                logger.warn("No shapes selected in Shape Selector");
-            } else {
-                model.removeAllElements();
-
-                // Populate with all possible glyphs, sorted by gName
-                for (String folder : folders) {
-                    // Add proper glyphs files from this directory
-                    ArrayList<String> gNames = new ArrayList<>();
-                    File dir = getActualDir(folder);
-
-                    for (File file : repository.getGlyphsIn(dir)) {
-                        String shapeName = radixOf(file.getName());
-                        Shape shape = Shape.valueOf(shapeName);
-
-                        if (shapes.contains(shape)) {
-                            gNames.add(
-                                    folder + File.separator + file.getName());
-                        }
-                    }
-
-                    Collections.sort(gNames);
-
-                    for (String gName : gNames) {
-                        model.addElement(gName);
-                    }
-                }
-
-                updateCardinal();
-            }
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Selector //
     //----------//
@@ -447,10 +325,9 @@ public class SampleVerifier
      */
     private abstract static class Selector<E>
             extends TitledPanel
-            implements ActionListener,
-                       ChangeListener
+            implements ActionListener, ChangeListener
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** The title base for this selector */
         private final String title;
@@ -464,21 +341,19 @@ public class SampleVerifier
         // Buttons
         protected JButton load = new JButton("Load");
 
-        protected JButton selectAll = new JButton(
-                "Select All");
+        protected JButton selectAll = new JButton("Select All");
 
-        protected JButton cancelAll = new JButton(
-                "Cancel All");
+        protected JButton cancelAll = new JButton("Cancel All");
 
         // List of items, with its model
-        protected final DefaultListModel<E> model = new DefaultListModel<>();
+        protected final DefaultListModel<E> model = new DefaultListModel<E>();
 
-        protected JList<E> list = new JList<>(model);
+        protected JList<E> list = new JList<E>(model);
 
         // ScrollPane around the list
         protected JScrollPane scrollPane = new JScrollPane(list);
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create a selector.
          *
@@ -547,7 +422,7 @@ public class SampleVerifier
             add(scrollPane, BorderLayout.CENTER);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //--------------//
         // populateWith //
         //--------------//
@@ -615,6 +490,149 @@ public class SampleVerifier
         }
     }
 
+    //-------------//
+    // TitledPanel //
+    //-------------//
+    private static class TitledPanel
+            extends JPanel
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        protected final int height = 200;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public TitledPanel (String title,
+                            int width)
+        {
+            setBorder(
+                    BorderFactory.createTitledBorder(
+                            new EtchedBorder(),
+                            title,
+                            TitledBorder.LEFT,
+                            TitledBorder.TOP));
+            setLayout(new BorderLayout());
+            setMinimumSize(new Dimension(200, height));
+            setPreferredSize(new Dimension(width, height));
+        }
+    }
+
+    //----------------//
+    // FolderSelector //
+    //----------------//
+    private class FolderSelector
+            extends Selector<String>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public FolderSelector (ChangeListener listener)
+        {
+            super("Folders", listener, 300);
+            load.setEnabled(true);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        // Triggered by load button
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            model.removeAllElements();
+
+            // First insert the dedicated icons folder
+            model.addElement(WellKnowns.SYMBOLS_FOLDER.getName());
+
+            // Then the sheets folders
+            String root = repository.getSheetsFolder().getName();
+            ArrayList<String> folders = new ArrayList<String>();
+
+            for (File file : repository.getSheetDirectories()) {
+                folders.add(root + File.separator + file.getName());
+            }
+
+            // Finally, the samples folders
+            root = repository.getSamplesFolder().getName();
+
+            for (File file : repository.getSampleDirectories()) {
+                folders.add(root + File.separator + file.getName());
+            }
+
+            Collections.sort(folders);
+
+            for (String folder : folders) {
+                model.addElement(folder);
+            }
+
+            updateCardinal();
+        }
+    }
+
+    //---------------//
+    // GlyphSelector //
+    //---------------//
+    private class GlyphSelector
+            extends Selector<String>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public GlyphSelector (ChangeListener listener)
+        {
+            super("Glyphs", listener, 300);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        // Triggered by the load button
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final List<String> folders = folderSelector.list.getSelectedValuesList();
+            final List<Shape> shapes = shapeSelector.list.getSelectedValuesList();
+
+            // Debug
+            if (logger.isDebugEnabled()) {
+                logger.debug("Glyph Selector. Got Folders:");
+
+                for (String fName : folders) {
+                    logger.debug(fName);
+                }
+
+                logger.debug("Glyph Selector. Got Shapes:");
+
+                for (Shape shape : shapes) {
+                    logger.debug(shape.toString());
+                }
+            }
+
+            if (shapes.isEmpty()) {
+                logger.warn("No shapes selected in Shape Selector");
+            } else {
+                model.removeAllElements();
+
+                // Populate with all possible glyphs, sorted by gName
+                for (String folder : folders) {
+                    // Add proper glyphs files from this directory
+                    ArrayList<String> gNames = new ArrayList<String>();
+                    File dir = getActualDir(folder);
+
+                    for (File file : repository.getGlyphsIn(dir)) {
+                        String shapeName = radixOf(file.getName());
+                        Shape shape = Shape.valueOf(shapeName);
+
+                        if (shapes.contains(shape)) {
+                            gNames.add(folder + File.separator + file.getName());
+                        }
+                    }
+
+                    Collections.sort(gNames);
+
+                    for (String gName : gNames) {
+                        model.addElement(gName);
+                    }
+                }
+
+                updateCardinal();
+            }
+        }
+    }
+
     //-------------------//
     // ShapeCellRenderer //
     //-------------------//
@@ -622,14 +640,14 @@ public class SampleVerifier
             extends JLabel
             implements ListCellRenderer<Shape>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public ShapeCellRenderer ()
         {
             setOpaque(true);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         /*
          * This method finds the image and text corresponding
@@ -637,12 +655,11 @@ public class SampleVerifier
          * to display the text and image.
          */
         @Override
-        public Component getListCellRendererComponent (
-                JList<? extends Shape> list,
-                Shape shape,
-                int index,
-                boolean isSelected,
-                boolean cellHasFocus)
+        public Component getListCellRendererComponent (JList<? extends Shape> list,
+                                                       Shape shape,
+                                                       int index,
+                                                       boolean isSelected,
+                                                       boolean cellHasFocus)
         {
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
@@ -666,7 +683,7 @@ public class SampleVerifier
     private class ShapeSelector
             extends Selector<Shape>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public ShapeSelector (ChangeListener listener)
         {
@@ -676,7 +693,7 @@ public class SampleVerifier
             ///list.setFixedCellHeight(60);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         // Triggered by load button
         @Override
         public void actionPerformed (ActionEvent e)
@@ -700,32 +717,6 @@ public class SampleVerifier
 
                 populateWith(shapeSet);
             }
-        }
-    }
-
-    //-------------//
-    // TitledPanel //
-    //-------------//
-    private static class TitledPanel
-            extends JPanel
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        protected final int height = 200;
-
-        //~ Constructors -------------------------------------------------------
-        public TitledPanel (String title,
-                            int width)
-        {
-            setBorder(
-                    BorderFactory.createTitledBorder(
-                            new EtchedBorder(),
-                            title,
-                            TitledBorder.LEFT,
-                            TitledBorder.TOP));
-            setLayout(new BorderLayout());
-            setMinimumSize(new Dimension(200, height));
-            setPreferredSize(new Dimension(width, height));
         }
     }
 }

@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -75,8 +74,7 @@ public class WindowsRegistry
             // Wait for process completion
             int exitValue = process.waitFor();
             logger.debug("Exit value is: {}", exitValue);
-
-        } catch (IOException | InterruptedException ex) {
+        } catch (Exception ex) {
             logger.warn("Error running " + cmdArgs, ex);
         }
 

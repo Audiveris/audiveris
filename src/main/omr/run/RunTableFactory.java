@@ -176,48 +176,6 @@ public class RunTableFactory
         }
     }
 
-    //-------------------//
-    // HorizontalAdapter //
-    //-------------------//
-    /**
-     * Adapter for horizontal runs.
-     */
-    private class HorizontalAdapter
-            extends MyAdapter
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public HorizontalAdapter (ByteProcessor source,
-                                  RunTable table,
-                                  Point tableOffset)
-        {
-            super(source, table, tableOffset);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void endPosition (int pos,
-                                 List<Run> runs)
-        {
-            table.setSequence(pos - tableOffset.y, new BasicRunSequence(runs));
-        }
-
-        @Override
-        public final boolean isFore (int coord,
-                                     int pos)
-        {
-            return source.get(coord, pos) == 0;
-        }
-
-        @Override
-        protected boolean checkFilter (int coord,
-                                       int pos,
-                                       int length)
-        {
-            return filter.check(coord - length, pos, length);
-        }
-    }
-
     // ----------//
     // MyAdapter //
     // ----------//
@@ -295,6 +253,48 @@ public class RunTableFactory
         protected abstract boolean checkFilter (int coord,
                                                 int pos,
                                                 int length);
+    }
+
+    //-------------------//
+    // HorizontalAdapter //
+    //-------------------//
+    /**
+     * Adapter for horizontal runs.
+     */
+    private class HorizontalAdapter
+            extends MyAdapter
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public HorizontalAdapter (ByteProcessor source,
+                                  RunTable table,
+                                  Point tableOffset)
+        {
+            super(source, table, tableOffset);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void endPosition (int pos,
+                                 List<Run> runs)
+        {
+            table.setSequence(pos - tableOffset.y, new BasicRunSequence(runs));
+        }
+
+        @Override
+        public final boolean isFore (int coord,
+                                     int pos)
+        {
+            return source.get(coord, pos) == 0;
+        }
+
+        @Override
+        protected boolean checkFilter (int coord,
+                                       int pos,
+                                       int length)
+        {
+            return filter.check(coord - length, pos, length);
+        }
     }
 
     //-----------------//

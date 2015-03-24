@@ -24,8 +24,8 @@ import omr.math.Rational;
 
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.NotePosition;
 import omr.sheet.Scale;
+import omr.sheet.note.NotePosition;
 
 import omr.util.TreeNode;
 
@@ -57,7 +57,7 @@ import java.util.TreeSet;
 public class Note
         extends MeasureNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -66,11 +66,11 @@ public class Note
     /** The quarter duration value */
     public static final Rational QUARTER_DURATION = new Rational(1, 4);
 
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
     /** Names of the various note steps */
     public static enum Step
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** La */
         A,
@@ -86,10 +86,9 @@ public class Note
         F,
         /** Sol */
         G;
-
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The note shape */
     private final Shape shape;
 
@@ -127,12 +126,12 @@ public class Note
     private Integer octave;
 
     /** Tie / slurs */
-    private final Set<Slur> slurs = new HashSet<>();
+    private final Set<Slur> slurs = new HashSet<Slur>();
 
     /** Lyrics syllables (in different lines) */
     private SortedSet<LyricsItem> syllables;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /** Create a new instance of an isolated Note
      *
      * @param chord the containing chord
@@ -141,12 +140,7 @@ public class Note
     public Note (OldChord chord,
                  Glyph glyph)
     {
-        this(
-                chord,
-                glyph,
-                getItemCenter(glyph, 0, chord.getScale().getInterline()),
-                1,
-                0);
+        this(chord, glyph, getItemCenter(glyph, 0, chord.getScale().getInterline()), 1, 0);
         glyph.setTranslation(this);
     }
 
@@ -222,9 +216,8 @@ public class Note
                     new Point(
                             center.x,
                             (int) Math.rint(
-                            (staff.getTopLeft().y
-                             - staff.getSystem().getTopLeft().y)
-                            + ((chord.getScale().getInterline() * (4d + pitchPosition)) / 2))));
+                                    (staff.getTopLeft().y - staff.getSystem().getTopLeft().y)
+                                    + ((chord.getScale().getInterline() * (4d + pitchPosition)) / 2))));
         }
 
         // Note box
@@ -278,7 +271,7 @@ public class Note
         pitchPosition = pos.getPitchPosition();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createPack //
     //------------//
@@ -351,8 +344,7 @@ public class Note
 
             if (stemDir != null) {
                 // Apply the stem test, except on the item closest to the stem
-                if ((stemDir == 1 && i > 0)
-                    || (stemDir == -1 && i < card - 1)) {
+                if (((stemDir == 1) && (i > 0)) || ((stemDir == -1) && (i < (card - 1)))) {
                     if (!itemBox.intersects(stemBox)) {
                         // Stem check failed.
                         // Force assignment if unassigned and this is the end.
@@ -388,13 +380,13 @@ public class Note
     {
         if (getGlyphs().contains(glyph)) {
             OldChord chord = getChord();
+
             if (chord != null) {
                 Point from = glyph.getLocation();
                 Glyph stem = chord.getStem();
-                Point to = stem != null
-                        ? stem.getAreaCenter()
-                        : chord.getReferencePoint();
+                Point to = (stem != null) ? stem.getAreaCenter() : chord.getReferencePoint();
                 Line2D line = new Line2D.Double(from, to);
+
                 return Arrays.asList(line);
             } else {
                 return Collections.emptyList();
@@ -436,7 +428,7 @@ public class Note
     public void addSyllable (LyricsItem item)
     {
         if (syllables == null) {
-            syllables = new TreeSet<>(LyricsItem.numberComparator);
+            syllables = new TreeSet<LyricsItem>(LyricsItem.numberComparator);
         }
 
         syllables.add(item);
@@ -475,18 +467,23 @@ public class Note
         final int minDx = scale.toPixels(constants.minAccidDx);
         final int maxDx = scale.toPixels(constants.maxAccidDx);
         final int maxDy = scale.toPixels(constants.maxAccidDy);
-        final List<Note> candidates = new ArrayList<>();
+        final List<Note> candidates = new ArrayList<Note>();
 
         // An accidental impacts the note right after (even if mirrored)
         // Use an intersection rectangle defined from accidCenter
         Rectangle rect = new Rectangle(
-                accidCenter.x + minDx, accidCenter.y - maxDy,
-                maxDx - minDx, 2 * maxDy);
+                accidCenter.x + minDx,
+                accidCenter.y - maxDy,
+                maxDx - minDx,
+                2 * maxDy);
         glyph.addAttachment("#", rect);
+
         for (TreeNode node : measure.getChords()) {
             final OldChord chord = (OldChord) node;
+
             for (TreeNode n : chord.getNotes()) {
                 final Note note = (Note) n;
+
                 if (!note.isRest() && rect.contains(note.getCenterLeft())) {
                     candidates.add(note);
                 }
@@ -496,32 +493,37 @@ public class Note
         // Select the closest candidate note using euclidian distance
         // from accidental center to note left center
         if (!candidates.isEmpty()) {
-            Collections.sort(candidates, new Comparator<Note>()
-            {
-                @Override
-                public int compare (Note n1,
-                                    Note n2)
-                {
-                    double dx1 = n1.getCenterLeft().x - accidCenter.x;
-                    double dy1 = n1.getCenterLeft().y - accidCenter.y;
-                    double ds1 = dx1 * dx1 + dy1 * dy1;
+            Collections.sort(
+                    candidates,
+                    new Comparator<Note>()
+                    {
+                        @Override
+                        public int compare (Note n1,
+                                            Note n2)
+                        {
+                            double dx1 = n1.getCenterLeft().x - accidCenter.x;
+                            double dy1 = n1.getCenterLeft().y - accidCenter.y;
+                            double ds1 = (dx1 * dx1) + (dy1 * dy1);
 
-                    double dx2 = n2.getCenterLeft().x - accidCenter.x;
-                    double dy2 = n2.getCenterLeft().y - accidCenter.y;
-                    double ds2 = dx2 * dx2 + dy2 * dy2;
+                            double dx2 = n2.getCenterLeft().x - accidCenter.x;
+                            double dy2 = n2.getCenterLeft().y - accidCenter.y;
+                            double ds2 = (dx2 * dx2) + (dy2 * dy2);
 
-                    return Double.compare(ds1, ds2);
-                }
-            });
+                            return Double.compare(ds1, ds2);
+                        }
+                    });
             logger.debug("{} Candidates={}", candidates.size(), candidates);
 
             glyph.clearTranslations();
+
             Note bestNote = candidates.get(0);
             bestNote.accidental = glyph;
             glyph.addTranslation(bestNote);
-            logger.debug("{} accidental {} at {}",
-                         bestNote.getContextString(),
-                         glyph.getShape(), bestNote.getCenter());
+            logger.debug(
+                    "{} accidental {} at {}",
+                    bestNote.getContextString(),
+                    glyph.getShape(),
+                    bestNote.getCenter());
 
             // Apply also to mirrored note if any
             Note mirrored = bestNote.getMirroredNote();
@@ -529,9 +531,11 @@ public class Note
             if (mirrored != null) {
                 mirrored.accidental = glyph;
                 glyph.addTranslation(mirrored);
-                logger.debug("{} accidental {} at {} (mirrored)",
-                             mirrored.getContextString(),
-                             glyph.getShape(), mirrored.getCenter());
+                logger.debug(
+                        "{} accidental {} at {} (mirrored)",
+                        mirrored.getContextString(),
+                        glyph.getShape(),
+                        mirrored.getCenter());
             }
         } else {
             // Deassign the glyph
@@ -560,45 +564,46 @@ public class Note
     public static Shape getActualShape (Shape base,
                                         int card)
     {
-//        switch (card) {
-//        case 3:
-//
-//            switch (base) {
-//            case NOTEHEAD_VOID:
-//                return NOTEHEAD_VOID_3;
-//
-//            case NOTEHEAD_BLACK:
-//                return NOTEHEAD_BLACK_3;
-//
-//            case WHOLE_NOTE:
-//                return WHOLE_NOTE_3;
-//
-//            default:
-//                return null;
-//            }
-//
-//        case 2:
-//
-//            switch (base) {
-//            case NOTEHEAD_VOID:
-//                return NOTEHEAD_VOID_2;
-//
-//            case NOTEHEAD_BLACK:
-//                return NOTEHEAD_BLACK_2;
-//
-//            case WHOLE_NOTE:
-//                return WHOLE_NOTE_2;
-//
-//            default:
-//                return null;
-//            }
-//
-//        case 1:
+        //        switch (card) {
+        //        case 3:
+        //
+        //            switch (base) {
+        //            case NOTEHEAD_VOID:
+        //                return NOTEHEAD_VOID_3;
+        //
+        //            case NOTEHEAD_BLACK:
+        //                return NOTEHEAD_BLACK_3;
+        //
+        //            case WHOLE_NOTE:
+        //                return WHOLE_NOTE_3;
+        //
+        //            default:
+        //                return null;
+        //            }
+        //
+        //        case 2:
+        //
+        //            switch (base) {
+        //            case NOTEHEAD_VOID:
+        //                return NOTEHEAD_VOID_2;
+        //
+        //            case NOTEHEAD_BLACK:
+        //                return NOTEHEAD_BLACK_2;
+        //
+        //            case WHOLE_NOTE:
+        //                return WHOLE_NOTE_2;
+        //
+        //            default:
+        //                return null;
+        //            }
+        //
+        //        case 1:
         return base;
-//
-//        default:
-//            return null;
-//        }
+
+        //
+        //        default:
+        //            return null;
+        //        }
     }
 
     //----------//
@@ -624,8 +629,8 @@ public class Note
             List<OldSlot> slots = getMeasure().getSlots();
 
             boolean started = false;
-            for (ListIterator<OldSlot> it = slots.listIterator(slots.size());
-                    it.hasPrevious();) {
+
+            for (ListIterator<OldSlot> it = slots.listIterator(slots.size()); it.hasPrevious();) {
                 OldSlot slot = it.previous();
 
                 // Inspect all notes of all chords
@@ -673,17 +678,25 @@ public class Note
         switch (accidental.getShape()) {
         case SHARP:
             return 1;
+
         case DOUBLE_SHARP:
             return 2;
+
         case FLAT:
             return -1;
+
         case DOUBLE_FLAT:
             return -2;
+
         case NATURAL:
             return 0;
+
         default:
-            logger.warn("Weird shape {} for accidental {}",
-                        accidental.getShape(), accidental.idString());
+            logger.warn(
+                    "Weird shape {} for accidental {}",
+                    accidental.getShape(),
+                    accidental.idString());
+
             return 0; // Should not happen
         }
     }
@@ -698,9 +711,7 @@ public class Note
      */
     public Point getCenterBottom ()
     {
-        return new Point(
-                getCenter().x,
-                getCenter().y + (getBox().height / 2));
+        return new Point(getCenter().x, getCenter().y + (getBox().height / 2));
     }
 
     //---------------//
@@ -713,9 +724,7 @@ public class Note
      */
     public Point getCenterLeft ()
     {
-        return new Point(
-                getCenter().x - (getBox().width / 2),
-                getCenter().y);
+        return new Point(getCenter().x - (getBox().width / 2), getCenter().y);
     }
 
     //----------------//
@@ -728,9 +737,7 @@ public class Note
      */
     public Point getCenterRight ()
     {
-        return new Point(
-                getCenter().x + (getBox().width / 2),
-                getCenter().y);
+        return new Point(getCenter().x + (getBox().width / 2), getCenter().y);
     }
 
     //--------------//
@@ -743,9 +750,7 @@ public class Note
      */
     public Point getCenterTop ()
     {
-        return new Point(
-                getCenter().x,
-                getCenter().y - (getBox().height / 2));
+        return new Point(getCenter().x, getCenter().y - (getBox().height / 2));
     }
 
     //----------//
@@ -1106,25 +1111,26 @@ public class Note
     //-------------//
     private static Shape baseShapeOf (Shape shape)
     {
-//        switch (shape) {
-//        case NOTEHEAD_BLACK:
-//        case NOTEHEAD_BLACK_2:
-//        case NOTEHEAD_BLACK_3:
-//            return Shape.NOTEHEAD_BLACK;
-//
-//        case NOTEHEAD_VOID:
-//        case NOTEHEAD_VOID_2:
-//        case NOTEHEAD_VOID_3:
-//            return Shape.NOTEHEAD_VOID;
-//
-//        case WHOLE_NOTE:
-//        case WHOLE_NOTE_2:
-//        case WHOLE_NOTE_3:
-//            return Shape.WHOLE_NOTE;
-//
-//        default:
+        //        switch (shape) {
+        //        case NOTEHEAD_BLACK:
+        //        case NOTEHEAD_BLACK_2:
+        //        case NOTEHEAD_BLACK_3:
+        //            return Shape.NOTEHEAD_BLACK;
+        //
+        //        case NOTEHEAD_VOID:
+        //        case NOTEHEAD_VOID_2:
+        //        case NOTEHEAD_VOID_3:
+        //            return Shape.NOTEHEAD_VOID;
+        //
+        //        case WHOLE_NOTE:
+        //        case WHOLE_NOTE_2:
+        //        case WHOLE_NOTE_3:
+        //            return Shape.WHOLE_NOTE;
+        //
+        //        default:
         return shape;
-//        }
+
+        //        }
     }
 
     //------------//
@@ -1149,11 +1155,7 @@ public class Note
             final Point centroid = glyph.getCentroid();
             final int top = centroid.y - ((card * interline) / 2);
 
-            return new Rectangle(
-                    box.x,
-                    top + (index * interline),
-                    box.width,
-                    interline);
+            return new Rectangle(box.x, top + (index * interline), box.width, interline);
         }
     }
 
@@ -1170,9 +1172,7 @@ public class Note
     {
         Rectangle box = getItemBox(glyph, index, interline);
 
-        return new Point(
-                box.x + (box.width / 2),
-                box.y + (box.height / 2));
+        return new Point(box.x + (box.width / 2), box.y + (box.height / 2));
     }
 
     //------------//
@@ -1180,30 +1180,31 @@ public class Note
     //------------//
     public static int packCardOf (Shape shape)
     {
-//        switch (shape) {
-//        case NOTEHEAD_VOID_3:
-//        case NOTEHEAD_BLACK_3:
-//        case WHOLE_NOTE_3:
-//            return 3;
-//
-//        case NOTEHEAD_VOID_2:
-//        case NOTEHEAD_BLACK_2:
-//        case WHOLE_NOTE_2:
-//            return 2;
-//
-//        default:
+        //        switch (shape) {
+        //        case NOTEHEAD_VOID_3:
+        //        case NOTEHEAD_BLACK_3:
+        //        case WHOLE_NOTE_3:
+        //            return 3;
+        //
+        //        case NOTEHEAD_VOID_2:
+        //        case NOTEHEAD_BLACK_2:
+        //        case WHOLE_NOTE_2:
+        //            return 2;
+        //
+        //        default:
         return 1;
-//        }
+
+        //        }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction minAccidDx = new Scale.Fraction(
                 0.3d,
@@ -1232,6 +1233,5 @@ public class Note
         Scale.Fraction maxCenterDy = new Scale.Fraction(
                 0.1d,
                 "Maximum absolute dy between note center and centroid");
-
     }
 }

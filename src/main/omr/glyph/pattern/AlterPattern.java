@@ -394,6 +394,63 @@ public class AlterPattern
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // PairAdapter //
+    //-------------//
+    /**
+     * Abstract compound adapter meant to build sharps or naturals
+     * from a pair of close stems.
+     */
+    private abstract class PairAdapter
+            extends CompoundBuilder.TopShapeAdapter
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        protected Rectangle leftBox;
+
+        protected Rectangle rightBox;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public PairAdapter (SystemInfo system,
+                            EnumSet<Shape> shapes)
+        {
+            super(system, constants.alterMinGrade.getValue(), shapes);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public boolean isCandidateClose (Glyph glyph)
+        {
+            // We use containment instead of intersection
+            return box.contains(glyph.getBounds());
+        }
+
+        @Override
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !glyph.isManualShape();
+        }
+
+        public void setStemBoxes (Rectangle leftBox,
+                                  Rectangle rightBox)
+        {
+            this.leftBox = leftBox;
+            this.rightBox = rightBox;
+        }
+
+        protected Rectangle getStemsBox ()
+        {
+            if ((leftBox == null) || (rightBox == null)) {
+                throw new NullPointerException("Stem boxes have not been set");
+            }
+
+            Rectangle box = new Rectangle(leftBox);
+            box.add(rightBox);
+
+            return box;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -497,63 +554,6 @@ public class AlterPattern
             newBox.grow(maxCloseStemDx / 4, minCloseStemOverlap / 2);
 
             return newBox;
-        }
-    }
-
-    //-------------//
-    // PairAdapter //
-    //-------------//
-    /**
-     * Abstract compound adapter meant to build sharps or naturals
-     * from a pair of close stems.
-     */
-    private abstract class PairAdapter
-            extends CompoundBuilder.TopShapeAdapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        protected Rectangle leftBox;
-
-        protected Rectangle rightBox;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public PairAdapter (SystemInfo system,
-                            EnumSet<Shape> shapes)
-        {
-            super(system, constants.alterMinGrade.getValue(), shapes);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public boolean isCandidateClose (Glyph glyph)
-        {
-            // We use containment instead of intersection
-            return box.contains(glyph.getBounds());
-        }
-
-        @Override
-        public boolean isCandidateSuitable (Glyph glyph)
-        {
-            return !glyph.isManualShape();
-        }
-
-        public void setStemBoxes (Rectangle leftBox,
-                                  Rectangle rightBox)
-        {
-            this.leftBox = leftBox;
-            this.rightBox = rightBox;
-        }
-
-        protected Rectangle getStemsBox ()
-        {
-            if ((leftBox == null) || (rightBox == null)) {
-                throw new NullPointerException("Stem boxes have not been set");
-            }
-
-            Rectangle box = new Rectangle(leftBox);
-            box.add(rightBox);
-
-            return box;
         }
     }
 

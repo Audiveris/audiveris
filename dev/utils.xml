@@ -36,7 +36,15 @@
             threads="1" >
             <fileset dir="${src.dir}">
                 <include name="**/*.java" />
+                <!-- Following classes use features not accepted in Java 5 -->
                 <exclude name="**/package-info.java"/>
+                <exclude name="**/ConstantManager.java"/>
+                <exclude name="**/ScriptActions.java"/>
+                <exclude name="**/ScriptManager.java"/>
+                <exclude name="**/InterBoard.java"/>
+                <exclude name="**/Language.java"/>
+                <exclude name="**/TesseractOrder.java"/>
+                <exclude name="**/OmrFont.java"/>
             </fileset>
         </jalopy>
     </target>

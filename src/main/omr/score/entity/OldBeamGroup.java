@@ -514,7 +514,7 @@ public class OldBeamGroup
     //-----------------//
     /**
      * Check all the OldBeamGroup instances of the given measure, to find the first split
- if any to perform.
+     * if any to perform.
      *
      * @param measure the given measure
      * @return the first split parameters, or null if everything is OK

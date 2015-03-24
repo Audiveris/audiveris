@@ -14,15 +14,17 @@ package omr.sheet;
 import omr.score.entity.LogicalPart;
 import omr.score.entity.SystemNode;
 
+import omr.sheet.rhythm.Measure;
+import omr.sheet.rhythm.MeasureStack;
+import omr.sheet.rhythm.Voice;
+
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.KeyInter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.TimeInter;
 
 import omr.step.PageStep;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.Predicate;
 

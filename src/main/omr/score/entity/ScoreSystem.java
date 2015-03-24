@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Class {@code ScoreSystem} encapsulates a system in a score.
  * <p>
- A system contains only one kind of direct children : OldSystemPart instances
+ * A system contains only one kind of direct children : OldSystemPart instances
  *
  * @author Hervé Bitteur
  */
@@ -482,7 +482,7 @@ public class ScoreSystem
      * @return the preferred staff
      */
     public OldStaff getTextStaff (TextRole role,
-                               Point point)
+                                  Point point)
     {
         OldStaff staff = null;
 

@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.score.ui;
 
+import omr.sheet.Sheet;
 
 import omr.ui.view.LocationDependent;
 
@@ -22,7 +23,6 @@ import java.awt.Rectangle;
 
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
-import omr.sheet.Sheet;
 
 /**
  * Class {@code PageMenu} is a general page pop-up menu meant to host sub-menus.

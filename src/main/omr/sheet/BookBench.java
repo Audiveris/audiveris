@@ -13,7 +13,6 @@ package omr.sheet;
 
 import omr.WellKnowns;
 
-
 import omr.step.Step;
 
 import org.slf4j.Logger;

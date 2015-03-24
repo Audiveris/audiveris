@@ -149,23 +149,6 @@ public class GlyphInspector
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        Scale.Fraction boxMargin = new Scale.Fraction(
-                0.25,
-                "Box margin to check intersection with compound");
-
-        Scale.Fraction boxWiden = new Scale.Fraction(
-                0.5,
-                "Box special abscissa margin to check intersection with compound");
-    }
-
     //--------------//
     // BasicAdapter //
     //--------------//
@@ -272,5 +255,22 @@ public class GlyphInspector
                 return false;
             }
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        Scale.Fraction boxMargin = new Scale.Fraction(
+                0.25,
+                "Box margin to check intersection with compound");
+
+        Scale.Fraction boxWiden = new Scale.Fraction(
+                0.5,
+                "Box special abscissa margin to check intersection with compound");
     }
 }

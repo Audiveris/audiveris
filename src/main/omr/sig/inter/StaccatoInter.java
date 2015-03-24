@@ -14,7 +14,7 @@ package omr.sig.inter;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.sheet.Voice;
+import omr.sheet.rhythm.Voice;
 
 import omr.sig.relation.Relation;
 import omr.sig.relation.StaccatoChordRelation;

@@ -23,6 +23,7 @@ public enum PaintingLayer
     INPUT_OUTPUT("layer-input-output.png"),
     /** Output: score entities. */
     OUTPUT("layer-output.png");
+
     //---------------//
     // PaintingLayer //
     //---------------//

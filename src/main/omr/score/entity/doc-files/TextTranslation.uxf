@@ -1,36 +1,49 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><umlet_diagram><help_text>//Uncomment the following line to change the fontsize:
-//fontsize=14
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><umlet_diagram>
+    <help_text>//Uncomment the following line to change the fontsize:
+        //fontsize=14
 
-//Welcome to UMLet!
+        //Welcome to UMLet!
 
-// *Double-click on UML elements to add them to the diagram.
-// *Edit element properties by modifying the text in this panel.
-// *Edit the files in the 'palettes' directory to store your own element palettes.
-// *Press Del or Backspace to remove elements from the diagram.
-// *Hold down Ctrl key to select multiple elements.
-// *Press c to copy the UML diagram to the system clipboard.
-// * This text will be stored with each diagram. Feel free to use the area for notes.
-</help_text><element><type>com.umlet.element.base.SequenceDiagram</type><coordinates><x>30</x><y>20</y><w>870</w><h>600</h></coordinates><panel_attributes>_system:System~id1_|_text:Text~id2_|_part:SystemPart~id3_|_line:LyricLine~id4_|_item:LyricItem~id5_
+        // *Double-click on UML elements to add them to the diagram.
+        // *Edit element properties by modifying the text in this panel.
+        // *Edit the files in the 'palettes' directory to store your own element palettes.
+        // *Press Del or Backspace to remove elements from the diagram.
+        // *Hold down Ctrl key to select multiple elements.
+        // *Press c to copy the UML diagram to the system clipboard.
+        // * This text will be stored with each diagram. Feel free to use the area for notes.
+    </help_text>
+    <element>
+        <type>com.umlet.element.base.SequenceDiagram</type>
+        <coordinates>
+            <x>30</x>
+            <y>20</y>
+            <w>870</w>
+            <h>600</h>
+        </coordinates>
+        <panel_attributes>_system:System~id1_|_text:Text~id2_|_part:SystemPart~id3_|_line:LyricLine~id4_|_item:LyricItem~id5_
 
-iframe{:translation of each textual glyph
-id1-&gt;&gt;id2:id1:Text.populate(sentence)
-id2-&gt;&gt;id2:id2:new Text subclass
-iframe}
+            iframe{:translation of each textual glyph
+            id1-&gt;&gt;id2:id1:Text.populate(sentence)
+            id2-&gt;&gt;id2:id2:new Text subclass
+            iframe}
 
-iframe{:at system completion
+            iframe{:at system completion
 
-iframe{:creation of lyric lines
-id1-&gt;&gt;id3:id1,id3:foreach part.populateLyricLines()
-id3-&gt;&gt;id4:id3:LyricLine.populate(text)
-id3-&gt;&gt;id4:id3,id4:line.setId()
-id3-&gt;&gt;id4:id3,id4:line.setStaff()
-iframe}
+            iframe{:creation of lyric lines
+            id1-&gt;&gt;id3:id1,id3:foreach part.populateLyricLines()
+            id3-&gt;&gt;id4:id3:LyricLine.populate(text)
+            id3-&gt;&gt;id4:id3,id4:line.setId()
+            id3-&gt;&gt;id4:id3,id4:line.setStaff()
+            iframe}
 
-iframe{:mapping syllables to notes
-id1-&gt;&gt;id3:id1,id3:foreach part.mapSyllables()
-id3-&gt;&gt;id4:id3,id4:foreach line.mapSyllables()
-id4-&gt;&gt;id5:id4,id5:foreach item.mapToNotes()
-iframe}
+            iframe{:mapping syllables to notes
+            id1-&gt;&gt;id3:id1,id3:foreach part.mapSyllables()
+            id3-&gt;&gt;id4:id3,id4:foreach line.mapSyllables()
+            id4-&gt;&gt;id5:id4,id5:foreach item.mapToNotes()
+            iframe}
 
-iframe}
-</panel_attributes><additional_attributes/></element></umlet_diagram>
+            iframe}
+        </panel_attributes>
+        <additional_attributes/>
+    </element>
+</umlet_diagram>

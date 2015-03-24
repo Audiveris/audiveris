@@ -14,8 +14,6 @@ package omr.sheet.curve;
 import omr.Main;
 
 import omr.constant.ConstantSet;
-
-import omr.grid.FilamentLine;
 import static omr.image.PixelSource.BACKGROUND;
 
 import omr.math.AreaUtil;
@@ -28,6 +26,7 @@ import omr.sheet.Sheet;
 import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
 import static omr.sheet.curve.Skeleton.*;
+import omr.sheet.grid.FilamentLine;
 
 import omr.sig.inter.Inter;
 

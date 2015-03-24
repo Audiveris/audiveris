@@ -26,7 +26,6 @@ import java.awt.event.ActionEvent;
 import java.util.Arrays;
 
 import javax.swing.AbstractAction;
-
 import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**

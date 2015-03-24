@@ -349,188 +349,6 @@ public class SlursLinker
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final Scale.Fraction coverageHExt = new Scale.Fraction(
-                2.0,
-                "Length of extension for horizontal slur coverage");
-
-        final Scale.Fraction coverageHIn = new Scale.Fraction(
-                1.5,
-                "Internal abscissa of horizontal slur coverage");
-
-        final Scale.Fraction coverageHDepth = new Scale.Fraction(
-                4.0,
-                "Vertical extension of horizontal slur coverage");
-
-        final Scale.Fraction coverageVExt = new Scale.Fraction(
-                2.0,
-                "Length of extension for vertical slur coverage");
-
-        final Scale.Fraction coverageVIn = new Scale.Fraction(
-                1.5,
-                "Internal abscissa of vertical slur coverage");
-
-        final Scale.Fraction coverageVDepth = new Scale.Fraction(
-                2.5,
-                "Vertical extension of vertical slur coverage");
-
-        final Scale.Fraction coverageVDepthSmall = new Scale.Fraction(
-                1.5,
-                "Vertical extension of small vertical slur coverage");
-
-        final Constant.Double slopeSeparator = new Constant.Double(
-                "tangent",
-                0.5,
-                "Slope that separates vertical slurs from horizontal slurs");
-
-        final Constant.Double maxOrphanSlope = new Constant.Double(
-                "tangent",
-                0.5,
-                "Maximum slope for an orphan slur");
-
-        final Scale.Fraction maxOrphanDx = new Scale.Fraction(
-                6.0,
-                "Maximum dx to staff end for an orphan slur");
-
-        final Scale.Fraction wideSlurWidth = new Scale.Fraction(
-                6.0,
-                "Minimum width to be a wide slur");
-
-        final Scale.Fraction maxSmallSlurWidth = new Scale.Fraction(
-                1.5,
-                "Maximum width for a small slur");
-    }
-
-    //----------//
-    // NoteLink //
-    //----------//
-    /**
-     * Formalizes a relation between a slur end and a note nearby.
-     */
-    private static class NoteLink
-    {
-        //~ Static fields/initializers -------------------------------------------------------------
-
-        public static Comparator<NoteLink> byEuclidean = new Comparator<NoteLink>()
-        {
-            @Override
-            public int compare (NoteLink o1,
-                                NoteLink o2)
-            {
-                return Double.compare(o1.euclidean, o2.euclidean);
-            }
-        };
-
-        public static Comparator<NoteLink> global = new Comparator<NoteLink>()
-        {
-            @Override
-            public int compare (NoteLink o1,
-                                NoteLink o2)
-            {
-                // If notes are rather vertically aligned (parts of same chord), use euclidean
-                // Otherwise use x-distance, regardless of y-distance
-                if (Math.abs(o1.dx - o2.dx) <= o1.note.getBounds().width) {
-                    return Double.compare(o1.euclidean, o2.euclidean);
-                } else {
-                    return Integer.compare(Math.abs(o1.dx), Math.abs(o2.dx));
-                }
-            }
-        };
-
-        //~ Instance fields ------------------------------------------------------------------------
-        public final Inter note; // Note linked to slur end
-
-        public final int dx; // dx (positive or negative) from slur end to note center
-
-        public final int dy; // dy (positive or negative) from slur end to note center
-
-        public final double euclidean; // Euclidean distance between slur end and note center
-
-        public final boolean direct; // False if via stem
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public NoteLink (Point slurEnd,
-                         Inter note,
-                         boolean direct)
-        {
-            this.note = note;
-            this.direct = direct;
-
-            Point center = note.getCenter();
-            dx = center.x - slurEnd.x;
-            dy = center.y - slurEnd.y;
-            euclidean = Math.hypot(dx, dy);
-        }
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * All pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final int coverageHExt;
-
-        final int coverageVExt;
-
-        final int coverageHIn;
-
-        final int coverageVIn;
-
-        final int coverageHDepth;
-
-        final int coverageVDepth;
-
-        final int coverageVDepthSmall;
-
-        final double slopeSeparator;
-
-        final double maxOrphanSlope;
-
-        final int maxOrphanDx;
-
-        final int wideSlurWidth;
-
-        final int maxSmallSlurWidth;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
-        {
-            coverageHExt = scale.toPixels(constants.coverageHExt);
-            coverageHIn = scale.toPixels(constants.coverageHIn);
-            coverageHDepth = scale.toPixels(constants.coverageHDepth);
-            coverageVExt = scale.toPixels(constants.coverageVExt);
-            coverageVIn = scale.toPixels(constants.coverageVIn);
-            coverageVDepth = scale.toPixels(constants.coverageVDepth);
-            coverageVDepthSmall = scale.toPixels(constants.coverageVDepthSmall);
-            slopeSeparator = constants.slopeSeparator.getValue();
-            maxOrphanSlope = constants.maxOrphanSlope.getValue();
-            maxOrphanDx = scale.toPixels(constants.maxOrphanDx);
-            wideSlurWidth = scale.toPixels(constants.wideSlurWidth);
-            maxSmallSlurWidth = scale.toPixels(constants.maxSmallSlurWidth);
-
-            if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
-            }
-        }
-    }
-
     //-------------//
     // ClumpLinker //
     //-------------//
@@ -1026,6 +844,188 @@ public class SlursLinker
             }
 
             return related;
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Scale.Fraction coverageHExt = new Scale.Fraction(
+                2.0,
+                "Length of extension for horizontal slur coverage");
+
+        final Scale.Fraction coverageHIn = new Scale.Fraction(
+                1.5,
+                "Internal abscissa of horizontal slur coverage");
+
+        final Scale.Fraction coverageHDepth = new Scale.Fraction(
+                4.0,
+                "Vertical extension of horizontal slur coverage");
+
+        final Scale.Fraction coverageVExt = new Scale.Fraction(
+                2.0,
+                "Length of extension for vertical slur coverage");
+
+        final Scale.Fraction coverageVIn = new Scale.Fraction(
+                1.5,
+                "Internal abscissa of vertical slur coverage");
+
+        final Scale.Fraction coverageVDepth = new Scale.Fraction(
+                2.5,
+                "Vertical extension of vertical slur coverage");
+
+        final Scale.Fraction coverageVDepthSmall = new Scale.Fraction(
+                1.5,
+                "Vertical extension of small vertical slur coverage");
+
+        final Constant.Double slopeSeparator = new Constant.Double(
+                "tangent",
+                0.5,
+                "Slope that separates vertical slurs from horizontal slurs");
+
+        final Constant.Double maxOrphanSlope = new Constant.Double(
+                "tangent",
+                0.5,
+                "Maximum slope for an orphan slur");
+
+        final Scale.Fraction maxOrphanDx = new Scale.Fraction(
+                6.0,
+                "Maximum dx to staff end for an orphan slur");
+
+        final Scale.Fraction wideSlurWidth = new Scale.Fraction(
+                6.0,
+                "Minimum width to be a wide slur");
+
+        final Scale.Fraction maxSmallSlurWidth = new Scale.Fraction(
+                1.5,
+                "Maximum width for a small slur");
+    }
+
+    //----------//
+    // NoteLink //
+    //----------//
+    /**
+     * Formalizes a relation between a slur end and a note nearby.
+     */
+    private static class NoteLink
+    {
+        //~ Static fields/initializers -------------------------------------------------------------
+
+        public static Comparator<NoteLink> byEuclidean = new Comparator<NoteLink>()
+        {
+            @Override
+            public int compare (NoteLink o1,
+                                NoteLink o2)
+            {
+                return Double.compare(o1.euclidean, o2.euclidean);
+            }
+        };
+
+        public static Comparator<NoteLink> global = new Comparator<NoteLink>()
+        {
+            @Override
+            public int compare (NoteLink o1,
+                                NoteLink o2)
+            {
+                // If notes are rather vertically aligned (parts of same chord), use euclidean
+                // Otherwise use x-distance, regardless of y-distance
+                if (Math.abs(o1.dx - o2.dx) <= o1.note.getBounds().width) {
+                    return Double.compare(o1.euclidean, o2.euclidean);
+                } else {
+                    return Integer.compare(Math.abs(o1.dx), Math.abs(o2.dx));
+                }
+            }
+        };
+
+        //~ Instance fields ------------------------------------------------------------------------
+        public final Inter note; // Note linked to slur end
+
+        public final int dx; // dx (positive or negative) from slur end to note center
+
+        public final int dy; // dy (positive or negative) from slur end to note center
+
+        public final double euclidean; // Euclidean distance between slur end and note center
+
+        public final boolean direct; // False if via stem
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public NoteLink (Point slurEnd,
+                         Inter note,
+                         boolean direct)
+        {
+            this.note = note;
+            this.direct = direct;
+
+            Point center = note.getCenter();
+            dx = center.x - slurEnd.x;
+            dy = center.y - slurEnd.y;
+            euclidean = Math.hypot(dx, dy);
+        }
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * All pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final int coverageHExt;
+
+        final int coverageVExt;
+
+        final int coverageHIn;
+
+        final int coverageVIn;
+
+        final int coverageHDepth;
+
+        final int coverageVDepth;
+
+        final int coverageVDepthSmall;
+
+        final double slopeSeparator;
+
+        final double maxOrphanSlope;
+
+        final int maxOrphanDx;
+
+        final int wideSlurWidth;
+
+        final int maxSmallSlurWidth;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            coverageHExt = scale.toPixels(constants.coverageHExt);
+            coverageHIn = scale.toPixels(constants.coverageHIn);
+            coverageHDepth = scale.toPixels(constants.coverageHDepth);
+            coverageVExt = scale.toPixels(constants.coverageVExt);
+            coverageVIn = scale.toPixels(constants.coverageVIn);
+            coverageVDepth = scale.toPixels(constants.coverageVDepth);
+            coverageVDepthSmall = scale.toPixels(constants.coverageVDepthSmall);
+            slopeSeparator = constants.slopeSeparator.getValue();
+            maxOrphanSlope = constants.maxOrphanSlope.getValue();
+            maxOrphanDx = scale.toPixels(constants.maxOrphanDx);
+            wideSlurWidth = scale.toPixels(constants.wideSlurWidth);
+            maxSmallSlurWidth = scale.toPixels(constants.maxSmallSlurWidth);
+
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
+            }
         }
     }
 }

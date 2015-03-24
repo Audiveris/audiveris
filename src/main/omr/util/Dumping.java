@@ -29,12 +29,12 @@ import java.util.Set;
  */
 public class Dumping
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The relevance filter to be used */
     protected final Relevance relevance;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Dumping service.
      *
@@ -55,7 +55,7 @@ public class Dumping
         relevance = new PackageRelevance(rootPackages);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // dump //
     //------//
@@ -150,13 +150,13 @@ public class Dumping
         return new Html(relevance, obj).toString();
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //-----------//
     // Relevance //
     //-----------//
     public static interface Relevance
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Predicate to determine if a given class is worth being printed.
@@ -175,7 +175,7 @@ public class Dumping
         boolean isFieldRelevant (Field field);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // PackageRelevance //
     //------------------//
@@ -185,12 +185,12 @@ public class Dumping
     public static class PackageRelevance
             implements Relevance
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Collection of root packages, to filter non-relevant classes */
-        protected final Set<Package> rootPackages = new HashSet<>();
+        protected final Set<Package> rootPackages = new HashSet<Package>();
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public PackageRelevance (Collection<Package> rootPackages)
         {
             this.rootPackages.addAll(rootPackages);
@@ -203,7 +203,7 @@ public class Dumping
             }
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //-----------------//
         // isClassRelevant //
         //-----------------//
@@ -215,8 +215,7 @@ public class Dumping
             }
 
             for (Package pkg : rootPackages) {
-                if (classe.getName()
-                        .startsWith(pkg.getName() + ".")) {
+                if (classe.getName().startsWith(pkg.getName() + ".")) {
                     return true;
                 }
             }
@@ -236,8 +235,7 @@ public class Dumping
             }
 
             // We don't print non-user visible entities
-            if (field.getName()
-                    .indexOf('$') != -1) {
+            if (field.getName().indexOf('$') != -1) {
                 return false;
             }
 

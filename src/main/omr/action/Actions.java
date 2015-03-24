@@ -61,7 +61,6 @@ public class Actions
         //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Domain of file actions */
-
         /** Domain of file actions */
         FILE,
         /** Domain of individual steps */

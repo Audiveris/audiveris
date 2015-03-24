@@ -21,7 +21,7 @@ import omr.math.GeoOrder;
 
 import omr.sheet.Scale;
 import omr.sheet.Staff;
-import omr.sheet.Voice;
+import omr.sheet.rhythm.Voice;
 
 import omr.sig.GradeImpacts;
 import omr.sig.relation.AccidHeadRelation;

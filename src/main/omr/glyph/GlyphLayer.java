@@ -25,10 +25,8 @@ public enum GlyphLayer
 
     /** Glyph instances from foreground spots. */
     SPOT("S", "Glyphs from foreground spots"),
-
     /** Glyph instances from symbols. */
     SYMBOL("Y", "Glyphs from symbols"),
-
     /** Virtual glyph instances from Drag and Drop. */
     DROP("D", "Virtual glyphs from Drag n' Drop"),
 

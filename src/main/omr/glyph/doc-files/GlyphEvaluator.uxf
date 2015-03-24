@@ -1,225 +1,225 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <diagram program="umlet" version="11.4">
-  <help_text>
-fontsize=14
+    <help_text>
+        fontsize=14
 
-	// My own comments
-</help_text>
-  <zoom_level>10</zoom_level>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>290</x>
-      <y>620</y>
-      <w>140</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>*LinearEvaluator*
-bg=#ffffaa
---
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>210</x>
-      <y>600</y>
-      <w>100</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>80;30;30;30</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>290</x>
-      <y>480</y>
-      <w>140</w>
-      <h>70</h>
-    </coordinates>
-    <panel_attributes>*GlyphChecker*
-bg=#ffffaa
---
-annotate()
-relax()
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>180</x>
-      <y>460</y>
-      <w>130</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>110;30;30;30</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>10</x>
-      <y>10</y>
-      <w>140</w>
-      <h>150</h>
-    </coordinates>
-    <panel_attributes>&lt;&lt;interface&gt;&gt;
-*/GlyphEvaluator/*
---
-Condition
---
-getName()
-isBigEnough()
-evaluate()
-vote()
-rawVote()
+        // My own comments
+    </help_text>
+    <zoom_level>10</zoom_level>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>290</x>
+            <y>620</y>
+            <w>140</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>*LinearEvaluator*
+            bg=#ffffaa
+            --
+        </panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>210</x>
+            <y>600</y>
+            <w>100</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;-</panel_attributes>
+        <additional_attributes>80;30;30;30</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>290</x>
+            <y>480</y>
+            <w>140</w>
+            <h>70</h>
+        </coordinates>
+        <panel_attributes>*GlyphChecker*
+            bg=#ffffaa
+            --
+            annotate()
+            relax()
+        </panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>180</x>
+            <y>460</y>
+            <w>130</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;-</panel_attributes>
+        <additional_attributes>110;30;30;30</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>10</x>
+            <y>10</y>
+            <w>140</w>
+            <h>150</h>
+        </coordinates>
+        <panel_attributes>&lt;&lt;interface&gt;&gt;
+            */GlyphEvaluator/*
+            --
+            Condition
+            --
+            getName()
+            isBigEnough()
+            evaluate()
+            vote()
+            rawVote()
 
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>10</x>
-      <y>210</y>
-      <w>140</w>
-      <h>160</h>
-    </coordinates>
-    <panel_attributes>&lt;&lt;interface&gt;&gt;
-*/EvaluationEngine/*
---
-StartingMode
-Monitor
---
-dump()
-train()
-stop()
-marshal()
+        </panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>10</x>
+            <y>210</y>
+            <w>140</w>
+            <h>160</h>
+        </coordinates>
+        <panel_attributes>&lt;&lt;interface&gt;&gt;
+            */EvaluationEngine/*
+            --
+            StartingMode
+            Monitor
+            --
+            dump()
+            train()
+            stop()
+            marshal()
 
 
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>10</x>
-      <y>420</y>
-      <w>200</w>
-      <h>120</h>
-    </coordinates>
-    <panel_attributes>&lt;&lt;abstract&gt;&gt;
-*/AbstractEvaluationEngine/*
-bg=#ffffaa
---
-#unmarshal()
-#getFileName()
--getBackupName()
-/#getRawEvaluations()/
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>40</x>
-      <y>340</y>
-      <w>50</w>
-      <h>100</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
-    <additional_attributes>30;30;30;80</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>10</x>
-      <y>670</y>
-      <w>150</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>*GlyphNetwork*
-bg=#ffffaa
---
-#getRawEvaluations()
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>80</x>
-      <y>580</y>
-      <w>160</w>
-      <h>70</h>
-    </coordinates>
-    <panel_attributes>*GlyphRegression*
-bg=#ffffaa
---
-#getRawEvaluations()
-constraintsMatched()
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>20</x>
-      <y>510</y>
-      <w>50</w>
-      <h>180</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>30;30;30;160</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>110</x>
-      <y>510</y>
-      <w>50</w>
-      <h>90</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>30;30;30;70</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>290</x>
-      <y>690</y>
-      <w>140</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>*NeuralNetwork*
-bg=#ffffaa
---
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>130</x>
-      <y>670</y>
-      <w>180</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>160;30;30;30</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>40</x>
-      <y>130</y>
-      <w>50</w>
-      <h>100</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>30;30;30;80</additional_attributes>
-  </element>
+        </panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>10</x>
+            <y>420</y>
+            <w>200</w>
+            <h>120</h>
+        </coordinates>
+        <panel_attributes>&lt;&lt;abstract&gt;&gt;
+            */AbstractEvaluationEngine/*
+            bg=#ffffaa
+            --
+            #unmarshal()
+            #getFileName()
+            -getBackupName()
+            /#getRawEvaluations()/
+        </panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>40</x>
+            <y>340</y>
+            <w>50</w>
+            <h>100</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+        <additional_attributes>30;30;30;80</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>10</x>
+            <y>670</y>
+            <w>150</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>*GlyphNetwork*
+            bg=#ffffaa
+            --
+            #getRawEvaluations()
+        </panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>80</x>
+            <y>580</y>
+            <w>160</w>
+            <h>70</h>
+        </coordinates>
+        <panel_attributes>*GlyphRegression*
+            bg=#ffffaa
+            --
+            #getRawEvaluations()
+            constraintsMatched()
+        </panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>20</x>
+            <y>510</y>
+            <w>50</w>
+            <h>180</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+        <additional_attributes>30;30;30;160</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>110</x>
+            <y>510</y>
+            <w>50</w>
+            <h>90</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+        <additional_attributes>30;30;30;70</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>290</x>
+            <y>690</y>
+            <w>140</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>*NeuralNetwork*
+            bg=#ffffaa
+            --
+        </panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>130</x>
+            <y>670</y>
+            <w>180</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;-</panel_attributes>
+        <additional_attributes>160;30;30;30</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>40</x>
+            <y>130</y>
+            <w>50</w>
+            <h>100</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+        <additional_attributes>30;30;30;80</additional_attributes>
+    </element>
 </diagram>

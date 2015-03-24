@@ -13,11 +13,10 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
-import omr.sheet.Staff;
-
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Part;
+import omr.sheet.Staff;
 
 import omr.util.Predicate;
 import omr.util.TreeNode;
@@ -110,7 +109,7 @@ public class OldSystemPart
      * @param info   the counterpart in sheet
      */
     public OldSystemPart (ScoreSystem system,
-                       Part info)
+                          Part info)
     {
         super(system);
 
@@ -685,24 +684,25 @@ public class OldSystemPart
     public OldStaff getStaffAt (Point point)
     {
         return null;
-//        // This may fail
-//        Staff staffInfo = getSystem().getInfo().getStaffAt(point);
-//
-//        if (staffInfo == null) {
-//            return null;
-//        }
-//
-//        OldStaff staff = staffInfo.getScoreStaff();
-//
-//        if (staves.getChildren().contains(staff)) {
-//            return staff;
-//        }
-//
-//        if (staff.getInfo().getId() < getFirstStaff().getInfo().getId()) {
-//            return getFirstStaff();
-//        } else {
-//            return getLastStaff();
-//        }
+
+        //        // This may fail
+        //        Staff staffInfo = getSystem().getInfo().getStaffAt(point);
+        //
+        //        if (staffInfo == null) {
+        //            return null;
+        //        }
+        //
+        //        OldStaff staff = staffInfo.getScoreStaff();
+        //
+        //        if (staves.getChildren().contains(staff)) {
+        //            return staff;
+        //        }
+        //
+        //        if (staff.getInfo().getId() < getFirstStaff().getInfo().getId()) {
+        //            return getFirstStaff();
+        //        } else {
+        //            return getLastStaff();
+        //        }
     }
 
     //-------------------//

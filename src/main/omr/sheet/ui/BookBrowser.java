@@ -229,60 +229,6 @@ public class BookBrowser
                 "Should we hide empty dummy containers");
     }
 
-    //-----------------//
-    // NamedCollection //
-    //-----------------//
-    private static class NamedCollection
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final String name;
-
-        private final Collection<?> collection;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public NamedCollection (String name,
-                                Collection<?> collection)
-        {
-            this.name = name;
-            this.collection = collection;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            return name;
-        }
-    }
-
-    //-----------//
-    // NamedData //
-    //-----------//
-    private static class NamedData
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final String name;
-
-        private final Object data;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public NamedData (String name,
-                          Object data)
-        {
-            this.name = name;
-            this.data = data;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            return name + ":" + data;
-        }
-    }
-
     //-------//
     // Model //
     //-------//
@@ -577,6 +523,60 @@ public class BookBrowser
             } else {
                 return true;
             }
+        }
+    }
+
+    //-----------------//
+    // NamedCollection //
+    //-----------------//
+    private static class NamedCollection
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final String name;
+
+        private final Collection<?> collection;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public NamedCollection (String name,
+                                Collection<?> collection)
+        {
+            this.name = name;
+            this.collection = collection;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            return name;
+        }
+    }
+
+    //-----------//
+    // NamedData //
+    //-----------//
+    private static class NamedData
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final String name;
+
+        private final Object data;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public NamedData (String name,
+                          Object data)
+        {
+            this.name = name;
+            this.data = data;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            return name + ":" + data;
         }
     }
 

@@ -14,14 +14,16 @@ package omr.sheet;
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
 
-import omr.grid.FilamentLine;
-import omr.grid.LineInfo;
-import omr.grid.StaffPeak;
-
 import omr.math.GeoUtil;
 import omr.math.Population;
 
 import omr.score.entity.OldStaff;
+
+import omr.sheet.grid.FilamentLine;
+import omr.sheet.grid.LineInfo;
+import omr.sheet.grid.StaffPeak;
+import omr.sheet.header.StaffHeader;
+import omr.sheet.note.NotePosition;
 
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.Inter;

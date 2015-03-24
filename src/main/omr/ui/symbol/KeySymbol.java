@@ -116,8 +116,8 @@ public abstract class KeySymbol
                     g,
                     p.layout,
                     new Point(
-                    loc.x + (int) Math.rint((k - 1) * p.itemDx),
-                    loc.y + (int) Math.rint(position * p.stepDy)),
+                            loc.x + (int) Math.rint((k - 1) * p.itemDx),
+                            loc.y + (int) Math.rint(position * p.stepDy)),
                     MIDDLE_LEFT);
         }
     }

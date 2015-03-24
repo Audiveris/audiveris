@@ -883,6 +883,37 @@ public class Slur
                 "Maximum difference in interlines between connecting slurs");
     }
 
+    //-----//
+    // End //
+    //-----//
+    /**
+     * Note information on one end of a slur.
+     */
+    private static class End
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        // The precise note embraced by the slur on this side
+        final Note note;
+
+        // The related chord stem direction
+        final int stemDir;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public End (MeasureNode node)
+        {
+            if (node instanceof Note) {
+                note = (Note) node;
+            } else {
+                OldChord chord = (OldChord) node;
+                // Take the last note (closest to the tail)
+                note = (Note) chord.getNotes().get(chord.getNotes().size() - 1);
+            }
+
+            stemDir = note.getChord().getStemDir();
+        }
+    }
+
     //----------------//
     // NodeComparator //
     //----------------//
@@ -913,37 +944,6 @@ public class Slur
             Point p2 = (n2 instanceof OldChord) ? ((OldChord) n2).getTailLocation() : n2.getCenter();
 
             return Double.compare(p1.distance(ref), p2.distance(ref));
-        }
-    }
-
-    //-----//
-    // End //
-    //-----//
-    /**
-     * Note information on one end of a slur.
-     */
-    private static class End
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        // The precise note embraced by the slur on this side
-        final Note note;
-
-        // The related chord stem direction
-        final int stemDir;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public End (MeasureNode node)
-        {
-            if (node instanceof Note) {
-                note = (Note) node;
-            } else {
-                OldChord chord = (OldChord) node;
-                // Take the last note (closest to the tail)
-                note = (Note) chord.getNotes().get(chord.getNotes().size() - 1);
-            }
-
-            stemDir = note.getChord().getStemDir();
         }
     }
 }

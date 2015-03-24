@@ -16,7 +16,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.facets.Glyph;
 
 import omr.score.entity.SystemNode.StaffPosition;
-
 import static omr.score.entity.Text.CreatorText.CreatorType.*;
 
 import omr.sheet.Part;
@@ -24,7 +23,6 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
-
 import static omr.text.TextRole.*;
 
 import org.slf4j.Logger;
@@ -128,11 +126,12 @@ public enum TextRole
                     return glyph.getManualRole();
                 }
             }
-//
-//            // Word that could be a chord symbol?
-//            if (word.guessChordInfo() != null) {
-//                chordCount++;
-//            }
+
+            //
+            //            // Word that could be a chord symbol?
+            //            if (word.guessChordInfo() != null) {
+            //                chordCount++;
+            //            }
         }
 
         // Is line made entirely of potential chord symbols?

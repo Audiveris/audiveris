@@ -15,8 +15,8 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.score.entity.OldMeasure;
-import omr.score.entity.ScoreSystem;
 import omr.score.entity.OldSystemPart;
+import omr.score.entity.ScoreSystem;
 
 import omr.sheet.SystemInfo;
 

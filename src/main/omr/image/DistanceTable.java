@@ -182,8 +182,8 @@ public interface DistanceTable
             final int stdB = Colors.DISTANCE_STANDARD.getBlue();
 
             for (int i = rawDistMax - 1; i > 0; i--) {
-//                int alpha = Math.max(0, (int) Math.rint(255 * (1 - (i / (double) rawDistMax))));
-//                lut[1 + i] = new Color(stdR, stdG, stdB, alpha).getRGB();
+                //                int alpha = Math.max(0, (int) Math.rint(255 * (1 - (i / (double) rawDistMax))));
+                //                lut[1 + i] = new Color(stdR, stdG, stdB, alpha).getRGB();
                 ///int alpha = Math.max(0, (int) Math.rint(255 * (1 - (i / (double) rawDistMax))));
                 lut[1 + i] = Color.WHITE.getRGB();
             }

@@ -139,6 +139,35 @@ public class ConstantManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------------//
+    // getAllProperties //
+    //------------------//
+    /**
+     * Report the whole collection of properties (coming from USER
+     * sources) backed up on disk.
+     *
+     * @return the collection of constant properties
+     */
+    public Collection<String> getAllProperties ()
+    {
+        SortedSet<String> props = new TreeSet<String>(userHolder.getKeys());
+
+        return props;
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton of this class.
+     *
+     * @return the only ConstantManager instance
+     */
+    public static ConstantManager getInstance ()
+    {
+        return INSTANCE;
+    }
+
     //-------------//
     // addConstant //
     //-------------//
@@ -176,35 +205,6 @@ public class ConstantManager
 
         // Fallback on using user value
         return userHolder.getProperty(qName);
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton of this class.
-     *
-     * @return the only ConstantManager instance
-     */
-    public static ConstantManager getInstance ()
-    {
-        return INSTANCE;
-    }
-
-    //------------------//
-    // getAllProperties //
-    //------------------//
-    /**
-     * Report the whole collection of properties (coming from USER
-     * sources) backed up on disk.
-     *
-     * @return the collection of constant properties
-     */
-    public Collection<String> getAllProperties ()
-    {
-        SortedSet<String> props = new TreeSet<String>(userHolder.getKeys());
-
-        return props;
     }
 
     //-------------------------//

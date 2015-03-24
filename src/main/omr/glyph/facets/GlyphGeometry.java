@@ -12,6 +12,7 @@
 package omr.glyph.facets;
 
 import omr.glyph.GlyphSignature;
+import omr.glyph.Shape;
 
 import omr.math.Circle;
 import omr.math.PointsCollector;
@@ -21,7 +22,6 @@ import omr.moments.GeometricMoments;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import omr.glyph.Shape;
 
 /**
  * Interface {@code GlyphGeometry} defines the facet which handles all the geometrical

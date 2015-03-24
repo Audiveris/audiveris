@@ -207,10 +207,10 @@ public class Tuplet
      *         when the retrieval has failed
      */
     private static SortedSet<OldChord> getEmbracedChords (Glyph glyph,
-                                                       OldMeasure measure,
-                                                       Point point,
-                                                       List<OldChord> candidates,
-                                                       OldStaff requiredStaff)
+                                                          OldMeasure measure,
+                                                          Point point,
+                                                          List<OldChord> candidates,
+                                                          OldStaff requiredStaff)
     {
         logger.debug(
                 "{} {}{}",

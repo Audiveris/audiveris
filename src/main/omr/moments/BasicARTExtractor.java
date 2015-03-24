@@ -13,10 +13,10 @@ package omr.moments;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-
 import static omr.moments.ARTMoments.*;
 
-import omr.sheet.NoteHeadsBuilder;
+import omr.sheet.note.NoteHeadsBuilder;
+
 import omr.util.StopWatch;
 
 import java.awt.image.WritableRaster;

@@ -144,8 +144,8 @@ public class ChordInfo
     /** Pattern for parenthesized degrees if any. (6), (#9), (#11b13) */
     private static final String parPat = "(\\("
                                          + group(
-            PARS,
-            Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*") + "\\))";
+                    PARS,
+                    Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*") + "\\))";
 
     /** Uncompiled patterns for whole chord symbol. */
     private static final String[] raws = new String[]{

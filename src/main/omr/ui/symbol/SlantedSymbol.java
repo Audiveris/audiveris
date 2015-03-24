@@ -157,6 +157,20 @@ public class SlantedSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // Params //
+    //--------//
+    protected class MyParams
+            extends Params
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        // layout not used
+        // rect for global image
+        // Sequence of layouts
+        SmartLayout[] layouts;
+    }
+
     //-------------//
     // SmartLayout //
     //-------------//
@@ -177,19 +191,5 @@ public class SlantedSymbol
             this.layout = layout;
             this.dx = dx;
         }
-    }
-
-    //--------//
-    // Params //
-    //--------//
-    protected class MyParams
-            extends Params
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        // layout not used
-        // rect for global image
-        // Sequence of layouts
-        SmartLayout[] layouts;
     }
 }

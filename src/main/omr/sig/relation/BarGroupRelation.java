@@ -11,14 +11,13 @@
 // </editor-fold>
 package omr.sig.relation;
 
-
 /**
  * Class {@code BarGroupRelation} groups 2 bar lines.
  *
  * @author Hervé Bitteur
  */
 public class BarGroupRelation
-    extends AbstractRelation
+        extends AbstractRelation
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -26,7 +25,6 @@ public class BarGroupRelation
     private final double xGap;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     /**
      * Creates a new BarGroupRelation object.
      *
@@ -38,7 +36,6 @@ public class BarGroupRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     @Override
     public String getName ()
     {

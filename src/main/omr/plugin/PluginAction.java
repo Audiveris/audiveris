@@ -11,9 +11,8 @@
 // </editor-fold>
 package omr.plugin;
 
-import omr.sheet.ui.BookController;
-
 import omr.sheet.Book;
+import omr.sheet.ui.BookController;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

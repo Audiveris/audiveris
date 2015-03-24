@@ -16,11 +16,11 @@ import omr.math.Rational;
 import omr.score.Score;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.MeasureStack;
 import omr.sheet.Part;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.rhythm.MeasureStack;
 
 import omr.sig.inter.ChordInter;
 

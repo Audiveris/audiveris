@@ -317,7 +317,7 @@ public class GrayMorphology
             break;
         }
 
-            //        case FERODE: {
+        //        case FERODE: {
         //            if ((se.getType() == HLINE) || (se.getType() == VLINE)) {
         //                mp.LineErode(ip);
         //            } else {

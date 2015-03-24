@@ -22,13 +22,13 @@ import java.util.List;
  */
 public class StopWatch
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Name for this watch instance */
     private final String name;
 
     /** Sequence of all tasks so far */
-    private final List<Task> tasks = new ArrayList<>(128);
+    private final List<Task> tasks = new ArrayList<Task>(128);
 
     /** Current task (null if not running) */
     private Task task;
@@ -36,7 +36,7 @@ public class StopWatch
     /** Current sum of tasks times */
     private long total;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StopWatch object.
      *
@@ -47,7 +47,7 @@ public class StopWatch
         this.name = name;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // print //
     //-------//
@@ -117,15 +117,11 @@ public class StopWatch
     public String toString ()
     {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append(" \"")
-                .append(name)
-                .append("\"");
+        sb.append(" \"").append(name).append("\"");
 
-        sb.append(" tasks:")
-                .append(tasks.size());
+        sb.append(" tasks:").append(tasks.size());
 
-        sb.append(" total:")
-                .append(total);
+        sb.append(" total:").append(total);
 
         if (task != null) {
             sb.append(" running");
@@ -136,13 +132,13 @@ public class StopWatch
         return sb.toString();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Task //
     //------//
     private static class Task
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Label for this task */
         private final String label;
@@ -153,7 +149,7 @@ public class StopWatch
         /** Elapsed time */
         private long elapsed;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Task (String label)
         {
             this.label = label;

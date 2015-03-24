@@ -840,43 +840,6 @@ public class BasicNest
                 "(Debug) Comma-separated values of VIP glyphs IDs");
     }
 
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all constants related to nest
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final List<Integer> vipGlyphs; // List of IDs for VIP glyphs
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters ()
-        {
-            vipGlyphs = IntUtil.parseInts(constants.vipGlyphs.getValue());
-
-            if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
-            }
-
-            if (!vipGlyphs.isEmpty()) {
-                logger.info("VIP glyphs: {}", vipGlyphs);
-            }
-        }
-    }
-
-    //-------------//
-    // SectionLink //
-    //-------------//
-    /**
-     * Represents a "touching" relationship between two sections.
-     */
-    private static class SectionLink
-    {
-    }
-
     //-----------//
     // LayerNest //
     //-----------//
@@ -1012,5 +975,42 @@ public class BasicNest
             // Should we keep track of every glyph ever added?
             ///??? allGlyphs.remove(glyph.getId(), glyph);
         }
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all constants related to nest
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final List<Integer> vipGlyphs; // List of IDs for VIP glyphs
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Parameters ()
+        {
+            vipGlyphs = IntUtil.parseInts(constants.vipGlyphs.getValue());
+
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
+            }
+
+            if (!vipGlyphs.isEmpty()) {
+                logger.info("VIP glyphs: {}", vipGlyphs);
+            }
+        }
+    }
+
+    //-------------//
+    // SectionLink //
+    //-------------//
+    /**
+     * Represents a "touching" relationship between two sections.
+     */
+    private static class SectionLink
+    {
     }
 }

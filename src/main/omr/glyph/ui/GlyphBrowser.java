@@ -337,61 +337,6 @@ class GlyphBrowser
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------------//
-    // BasicController //
-    //-----------------//
-    /**
-     * A very basic glyphs controller, with a sheet-less location service.
-     */
-    private class BasicController
-            extends GlyphsController
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** A specific location service, not tied to a sheet */
-        private final SelectionService locationService;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public BasicController (GlyphNest nest,
-                                SelectionService locationService)
-        {
-            super(new BasicModel(nest));
-            this.locationService = locationService;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public SelectionService getLocationService ()
-        {
-            return this.locationService;
-        }
-    }
-
-    //------------//
-    // BasicModel //
-    //------------//
-    /**
-     * A very basic glyphs model, used to handle the deletion of glyphs.
-     */
-    private class BasicModel
-            extends GlyphsModel
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public BasicModel (GlyphNest nest)
-        {
-            super(null, nest, null);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        // Certainly not called ...
-        @Override
-        public void deassignGlyph (Glyph glyph)
-        {
-            removeGlyph();
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -405,128 +350,29 @@ class GlyphBrowser
                 "Should user confirm each glyph deletion" + " from training material");
     }
 
-    //----------------//
-    // DeassignAction //
-    //----------------//
-    private class DeassignAction
-            extends AbstractAction
+    //-----------//
+    // NoSigNest //
+    //-----------//
+    /**
+     * A specific glyph nest, with no handling of signature.
+     */
+    private static class NoSigNest
+            extends BasicNest
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public DeassignAction ()
+        public NoSigNest (String name,
+                          Sheet sheet)
         {
-            super("Remove");
-            putValue(Action.SHORT_DESCRIPTION, "Remove that glyph from training material");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @SuppressWarnings("unchecked")
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            removeGlyph();
-        }
-    }
-
-    //---------//
-    // Display //
-    //---------//
-    private class Display
-            extends JPanel
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        LogSlider slider;
-
-        Rubber rubber;
-
-        ScrollView slv;
-
-        Zoom zoom;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Display ()
-        {
-            view = new MyView();
-            view.setLocationService(locationService);
-            view.subscribe();
-            modelRectangle = new Rectangle();
-            modelSize = new Dimension(0, 0);
-            slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 4, 0);
-            zoom = new Zoom(slider, 1); // Default ratio set to 1
-            rubber = new Rubber(view, zoom);
-            rubber.setMouseMonitor(view);
-            view.setZoom(zoom);
-            view.setRubber(rubber);
-            slv = new ScrollView(view);
-
-            // Layout
-            setLayout(new BorderLayout());
-            add(slider, BorderLayout.WEST);
-            add(slv.getComponent(), BorderLayout.CENTER);
-        }
-    }
-
-    //------------//
-    // LoadAction //
-    //------------//
-    private class LoadAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public LoadAction ()
-        {
-            super("Load");
+            super(name, sheet);
         }
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public void actionPerformed (ActionEvent e)
+        public Glyph getOriginal (GlyphSignature signature,
+                                  GlyphLayer layer)
         {
-            // Get a (shrinkable, to allow deletions) list of glyph names
-            names = verifier.getGlyphNames();
-
-            // Reset lag & display
-            resetBrowser();
-
-            // Set navigator on first glyph, if any
-            if (!names.isEmpty()) {
-                navigator.setIndex(0, GLYPH_INIT);
-            } else {
-                if (e != null) {
-                    logger.warn("No glyphs selected in Glyph Selector");
-                }
-
-                navigator.all.setEnabled(false);
-                navigator.prev.setEnabled(false);
-                navigator.next.setEnabled(false);
-            }
-        }
-    }
-
-    //--------------//
-    // MyGlyphBoard //
-    //--------------//
-    private class MyGlyphBoard
-            extends SymbolGlyphBoard
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public MyGlyphBoard (GlyphsController controller)
-        {
-            super(controller, false, true);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public Action getDeassignAction ()
-        {
-            if (deassignAction == null) {
-                deassignAction = new DeassignAction();
-            }
-
-            return deassignAction;
+            return null;
         }
     }
 
@@ -870,29 +716,183 @@ class GlyphBrowser
         }
     }
 
-    //-----------//
-    // NoSigNest //
-    //-----------//
+    //-----------------//
+    // BasicController //
+    //-----------------//
     /**
-     * A specific glyph nest, with no handling of signature.
+     * A very basic glyphs controller, with a sheet-less location service.
      */
-    private static class NoSigNest
-            extends BasicNest
+    private class BasicController
+            extends GlyphsController
     {
-        //~ Constructors ---------------------------------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        public NoSigNest (String name,
-                          Sheet sheet)
+        /** A specific location service, not tied to a sheet */
+        private final SelectionService locationService;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public BasicController (GlyphNest nest,
+                                SelectionService locationService)
         {
-            super(name, sheet);
+            super(new BasicModel(nest));
+            this.locationService = locationService;
         }
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public Glyph getOriginal (GlyphSignature signature,
-                                  GlyphLayer layer)
+        public SelectionService getLocationService ()
         {
-            return null;
+            return this.locationService;
+        }
+    }
+
+    //------------//
+    // BasicModel //
+    //------------//
+    /**
+     * A very basic glyphs model, used to handle the deletion of glyphs.
+     */
+    private class BasicModel
+            extends GlyphsModel
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public BasicModel (GlyphNest nest)
+        {
+            super(null, nest, null);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        // Certainly not called ...
+        @Override
+        public void deassignGlyph (Glyph glyph)
+        {
+            removeGlyph();
+        }
+    }
+
+    //----------------//
+    // DeassignAction //
+    //----------------//
+    private class DeassignAction
+            extends AbstractAction
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public DeassignAction ()
+        {
+            super("Remove");
+            putValue(Action.SHORT_DESCRIPTION, "Remove that glyph from training material");
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @SuppressWarnings("unchecked")
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            removeGlyph();
+        }
+    }
+
+    //---------//
+    // Display //
+    //---------//
+    private class Display
+            extends JPanel
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        LogSlider slider;
+
+        Rubber rubber;
+
+        ScrollView slv;
+
+        Zoom zoom;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Display ()
+        {
+            view = new MyView();
+            view.setLocationService(locationService);
+            view.subscribe();
+            modelRectangle = new Rectangle();
+            modelSize = new Dimension(0, 0);
+            slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 4, 0);
+            zoom = new Zoom(slider, 1); // Default ratio set to 1
+            rubber = new Rubber(view, zoom);
+            rubber.setMouseMonitor(view);
+            view.setZoom(zoom);
+            view.setRubber(rubber);
+            slv = new ScrollView(view);
+
+            // Layout
+            setLayout(new BorderLayout());
+            add(slider, BorderLayout.WEST);
+            add(slv.getComponent(), BorderLayout.CENTER);
+        }
+    }
+
+    //------------//
+    // LoadAction //
+    //------------//
+    private class LoadAction
+            extends AbstractAction
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public LoadAction ()
+        {
+            super("Load");
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Get a (shrinkable, to allow deletions) list of glyph names
+            names = verifier.getGlyphNames();
+
+            // Reset lag & display
+            resetBrowser();
+
+            // Set navigator on first glyph, if any
+            if (!names.isEmpty()) {
+                navigator.setIndex(0, GLYPH_INIT);
+            } else {
+                if (e != null) {
+                    logger.warn("No glyphs selected in Glyph Selector");
+                }
+
+                navigator.all.setEnabled(false);
+                navigator.prev.setEnabled(false);
+                navigator.next.setEnabled(false);
+            }
+        }
+    }
+
+    //--------------//
+    // MyGlyphBoard //
+    //--------------//
+    private class MyGlyphBoard
+            extends SymbolGlyphBoard
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public MyGlyphBoard (GlyphsController controller)
+        {
+            super(controller, false, true);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public Action getDeassignAction ()
+        {
+            if (deassignAction == null) {
+                deassignAction = new DeassignAction();
+            }
+
+            return deassignAction;
         }
     }
 }

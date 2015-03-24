@@ -25,8 +25,8 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.sig.inter.Inter;
 import omr.sig.SIGraph;
+import omr.sig.inter.Inter;
 
 import omr.ui.util.ItemRenderer;
 

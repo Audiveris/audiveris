@@ -24,8 +24,8 @@ import javax.swing.JMenu;
  * @author Hervé Bitteur
  */
 public class LocationDependentMenu
-    extends JMenu
-    implements LocationDependent
+        extends JMenu
+        implements LocationDependent
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -59,7 +59,6 @@ public class LocationDependentMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     @Override
     public void updateUserLocation (Rectangle rect)
     {

@@ -198,11 +198,12 @@ public class OldBarline
     public Style getStyle ()
     {
         throw new RuntimeException("No longer implemented");
-//        if (staffBarlines.isEmpty()) {
-//            return null;
-//        }
-//
-//        return staffBarlines.get(0).getStyle();
+
+        //        if (staffBarlines.isEmpty()) {
+        //            return null;
+        //        }
+        //
+        //        return staffBarlines.get(0).getStyle();
     }
 
     //-----------//

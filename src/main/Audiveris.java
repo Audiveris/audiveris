@@ -9,7 +9,6 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-
 import omr.WellKnowns;
 
 /**
@@ -28,6 +27,7 @@ public final class Audiveris
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------//
     // main //
     //------//

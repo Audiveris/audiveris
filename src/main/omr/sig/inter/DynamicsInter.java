@@ -33,11 +33,11 @@ public class DynamicsInter
     private static final Map<Shape, String> sigs = new EnumMap<Shape, String>(Shape.class);
 
     static {
-//        // Additional characters : m, r, s & z
-//        sigs.put(Shape.DYNAMICS_CHAR_M, "m");
-//        sigs.put(Shape.DYNAMICS_CHAR_R, "r");
-//        sigs.put(Shape.DYNAMICS_CHAR_S, "s");
-//        sigs.put(Shape.DYNAMICS_CHAR_Z, "z");
+        //        // Additional characters : m, r, s & z
+        //        sigs.put(Shape.DYNAMICS_CHAR_M, "m");
+        //        sigs.put(Shape.DYNAMICS_CHAR_R, "r");
+        //        sigs.put(Shape.DYNAMICS_CHAR_S, "s");
+        //        sigs.put(Shape.DYNAMICS_CHAR_Z, "z");
         //
         // True dynamics symbols
         sigs.put(Shape.DYNAMICS_P, "p");
@@ -48,15 +48,16 @@ public class DynamicsInter
         sigs.put(Shape.DYNAMICS_MF, "mf");
         sigs.put(Shape.DYNAMICS_FP, "fp");
         sigs.put(Shape.DYNAMICS_SFZ, "sfz");
-//        sigs.put(Shape.DYNAMICS_FFF, "fff");
-//        sigs.put(Shape.DYNAMICS_FZ, "fz");
-//        sigs.put(Shape.DYNAMICS_PPP, "ppp");
-//        sigs.put(Shape.DYNAMICS_RF, "rf");
-//        sigs.put(Shape.DYNAMICS_RFZ, "rfz");
-//        sigs.put(Shape.DYNAMICS_SF, "sf");
-//        sigs.put(Shape.DYNAMICS_SFFZ, "sffz");
-//        sigs.put(Shape.DYNAMICS_SFP, "sfp");
-//        sigs.put(Shape.DYNAMICS_SFPP, "sfpp");
+
+        //        sigs.put(Shape.DYNAMICS_FFF, "fff");
+        //        sigs.put(Shape.DYNAMICS_FZ, "fz");
+        //        sigs.put(Shape.DYNAMICS_PPP, "ppp");
+        //        sigs.put(Shape.DYNAMICS_RF, "rf");
+        //        sigs.put(Shape.DYNAMICS_RFZ, "rfz");
+        //        sigs.put(Shape.DYNAMICS_SF, "sf");
+        //        sigs.put(Shape.DYNAMICS_SFFZ, "sffz");
+        //        sigs.put(Shape.DYNAMICS_SFP, "sfp");
+        //        sigs.put(Shape.DYNAMICS_SFPP, "sfpp");
     }
 
     /** Map Signature -> Shape. */
@@ -71,15 +72,16 @@ public class DynamicsInter
         shapes.put("mf", Shape.DYNAMICS_MF);
         shapes.put("fp", Shape.DYNAMICS_FP);
         shapes.put("sfz", Shape.DYNAMICS_SFZ);
-//        shapes.put("fff", Shape.DYNAMICS_FFF);
-//        shapes.put("fz", Shape.DYNAMICS_FZ);
-//        shapes.put("ppp", Shape.DYNAMICS_PPP);
-//        shapes.put("rf", Shape.DYNAMICS_RF);
-//        shapes.put("rfz", Shape.DYNAMICS_RFZ);
-//        shapes.put("sf", Shape.DYNAMICS_SF);
-//        shapes.put("sffz", Shape.DYNAMICS_SFFZ);
-//        shapes.put("sfp", Shape.DYNAMICS_SFP);
-//        shapes.put("sfpp", Shape.DYNAMICS_SFPP);
+
+        //        shapes.put("fff", Shape.DYNAMICS_FFF);
+        //        shapes.put("fz", Shape.DYNAMICS_FZ);
+        //        shapes.put("ppp", Shape.DYNAMICS_PPP);
+        //        shapes.put("rf", Shape.DYNAMICS_RF);
+        //        shapes.put("rfz", Shape.DYNAMICS_RFZ);
+        //        shapes.put("sf", Shape.DYNAMICS_SF);
+        //        shapes.put("sffz", Shape.DYNAMICS_SFFZ);
+        //        shapes.put("sfp", Shape.DYNAMICS_SFP);
+        //        shapes.put("sfpp", Shape.DYNAMICS_SFPP);
     }
 
     //~ Constructors -------------------------------------------------------------------------------

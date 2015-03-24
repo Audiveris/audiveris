@@ -16,8 +16,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.math.AreaUtil;
 
-import omr.sheet.BeamGroup;
-import omr.sheet.Voice;
+import omr.sheet.beam.BeamGroup;
+import omr.sheet.rhythm.Voice;
 
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;

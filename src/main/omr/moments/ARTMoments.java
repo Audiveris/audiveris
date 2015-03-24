@@ -14,7 +14,7 @@ package omr.moments;
 /**
  * Interface {@code ARTMoments} defines a region shape features descriptor based on
  * Angular Radial Transform.
- *<p>
+ * <p>
  * See MPEG-7 Experimentation Model for the original C++ code
  *
  * @author Hervé Bitteur

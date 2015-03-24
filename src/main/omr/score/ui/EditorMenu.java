@@ -15,19 +15,19 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolMenu;
 import omr.glyph.ui.SymbolsController;
 
-import omr.grid.StaffProjector;
-
 import omr.math.GeoUtil;
 
-
-import omr.sheet.HeaderBuilder;
 import omr.sheet.Sheet;
-import omr.sheet.Slot;
 import omr.sheet.Staff;
 import omr.sheet.StaffManager;
 import omr.sheet.SystemInfo;
+import omr.sheet.grid.StaffProjector;
+import omr.sheet.header.HeaderBuilder;
+import omr.sheet.rhythm.MeasureStack;
+import omr.sheet.rhythm.Slot;
 import omr.sheet.ui.ExtractionMenu;
 
+import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.ChordInter;
 import omr.sig.ui.GlyphMenu;
 import omr.sig.ui.InterMenu;
@@ -49,8 +49,6 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import omr.sheet.MeasureStack;
-import omr.sig.inter.AbstractNoteInter;
 
 /**
  * Class {@code EditorMenu} defines the pop-up menu which is linked to the current
@@ -61,26 +59,24 @@ import omr.sig.inter.AbstractNoteInter;
  * @author Hervé Bitteur
  */
 public class EditorMenu
-    extends PageMenu
+        extends PageMenu
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(EditorMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     /** Glyph submenu. */
     private final SymbolMenu symbolMenu;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     /**
      * Create the editor page menu.
      *
      * @param sheet      the related sheet
      * @param symbolMenu already allocated symbol menu
      */
-    public EditorMenu (Sheet      sheet,
+    public EditorMenu (Sheet sheet,
                        SymbolMenu symbolMenu)
     {
         super(sheet);
@@ -89,7 +85,6 @@ public class EditorMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //------------//
     // updateMenu //
     //------------//
@@ -139,7 +134,6 @@ public class EditorMenu
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //-----------//
     // ChordMenu //
     //-----------//
@@ -147,7 +141,7 @@ public class EditorMenu
      * Dump the chords that translate the selected glyphs.
      */
     private class ChordMenu
-        extends LocationDependentMenu
+            extends LocationDependentMenu
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -155,7 +149,6 @@ public class EditorMenu
         private final Set<ChordInter> selectedChords = new HashSet<ChordInter>();
 
         //~ Constructors ---------------------------------------------------------------------------
-
         public ChordMenu ()
         {
             super("Chord");
@@ -163,12 +156,11 @@ public class EditorMenu
         }
 
         //~ Methods --------------------------------------------------------------------------------
-
         @Override
         public void updateUserLocation (Rectangle rect)
         {
             SymbolsController controller = sheet.getSymbolsController();
-            Set<Glyph>        glyphs = controller.getNest().getSelectedGlyphSet();
+            Set<Glyph> glyphs = controller.getNest().getSelectedGlyphSet();
             selectedChords.clear();
             setText("");
 
@@ -176,7 +168,7 @@ public class EditorMenu
                 for (Glyph glyph : glyphs) {
                     for (Object obj : glyph.getTranslations()) {
                         if (obj instanceof AbstractNoteInter) {
-                            AbstractNoteInter       note = (AbstractNoteInter) obj;
+                            AbstractNoteInter note = (AbstractNoteInter) obj;
                             ChordInter chord = note.getChord();
 
                             if (chord != null) {
@@ -211,12 +203,11 @@ public class EditorMenu
         }
 
         //~ Inner Classes --------------------------------------------------------------------------
-
         /**
          * Dump the current chord(s)
          */
         private class DumpAction
-            extends AbstractAction
+                extends AbstractAction
         {
             //~ Constructors -----------------------------------------------------------------------
 
@@ -227,7 +218,6 @@ public class EditorMenu
             }
 
             //~ Methods ----------------------------------------------------------------------------
-
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -243,7 +233,7 @@ public class EditorMenu
     // MeasureMenu //
     //-------------//
     private class MeasureMenu
-        extends LocationDependentMenu
+            extends LocationDependentMenu
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -251,7 +241,6 @@ public class EditorMenu
         private MeasureStack stack;
 
         //~ Constructors ---------------------------------------------------------------------------
-
         public MeasureMenu ()
         {
             super("Measure");
@@ -259,7 +248,6 @@ public class EditorMenu
         }
 
         //~ Methods --------------------------------------------------------------------------------
-
         @Override
         public void updateUserLocation (Rectangle rect)
         {
@@ -279,12 +267,11 @@ public class EditorMenu
         }
 
         //~ Inner Classes --------------------------------------------------------------------------
-
         /**
          * Dump the current measure
          */
         private class DumpAction
-            extends AbstractAction
+                extends AbstractAction
         {
             //~ Constructors -----------------------------------------------------------------------
 
@@ -295,7 +282,6 @@ public class EditorMenu
             }
 
             //~ Methods ----------------------------------------------------------------------------
-
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -308,7 +294,7 @@ public class EditorMenu
     // SlotMenu //
     //----------//
     private class SlotMenu
-        extends LocationDependentMenu
+            extends LocationDependentMenu
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -316,7 +302,6 @@ public class EditorMenu
         private Slot slot;
 
         //~ Constructors ---------------------------------------------------------------------------
-
         public SlotMenu ()
         {
             super("Slot");
@@ -325,7 +310,6 @@ public class EditorMenu
         }
 
         //~ Methods --------------------------------------------------------------------------------
-
         @Override
         public void updateUserLocation (Rectangle rect)
         {
@@ -345,12 +329,11 @@ public class EditorMenu
         }
 
         //~ Inner Classes --------------------------------------------------------------------------
-
         /**
          * Dump the chords of the current slot
          */
         private class DumpSlotChordsAction
-            extends AbstractAction
+                extends AbstractAction
         {
             //~ Constructors -----------------------------------------------------------------------
 
@@ -361,7 +344,6 @@ public class EditorMenu
             }
 
             //~ Methods ----------------------------------------------------------------------------
-
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -373,7 +355,7 @@ public class EditorMenu
          * Dump the voices of the current slot
          */
         private class DumpVoicesAction
-            extends AbstractAction
+                extends AbstractAction
         {
             //~ Constructors -----------------------------------------------------------------------
 
@@ -384,7 +366,6 @@ public class EditorMenu
             }
 
             //~ Methods ----------------------------------------------------------------------------
-
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -397,14 +378,13 @@ public class EditorMenu
     // StaffMenu //
     //-----------//
     private class StaffMenu
-        extends LocationDependentMenu
+            extends LocationDependentMenu
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         private Staff staff;
 
         //~ Constructors ---------------------------------------------------------------------------
-
         /**
          * Create the staff menu
          */
@@ -416,7 +396,6 @@ public class EditorMenu
         }
 
         //~ Methods --------------------------------------------------------------------------------
-
         @Override
         public void updateUserLocation (Rectangle rect)
         {
@@ -430,12 +409,11 @@ public class EditorMenu
         }
 
         //~ Inner Classes --------------------------------------------------------------------------
-
         /**
          * Plot the x-axis projection of the current staff.
          */
         private class PlotAction
-            extends AbstractAction
+                extends AbstractAction
         {
             //~ Constructors -----------------------------------------------------------------------
 
@@ -446,7 +424,6 @@ public class EditorMenu
             }
 
             //~ Methods ----------------------------------------------------------------------------
-
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -458,7 +435,7 @@ public class EditorMenu
          * Plot the x-axis projection of the current staff header.
          */
         private class PlotHeaderAction
-            extends AbstractAction
+                extends AbstractAction
         {
             //~ Constructors -----------------------------------------------------------------------
 
@@ -469,7 +446,6 @@ public class EditorMenu
             }
 
             //~ Methods ----------------------------------------------------------------------------
-
             @Override
             public void actionPerformed (ActionEvent e)
             {

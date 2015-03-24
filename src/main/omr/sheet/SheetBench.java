@@ -13,6 +13,8 @@ package omr.sheet;
 
 import omr.score.Score;
 
+import omr.sheet.stem.StemScale;
+
 import omr.step.Step;
 
 import org.slf4j.Logger;
@@ -134,6 +136,7 @@ public class SheetBench
         }
 
         addProp("scale.mainBeam", scale.getMainBeam());
+
         ///addProp("scale.mainStem", scale.getMainStem());
     }
 

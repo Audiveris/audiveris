@@ -19,10 +19,10 @@ import omr.math.Rational;
 
 import omr.score.entity.DurationFactor;
 
-import omr.sheet.BeamGroup;
-import omr.sheet.Measure;
-import omr.sheet.Slot;
-import omr.sheet.Voice;
+import omr.sheet.beam.BeamGroup;
+import omr.sheet.rhythm.Measure;
+import omr.sheet.rhythm.Slot;
+import omr.sheet.rhythm.Voice;
 
 import omr.sig.SIGraph;
 import omr.sig.relation.AugmentationRelation;
@@ -134,35 +134,6 @@ public abstract class ChordInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------//
-    // getClosestChord //
-    //-----------------//
-    /**
-     * From a provided Chord collection, report the chord which has the
-     * closest abscissa to a provided point.
-     *
-     * @param chords the collection of chords to browse
-     * @param point  the reference point
-     * @return the abscissa-wise closest chord
-     */
-    public static ChordInter getClosestChord (Collection<ChordInter> chords,
-                                              Point point)
-    {
-        ChordInter bestChord = null;
-        int bestDx = Integer.MAX_VALUE;
-
-        for (ChordInter chord : chords) {
-            int dx = Math.abs(chord.getHeadLocation().x - point.x);
-
-            if (dx < bestDx) {
-                bestDx = dx;
-                bestChord = chord;
-            }
-        }
-
-        return bestChord;
-    }
-
     //--------//
     // accept //
     //--------//
@@ -323,6 +294,35 @@ public abstract class ChordInter
         }
 
         return super.getBounds();
+    }
+
+    //-----------------//
+    // getClosestChord //
+    //-----------------//
+    /**
+     * From a provided Chord collection, report the chord which has the
+     * closest abscissa to a provided point.
+     *
+     * @param chords the collection of chords to browse
+     * @param point  the reference point
+     * @return the abscissa-wise closest chord
+     */
+    public static ChordInter getClosestChord (Collection<ChordInter> chords,
+                                              Point point)
+    {
+        ChordInter bestChord = null;
+        int bestDx = Integer.MAX_VALUE;
+
+        for (ChordInter chord : chords) {
+            int dx = Math.abs(chord.getHeadLocation().x - point.x);
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestChord = chord;
+            }
+        }
+
+        return bestChord;
     }
 
     //---------------//

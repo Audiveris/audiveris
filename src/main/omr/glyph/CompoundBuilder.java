@@ -293,60 +293,6 @@ public class CompoundBuilder
         protected abstract Rectangle computeReferenceBox ();
     }
 
-    //-----------//
-    // NoAdapter //
-    //-----------//
-    /**
-     * A pass-through fake adapter.
-     */
-    public static class NoAdapter
-            extends AbstractAdapter
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public NoAdapter (SystemInfo system)
-        {
-            super(system, 0);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public Evaluation getChosenEvaluation ()
-        {
-            return new Evaluation(null, Evaluation.ALGORITHM);
-        }
-
-        @Override
-        public boolean isCandidateClose (Glyph glyph)
-        {
-            return true;
-        }
-
-        @Override
-        public boolean isCandidateSuitable (Glyph glyph)
-        {
-            return true;
-        }
-
-        @Override
-        public boolean isCompoundValid (Glyph compound)
-        {
-            return true;
-        }
-
-        @Override
-        public boolean shouldFilterCandidates ()
-        {
-            return false;
-        }
-
-        @Override
-        protected Rectangle computeReferenceBox ()
-        {
-            return null;
-        }
-    }
-
     //---------------//
     // TopRawAdapter //
     //---------------//
@@ -393,10 +339,8 @@ public class CompoundBuilder
         public boolean isCompoundValid (Glyph compound)
         {
             // Check if a desired shape appears in the top raw evaluations
-            final Evaluation vote = GlyphClassifier.getInstance().rawVote(
-                    compound,
-                    minGrade,
-                    predicate);
+            final Evaluation vote = GlyphClassifier.getInstance()
+                    .rawVote(compound, minGrade, predicate);
 
             if (vote != null) {
                 chosenEvaluation = vote;
@@ -452,6 +396,60 @@ public class CompoundBuilder
             } else {
                 return false;
             }
+        }
+    }
+
+    //-----------//
+    // NoAdapter //
+    //-----------//
+    /**
+     * A pass-through fake adapter.
+     */
+    public static class NoAdapter
+            extends AbstractAdapter
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public NoAdapter (SystemInfo system)
+        {
+            super(system, 0);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public Evaluation getChosenEvaluation ()
+        {
+            return new Evaluation(null, Evaluation.ALGORITHM);
+        }
+
+        @Override
+        public boolean isCandidateClose (Glyph glyph)
+        {
+            return true;
+        }
+
+        @Override
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return true;
+        }
+
+        @Override
+        public boolean isCompoundValid (Glyph compound)
+        {
+            return true;
+        }
+
+        @Override
+        public boolean shouldFilterCandidates ()
+        {
+            return false;
+        }
+
+        @Override
+        protected Rectangle computeReferenceBox ()
+        {
+            return null;
         }
     }
 }

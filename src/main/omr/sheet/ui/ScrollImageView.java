@@ -21,7 +21,7 @@ import omr.ui.view.ScrollView;
  * @author Hervé Bitteur
  */
 public class ScrollImageView
-    extends ScrollView
+        extends ScrollView
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ public class ScrollImageView
      * @param sheet related sheet
      * @param view  the image view
      */
-    public ScrollImageView (Sheet     sheet,
+    public ScrollImageView (Sheet sheet,
                             ImageView view)
     {
         // Inject dependency of pixel location

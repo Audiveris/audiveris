@@ -141,7 +141,6 @@ public abstract class SheetDependent
             } else {
                 setBookIdle(false);
             }
-
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }

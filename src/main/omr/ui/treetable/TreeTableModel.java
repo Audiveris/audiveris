@@ -42,7 +42,7 @@ import javax.swing.tree.TreeModel;
 public interface TreeTableModel
         extends TreeModel
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Returns the type for column number.

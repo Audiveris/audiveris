@@ -38,7 +38,6 @@ public class JunctionRetriever
     private final Vicinity vicinity = new Vicinity();
 
     //~ Constructors -------------------------------------------------------------------------------
-
     /**
      * Creates a new JunctionRetriever object.
      *
@@ -50,7 +49,6 @@ public class JunctionRetriever
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     /**
      * Scan the whole image.
      */
@@ -61,7 +59,7 @@ public class JunctionRetriever
                 int pix = buf.get(x, y);
 
                 if ((pix == FOREGROUND) // Basic pixel, not yet processed
-                     ||isJunction(pix)) { // Junction, perhaps not the best
+                    || isJunction(pix)) { // Junction, perhaps not the best
                     checkJunction(x, y);
                 }
             }
@@ -104,8 +102,8 @@ public class JunctionRetriever
      * @param dirs which directions to scan
      * @return the number of non-foreground pixels found
      */
-    private int dirNeighbors (int   x,
-                              int   y,
+    private int dirNeighbors (int x,
+                              int y,
                               int[] dirs)
     {
         int n = 0;
@@ -178,7 +176,6 @@ public class JunctionRetriever
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //----------//
     // Vicinity //
     //----------//
@@ -190,11 +187,12 @@ public class JunctionRetriever
         //~ Instance fields ------------------------------------------------------------------------
 
         int verts; // Number of neighbors vertically connected
+
         int horis; // Number of neighbors horizontally connected
+
         int diags; // Number of neighbors diagonally connected
 
         //~ Methods --------------------------------------------------------------------------------
-
         public int getCount ()
         {
             return verts + horis + diags;

@@ -12,7 +12,7 @@
 package omr.util;
 
 /**
- * Interface {@code Concurrency} declares if an entity (class instance) can be used by 
+ * Interface {@code Concurrency} declares if an entity (class instance) can be used by
  * concurrent threads.
  * This complements the JCIP annotations in a more dynamic way.
  *
@@ -20,7 +20,7 @@ package omr.util;
  */
 public interface Concurrency
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report whether the entity can be used concurrently

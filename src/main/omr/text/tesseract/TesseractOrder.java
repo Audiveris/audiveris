@@ -13,8 +13,6 @@ package omr.text.tesseract;
 
 import omr.WellKnowns;
 
-import omr.sheet.Sheet;
-
 import omr.text.FontInfo;
 import omr.text.TextChar;
 import omr.text.TextLine;
@@ -31,7 +29,6 @@ import tesseract.TessBridge.ResultIterator.Level;
 import tesseract.TessBridge.TessBaseAPI;
 import tesseract.TessBridge.TessBaseAPI.SegmentationMode;
 
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -64,13 +61,12 @@ public class TesseractOrder
     static {
         IIORegistry registry = IIORegistry.getDefaultInstance();
         registry.registerServiceProvider(
-            new com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriterSpi());
+                new com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriterSpi());
         registry.registerServiceProvider(
-            new com.sun.media.imageioimpl.plugins.tiff.TIFFImageReaderSpi());
+                new com.sun.media.imageioimpl.plugins.tiff.TIFFImageReaderSpi());
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     /** Serial number for this order. */
     private final int serial;
 
@@ -93,7 +89,6 @@ public class TesseractOrder
     private final PIX image;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     //
     //----------------//
     // TesseractOrder //
@@ -112,13 +107,13 @@ public class TesseractOrder
      * @throws IOException          When temporary Tiff buffer failed
      * @throws RuntimeException     When PIX image failed
      */
-    public TesseractOrder (String           label,
-                           int              serial,
-                           boolean          keepImage,
-                           String           lang,
+    public TesseractOrder (String label,
+                           int serial,
+                           boolean keepImage,
+                           String lang,
                            SegmentationMode segMode,
-                           BufferedImage    bufferedImage)
-        throws UnsatisfiedLinkError, IOException
+                           BufferedImage bufferedImage)
+            throws UnsatisfiedLinkError, IOException
     {
         this.label = label;
         this.serial = serial;
@@ -137,7 +132,6 @@ public class TesseractOrder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //
     //---------//
     // process //
@@ -221,14 +215,14 @@ public class TesseractOrder
     {
         if (att != null) {
             return new FontInfo(
-                att.isBold,
-                att.isItalic,
-                att.isUnderlined,
-                att.isMonospace,
-                att.isSerif,
-                att.isSmallcaps,
-                att.pointsize,
-                att.fontName);
+                    att.isBold,
+                    att.isItalic,
+                    att.isUnderlined,
+                    att.isMonospace,
+                    att.isSerif,
+                    att.isSmallcaps,
+                    att.pointsize,
+                    att.fontName);
         } else {
             return null;
         }
@@ -248,8 +242,8 @@ public class TesseractOrder
         ResultIterator it = api.GetIterator();
 
         List<TextLine> lines = new ArrayList<TextLine>(); // All lines built so far
-        TextLine       line = null; // The line being built
-        TextWord       word = null; // The word being built
+        TextLine line = null; // The line being built
+        TextWord word = null; // The word being built
 
         try {
             do {
@@ -276,12 +270,12 @@ public class TesseractOrder
                     }
 
                     word = new TextWord(
-                        it.BoundingBox(Level.WORD),
-                        it.GetUTF8Text(Level.WORD),
-                        it.Baseline(Level.WORD),
-                        it.Confidence(Level.WORD)/ 100.0,
-                        fontInfo,
-                        line);
+                            it.BoundingBox(Level.WORD),
+                            it.GetUTF8Text(Level.WORD),
+                            it.Baseline(Level.WORD),
+                            it.Confidence(Level.WORD) / 100.0,
+                            fontInfo,
+                            line);
                     logger.debug("    {}", word);
                     line.appendWord(word);
 
@@ -298,7 +292,7 @@ public class TesseractOrder
 
                 // Char/symbol to be processed
                 word.addChar(
-                    new TextChar(it.BoundingBox(Level.SYMBOL), it.GetUTF8Text(Level.SYMBOL)));
+                        new TextChar(it.BoundingBox(Level.SYMBOL), it.GetUTF8Text(Level.SYMBOL)));
             } while (it.Next(Level.SYMBOL));
 
             return lines;
@@ -323,7 +317,7 @@ public class TesseractOrder
      * @return a buffer in TIFF format
      */
     private ByteBuffer toTiffBuffer (BufferedImage image)
-        throws IOException
+            throws IOException
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -335,13 +329,13 @@ public class TesseractOrder
         }
 
         ByteBuffer buf = ByteBuffer.allocate(baos.size());
-        byte[]     bytes = baos.toByteArray();
+        byte[] bytes = baos.toByteArray();
         buf.put(bytes);
 
         // Should we keep a local copy of this buffer on disk?
         if (keepImage) {
             String name = String.format("%03d-", serial) + ((label != null) ? label : "");
-            File   file = new File(WellKnowns.TEMP_FOLDER, name + ".tif");
+            File file = new File(WellKnowns.TEMP_FOLDER, name + ".tif");
 
             // Make sure the TEMP directory exists
             if (!WellKnowns.TEMP_FOLDER.exists()) {

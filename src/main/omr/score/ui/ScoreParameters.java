@@ -363,6 +363,76 @@ public class ScoreParameters
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //
+    //---------//
+    // MyPanel //
+    //---------//
+    /**
+     * A panel corresponding to a tab.
+     */
+    private final class MyPanel
+            extends Panel
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Collection of individual data panes */
+        private final List<Pane> panes = new ArrayList<Pane>();
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public MyPanel (String name,
+                        Pane... panes)
+        {
+            this(name, Arrays.asList(panes));
+        }
+
+        public MyPanel (String name,
+                        List<Pane> panes)
+        {
+            setName(name);
+
+            for (Pane pane : panes) {
+                if (pane != null) {
+                    this.panes.add(pane);
+                }
+            }
+
+            defineLayout();
+
+            // Initially, all panes are deselected
+            for (Pane pane : this.panes) {
+                pane.box.setSelected(false);
+                pane.actionPerformed(null);
+            }
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public void defineLayout ()
+        {
+            // Compute the total number of logical rows
+            int logicalRowCount = 0;
+
+            for (Pane pane : panes) {
+                logicalRowCount += pane.getLogicalRowCount();
+            }
+
+            FormLayout layout = Panel.makeFormLayout(
+                    logicalRowCount,
+                    3,
+                    "right:",
+                    "30dlu",
+                    "35dlu");
+            PanelBuilder builder = new PanelBuilder(layout, this);
+            builder.setDefaultDialogBorder();
+
+            CellConstraints cst = new CellConstraints();
+            int r = 1;
+
+            for (Pane pane : panes) {
+                r = pane.defineLayout(builder, cst, r);
+            }
+        }
+    }
+
     //-------------//
     // BooleanPane //
     //-------------//
@@ -429,6 +499,183 @@ public class ScoreParameters
         {
             return box.getItemAt(box.getSelectedIndex());
         }
+    }
+
+    //------//
+    // Pane //
+    //------//
+    /**
+     * A pane is able to host data, check data validity and apply the
+     * requested modifications.
+     */
+    private abstract class Pane<E>
+            extends Param<E>
+            implements ActionListener
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Backup parameter (cannot be null). */
+        protected final Param<E> backup;
+
+        /** Related book, if any. */
+        protected final Book book;
+
+        /** Related sheet, if any. */
+        protected final Sheet sheet;
+
+        /** Box for selecting specific vs inherited data. */
+        private final JCheckBox box;
+
+        /** Title for the pane. */
+        private final String title;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Pane (String title,
+                     Book book,
+                     Sheet sheet,
+                     Pane parent,
+                     Param<E> backup)
+        {
+            super(parent);
+
+            if (backup == null) {
+                throw new IllegalArgumentException("Null backup for pane '" + title + "'");
+            }
+
+            this.backup = backup;
+            this.title = title;
+            this.book = book;
+            this.sheet = sheet;
+
+            box = new JCheckBox();
+            box.addActionListener(this);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Pane (de)selection (programmatic or manual)
+            boolean sel = isSelected();
+
+            setEnabled(sel);
+
+            if (!sel) {
+                display(getTarget());
+            }
+        }
+
+        /**
+         * Commit the modifications, for the items that are not handled
+         * by the ParametersTask, which means all actions related to
+         * default values.
+         */
+        public void commit ()
+        {
+            if (isSelected()) {
+                //logger.info("   {}: {}", title, read());
+                backup.setSpecific(read());
+            }
+        }
+
+        /**
+         * Build the related user interface
+         *
+         * @param builder the shared panel builder
+         * @param cst     the cell constraints
+         * @param r       initial row value
+         * @return final row value
+         */
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int r)
+        {
+            // Draw the specific/inherit box + separating line
+            builder.add(box, cst.xyw(1, r, 1));
+            builder.addSeparator(title, cst.xyw(3, r, 9));
+            r += 2;
+
+            return r;
+        }
+
+        /**
+         * Report the count of needed logical rows.
+         * Typically 2 (the label separator plus 1 line of data)
+         */
+        public int getLogicalRowCount ()
+        {
+            return 2;
+        }
+
+        /**
+         * Report the specific value for this pane, if any.
+         *
+         * @return the fields content when selected, otherwise the backup
+         *         specific data if any.
+         */
+        @Override
+        public E getSpecific ()
+        {
+            if (isSelected()) {
+                return read();
+            } else if (backup != null) {
+                return backup.getSpecific();
+            } else {
+                return null;
+            }
+        }
+
+        /**
+         * User has selected (and enabled) this pane
+         *
+         * @return true if selected
+         */
+        public boolean isSelected ()
+        {
+            return box.isSelected();
+        }
+
+        /**
+         * Check whether all the pane data are valid, and feed the
+         * ParametersTask accordingly with score or page information.
+         *
+         * @return true if everything is OK, false otherwise
+         */
+        public boolean isValid ()
+        {
+            return true; // By default
+        }
+
+        /**
+         * User selects (or deselects) this pane
+         *
+         * @param bool true for selection
+         */
+        public void setSelected (boolean bool)
+        {
+            box.setSelected(bool);
+        }
+
+        /**
+         * Write the parameter into the fields content
+         *
+         * @param content the data to display
+         */
+        protected abstract void display (E content);
+
+        /**
+         * Read the parameter as defined by the fields content.
+         *
+         * @return the pane parameter
+         */
+        protected abstract E read ();
+
+        /**
+         * Set the enabled flag for all data fields
+         *
+         * @param bool the flag value
+         */
+        protected abstract void setEnabled (boolean bool);
     }
 
     //---------//
@@ -680,253 +927,6 @@ public class ScoreParameters
         private FilterKind readKind ()
         {
             return kindCombo.getItemAt(kindCombo.getSelectedIndex());
-        }
-    }
-
-    //------//
-    // Pane //
-    //------//
-    /**
-     * A pane is able to host data, check data validity and apply the
-     * requested modifications.
-     */
-    private abstract class Pane<E>
-            extends Param<E>
-            implements ActionListener
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Backup parameter (cannot be null). */
-        protected final Param<E> backup;
-
-        /** Related book, if any. */
-        protected final Book book;
-
-        /** Related sheet, if any. */
-        protected final Sheet sheet;
-
-        /** Box for selecting specific vs inherited data. */
-        private final JCheckBox box;
-
-        /** Title for the pane. */
-        private final String title;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Pane (String title,
-                     Book book,
-                     Sheet sheet,
-                     Pane parent,
-                     Param<E> backup)
-        {
-            super(parent);
-
-            if (backup == null) {
-                throw new IllegalArgumentException("Null backup for pane '" + title + "'");
-            }
-
-            this.backup = backup;
-            this.title = title;
-            this.book = book;
-            this.sheet = sheet;
-
-            box = new JCheckBox();
-            box.addActionListener(this);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            // Pane (de)selection (programmatic or manual)
-            boolean sel = isSelected();
-
-            setEnabled(sel);
-
-            if (!sel) {
-                display(getTarget());
-            }
-        }
-
-        /**
-         * Commit the modifications, for the items that are not handled
-         * by the ParametersTask, which means all actions related to
-         * default values.
-         */
-        public void commit ()
-        {
-            if (isSelected()) {
-                //logger.info("   {}: {}", title, read());
-                backup.setSpecific(read());
-            }
-        }
-
-        /**
-         * Build the related user interface
-         *
-         * @param builder the shared panel builder
-         * @param cst     the cell constraints
-         * @param r       initial row value
-         * @return final row value
-         */
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            // Draw the specific/inherit box + separating line
-            builder.add(box, cst.xyw(1, r, 1));
-            builder.addSeparator(title, cst.xyw(3, r, 9));
-            r += 2;
-
-            return r;
-        }
-
-        /**
-         * Report the count of needed logical rows.
-         * Typically 2 (the label separator plus 1 line of data)
-         */
-        public int getLogicalRowCount ()
-        {
-            return 2;
-        }
-
-        /**
-         * Report the specific value for this pane, if any.
-         *
-         * @return the fields content when selected, otherwise the backup
-         *         specific data if any.
-         */
-        @Override
-        public E getSpecific ()
-        {
-            if (isSelected()) {
-                return read();
-            } else if (backup != null) {
-                return backup.getSpecific();
-            } else {
-                return null;
-            }
-        }
-
-        /**
-         * User has selected (and enabled) this pane
-         *
-         * @return true if selected
-         */
-        public boolean isSelected ()
-        {
-            return box.isSelected();
-        }
-
-        /**
-         * Check whether all the pane data are valid, and feed the
-         * ParametersTask accordingly with score or page information.
-         *
-         * @return true if everything is OK, false otherwise
-         */
-        public boolean isValid ()
-        {
-            return true; // By default
-        }
-
-        /**
-         * User selects (or deselects) this pane
-         *
-         * @param bool true for selection
-         */
-        public void setSelected (boolean bool)
-        {
-            box.setSelected(bool);
-        }
-
-        /**
-         * Write the parameter into the fields content
-         *
-         * @param content the data to display
-         */
-        protected abstract void display (E content);
-
-        /**
-         * Read the parameter as defined by the fields content.
-         *
-         * @return the pane parameter
-         */
-        protected abstract E read ();
-
-        /**
-         * Set the enabled flag for all data fields
-         *
-         * @param bool the flag value
-         */
-        protected abstract void setEnabled (boolean bool);
-    }
-
-    //
-    //---------//
-    // MyPanel //
-    //---------//
-    /**
-     * A panel corresponding to a tab.
-     */
-    private final class MyPanel
-            extends Panel
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Collection of individual data panes */
-        private final List<Pane> panes = new ArrayList<Pane>();
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public MyPanel (String name,
-                        Pane... panes)
-        {
-            this(name, Arrays.asList(panes));
-        }
-
-        public MyPanel (String name,
-                        List<Pane> panes)
-        {
-            setName(name);
-
-            for (Pane pane : panes) {
-                if (pane != null) {
-                    this.panes.add(pane);
-                }
-            }
-
-            defineLayout();
-
-            // Initially, all panes are deselected
-            for (Pane pane : this.panes) {
-                pane.box.setSelected(false);
-                pane.actionPerformed(null);
-            }
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public void defineLayout ()
-        {
-            // Compute the total number of logical rows
-            int logicalRowCount = 0;
-
-            for (Pane pane : panes) {
-                logicalRowCount += pane.getLogicalRowCount();
-            }
-
-            FormLayout layout = Panel.makeFormLayout(
-                    logicalRowCount,
-                    3,
-                    "right:",
-                    "30dlu",
-                    "35dlu");
-            PanelBuilder builder = new PanelBuilder(layout, this);
-            builder.setDefaultDialogBorder();
-
-            CellConstraints cst = new CellConstraints();
-            int r = 1;
-
-            for (Pane pane : panes) {
-                r = pane.defineLayout(builder, cst, r);
-            }
         }
     }
 

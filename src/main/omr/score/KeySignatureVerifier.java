@@ -21,18 +21,17 @@ import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.sheet.Staff;
-
 import omr.math.GeoUtil;
 
-import omr.score.entity.OldBarline;
 import omr.score.entity.KeySignature;
+import omr.score.entity.OldBarline;
 import omr.score.entity.OldMeasure;
-import omr.score.entity.ScoreSystem;
 import omr.score.entity.OldStaff;
 import omr.score.entity.OldSystemPart;
+import omr.score.entity.ScoreSystem;
 
 import omr.sheet.Scale;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
@@ -126,12 +125,12 @@ public class KeySignatureVerifier
                 compound,
                 Grades.keySigMinGrade,
                 new Predicate<Shape>()
-        {
-            @Override
-            public boolean check (Shape shape)
-            {
-                return shape == bestKey.getShape();
-            }
+                {
+                    @Override
+                    public boolean check (Shape shape)
+                    {
+                        return shape == bestKey.getShape();
+                    }
                 });
 
         if (vote != null) {
@@ -166,7 +165,7 @@ public class KeySignatureVerifier
     // getMeasureOf //
     //--------------//
     private OldMeasure getMeasureOf (int staffIndex,
-                                  int measureIndex)
+                                     int measureIndex)
     {
         int staffOffset = 0;
 
@@ -267,7 +266,8 @@ public class KeySignatureVerifier
             staffOffset += partStaffNb;
 
             if (systemStaffIndex < staffOffset) {
-                return (OldStaff) part.getStaves().get((partStaffNb + systemStaffIndex) - staffOffset);
+                return (OldStaff) part.getStaves()
+                        .get((partStaffNb + systemStaffIndex) - staffOffset);
             }
         }
 

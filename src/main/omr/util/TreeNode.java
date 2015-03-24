@@ -31,15 +31,15 @@ import java.util.List;
  */
 public abstract class TreeNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TreeNode.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Children : the list of nodes just below in the tree
      */
-    protected final List<TreeNode> children = new ArrayList<>();
+    protected final List<TreeNode> children = new ArrayList<TreeNode>();
 
     /**
      * Container : the node just above in the tree
@@ -47,7 +47,7 @@ public abstract class TreeNode
     @Navigable(false)
     protected TreeNode parent;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a node in the tree, given its parent.
      *
@@ -62,7 +62,7 @@ public abstract class TreeNode
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addChild //
     //----------//

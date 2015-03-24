@@ -21,9 +21,6 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.pattern.PatternsChecker;
 
-import omr.grid.LineInfo;
-import omr.grid.PartGroup;
-
 import omr.lag.Section;
 
 import omr.score.Score;
@@ -32,6 +29,11 @@ import omr.score.entity.LogicalPart;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemNode;
+
+import omr.sheet.grid.LineInfo;
+import omr.sheet.grid.PartGroup;
+import omr.sheet.note.NotePosition;
+import omr.sheet.rhythm.MeasureStack;
 
 import omr.sig.SIGraph;
 
@@ -275,6 +277,7 @@ public class SystemInfo
     /**
      * For this system, retrieve the connections between the (orphan) slurs at the
      * beginning of this page and the (orphan) slurs at the end of the previous page.
+     *
      * @param score the containing score
      */
     public void connectPageInitialSlurs (Score score)

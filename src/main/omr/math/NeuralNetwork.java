@@ -48,7 +48,8 @@ public class NeuralNetwork
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(NeuralNetwork.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            NeuralNetwork.class);
 
     /** Un/marshalling context for use with JAXB */
     private static volatile JAXBContext jaxbContext;

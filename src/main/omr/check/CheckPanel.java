@@ -13,6 +13,8 @@ package omr.check;
 
 import omr.constant.Constant;
 
+import omr.sig.GradeImpacts;
+
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -35,7 +37,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import omr.sig.GradeImpacts;
 
 /**
  * Class {@code CheckPanel} handles a panel to display the results of a check suite,
@@ -144,7 +145,7 @@ public class CheckPanel<C extends Checkable>
 
         for (int index = 0; index < checks.size(); index++) {
             final Check<C> check = checks.get(index);
-            final double value = suite.getChecks().get(index).getValue(checkable);////impacts.getValue(index);
+            final double value = suite.getChecks().get(index).getValue(checkable); ////impacts.getValue(index);
 
             // Update proper field to display check result
             final int col = (value <= check.getLow()) ? 0 : ((value < check.getHigh()) ? 1 : 2);

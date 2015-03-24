@@ -31,7 +31,7 @@ import javax.swing.tree.TreePath;
 public abstract class AbstractTreeTableModel
         implements TreeTableModel
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
@@ -43,7 +43,7 @@ public abstract class AbstractTreeTableModel
      */
     protected Object root;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractTreeTableModel object.
      *
@@ -54,7 +54,7 @@ public abstract class AbstractTreeTableModel
         this.root = root;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // addTreeModelListener //
     //----------------------//
@@ -102,8 +102,7 @@ public abstract class AbstractTreeTableModel
                                 Object child)
     {
         for (int i = 0; i < getChildCount(parent); i++) {
-            if (getChild(parent, i)
-                    .equals(child)) {
+            if (getChild(parent, i).equals(child)) {
                 return i;
             }
         }
@@ -221,11 +220,7 @@ public abstract class AbstractTreeTableModel
             if (listeners[i] == TreeModelListener.class) {
                 // Lazily create the event:
                 if (e == null) {
-                    e = new TreeModelEvent(
-                            source,
-                            path,
-                            childIndices,
-                            children);
+                    e = new TreeModelEvent(source, path, childIndices, children);
                 }
 
                 ((TreeModelListener) listeners[i + 1]).treeNodesChanged(e);
@@ -255,11 +250,7 @@ public abstract class AbstractTreeTableModel
             if (listeners[i] == TreeModelListener.class) {
                 // Lazily create the event:
                 if (e == null) {
-                    e = new TreeModelEvent(
-                            source,
-                            path,
-                            childIndices,
-                            children);
+                    e = new TreeModelEvent(source, path, childIndices, children);
                 }
 
                 ((TreeModelListener) listeners[i + 1]).treeNodesInserted(e);
@@ -289,11 +280,7 @@ public abstract class AbstractTreeTableModel
             if (listeners[i] == TreeModelListener.class) {
                 // Lazily create the event:
                 if (e == null) {
-                    e = new TreeModelEvent(
-                            source,
-                            path,
-                            childIndices,
-                            children);
+                    e = new TreeModelEvent(source, path, childIndices, children);
                 }
 
                 ((TreeModelListener) listeners[i + 1]).treeNodesRemoved(e);
@@ -323,17 +310,14 @@ public abstract class AbstractTreeTableModel
             if (listeners[i] == TreeModelListener.class) {
                 // Lazily create the event:
                 if (e == null) {
-                    e = new TreeModelEvent(
-                            source,
-                            path,
-                            childIndices,
-                            children);
+                    e = new TreeModelEvent(source, path, childIndices, children);
                 }
 
                 ((TreeModelListener) listeners[i + 1]).treeStructureChanged(e);
             }
         }
     }
+
     // Left to be implemented in the subclass:
 
     /*

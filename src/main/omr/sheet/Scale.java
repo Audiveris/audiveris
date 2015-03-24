@@ -119,7 +119,7 @@ public class Scale
     public Scale (int interline,
                   int mainFore)
     {
-        this(new Range(-1, mainFore, -1), new Range(-1, interline, -1), -1,  null);
+        this(new Range(-1, mainFore, -1), new Range(-1, interline, -1), -1, null);
     }
 
     //-------//
@@ -150,7 +150,7 @@ public class Scale
     /** No-arg constructor, needed by JAXB. */
     private Scale ()
     {
-        this(null, null, -1,  null);
+        this(null, null, -1, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

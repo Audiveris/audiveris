@@ -106,7 +106,7 @@ public abstract class MeasureId
      * @return the measure found, or null if not found
      */
     public static OldMeasure retrieveMeasure (Score score,
-                                           ScoreBased scoreBasedId)
+                                              ScoreBased scoreBasedId)
     {
         int scoreValue = scoreBasedId.value;
         String strId = scoreBasedId.toString();
@@ -150,7 +150,8 @@ public abstract class MeasureId
     public static Page retrievePage (Score score,
                                      int scoreBasedIdValue)
     {
-        for (ListIterator<TreeNode> pageIt = score.getScorePages().listIterator(score.getScorePages().size());
+        for (ListIterator<TreeNode> pageIt = score.getScorePages()
+                .listIterator(score.getScorePages().size());
                 pageIt.hasPrevious();) {
             Page page = (Page) pageIt.previous();
 

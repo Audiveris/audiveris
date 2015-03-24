@@ -34,7 +34,6 @@ public class WordInter
     private static final Logger logger = LoggerFactory.getLogger(WordInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     /** Word text content. */
     private final String value;
 

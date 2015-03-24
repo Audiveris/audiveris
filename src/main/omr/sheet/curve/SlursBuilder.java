@@ -18,14 +18,13 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 
-import omr.grid.FilamentLine;
-
 import omr.math.Circle;
 
 import omr.sheet.Scale;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
+import omr.sheet.grid.FilamentLine;
 
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;

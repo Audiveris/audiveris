@@ -19,10 +19,10 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.sheet.NotePosition;
 import omr.sheet.Scale;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
+import omr.sheet.note.NotePosition;
 
 import omr.util.Predicate;
 

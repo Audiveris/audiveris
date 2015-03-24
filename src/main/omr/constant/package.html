@@ -18,7 +18,7 @@
 
         <p>
             <img src="doc-files/Constant.png" alt="Persistency of constants"
-            title="Persistency of constants" />
+                 title="Persistency of constants" />
         </p>
         <p>
             <a href="Constant.html">Constant</a> instances represent a logical
@@ -31,13 +31,13 @@
 
         <ul>
             <li>A Constant declaration enclosed in a <a href=
-            "ConstantSet.html">ConstantSet</a> instance. This is by far the
-            most common and easiest way to define constants related to specific
-            application class.
+                                                        "ConstantSet.html">ConstantSet</a> instance. This is by far the
+                most common and easiest way to define constants related to specific
+                application class.
             </li>
             <li>A standalone Constant defined outside the scope of any
-            ConstantSet. This case is typically used when the name of the
-            constant must be forged programmatically.
+                ConstantSet. This case is typically used when the name of the
+                constant must be forged programmatically.
             </li>
         </ul>
         <p>
@@ -49,26 +49,26 @@
 
         <ul>
             <li>The <a href="UnitTreeTable.html">UnitTreeTable</a> is the GUI
-            related to the <a href="UnitManager.html">UnitManager</a> singleton
-            which handles all the units (classes) for which there is either a
-            Logger instance or a ConstantSet instance, or both. This GUI is
-            launched from Tools | Options menu and handles the tree of these
-            units.
+                related to the <a href="UnitManager.html">UnitManager</a> singleton
+                which handles all the units (classes) for which there is either a
+                Logger instance or a ConstantSet instance, or both. This GUI is
+                launched from Tools | Options menu and handles the tree of these
+                units.
             </li>
             <li>The <a href=
-            "../glyph/ui/ShapeColorChooser.html">ShapeColorChooser</a> is a
-            rudimentary GUI interface to set the color of each and every glyph
-            shape.
+                       "../glyph/ui/ShapeColorChooser.html">ShapeColorChooser</a> is a
+                rudimentary GUI interface to set the color of each and every glyph
+                shape.
             </li>
 
         </ul>
         <p>
             <b>Persistency</b> of each constant is handled by the <a href=
-            "ConstantManager.html">ConstantManager</a> singleton, which uses
+                                                                     "ConstantManager.html">ConstantManager</a> singleton, which uses
             the qualified name of the constant as the key to retrieve a related
             property (if any) specified in either the DEFAULT and/or the USER
             property files. Please refer to the <a href=
-            "ConstantManager.html">ConstantManager</a> documentation to read
+                                                   "ConstantManager.html">ConstantManager</a> documentation to read
             the details on how a constant value is determined.<br />
             Since the persistency of a Constant uses its fully qualified name
             (i.e. the path to the enclosing class, plus the name of the

@@ -26,21 +26,19 @@ import omr.lag.SectionFactory;
 
 import omr.math.GeoUtil;
 import omr.math.LineUtil;
-
 import static omr.run.Orientation.VERTICAL;
 
 import omr.sheet.Part;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SentenceInter;
-
 import static omr.text.TextRole.PartName;
-
 import omr.text.tesseract.TesseractOCR;
 
 import omr.ui.symbol.TextFont;
@@ -76,7 +74,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import omr.sheet.Staff;
 
 /**
  * Class {@code TextBuilder} works at system level, to provide features to check, build

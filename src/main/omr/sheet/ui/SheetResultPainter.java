@@ -19,13 +19,15 @@ import omr.math.Rational;
 
 import omr.score.ui.PaintingParameters;
 
-import omr.sheet.MeasureStack;
+import omr.sheet.Part;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-import omr.sheet.Slot;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
-import omr.sheet.Voice;
+import omr.sheet.rhythm.Measure;
+import omr.sheet.rhythm.MeasureStack;
+import omr.sheet.rhythm.Slot;
+import omr.sheet.rhythm.Voice;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractNoteInter;
@@ -43,15 +45,12 @@ import omr.sig.ui.SigPainter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
-
 import static omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static omr.ui.symbol.Alignment.TOP_LEFT;
-
 import omr.ui.symbol.OmrFont;
 import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
@@ -68,8 +67,6 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import omr.sheet.Measure;
-import omr.sheet.Part;
 
 /**
  * Class {@code SheetResultPainter} paints the items resulting from the processing of a

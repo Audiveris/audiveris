@@ -16,9 +16,9 @@ import omr.glyph.facets.Glyph;
 
 import omr.math.Rational;
 
-import omr.sheet.Measure;
 import omr.sheet.Staff;
-import omr.sheet.Voice;
+import omr.sheet.rhythm.Measure;
+import omr.sheet.rhythm.Voice;
 
 import omr.sig.GradeImpacts;
 import omr.sig.relation.AugmentationRelation;

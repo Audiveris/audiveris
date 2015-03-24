@@ -18,11 +18,10 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.grid.FilamentLine;
-
 import omr.math.LineUtil;
 
 import omr.sheet.Scale;
+import omr.sheet.grid.FilamentLine;
 
 import omr.sig.GradeImpacts;
 import omr.sig.inter.Inter;

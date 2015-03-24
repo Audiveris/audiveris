@@ -17,7 +17,6 @@ import omr.glyph.facets.Glyph;
 import omr.sheet.Staff;
 
 import omr.sig.GradeImpacts;
-
 import static omr.sig.inter.AlterInter.computePitch;
 
 /**

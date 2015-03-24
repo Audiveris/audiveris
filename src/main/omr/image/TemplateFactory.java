@@ -14,7 +14,6 @@ package omr.image;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

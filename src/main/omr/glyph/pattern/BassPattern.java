@@ -113,6 +113,22 @@ public class BassPattern
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        Scale.Fraction maxBassDotDx = new Scale.Fraction(0.25, "Tolerance on Bass dot abscissae");
+
+        Constant.Double maxBassDotPitchDy = new Constant.Double(
+                "pitch",
+                0.5,
+                "Ordinate tolerance on a Bass dot pitch position");
+    }
+
     //-------------//
     // BassAdapter //
     //-------------//
@@ -152,21 +168,5 @@ public class BassPattern
         {
             return !glyph.isManualShape() || ShapeSet.BassClefs.contains(glyph.getShape());
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        Scale.Fraction maxBassDotDx = new Scale.Fraction(0.25, "Tolerance on Bass dot abscissae");
-
-        Constant.Double maxBassDotPitchDy = new Constant.Double(
-                "pitch",
-                0.5,
-                "Ordinate tolerance on a Bass dot pitch position");
     }
 }

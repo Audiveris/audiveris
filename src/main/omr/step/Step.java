@@ -13,8 +13,24 @@ package omr.step;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.beam.BeamsStep;
+import omr.sheet.beam.CueBeamsStep;
+import omr.sheet.curve.CurvesStep;
+import omr.sheet.grid.GridStep;
+import omr.sheet.header.HeadersStep;
+import omr.sheet.ledger.LedgersStep;
+import omr.sheet.note.ChordsStep;
+import omr.sheet.note.HeadsStep;
+import omr.sheet.rhythm.MeasuresStep;
+import omr.sheet.rhythm.RhythmsStep;
+import omr.sheet.stem.StemSeedsStep;
+import omr.sheet.stem.StemsStep;
+import omr.sheet.symbol.SymbolReductionStep;
+import omr.sheet.symbol.SymbolsStep;
 import omr.sheet.ui.SheetTab;
 import static omr.sheet.ui.SheetTab.*;
+
+import omr.text.TextsStep;
 
 import java.util.Collection;
 

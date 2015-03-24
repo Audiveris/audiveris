@@ -23,7 +23,7 @@ import javax.swing.JSeparator;
 public class SeparableMenu
         extends JMenu
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new SeparableMenu object.
@@ -53,7 +53,7 @@ public class SeparableMenu
         super(s);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addSeparator //
     //--------------//
@@ -65,8 +65,7 @@ public class SeparableMenu
     {
         int count = getMenuComponentCount();
 
-        if ((count > 0)
-            && !(getMenuComponent(count - 1) instanceof JSeparator)) {
+        if ((count > 0) && !(getMenuComponent(count - 1) instanceof JSeparator)) {
             super.addSeparator();
         }
     }
@@ -83,8 +82,7 @@ public class SeparableMenu
     {
         int count = menu.getMenuComponentCount();
 
-        if ((count > 0)
-            && menu.getMenuComponent(count - 1) instanceof JSeparator) {
+        if ((count > 0) && menu.getMenuComponent(count - 1) instanceof JSeparator) {
             menu.remove(count - 1);
         }
     }

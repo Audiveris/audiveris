@@ -12,17 +12,16 @@
 package omr.score.ui;
 
 import omr.glyph.Shape;
-
 import static omr.glyph.Shape.*;
-
-import omr.grid.FilamentLine;
-import omr.grid.LineInfo;
-import omr.sheet.Staff;
 
 import omr.math.BasicLine;
 import omr.math.Line;
 
 import omr.score.entity.OldSystemPart;
+
+import omr.sheet.Staff;
+import omr.sheet.grid.FilamentLine;
+import omr.sheet.grid.LineInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -15,15 +15,14 @@ import omr.selection.InterListEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 
+import omr.sig.SIGraph;
 import omr.sig.inter.Inter;
 import omr.sig.relation.Relation;
-import omr.sig.SIGraph;
 
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
 
 import javax.swing.AbstractAction;
-
 import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**

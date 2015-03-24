@@ -190,7 +190,7 @@ public abstract class MeasureElement
     // findChord //
     //-----------//
     protected static OldChord findChord (OldMeasure measure,
-                                      Point point)
+                                         Point point)
     {
         // Shift on abscissa (because of left side of note heads)
         int dx = measure.getSystem().getScale().toPixels(constants.slotShift);

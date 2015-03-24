@@ -232,6 +232,7 @@ public class InsertTask
      * for this object, but before this object is set to the parent object.
      */
     @PostConstruct // Don't remove this method, invoked by JAXB through reflection
+
     private void afterUnmarshal (Unmarshaller um,
                                  Object parent)
     {
@@ -252,6 +253,7 @@ public class InsertTask
      * Called immediately before the marshalling of this object begins.
      */
     @PreDestroy // Don't remove this method, invoked by JAXB through reflection
+
     private void beforeMarshal (Marshaller m)
     {
         // Convert locations -> array of point facades

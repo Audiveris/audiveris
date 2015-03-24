@@ -101,7 +101,7 @@ public abstract class ConstantSet
                             constant.getName(),
                             constant.getShortTypeName(),
                             (constant.getQuantityUnit() != null) ? ("(" + constant.getQuantityUnit() + ")")
-                            : "",
+                                    : "",
                             origin,
                             constant.getCurrentString(),
                             constant.getDescription()));

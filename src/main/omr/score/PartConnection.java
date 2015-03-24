@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.score;
 
-import omr.score.entity.Page;
 import omr.score.entity.LogicalPart;
+import omr.score.entity.Page;
 
 import omr.sheet.Part;
 import omr.sheet.SystemInfo;
@@ -400,7 +400,7 @@ public class PartConnection
     //--------//
     /**
      * Interface {@code Result} is used to process resulting LogicalPart instances,
- regardless whether they are instances of standard Audiveris {@link LogicalPart}
+     * regardless whether they are instances of standard Audiveris {@link LogicalPart}
      * or instances of ProxyMusic {@link com.audiveris.proxymusic.ScorePart}.
      */
     public static interface Result
@@ -485,6 +485,165 @@ public class PartConnection
             sb.append("}");
 
             return sb.toString();
+        }
+    }
+
+    //----------------------//
+    // LogicalPartCandidate //
+    //----------------------//
+    /**
+     * Wrapping class meant for a LogicalPart instance candidate.
+     */
+    private static class LogicalPartCandidate
+            implements Candidate
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final LogicalPart logicalPart;
+
+        private final Page page;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public LogicalPartCandidate (LogicalPart logicalPart,
+                                     Page page)
+        {
+            this.logicalPart = logicalPart;
+            this.page = page;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public LogicalPartResult createResult ()
+        {
+            // Create a brand new score part for this candidate
+            // Id is irrelevant for the time being
+            LogicalPartResult result = new LogicalPartResult(
+                    this,
+                    new LogicalPart(0, getStaffCount()));
+            result.setName(getName());
+            result.setAbbreviation(getAbbreviation());
+            logger.debug("Created {} from {}", result, this);
+
+            return result;
+        }
+
+        @Override
+        public String getAbbreviation ()
+        {
+            return logicalPart.getAbbreviation();
+        }
+
+        @Override
+        public int getInputIndex ()
+        {
+            return page.getSheet().getIndex();
+        }
+
+        @Override
+        public String getName ()
+        {
+            return logicalPart.getName();
+        }
+
+        @Override
+        public int getStaffCount ()
+        {
+            return logicalPart.getStaffCount();
+        }
+
+        @Override
+        public Object getUnderlyingObject ()
+        {
+            return logicalPart;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("{");
+
+            sb.append(getClass().getSimpleName());
+
+            sb.append(" page#").append(getInputIndex());
+
+            sb.append(" \"").append(getName()).append("\"");
+
+            sb.append(" staffCount:").append(getStaffCount());
+
+            sb.append("}");
+
+            return sb.toString();
+        }
+    }
+
+    //-------------------//
+    // LogicalPartResult //
+    //-------------------//
+    /**
+     * Wrapping class meant for a LogicalPart instance result.
+     */
+    private static class LogicalPartResult
+            extends AbstractResult
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final LogicalPart logicalPart;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public LogicalPartResult (Candidate candidate,
+                                  LogicalPart logicalPart)
+        {
+            super(candidate);
+            this.logicalPart = logicalPart;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String getAbbreviation ()
+        {
+            return logicalPart.getAbbreviation();
+        }
+
+        @Override
+        public int getId ()
+        {
+            return logicalPart.getId();
+        }
+
+        @Override
+        public String getName ()
+        {
+            return logicalPart.getName();
+        }
+
+        @Override
+        public int getStaffCount ()
+        {
+            return logicalPart.getStaffCount();
+        }
+
+        @Override
+        public LogicalPart getUnderlyingObject ()
+        {
+            return logicalPart;
+        }
+
+        @Override
+        public void setAbbreviation (String abbreviation)
+        {
+            logicalPart.setAbbreviation(abbreviation);
+        }
+
+        @Override
+        public void setId (int id)
+        {
+            logicalPart.setId(id);
+        }
+
+        @Override
+        public void setName (String name)
+        {
+            logicalPart.setName(name);
         }
     }
 
@@ -757,7 +916,9 @@ public class PartConnection
         {
             // Create a brand new score part for this candidate
             // Id is irrelevant for the time being
-            LogicalPartResult result = new LogicalPartResult(this, new LogicalPart(0, getStaffCount()));
+            LogicalPartResult result = new LogicalPartResult(
+                    this,
+                    new LogicalPart(0, getStaffCount()));
             result.setName(getName());
             result.setAbbreviation(getAbbreviation());
             logger.debug("Created {} from {}", result, this);
@@ -799,163 +960,6 @@ public class PartConnection
         public String toString ()
         {
             return "S" + getInputIndex() + "-" + systemPart.toString();
-        }
-    }
-
-    //----------------------//
-    // LogicalPartCandidate //
-    //----------------------//
-    /**
-     * Wrapping class meant for a LogicalPart instance candidate.
-     */
-    private static class LogicalPartCandidate
-            implements Candidate
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final LogicalPart logicalPart;
-
-        private final Page page;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public LogicalPartCandidate (LogicalPart logicalPart,
-                                   Page page)
-        {
-            this.logicalPart = logicalPart;
-            this.page = page;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public LogicalPartResult createResult ()
-        {
-            // Create a brand new score part for this candidate
-            // Id is irrelevant for the time being
-            LogicalPartResult result = new LogicalPartResult(this, new LogicalPart(0, getStaffCount()));
-            result.setName(getName());
-            result.setAbbreviation(getAbbreviation());
-            logger.debug("Created {} from {}", result, this);
-
-            return result;
-        }
-
-        @Override
-        public String getAbbreviation ()
-        {
-            return logicalPart.getAbbreviation();
-        }
-
-        @Override
-        public int getInputIndex ()
-        {
-            return page.getSheet().getIndex();
-        }
-
-        @Override
-        public String getName ()
-        {
-            return logicalPart.getName();
-        }
-
-        @Override
-        public int getStaffCount ()
-        {
-            return logicalPart.getStaffCount();
-        }
-
-        @Override
-        public Object getUnderlyingObject ()
-        {
-            return logicalPart;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder("{");
-
-            sb.append(getClass().getSimpleName());
-
-            sb.append(" page#").append(getInputIndex());
-
-            sb.append(" \"").append(getName()).append("\"");
-
-            sb.append(" staffCount:").append(getStaffCount());
-
-            sb.append("}");
-
-            return sb.toString();
-        }
-    }
-
-    //-------------------//
-    // LogicalPartResult //
-    //-------------------//
-    /**
-     * Wrapping class meant for a LogicalPart instance result.
-     */
-    private static class LogicalPartResult
-            extends AbstractResult
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final LogicalPart logicalPart;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public LogicalPartResult (Candidate candidate,
-                                LogicalPart logicalPart)
-        {
-            super(candidate);
-            this.logicalPart = logicalPart;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String getAbbreviation ()
-        {
-            return logicalPart.getAbbreviation();
-        }
-
-        @Override
-        public int getId ()
-        {
-            return logicalPart.getId();
-        }
-
-        @Override
-        public String getName ()
-        {
-            return logicalPart.getName();
-        }
-
-        @Override
-        public int getStaffCount ()
-        {
-            return logicalPart.getStaffCount();
-        }
-
-        @Override
-        public LogicalPart getUnderlyingObject ()
-        {
-            return logicalPart;
-        }
-
-        @Override
-        public void setAbbreviation (String abbreviation)
-        {
-            logicalPart.setAbbreviation(abbreviation);
-        }
-
-        @Override
-        public void setId (int id)
-        {
-            logicalPart.setId(id);
-        }
-
-        @Override
-        public void setName (String name)
-        {
-            logicalPart.setName(name);
         }
     }
 }

@@ -21,24 +21,23 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.sheet.Staff;
-
 import omr.math.GeoUtil;
 
-import omr.score.entity.OldBarline;
-import omr.score.entity.OldChord;
 import omr.score.entity.Clef;
 import omr.score.entity.KeySignature;
-import omr.score.entity.OldMeasure;
 import omr.score.entity.Note;
-import omr.score.entity.Page;
-import omr.score.entity.ScoreSystem;
+import omr.score.entity.OldBarline;
+import omr.score.entity.OldChord;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.OldStaff;
 import omr.score.entity.OldSystemPart;
+import omr.score.entity.Page;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.TimeSignature;
 import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.sheet.Scale;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
 import omr.util.TreeNode;
@@ -115,7 +114,8 @@ public class TimeSignatureRetriever
                 return false;
             }
 
-            for (OldStaff.SystemIterator sit = new OldStaff.SystemIterator(firstMeasure); sit.hasNext();) {
+            for (OldStaff.SystemIterator sit = new OldStaff.SystemIterator(firstMeasure);
+                    sit.hasNext();) {
                 OldStaff staff = sit.next();
 
                 if (staff.isDummy()) {
@@ -128,11 +128,11 @@ public class TimeSignatureRetriever
                         false,
                         system.getInfo().getGlyphs(),
                         new TimeSigAdapter(
-                        system.getInfo(),
-                        Grades.timeMinGrade,
-                        ShapeSet.WholeTimes,
-                        staff,
-                        center));
+                                system.getInfo(),
+                                Grades.timeMinGrade,
+                                ShapeSet.WholeTimes,
+                                staff,
+                                center));
 
                 if (compound != null) {
                     // Insert time sig in proper measure
@@ -162,7 +162,8 @@ public class TimeSignatureRetriever
         int left = 0; // Min
         int right = system.getTopLeft().x + system.getDimension().width; // Max
 
-        for (OldStaff.SystemIterator sit = new OldStaff.SystemIterator(firstMeasure); sit.hasNext();) {
+        for (OldStaff.SystemIterator sit = new OldStaff.SystemIterator(firstMeasure);
+                sit.hasNext();) {
             OldStaff staff = sit.next();
 
             if (staff.isDummy()) {

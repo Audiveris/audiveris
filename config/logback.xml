@@ -70,6 +70,6 @@
 <!--    <logger name="omr.step.StepMonitor" level="DEBUG"/>-->
 <!--    <logger name="omr.script.Script" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.picture.PictureLoader" level="DEBUG"/>-->
-    <logger name="omr.CLI" level="DEBUG"/>
+<!--    <logger name="omr.CLI" level="DEBUG"/>-->
 
 </configuration>

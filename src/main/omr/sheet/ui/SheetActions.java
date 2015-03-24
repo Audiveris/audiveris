@@ -18,8 +18,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphRepository;
 
-import omr.grid.StaffProjector;
-
 import omr.script.RemoveTask;
 
 import omr.sheet.Book;
@@ -28,7 +26,8 @@ import omr.sheet.ScaleBuilder;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.StaffManager;
-import omr.sheet.StemScaler;
+import omr.sheet.grid.StaffProjector;
+import omr.sheet.stem.StemScaler;
 
 import omr.step.Step;
 

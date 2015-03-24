@@ -54,13 +54,13 @@ public class HistogramPlotter
     /**
      * Creates a new HistogramPlotter object.
      *
-     * @param sheet       related sheet
-     * @param name        DOCUMENT ME!
-     * @param values      DOCUMENT ME!
-     * @param histo       DOCUMENT ME!
-     * @param peak        DOCUMENT ME!
-     * @param secondPeak  DOCUMENT ME!
-     * @param upper       DOCUMENT ME!
+     * @param sheet      related sheet
+     * @param name       DOCUMENT ME!
+     * @param values     DOCUMENT ME!
+     * @param histo      DOCUMENT ME!
+     * @param peak       DOCUMENT ME!
+     * @param secondPeak DOCUMENT ME!
+     * @param upper      DOCUMENT ME!
      */
     public HistogramPlotter (Sheet sheet,
                              String name,

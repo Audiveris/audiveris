@@ -15,9 +15,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
-
 import static omr.glyph.Shape.*;
-
 import omr.glyph.facets.Glyph;
 
 import omr.math.GeoUtil;
@@ -27,7 +25,6 @@ import omr.score.entity.AbstractNotation;
 import omr.score.entity.Arpeggiate;
 import omr.score.entity.Articulation;
 import omr.score.entity.Beam;
-import omr.score.entity.OldChord;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
 import omr.score.entity.Dynamics;
@@ -36,18 +33,19 @@ import omr.score.entity.KeySignature;
 import omr.score.entity.LyricsItem;
 import omr.score.entity.MeasureElement;
 import omr.score.entity.Note;
+import omr.score.entity.OldChord;
+import omr.score.entity.OldStaff;
+import omr.score.entity.OldSystemPart;
+import omr.score.entity.OldVoice;
 import omr.score.entity.Ornament;
 import omr.score.entity.Pedal;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Segno;
 import omr.score.entity.Slur;
-import omr.score.entity.OldStaff;
-import omr.score.entity.OldSystemPart;
 import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.entity.Tuplet;
-import omr.score.entity.OldVoice;
 import omr.score.entity.Wedge;
 import omr.score.visitor.AbstractScoreVisitor;
 
@@ -59,18 +57,14 @@ import omr.text.TextLine;
 import omr.text.TextWord;
 
 import omr.ui.symbol.Alignment;
-
 import static omr.ui.symbol.Alignment.*;
 import static omr.ui.symbol.Alignment.Horizontal.*;
 import static omr.ui.symbol.Alignment.Vertical.*;
-
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.OmrFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
-
 import static omr.ui.symbol.Symbols.*;
-
 import omr.ui.symbol.TextFont;
 import omr.ui.util.UIUtil;
 
@@ -390,7 +384,8 @@ public abstract class PagePainter
 
                 // We draw from tail
                 boolean goesUp = head.y < tail.y;
-                paint(OldChord.getFlagShape(fn, goesUp),
+                paint(
+                        OldChord.getFlagShape(fn, goesUp),
                         location(tail, chord),
                         goesUp ? BOTTOM_LEFT : TOP_LEFT);
             }

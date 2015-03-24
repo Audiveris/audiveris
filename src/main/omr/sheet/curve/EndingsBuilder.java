@@ -20,9 +20,6 @@ import omr.glyph.GlyphLayer;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
-import omr.grid.FilamentsFactory;
-import omr.sheet.Staff;
-
 import omr.lag.Section;
 import omr.lag.Sections;
 
@@ -30,23 +27,22 @@ import omr.math.GeoOrder;
 import omr.math.LineUtil;
 
 import omr.run.Orientation;
-
 import static omr.run.Orientation.VERTICAL;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
+import omr.sheet.grid.FilamentsFactory;
 
-import omr.sig.inter.BarlineInter;
-import omr.sig.relation.EndingBarRelation;
-import omr.sig.inter.EndingInter;
 import omr.sig.GradeImpacts;
-import omr.sig.inter.Inter;
 import omr.sig.SIGraph;
+import omr.sig.inter.BarlineInter;
+import omr.sig.inter.EndingInter;
+import omr.sig.inter.Inter;
 import omr.sig.inter.SegmentInter;
-
+import omr.sig.relation.EndingBarRelation;
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 
 import org.slf4j.Logger;

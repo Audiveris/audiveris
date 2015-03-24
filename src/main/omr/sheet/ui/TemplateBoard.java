@@ -28,8 +28,8 @@ import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
-import omr.sheet.NoteHeadsBuilder;
 import omr.sheet.Sheet;
+import omr.sheet.note.NoteHeadsBuilder;
 
 import omr.ui.Board;
 import omr.ui.field.LDoubleField;

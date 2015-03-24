@@ -60,18 +60,18 @@ public class LedgerSymbol
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-//    //-------------//
-//    // getRefPoint //
-//    //-------------//
-//    /**
-//     * Report the symbol reference point at ledger ordinate.
-//     */
-//    @Override
-//    public Point getRefPoint (Rectangle box)
-//    {
-//        return new Point(box.x + (box.width / 2), box.y + (int) Math.rint(box.height * 0.67));
-//    }
-//
+    //    //-------------//
+    //    // getRefPoint //
+    //    //-------------//
+    //    /**
+    //     * Report the symbol reference point at ledger ordinate.
+    //     */
+    //    @Override
+    //    public Point getRefPoint (Rectangle box)
+    //    {
+    //        return new Point(box.x + (box.width / 2), box.y + (int) Math.rint(box.height * 0.67));
+    //    }
+    //
     //------------//
     // createIcon //
     //------------//

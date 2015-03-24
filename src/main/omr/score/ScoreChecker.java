@@ -15,6 +15,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
+import omr.glyph.GlyphClassifier;
 import omr.glyph.GlyphNest;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
@@ -25,13 +26,13 @@ import omr.glyph.facets.Glyph;
 import omr.math.GeoUtil;
 
 import omr.score.entity.Beam;
-import omr.score.entity.OldChord;
 import omr.score.entity.Dynamics;
-import omr.score.entity.OldMeasure;
 import omr.score.entity.Note;
-import omr.score.entity.ScoreSystem;
+import omr.score.entity.OldChord;
+import omr.score.entity.OldMeasure;
 import omr.score.entity.OldStaff;
 import omr.score.entity.OldSystemPart;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.AbstractScoreVisitor;
@@ -56,7 +57,6 @@ import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import omr.glyph.GlyphClassifier;
 
 /**
  * Class {@code ScoreChecker} can visit the score hierarchy and perform global checking
@@ -592,8 +592,8 @@ public class ScoreChecker
         TimeSignature bestSig = findBestTimeSig(timeSignature.getMeasure());
 
         if (bestSig != null) {
-            for (OldStaff.SystemIterator sit = new OldStaff.SystemIterator(timeSignature.getMeasure());
-                    sit.hasNext();) {
+            for (OldStaff.SystemIterator sit = new OldStaff.SystemIterator(
+                    timeSignature.getMeasure()); sit.hasNext();) {
                 OldStaff staff = sit.next();
                 OldMeasure measure = sit.getMeasure();
                 TimeSignature sig = measure.getTimeSignature(staff);
@@ -807,7 +807,9 @@ public class ScoreChecker
 
                         throw new InconsistentTimeSignatures();
                     }
-                } catch (InvalidTimeSignature | InconsistentTimeSignatures ex) {
+                } catch (InvalidTimeSignature ex) {
+                    // Unusable signature, forget about this one
+                } catch (InconsistentTimeSignatures ex) {
                     // Unusable signature, forget about this one
                 }
             }

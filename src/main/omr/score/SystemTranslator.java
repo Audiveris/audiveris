@@ -12,33 +12,31 @@
 package omr.score;
 
 import omr.glyph.Shape;
-
 import static omr.glyph.ShapeSet.*;
-
 import omr.glyph.facets.Glyph;
 
 import omr.score.entity.Arpeggiate;
 import omr.score.entity.Articulation;
-import omr.score.entity.OldBarline;
-import omr.score.entity.OldBeamGroup;
 import omr.score.entity.BeamItem;
-import omr.score.entity.OldChord;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
 import omr.score.entity.DotTranslation;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
-import omr.score.entity.OldMeasure;
 import omr.score.entity.MeasureNode;
 import omr.score.entity.Note;
+import omr.score.entity.OldBarline;
+import omr.score.entity.OldBeamGroup;
+import omr.score.entity.OldChord;
+import omr.score.entity.OldMeasure;
+import omr.score.entity.OldStaff;
+import omr.score.entity.OldSystemPart;
 import omr.score.entity.Ornament;
 import omr.score.entity.Page;
 import omr.score.entity.Pedal;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Segno;
 import omr.score.entity.Slur;
-import omr.score.entity.OldStaff;
-import omr.score.entity.OldSystemPart;
 import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
@@ -676,11 +674,9 @@ public class SystemTranslator
     private class MeasureTranslator
             extends Translator
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         ///SlotBuilder slotBuilder = new SlotBuilder(system);
-
-        //~ Constructors ---------------------------------------------------------------------------
         public MeasureTranslator ()
         {
             super("Measure");
@@ -695,7 +691,6 @@ public class SystemTranslator
 
             // Build slots and voices
             ///slotBuilder.buildSlots(measure);
-
             // Make sure all barline glyphs point to it
             OldBarline barline = measure.getBarline();
 

@@ -217,7 +217,7 @@ public class OldChord
      * @param slot    the containing slot (null for whole/multi rest chords)
      */
     public OldChord (OldMeasure measure,
-                  OldSlot slot)
+                     OldSlot slot)
     {
         super(measure);
         reset();
@@ -266,7 +266,7 @@ public class OldChord
      *         is yet attached to this stem
      */
     public static List<OldChord> getStemChords (OldMeasure measure,
-                                             Glyph stem)
+                                                Glyph stem)
     {
         List<OldChord> chords = new ArrayList<OldChord>();
 
@@ -840,7 +840,7 @@ public class OldChord
      * @return the collection of interleaved chords, which may be empty
      */
     public static SortedSet<OldChord> lookupInterleavedChords (OldChord left,
-                                                            OldChord right)
+                                                               OldChord right)
     {
         SortedSet<OldChord> found = new TreeSet<OldChord>(OldChord.byAbscissa);
 
@@ -1873,19 +1873,6 @@ public class OldChord
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        Scale.Fraction minStemFragmentLength = new Scale.Fraction(
-                2d,
-                "Minimum length for stem fragment in split");
-    }
-
     //-------------//
     // TieRelation //
     //-------------//
@@ -1902,5 +1889,18 @@ public class OldChord
         {
             return slur.isTie() && (getLocalNote(slur) == note);
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        Scale.Fraction minStemFragmentLength = new Scale.Fraction(
+                2d,
+                "Minimum length for stem fragment in split");
     }
 }

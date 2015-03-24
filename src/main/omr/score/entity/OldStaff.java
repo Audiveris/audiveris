@@ -11,9 +11,9 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.sheet.Staff;
-
 import omr.score.visitor.ScoreVisitor;
+
+import omr.sheet.Staff;
 
 import omr.util.TreeNode;
 
@@ -27,12 +27,12 @@ import java.util.Iterator;
 /**
  * Class {@code OldStaff} handles a staff in a system part.
  * <p>
- It is useful for its geometric parameters (topLeft corner, width and height,
- ability to convert between a Point ordinate and a staff-based
- pitchPosition.
- But it contains no further entities, the OldMeasure's are the actual containers.
- Within a measure, some entities may be assigned a staff, more like a tag than
- like a parent.
+ * It is useful for its geometric parameters (topLeft corner, width and height,
+ * ability to convert between a Point ordinate and a staff-based
+ * pitchPosition.
+ * But it contains no further entities, the OldMeasure's are the actual containers.
+ * Within a measure, some entities may be assigned a staff, more like a tag than
+ * like a parent.
  *
  * @author Hervé Bitteur
  */
@@ -68,10 +68,10 @@ public class OldStaff
      * @param height  the staff height
      */
     public OldStaff (Staff info,
-                  OldSystemPart part,
-                  Point topLeft,
-                  int width,
-                  int height)
+                     OldSystemPart part,
+                     Point topLeft,
+                     int width,
+                     int height)
     {
         super(part);
 
@@ -250,7 +250,7 @@ public class OldStaff
     //--------------//
     /**
      * Class {@code PartIterator} implements an iterator on the
- sequence of staves within all parallel measures of a OldSystemPart.
+     * sequence of staves within all parallel measures of a OldSystemPart.
      */
     public static class PartIterator
             implements Iterator<OldStaff>

@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.sheet.grid.Filament;
 import omr.glyph.GlyphLayer;
 
 import omr.lag.BasicLag;
@@ -24,7 +25,9 @@ import omr.sheet.Scale;
 
 import org.junit.After;
 import org.junit.AfterClass;
+
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

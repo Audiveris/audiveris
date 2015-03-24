@@ -31,7 +31,6 @@ import java.awt.Rectangle;
 public class SmallVoidHeadInter
         extends AbstractHeadInter
 {
-
     //~ Constructors -------------------------------------------------------------------------------
 
     /**

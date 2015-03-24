@@ -40,13 +40,13 @@ import javax.swing.tree.TreePath;
 public class TreeTableModelAdapter
         extends AbstractTableModel
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     JTree tree;
 
     TreeTableModel treeTableModel;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TreeTableModelAdapter object.
      *
@@ -61,21 +61,21 @@ public class TreeTableModelAdapter
 
         tree.addTreeExpansionListener(
                 new TreeExpansionListener()
-        {
-            // Don't use fireTableRowsInserted() here; the selection model
-            // would get updated twice.
-            @Override
-            public void treeExpanded (TreeExpansionEvent event)
-            {
-                fireTableDataChanged();
-            }
+                {
+                    // Don't use fireTableRowsInserted() here; the selection model
+                    // would get updated twice.
+                    @Override
+                    public void treeExpanded (TreeExpansionEvent event)
+                    {
+                        fireTableDataChanged();
+                    }
 
-            @Override
-            public void treeCollapsed (TreeExpansionEvent event)
-            {
-                fireTableDataChanged();
-            }
-        });
+                    @Override
+                    public void treeCollapsed (TreeExpansionEvent event)
+                    {
+                        fireTableDataChanged();
+                    }
+                });
 
         // Install a TreeModelListener that can update the table when
         // tree changes. We use delayedFireTableDataChanged as we can
@@ -83,34 +83,34 @@ public class TreeTableModelAdapter
         // the event before us.
         treeTableModel.addTreeModelListener(
                 new TreeModelListener()
-        {
-            @Override
-            public void treeNodesChanged (TreeModelEvent e)
-            {
-                delayedFireTableDataChanged();
-            }
+                {
+                    @Override
+                    public void treeNodesChanged (TreeModelEvent e)
+                    {
+                        delayedFireTableDataChanged();
+                    }
 
-            @Override
-            public void treeNodesInserted (TreeModelEvent e)
-            {
-                delayedFireTableDataChanged();
-            }
+                    @Override
+                    public void treeNodesInserted (TreeModelEvent e)
+                    {
+                        delayedFireTableDataChanged();
+                    }
 
-            @Override
-            public void treeNodesRemoved (TreeModelEvent e)
-            {
-                delayedFireTableDataChanged();
-            }
+                    @Override
+                    public void treeNodesRemoved (TreeModelEvent e)
+                    {
+                        delayedFireTableDataChanged();
+                    }
 
-            @Override
-            public void treeStructureChanged (TreeModelEvent e)
-            {
-                delayedFireTableDataChanged();
-            }
-        });
+                    @Override
+                    public void treeStructureChanged (TreeModelEvent e)
+                    {
+                        delayedFireTableDataChanged();
+                    }
+                });
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getColumnClass //
     //----------------//
@@ -254,12 +254,12 @@ public class TreeTableModelAdapter
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                fireTableDataChanged();
-            }
-        });
+                {
+                    @Override
+                    public void run ()
+                    {
+                        fireTableDataChanged();
+                    }
+                });
     }
 }

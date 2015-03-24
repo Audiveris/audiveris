@@ -16,12 +16,12 @@ import omr.math.Rational;
 import omr.score.entity.Page;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 
-import omr.sheet.Measure;
-import omr.sheet.MeasureStack;
 import omr.sheet.Part;
 import omr.sheet.PartBarline;
 import omr.sheet.SystemInfo;
-import omr.sheet.Voice;
+import omr.sheet.rhythm.Measure;
+import omr.sheet.rhythm.MeasureStack;
+import omr.sheet.rhythm.Voice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -20,7 +20,7 @@ import omr.math.AreaUtil;
 import omr.math.GeoUtil;
 
 import omr.sheet.Staff;
-import omr.sheet.Voice;
+import omr.sheet.rhythm.Voice;
 
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;

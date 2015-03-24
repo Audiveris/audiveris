@@ -53,7 +53,7 @@ import java.util.Map;
 public class MusicFont
         extends OmrFont
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MusicFont.class);
 
@@ -71,20 +71,19 @@ public class MusicFont
     public static final int CODE_OFFSET = 0xf000;
 
     /** Cache of font according to desired interline value */
-    private static final Map<Integer, MusicFont> sizeMap = new HashMap<>();
+    private static final Map<Integer, MusicFont> sizeMap = new HashMap<Integer, MusicFont>();
 
     /** The music font used for default interline and no zoom */
     public static final MusicFont baseMusicFont = getFont(DEFAULT_INTERLINE);
 
     /** The music font used for icons (half-size) */
-    public static final MusicFont iconMusicFont = getFont(
-            DEFAULT_INTERLINE / 2);
+    public static final MusicFont iconMusicFont = getFont(DEFAULT_INTERLINE / 2);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Precise interline height with this font. */
     private final int fontInterline;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new MusicFont object.
      *
@@ -98,7 +97,7 @@ public class MusicFont
         this.fontInterline = fontInterline;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildImage //
     //------------//
@@ -154,8 +153,7 @@ public class MusicFont
     public static boolean checkMusicFont ()
     {
         if (baseMusicFont.getFamily().equals("Dialog")) {
-            String msg = FONT_NAME + " font not found." + " Please install "
-                         + FONT_NAME + ".ttf";
+            String msg = FONT_NAME + " font not found." + " Please install " + FONT_NAME + ".ttf";
             logger.error(msg);
 
             if (Main.getGui() != null) {
@@ -216,6 +214,7 @@ public class MusicFont
 
         if (symbol == null) {
             logger.debug("No MusicFont symbol for {}", shape);
+
             return null;
         }
 

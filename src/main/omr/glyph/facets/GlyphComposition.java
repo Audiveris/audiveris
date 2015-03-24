@@ -166,6 +166,7 @@ public interface GlyphComposition
 
     /**
      * Test whether glyph touches the provided section
+     *
      * @param section provided section
      * @return true if there is contact
      */

@@ -38,7 +38,7 @@ import java.util.List;
  */
 @Deprecated
 public class TestStep
-    extends AbstractStep
+        extends AbstractStep
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -47,18 +47,17 @@ public class TestStep
      */
     public TestStep ()
     {
-//        super(
-//            Steps.TEST,
-//            DATA_TAB,
-//            "Placeholder for specific tests");
+        //        super(
+        //            Steps.TEST,
+        //            DATA_TAB,
+        //            "Placeholder for specific tests");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     @Override
     protected void doit (Collection<SystemInfo> systems,
-                         Sheet                  aSheet)
-        throws StepException
+                         Sheet aSheet)
+            throws StepException
     {
         final Book book = aSheet.getBook();
 
@@ -66,8 +65,8 @@ public class TestStep
             boolean sheetStarted = false;
 
             for (SystemInfo system : sheet.getSystems()) {
-                boolean     systemStarted = false;
-                SIGraph     sig = system.getSig();
+                boolean systemStarted = false;
+                SIGraph sig = system.getSig();
                 List<Inter> brackets = sig.inters(BracketInter.class);
 
                 if (!brackets.isEmpty()) {
@@ -103,7 +102,7 @@ public class TestStep
     {
         try {
             final BufferedWriter bw = new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(file), WellKnowns.FILE_ENCODING));
+                    new OutputStreamWriter(new FileOutputStream(file), WellKnowns.FILE_ENCODING));
 
             return new PrintWriter(bw);
         } catch (Exception ex) {
@@ -119,7 +118,7 @@ public class TestStep
     private static File getTestFile ()
     {
         String stamp = getTimeStamp();
-        File   file = new File(WellKnowns.TEMP_FOLDER, "TestFile " + stamp + ".txt");
+        File file = new File(WellKnowns.TEMP_FOLDER, "TestFile " + stamp + ".txt");
 
         return file;
     }
@@ -129,7 +128,7 @@ public class TestStep
     //--------------//
     private static String getTimeStamp ()
     {
-        Date             now = new Date();
+        Date now = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
 
         return formatter.format(now);
@@ -153,7 +152,6 @@ public class TestStep
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
-
     //--------//
     // Holder //
     //--------//

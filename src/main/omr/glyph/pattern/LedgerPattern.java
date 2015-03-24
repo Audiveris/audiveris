@@ -21,9 +21,9 @@ import omr.glyph.facets.Glyph;
 
 import omr.run.Orientation;
 
-import omr.sheet.LedgersBuilder;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
+import omr.sheet.ledger.LedgersBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +61,6 @@ public class LedgerPattern
     //~ Instance fields ----------------------------------------------------------------------------
     /** Companion in charge of building ledgers */
     ///private final LedgersBuilder builder;
-
     /** Scale-dependent parameters */
     final int interChunkDx;
 

@@ -111,22 +111,23 @@ public class FingeringInter
 
         case DIGIT_4:
             return 4;
-//
-//        // Following shapes may be useless
-//        case DIGIT_5:
-//            return 5;
-//
-//        case DIGIT_6:
-//            return 6;
-//
-//        case DIGIT_7:
-//            return 7;
-//
-//        case DIGIT_8:
-//            return 8;
-//
-//        case DIGIT_9:
-//            return 9;
+
+        //
+        //        // Following shapes may be useless
+        //        case DIGIT_5:
+        //            return 5;
+        //
+        //        case DIGIT_6:
+        //            return 6;
+        //
+        //        case DIGIT_7:
+        //            return 7;
+        //
+        //        case DIGIT_8:
+        //            return 8;
+        //
+        //        case DIGIT_9:
+        //            return 9;
         }
 
         return -1;

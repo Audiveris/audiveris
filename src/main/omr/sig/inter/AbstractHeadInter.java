@@ -30,10 +30,10 @@ import static omr.run.Orientation.VERTICAL;
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
-import omr.sheet.Measure;
-import omr.sheet.MeasureStack;
-import omr.sheet.Slot;
 import omr.sheet.Staff;
+import omr.sheet.rhythm.Measure;
+import omr.sheet.rhythm.MeasureStack;
+import omr.sheet.rhythm.Slot;
 
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;

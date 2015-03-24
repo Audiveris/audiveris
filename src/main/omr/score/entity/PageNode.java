@@ -25,7 +25,6 @@ import omr.util.TreeNode;
 public abstract class PageNode
         extends ScoreNode
 {
-
     //~ Constructors -------------------------------------------------------------------------------
 
     /**

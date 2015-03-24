@@ -13,8 +13,8 @@ package omr.text;
 
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.PartNode;
 import omr.score.entity.OldSystemPart;
+import omr.score.entity.PartNode;
 
 import omr.sheet.Skew;
 

@@ -15,9 +15,9 @@ import omr.score.MeasureFixer;
 import omr.score.PageReduction;
 import omr.score.entity.Page;
 
-import omr.sheet.MeasureFiller;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.rhythm.MeasureFiller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

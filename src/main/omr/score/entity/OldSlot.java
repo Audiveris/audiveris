@@ -289,7 +289,7 @@ public class OldSlot
      * @return the collection of chords, which may be empty
      */
     public List<OldChord> getEmbracedChords (Point top,
-                                          Point bottom)
+                                             Point bottom)
     {
         List<OldChord> embracedChords = new ArrayList<OldChord>();
 

@@ -23,14 +23,14 @@ import javax.swing.event.EventListenerList;
 public class AbstractCellEditor
         implements CellEditor
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      */
     protected EventListenerList listenerList = new EventListenerList();
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------------//
     // addCellEditorListener //
     //-----------------------//
@@ -144,8 +144,7 @@ public class AbstractCellEditor
         // interested in this event
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == CellEditorListener.class) {
-                ((CellEditorListener) listeners[i + 1]).editingCanceled(
-                        new ChangeEvent(this));
+                ((CellEditorListener) listeners[i + 1]).editingCanceled(new ChangeEvent(this));
             }
         }
     }
@@ -164,8 +163,7 @@ public class AbstractCellEditor
         // those that are interested in this event
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == CellEditorListener.class) {
-                ((CellEditorListener) listeners[i + 1]).editingStopped(
-                        new ChangeEvent(this));
+                ((CellEditorListener) listeners[i + 1]).editingStopped(new ChangeEvent(this));
             }
         }
     }

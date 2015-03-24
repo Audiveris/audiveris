@@ -71,21 +71,22 @@ public class PluginStep
             plugin.runPlugin(book);
         }
     }
-//
-//    //----------------//
-//    // getDescription //
-//    //----------------//
-//    /**
-//     * Augment the description with the plugin title
-//     *
-//     * @return a named description
-//     */
-//    @Override
-//    public String getDescription ()
-//    {
-//        return super.getDescription() + " (" + plugin.getTitle() + ")";
-//    }
-//
+
+    //
+    //    //----------------//
+    //    // getDescription //
+    //    //----------------//
+    //    /**
+    //     * Augment the description with the plugin title
+    //     *
+    //     * @return a named description
+    //     */
+    //    @Override
+    //    public String getDescription ()
+    //    {
+    //        return super.getDescription() + " (" + plugin.getTitle() + ")";
+    //    }
+    //
     //-----------//
     // setPlugin //
     //-----------//

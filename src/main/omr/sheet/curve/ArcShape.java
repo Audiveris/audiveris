@@ -11,13 +11,12 @@
 // </editor-fold>
 package omr.sheet.curve;
 
-//~ Enumerations -------------------------------------------------------------------------------
-
 /**
  * Shape detected for arc.
  */
-public enum ArcShape {
-    //~ Enumeration constant initializers ------------------------------------------------------
+public enum ArcShape
+{
+
     /**
      * Not yet known.
      */
@@ -48,12 +47,10 @@ public enum ArcShape {
      */
     IRRELEVANT(false, false);
 
-    //~ Instance fields ------------------------------------------------------------------------
     private final boolean forSlur; // OK for slur
 
     private final boolean forWedge; // OK for wedge
 
-    //~ Constructors ---------------------------------------------------------------------------
     ArcShape (boolean forSlur,
               boolean forWedge)
     {
@@ -61,7 +58,6 @@ public enum ArcShape {
         this.forWedge = forWedge;
     }
 
-    //~ Methods --------------------------------------------------------------------------------
     public boolean isSlurRelevant ()
     {
         return forSlur;
@@ -71,5 +67,4 @@ public enum ArcShape {
     {
         return forWedge;
     }
-
 }

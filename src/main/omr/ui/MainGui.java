@@ -28,11 +28,12 @@ import omr.log.LogPane;
 import omr.plugin.PluginManager;
 
 import omr.score.PartwiseBuilder;
-import omr.sheet.BookManager;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
+import omr.sheet.Book;
+import omr.sheet.BookManager;
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
@@ -78,7 +79,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
-import omr.sheet.Book;
 
 /**
  * Class {@code MainGui} is the Java User Interface, the main class for displaying a
@@ -754,6 +754,19 @@ public class MainGui
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
+                true,
+                "Should we preload costly packages in the background?");
+    }
+
     //
     //------------------//
     // BoardsScrollPane //
@@ -772,18 +785,5 @@ public class MainGui
             setViewportView(boards);
             revalidate();
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-                true,
-                "Should we preload costly packages in the background?");
     }
 }

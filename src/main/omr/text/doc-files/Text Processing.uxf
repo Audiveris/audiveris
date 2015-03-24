@@ -1,263 +1,263 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <diagram program="umlet" version="11.5">
-  <help_text>
-fontsize=14
+    <help_text>
+        fontsize=14
 
-	// My own comments
-</help_text>
-  <zoom_level>10</zoom_level>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>10</x>
-      <y>60</y>
-      <w>130</w>
-      <h>70</h>
-    </coordinates>
-    <panel_attributes>*Language*
+        // My own comments
+    </help_text>
+    <zoom_level>10</zoom_level>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>10</x>
+            <y>60</y>
+            <w>130</w>
+            <h>70</h>
+        </coordinates>
+        <panel_attributes>*Language*
 
---
-defaultLanguage
---
-nameOf(lan)</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>450</x>
-      <y>10</y>
-      <w>170</w>
-      <h>120</h>
-    </coordinates>
-    <panel_attributes>&lt;&lt;interface&gt;&gt;
-*/OCR/*
---
-UnavailableOcrException
---
-isAvailable()
-getLanguages()
-recognize()
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>450</x>
-      <y>160</y>
-      <w>170</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>*TesseractOCR*
-bg=#ffffaa</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>500</x>
-      <y>100</y>
-      <w>50</w>
-      <h>80</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
-    <additional_attributes>30;30;30;60</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>380</x>
-      <y>140</y>
-      <w>90</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>70;30;30;30</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>670</x>
-      <y>160</y>
-      <w>120</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>*TesseractOrder*
-bg=#ffffaa</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>670</x>
-      <y>230</y>
-      <w>120</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>*TessBridge*
-bg=#ffcccc</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>700</x>
-      <y>160</y>
-      <w>50</w>
-      <h>90</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>30;70;30;30</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>590</x>
-      <y>140</y>
-      <w>100</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
-    <additional_attributes>30;30;80;30</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>190</x>
-      <y>140</y>
-      <w>220</w>
-      <h>260</h>
-    </coordinates>
-    <panel_attributes>*TextBuilder*
-bg=#ffffaa
---
-ocr
-system
---
-isMainlyItalic(line)
-isValid(line)
-isValid(word)
-mapGlyphs(lines, sections)
-mergeLines(lines)
-recomposeLines(lines)
-recutStandardWords(line)
-retrieveOcrLine(glyph, lan)
-retrieveSections(chars, sections)
-splitWords(words, line)
-switchLanguageTexts()</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>10</x>
-      <y>250</y>
-      <w>130</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>*TextScanner*
-bg=#ff8888
---
---
-scanSystem()</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>110</x>
-      <y>230</y>
-      <w>100</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>80;30;30;30</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>10</x>
-      <y>320</y>
-      <w>130</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>*TextPattern*
-bg=#ff8888
---
---
-runPattern()</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>110</x>
-      <y>300</y>
-      <w>100</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>80;30;30;30</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>10</x>
-      <y>170</y>
-      <w>130</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>*ScoreParameters*
-bg=#ff8888
---
-langCombo
---</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>110</x>
-      <y>150</y>
-      <w>100</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>80;30;30;30</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>80</x>
-      <y>100</y>
-      <w>50</w>
-      <h>90</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>30;30;30;70</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>670</x>
-      <y>300</y>
-      <w>120</w>
-      <h>60</h>
-    </coordinates>
-    <panel_attributes>C++ Tesseract
-bg=#bbbbbb</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>700</x>
-      <y>230</y>
-      <w>50</w>
-      <h>90</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>30;70;30;30</additional_attributes>
-  </element>
+            --
+            defaultLanguage
+            --
+            nameOf(lan)</panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>450</x>
+            <y>10</y>
+            <w>170</w>
+            <h>120</h>
+        </coordinates>
+        <panel_attributes>&lt;&lt;interface&gt;&gt;
+            */OCR/*
+            --
+            UnavailableOcrException
+            --
+            isAvailable()
+            getLanguages()
+            recognize()
+        </panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>450</x>
+            <y>160</y>
+            <w>170</w>
+            <h>30</h>
+        </coordinates>
+        <panel_attributes>*TesseractOCR*
+            bg=#ffffaa</panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>500</x>
+            <y>100</y>
+            <w>50</w>
+            <h>80</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+        <additional_attributes>30;30;30;60</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>380</x>
+            <y>140</y>
+            <w>90</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;-</panel_attributes>
+        <additional_attributes>70;30;30;30</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>670</x>
+            <y>160</y>
+            <w>120</w>
+            <h>30</h>
+        </coordinates>
+        <panel_attributes>*TesseractOrder*
+            bg=#ffffaa</panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>670</x>
+            <y>230</y>
+            <w>120</w>
+            <h>30</h>
+        </coordinates>
+        <panel_attributes>*TessBridge*
+            bg=#ffcccc</panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>700</x>
+            <y>160</y>
+            <w>50</w>
+            <h>90</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;.</panel_attributes>
+        <additional_attributes>30;70;30;30</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>590</x>
+            <y>140</y>
+            <w>100</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
+        <additional_attributes>30;30;80;30</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>190</x>
+            <y>140</y>
+            <w>220</w>
+            <h>260</h>
+        </coordinates>
+        <panel_attributes>*TextBuilder*
+            bg=#ffffaa
+            --
+            ocr
+            system
+            --
+            isMainlyItalic(line)
+            isValid(line)
+            isValid(word)
+            mapGlyphs(lines, sections)
+            mergeLines(lines)
+            recomposeLines(lines)
+            recutStandardWords(line)
+            retrieveOcrLine(glyph, lan)
+            retrieveSections(chars, sections)
+            splitWords(words, line)
+            switchLanguageTexts()</panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>10</x>
+            <y>250</y>
+            <w>130</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>*TextScanner*
+            bg=#ff8888
+            --
+            --
+            scanSystem()</panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>110</x>
+            <y>230</y>
+            <w>100</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;.</panel_attributes>
+        <additional_attributes>80;30;30;30</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>10</x>
+            <y>320</y>
+            <w>130</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>*TextPattern*
+            bg=#ff8888
+            --
+            --
+            runPattern()</panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>110</x>
+            <y>300</y>
+            <w>100</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;.</panel_attributes>
+        <additional_attributes>80;30;30;30</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>10</x>
+            <y>170</y>
+            <w>130</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>*ScoreParameters*
+            bg=#ff8888
+            --
+            langCombo
+            --</panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>110</x>
+            <y>150</y>
+            <w>100</w>
+            <h>50</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;.</panel_attributes>
+        <additional_attributes>80;30;30;30</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>80</x>
+            <y>100</y>
+            <w>50</w>
+            <h>90</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;.</panel_attributes>
+        <additional_attributes>30;30;30;70</additional_attributes>
+    </element>
+    <element>
+        <type>com.umlet.element.Class</type>
+        <coordinates>
+            <x>670</x>
+            <y>300</y>
+            <w>120</w>
+            <h>60</h>
+        </coordinates>
+        <panel_attributes>C++ Tesseract
+            bg=#bbbbbb</panel_attributes>
+        <additional_attributes/>
+    </element>
+    <element>
+        <type>com.umlet.element.Relation</type>
+        <coordinates>
+            <x>700</x>
+            <y>230</y>
+            <w>50</w>
+            <h>90</h>
+        </coordinates>
+        <panel_attributes>lt=&lt;.</panel_attributes>
+        <additional_attributes>30;70;30;30</additional_attributes>
+    </element>
 </diagram>

@@ -41,9 +41,7 @@ public class OmrExecutors
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-
     private static final Logger logger = LoggerFactory.getLogger(OmrExecutors.class);
-
 
     private static final Constants constants = new Constants();
 

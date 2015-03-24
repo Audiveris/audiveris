@@ -12,9 +12,7 @@
 package omr.score.ui;
 
 import omr.glyph.Shape;
-
 import static omr.glyph.Shape.*;
-
 import omr.glyph.facets.Glyph;
 
 import omr.math.GeoUtil;
@@ -23,20 +21,21 @@ import omr.math.Rational;
 
 import omr.run.Orientation;
 
+import omr.score.entity.Note;
 import omr.score.entity.OldBarline;
 import omr.score.entity.OldChord;
 import omr.score.entity.OldMeasure;
-import omr.score.entity.Note;
-import omr.score.entity.Page;
-import omr.score.entity.ScoreSystem;
 import omr.score.entity.OldSlot;
 import omr.score.entity.OldStaff;
 import omr.score.entity.OldSystemPart;
+import omr.score.entity.Page;
+import omr.score.entity.ScoreSystem;
 
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
+import omr.sig.SIGraph;
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.BarConnectionInter;
@@ -44,14 +43,15 @@ import omr.sig.inter.BarlineInter;
 import omr.sig.inter.BraceInter;
 import omr.sig.inter.BracketConnectionInter;
 import omr.sig.inter.BracketInter;
+import omr.sig.inter.ChordInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.EndingInter;
+import omr.sig.inter.FlagInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.InterVisitor;
 import omr.sig.inter.KeyAlterInter;
 import omr.sig.inter.KeyInter;
 import omr.sig.inter.LedgerInter;
-import omr.sig.SIGraph;
 import omr.sig.inter.SentenceInter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.StemInter;
@@ -62,19 +62,15 @@ import omr.sig.inter.WordInter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
-
 import static omr.ui.symbol.Alignment.*;
-
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.OmrFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
-
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
-
 import omr.ui.util.UIUtil;
 
 import omr.util.TreeNode;
@@ -94,8 +90,6 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ConcurrentModificationException;
-import omr.sig.inter.ChordInter;
-import omr.sig.inter.FlagInter;
 
 /**
  * Class {@code PagePhysicalPainter} paints the recognized page entities at the location

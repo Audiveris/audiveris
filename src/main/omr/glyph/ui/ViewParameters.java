@@ -32,13 +32,10 @@ import java.awt.event.ActionEvent;
 public class ViewParameters
         extends AbstractBean
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    
-    private static final Logger logger = LoggerFactory.getLogger(
-            ViewParameters.class);
+    private static final Logger logger = LoggerFactory.getLogger(ViewParameters.class);
 
-    
     private static final Constants constants = new Constants();
 
     /** Should the letter boxes be painted */
@@ -59,11 +56,11 @@ public class ViewParameters
     /** Should the sentence links be painted */
     public static final String SENTENCE_PAINTING = "sentencePainting";
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Dynamic flag to remember if section mode is enabled */
     private boolean sectionMode = false;
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -258,26 +255,25 @@ public class ViewParameters
     {
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------//
     // Holder //
     //--------//
     private static interface Holder
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final ViewParameters INSTANCE = new ViewParameters();
-
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Constant.Boolean letterBoxPainting = new Constant.Boolean(
                 true,
@@ -298,6 +294,5 @@ public class ViewParameters
         final Constant.Boolean sentencePainting = new Constant.Boolean(
                 true,
                 "Should the sentence words links be painted");
-
     }
 }

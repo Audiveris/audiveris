@@ -26,6 +26,7 @@ public class RemoveTask
         extends SheetTask
 {
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a task to remove a page from its score
      *
@@ -61,6 +62,5 @@ public class RemoveTask
         sb.append(" remove");
 
         return sb.toString();
-
     }
 }

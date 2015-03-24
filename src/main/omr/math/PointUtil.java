@@ -101,6 +101,7 @@ public abstract class PointUtil
                 p2.getX() + ((dist * (p2.getX() - p1.getX())) / seg),
                 p2.getY() + ((dist * (p2.getY() - p1.getY())) / seg));
     }
+
     //---------//
     // integer //
     //---------//

@@ -23,7 +23,7 @@ import static omr.run.Orientation.VERTICAL;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
-import omr.sheet.Voice;
+import omr.sheet.rhythm.Voice;
 
 import omr.sig.SIGraph;
 import omr.sig.SigReducer;

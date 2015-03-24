@@ -32,11 +32,10 @@ public interface ShapeEvaluator
     public static final EnumSet<Condition> NO_CONDITIONS = EnumSet.noneOf(Condition.class);
 
     //~ Enumerations -------------------------------------------------------------------------------
-
     /** Conditions for evaluation */
-    public static enum Condition {
+    public static enum Condition
+    {
         //~ Enumeration constant initializers ------------------------------------------------------
-
 
         /** Make sure the shape is not blacklisted by the glyph at hand */
         ALLOWED,
@@ -46,7 +45,6 @@ public interface ShapeEvaluator
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     /**
      * Report the sorted sequence of best evaluation(s) found by the evaluator on the
      * provided glyph.
@@ -59,12 +57,12 @@ public interface ShapeEvaluator
      * @param predicate  filter for acceptable shapes, perhaps null
      * @return the sequence of evaluations, perhaps empty but not null
      */
-    Evaluation[] evaluate (Glyph              glyph,
-                           SystemInfo         system,
-                           int                count,
-                           double             minGrade,
+    Evaluation[] evaluate (Glyph glyph,
+                           SystemInfo system,
+                           int count,
+                           double minGrade,
                            EnumSet<Condition> conditions,
-                           Predicate<Shape>   predicate);
+                           Predicate<Shape> predicate);
 
     /**
      * Report the evaluation of a glyph regarding a specific shape.
@@ -119,8 +117,8 @@ public interface ShapeEvaluator
      * @param predicate filter for acceptable shapes, perhaps null
      * @return the best acceptable evaluation, or null if none
      */
-    Evaluation rawVote (Glyph            glyph,
-                        double           minGrade,
+    Evaluation rawVote (Glyph glyph,
+                        double minGrade,
                         Predicate<Shape> predicate);
 
     /**
@@ -132,9 +130,9 @@ public interface ShapeEvaluator
      * @param minGrade the minimum evaluation grade to be acceptable
      * @return the best acceptable evaluation, or null if none
      */
-    Evaluation vote (Glyph      glyph,
+    Evaluation vote (Glyph glyph,
                      SystemInfo system,
-                     double     minGrade);
+                     double minGrade);
 
     /**
      * Report the best of all evaluations found by the evaluator on the provided glyph,
@@ -147,11 +145,11 @@ public interface ShapeEvaluator
      * @param predicate  filter for acceptable shapes, perhaps null
      * @return the best acceptable evaluation, or null if none
      */
-    Evaluation vote (Glyph              glyph,
-                     SystemInfo         system,
-                     double             minGrade,
+    Evaluation vote (Glyph glyph,
+                     SystemInfo system,
+                     double minGrade,
                      EnumSet<Condition> conditions,
-                     Predicate<Shape>   predicate);
+                     Predicate<Shape> predicate);
 
     /**
      * Report the best of all evaluations found by the evaluator on the provided glyph,
@@ -163,8 +161,8 @@ public interface ShapeEvaluator
      * @param predicate filter for acceptable shapes, perhaps null
      * @return the best acceptable evaluation, or null if none
      */
-    Evaluation vote (Glyph            glyph,
-                     SystemInfo       system,
-                     double           minGrade,
+    Evaluation vote (Glyph glyph,
+                     SystemInfo system,
+                     double minGrade,
                      Predicate<Shape> predicate);
 }

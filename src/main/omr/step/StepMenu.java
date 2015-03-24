@@ -101,6 +101,47 @@ public class StepMenu
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //----------------//
+    // MyMenuListener //
+    //----------------//
+    /**
+     * Class {@code MyMenuListener} is triggered when the whole sub-menu is entered.
+     * This is done with respect to currently displayed sheet.
+     * The steps already done are flagged as such.
+     */
+    private class MyMenuListener
+            implements MenuListener
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void menuCanceled (MenuEvent e)
+        {
+        }
+
+        @Override
+        public void menuDeselected (MenuEvent e)
+        {
+        }
+
+        @Override
+        public void menuSelected (MenuEvent e)
+        {
+            Sheet sheet = SheetsController.getCurrentSheet();
+            boolean isIdle = (sheet != null) && (sheet.getCurrentStep() == null);
+
+            for (int i = 0; i < menu.getItemCount(); i++) {
+                JMenuItem menuItem = menu.getItem(i);
+
+                // Adjust the status for each step
+                if (menuItem instanceof StepItem) {
+                    StepItem item = (StepItem) menuItem;
+                    item.displayState(sheet, isIdle);
+                }
+            }
+        }
+    }
+
     //------------//
     // StepAction //
     //------------//
@@ -192,47 +233,6 @@ public class StepMenu
 
                 if (!isIdle) {
                     action.setEnabled(false);
-                }
-            }
-        }
-    }
-
-    //----------------//
-    // MyMenuListener //
-    //----------------//
-    /**
-     * Class {@code MyMenuListener} is triggered when the whole sub-menu is entered.
-     * This is done with respect to currently displayed sheet.
-     * The steps already done are flagged as such.
-     */
-    private class MyMenuListener
-            implements MenuListener
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public void menuCanceled (MenuEvent e)
-        {
-        }
-
-        @Override
-        public void menuDeselected (MenuEvent e)
-        {
-        }
-
-        @Override
-        public void menuSelected (MenuEvent e)
-        {
-            Sheet sheet = SheetsController.getCurrentSheet();
-            boolean isIdle = (sheet != null) && (sheet.getCurrentStep() == null);
-
-            for (int i = 0; i < menu.getItemCount(); i++) {
-                JMenuItem menuItem = menu.getItem(i);
-
-                // Adjust the status for each step
-                if (menuItem instanceof StepItem) {
-                    StepItem item = (StepItem) menuItem;
-                    item.displayState(sheet, isIdle);
                 }
             }
         }

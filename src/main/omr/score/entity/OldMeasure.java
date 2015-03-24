@@ -36,12 +36,12 @@ import java.util.List;
  * Vertically a measure embraces the part staves (generally one staff, but two staves for piano or
  * harp instrument).
  * <p>
- As a ScoreNode, the children of a OldMeasure are : ending OldBarline, list of
- TimeSignature(s), list of Clef(s), list of KeySignature(s), list of Chord(s)
- and list of Beam(s).</p>
+ * As a ScoreNode, the children of a OldMeasure are : ending OldBarline, list of
+ * TimeSignature(s), list of Clef(s), list of KeySignature(s), list of Chord(s)
+ * and list of Beam(s).</p>
  * <p>
- OldMeasure Ids are stored with respect to their containing page only, they
- are page-based ids. Displayed to the user are score-based ids.</p>
+ * OldMeasure Ids are stored with respect to their containing page only, they
+ * are page-based ids. Displayed to the user are score-based ids.</p>
  *
  * @author Hervé Bitteur
  */
@@ -615,7 +615,7 @@ public class OldMeasure
      * @return the abscissa-wise closest chord
      */
     public OldChord getClosestChord (Collection<OldChord> chords,
-                                  Point point)
+                                     Point point)
     {
         OldChord bestChord = null;
         int bestDx = Integer.MAX_VALUE;

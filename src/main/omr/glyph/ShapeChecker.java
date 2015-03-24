@@ -356,7 +356,7 @@ public class ShapeChecker
                                   Glyph glyph,
                                   double[] features)
             {
-                    // They must be within the abscissa bounds of the system
+                // They must be within the abscissa bounds of the system
                 // Except a few shapes
                 Shape shape = eval.shape;
 
@@ -507,7 +507,7 @@ public class ShapeChecker
                                   Glyph glyph,
                                   double[] features)
             {
-                    // COMMON_TIME shape is easily confused with CUT_TIME
+                // COMMON_TIME shape is easily confused with CUT_TIME
                 // Check presence of a "pseudo-stem"
                 Rectangle box = glyph.getBounds();
                 box.grow(-box.width / 4, 0);
@@ -537,7 +537,7 @@ public class ShapeChecker
                     return false;
                 }
 
-                    // Hook slope is not reliable, so this test is disabled
+                // Hook slope is not reliable, so this test is disabled
                 //                    if (!validBeamHookSlope(glyph)) {
                 //                        eval.failure = new Evaluation.Failure("slope");
                 //
@@ -558,7 +558,7 @@ public class ShapeChecker
                 Integer singleThickness = system.getScoreSystem().getScale().getMainBeam();
 
                 if (singleThickness != null) {
-                        // Check we have thickness consistent with the number of
+                    // Check we have thickness consistent with the number of
                     // beams (since we know single beam thickness)
                     double meanThickness = glyph.getMeanThickness(Orientation.HORIZONTAL);
 
@@ -568,7 +568,7 @@ public class ShapeChecker
                     case 1:
                         return correctShape(system, glyph, eval, BEAM);
 
-                        //
+                    //
                     //                    case 2:
                     //                        return correctShape(system, glyph, eval, BEAM_2);
                     //
@@ -630,7 +630,7 @@ public class ShapeChecker
                     return false;
                 }
 
-                    //                    // Check there is no huge horizontal gap between parts
+                //                    // Check there is no huge horizontal gap between parts
                 //                    if (hugeGapBetweenParts(glyph)) {
                 //                        eval.failure = new Evaluation.Failure("gaps");
                 //
@@ -639,7 +639,7 @@ public class ShapeChecker
                 return true;
             }
 
-                //                /**
+            //                /**
             //                 * Browse the collection of provided glyphs to make sure there
             //                 * is no huge horizontal gap included
             //                 * @param glyphs the collection of glyphs that compose the text
@@ -866,7 +866,7 @@ public class ShapeChecker
                     return false;
                 }
 
-                    //                    // Simply check the tuplet character via OCR, if available
+                //                    // Simply check the tuplet character via OCR, if available
                 //                    // Nota: We must avoid multiple OCR calls on the same glyph
                 //                    if (Language.getOcr()
                 //                                .isAvailable()) {
@@ -1186,74 +1186,6 @@ public class ShapeChecker
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        Constant.Boolean applySpecificCheck = new Constant.Boolean(
-                true,
-                "Should we apply specific checks on shape candidates?");
-
-        Constant.Boolean applyConstraintsCheck = new Constant.Boolean(
-                true,
-                "Should we apply constraints checks on shape candidates?");
-
-        Scale.Fraction maxTitleHeight = new Scale.Fraction(
-                4d,
-                "Maximum normalized height for a title text");
-
-        Scale.Fraction maxLyricsHeight = new Scale.Fraction(
-                2.5d,
-                "Maximum normalized height for a lyrics text");
-
-        Constant.Double minTitlePitchPosition = new Constant.Double(
-                "PitchPosition",
-                15d,
-                "Minimum absolute pitch position for a title");
-
-        Constant.Double maxTupletPitchPosition = new Constant.Double(
-                "PitchPosition",
-                15d,
-                "Minimum absolute pitch position for a tuplet");
-
-        Constant.Double maxTimePitchPositionMargin = new Constant.Double(
-                "PitchPosition",
-                1d,
-                "Maximum absolute pitch position margin for a time signature");
-
-        Scale.Fraction maxTextGap = new Scale.Fraction(
-                5.0,
-                "Maximum value for a horizontal gap between glyphs of the same text");
-
-        Scale.Fraction maxKeyXOffset = new Scale.Fraction(
-                2,
-                "Maximum horizontal offset for a key since clef or measure start");
-
-        Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(
-                1.5,
-                "Maximum height for small dynamics (no p, no f)");
-
-        Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(
-                2,
-                "Maximum height for small dynamics (no p, no f)");
-
-        Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(
-                2.5,
-                "Maximum height for small dynamics (no p, no f)");
-
-        Scale.Fraction maxGapToStaff = new Scale.Fraction(
-                8,
-                "Maximum vertical gap between a note-like glyph and closest staff");
-
-        Scale.Fraction maxStemGapToStaff = new Scale.Fraction(
-                12,
-                "Maximum vertical gap between a stem and closest staff");
-    }
-
     //---------//
     // Checker //
     //---------//
@@ -1368,5 +1300,73 @@ public class ShapeChecker
         {
             return name;
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        Constant.Boolean applySpecificCheck = new Constant.Boolean(
+                true,
+                "Should we apply specific checks on shape candidates?");
+
+        Constant.Boolean applyConstraintsCheck = new Constant.Boolean(
+                true,
+                "Should we apply constraints checks on shape candidates?");
+
+        Scale.Fraction maxTitleHeight = new Scale.Fraction(
+                4d,
+                "Maximum normalized height for a title text");
+
+        Scale.Fraction maxLyricsHeight = new Scale.Fraction(
+                2.5d,
+                "Maximum normalized height for a lyrics text");
+
+        Constant.Double minTitlePitchPosition = new Constant.Double(
+                "PitchPosition",
+                15d,
+                "Minimum absolute pitch position for a title");
+
+        Constant.Double maxTupletPitchPosition = new Constant.Double(
+                "PitchPosition",
+                15d,
+                "Minimum absolute pitch position for a tuplet");
+
+        Constant.Double maxTimePitchPositionMargin = new Constant.Double(
+                "PitchPosition",
+                1d,
+                "Maximum absolute pitch position margin for a time signature");
+
+        Scale.Fraction maxTextGap = new Scale.Fraction(
+                5.0,
+                "Maximum value for a horizontal gap between glyphs of the same text");
+
+        Scale.Fraction maxKeyXOffset = new Scale.Fraction(
+                2,
+                "Maximum horizontal offset for a key since clef or measure start");
+
+        Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(
+                1.5,
+                "Maximum height for small dynamics (no p, no f)");
+
+        Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(
+                2,
+                "Maximum height for small dynamics (no p, no f)");
+
+        Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(
+                2.5,
+                "Maximum height for small dynamics (no p, no f)");
+
+        Scale.Fraction maxGapToStaff = new Scale.Fraction(
+                8,
+                "Maximum vertical gap between a note-like glyph and closest staff");
+
+        Scale.Fraction maxStemGapToStaff = new Scale.Fraction(
+                12,
+                "Maximum vertical gap between a stem and closest staff");
     }
 }

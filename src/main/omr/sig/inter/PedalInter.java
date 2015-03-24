@@ -20,8 +20,9 @@ import omr.glyph.facets.Glyph;
  * @author Hervé Bitteur
  */
 public class PedalInter
-extends AbstractDirectionInter{
-     //~ Constructors -------------------------------------------------------------------------------
+        extends AbstractDirectionInter
+{
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code PedalInter} object.
@@ -31,10 +32,9 @@ extends AbstractDirectionInter{
      * @param grade the interpretation quality
      */
     public PedalInter (Glyph glyph,
-                         Shape shape,
-                         double grade)
+                       Shape shape,
+                       double grade)
     {
         super(glyph, glyph.getBounds(), shape, grade);
     }
-
 }

@@ -92,7 +92,6 @@ public class BasicLag
         this.orientation = orientation;
         lagService = new SelectionService(name, Lag.eventsWritten);
         logger.debug("Created lag {}", name);
-
     }
 
     //~ Methods ------------------------------------------------------------------------------------

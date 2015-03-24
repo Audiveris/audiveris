@@ -18,8 +18,6 @@ import omr.glyph.facets.GlyphComposition;
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
 
-import omr.grid.FilamentLine;
-
 import omr.lag.Section;
 import omr.lag.Sections;
 
@@ -31,6 +29,7 @@ import omr.run.RunTable;
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.grid.FilamentLine;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

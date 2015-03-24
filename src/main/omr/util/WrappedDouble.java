@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.util;
 
-
 /**
  * Class {@code WrappedDouble} is a wrapper around a Double, with the ability to set
  * an initial value.
@@ -19,7 +18,7 @@ package omr.util;
  * @author Hervé Bitteur
  */
 public class WrappedDouble
-    extends Wrapper<Double>
+        extends Wrapper<Double>
 {
     //~ Constructors -------------------------------------------------------------------------------
 

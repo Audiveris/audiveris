@@ -13,7 +13,7 @@ package omr.sig.inter;
 
 import omr.glyph.Shape;
 
-import omr.grid.BarConnection;
+import omr.sheet.grid.BarConnection;
 
 import omr.sig.GradeImpacts;
 

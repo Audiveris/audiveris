@@ -64,12 +64,12 @@ import java.util.Map;
  */
 public class Dumper
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Maximum number of collection items printed */
     private static final int MAX_COLLECTION_INDEX = 9;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** To filter classes and fields */
     protected final Relevance relevance;
 
@@ -93,7 +93,7 @@ public class Dumper
      */
     protected Class<?> classe;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Dumper.
      *
@@ -116,7 +116,7 @@ public class Dumper
         classe = object.getClass();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // print //
     //-------//
@@ -182,9 +182,7 @@ public class Dumper
 
             // Safeguard action when the object is a big collection
             if (i > MAX_COLLECTION_INDEX) {
-                sb.append(" ... ")
-                        .append(collection.size())
-                        .append(" items");
+                sb.append(" ... ").append(collection.size()).append(" items");
 
                 break;
             } else {
@@ -274,7 +272,7 @@ public class Dumper
         } while (relevance.isClassRelevant(classe));
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Column //
     //--------//
@@ -286,18 +284,18 @@ public class Dumper
     public static class Column
             extends Dumper
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String MEMBER_GAP = "   ";
 
         private static final String INDENT_GAP = ".  ";
 
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
         private final String title;
 
         private final StringBuilder prefix;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Column (Relevance relevance,
                        Object object,
                        String title,
@@ -320,7 +318,7 @@ public class Dumper
             }
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void printClassProlog ()
         {
@@ -328,11 +326,8 @@ public class Dumper
             // heritance hierarchy
             if (object.getClass() == classe) {
                 sb.append("\n");
-                sb.append(prefix)
-                        .append(classe.getName());
-                sb.append(" ")
-                        .append(title)
-                        .append(":");
+                sb.append(prefix).append(classe.getName());
+                sb.append(" ").append(title).append(":");
             }
         }
 
@@ -341,10 +336,8 @@ public class Dumper
                                    Object value)
         {
             sb.append("\n");
-            sb.append(prefix)
-                    .append(MEMBER_GAP);
-            sb.append(name)
-                    .append("=");
+            sb.append(prefix).append(MEMBER_GAP);
+            sb.append(name).append("=");
             super.printField(name, value);
         }
     }
@@ -359,7 +352,7 @@ public class Dumper
     public static class Html
             extends Dumper
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public Html (Relevance relevance,
                      Object object)
@@ -367,16 +360,13 @@ public class Dumper
             super(relevance, object, true);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
             // Style
-            sb.append("<style> td {")
-                    .append(" font-family: Lucida Console, Verdana, sans-serif;")
-                    .append(" font-size: 9px;")
-                    .append(" font-style: normal;")
-                    .append("} </style>");
+            sb.append("<style> td {").append(" font-family: Lucida Console, Verdana, sans-serif;").append(
+                    " font-size: 9px;").append(" font-style: normal;").append("} </style>");
 
             // Table begin
             sb.append("<table border=0 cellpadding=3>");
@@ -395,9 +385,8 @@ public class Dumper
         protected void printClassProlog ()
         {
             // Class name
-            sb.append("<tr><td colspan=2><font color='BLUE'>")
-                    .append(classe.getName())
-                    .append("</font></td></tr>");
+            sb.append("<tr><td colspan=2><font color='BLUE'>").append(classe.getName()).append(
+                    "</font></td></tr>");
         }
 
         @Override
@@ -408,16 +397,13 @@ public class Dumper
             sb.append("<tr>");
 
             // First the field name
-            sb.append("<td align='right'><font color='RED'>")
-                    .append(name)
-                    .append("</font></td>");
+            sb.append("<td align='right'><font color='RED'>").append(name).append("</font></td>");
 
             // Then the field value
             sb.append("<td>");
             super.printField(name, value);
 
-            sb.append("</td>")
-                    .append("</tr>");
+            sb.append("</td>").append("</tr>");
         }
     }
 
@@ -431,7 +417,7 @@ public class Dumper
     public static class Row
             extends Dumper
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public Row (Relevance relevance,
                     Object object)
@@ -439,7 +425,7 @@ public class Dumper
             super(relevance, object, false);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void printClassEpilog ()
         {
@@ -457,8 +443,7 @@ public class Dumper
                 sb.append("from ");
             }
 
-            sb.append(classe.getName())
-                    .append(":");
+            sb.append(classe.getName()).append(":");
         }
 
         @Override
@@ -466,8 +451,7 @@ public class Dumper
                                    Object value)
         {
             sb.append(" ");
-            sb.append(name)
-                    .append("=");
+            sb.append(name).append("=");
             super.printField(name, value);
         }
     }

@@ -23,18 +23,16 @@ import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 
-import omr.sig.inter.Inter;
 import omr.sig.SIGraph;
 import omr.sig.SigManager;
+import omr.sig.inter.Inter;
 
 import omr.ui.Board;
 import omr.ui.PixelCount;
 import omr.ui.field.LCheckBox;
 import omr.ui.field.LTextField;
 import omr.ui.field.SpinnerUtil;
-
 import static omr.ui.field.SpinnerUtil.NO_VALUE;
-
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -158,7 +156,7 @@ public class InterBoard
                             // Details of contextual grade?
                             SIGraph sig = inter.getSig();
 
-                            if (sig != null && !inter.isDeleted()) {
+                            if ((sig != null) && !inter.isDeleted()) {
                                 sig.computeContextualGrade(inter, true);
                             }
 

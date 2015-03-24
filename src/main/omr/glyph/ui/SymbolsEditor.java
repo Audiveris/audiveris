@@ -33,11 +33,11 @@ import omr.selection.SectionSetEvent;
 import static omr.selection.SelectionHint.*;
 import omr.selection.UserEvent;
 
-import omr.sheet.Measure;
 import omr.sheet.Part;
 import omr.sheet.Sheet;
-import omr.sheet.Slot;
 import omr.sheet.Staff;
+import omr.sheet.rhythm.Measure;
+import omr.sheet.rhythm.Slot;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetGradedPainter;
 import omr.sheet.ui.SheetResultPainter;

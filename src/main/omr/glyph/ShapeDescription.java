@@ -102,12 +102,14 @@ public abstract class ShapeDescription
     //---------//
     /**
      * Report the name of the descriptor used.
+     *
      * @return the descriptor name
      */
-    public static String getName()
+    public static String getName ()
     {
         return INSTANCE.getName();
     }
+
     //~ Inner Interfaces ---------------------------------------------------------------------------
     //
     //------------//
