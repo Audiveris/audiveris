@@ -129,7 +129,7 @@ public class ChamferMatchingTest
     {
         System.out.println();
         System.out.println("Best matches:");
-        Collections.sort(locs);
+        Collections.sort(locs, PixelDistance.byValue);
 
         for (PixelDistance loc : locs) {
             System.out.println(loc.toString());

@@ -10,12 +10,12 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>&lt;&lt;interface&gt;&gt;
-            */OrthogonalMoments/*
-            bg=#ffffaa
-            --
-            setMoment()
-            getMoment()
-            distanceTo()
+*/OrthogonalMoments/*
+bg=#ffffaa
+--
+setMoment()
+getMoment()
+distanceTo()
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -28,10 +28,10 @@
             <h>60</h>
         </coordinates>
         <panel_attributes>&lt;&lt;interface&gt;&gt;
-            */LegendreMoments/*
-            bg=#ffffaa
-            --
-            ORDER
+*/LegendreMoments/*
+bg=#ffffaa
+--
+ORDER
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -44,11 +44,11 @@
             <h>80</h>
         </coordinates>
         <panel_attributes>&lt;&lt;interface&gt;&gt;
-            */ARTMoments/*
-            bg=#ffffaa
-            --
-            ANGULAR
-            RADIAL
+*/ARTMoments/*
+bg=#ffffaa
+--
+ANGULAR
+RADIAL
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -164,13 +164,13 @@
             <h>110</h>
         </coordinates>
         <panel_attributes>&lt;&lt;interface&gt;&gt;
-            */MomentsExtractor/*
-            bg=#ffffaa
+*/MomentsExtractor/*
+bg=#ffffaa
 &lt;Descriptor&gt;
-            --
-            extract()
-            reconstruct()
-            setDescriptor()
+--
+extract()
+reconstruct()
+setDescriptor()
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -184,16 +184,16 @@
         </coordinates>
         <panel_attributes>*/AbstractExtractor/*
 &lt;Descriptor&gt;
-            --
-            xx
-            yy
-            mass
-            center
-            radius
-            descriptor
-            --
-            extract()
-            setDescriptor()
+--
+xx
+yy
+mass
+center
+radius
+descriptor
+--
+extract()
+setDescriptor()
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -217,8 +217,8 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>*BasicARTExtractor*
-            --
-            extractMoments()
+--
+extractMoments()
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -231,9 +231,9 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>*BasicLegendreExtractor*
-            --
-            extractMoments()
-            reconstruct()
+--
+extractMoments()
+reconstruct()
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -268,11 +268,11 @@
             <h>80</h>
         </coordinates>
         <panel_attributes>&lt;&lt;interface&gt;&gt;
-            */LUT/*
-            bg=#ffffaa
-            --
-            assign()
-            interpolate()</panel_attributes>
+*/LUT/*
+bg=#ffffaa
+--
+assign()
+interpolate()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>

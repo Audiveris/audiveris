@@ -10,13 +10,13 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>*TargetBuilder*
-            bg=#ffff55
-            --
-            targetPage
-            dewarpGrid
-            dewarpedImage
-            --
-            buildInfo()</panel_attributes>
+bg=#ffff55
+--
+targetPage
+dewarpGrid
+dewarpedImage
+--
+buildInfo()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -28,10 +28,10 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>*GridBuilder*
-            bg=#ffff55
-            --
-            --
-            buildInfo()</panel_attributes>
+bg=#ffff55
+--
+--
+buildInfo()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -43,14 +43,14 @@
             <h>120</h>
         </coordinates>
         <panel_attributes>*LinesRetriever*
-            bg=#ffff55
-            --
-            hLag
-            filaments
-            globalSlope
-            --
-            buildLag()
-            buildInfo()</panel_attributes>
+bg=#ffff55
+--
+hLag
+filaments
+globalSlope
+--
+buildLag()
+buildInfo()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -62,14 +62,14 @@
             <h>120</h>
         </coordinates>
         <panel_attributes>*BarsRetriever*
-            bg=#ffff55
-            --
-            vLag
-            bars
-            systems
-            --
-            buildLag()
-            buildInfo()</panel_attributes>
+bg=#ffff55
+--
+vLag
+bars
+systems
+--
+buildLag()
+buildInfo()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -114,15 +114,15 @@
             <h>140</h>
         </coordinates>
         <panel_attributes>*ClustersRetriever*
-            bg=#ffff55
-            --
-            interline
-            sheetTopEdge
-            colPatterns
-            popLength
-            clusters
-            --
-            buildInfo()</panel_attributes>
+bg=#ffff55
+--
+interline
+sheetTopEdge
+colPatterns
+popLength
+clusters
+--
+buildInfo()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -145,11 +145,11 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>*BarsChecker*
-            bg=#ffff55
-            --
-            suite
-            --
-            retrieveCandidates()</panel_attributes>
+bg=#ffff55
+--
+suite
+--
+retrieveCandidates()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -172,7 +172,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>*GridView*
-            bg=#ff5555</panel_attributes>
+bg=#ff5555</panel_attributes>
         <additional_attributes/>
     </element>
     <element>

@@ -1,8 +1,8 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     A b s t r a c t G r a y F i l t e r                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               A b s t r a c t G r a y F i l t e r                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
 //  This software is released under the GNU General Public License.
@@ -16,11 +16,10 @@ import omr.util.StopWatch;
 import ij.process.ByteProcessor;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 
 /**
- * Class {@code AbstractGrayFilter} is the basis for filters
- * operating on gray-level images.
+ * Class {@code AbstractGrayFilter} is the basis for filters operating on gray-level
+ * images.
  *
  * @author Hervé Bitteur
  */
@@ -52,8 +51,8 @@ public abstract class AbstractGrayFilter
      */
     public BufferedImage filter (final BufferedImage input)
     {
-        if (!(input instanceof RenderedImage)) {
-            throw new IllegalArgumentException("Input image is not a RenderedImage");
+        if (input == null) {
+            throw new IllegalArgumentException("Input image is null");
         }
 
         if (input.getType() != BufferedImage.TYPE_BYTE_GRAY) {

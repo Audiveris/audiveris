@@ -162,7 +162,7 @@ public abstract class FilterDescriptor
                 } else {
                     logger.error(method + " must be static");
                 }
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
                 logger.warn("Could not call " + method, ex);
             }
 
@@ -179,16 +179,24 @@ public abstract class FilterDescriptor
                 switch (kind) {
                 case GLOBAL:
 
-                    GlobalDescriptor gDesc = (GlobalDescriptor) specific;
-                    GlobalFilter.setDefaultThreshold(gDesc.threshold);
+                    if (specific instanceof GlobalDescriptor) {
+                        GlobalDescriptor gDesc = (GlobalDescriptor) specific;
+                        GlobalFilter.setDefaultThreshold(gDesc.threshold);
+                    } else {
+                        logger.error("Wrong class for {} find {}", specific, kind);
+                    }
 
                     break;
 
                 case ADAPTIVE:
 
-                    AdaptiveDescriptor aDesc = (AdaptiveDescriptor) specific;
-                    AdaptiveFilter.setDefaultMeanCoeff(aDesc.meanCoeff);
-                    AdaptiveFilter.setDefaultStdDevCoeff(aDesc.stdDevCoeff);
+                    if (specific instanceof AdaptiveDescriptor) {
+                        AdaptiveDescriptor aDesc = (AdaptiveDescriptor) specific;
+                        AdaptiveFilter.setDefaultMeanCoeff(aDesc.meanCoeff);
+                        AdaptiveFilter.setDefaultStdDevCoeff(aDesc.stdDevCoeff);
+                    } else {
+                        logger.error("Wrong class for {} find {}", specific, kind);
+                    }
 
                     break;
                 }

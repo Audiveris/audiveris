@@ -80,11 +80,7 @@ public class HeadStemRelation
         final double midStem = (stemLine.getY1() + stemLine.getY2()) / 2;
         final double anchor = anchorPoint.getY();
 
-        if (anchor == midStem) {
-            return STEM_MIDDLE;
-        }
-
-        if (anchor > midStem) {
+        if (anchor >= midStem) {
             return (anchor > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
         } else {
             return (anchor < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;

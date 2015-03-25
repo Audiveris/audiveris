@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -87,20 +88,22 @@ public class InterMenu
         // Sort the inters, first by containing system, then by decreasing contextual grade
         Map<SystemInfo, List<Inter>> interMap = new TreeMap<SystemInfo, List<Inter>>();
 
-        for (Inter inter : inters) {
-            SIGraph sig = inter.getSig();
+        if (inters != null) {
+            for (Inter inter : inters) {
+                SIGraph sig = inter.getSig();
 
-            if (sig != null) {
-                SystemInfo system = sig.getSystem();
+                if (sig != null) {
+                    SystemInfo system = sig.getSystem();
 
-                if (system != null) {
-                    List<Inter> list = interMap.get(system);
+                    if (system != null) {
+                        List<Inter> list = interMap.get(system);
 
-                    if (list == null) {
-                        interMap.put(system, list = new ArrayList<Inter>());
+                        if (list == null) {
+                            interMap.put(system, list = new ArrayList<Inter>());
+                        }
+
+                        list.add(inter);
                     }
-
-                    list.add(inter);
                 }
             }
         }
@@ -114,14 +117,16 @@ public class InterMenu
             removeAll();
 
             if ((inters != null) && !inters.isEmpty()) {
-                for (SystemInfo system : interMap.keySet()) {
+                for (Entry<SystemInfo, List<Inter>> entry : interMap.entrySet()) {
+                    SystemInfo system = entry.getKey();
+
                     if (getMenuComponentCount() > 0) {
                         addSeparator();
                     }
 
                     UIUtil.insertTitle(this, "Inters for System #" + system.getId() + ":");
 
-                    for (Inter inter : interMap.get(system)) {
+                    for (Inter inter : entry.getValue()) {
                         final SIGraph sig = inter.getSig();
                         final Set<Relation> rels = sig.edgesOf(inter);
 
@@ -157,7 +162,7 @@ public class InterMenu
     /**
      * Publish related inter when entered by mouse.
      */
-    private class InterListener
+    private static class InterListener
             extends AbstractMouseListener
     {
         //~ Methods --------------------------------------------------------------------------------

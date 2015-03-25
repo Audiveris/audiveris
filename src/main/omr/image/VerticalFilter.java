@@ -61,7 +61,6 @@ import org.slf4j.LoggerFactory;
 @NotThreadSafe
 public class VerticalFilter
         extends AdaptiveFilter
-        implements PixelFilter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

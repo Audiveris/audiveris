@@ -43,7 +43,7 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;&lt;-
-            r1=    level   ordered</panel_attributes>
+r1=    level   ordered</panel_attributes>
         <additional_attributes>53;20;53;80</additional_attributes>
     </element>
     <element>
@@ -77,7 +77,7 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;&lt;-
-            r1=abscissa    ordered</panel_attributes>
+r1=abscissa    ordered</panel_attributes>
         <additional_attributes>60;20;60;80</additional_attributes>
     </element>
     <element>
@@ -89,8 +89,8 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>BeamItem
-            --
-            glyph</panel_attributes>
+--
+glyph</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -102,7 +102,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;&lt;-
-            m1=abscissa ordered</panel_attributes>
+m1=abscissa ordered</panel_attributes>
         <additional_attributes>20;20;160;20</additional_attributes>
     </element>
     <element>
@@ -114,8 +114,8 @@
             <h>60</h>
         </coordinates>
         <panel_attributes>Chord
-            --
-            stem</panel_attributes>
+--
+stem</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -127,7 +127,7 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;&lt;-
-            r1=abscissa    ordered</panel_attributes>
+r1=abscissa    ordered</panel_attributes>
         <additional_attributes>60;20;60;80</additional_attributes>
     </element>
     <element>
@@ -139,7 +139,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;&lt;-
-            m1=abscissa ordered</panel_attributes>
+m1=abscissa ordered</panel_attributes>
         <additional_attributes>160;20;20;20</additional_attributes>
     </element>
 </umlet_diagram>

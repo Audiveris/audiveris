@@ -99,7 +99,7 @@ public class GlyphMenu
     /**
      * Publish related glyph when entered by mouse.
      */
-    private class GlyphListener
+    private static class GlyphListener
             extends AbstractMouseListener
     {
         //~ Methods --------------------------------------------------------------------------------

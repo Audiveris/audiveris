@@ -145,45 +145,38 @@ public class GrayMorphology
         //IJ.log( "options SE "+strelitems[options]+ " "+ constitems[options]);
         int eltype = constitems[options];
 
-        //        if (eltype == FREE) {
-        //            se = inputSE();
-        //        } else {
         se = new StructureElement(eltype, 1, radius, offset);
+        mp = new MorphoProcessor(se);
 
-        //        }
-        if (se != null) {
-            mp = new MorphoProcessor(se);
+        //            if ((showoptions) && (!seshown)) {
+        //                minus_se = mp.getSE(-1);
+        //                plus_se = mp.getSE(1);
+        //                showStrEl(se, "SE r=" + radius);
+        //                showStrEl(minus_se, "minus SE r=" + radius);
+        //                showStrEl(plus_se, "plus SE r=" + radius);
+        //            }
+        slice++;
 
-            //            if ((showoptions) && (!seshown)) {
-            //                minus_se = mp.getSE(-1);
-            //                plus_se = mp.getSE(1);
-            //                showStrEl(se, "SE r=" + radius);
-            //                showStrEl(minus_se, "minus SE r=" + radius);
-            //                showStrEl(plus_se, "plus SE r=" + radius);
-            //            }
-            slice++;
+        //IJ.showStatus("Doing slice " + slice);
+        //            if (slice > 1) {
+        //                logger.info(
+        //                        imp.getTitle() + " : " + slice + "/" + imp.getStackSize());
+        //            }
+        // ip.snapshot();
+        //            Rectangle r = ip.getRoi();
+        //
+        //            if (r == null) {
+        doOptions(ip, mp, morphoptions);
 
-            //IJ.showStatus("Doing slice " + slice);
-            //            if (slice > 1) {
-            //                logger.info(
-            //                        imp.getTitle() + " : " + slice + "/" + imp.getStackSize());
-            //            }
-            // ip.snapshot();
-            //            Rectangle r = ip.getRoi();
-            //
-            //            if (r == null) {
-            doOptions(ip, mp, morphoptions);
-
-            //            } // end if
-            //            else if (!isLineRoi) {
-            //                ImageProcessor ipmask = getMask((ByteProcessor) ip, r);
-            //                doOptions(ipmask, mp, morphoptions);
-            //                ip.insert(ipmask, r.x, r.y);
-            //            } // end if
-            //            if (slice == imp.getImageStackSize()) {
-            //                imp.updateAndDraw();
-            //            }
-        }
+        //            } // end if
+        //            else if (!isLineRoi) {
+        //                ImageProcessor ipmask = getMask((ByteProcessor) ip, r);
+        //                doOptions(ipmask, mp, morphoptions);
+        //                ip.insert(ipmask, r.x, r.y);
+        //            } // end if
+        //            if (slice == imp.getImageStackSize()) {
+        //                imp.updateAndDraw();
+        //            }
     }
 
     //    public int setup (String arg,
@@ -355,6 +348,7 @@ public class GrayMorphology
         //
         //            break;
         //        }
+        default:
         } // switch
     }
 
@@ -379,21 +373,21 @@ public class GrayMorphology
     //
     //        return new StructureElement(kernelText);
     //    }
-
-    /* validates the input value
-     * only n/2 floats are accepted
-     */
-    private boolean validate (float var,
-                              int k)
-    {
-        float a = k * var;
-        int b = (int) (k * var);
-
-        // IJ.log(IJ.d2s(a-b));
-        if (((a - b) == 0) || (var < 0)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+//
+//    /* validates the input value
+//     * only n/2 floats are accepted
+//     */
+//    private boolean validate (float var,
+//                              int k)
+//    {
+//        float a = k * var;
+//        int b = (int) (k * var);
+//
+//        // IJ.log(IJ.d2s(a-b));
+//        if (((a - b) == 0) || (var < 0)) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
 }

@@ -348,8 +348,8 @@ public class UnitManager
                     for (int i = 0; i < set.size(); i++) {
                         Constant constant = set.getConstant(i);
 
-                        if (constant.getName().toLowerCase().contains(str)
-                            || constant.getDescription().toLowerCase().contains(str)) {
+                        if (constant.getName().toLowerCase(Locale.US).contains(str)
+                            || constant.getDescription().toLowerCase(Locale.US).contains(str)) {
                             found.add(constant);
                         }
                     }

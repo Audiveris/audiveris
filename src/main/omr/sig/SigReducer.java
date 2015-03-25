@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
+
 import static omr.glyph.ShapeSet.Alterations;
 import static omr.glyph.ShapeSet.CoreBarlines;
 import static omr.glyph.ShapeSet.Flags;
@@ -65,13 +66,16 @@ import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.RepeatDotDotRelation;
 import omr.sig.relation.StaccatoChordRelation;
-import omr.sig.relation.StemConnection;
 import omr.sig.relation.StemPortion;
+
 import static omr.sig.relation.StemPortion.*;
+
 import omr.sig.relation.TimeNumberRelation;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 import omr.util.Predicate;
 
@@ -83,7 +87,6 @@ import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -452,8 +455,9 @@ public class SigReducer
             }
 
             // Head/Beam support or exclusion based on size
-            for (Size size : beams.keySet()) {
-                Set<Inter> beamSet = beams.get(size);
+            for (Entry<Size, Set<Inter>> entry : beams.entrySet()) {
+                Size size = entry.getKey();
+                Set<Inter> beamSet = entry.getValue();
 
                 if (size == Size.SMALL) {
                     // Small beams exclude standard heads

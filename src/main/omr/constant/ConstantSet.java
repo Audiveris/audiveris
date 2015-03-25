@@ -286,7 +286,7 @@ public abstract class ConstantSet
 
             // Assign the constructed map atomically
             map = tempMap;
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             logger.warn("Error initializing map of ConstantSet " + this, ex);
         }
     }

@@ -10,9 +10,9 @@
             <h>60</h>
         </coordinates>
         <panel_attributes>*TargetPage*
-            --
-            width
-            height</panel_attributes>
+--
+width
+height</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -35,10 +35,10 @@
             <h>80</h>
         </coordinates>
         <panel_attributes>*TargetSystem*
-            --
-            top
-            left
-            right</panel_attributes>
+--
+top
+left
+right</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -50,8 +50,8 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>*TargetStaff*
-            --
-            top</panel_attributes>
+--
+top</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -74,8 +74,8 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>*TargetLine*
-            --
-            y</panel_attributes>
+--
+y</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -98,14 +98,14 @@
             <h>150</h>
         </coordinates>
         <panel_attributes>*StaffInfo*
-            --
-            specificScale
-            topLimit
-            bottomLimit
-            left
-            leftBar
-            right
-            rightBar</panel_attributes>
+--
+specificScale
+topLimit
+bottomLimit
+left
+leftBar
+right
+rightBar</panel_attributes>
         <additional_attributes/>
     </element>
     <element>

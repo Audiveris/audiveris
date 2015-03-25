@@ -70,16 +70,6 @@ public class AdaptiveDescriptor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // getDefault //
-    //------------//
-    public static AdaptiveDescriptor getDefault ()
-    {
-        return new AdaptiveDescriptor(
-                AdaptiveFilter.getDefaultMeanCoeff(),
-                AdaptiveFilter.getDefaultStdDevCoeff());
-    }
-
     //--------//
     // equals //
     //--------//
@@ -88,11 +78,23 @@ public class AdaptiveDescriptor
     {
         if ((obj instanceof AdaptiveDescriptor) && super.equals(obj)) {
             AdaptiveDescriptor that = (AdaptiveDescriptor) obj;
+            final double epsilon = 0.00001;
 
-            return (this.meanCoeff == that.meanCoeff) && (this.stdDevCoeff == that.stdDevCoeff);
+            return (Math.abs(this.meanCoeff - that.meanCoeff) < epsilon)
+                   && (Math.abs(this.stdDevCoeff - that.stdDevCoeff) < epsilon);
         }
 
         return false;
+    }
+
+    //------------//
+    // getDefault //
+    //------------//
+    public static AdaptiveDescriptor getDefault ()
+    {
+        return new AdaptiveDescriptor(
+                AdaptiveFilter.getDefaultMeanCoeff(),
+                AdaptiveFilter.getDefaultStdDevCoeff());
     }
 
     //-----------//
@@ -108,7 +110,7 @@ public class AdaptiveDescriptor
                     new Class[]{ByteProcessor.class, double.class, double.class});
 
             return (PixelFilter) cons.newInstance(source, meanCoeff, stdDevCoeff);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             logger.error("Error on getFilter {}", ex);
 
             return null;

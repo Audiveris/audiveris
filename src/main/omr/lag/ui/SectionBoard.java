@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.lag.ui;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.lag.Lag;
 import omr.lag.Section;
 
@@ -60,8 +57,6 @@ public class SectionBoard
         extends Board
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SectionBoard.class);
 
@@ -141,21 +136,7 @@ public class SectionBoard
         // Dump button
         dump = getDumpButton();
         dump.setToolTipText("Dump this section");
-        dump.addActionListener(
-                new ActionListener()
-                {
-                    @Override
-                    public void actionPerformed (ActionEvent e)
-                    {
-                        // Retrieve current section selection
-                        Section section = (Section) lag.getSectionService()
-                        .getSelection(SectionEvent.class);
-
-                        if (section != null) {
-                            section.dump();
-                        }
-                    }
-                });
+        dump.addActionListener(new DumpActionListener(lag));
         dump.setEnabled(false); // Until a section selection is made
 
         // ID Spinner
@@ -330,16 +311,32 @@ public class SectionBoard
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //--------------------//
+    // DumpActionListener //
+    //--------------------//
+    private static class DumpActionListener
+            implements ActionListener
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean hideRelationFields = new Constant.Boolean(
-                true,
-                "Should we hide section relation fields when empty?");
+        private final Lag lag;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public DumpActionListener (Lag lag)
+        {
+            this.lag = lag;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Retrieve current section selection
+            Section section = (Section) lag.getSectionService().getSelection(SectionEvent.class);
+
+            if (section != null) {
+                section.dump();
+            }
+        }
     }
 }

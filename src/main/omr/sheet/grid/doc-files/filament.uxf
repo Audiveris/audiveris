@@ -10,9 +10,9 @@
             <h>90</h>
         </coordinates>
         <panel_attributes>*Filament*
-            bg=#ffff55
-            --
-            refDist</panel_attributes>
+bg=#ffff55
+--
+refDist</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -24,9 +24,9 @@
             <h>60</h>
         </coordinates>
         <panel_attributes>Point2D
-            --
-            x
-            y</panel_attributes>
+--
+x
+y</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -38,7 +38,7 @@
             <h>110</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-            r1=points</panel_attributes>
+r1=points</panel_attributes>
         <additional_attributes>30;30;30;90</additional_attributes>
     </element>
     <element>
@@ -50,7 +50,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>&lt;&lt;interface&gt;&gt;
-            /Stick/</panel_attributes>
+/Stick/</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -73,7 +73,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>NaturalSpline
-            bg=#ffff55</panel_attributes>
+bg=#ffff55</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -85,7 +85,7 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>lt=-&gt;
-            r1=(line)
+r1=(line)
         </panel_attributes>
         <additional_attributes>30;30;110;30</additional_attributes>
     </element>
@@ -120,7 +120,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>&lt;&lt;interface&gt;&gt;
-            /GlyphAlignment/</panel_attributes>
+/GlyphAlignment/</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -132,9 +132,9 @@
             <h>60</h>
         </coordinates>
         <panel_attributes>BasicAlignment
-            --
-            pStart
-            pStop
+--
+pStart
+pStop
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -158,7 +158,7 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>lt=-&gt;
-            r1=alignment</panel_attributes>
+r1=alignment</panel_attributes>
         <additional_attributes>30;30;130;30</additional_attributes>
     </element>
     <element>
@@ -181,7 +181,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>&lt;&lt;interface&gt;&gt;
-            /Line/</panel_attributes>
+/Line/</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -204,7 +204,7 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>lt=-&gt;
-            r1=line</panel_attributes>
+r1=line</panel_attributes>
         <additional_attributes>30;30;140;30</additional_attributes>
     </element>
     <element>
@@ -227,7 +227,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>*FilamentAlignment*
-            bg=#ffff55</panel_attributes>
+bg=#ffff55</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -250,9 +250,9 @@
             <h>60</h>
         </coordinates>
         <panel_attributes>BasicGlyph
-            --
-            getInterline()
-            getPartOf()</panel_attributes>
+--
+getInterline()
+getPartOf()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -275,7 +275,7 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>lt=-&gt;
-            r1=(alignment)</panel_attributes>
+r1=(alignment)</panel_attributes>
         <additional_attributes>30;30;130;30</additional_attributes>
     </element>
     <element>
@@ -287,11 +287,11 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>*LineFilament*
-            bg=#ffff55
-            --
-            clusterPos
-            --
-            fillHoles()</panel_attributes>
+bg=#ffff55
+--
+clusterPos
+--
+fillHoles()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -314,7 +314,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>*LineFilamentAlignment*
-            bg=#ffff55</panel_attributes>
+bg=#ffff55</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -326,7 +326,7 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>lt=-&gt;
-            r1=(alignment)</panel_attributes>
+r1=(alignment)</panel_attributes>
         <additional_attributes>30;30;130;30</additional_attributes>
     </element>
     <element>
@@ -361,7 +361,7 @@
             <h>110</h>
         </coordinates>
         <panel_attributes>lt=-&gt;
-            r1=cluster</panel_attributes>
+r1=cluster</panel_attributes>
         <additional_attributes>40;30;40;90</additional_attributes>
     </element>
 </diagram>

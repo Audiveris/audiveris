@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -187,8 +188,10 @@ public class UnitTreeTable
         final int height = tree.getRowHeight();
         Rectangle rect = new Rectangle(0, row * height, 0, 0);
 
-        if (getParent() instanceof JComponent) {
-            JComponent comp = (JComponent) getParent();
+        Container container = getParent();
+
+        if (container instanceof JComponent) {
+            JComponent comp = (JComponent) container;
             rect.grow(0, comp.getHeight() / 2);
         } else {
             rect.grow(0, height);

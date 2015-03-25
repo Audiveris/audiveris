@@ -25,10 +25,10 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>*Score*
-            --
-            --
-            getLayout(ScoreOrientation)
-            setOrientation(ScoreOrientation)</panel_attributes>
+--
+--
+getLayout(ScoreOrientation)
+setOrientation(ScoreOrientation)</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -40,11 +40,11 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>*PaintingParameters*
-            --
-            dummyPainting
-            markPainting
-            slotPainting
-            voicePainting</panel_attributes>
+--
+dummyPainting
+markPainting
+slotPainting
+voicePainting</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -56,19 +56,19 @@
             <h>200</h>
         </coordinates>
         <panel_attributes>*ScoreLayout*
-            bg=#ffff88
-            --
-            orientation
-            scoreDimension
-            recentSystem
-            --
-            getScoreDimension()
-            getSystemView(ScoreSystem)
-            getSystemView(int)
-            resetSystemViews()
-            computeLayout()
-            scoreLocateSystem(ScorePoint)
-            toPixelPoint(ScorePoint)
+bg=#ffff88
+--
+orientation
+scoreDimension
+recentSystem
+--
+getScoreDimension()
+getSystemView(ScoreSystem)
+getSystemView(int)
+resetSystemViews()
+computeLayout()
+scoreLocateSystem(ScorePoint)
+toPixelPoint(ScorePoint)
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -81,18 +81,18 @@
             <h>210</h>
         </coordinates>
         <panel_attributes>*SystemView*
-            --
-            origin
-            orientation
-            rightPosition
-            system
-            --
-            locate(ScorePoint)
-            toPagePoint(ScorePoint)
-            toScorePoint(PagePoint)
-            toScorePoint(SystemPoint)
-            toScoreRectangle(SystemRectangle)
-            toSystemPoint(ScorePoint)</panel_attributes>
+--
+origin
+orientation
+rightPosition
+system
+--
+locate(ScorePoint)
+toPagePoint(ScorePoint)
+toScorePoint(PagePoint)
+toScorePoint(SystemPoint)
+toScoreRectangle(SystemRectangle)
+toSystemPoint(ScorePoint)</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -115,8 +115,8 @@
             <h>120</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;-
-            m1=views
-            m2=0..n</panel_attributes>
+m1=views
+m2=0..n</panel_attributes>
         <additional_attributes>30;30;30;100</additional_attributes>
     </element>
     <element>
@@ -128,14 +128,14 @@
             <h>130</h>
         </coordinates>
         <panel_attributes>*/ScoreView/*
-            --
-            orientation
-            --
-            setLayout(ScoreLayout)
-            getLayout()
-            set(PaintingParameters)
-            update()
-            close()
+--
+orientation
+--
+setLayout(ScoreLayout)
+getLayout()
+set(PaintingParameters)
+update()
+close()
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -214,7 +214,7 @@
             <h>170</h>
         </coordinates>
         <panel_attributes>lt=-&gt;
-            m1=layout</panel_attributes>
+m1=layout</panel_attributes>
         <additional_attributes>30;150;150;30</additional_attributes>
     </element>
 </umlet_diagram>

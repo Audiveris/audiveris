@@ -146,25 +146,25 @@ public class CheckSuite<C extends Checkable>
      */
     public void dump ()
     {
-        StringBuilder sb = new StringBuilder(String.format("\n"));
+        StringBuilder sb = new StringBuilder(String.format("%n"));
 
         if (name != null) {
             sb.append(name);
         }
 
-        sb.append(String.format(" Check Suite: min=%f good=%f\n", minThreshold, goodThreshold));
+        sb.append(String.format(" Check Suite: min=%f good=%f%n", minThreshold, goodThreshold));
 
         dumpSpecific(sb);
 
-        sb.append(String.format("Weight    Name             Covariant    Low       High\n"));
-        sb.append(String.format("------    ----                ------    ---       ----\n"));
+        sb.append(String.format("Weight    Name             Covariant    Low       High%n"));
+        sb.append(String.format("------    ----                ------    ---       ----%n"));
 
         int index = 0;
 
         for (Check<C> check : checks) {
             sb.append(
                     String.format(
-                            "%4.1f      %-19s  %5b  % 6.2f    % 6.2f \n",
+                            "%4.1f      %-19s  %5b  % 6.2f    % 6.2f%n",
                             weights.get(index++),
                             check.getName(),
                             check.isCovariant(),

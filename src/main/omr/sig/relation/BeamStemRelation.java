@@ -176,8 +176,6 @@ public class BeamStemRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio minGrade = new Constant.Ratio(0.1, "Minimum interpretation grade");
-
         final Constant.Ratio beamSupportCoeff = new Constant.Ratio(
                 4,
                 "Value for source (beam) coeff in support formula");

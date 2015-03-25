@@ -779,7 +779,7 @@ public abstract class Constant
         @Override
         public void setValue (java.lang.String string)
         {
-            setValue(java.lang.Integer.valueOf(string).intValue());
+            setValue(java.lang.Integer.parseInt(string));
         }
 
         /**
@@ -795,7 +795,7 @@ public abstract class Constant
         @Override
         protected java.lang.Integer decode (java.lang.String str)
         {
-            return new java.lang.Integer(str);
+            return java.lang.Integer.valueOf(str);
         }
     }
 

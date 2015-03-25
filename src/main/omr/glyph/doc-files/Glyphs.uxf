@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><umlet_diagram>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<umlet_diagram>
     <help_text>
         fontsize=14
 
@@ -13,9 +14,9 @@
             <h>180</h>
         </coordinates>
         <panel_attributes>Glyph
-            --
-            result
-            shape
+--
+result
+shape
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -28,7 +29,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;-&gt;
-            m1=  allGlyphs</panel_attributes>
+m1=allGlyphs</panel_attributes>
         <additional_attributes>20;20;240;20</additional_attributes>
     </element>
     <element>
@@ -40,7 +41,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;-&gt;
-            m1=  originals</panel_attributes>
+m1=originals</panel_attributes>
         <additional_attributes>20;20;240;20</additional_attributes>
     </element>
     <element>
@@ -52,7 +53,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;-
-            m1=  activeGlyphs</panel_attributes>
+m1=activeGlyphs</panel_attributes>
         <additional_attributes>20;20;240;20</additional_attributes>
     </element>
     <element>
@@ -64,7 +65,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;&lt;-
-            m1=  sections</panel_attributes>
+m1=sections</panel_attributes>
         <additional_attributes>20;20;240;20</additional_attributes>
     </element>
     <element>
@@ -87,7 +88,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;&lt;-
-            m1=1..n</panel_attributes>
+m1=1..n</panel_attributes>
         <additional_attributes>20;20;80;20</additional_attributes>
     </element>
     <element>
@@ -158,7 +159,7 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;-&gt;
-            m1=members</panel_attributes>
+m1=members</panel_attributes>
         <additional_attributes>30;20;30;80</additional_attributes>
     </element>
     <element>
@@ -182,8 +183,8 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;-
-            m1=0..n parts
-            m2=0..1 partOf</panel_attributes>
+m1=0..n parts
+m2=0..1 partOf</panel_attributes>
         <additional_attributes>20;20;110;20;110;50;20;50</additional_attributes>
     </element>
 </umlet_diagram>

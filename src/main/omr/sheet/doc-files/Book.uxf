@@ -56,9 +56,9 @@
             <h>45</h>
         </coordinates>
         <panel_attributes>*Book*
-            bg=#55ffff
-            --
-            file</panel_attributes>
+bg=#55ffff
+--
+file</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -70,9 +70,9 @@
             <h>45</h>
         </coordinates>
         <panel_attributes>*Sheet*
-            bg=#55ffff
-            --
-            fileIndex</panel_attributes>
+bg=#55ffff
+--
+fileIndex</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -84,9 +84,9 @@
             <h>135</h>
         </coordinates>
         <panel_attributes>*SystemInfo*
-            --
-            id
-            indented?</panel_attributes>
+--
+id
+indented?</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -98,7 +98,7 @@
             <h>27</h>
         </coordinates>
         <panel_attributes>*Opus*
-            bg=#ffff55</panel_attributes>
+bg=#ffff55</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -110,9 +110,9 @@
             <h>45</h>
         </coordinates>
         <panel_attributes>*Score*
-            bg=#ffff55
-            --
-            movementId</panel_attributes>
+bg=#ffff55
+--
+movementId</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -124,9 +124,9 @@
             <h>45</h>
         </coordinates>
         <panel_attributes>*Page*
-            bg=#ffff55
-            --
-            movementStart?</panel_attributes>
+bg=#ffff55
+--
+movementStart?</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -215,10 +215,10 @@
             <h>72</h>
         </coordinates>
         <panel_attributes>*Part*
-            --
-            name
-            slurs
-            texts</panel_attributes>
+--
+name
+slurs
+texts</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -230,9 +230,9 @@
             <h>54</h>
         </coordinates>
         <panel_attributes>*Staff*
-            --
-            lines
-            ledgers</panel_attributes>
+--
+lines
+ledgers</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -277,8 +277,8 @@
             <h>45</h>
         </coordinates>
         <panel_attributes>*SIG*
-            bg=#aaffaa
-            --</panel_attributes>
+bg=#aaffaa
+--</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -290,13 +290,13 @@
             <h>108</h>
         </coordinates>
         <panel_attributes>*Inter*
-            bg=#aaffaa
-            --
-            grade
-            ctxGrade
-            shape
-            glyph
-            box</panel_attributes>
+bg=#aaffaa
+--
+grade
+ctxGrade
+shape
+glyph
+box</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -308,9 +308,9 @@
             <h>63</h>
         </coordinates>
         <panel_attributes>*Relation*
-            bg=#aaffaa
-            --
-            grade</panel_attributes>
+bg=#aaffaa
+--
+grade</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -344,7 +344,7 @@
             <h>44</h>
         </coordinates>
         <panel_attributes>lt=-&gt;&gt;&gt;
-            m1=source</panel_attributes>
+m1=source</panel_attributes>
         <additional_attributes>90;27;27;27</additional_attributes>
     </element>
     <element>
@@ -356,7 +356,7 @@
             <h>44</h>
         </coordinates>
         <panel_attributes>lt=-&gt;&gt;&gt;
-            m1=target</panel_attributes>
+m1=target</panel_attributes>
         <additional_attributes>90;27;27;27</additional_attributes>
     </element>
     <element>
@@ -379,11 +379,11 @@
             <h>90</h>
         </coordinates>
         <panel_attributes>*Stack*
-            --
-            id
-            duration
-            rhythms
-            repeat</panel_attributes>
+--
+id
+duration
+rhythms
+repeat</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -395,12 +395,12 @@
             <h>108</h>
         </coordinates>
         <panel_attributes>*Measure*
-            --
-            barline
-            clefs
-            keySigs
-            timeSigs
-            chords</panel_attributes>
+--
+barline
+clefs
+keySigs
+timeSigs
+chords</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -445,8 +445,8 @@
             <h>98</h>
         </coordinates>
         <panel_attributes>lt=-&gt;&gt;&gt;
-            r1=ensemble
-            m2=members</panel_attributes>
+r1=ensemble
+m2=members</panel_attributes>
         <additional_attributes>36;45;36;81;135;81;135;27;63;27</additional_attributes>
     </element>
 </diagram>

@@ -151,8 +151,7 @@ public class Ghostscript
 
                 Double version = Double.valueOf(versionStr);
 
-                if ((version != null)
-                    && (version >= constants.minVersion.getValue())
+                if ((version >= constants.minVersion.getValue())
                     && (version <= constants.maxVersion.getValue())) {
                     // We have an acceptable version
                     if ((bestVersion == null) || (bestVersion < version)) {
@@ -178,7 +177,7 @@ public class Ghostscript
 
         // Extract prefix and dll from best path found, regardless of arch
         if (bestPath != null) {
-            int lastSep = bestPath.lastIndexOf("\\");
+            int lastSep = bestPath.lastIndexOf('\\');
             String prefix = bestPath.substring(0, lastSep);
             logger.debug("Prefix is: {}", prefix);
 

@@ -459,7 +459,7 @@ public class InterBoard
     //----------------//
     // DeassignAction //
     //----------------//
-    private class DeassignAction
+    private static class DeassignAction
             extends AbstractAction
     {
         //~ Constructors ---------------------------------------------------------------------------

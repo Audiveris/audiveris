@@ -22,14 +22,14 @@
             <h>140</h>
         </coordinates>
         <panel_attributes>/LField&lt;C extends JComponent&gt;/
-            --
-            label : JLabel
-            field : C
-            --
-            getLabel
-            getField
-            setEnabled
-            setVisible
+--
+label : JLabel
+field : C
+--
+getLabel
+getField
+setEnabled
+setVisible
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -53,10 +53,10 @@
             <h>60</h>
         </coordinates>
         <panel_attributes>LTextField
-            --
-            --
-            getText
-            setText</panel_attributes>
+--
+--
+getText
+setText</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -68,10 +68,10 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>LDoubleField
-            --
-            --
-            getValue
-            setValue</panel_attributes>
+--
+--
+getValue
+setValue</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -94,10 +94,10 @@
             <h>60</h>
         </coordinates>
         <panel_attributes>LIntegerField
-            --
-            --
-            getValue
-            setValue</panel_attributes>
+--
+--
+getValue
+setValue</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -120,11 +120,11 @@
             <h>80</h>
         </coordinates>
         <panel_attributes>LComboBox
-            --
-            --
-            getSelectedItem
-            setSelectedItem
-            addChangeListener</panel_attributes>
+--
+--
+getSelectedItem
+setSelectedItem
+addChangeListener</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -147,10 +147,10 @@
             <h>80</h>
         </coordinates>
         <panel_attributes>LSpinner
-            --
-            --
-            setModel
-            addChangeListener</panel_attributes>
+--
+--
+setModel
+addChangeListener</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -173,11 +173,11 @@
             <h>80</h>
         </coordinates>
         <panel_attributes>LIntegerSpinner
-            --
-            --
-            setModel
-            getValue
-            setValue</panel_attributes>
+--
+--
+setModel
+getValue
+setValue</panel_attributes>
         <additional_attributes/>
     </element>
     <element>

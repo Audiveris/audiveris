@@ -154,18 +154,18 @@
             <h>190</h>
         </coordinates>
         <panel_attributes>Constant
-            --
-            String quantityUnit
-            String defaultString
-            String description
-            --
-            String unit
-            String name
-            String qualifiedName
-            --
-            String initialString
-            String currentString
-            Object cachedValue</panel_attributes>
+--
+String quantityUnit
+String defaultString
+String description
+--
+String unit
+String name
+String qualifiedName
+--
+String initialString
+String currentString
+Object cachedValue</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -177,8 +177,8 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>ConstantSet
-            --
-            String unit</panel_attributes>
+--
+String unit</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -190,8 +190,8 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>Logger
-            --
-            level</panel_attributes>
+--
+level</panel_attributes>
         <additional_attributes/>
     </element>
     <element>

@@ -23,18 +23,18 @@
             <h>220</h>
         </coordinates>
         <panel_attributes>*SystemInfo*
-            --
-            id
-            indented?
-            top
-            bottom
-            deltaY
-            left
-            width
-            area
-            areaLeft
-            areaRight
-            sig</panel_attributes>
+--
+id
+indented?
+top
+bottom
+deltaY
+left
+width
+area
+areaLeft
+areaRight
+sig</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -46,12 +46,12 @@
             <h>110</h>
         </coordinates>
         <panel_attributes>*Part*
-            --
-            id
-            dummy?
-            name
-            startingBarline
-            slurs
+--
+id
+dummy?
+name
+startingBarline
+slurs
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -64,17 +64,17 @@
             <h>200</h>
         </coordinates>
         <panel_attributes>*Staff*
-            --
-            id
-            dummy?
-            lines
-            left
-            right
-            isShort
-            ledgerMap
-            peaks
-            bars
-            sideBars</panel_attributes>
+--
+id
+dummy?
+lines
+left
+right
+isShort
+ledgerMap
+peaks
+bars
+sideBars</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -108,17 +108,17 @@
             <h>200</h>
         </coordinates>
         <panel_attributes>*Measure*
-            --
-            dummy?
-            leftBarline
-            insideBarline
-            barline
-            clefs
-            keySigs
-            timeSigs
-            chords
-            otherTimings
-            wholeChords</panel_attributes>
+--
+dummy?
+leftBarline
+insideBarline
+barline
+clefs
+keySigs
+timeSigs
+chords
+otherTimings
+wholeChords</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -141,11 +141,11 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>*Slot*
-            --
-            id
-            xOffset
-            startTime
-            incomings</panel_attributes>
+--
+id
+xOffset
+startTime
+incomings</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -168,19 +168,19 @@
             <h>240</h>
         </coordinates>
         <panel_attributes>*MeasureStack*
-            --
-            id
-            special
-            repeat
-            expectedDuration
-            beamgroups
-            chords
-            graceChords
-            restChords
-            wholeRestChords
-            rhythms
-            actualDuration
-            excess</panel_attributes>
+--
+id
+special
+repeat
+expectedDuration
+beamgroups
+chords
+graceChords
+restChords
+wholeRestChords
+rhythms
+actualDuration
+excess</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -225,11 +225,11 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>*Voice*
-            --
-            id
-            wholeChord
-            termination
-            inferredTimeSig</panel_attributes>
+--
+id
+wholeChord
+termination
+inferredTimeSig</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -252,9 +252,9 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>*SlotVoice*
-            --
-            chord
-            status</panel_attributes>
+--
+chord
+status</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -277,7 +277,7 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;&lt;-
-            m2=slotTable</panel_attributes>
+m2=slotTable</panel_attributes>
         <additional_attributes>30;30;110;30</additional_attributes>
     </element>
     <element>
@@ -289,12 +289,12 @@
             <h>120</h>
         </coordinates>
         <panel_attributes>*PartGroup*
-            --
-            number
-            symbol
-            barline?
-            name
-            abbreviation</panel_attributes>
+--
+number
+symbol
+barline?
+name
+abbreviation</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -306,7 +306,7 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>lt=-&gt;
-            first</panel_attributes>
+first</panel_attributes>
         <additional_attributes>30;50;60;50</additional_attributes>
     </element>
     <element>
@@ -318,7 +318,7 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>lt=-&gt;
-            last</panel_attributes>
+last</panel_attributes>
         <additional_attributes>30;50;60;50</additional_attributes>
     </element>
     <element>

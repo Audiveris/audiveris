@@ -32,7 +32,7 @@
             <h>64</h>
         </coordinates>
         <panel_attributes>Load
-            bg=#aaaaaa</panel_attributes>
+bg=#aaaaaa</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -44,8 +44,8 @@
             <h>64</h>
         </coordinates>
         <panel_attributes>OMR
-            transcription
-            bg=red</panel_attributes>
+transcription
+bg=red</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -90,7 +90,7 @@
             <h>64</h>
         </coordinates>
         <panel_attributes>center:Initial SIG
-        </panel_attributes>
+</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -113,7 +113,7 @@
             <h>64</h>
         </coordinates>
         <panel_attributes>center:Modified SIG
-        </panel_attributes>
+</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -125,9 +125,9 @@
             <h>96</h>
         </coordinates>
         <panel_attributes>UI
-            modifications
-            validation
-            bg=green</panel_attributes>
+modifications
+validation
+bg=green</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -172,7 +172,7 @@
             <h>64</h>
         </coordinates>
         <panel_attributes>center:Final SIG
-        </panel_attributes>
+</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -195,7 +195,7 @@
             <h>64</h>
         </coordinates>
         <panel_attributes>Feedback
-            bg=blue</panel_attributes>
+bg=blue</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -240,7 +240,7 @@
             <h>64</h>
         </coordinates>
         <panel_attributes>center:Samples
-        </panel_attributes>
+</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -252,7 +252,7 @@
             <h>64</h>
         </coordinates>
         <panel_attributes>center:Mistakes
-        </panel_attributes>
+</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -275,7 +275,7 @@
             <h>64</h>
         </coordinates>
         <panel_attributes>Training
-            bg=#aaaaff</panel_attributes>
+bg=#aaaaff</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -287,7 +287,7 @@
             <h>64</h>
         </coordinates>
         <panel_attributes>center:Classifier
-        </panel_attributes>
+</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -321,7 +321,7 @@
             <h>64</h>
         </coordinates>
         <panel_attributes>Study
-            bg=#aaaaff</panel_attributes>
+bg=#aaaaff</panel_attributes>
         <additional_attributes/>
     </element>
     <element>

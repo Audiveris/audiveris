@@ -32,8 +32,9 @@ public class SuiteImpacts
     /**
      * Creates a new SuiteImpacts object.
      *
-     * @param names   array of names
-     * @param weights array of weights
+     * @param names     array of names
+     * @param weights   array of weights
+     * @param suiteName name for the suite
      */
     protected SuiteImpacts (String[] names,
                             double[] weights,
@@ -82,6 +83,7 @@ public class SuiteImpacts
     //---------//
     // getDump //
     //---------//
+    @Override
     public String getDump ()
     {
         //        final List<Check<C>> checks = suite.getChecks();
@@ -102,7 +104,7 @@ public class SuiteImpacts
         //                        suite.getGoodThreshold()));
         //
         //        return sb.toString();
-        return null;
+        return suiteName;
     }
 
     //----------//

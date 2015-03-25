@@ -23,11 +23,11 @@
             <h>80</h>
         </coordinates>
         <panel_attributes>ScorePart
-            bg=#ffff55
-            --
-            String id
-            String PartName
-            String PartAbbreviation</panel_attributes>
+bg=#ffff55
+--
+String id
+String PartName
+String PartAbbreviation</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -39,7 +39,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>Part
-            bg=#ff5555</panel_attributes>
+bg=#ff5555</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -51,7 +51,7 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>lt=&lt;-
-            m2=id</panel_attributes>
+m2=id</panel_attributes>
         <additional_attributes>30;30;130;30</additional_attributes>
     </element>
     <element>
@@ -107,9 +107,9 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>ScoreInstrument
-            bg=#ffff55
-            --
-            String id</panel_attributes>
+bg=#ffff55
+--
+String id</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -132,12 +132,12 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>MidiInstrument
-            bg=#ffff55
-            --
-            channel
-            program
-            volume
-            pan</panel_attributes>
+bg=#ffff55
+--
+channel
+program
+volume
+pan</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -160,7 +160,7 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>lt=&lt;-
-            m2=id</panel_attributes>
+m2=id</panel_attributes>
         <additional_attributes>80;30;30;30</additional_attributes>
     </element>
     <element>
@@ -183,7 +183,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>PartList
-            bg=#ff5555</panel_attributes>
+bg=#ff5555</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -206,7 +206,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>ScorePartwise
-            bg=#ff5555</panel_attributes>
+bg=#ff5555</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -240,9 +240,9 @@
             <h>80</h>
         </coordinates>
         <panel_attributes>&lt;!ELEMENT score-part (identification?,
-            part-name, part-name-display?,
-            part-abbreviation?, part-abbreviation-display?, 
-            group*, score-instrument*, midi-device?, midi-instrument*)&gt;
+part-name, part-name-display?,
+part-abbreviation?, part-abbreviation-display?, 
+group*, score-instrument*, midi-device?, midi-instrument*)&gt;
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -255,7 +255,7 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>&lt;!ELEMENT part-list (part-group*, score-part,
-            (part-group | score-part)*)&gt;
+(part-group | score-part)*)&gt;
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -268,7 +268,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>Instrument
-            bg=#ff5555</panel_attributes>
+bg=#ff5555</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -280,7 +280,7 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>lt=&lt;-
-            m2=id</panel_attributes>
+m2=id</panel_attributes>
         <additional_attributes>30;30;80;30</additional_attributes>
     </element>
     <element>
@@ -292,13 +292,13 @@
             <h>120</h>
         </coordinates>
         <panel_attributes>PartGroup
-            bg=#ffff55
-            --
-            number
-            name
-            abbreviation
-            symbol
-            barline</panel_attributes>
+bg=#ffff55
+--
+number
+name
+abbreviation
+symbol
+barline</panel_attributes>
         <additional_attributes/>
     </element>
     <element>

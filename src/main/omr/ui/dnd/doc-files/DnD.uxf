@@ -13,10 +13,10 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>/awt.event::MouseAdapter/
-            --
-            --
-            mousePressed()
-            mouseReleased()</panel_attributes>
+--
+--
+mousePressed()
+mouseReleased()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -28,16 +28,16 @@
             <h>150</h>
         </coordinates>
         <panel_attributes>/GhostDropAdapter&lt;A&gt;/
-            bg=#ffffbb
-            --
-            A action
-            image
-            --
-            addGhostDropListener()
-            removeGhostDropListener()
-            #fireGhostDropEvent()
-            mousePressed()
-            mouseReleased()</panel_attributes>
+bg=#ffffbb
+--
+A action
+image
+--
+addGhostDropListener()
+removeGhostDropListener()
+#fireGhostDropEvent()
+mousePressed()
+mouseReleased()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -60,7 +60,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>GhostImageAdapter&lt;A&gt;
-            bg=#ffffbb</panel_attributes>
+bg=#ffffbb</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -83,13 +83,13 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>GhostGlassPane
-            bg=#ffffbb
-            --
-            draggedImage
-            composite
-            location
-            --
-            paintComponent()</panel_attributes>
+bg=#ffffbb
+--
+draggedImage
+composite
+location
+--
+paintComponent()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -101,7 +101,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>lt=&lt;-
-            r1=glassPane</panel_attributes>
+ r1=glassPane</panel_attributes>
         <additional_attributes>110;20;20;20</additional_attributes>
     </element>
     <element>
@@ -114,9 +114,9 @@
         </coordinates>
         <panel_attributes>&lt;&lt;interface&gt;&gt;
             GhostDropListener&lt;A&gt;
-            bg=#ffffbb
-            --
-            ghostDropped()</panel_attributes>
+bg=#ffffbb
+--
+ghostDropped()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -128,7 +128,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-            r2=listeners</panel_attributes>
+r2=listeners</panel_attributes>
         <additional_attributes>20;20;320;20</additional_attributes>
     </element>
     <element>
@@ -140,13 +140,13 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>/AbstractGhostDropListener&lt;A&gt;/
-            bg=#ffffbb
-            --
-            component
-            --
-            isInTarget()
-            getLocalPoint()
-            ghostDropped()</panel_attributes>
+bg=#ffffbb
+--
+component
+--
+isInTarget()
+getLocalPoint()
+ghostDropped()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -169,10 +169,10 @@
             <h>60</h>
         </coordinates>
         <panel_attributes>GhostDropEvent&lt;A&gt;
-            bg=#ffffbb
-            --
-            point
-            A action</panel_attributes>
+bg=#ffffbb
+--
+point
+A action</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -184,9 +184,9 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>/awt.event::MouseMotionAdapter/
-            --
-            --
-            mouseDragged()</panel_attributes>
+--
+--
+mouseDragged()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -198,10 +198,10 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>/GhostMotionAdapter/
-            bg=#ffffbb
-            --
-            --
-            mouseDragged()</panel_attributes>
+bg=#ffffbb
+--
+--
+mouseDragged()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -224,7 +224,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>lt=&lt;-
-            r1=glassPane</panel_attributes>
+r1=glassPane</panel_attributes>
         <additional_attributes>20;20;110;20</additional_attributes>
     </element>
     <element>
@@ -236,9 +236,9 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>swing::JPanel
-            --
-            --
-            paintComponent()</panel_attributes>
+--
+--
+paintComponent()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -261,11 +261,11 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>ScreenPoint
-            bg=#ffffbb
-            --
-            --
-            isInComponent(comp)
-            getLocalPoint(comp)
+bg=#ffffbb
+--
+--
+isInComponent(comp)
+getLocalPoint(comp)
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -278,7 +278,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>omr.score.common::SimplePoint
-            bg=#ffffbb
+bg=#ffffbb
         </panel_attributes>
         <additional_attributes/>
     </element>

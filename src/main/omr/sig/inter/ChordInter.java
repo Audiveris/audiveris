@@ -65,7 +65,7 @@ public abstract class ChordInter
      * Compare two notes of the same chord, ordered by increasing distance from chord
      * head ordinate.
      */
-    public static Comparator<AbstractNoteInter> noteHeadComparator = new Comparator<AbstractNoteInter>()
+    public static final Comparator<AbstractNoteInter> noteHeadComparator = new Comparator<AbstractNoteInter>()
     {
         @Override
         public int compare (AbstractNoteInter n1,

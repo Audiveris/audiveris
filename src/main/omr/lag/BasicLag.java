@@ -58,11 +58,17 @@ public class BasicLag
     private static final Logger logger = LoggerFactory.getLogger(BasicLag.class);
 
     /** Events read on location service */
-    public static final Class[] locEventsRead = new Class<?>[]{LocationEvent.class};
+    private static final Class[] locEventsRead = new Class<?>[]{LocationEvent.class};
 
-    /** Events read on section service */
-    public static final Class[] sctEventsRead = new Class<?>[]{
+    /** Events read on lag section service */
+    private static final Class[] sctEventsRead = new Class<?>[]{
         SectionIdEvent.class, SectionEvent.class
+    };
+
+    /** Events that can be published on lag section service */
+    private static final Class<?>[] sctEventsWritten = new Class<?>[]{
+        SectionIdEvent.class, SectionEvent.class,
+        SectionSetEvent.class
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -90,7 +96,7 @@ public class BasicLag
     {
         super(name, BasicSection.class);
         this.orientation = orientation;
-        lagService = new SelectionService(name, Lag.eventsWritten);
+        lagService = new SelectionService(name, sctEventsWritten);
         logger.debug("Created lag {}", name);
     }
 
@@ -107,6 +113,15 @@ public class BasicLag
             // Add runs into the existing table
             this.runTable.include(runTable);
         }
+    }
+
+    //-------------------//
+    // containedSections //
+    //-------------------//
+    @Override
+    public Set<Section> containedSections (Rectangle rect)
+    {
+        return Sections.containedSections(rect, getSections());
     }
 
     //---------------//
@@ -209,15 +224,6 @@ public class BasicLag
     public final Collection<Section> getSections ()
     {
         return getVertices();
-    }
-
-    //-------------------//
-    // containedSections //
-    //-------------------//
-    @Override
-    public Set<Section> containedSections (Rectangle rect)
-    {
-        return Sections.containedSections(rect, getSections());
     }
 
     //--------------------//

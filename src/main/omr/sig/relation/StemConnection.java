@@ -38,7 +38,7 @@ public abstract class StemConnection
     /**
      * Report the portion of the stem the provided source is connected to
      *
-     * @param source   the item connected to the stem
+     * @param source   the item connected to the stem (head, beam, flag)
      * @param stemLine logical range of the stem
      * @param scale    global scale
      * @return the stem Portion

@@ -331,7 +331,7 @@ public class ActionManager
             } else {
                 logger.error("Unknown action {} in class {}", desc.methodName, desc.className);
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             logger.warn("Error while registering " + desc, ex);
         }
 
@@ -378,7 +378,7 @@ public class ActionManager
                         } else {
                             logger.warn("Could not register {}", desc);
                         }
-                    } catch (Exception ex) {
+                    } catch (Throwable ex) {
                         logger.warn("Error with " + desc.itemClassName, ex);
                     }
                 }

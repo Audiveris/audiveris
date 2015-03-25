@@ -169,23 +169,24 @@ public class WatershedGrayLevel
         rmap = null;
         exploreList = null;
     }
-
-    private void dumpRmap ()
-    {
-        System.out.println("rmap:");
-
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                System.out.printf("%3d", rmap.getValue(x, y));
-            }
-
-            System.out.println();
-        }
-    }
-
+//
+//    private void dumpRmap ()
+//    {
+//        System.out.println("rmap:");
+//
+//        for (int y = 0; y < height; y++) {
+//            for (int x = 0; x < width; x++) {
+//                System.out.printf("%3d", rmap.getValue(x, y));
+//            }
+//
+//            System.out.println();
+//        }
+//    }
+//
     //--------//
     // extend //
     //--------//
+
     /**
      * Explore the 8 neighbors of a pixel and set its region
      * accordingly.

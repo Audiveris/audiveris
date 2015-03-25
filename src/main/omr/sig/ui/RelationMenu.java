@@ -91,7 +91,7 @@ public class RelationMenu
     //----------//
     // Listener //
     //----------//
-    private class Listener
+    private static class Listener
             extends AbstractMouseListener
     {
         //~ Methods --------------------------------------------------------------------------------

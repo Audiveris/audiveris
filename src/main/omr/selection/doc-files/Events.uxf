@@ -23,7 +23,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>SheetEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -35,7 +35,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>GlyphIdEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -47,7 +47,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>GlyphSetEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -59,7 +59,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>GlyphEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -71,7 +71,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>SectionIdEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -83,7 +83,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>SectionEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -95,7 +95,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>PixelLevelEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -107,7 +107,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>LocationEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -131,10 +131,10 @@
             <h>90</h>
         </coordinates>
         <panel_attributes> 
-            'Lag
-            'SectionService
-            '2 inst / sheet
-            bg=pink</panel_attributes>
+'Lag
+'SectionService
+'2 inst / sheet
+bg=pink</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -201,10 +201,10 @@
             <h>90</h>
         </coordinates>
         <panel_attributes> 
-            'Nest
-            'GlyphService
-            '1 inst / sheet
-            bg=pink</panel_attributes>
+'Nest
+'GlyphService
+'1 inst / sheet
+bg=pink</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -216,10 +216,10 @@
             <h>90</h>
         </coordinates>
         <panel_attributes> 
-            'Sheet
-            'LocationService
-            '1 inst / sheet
-            bg=pink</panel_attributes>
+'Sheet
+'LocationService
+'1 inst / sheet
+bg=pink</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -231,10 +231,10 @@
             <h>90</h>
         </coordinates>
         <panel_attributes> 
-            'SheetsController
-            'SheetService
-            '1 inst / application
-            bg=pink</panel_attributes>
+'SheetsController
+'SheetService
+'1 inst / application
+bg=pink</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -330,7 +330,7 @@
             <h>140</h>
         </coordinates>
         <panel_attributes>lt=&lt;(
-            r1=publish</panel_attributes>
+r1=publish</panel_attributes>
         <additional_attributes>40;30;40;120</additional_attributes>
     </element>
     <element>
@@ -353,7 +353,7 @@
             <h>140</h>
         </coordinates>
         <panel_attributes>lt=&lt;(
-            r1=publish</panel_attributes>
+r1=publish</panel_attributes>
         <additional_attributes>40;30;40;120</additional_attributes>
     </element>
     <element>
@@ -444,10 +444,10 @@
             <h>90</h>
         </coordinates>
         <panel_attributes> 
-            'RunTable
-            'RunService
-            '2 inst / sheet
-            bg=pink</panel_attributes>
+'RunTable
+'RunService
+'2 inst / sheet
+bg=pink</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -459,7 +459,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>RunEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -482,7 +482,7 @@
             <h>140</h>
         </coordinates>
         <panel_attributes>lt=&lt;(
-            r1=publish</panel_attributes>
+r1=publish</panel_attributes>
         <additional_attributes>40;30;40;120</additional_attributes>
     </element>
     <element>
@@ -494,7 +494,7 @@
             <h>140</h>
         </coordinates>
         <panel_attributes>lt=&lt;(
-            r1=publish</panel_attributes>
+r1=publish</panel_attributes>
         <additional_attributes>40;30;40;120</additional_attributes>
     </element>
     <element>
@@ -518,7 +518,7 @@
             <h>140</h>
         </coordinates>
         <panel_attributes>lt=&lt;(
-            r1=publish</panel_attributes>
+r1=publish</panel_attributes>
         <additional_attributes>40;30;40;120</additional_attributes>
     </element>
     <element>
@@ -530,7 +530,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>SectionSetEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -565,10 +565,10 @@
             <h>90</h>
         </coordinates>
         <panel_attributes> 
-            'RunsTable
-            'RunService
-            '2 inst / sheet
-            bg=pink</panel_attributes>
+'RunsTable
+'RunService
+'2 inst / sheet
+bg=pink</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -580,7 +580,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>InterIdEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -592,7 +592,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>InterListEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -616,7 +616,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>GlyphPileEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -628,7 +628,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>GlyphLayerEvent
-            bg=#FFFFAAA</panel_attributes>
+bg=#FFFFAAA</panel_attributes>
         <additional_attributes/>
     </element>
 </diagram>

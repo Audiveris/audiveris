@@ -22,7 +22,7 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>*XML script file*
-            {section ids}</panel_attributes>
+{section ids}</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -68,12 +68,12 @@
             <h>90</h>
         </coordinates>
         <panel_attributes>*GlyphTask*
-            --
-            run
-            --
-            {glyphs}
-            --
-            {sections}</panel_attributes>
+--
+run
+--
+{glyphs}
+--
+{sections}</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -85,10 +85,10 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>*GlyphsController*
-            --
-            asyncAction(glyphs)
-            --
-            {glyphs}</panel_attributes>
+--
+asyncAction(glyphs)
+--
+{glyphs}</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -111,10 +111,10 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>*GlyphsModel*
-            --
-            action(glyphs)
-            --
-            {glyphs}</panel_attributes>
+--
+action(glyphs)
+--
+{glyphs}</panel_attributes>
         <additional_attributes/>
     </element>
     <element>

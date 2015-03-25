@@ -17,9 +17,6 @@ import omr.run.Oriented;
 import omr.run.Run;
 import omr.run.RunTable;
 
-import omr.selection.SectionEvent;
-import omr.selection.SectionIdEvent;
-import omr.selection.SectionSetEvent;
 import omr.selection.SelectionService;
 
 import omr.util.Predicate;
@@ -52,15 +49,8 @@ import java.util.Set;
 public interface Lag
         extends Digraph<Lag, Section>, Oriented
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    /** Events that can be published on lag section service */
-    static final Class<?>[] eventsWritten = new Class<?>[]{
-        SectionIdEvent.class, SectionEvent.class,
-        SectionSetEvent.class
-    };
-
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Include the content of runs table to the lag.
      *

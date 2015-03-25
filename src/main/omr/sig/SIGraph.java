@@ -144,12 +144,10 @@ public class SIGraph
     // intersectedGlyphs //
     //-------------------//
     /**
-     * Lookup the provided list of glyph instances which intersect the
-     * given box.
+     * Lookup the provided list of glyph instances which intersect the given box.
      *
      * @param glyphs           the list of glyph instances to search for
-     * @param sortedByAbscissa true if the list is already sorted by abscissa,
-     *                         in order to speedup the search
+     * @param sortedByAbscissa true if the list is already sorted by abscissa, to speedup the search
      * @param box              the intersecting box
      * @return the intersected glyph instances found
      */
@@ -222,8 +220,8 @@ public class SIGraph
     // containedInters //
     //-----------------//
     /**
-     * Lookup the sig collection of interpretations for those which
-     * are contained in the provided rectangle.
+     * Lookup the sig collection of interpretations for those which are contained in the
+     * provided rectangle.
      *
      * @param rect the containing rectangle
      * @return the contained interpretations
@@ -245,8 +243,8 @@ public class SIGraph
     // containingInters //
     //------------------//
     /**
-     * Lookup the sig collection of interpretations for those which
-     * contain the provided point.
+     * Lookup the sig collection of interpretations for those which contain the provided
+     * point.
      *
      * @param point provided point
      * @return the containing interpretations
@@ -477,8 +475,8 @@ public class SIGraph
     // getRelation //
     //-------------//
     /**
-     * Report the first relation if any of desired class between the provided
-     * source and target vertices.
+     * Report the first relation if any of desired class between the provided source and
+     * target vertices.
      *
      * @param source provided source
      * @param target provided target
@@ -750,15 +748,7 @@ public class SIGraph
      */
     public List<Inter> inters (final Shape shape)
     {
-        return inters(
-                new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        return !inter.isDeleted() && (inter.getShape() == shape);
-                    }
-                });
+        return inters(new ShapePredicate(shape));
     }
 
     //--------//
@@ -772,15 +762,7 @@ public class SIGraph
      */
     public List<Inter> inters (final Class classe)
     {
-        return inters(
-                new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        return !inter.isDeleted() && (classe.isInstance(inter));
-                    }
-                });
+        return inters(new ClassPredicate(classe));
     }
 
     //--------//
@@ -796,16 +778,7 @@ public class SIGraph
     public List<Inter> inters (Collection<? extends Inter> collection,
                                final Class classe)
     {
-        return inters(
-                collection,
-                new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        return !inter.isDeleted() && (classe.isInstance(inter));
-                    }
-                });
+        return inters(collection, new ClassPredicate(classe));
     }
 
     //--------//
@@ -819,21 +792,7 @@ public class SIGraph
      */
     public List<Inter> inters (final Class[] classes)
     {
-        return inters(
-                new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        for (Class classe : classes) {
-                            if (classe.isInstance(inter)) {
-                                return true;
-                            }
-                        }
-
-                        return false;
-                    }
-                });
+        return inters(new ClassesPredicate(classes));
     }
 
     //--------//
@@ -849,16 +808,7 @@ public class SIGraph
     public List<Inter> inters (final Staff staff,
                                final Class classe)
     {
-        return inters(
-                new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        return !inter.isDeleted() && (inter.getStaff() == staff)
-                               && ((classe == null) || classe.isInstance(inter));
-                    }
-                });
+        return inters(new StaffClassPredicate(staff, classe));
     }
 
     //--------//
@@ -872,15 +822,7 @@ public class SIGraph
      */
     public List<Inter> inters (final Collection<Shape> shapes)
     {
-        return inters(
-                new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        return !inter.isDeleted() && shapes.contains(inter.getShape());
-                    }
-                });
+        return inters(new ShapesPredicate(shapes));
     }
 
     //--------//
@@ -940,12 +882,10 @@ public class SIGraph
     // intersectedGlyphs //
     //-------------------//
     /**
-     * Lookup the provided list of glyph instances which intersect the
-     * given box.
+     * Lookup the provided list of glyph instances which intersect the given box.
      *
      * @param glyphs           the list of glyph instances to search for
-     * @param sortedByAbscissa true if the list is already sorted by abscissa,
-     *                         in order to speedup the search
+     * @param sortedByAbscissa true if the list is already sorted by abscissa, to speedup the search
      * @param area             the intersecting box
      * @return the intersected glyph instances found
      */
@@ -973,12 +913,11 @@ public class SIGraph
     // intersectedInters //
     //-------------------//
     /**
-     * Lookup the provided list of interpretations for those whose
-     * related glyph intersect the given box.
+     * Lookup the provided list of interpretations for those whose related glyph
+     * intersect the given box.
      *
      * @param inters the list of interpretations to search for
-     * @param order  if the list is already sorted by some order, this may
-     *               speedup the search
+     * @param order  if the list is already sorted by some order, this may speedup the search
      * @param box    the intersecting box
      * @return the intersected interpretations found
      */
@@ -1013,12 +952,11 @@ public class SIGraph
     // intersectedInters //
     //-------------------//
     /**
-     * Lookup the provided list of interpretations for those whose
-     * related glyph intersect the given area.
+     * Lookup the provided list of interpretations for those whose related glyph
+     * intersect the given area.
      *
      * @param inters the list of interpretations to search for
-     * @param order  if the list is already sorted by some order, this may
-     *               speedup the search
+     * @param order  if the list is already sorted by some order, this may speedup the search
      * @param area   the intersecting area
      * @return the intersected interpretations found
      */
@@ -1128,14 +1066,14 @@ public class SIGraph
     /**
      * Reduce the provided exclusions as much as possible by removing the source or
      * target vertex of lower contextual grade.
-     * <pre>
-     * Strategy is as follows:
-     * - Pick up among all current exclusions the one whose high inter has the highest contextual
-     * grade contribution among all exclusions.
-     * - Remove the weaker inter in this chosen exclusion relation.
-     * - Recompute all impacted contextual grades values.
-     * - Iterate until no more exclusion is left.
-     * </pre>
+     * <p>
+     * Strategy is as follows:<ol>
+     * <li>Pick up among all current exclusions the one whose high inter has the highest contextual
+     * grade contribution among all exclusions,</li>
+     * <li>Remove the weaker inter in this chosen exclusion relation,</li>
+     * <li>Recompute all impacted contextual grades values,</li>
+     * <li>Iterate until no more exclusion is left.</li>
+     * </ol>
      *
      * @param minDelta   minimum delta value to decide on conflict
      * @param warning    true to issue a warning on tight exclusion
@@ -1426,6 +1364,10 @@ public class SIGraph
     //----------------//
     /**
      * Check, and shrink if needed, the collection of partners.
+     * <p>
+     * It is very expensive (and certainly useless) to compute contextual grade of an inter with too
+     * many partners. We put a reasonable limit to this number of partners and, if we have too many
+     * of them, we discard the ones which exhibit the lowest contribution values.
      *
      * @param list          (input/output) the list of partners which may be modified
      * @param partnerRatios (input) the support ratio brought by each partner
@@ -1438,39 +1380,13 @@ public class SIGraph
         int n = list.size();
 
         if (n > maxSupportCount) {
-            class Contribution
-            {
-
-                final Inter partner;
-
-                final double value; // Concrete contribution brought by the partner
-
-                public Contribution (Inter partner,
-                                     double ratio)
-                {
-                    this.partner = partner;
-                    value = ratio * partner.getGrade();
-                }
-            }
-
             List<Contribution> contribs = new ArrayList<Contribution>();
 
-            for (int i = 0; i < n; i++) {
-                Inter partner = list.get(i);
+            for (Inter partner : list) {
                 contribs.add(new Contribution(partner, partnerRatios.get(partner)));
             }
 
-            Collections.sort(
-                    contribs,
-                    new Comparator<Contribution>()
-                    {
-                        @Override
-                        public int compare (Contribution o1,
-                                            Contribution o2)
-                        {
-                            return Double.compare(o2.value, o1.value);
-                        }
-                    });
+            Collections.sort(contribs, Contribution.byReverseValue);
             list.clear();
             n = maxSupportCount;
 
@@ -1546,16 +1462,106 @@ public class SIGraph
                 "Minimum grade delta to reduce an exclusion in RELAXED mode");
     }
 
+    //----------------//
+    // ClassPredicate //
+    //----------------//
+    private static class ClassPredicate
+            implements Predicate<Inter>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Class classe;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ClassPredicate (Class classe)
+        {
+            this.classe = classe;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public boolean check (Inter inter)
+        {
+            return !inter.isDeleted() && (classe.isInstance(inter));
+        }
+    }
+
+    //------------------//
+    // ClassesPredicate //
+    //------------------//
+    private static class ClassesPredicate
+            implements Predicate<Inter>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Class[] classes;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ClassesPredicate (Class[] classes)
+        {
+            this.classes = classes;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public boolean check (Inter inter)
+        {
+            for (Class classe : classes) {
+                if (classe.isInstance(inter)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    //--------------//
+    // Contribution //
+    //--------------//
+    /**
+     * Meant to sort the actual contributions brought by supporting partners.
+     */
+    private static class Contribution
+    {
+        //~ Static fields/initializers -------------------------------------------------------------
+
+        public static Comparator<Contribution> byReverseValue = new Comparator<Contribution>()
+        {
+            @Override
+            public int compare (Contribution o1,
+                                Contribution o2)
+            {
+                return Double.compare(o2.value, o1.value);
+            }
+        };
+
+        //~ Instance fields ------------------------------------------------------------------------
+        final Inter partner; // Contributing partner
+
+        final double value; // Concrete contribution brought by the partner
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Contribution (Inter partner,
+                             double ratio)
+        {
+            this.partner = partner;
+            value = ratio * partner.getGrade();
+        }
+    }
+
     //----------//
     // Sequence //
     //----------//
     /**
      * This class lists a sequence of interpretations statuses.
-     * Possible status values are:
-     * -1: the related inter is forbidden (because of a conflict with an inter located before in the
-     * sequence)
-     * 0: the related inter is not selected
-     * 1: the related inter is selected
+     * <p>
+     * Possible status values are:<ul>
+     * <li>-1: the related inter is forbidden (because of a conflict with an inter located before in
+     * the sequence)</li>
+     * <li>0: the related inter is not selected</li>
+     * <li>1: the related inter is selected</li>
+     * </ul>
      */
     private static class Sequence
     {
@@ -1579,6 +1585,83 @@ public class SIGraph
             System.arraycopy(line, 0, newSeq.line, 0, line.length);
 
             return newSeq;
+        }
+    }
+
+    //----------------//
+    // ShapePredicate //
+    //----------------//
+    private static class ShapePredicate
+            implements Predicate<Inter>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Shape shape;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ShapePredicate (Shape shape)
+        {
+            this.shape = shape;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public boolean check (Inter inter)
+        {
+            return !inter.isDeleted() && (inter.getShape() == shape);
+        }
+    }
+
+    //-----------------//
+    // ShapesPredicate //
+    //-----------------//
+    private static class ShapesPredicate
+            implements Predicate<Inter>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Collection<Shape> shapes;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ShapesPredicate (Collection<Shape> shapes)
+        {
+            this.shapes = shapes;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public boolean check (Inter inter)
+        {
+            return !inter.isDeleted() && shapes.contains(inter.getShape());
+        }
+    }
+
+    //---------------------//
+    // StaffClassPredicate //
+    //---------------------//
+    private static class StaffClassPredicate
+            implements Predicate<Inter>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Staff staff;
+
+        private final Class classe;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public StaffClassPredicate (Staff staff,
+                                    Class classe)
+        {
+            this.staff = staff;
+            this.classe = classe;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public boolean check (Inter inter)
+        {
+            return !inter.isDeleted() && (inter.getStaff() == staff)
+                   && ((classe == null) || classe.isInstance(inter));
         }
     }
 }

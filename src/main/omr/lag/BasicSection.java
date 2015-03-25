@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -106,8 +107,7 @@ public class BasicSection
     /**
      * Glyph this section belongs to.
      * This reference is kept in sync with the containing GlyphLag activeMap.
-     * Don't directly assign a value to 'glyph', use the setGlyph() method
-     * instead.
+     * Don't directly assign a value to 'glyph', use the setGlyph() method instead.
      */
     private Glyph glyph;
 
@@ -431,6 +431,19 @@ public class BasicSection
         char[][] table = allocateTable(box);
         fillTable(table, box);
         drawingOfTable(table, box);
+    }
+
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (obj instanceof Section) {
+            return compareTo((Section) obj) == 0;
+        }
+
+        return false;
     }
 
     //-----------//
@@ -905,6 +918,19 @@ public class BasicSection
         return weight;
     }
 
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = (43 * hash) + Objects.hashCode(this.orientation);
+        hash = (43 * hash) + this.weight;
+
+        return hash;
+    }
+
     //---------------//
     // inNextSibling //
     //---------------//
@@ -1203,13 +1229,15 @@ public class BasicSection
         Rectangle rect = getBounds();
 
         if ((clip == null) || clip.intersects(rect)) {
-            Graphics2D g2 = (Graphics2D) g;
-            final Stroke oldStroke = UIUtil.setAbsoluteStroke(g2, 1f);
-            g.setColor(Color.white);
-            g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
-            g.setColor(Color.black);
-            g.drawPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
-            g2.setStroke(oldStroke);
+            if (g instanceof Graphics2D) {
+                Graphics2D g2 = (Graphics2D) g;
+                final Stroke oldStroke = UIUtil.setAbsoluteStroke(g2, 1f);
+                g.setColor(Color.white);
+                g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
+                g.setColor(Color.black);
+                g.drawPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
+                g2.setStroke(oldStroke);
+            }
 
             return true;
         } else {

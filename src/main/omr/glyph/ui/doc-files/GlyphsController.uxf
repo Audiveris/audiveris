@@ -13,14 +13,14 @@
             <h>150</h>
         </coordinates>
         <panel_attributes>SymbolsModel
-            --
-            assignGlyph
-            assignRational
-            assignText
-            cancelStems
-            deassignGlyph
-            fixLargeSlurs
-            segmentGlyphs</panel_attributes>
+--
+assignGlyph
+assignRational
+assignText
+cancelStems
+deassignGlyph
+fixLargeSlurs
+segmentGlyphs</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -32,12 +32,12 @@
             <h>120</h>
         </coordinates>
         <panel_attributes>SymbolsController
-            (for most symbols)
-            --
-            +asyncAssignRationals:RationalTask
-            +asyncAssignTexts:TextTask
-            +asyncFixLargeSlurs:SlurTask
-            +asyncSegment:SegmentTask</panel_attributes>
+(for most symbols)
+--
++asyncAssignRationals:RationalTask
++asyncAssignTexts:TextTask
++asyncFixLargeSlurs:SlurTask
++asyncSegment:SegmentTask</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -71,8 +71,8 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>
-            _Data side_
-            - Permanency
+_Data side_
+- Permanency
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -85,10 +85,10 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>_UI side_
-            - Build Task in Script
-            - Act asynchronously
-            - Publish on event bus
-            - Update following steps</panel_attributes>
+- Build Task in Script
+- Act asynchronously
+- Publish on event bus
+- Update following steps</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -111,16 +111,16 @@
             <h>140</h>
         </coordinates>
         <panel_attributes>GlyphsController
-            --
-            locationService
-            --
-            +asyncAssignGlyphs:AssignTask
+--
+locationService
+--
++asyncAssignGlyphs:AssignTask
 
-            +asyncDeassignGlyphs
-            --
-            #publish(Glyph)
-            #publish(Glyphs)
-            #syncAssign(AssignTask)</panel_attributes>
++asyncDeassignGlyphs
+--
+#publish(Glyph)
+#publish(Glyphs)
+#syncAssign(AssignTask)</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -132,9 +132,9 @@
             <h>70</h>
         </coordinates>
         <panel_attributes>BarsController
-            (for Barlines)
-            --
-            +asyncModifyBoundaries:BoundaryTask</panel_attributes>
+(for Barlines)
+--
++asyncModifyBoundaries:BoundaryTask</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -146,18 +146,18 @@
             <h>200</h>
         </coordinates>
         <panel_attributes>GlyphsModel
-            --
-            lag
-            sheet
-            relatedStep
-            latestShape
-            --
-            getGlyphById
-            assignGlyph
-            assignGlyphs
-            assignSections
-            deassignGlyph
-            deassignGlyphs
+--
+lag
+sheet
+relatedStep
+latestShape
+--
+getGlyphById
+assignGlyph
+assignGlyphs
+assignSections
+deassignGlyph
+deassignGlyphs
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -192,7 +192,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>VerticalsController
-            (for Stems)</panel_attributes>
+(for Stems)</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -204,7 +204,7 @@
             <h>40</h>
         </coordinates>
         <panel_attributes>BasicController
-            (deassign=delete)</panel_attributes>
+(deassign=delete)</panel_attributes>
         <additional_attributes/>
     </element>
     <element>

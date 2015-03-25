@@ -89,7 +89,7 @@ public class FlagStemRelation
                                        Line2D stemLine,
                                        Scale scale)
     {
-        final double margin = scale.getInterline();
+        final double margin = scale.getInterline(); // TODO: use a constant instead?
 
         if (FlagsUp.contains(source.getShape())) {
             return (anchorPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;

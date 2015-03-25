@@ -10,8 +10,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            SheetController
-            bg=green</panel_attributes>
+SheetController
+bg=green</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -34,8 +34,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            MainGui
-            bg=blue</panel_attributes>
+MainGui
+bg=blue</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -69,8 +69,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            ActionMgr
-            bg=blue</panel_attributes>
+ActionMgr
+bg=blue</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -93,8 +93,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            /SheetDependent/
-            bg=blue</panel_attributes>
+/SheetDependent/
+bg=blue</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -106,8 +106,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            Picture
-            bg=green</panel_attributes>
+Picture
+bg=green</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -141,8 +141,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            PixelBoard
-            bg=red</panel_attributes>
+PixelBoard
+bg=red</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -176,8 +176,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            RunsTable
-            bg=green
+RunsTable
+bg=green
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -212,8 +212,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            RubberPanel
-            bg=red</panel_attributes>
+RubberPanel
+bg=red</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -247,7 +247,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>
-            ms</panel_attributes>
+ms</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -259,7 +259,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>
-            kb</panel_attributes>
+kb</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -271,8 +271,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            RunBoard
-            bg=blue</panel_attributes>
+RunBoard
+bg=blue</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -295,8 +295,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            SectionBoard
-            bg=red</panel_attributes>
+SectionBoard
+bg=red</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -308,7 +308,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>
-            kb</panel_attributes>
+kb</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -353,8 +353,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            Lag
-            bg=green</panel_attributes>
+Lag
+bg=green</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -366,8 +366,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            Nest
-            bg=green</panel_attributes>
+Nest
+bg=green</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -423,8 +423,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            GlyphBoard
-            bg=red</panel_attributes>
+GlyphBoard
+bg=red</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -436,7 +436,7 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>
-            kb</panel_attributes>
+kb</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -481,7 +481,7 @@
             <h>20</h>
         </coordinates>
         <panel_attributes>*PixelLevel*
-            bg=light_gray</panel_attributes>
+bg=light_gray</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -493,7 +493,7 @@
             <h>20</h>
         </coordinates>
         <panel_attributes>*(v/h)Run*
-            bg=#88ff88</panel_attributes>
+bg=#88ff88</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -505,7 +505,7 @@
             <h>20</h>
         </coordinates>
         <panel_attributes>*(v/h)SectionId*
-            bg=cyan</panel_attributes>
+bg=cyan</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -517,7 +517,7 @@
             <h>20</h>
         </coordinates>
         <panel_attributes>*GlyphId*
-            bg=magenta</panel_attributes>
+bg=magenta</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -529,7 +529,7 @@
             <h>20</h>
         </coordinates>
         <panel_attributes>*GlyphSet*
-            bg=magenta</panel_attributes>
+bg=magenta</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -541,7 +541,7 @@
             <h>20</h>
         </coordinates>
         <panel_attributes>*Sheet*
-            bg=orange</panel_attributes>
+bg=orange</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -641,7 +641,7 @@
             <h>20</h>
         </coordinates>
         <panel_attributes>*Glyph*
-            bg=magenta</panel_attributes>
+bg=magenta</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -664,7 +664,7 @@
             <h>20</h>
         </coordinates>
         <panel_attributes>*(v/h)Section*
-            bg=cyan</panel_attributes>
+bg=cyan</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -676,8 +676,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            Output UI
-            bg=blue</panel_attributes>
+Output UI
+bg=blue</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -689,8 +689,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            non UI
-            bg=green</panel_attributes>
+non UI
+bg=green</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -702,8 +702,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            Input/Output UI
-            bg=red</panel_attributes>
+Input/Output UI
+bg=red</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -737,7 +737,7 @@
             <h>20</h>
         </coordinates>
         <panel_attributes>*(vertical/horizontal) event*
-            bg=cyan</panel_attributes>
+bg=cyan</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -793,8 +793,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            SymbolsEditor
-            bg=red</panel_attributes>
+SymbolsEditor
+bg=red</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -850,7 +850,7 @@
             <h>20</h>
         </coordinates>
         <panel_attributes>*(v/h)SectionSet*
-            bg=cyan</panel_attributes>
+bg=cyan</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -862,7 +862,7 @@
             <h>20</h>
         </coordinates>
         <panel_attributes>*Location*
-            bg=yellow</panel_attributes>
+bg=yellow</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -874,8 +874,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            GlyphsController
-            bg=red</panel_attributes>
+GlyphsController
+bg=red</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -898,8 +898,8 @@
             <h>30</h>
         </coordinates>
         <panel_attributes>bt=*
-            ShapeBoard
-            bg=red</panel_attributes>
+ShapeBoard
+bg=red</panel_attributes>
         <additional_attributes/>
     </element>
     <element>

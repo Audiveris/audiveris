@@ -71,9 +71,9 @@ public class AreaMask
         return count;
     }
 
-    //-------//
+    //------//
     // fore //
-    //-------//
+    //------//
     /**
      * Count the number of foreground pixels in the mask area.
      *
@@ -86,18 +86,7 @@ public class AreaMask
     {
         fore.value = 0;
 
-        return apply(
-                new AreaMask.Adapter()
-                {
-                    @Override
-                    public void process (int x,
-                                         int y)
-                    {
-                        if (filter.get(x, y) == 0) {
-                            fore.value++;
-                        }
-                    }
-                });
+        return apply(new ForeCounter(filter, fore));
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
@@ -116,5 +105,37 @@ public class AreaMask
          */
         public void process (int x,
                              int y);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // ForeCounter //
+    //-------------//
+    private static class ForeCounter
+            implements Adapter
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final ByteProcessor filter;
+
+        private final Wrapper<Integer> fore;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ForeCounter (ByteProcessor filter,
+                            Wrapper<Integer> fore)
+        {
+            this.filter = filter;
+            this.fore = fore;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void process (int x,
+                             int y)
+        {
+            if (filter.get(x, y) == 0) {
+                fore.value++;
+            }
+        }
     }
 }

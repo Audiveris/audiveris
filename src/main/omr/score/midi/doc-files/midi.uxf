@@ -22,7 +22,7 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>MIDI file
-            bg=#ffffff</panel_attributes>
+bg=#ffffff</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -34,11 +34,11 @@
             <h>80</h>
         </coordinates>
         <panel_attributes>MidiReceiver
-            bg=#ffffbb
-            --
-            playbackAtEnd()
-            playbackAtScorePosition()
-            playbackStopped()</panel_attributes>
+bg=#ffffbb
+--
+playbackAtEnd()
+playbackAtScorePosition()
+playbackStopped()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -50,11 +50,11 @@
             <h>80</h>
         </coordinates>
         <panel_attributes>OmrFrameController
-            bg=#ffffbb
-            --
-            play()
-            isPlaying()
-            playbackStopped()
+bg=#ffffbb
+--
+play()
+isPlaying()
+playbackStopped()
         </panel_attributes>
         <additional_attributes/>
     </element>
@@ -79,17 +79,17 @@
             <h>170</h>
         </coordinates>
         <panel_attributes>MidiAgent
-            bg=#ffffbb
-            --
-            score
-            document
-            measureRange
-            --
-            setScore()
-            getScore()
-            play()
-            reset()
-            write()</panel_attributes>
+bg=#ffffbb
+--
+score
+document
+measureRange
+--
+setScore()
+getScore()
+play()
+reset()
+write()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -101,12 +101,12 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>Controller
-            bg=#ffffff
-            --
-            loadScore()
-            play()
-            pause()
-            stop()</panel_attributes>
+bg=#ffffff
+--
+loadScore()
+play()
+pause()
+stop()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -130,7 +130,7 @@
             <h>54</h>
         </coordinates>
         <panel_attributes>lt=&lt;-
-            receiver</panel_attributes>
+receiver</panel_attributes>
         <additional_attributes>350;34;20;34</additional_attributes>
     </element>
     <element>
@@ -142,9 +142,9 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>MidiSystem
-            bg=#ffffff
-            --
-            write()</panel_attributes>
+bg=#ffffff
+--
+write()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -167,7 +167,7 @@
             <h>110</h>
         </coordinates>
         <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-            listeners
+listeners
         </panel_attributes>
         <additional_attributes>45;90;45;20</additional_attributes>
     </element>
@@ -180,14 +180,14 @@
             <h>120</h>
         </coordinates>
         <panel_attributes>BasicFrameView
-            bg=#ffffff
-            --
-            {buttons}
-            --
-            #loadIcon()
-            #getButtonSequence()
-            setProgressDisplay()
-            setScoreInfo()</panel_attributes>
+bg=#ffffff
+--
+{buttons}
+--
+#loadIcon()
+#getButtonSequence()
+setProgressDisplay()
+setScoreInfo()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -199,7 +199,7 @@
             <h>54</h>
         </coordinates>
         <panel_attributes>lt=&lt;-
-            view</panel_attributes>
+view</panel_attributes>
         <additional_attributes>120;34;20;34</additional_attributes>
     </element>
     <element>
@@ -211,7 +211,7 @@
             <h>54</h>
         </coordinates>
         <panel_attributes>lt=&lt;-
-            controller</panel_attributes>
+controller</panel_attributes>
         <additional_attributes>20;34;120;34</additional_attributes>
     </element>
     <element>
@@ -234,18 +234,18 @@
             <h>200</h>
         </coordinates>
         <panel_attributes>BasicFrameController
-            bg=#ffffff
-            --
-            addPlaybackListener()
-            getMidiPlayer()
-            getSequence()
-            loadDocument()
-            play()
-            pause()
-            stop()
-            setVolume()
-            showScoreInfo()
-            showAudioSettingsDialog()</panel_attributes>
+bg=#ffffff
+--
+addPlaybackListener()
+getMidiPlayer()
+getSequence()
+loadDocument()
+play()
+pause()
+stop()
+setVolume()
+showScoreInfo()
+showAudioSettingsDialog()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -257,10 +257,10 @@
             <h>60</h>
         </coordinates>
         <panel_attributes>OmrFrameView
-            bg=#ffffbb
-            --
-            #loadIcon()
-            #getButtonSequence()</panel_attributes>
+bg=#ffffbb
+--
+#loadIcon()
+#getButtonSequence()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -283,7 +283,7 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>javax.sound.midi
-            bg=#bbffff</panel_attributes>
+bg=#bbffff</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -295,7 +295,7 @@
             <h>290</h>
         </coordinates>
         <panel_attributes>zong.player.gui
-            bg=#ffbbee</panel_attributes>
+bg=#ffbbee</panel_attributes>
         <additional_attributes/>
     </element>
     <element>

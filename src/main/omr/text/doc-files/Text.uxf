@@ -15,8 +15,8 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>*TextChar*
-            bg=#ffffaa
-            --</panel_attributes>
+bg=#ffffaa
+--</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -28,22 +28,22 @@
             <h>260</h>
         </coordinates>
         <panel_attributes>*TextLine*
-            bg=#ffffaa
-            --
-            roleInfo
-            dskOrigin
-            --
-            translate()
-            getValue()
-            getBounds()
-            getBaseline()
-            getConfidence()
-            isLyrics()
-            getFirstWord()
-            addWords()
-            removeWords()
-            getMeanFontSize()
-            getSystemPart()</panel_attributes>
+bg=#ffffaa
+--
+roleInfo
+dskOrigin
+--
+translate()
+getValue()
+getBounds()
+getBaseline()
+getConfidence()
+isLyrics()
+getFirstWord()
+addWords()
+removeWords()
+getMeanFontSize()
+getSystemPart()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -66,15 +66,15 @@
             <h>140</h>
         </coordinates>
         <panel_attributes>*Glyph (Content)*
-            bg=#aaffff
-            --
-            manualValue
-            manualRole
-            ocrLanguage
-            --
-            getTextLocation()
-            getTextRole()
-            getTextValue()</panel_attributes>
+bg=#aaffff
+--
+manualValue
+manualRole
+ocrLanguage
+--
+getTextLocation()
+getTextRole()
+getTextValue()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -86,18 +86,18 @@
             <h>170</h>
         </coordinates>
         <panel_attributes>*TextWord*
-            bg=#ffffaa
-            --
-            fontInfo
-            preciseFontSize
-            chordInfo
-            --
-            translate()
-            getInternalValue()
-            getValue()
-            getLength()
-            --
-            createManualWord()</panel_attributes>
+bg=#ffffaa
+--
+fontInfo
+preciseFontSize
+chordInfo
+--
+translate()
+getInternalValue()
+getValue()
+getLength()
+--
+createManualWord()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -131,14 +131,13 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>/TextItem/
-            bg=#ffffee
-
-            --
-            value
-            bounds
-            --
-            translate()
-            getValue()</panel_attributes>
+bg=#ffffee
+--
+value
+bounds
+--
+translate()
+getValue()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -150,13 +149,13 @@
             <h>100</h>
         </coordinates>
         <panel_attributes>/TextBasedItem/
-            bg=#ffffee
-            --
-            baseline
-            confidence
-            --
-            translate()
-            getLocation()</panel_attributes>
+bg=#ffffee
+--
+baseline
+confidence
+--
+translate()
+getLocation()</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -212,8 +211,8 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>*Section*
-            bg=#aaffff
-            --</panel_attributes>
+bg=#aaffff
+--</panel_attributes>
         <additional_attributes/>
     </element>
     <element>
@@ -236,8 +235,8 @@
             <h>50</h>
         </coordinates>
         <panel_attributes>*SystemInfo*
-            bg=#eeffff
-            --</panel_attributes>
+bg=#eeffff
+--</panel_attributes>
         <additional_attributes/>
     </element>
     <element>

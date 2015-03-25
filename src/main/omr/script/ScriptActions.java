@@ -271,7 +271,7 @@ public class ScriptActions
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private File file;
+        private final File file;
 
         //~ Constructors ---------------------------------------------------------------------------
         LoadScriptTask (File file)
@@ -315,9 +315,9 @@ public class ScriptActions
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private Script script;
+        private final Script script;
 
-        private File file;
+        private final File file;
 
         //~ Constructors ---------------------------------------------------------------------------
         StoreScriptTask (Script script,

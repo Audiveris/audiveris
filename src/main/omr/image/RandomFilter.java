@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 @ThreadSafe
 public class RandomFilter
         extends AdaptiveFilter
-        implements PixelFilter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
