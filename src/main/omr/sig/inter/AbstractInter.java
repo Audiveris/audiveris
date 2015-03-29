@@ -864,7 +864,7 @@ public abstract class AbstractInter
         }
 
         if (ensemble != null) {
-            sb.append(" m");
+            sb.append(" e#").append(ensemble.getId());
         }
 
         if (staff != null) {

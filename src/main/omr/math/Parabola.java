@@ -15,7 +15,7 @@ import java.awt.geom.Point2D;
 import java.util.List;
 
 /**
- * Class {@code Parabola} handles a parabola curve whose parameters (a,b,c) are such:
+ * Class {@code Parabola} handles a parabola curve whose parameters (a,b,c) are such:.
  * <pre>
  * y = a*x^2 + b*x + c
  * </pre>

@@ -216,6 +216,7 @@ public abstract class CurvesBuilder
             }
         }
 
+        // Finally, filter candidates using their potential links to embraced chords
         if (!inters.isEmpty()) {
             ///register(inters); // For DEBUG only
             filterInters(inters);

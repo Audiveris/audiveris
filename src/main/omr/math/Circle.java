@@ -139,8 +139,7 @@ public class Circle
 
     /**
      * Creates a new instance of Circle, fitted to 3 defining points.
-     * The provided collection of coordinates is used only to compute the
-     * resulting distance.
+     * The provided collection of coordinates is used only to compute the resulting distance.
      *
      * @param left   left defining point
      * @param middle middle defining point
@@ -264,8 +263,7 @@ public class Circle
     // getCurve //
     //----------//
     /**
-     * Report the left-to-right Bézier curve which best approximates
-     * the circle arc.
+     * Report the left-to-right Bézier curve which best approximates the circle arc.
      *
      * @return the Bézier curve
      */
@@ -444,8 +442,8 @@ public class Circle
     // computeAngles //
     //---------------//
     /**
-     * Compute the start and stop angles of a circle, not knowing
-     * where the circle arc begins and stops.
+     * Compute the start and stop angles of a circle, not knowing where the circle arc
+     * begins and stops.
      */
     private void computeAngles (double[] xx,
                                 double[] yy)
@@ -696,8 +694,7 @@ public class Circle
     // fit //
     //-----//
     /**
-     * Given a collection of points, determine the best approximating
-     * circle.
+     * Given a collection of points, determine the best approximating circle.
      * The result is available in the center and radius variables.
      *
      * @param x the array of abscissae

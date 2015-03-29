@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="13.2">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>PlotGrid</id>
+    <coordinates>
+      <x>110</x>
+      <y>0</y>
+      <w>210</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>data
+a	  b	   c     d     e    f     g    h    i    j     k     l    m    n    o     p     q    
+0  0.065 0.125 0.165 0.2  0.225 0.25 0.26 0.27 0.275 0.275  0.27 0.26 0.25 0.23 0.200 0.170
+
+type=line
+axis.desc.show=
+axis.value.show=
+axis.value.list=relevant
+plot</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>280</x>
+      <y>110</y>
+      <w>140</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>fg=blue
+lt=&lt;-
+Ext</panel_attributes>
+    <additional_attributes>10.0;30.0;120.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>390</x>
+      <y>110</y>
+      <w>60</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>fg=blue
+lt=-
+Depth</panel_attributes>
+    <additional_attributes>10.0;110.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>220</x>
+      <y>120</y>
+      <w>90</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>fg=blue
+lt=-&gt;
+In</panel_attributes>
+    <additional_attributes>10.0;30.0;70.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>220</x>
+      <y>220</y>
+      <w>90</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>fg=blue
+lt=-&gt;
+In</panel_attributes>
+    <additional_attributes>10.0;30.0;70.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>280</x>
+      <y>210</y>
+      <w>140</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>fg=blue
+lt=&lt;-
+Ext</panel_attributes>
+    <additional_attributes>10.0;30.0;120.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>220</x>
+      <y>140</y>
+      <w>30</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>fg=blue
+lt=-</panel_attributes>
+    <additional_attributes>10.0;110.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>120</x>
+      <y>140</y>
+      <w>80</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>fg=blue
+lt=&lt;-
+In</panel_attributes>
+    <additional_attributes>10.0;30.0;60.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>170</x>
+      <y>150</y>
+      <w>30</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>fg=blue
+lt=-</panel_attributes>
+    <additional_attributes>10.0;110.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>0</x>
+      <y>160</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>fg=blue
+lt=-&gt;
+Ext</panel_attributes>
+    <additional_attributes>10.0;30.0;130.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>0</x>
+      <y>260</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>Ext
+fg=blue
+lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;30.0;130.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>120</x>
+      <y>240</y>
+      <w>80</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>fg=blue
+lt=&lt;-
+In</panel_attributes>
+    <additional_attributes>10.0;30.0;60.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>0</x>
+      <y>180</y>
+      <w>30</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>fg=blue
+lt=-</panel_attributes>
+    <additional_attributes>10.0;110.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>10</x>
+      <y>90</y>
+      <w>140</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>Lookup areas for a wide horizontal slur
+(coverageH...)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>170</x>
+      <y>230</y>
+      <w>80</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+</panel_attributes>
+    <additional_attributes>10.0;30.0;60.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>170</x>
+      <y>130</y>
+      <w>80</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.
+</panel_attributes>
+    <additional_attributes>10.0;30.0;60.0;20.0</additional_attributes>
+  </element>
+</diagram>

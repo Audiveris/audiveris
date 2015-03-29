@@ -28,7 +28,7 @@ import java.util.List;
  * Class {@code SlursInfo} gathers physical description of a slur.
  * <p>
  * Short and medium slurs generally fit a global circle rather well.
- * But a long slur may be closer to an ellipsis, hence the use of local osculatory circles, one at
+ * But a long slur may be closer to an ellipsis, hence the use of local osculating circles, one at
  * the start and one at the end of slur, in order to more accurately evaluate slur extensions.
  *
  * @author Hervé Bitteur
@@ -59,11 +59,17 @@ public class SlurInfo
     /** True for slur rather horizontal. */
     private boolean horizontal;
 
-    /** Area for first notes. */
-    private Area firstNoteArea;
+    /** Area for first chords. */
+    private Area firstChordArea;
 
-    /** Area for last notes. */
-    private Area lastNoteArea;
+    /** Area for last chords. */
+    private Area lastChordArea;
+
+    /** Target point for first chords. */
+    private Point firstTarget;
+
+    /** Target point for last chords. */
+    private Point lastTarget;
 
     /** Global Bézier curve for the slur. */
     private CubicCurve2D curve;
@@ -158,6 +164,14 @@ public class SlurInfo
     public Point2D getBisUnit ()
     {
         return bisUnit;
+    }
+
+    //--------------//
+    // getChordArea //
+    //--------------//
+    public Area getChordArea (boolean reverse)
+    {
+        return reverse ? firstChordArea : lastChordArea;
     }
 
     //----------//
@@ -266,19 +280,11 @@ public class SlurInfo
         return model.getMidPoint();
     }
 
-    //-------------//
-    // getNoteArea //
-    //-------------//
-    public Area getNoteArea (boolean reverse)
-    {
-        return reverse ? firstNoteArea : lastNoteArea;
-    }
-
     //--------------//
     // getSideModel //
     //--------------//
     /**
-     * Report the osculatory model on the desired side.
+     * Report the osculating model on the desired side.
      * Note that a small slur (a slur with not more than sideLength points) has just one global
      * model which is returned.
      *
@@ -330,6 +336,14 @@ public class SlurInfo
         }
     }
 
+    //----------------//
+    // getTargetPoint //
+    //----------------//
+    public Point getTargetPoint (boolean reverse)
+    {
+        return reverse ? firstTarget : lastTarget;
+    }
+
     //--------------//
     // hasSideModel //
     //--------------//
@@ -372,9 +386,9 @@ public class SlurInfo
                          boolean reverse)
     {
         if (reverse) {
-            firstNoteArea = area;
+            firstChordArea = area;
         } else {
-            lastNoteArea = area;
+            lastChordArea = area;
         }
     }
 
@@ -413,6 +427,35 @@ public class SlurInfo
         } else {
             lastModel = model;
         }
+    }
+
+    //----------------//
+    // setTargetPoint //
+    //----------------//
+    /**
+     * @param reverse desired end
+     * @param target  the target point to set
+     */
+    public void setTargetPoint (boolean reverse,
+                                Point target)
+    {
+        if (reverse) {
+            firstTarget = target;
+        } else {
+            lastTarget = target;
+        }
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(" ").append(horizontal ? "H" : "V");
+
+        return sb.toString();
     }
 
     //-----------------//

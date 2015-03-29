@@ -734,7 +734,7 @@ public class SlursBuilder
         SlurInter longest = null;
 
         for (SlurInter slur : inters) {
-            int ext2 = slur.getInfo().getExtensionSq();
+            int ext2 = slur.getInfo().getSegmentSq();
 
             if (maxExt2 < ext2) {
                 maxExt2 = ext2;
@@ -751,7 +751,7 @@ public class SlursBuilder
         for (Iterator<SlurInter> it = inters.iterator(); it.hasNext();) {
             SlurInfo slur = it.next().getInfo();
 
-            if (slur.getExtensionSq() < quorum) {
+            if (slur.getSegmentSq() < quorum) {
                 it.remove();
             }
         }

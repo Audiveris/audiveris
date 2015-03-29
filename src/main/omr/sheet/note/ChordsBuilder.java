@@ -25,7 +25,6 @@ import omr.sig.inter.HeadChordInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.RestChordInter;
 import omr.sig.inter.RestInter;
-import omr.sig.inter.SlurInter;
 import omr.sig.inter.SmallChordInter;
 import omr.sig.inter.StemInter;
 import omr.sig.inter.VoidHeadInter;
@@ -36,11 +35,12 @@ import omr.sig.relation.BeamStemRelation;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.NoExclusion;
 import omr.sig.relation.Relation;
-import omr.sig.relation.SlurHeadRelation;
 import omr.sig.relation.Support;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -161,10 +161,8 @@ public class ChordsBuilder
                             }
 
                             if (mirrorHead != null) {
-                                sig.addEdge(
-                                        head.getChord(),
-                                        mirrorHead.getChord(),
-                                        new NoExclusion());
+                                head.getChord().setMirror(mirrorHead.getChord());
+                                mirrorHead.getChord().setMirror(head.getChord());
                                 sig.addEdge(head, mirrorHead.getChord(), new NoExclusion());
                                 sig.addEdge(head.getChord(), mirrorHead, new NoExclusion());
                             }
@@ -247,11 +245,13 @@ public class ChordsBuilder
                     sig.removeEdge(rel);
                     sig.addEdge(beam, rightHead, rel);
                 }
-            } else if (rel instanceof SlurHeadRelation) {
-                // Connect the slur to both heads (this will be disambiguated later)
-                SlurInter slur = (SlurInter) sig.getOppositeInter(leftHead, rel);
-                HorizontalSide side = ((SlurHeadRelation) rel).getSide();
-                sig.addEdge(slur, rightHead, new SlurHeadRelation(side));
+
+                // Since head-chords are now built BEFORE slurs, this case no longer applies.
+                //            } else if (rel instanceof SlurHeadRelation) {
+                //                // Connect the slur to both heads (this will be disambiguated later)
+                //                SlurInter slur = (SlurInter) sig.getOppositeInter(leftHead, rel);
+                //                HorizontalSide side = ((SlurHeadRelation) rel).getSide();
+                //                sig.addEdge(slur, rightHead, new SlurHeadRelation(side));
             } else if (rel instanceof AccidHeadRelation) {
                 // TODO
             } else if (rel instanceof AugmentationRelation) {

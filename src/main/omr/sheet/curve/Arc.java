@@ -125,6 +125,9 @@ public class Arc
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------------//
+    // checkOrientation //
+    //------------------//
     /**
      * Make sure arc goes from left to right.
      */
@@ -137,6 +140,9 @@ public class Arc
         }
     }
 
+    //--------//
+    // getEnd //
+    //--------//
     /**
      * Report ending point, if any, on desired side.
      *
@@ -156,12 +162,15 @@ public class Arc
         }
     }
 
+    //--------------//
+    // getSegmentSq //
+    //--------------//
     /**
      * Report the (square of) distance from arc first point to arc last point
      *
      * @return the square of arc distance
      */
-    public int getExtensionSq ()
+    public int getSegmentSq ()
     {
         Point p1 = points.get(0);
         Point p2 = points.get(points.size() - 1);
@@ -171,6 +180,9 @@ public class Arc
         return (dx * dx) + (dy * dy);
     }
 
+    //-------------//
+    // getJunction //
+    //-------------//
     /**
      * Report the junction point, if any, on the desired side.
      *
@@ -186,6 +198,9 @@ public class Arc
         }
     }
 
+    //-----------//
+    // getLength //
+    //-----------//
     /**
      * Report the arc length, as the number of points
      *
@@ -196,6 +211,9 @@ public class Arc
         return points.size();
     }
 
+    //----------//
+    // getModel //
+    //----------//
     /**
      * @return the model, if any
      */
@@ -204,6 +222,9 @@ public class Arc
         return model;
     }
 
+    //-----------//
+    // getPoints //
+    //-----------//
     /**
      * @return the points
      */
@@ -212,6 +233,9 @@ public class Arc
         return points;
     }
 
+    //----------//
+    // getShape //
+    //----------//
     /**
      * @return the shape
      */
@@ -220,6 +244,9 @@ public class Arc
         return shape;
     }
 
+    //------------//
+    // getXLength //
+    //------------//
     /**
      * Report the arc X length, as the abscissa delta between end points
      *
@@ -230,6 +257,9 @@ public class Arc
         return Math.abs(points.get(points.size() - 1).x - points.get(0).x);
     }
 
+    //------------//
+    // isAssigned //
+    //------------//
     /**
      * @return the assigned flag
      */
@@ -238,6 +268,9 @@ public class Arc
         return assigned;
     }
 
+    //---------//
+    // reverse //
+    //---------//
     /**
      * Reverse arc internal order (points & junction points).
      */
@@ -257,6 +290,9 @@ public class Arc
         }
     }
 
+    //-------------//
+    // setAssigned //
+    //-------------//
     /**
      * @param assigned the assigned flag to set
      */
@@ -265,6 +301,9 @@ public class Arc
         this.assigned = assigned;
     }
 
+    //-------------//
+    // setJunction //
+    //-------------//
     /**
      * Set a junction point.
      *
@@ -281,6 +320,9 @@ public class Arc
         }
     }
 
+    //----------//
+    // setModel //
+    //----------//
     /**
      * @param model the model to set
      */
@@ -289,6 +331,9 @@ public class Arc
         this.model = model;
     }
 
+    //----------//
+    // setShape //
+    //----------//
     /**
      * @param shape the shape to set
      */
@@ -297,6 +342,9 @@ public class Arc
         this.shape = shape;
     }
 
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {

@@ -83,8 +83,7 @@ public abstract class PointUtil
     // extension //
     //-----------//
     /**
-     * Compute extension point, on line p1 -> p2, at 'dist' distance
-     * beyond p2.
+     * Compute extension point, on line p1 -> p2, at 'dist' distance beyond p2.
      *
      * @param p1   first point
      * @param p2   second point
@@ -152,6 +151,22 @@ public abstract class PointUtil
                                        Point2D p2)
     {
         return new Point2D.Double(p1.getX() - p2.getX(), p1.getY() - p2.getY());
+    }
+
+    //-------//
+    // times //
+    //-------//
+    /**
+     * Report the multiplication of a vector by the provided coefficient
+     *
+     * @param p     a vector
+     * @param coeff coefficient applied to vector components
+     * @return the resulting vector
+     */
+    public static Point2D times (Point2D p,
+                                 double coeff)
+    {
+        return new Point2D.Double(p.getX() * coeff, p.getY() * coeff);
     }
 
     //----------//
