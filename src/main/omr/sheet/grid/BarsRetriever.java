@@ -1750,8 +1750,10 @@ public class BarsRetriever
 
         if (serif.getWeight() < params.serifMinWeight) {
             logger.info(
-                    "Staff#{} serif normalized weight too small {}",
-                    serif.getNormalizedWeight());
+                    "Staff#{} serif normalized weight too small {} vs {}",
+                    staff.getId(),
+                    serif.getNormalizedWeight(),
+                    constants.serifMinWeight.getValue());
 
             return false;
         }

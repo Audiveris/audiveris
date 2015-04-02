@@ -285,7 +285,7 @@ public class InterManager
             if ((inters != null) && !inters.isEmpty()) {
                 Inter inter = inters.get(inters.size() - 1);
                 Rectangle box = inter.getBounds();
-                interService.publish(new LocationEvent(this, hint, movement, box));
+                sheet.getLocationService().publish(new LocationEvent(this, hint, movement, box));
             }
         }
     }

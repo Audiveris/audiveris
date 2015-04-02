@@ -1057,7 +1057,7 @@ public class SIGraph
     //---------//
     public void publish (InterListEvent event)
     {
-        system.getSheet().getLocationService().publish(event);
+        system.getSheet().getInterManager().getInterService().publish(event);
     }
 
     //------------------//
