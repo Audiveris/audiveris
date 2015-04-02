@@ -182,7 +182,7 @@ public class ShapeBoard
         public void mouseClicked (MouseEvent e)
         {
             if (e.getClickCount() == 2) {
-                Glyph glyph = sheet.getNest().getSelectedGlyph();
+                Glyph glyph = sheet.getGlyphNest().getSelectedGlyph();
 
                 if (glyph != null) {
                     ShapeButton button = (ShapeButton) e.getSource();

@@ -12,7 +12,6 @@
 package omr.script;
 
 import omr.sheet.Book;
-import omr.sheet.BookManager;
 import omr.sheet.Sheet;
 
 import java.io.File;
@@ -37,11 +36,8 @@ public class ExportTask
     @XmlAttribute
     private File folder;
 
-    /** Should we add our signature?. */
-    @XmlAttribute(name = "signed")
-    private Boolean signed;
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a task to export the related score entities of a sheet
      *
@@ -66,7 +62,8 @@ public class ExportTask
     {
         Book book = sheet.getBook();
         Path bookPath = (folder != null) ? new File(folder, book.getRadix()).toPath() : null;
-        BookManager.getInstance().exportBook(sheet.getBook(), bookPath, signed);
+        book.setExportPath(bookPath);
+        book.export();
     }
 
     //-----------//

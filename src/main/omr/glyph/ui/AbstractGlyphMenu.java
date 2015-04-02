@@ -65,7 +65,7 @@ public abstract class AbstractGlyphMenu
                               String text)
     {
         this.sheet = sheet;
-        nest = sheet.getNest();
+        nest = sheet.getGlyphNest();
         menu.setText(text);
     }
 

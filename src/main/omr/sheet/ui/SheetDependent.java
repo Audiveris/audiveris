@@ -14,6 +14,7 @@ package omr.sheet.ui;
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
+import omr.sheet.Book;
 import omr.sheet.Sheet;
 
 import org.bushe.swing.event.EventSubscriber;
@@ -67,6 +68,19 @@ public abstract class SheetDependent
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // isBookIdle //
+    //------------//
+    /**
+     * Getter for bookIdle property
+     *
+     * @return the current property value
+     */
+    public boolean isBookIdle ()
+    {
+        return bookIdle;
+    }
+
     //------------------//
     // isSheetAvailable //
     //------------------//
@@ -91,19 +105,6 @@ public abstract class SheetDependent
     public boolean isSheetIdle ()
     {
         return sheetIdle;
-    }
-
-    //------------//
-    // isBookIdle //
-    //------------//
-    /**
-     * Getter for bookIdle property
-     *
-     * @return the current property value
-     */
-    public boolean isBookIdle ()
-    {
-        return bookIdle;
     }
 
     //---------//
@@ -137,30 +138,12 @@ public abstract class SheetDependent
 
             // Update bookIdle
             if (sheet != null) {
-                setBookIdle(sheet.getBook().isIdle());
+                setBookIdle(isBookIdle(sheet.getBook()));
             } else {
                 setBookIdle(false);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
-    //--------------//
-    // setSheetIdle //
-    //--------------//
-    /**
-     * Setter for sheetIdle property
-     *
-     * @param sheetIdle the new property value
-     */
-    public void setSheetIdle (boolean sheetIdle)
-    {
-        boolean oldValue = this.sheetIdle;
-        this.sheetIdle = sheetIdle;
-
-        if (sheetIdle != oldValue) {
-            firePropertyChange(SHEET_IDLE, oldValue, this.sheetIdle);
         }
     }
 
@@ -198,5 +181,37 @@ public abstract class SheetDependent
         if (sheetAvailable != oldValue) {
             firePropertyChange(SHEET_AVAILABLE, oldValue, this.sheetAvailable);
         }
+    }
+
+    //--------------//
+    // setSheetIdle //
+    //--------------//
+    /**
+     * Setter for sheetIdle property
+     *
+     * @param sheetIdle the new property value
+     */
+    public void setSheetIdle (boolean sheetIdle)
+    {
+        boolean oldValue = this.sheetIdle;
+        this.sheetIdle = sheetIdle;
+
+        if (sheetIdle != oldValue) {
+            firePropertyChange(SHEET_IDLE, oldValue, this.sheetIdle);
+        }
+    }
+
+    //------------//
+    // isBookIdle //
+    //------------//
+    private boolean isBookIdle (Book book)
+    {
+        for (Sheet sheet : book.getSheets()) {
+            if ((sheet != null) && (sheet.getCurrentStep() != null)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

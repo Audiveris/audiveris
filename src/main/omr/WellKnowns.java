@@ -61,14 +61,14 @@ public abstract class WellKnowns
     /** Application build: {@value}. */
     public static final String TOOL_BUILD = ProgramId.BUILD;
 
-    /** Specific prefix for application folders: {@value} */
+    /** Specific prefix for application folders: {@value}. */
     private static final String TOOL_PREFIX = "/" + COMPANY_ID + "/" + TOOL_NAME;
 
     //----------//
     // PLATFORM //
     //----------//
     //
-    /** Name of operating system */
+    /** Name of operating system. */
     private static final String OS_NAME = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
 
     /** Are we using a Linux OS?. */
@@ -144,7 +144,7 @@ public abstract class WellKnowns
     // USER DATA // User-specific data, except configuration stuff
     //-----------//
     //
-    /** Base folder for data */
+    /** Base folder for data. */
     public static final File DATA_FOLDER = RUNNING_FROM_JAR ? getDataFolder() : new File("data");
 
     /**

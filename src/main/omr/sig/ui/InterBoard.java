@@ -24,7 +24,7 @@ import omr.selection.UserEvent;
 import omr.sheet.Sheet;
 
 import omr.sig.SIGraph;
-import omr.sig.SigManager;
+import omr.sig.InterManager;
 import omr.sig.inter.Inter;
 
 import omr.ui.Board;
@@ -32,7 +32,9 @@ import omr.ui.PixelCount;
 import omr.ui.field.LCheckBox;
 import omr.ui.field.LTextField;
 import omr.ui.field.SpinnerUtil;
+
 import static omr.ui.field.SpinnerUtil.NO_VALUE;
+
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -130,7 +132,7 @@ public class InterBoard
     {
         super(
                 Board.INTER,
-                sheet.getLocationService(),
+                sheet.getInterManager().getInterService(),
                 eventClasses,
                 true, // withDump
                 true); // initially expanded
@@ -289,7 +291,7 @@ public class InterBoard
     protected void defineLayout ()
     {
         // Model for idSpinner
-        idSpinner = makeInterSpinner(sheet.getSigManager());
+        idSpinner = makeInterSpinner(sheet.getInterManager());
         idSpinner.setName("idSpinner");
         idSpinner.setToolTipText("Spinner for any interpretation id");
 
@@ -336,7 +338,7 @@ public class InterBoard
      * @param sigManager the underlying SIG manager
      * @return the spinner built
      */
-    protected JSpinner makeInterSpinner (SigManager sigManager)
+    protected JSpinner makeInterSpinner (InterManager sigManager)
     {
         JSpinner spinner = new JSpinner();
         spinner.setModel(new SpinnerInterIdModel(sigManager));

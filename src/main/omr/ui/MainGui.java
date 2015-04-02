@@ -29,6 +29,8 @@ import omr.plugin.PluginManager;
 
 import omr.score.PartwiseBuilder;
 
+import omr.script.ScriptActions;
+
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
@@ -38,8 +40,8 @@ import omr.sheet.Sheet;
 import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
 
-import omr.step.StepMenu;
-import omr.step.Stepping;
+import omr.step.ui.StepMenu;
+import omr.step.ui.StepMonitoring;
 
 import omr.ui.dnd.GhostGlassPane;
 import omr.ui.symbol.MusicFont;
@@ -66,6 +68,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.concurrent.Callable;
 
@@ -445,6 +448,9 @@ public class MainGui
             }
 
             break;
+
+        default:
+            break;
         }
 
         // BottomPane = LogPane | ErrorsPane
@@ -518,8 +524,8 @@ public class MainGui
     {
         logger.debug("MainGui. 3/ready");
 
-        // Set exit listener
-        addExitListener(BookManager.getInstance().getExitListener());
+        // Set application exit listener
+        addExitListener(new GuiExitListener());
 
         // Weakly listen to GUI Actions parameters
         PropertyChangeListener weak = new WeakPropertyChangeListener(this);
@@ -570,24 +576,6 @@ public class MainGui
 
         // Use the defined application name
         appName = getContext().getResourceMap().getString("Application.name");
-
-        // Define an exit listener
-        addExitListener(
-                new ExitListener()
-                {
-                    @Override
-                    public boolean canExit (EventObject e)
-                    {
-                        return true;
-                    }
-
-                    @Override
-                    public void willExit (EventObject e)
-                    {
-                        // Store latest constant values on disk
-                        ConstantManager.getInstance().storeResource();
-                    }
-                });
 
         // Here we go...
         show(frame);
@@ -717,7 +705,7 @@ public class MainGui
         // Gauges = progress | memory
         JPanel gauges = new JPanel();
         gauges.setLayout(new BorderLayout());
-        gauges.add(Stepping.createMonitor().getComponent(), BorderLayout.CENTER);
+        gauges.add(StepMonitoring.createMonitor().getComponent(), BorderLayout.CENTER);
         gauges.add(new MemoryMeter().getComponent(), BorderLayout.EAST);
 
         // Outer bar = menu | gauges
@@ -775,7 +763,7 @@ public class MainGui
      * Just a scrollPane to host the pane of user boards, trying to offer
      * enough room for the boards.
      */
-    private class BoardsScrollPane
+    private static class BoardsScrollPane
             extends JScrollPane
     {
         //~ Methods --------------------------------------------------------------------------------
@@ -784,6 +772,54 @@ public class MainGui
         {
             setViewportView(boards);
             revalidate();
+        }
+    }
+
+    //-----------------//
+    // GuiExitListener //
+    //-----------------//
+    /**
+     * Listener called when application asks for exit and does exit.
+     */
+    private static class GuiExitListener
+            implements ExitListener
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public GuiExitListener ()
+        {
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public boolean canExit (EventObject eo)
+        {
+            // Are all scripts stored (or explicitly ignored)?
+            for (Book book : BookManager.getInstance().getAllBooks()) {
+                if (!ScriptActions.checkStored(book.getScript())) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        @Override
+        public void willExit (EventObject eo)
+        {
+            // Store latest constant values on disk
+            ConstantManager.getInstance().storeResource();
+
+            // Close all books
+            int count = 0;
+
+            // NB: Use a COPY of instances, to avoid concurrent modification
+            for (Book book : new ArrayList<Book>(BookManager.getInstance().getAllBooks())) {
+                book.close();
+                count++;
+            }
+
+            logger.debug("{} book(s) closed", count);
         }
     }
 }

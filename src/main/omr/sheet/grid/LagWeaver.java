@@ -127,8 +127,8 @@ public class LagWeaver
     {
         this.sheet = sheet;
 
-        vLag = sheet.getLag(Lags.VLAG);
-        hLag = sheet.getLag(Lags.HLAG);
+        vLag = sheet.getLagManager().getLag(Lags.VLAG);
+        hLag = sheet.getLagManager().getLag(Lags.HLAG);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -349,7 +349,7 @@ public class LagWeaver
      */
     private void horiWithHori ()
     {
-        int maxLongId = sheet.getLongSectionMaxId();
+        int maxLongId = sheet.getLagManager().getLongSectionMaxId();
 
         // Process each long section in turn
         for (Section lSect : hLag.getSections()) {

@@ -93,7 +93,6 @@ public class GridStep
                       Sheet sheet)
             throws StepException
     {
-        sheet.createNest();
         new GridBuilder(sheet).buildInfo();
 
         // Purge sections & runs of staff lines from hLag

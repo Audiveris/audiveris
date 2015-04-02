@@ -832,7 +832,7 @@ public class ScoreChecker
             glyphs.addAll(second.getGlyphs());
 
             SystemInfo system = first.getSystem().getInfo();
-            GlyphNest nest = system.getSheet().getNest();
+            GlyphNest nest = system.getSheet().getGlyphNest();
 
             Glyph compound = nest.buildGlyph(glyphs, false);
             Evaluation vote = evaluator.vote(

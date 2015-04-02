@@ -101,7 +101,7 @@ public class ClefPattern
     {
         super("Clef", system);
 
-        nest = system.getSheet().getNest();
+        nest = system.getSheet().getGlyphNest();
 
         clefWidth = scale.toPixels(constants.clefWidth);
         xOffset = scale.toPixels(constants.xOffset);
@@ -122,7 +122,7 @@ public class ClefPattern
     @Override
     public int runPattern ()
     {
-        final GlyphNest nest = system.getSheet().getNest();
+        final GlyphNest nest = system.getSheet().getGlyphNest();
         int successNb = 0;
         int staffId = 0;
 
@@ -196,7 +196,7 @@ public class ClefPattern
             return false;
         }
 
-        final GlyphNest nest = system.getSheet().getNest();
+        final GlyphNest nest = system.getSheet().getGlyphNest();
 
         // Check if we already have a clef among the intersected glyphs
         Set<Glyph> clefs = Glyphs.lookupGlyphs(glyphs, clefGlyphPredicate);

@@ -1989,7 +1989,7 @@ public class PartwiseBuilder
 
                 // Source
                 Book book = score.getFirstPage().getSheet().getBook();
-                identification.setSource(book.getImagePath().toString());
+                identification.setSource(book.getInputPath().toString());
 
                 // Encoding
                 Encoding encoding = factory.createEncoding();

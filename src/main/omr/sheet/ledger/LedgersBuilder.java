@@ -284,7 +284,7 @@ public class LedgersBuilder
         // Use filament factory
         FilamentsFactory factory = new FilamentsFactory(
                 scale,
-                sheet.getNest(),
+                sheet.getGlyphNest(),
                 GlyphLayer.LEDGER,
                 HORIZONTAL,
                 Filament.class);
@@ -901,7 +901,7 @@ public class LedgersBuilder
         //~ Constructors ---------------------------------------------------------------------------
         public LedgerCheckBoard (Sheet sheet)
         {
-            super("Ledger", null, sheet.getNest().getGlyphService(), eventClasses);
+            super("Ledger", null, sheet.getGlyphNest().getGlyphService(), eventClasses);
             this.sheet = sheet;
         }
 

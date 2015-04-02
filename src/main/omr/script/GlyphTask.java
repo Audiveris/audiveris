@@ -19,9 +19,6 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 
-import omr.step.Step;
-import omr.step.Stepping;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -98,7 +95,7 @@ public abstract class GlyphTask
     @Override
     public void epilog (Sheet sheet)
     {
-        Stepping.reprocessSheet(Step.SYMBOLS, sheet, getImpactedSystems(sheet), false);
+        ///Stepping.reprocessSheet(Step.SYMBOLS, sheet, getImpactedSystems(sheet), false);
     }
 
     //--------------------//

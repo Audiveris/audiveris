@@ -96,7 +96,7 @@ public class DoubleBeamPattern
                     logger.info("Beam candidate #{}", candidate);
                 }
 
-                GlyphNest nest = system.getSheet().getNest();
+                GlyphNest nest = system.getSheet().getGlyphNest();
                 Glyph compound = nest.buildGlyph(Arrays.asList(beam, candidate), false);
                 Evaluation eval = GlyphClassifier.getInstance()
                         .vote(compound, system, Grades.noMinGrade);

@@ -1367,7 +1367,7 @@ public class NoteHeadsBuilder
             inters = filterSeedConflicts(inters, competitors);
 
             for (AbstractHeadInter inter : inters) {
-                inter.retrieveGlyph(image, sheet.getNest());
+                inter.retrieveGlyph(image, sheet.getGlyphNest());
                 sig.addVertex(inter);
             }
 
@@ -1441,7 +1441,7 @@ public class NoteHeadsBuilder
                                     pitch);
 
                             if (inter != null) {
-                                inter.retrieveGlyph(image, sheet.getNest());
+                                inter.retrieveGlyph(image, sheet.getGlyphNest());
                                 sig.addVertex(inter);
                                 inters.add(inter);
                             }

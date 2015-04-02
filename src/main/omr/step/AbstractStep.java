@@ -62,118 +62,6 @@ public abstract class AbstractStep
         // Void by default
     }
 
-    //--------//
-    // doStep //
-    //--------//
-    public void doStep (Step step,
-                        Collection<SystemInfo> systems,
-                        Sheet sheet)
-            throws StepException
-    {
-        try {
-            logger.debug("{}Starting {}", sheet.getLogPrefix(), this);
-            started(step, sheet);
-            Stepping.notifyStep(sheet, step); // Start
-
-            clearErrors(step, sheet);
-
-            // Reset sheet relevant data
-            sheet.reset(step);
-
-            doit(systems, sheet);
-
-            sheet.done(step); // Full completion
-            logger.debug("{}Finished {}", sheet.getLogPrefix(), step);
-        } catch (Throwable ex) {
-            logger.warn("doStep error in " + this, ex);
-        } finally {
-            // Make sure we reset the sheet "current" step, always.
-            if (sheet != null) {
-                sheet.setCurrentStep(null);
-                Stepping.notifyStep(sheet, step); // Stop
-            }
-        }
-    }
-
-    //
-    //    //------//
-    //    // done //
-    //    //------//
-    //
-    //    public void done (Sheet sheet)
-    //    {
-    //        sheet.done(this);
-    //    }
-    //
-    //    //----------------//
-    //    // getDescription //
-    //    //----------------//
-    //
-    //    public String getDescription ()
-    //    {
-    //        return description;
-    //    }
-    //
-    //    //---------//
-    //    // getName //
-    //    //---------//
-    //
-    //    public String getName ()
-    //    {
-    //        return name;
-    //    }
-    //
-    //    //--------//
-    //    // getTab //
-    //    //--------//
-    //
-    //    public String getTab ()
-    //    {
-    //        return label;
-    //    }
-    //
-    //    //--------//
-    //    // isDone //
-    //    //--------//
-    //
-    //    public boolean isDone (Sheet sheet)
-    //    {
-    //        return sheet.isDone(this);
-    //    }
-    //---------//
-    // started //
-    //---------//
-    /**
-     * Flag this step as started
-     */
-    public void started (Step step,
-                         Sheet sheet)
-    {
-        sheet.setCurrentStep(step);
-    }
-
-    //    //--------------//
-    //    // toLongString //
-    //    //--------------//
-    //
-    //    public String toLongString ()
-    //    {
-    //        StringBuilder sb = new StringBuilder("{Step");
-    //        sb.append(" ").append(name);
-    //        sb.append(" label:").append(label);
-    //        sb.append("}");
-    //
-    //        return sb.toString();
-    //    }
-    //
-    //    //----------//
-    //    // toString //
-    //    //----------//
-    //
-    //    public String toString ()
-    //    {
-    //        return name;
-    //    }
     //------//
     // doit //
     //------//
@@ -185,7 +73,7 @@ public abstract class AbstractStep
      * @param sheet   the related sheet
      * @throws StepException raised if processing failed
      */
-    protected abstract void doit (Collection<SystemInfo> systems,
-                                  Sheet sheet)
+    public abstract void doit (Collection<SystemInfo> systems,
+                               Sheet sheet)
             throws StepException;
 }

@@ -110,7 +110,7 @@ public class SpotsBuilder
         try {
             /** Spots lag. */
             final Lag spotLag = new BasicLag(Lags.SPOT_LAG, SPOT_ORIENTATION);
-            sheet.setLag(Lags.SPOT_LAG, spotLag);
+            sheet.getLagManager().setLag(Lags.SPOT_LAG, spotLag);
 
             watch.start("gaussianBuffer");
 
@@ -162,7 +162,7 @@ public class SpotsBuilder
 
         // Erase Header for non-cue buffers
         if (cueId == null) {
-            spotLag = sheet.getLag(Lags.SPOT_LAG);
+            spotLag = sheet.getLagManager().getLag(Lags.SPOT_LAG);
             eraseHeaderAreas(buffer);
         } else {
             spotLag = new BasicLag(Lags.SPOT_LAG, SPOT_ORIENTATION);
@@ -229,7 +229,7 @@ public class SpotsBuilder
         }
 
         // Glyphs
-        GlyphNest nest = sheet.getNest();
+        GlyphNest nest = sheet.getGlyphNest();
         List<Glyph> glyphs = nest.retrieveGlyphs(sections, GlyphLayer.SPOT, true);
 
         return glyphs;

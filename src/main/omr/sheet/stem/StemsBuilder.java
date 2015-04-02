@@ -1014,7 +1014,7 @@ public class StemsBuilder
              */
             private StemInter createStemInter (List<Glyph> items)
             {
-                GlyphNest nest = system.getSheet().getNest();
+                GlyphNest nest = system.getSheet().getGlyphNest();
                 final Glyph stem = (items.size() == 1) ? items.get(0) : nest.buildGlyph(
                         items,
                         true);
@@ -1594,7 +1594,7 @@ public class StemsBuilder
                 List<Section> sections = lookupSections(fatHeadSection);
 
                 // Aggregate these sections into glyphs & check them
-                GlyphNest nest = system.getSheet().getNest();
+                GlyphNest nest = system.getSheet().getGlyphNest();
                 List<Glyph> chunks = nest.retrieveGlyphs(sections, GlyphLayer.DEFAULT, false);
 
                 // Remove useless glyphs and put wide glyphs apart

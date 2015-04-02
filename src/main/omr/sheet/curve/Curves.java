@@ -302,9 +302,7 @@ public class Curves
         protected void renderItems (Graphics2D g)
         {
             // Global sheet renderers
-            for (ItemRenderer renderer : sheet.getItemRenderers()) {
-                renderer.renderItems(g);
-            }
+            sheet.renderItems(g);
 
             // Curves renderers
             for (ItemRenderer renderer : itemRenderers) {

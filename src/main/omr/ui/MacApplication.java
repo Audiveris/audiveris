@@ -16,6 +16,7 @@ import omr.WellKnowns;
 import omr.script.Script;
 import omr.script.ScriptManager;
 
+import omr.sheet.BasicBook;
 import omr.sheet.Book;
 
 import org.slf4j.Logger;
@@ -132,7 +133,7 @@ public class MacApplication
                 worker.execute();
             } else {
                 // Actually load the sheet picture
-                Book book = new Book(Paths.get(filename));
+                Book book = new BasicBook(Paths.get(filename));
             }
 
             break;

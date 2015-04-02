@@ -56,7 +56,9 @@ public class CLITest
         String[] args = new String[]{"-input", "myInput#1.pdf", "-input", "myInput#2.pdf"};
         CLI.Parameters params = instance.getParameters(args);
         new Dumping().dump(params);
-        assertEquals(Arrays.asList("myInput#1.pdf", "myInput#2.pdf"), params.inputFiles);
+        assertEquals(
+                Arrays.asList("myInput#1.pdf", "myInput#2.pdf").toString(),
+                params.inputFiles.toString());
     }
 
     @Test
@@ -103,7 +105,7 @@ public class CLITest
         String[] args = new String[]{"-pages", "3", "4", "6"};
         CLI.Parameters params = instance.getParameters(args);
         new Dumping().dump(params);
-        assertEquals(Arrays.asList(3, 4, 6).toString(), params.getPageIds().toString());
+        assertEquals(Arrays.asList(3, 4, 6).toString(), params.getSheetIds().toString());
     }
 
     @Test
@@ -128,30 +130,47 @@ public class CLITest
 
         String[] args = new String[]{
             "-help", "-batch", "-script", "myScript.xml", "-input",
-            "my Input.pdf", "-pages", "5 2", " 3", "-steps"
+            "my Input.pdf", "-pages", "5 2", " 3", "-step", "PAGE"
         };
         CLI.Parameters params = instance.getParameters(args);
         new Dumping().dump(params);
         assertEquals(true, params.batchMode);
         assertEquals(true, params.helpMode);
-        assertEquals("myScript.xml", params.scriptFiles.get(0));
-        assertEquals("my Input.pdf", params.inputFiles.get(0));
-        assertEquals(Arrays.asList(2, 3, 5).toString(), params.getPageIds().toString());
-        assertEquals(0, params.getSteps().size());
+        assertEquals("myScript.xml", params.scriptFiles.get(0).toString());
+        assertEquals("my Input.pdf", params.inputFiles.get(0).toString());
+        assertEquals(Arrays.asList(2, 3, 5).toString(), params.getSheetIds().toString());
+        assertEquals(Step.PAGE, params.step);
     }
 
     @Test
-    public void testSteps ()
+    public void testStep ()
             throws Exception
     {
-        System.out.println("\n+++ testSteps");
+        System.out.println("\n+++ testStep");
 
-        String[] args = new String[]{"-steps", "RHYTHMS", "PAGE"};
+        String[] args = new String[]{"-step", "PAGE"};
         CLI.Parameters params = instance.getParameters(args);
         new Dumping().dump(params);
-        assertEquals(
-                Arrays.asList(Step.RHYTHMS, Step.PAGE).toString(),
-                params.getSteps().toString());
+        assertEquals(Step.PAGE, params.step);
+    }
+
+    @Test
+    public void testStepEmpty ()
+            throws Exception
+    {
+        System.out.println("\n+++ testStepEmpty");
+
+        String[] args = new String[]{"-step"};
+
+        try {
+            CLI.Parameters params = instance.getParameters(args);
+
+            fail();
+        } catch (CmdLineException ex) {
+            System.out.println(ex.getMessage());
+            System.out.println(ex.getLocalizedMessage());
+            assertTrue(ex.getMessage().contains("-step"));
+        }
     }
 
     @Test

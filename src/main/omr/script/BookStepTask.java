@@ -11,13 +11,11 @@
 // </editor-fold>
 package omr.script;
 
+import omr.sheet.Book;
 import omr.sheet.Sheet;
 
 import omr.step.Step;
 import omr.step.StepException;
-import omr.step.Stepping;
-
-import java.util.Collections;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -62,7 +60,8 @@ public class BookStepTask
     public void core (final Sheet sheet)
             throws StepException
     {
-        Stepping.processBook(Collections.singleton(step), null, sheet.getBook());
+        final Book book = sheet.getBook();
+        book.doStep(step, null);
         logger.info("End of book step {}", step);
     }
 

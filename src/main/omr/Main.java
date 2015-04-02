@@ -21,11 +21,12 @@ import omr.script.ExportTask;
 import omr.script.PrintTask;
 import omr.script.ScriptManager;
 
+import omr.sheet.BasicBook;
 import omr.sheet.Book;
+import omr.sheet.BookManager;
 
 import omr.step.ProcessingCancellationException;
 import omr.step.Step;
-import omr.step.Stepping;
 
 import omr.ui.MainGui;
 import omr.ui.symbol.MusicFont;
@@ -49,7 +50,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -77,13 +77,13 @@ public class Main
 
     private static final Constants constants = new Constants();
 
-    /** Master View */
+    /** Master View. */
     private static MainGui gui;
 
-    /** Parameters read from CLI */
+    /** Parameters read from CLI. */
     private static Parameters parameters;
 
-    /** The application dumping service */
+    /** The application dumping service. */
     public static final Dumping dumping = new Dumping(Main.class.getPackage());
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -103,11 +103,11 @@ public class Main
      */
     public static void doMain (String[] args)
     {
-        // Initialize tool parameters
-        initialize();
-
         // Process CLI arguments
         process(args);
+
+        // Initialize tool parameters
+        initialize();
 
         // Locale to be used in the whole application?
         checkLocale();
@@ -183,6 +183,7 @@ public class Main
                 }
             }
 
+            List<Book> books = BookManager.getInstance().getAllBooks();
             // At this point all tasks have completed (normally or not)
             // So shutdown immediately the executors
             OmrExecutors.shutdown(true);
@@ -275,36 +276,36 @@ public class Main
                         public Void call ()
                         throws Exception
                         {
-                            final Set<Step> steps = parameters.getSteps();
-                            final SortedSet<Integer> pages = parameters.getPageIds();
+                            final Step target = parameters.step;
+                            final SortedSet<Integer> sheetIds = parameters.getSheetIds();
 
-                            if (!steps.isEmpty()) {
+                            if (target != null) {
                                 logger.info(
                                         "Launching {} on {} {}",
-                                        steps,
+                                        target,
                                         input,
-                                        (!pages.isEmpty()) ? ("pages " + pages) : "");
+                                        (!sheetIds.isEmpty()) ? ("sheets " + sheetIds) : "");
                             }
 
                             if (Files.exists(path)) {
-                                final Book book = new Book(path);
+                                final Book book = new BasicBook(path);
 
                                 try {
                                     // Create book sheets and perform desired steps if any
-                                    Stepping.processBook(steps, pages, book);
+                                    book.doStep(target, sheetIds);
 
                                     // Book print output?
                                     if (parameters.print || (parameters.printFolder != null)) {
                                         logger.debug("Print output");
                                         new PrintTask(parameters.printFolder).core(
-                                                book.getFirstSheet());
+                                                book.getSheets().get(0));
                                     }
 
                                     // Book export output?
                                     if (parameters.export || (parameters.exportFolder != null)) {
                                         logger.debug("Export output");
                                         new ExportTask(parameters.exportFolder).core(
-                                                book.getFirstSheet());
+                                                book.getSheets().get(0));
                                     }
                                 } catch (ProcessingCancellationException pce) {
                                     logger.warn("Cancelled " + book, pce);
@@ -315,7 +316,7 @@ public class Main
                                     throw ex;
                                 } finally {
                                     // Close (when in batch mode only)
-                                    if (gui == null) {
+                                    if ((gui == null) && constants.closeBookOnEnd.isSet()) {
                                         book.close();
                                     }
                                 }
@@ -362,7 +363,7 @@ public class Main
      */
     public static SortedSet<Integer> getPageIds ()
     {
-        return parameters.getPageIds();
+        return parameters.getSheetIds();
     }
 
     //----------------//
@@ -395,7 +396,7 @@ public class Main
         List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
         // Launch desired scripts in parallel
-        for (File script : parameters.scriptFiles) {
+        for (File scriptFile : parameters.scriptFiles) {
             tasks.add(
                     new Callable<Void>()
                     {
@@ -403,7 +404,9 @@ public class Main
                         public Void call ()
                         throws Exception
                         {
-                            ScriptManager.getInstance().loadAndRun(script);
+                            ScriptManager.getInstance().loadAndRun(
+                                    scriptFile,
+                                    constants.closeBookOnEnd.isSet());
 
                             return null;
                         }
@@ -411,7 +414,7 @@ public class Main
                         @Override
                         public String toString ()
                         {
-                            return "Script " + script;
+                            return "Script " + scriptFile;
                         }
                     });
         }
@@ -608,7 +611,11 @@ public class Main
 
         private final Constant.Integer processTimeOut = new Constant.Integer(
                 "Seconds",
-                60, //300,
+                300,
                 "Process time-out, specified in seconds");
+
+        private final Constant.Boolean closeBookOnEnd = new Constant.Boolean(
+                true,
+                "Should we close a book when it has been processed in batch?");
     }
 }

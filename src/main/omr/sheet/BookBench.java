@@ -94,7 +94,7 @@ public class BookBench
         addProp("date", date.toString());
         addProp("program", WellKnowns.TOOL_NAME);
         addProp("version", WellKnowns.TOOL_REF);
-        addProp("image", book.getImagePath().toString());
+        addProp("image", book.getInputPath().toString());
 
         flushBench();
     }

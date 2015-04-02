@@ -17,6 +17,8 @@ import omr.math.GeoUtil;
 
 import omr.score.visitor.ScoreVisitor;
 
+import omr.ui.ErrorsEditor;
+
 import omr.util.Navigable;
 import omr.util.TreeNode;
 
@@ -122,7 +124,11 @@ public abstract class SystemNode
                           String text)
     {
         if ((getPage() != null) && (getPage().getSheet() != null)) {
-            getPage().getSheet().addError(this, glyph, text);
+            ErrorsEditor editor = getPage().getSheet().getErrorsEditor();
+
+            if (editor != null) {
+                editor.addError(this, glyph, text);
+            }
         }
     }
 

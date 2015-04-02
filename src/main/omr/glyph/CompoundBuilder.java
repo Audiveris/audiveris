@@ -105,7 +105,7 @@ public class CompoundBuilder
                 logger.debug("neighbors={} seed={}", Glyphs.toString(neighbors), seed);
             }
 
-            GlyphNest nest = system.getSheet().getNest();
+            GlyphNest nest = system.getSheet().getGlyphNest();
             Glyph compound = nest.buildGlyph(neighbors, false);
 
             if (adapter.isCompoundValid(compound)) {

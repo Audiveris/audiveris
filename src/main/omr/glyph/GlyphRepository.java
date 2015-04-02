@@ -458,7 +458,7 @@ public class GlyphRepository
         int glyphNb = 0;
 
         for (GlyphLayer layer : GlyphLayer.concreteValues()) {
-            for (Glyph glyph : sheet.getNest().getGlyphs(layer)) {
+            for (Glyph glyph : sheet.getGlyphNest().getGlyphs(layer)) {
                 Shape shape = getRecordableShape(glyph);
 
                 if (shape != null) {

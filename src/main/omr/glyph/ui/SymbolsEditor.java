@@ -135,8 +135,8 @@ public class SymbolsEditor
 
         pageMenu = new EditorMenu(sheet, new SymbolMenu(symbolsController, evaluator, focus));
 
-        Lag hLag = sheet.getLag(Lags.HLAG);
-        Lag vLag = sheet.getLag(Lags.VLAG);
+        Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
+        Lag vLag = sheet.getLagManager().getLag(Lags.VLAG);
 
         BoardsPane boardsPane = new BoardsPane(
                 new PixelBoard(sheet),
@@ -256,7 +256,12 @@ public class SymbolsEditor
         //~ Constructors ---------------------------------------------------------------------------
         private MyView (GlyphNest nest)
         {
-            super(nest, Arrays.asList(sheet.getLag(Lags.HLAG), sheet.getLag(Lags.VLAG)), sheet);
+            super(
+                    nest,
+                    Arrays.asList(
+                            sheet.getLagManager().getLag(Lags.HLAG),
+                            sheet.getLagManager().getLag(Lags.VLAG)),
+                    sheet);
             setName("SymbolsEditor-MyView");
 
             // Subscribe to all lags for SectionSet events
@@ -465,7 +470,7 @@ public class SymbolsEditor
                 super.renderItems(g);
 
                 // Render (last) selected inter, if any
-                List<Inter> inters = sheet.getSelectedInterList();
+                List<Inter> inters = sheet.getInterManager().getSelectedInterList();
 
                 if ((inters != null) && !inters.isEmpty()) {
                     Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);

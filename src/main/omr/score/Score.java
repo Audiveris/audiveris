@@ -112,7 +112,7 @@ public class Score
     {
         Source source = new Source();
         Book book = getFirstPage().getSheet().getBook();
-        source.setFile(book.getImagePath().toString());
+        source.setFile(book.getInputPath().toString());
         source.setOffset(book.getOffset());
 
         for (Page page : pages) {

@@ -18,7 +18,6 @@ import omr.sheet.BookManager;
 import omr.sheet.Sheet;
 
 import omr.step.Step;
-import omr.step.Stepping;
 
 import omr.util.BasicTask;
 import omr.util.FileUtil;
@@ -35,7 +34,6 @@ import java.util.List;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 /**
  * Class {@code Plugin} describes a plugin instance, encapsulating the relationship
@@ -164,7 +162,7 @@ public class Plugin
     {
         // Make sure all sheets have been transcribed
         for (Sheet sheet : book.getSheets()) {
-            Stepping.ensureSheetStep(Step.PAGE, sheet);
+            sheet.ensureStep(Step.PAGE);
         }
 
         // Make sure we have the export file

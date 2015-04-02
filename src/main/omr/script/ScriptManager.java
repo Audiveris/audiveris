@@ -98,9 +98,11 @@ public class ScriptManager
     /**
      * Load and run the script described by the provided file.
      *
-     * @param file the provided script file
+     * @param file           the provided script file
+     * @param closeBookOnEnd true do close book at script end (when running in batch)
      */
-    public void loadAndRun (File file)
+    public void loadAndRun (File file,
+                            boolean closeBookOnEnd)
     {
         Script script = null;
 
@@ -128,8 +130,8 @@ public class ScriptManager
         } catch (Exception ex) {
             logger.warn(ex.toString(), ex);
         } finally {
-            // Close when in batch mode
-            if ((Main.getGui() == null) && (script != null)) {
+            // Close when in batch mode?
+            if ((Main.getGui() == null) && (script != null) && closeBookOnEnd) {
                 Book book = script.getBook();
 
                 if (book != null) {

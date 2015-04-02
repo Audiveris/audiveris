@@ -132,7 +132,7 @@ public class LedgersFilter
         sectionsBuilder.createSections(ledgerTable, null, true);
         setVipSections(lag);
 
-        sheet.setLag(Lags.LEDGER_LAG, lag);
+        sheet.getLagManager().setLag(Lags.LEDGER_LAG, lag);
         sheet.getSystemManager().dispatchLedgerSections();
 
         if ((Main.getGui() != null) && constants.displayLedgers.isSet()) {

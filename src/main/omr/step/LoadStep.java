@@ -53,7 +53,7 @@ public class LoadStep
         final Book book = sheet.getBook();
         final int index = sheet.getIndex();
 
-        BufferedImage image = book.readImage(index);
+        BufferedImage image = book.loadSheetImage(index);
 
         if (image != null) {
             sheet.setImage(image);

@@ -12,7 +12,7 @@
 package omr.step;
 
 /**
- * Class {@code StepException} describes an exception occurring while doing OMR
+ * Class {@code StepException} describes a logical exception detected while doing OMR
  * processing, and which should immediately stop the current Step.
  *
  * @author Hervé Bitteur

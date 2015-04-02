@@ -20,7 +20,6 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.FieldSetter;
-import org.kohsuke.args4j.spi.Messages;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Setter;
 
@@ -32,10 +31,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -273,9 +270,9 @@ public class CLI
         @Option(name = "-batch", usage = "Runs with no graphic user interface")
         boolean batchMode;
 
-        /** List of specific steps. */
-        @Option(name = "-steps", usage = "Defines specific transcription steps", handler = StepArrayOptionHandler.class)
-        private final List<Step> steps = new ArrayList<Step>();
+        /** Specific step. */
+        @Option(name = "-step", usage = "Defines a specific transcription step")
+        Step step;
 
         /** The map of application options. */
         @Option(name = "-option", usage = "Defines an application constant", handler = PropertyOptionHandler.class)
@@ -289,9 +286,9 @@ public class CLI
         @Option(name = "-input", usage = "Reads the provided input image file", metaVar = "<input-file>")
         final List<File> inputFiles = new ArrayList<File>();
 
-        /** The set of page IDs to load. */
-        @Option(name = "-pages", usage = "Defines specific pages (counted from 1) to process", handler = IntArrayOptionHandler.class)
-        private final List<Integer> pages = new ArrayList<Integer>();
+        /** The set of sheet IDs to load. */
+        @Option(name = "-sheets", usage = "Defines specific sheets (counted from 1) to process", handler = IntArrayOptionHandler.class)
+        private final List<Integer> sheets = new ArrayList<Integer>();
 
         /** Should bench data be produced?. */
         @Option(name = "-bench", usage = "Outputs bench data (to default directory)")
@@ -324,36 +321,16 @@ public class CLI
 
         //~ Methods --------------------------------------------------------------------------------
         //-------------//
-        // getPagesIds //
+        // getSheetIds //
         //-------------//
         /**
-         * Report the set of page ids if present on the CLI
+         * Report the set of sheet ids if present on the CLI
          *
-         * @return the CLI page ids, perhaps empty but not null
+         * @return the CLI sheet IDs, perhaps empty but not null
          */
-        public SortedSet<Integer> getPageIds ()
+        public SortedSet<Integer> getSheetIds ()
         {
-            return new TreeSet(pages);
-        }
-
-        //----------//
-        // getSteps //
-        //----------//
-        /**
-         * Report the set of steps
-         *
-         * @return the set of steps, perhaps empty but not null
-         */
-        public Set<Step> getSteps ()
-        {
-            Set<Step> allSteps = new LinkedHashSet<Step>(steps);
-
-            //
-            //            if ((exportFolder != null) || (printFolder != null)) {
-            //                allSteps.add(Steps.valueOf(Steps.PAGE));
-            //            }
-            //
-            return allSteps;
+            return new TreeSet(sheets);
         }
     }
 
@@ -407,59 +384,59 @@ public class CLI
             return 1;
         }
     }
-
-    //------------------------//
-    // StepArrayOptionHandler //
-    //------------------------//
-    public static class StepArrayOptionHandler
-            extends OptionHandler<Step>
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public StepArrayOptionHandler (CmdLineParser parser,
-                                       OptionDef option,
-                                       Setter<Step> setter)
-        {
-            super(parser, option, setter);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String getDefaultMetaVariable ()
-        {
-            return "Step[]";
-        }
-
-        @Override
-        public int parseArguments (org.kohsuke.args4j.spi.Parameters params)
-                throws CmdLineException
-        {
-            int counter = 0;
-
-            for (; counter < params.size(); counter++) {
-                String param = params.getParameter(counter);
-
-                if (param.startsWith("-")) {
-                    break;
-                }
-
-                for (String p : param.split(" ")) {
-                    String s = p.replaceAll("-", "_");
-
-                    try {
-                        Step value = Step.valueOf(s.toUpperCase());
-                        setter.addValue(value);
-                    } catch (IllegalArgumentException ex) {
-                        throw new CmdLineException(
-                                owner,
-                                Messages.ILLEGAL_OPERAND,
-                                params.getParameter(-1),
-                                s);
-                    }
-                }
-            }
-
-            return counter;
-        }
-    }
+//
+//    //------------------------//
+//    // StepArrayOptionHandler //
+//    //------------------------//
+//    public static class StepArrayOptionHandler
+//            extends OptionHandler<Step>
+//    {
+//        //~ Constructors ---------------------------------------------------------------------------
+//
+//        public StepArrayOptionHandler (CmdLineParser parser,
+//                                       OptionDef option,
+//                                       Setter<Step> setter)
+//        {
+//            super(parser, option, setter);
+//        }
+//
+//        //~ Methods --------------------------------------------------------------------------------
+//        @Override
+//        public String getDefaultMetaVariable ()
+//        {
+//            return "Step[]";
+//        }
+//
+//        @Override
+//        public int parseArguments (org.kohsuke.args4j.spi.Parameters params)
+//                throws CmdLineException
+//        {
+//            int counter = 0;
+//
+//            for (; counter < params.size(); counter++) {
+//                String param = params.getParameter(counter);
+//
+//                if (param.startsWith("-")) {
+//                    break;
+//                }
+//
+//                for (String p : param.split(" ")) {
+//                    String s = p.replaceAll("-", "_");
+//
+//                    try {
+//                        Step value = Step.valueOf(s.toUpperCase());
+//                        setter.addValue(value);
+//                    } catch (IllegalArgumentException ex) {
+//                        throw new CmdLineException(
+//                                owner,
+//                                Messages.ILLEGAL_OPERAND,
+//                                params.getParameter(-1),
+//                                s);
+//                    }
+//                }
+//            }
+//
+//            return counter;
+//        }
+//    }
 }

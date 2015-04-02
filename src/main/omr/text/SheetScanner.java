@@ -43,7 +43,6 @@ import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.Inter;
 
 import omr.ui.BoardsPane;
-import omr.ui.util.ItemRenderer;
 
 import omr.util.LiveParam;
 import omr.util.StopWatch;
@@ -126,7 +125,7 @@ public class SheetScanner
             BufferedImage image = getImage(); // This also sets buffer member
 
             // Proper text params
-            final LiveParam<String> textParam = sheet.getTextParam();
+            final LiveParam<String> textParam = sheet.getLanguageParam();
             final String language = textParam.getTarget();
             logger.debug("scanSheet lan:{} on {}", language, sheet);
             textParam.setActual(language);
@@ -135,7 +134,7 @@ public class SheetScanner
             watch.start("OCR recognize");
 
             return TextBuilder.getOcr().recognize(
-                    sheet.getScale(),
+                    sheet.getScale().getInterline(),
                     image,
                     null,
                     language,
@@ -173,10 +172,7 @@ public class SheetScanner
                                 @Override
                                 protected void renderItems (Graphics2D g)
                                 {
-                                    // Global sheet renderers
-                                    for (ItemRenderer renderer : sheet.getItemRenderers()) {
-                                        renderer.renderItems(g);
-                                    }
+                                    sheet.renderItems(g); // Apply registered sheet renderers
                                 }
                             }),
                     new BoardsPane(new PixelBoard(sheet)));
@@ -299,7 +295,7 @@ public class SheetScanner
             // Build all glyphs out of buffer and erase those that intersect a staff core area
             SectionFactory factory = new SectionFactory(VERTICAL, JunctionAllPolicy.INSTANCE);
             List<Section> sections = factory.createSections(buffer, null);
-            List<Glyph> glyphs = sheet.getNest().retrieveGlyphs(sections, null, false);
+            List<Glyph> glyphs = sheet.getGlyphNest().retrieveGlyphs(sections, null, false);
             eraseBorderGlyphs(glyphs, cores);
         }
 

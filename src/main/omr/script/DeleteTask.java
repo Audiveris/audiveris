@@ -161,7 +161,7 @@ public class DeleteTask
         glyphs = new LinkedHashSet<Glyph>();
 
         for (Point location : locations) {
-            Glyph glyph = sheet.getNest().lookupVirtualGlyph(location);
+            Glyph glyph = sheet.getGlyphNest().lookupVirtualGlyph(location);
             glyphs.add(glyph);
             logger.debug("To be deleted: {}", glyph);
         }

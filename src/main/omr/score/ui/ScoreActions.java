@@ -25,12 +25,10 @@ import omr.sheet.Book;
 import omr.sheet.BookManager;
 import static omr.sheet.BookManager.PDF_EXTENSION;
 import omr.sheet.Sheet;
-import omr.sheet.ui.BookController;
 import omr.sheet.ui.SheetDependent;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.Step;
-import omr.step.Stepping;
 
 import omr.ui.MainGui;
 import omr.ui.util.OmrFileFilter;
@@ -185,7 +183,7 @@ public class ScoreActions
     @Action(enabledProperty = SHEET_AVAILABLE)
     public void browseBook (ActionEvent e)
     {
-        MainGui.getInstance().show(BookController.getCurrentBook().getBrowserFrame());
+        MainGui.getInstance().show(SheetsController.getCurrentBook().getBrowserFrame());
     }
 
     //-----------//
@@ -239,7 +237,7 @@ public class ScoreActions
     public void cleanBook (ActionEvent e)
     {
         Sheet sheet = SheetsController.getCurrentSheet();
-        bookManager.cleanBook(sheet.getBook(), null);
+        sheet.getBook().deleteExport();
     }
 
     //------------//
@@ -254,7 +252,7 @@ public class ScoreActions
     public void cleanSheet (ActionEvent e)
     {
         Sheet sheet = SheetsController.getCurrentSheet();
-        bookManager.cleanSheet(sheet, null);
+        sheet.deleteExport();
     }
 
     //------------------//
@@ -319,7 +317,7 @@ public class ScoreActions
     @Action(enabledProperty = BOOK_IDLE)
     public Task<Void, Void> exportBook (ActionEvent e)
     {
-        final Book book = BookController.getCurrentBook();
+        final Book book = SheetsController.getCurrentBook();
 
         if (book == null) {
             return null;
@@ -349,7 +347,7 @@ public class ScoreActions
     @Action(enabledProperty = BOOK_IDLE)
     public Task<Void, Void> exportBookAs (ActionEvent e)
     {
-        final Book book = BookController.getCurrentBook();
+        final Book book = SheetsController.getCurrentBook();
 
         if (book == null) {
             return null;
@@ -478,7 +476,7 @@ public class ScoreActions
     @Action(enabledProperty = BOOK_IDLE)
     public Task<Void, Void> printBook (ActionEvent e)
     {
-        final Book book = BookController.getCurrentBook();
+        final Book book = SheetsController.getCurrentBook();
 
         if (book == null) {
             return null;
@@ -507,7 +505,7 @@ public class ScoreActions
     @Action(enabledProperty = BOOK_IDLE)
     public Task<Void, Void> printBookAs (ActionEvent e)
     {
-        final Book book = BookController.getCurrentBook();
+        final Book book = SheetsController.getCurrentBook();
 
         if (book == null) {
             return null;
@@ -548,10 +546,10 @@ public class ScoreActions
         }
 
         final Book book = sheet.getBook();
-        final Path bookPdfPath = book.getPrintPath();
+        final Path bookPrintPath = book.getPrintPath();
 
-        if (bookPdfPath != null) {
-            return new PrintSheetTask(sheet, bookPdfPath);
+        if (bookPrintPath != null) {
+            return new PrintSheetTask(sheet, bookPrintPath);
         } else {
             return printSheetAs(e);
         }
@@ -797,12 +795,12 @@ public class ScoreActions
                 throws InterruptedException
         {
             book.setPrintPath(bookPrintPath);
-
-            for (Sheet sheet : book.getSheets()) {
-                Stepping.ensureSheetStep(Step.PAGE, sheet);
-            }
-
-            bookManager.printBook(book, null);
+            //
+            //            for (Sheet sheet : book.getSheets()) {
+            //                sheet.ensureStep(Step.PAGE);
+            //            }
+            //
+            book.print();
 
             return null;
         }
@@ -834,8 +832,8 @@ public class ScoreActions
                 throws InterruptedException
         {
             sheet.getBook().setPrintPath(bookPrintPath);
-            Stepping.ensureSheetStep(Step.PAGE, sheet);
-            bookManager.printSheet(sheet, null);
+            sheet.ensureStep(Step.PAGE);
+            sheet.print();
 
             return null;
         }
@@ -877,7 +875,7 @@ public class ScoreActions
         {
             try {
                 for (Sheet sheet : book.getSheets()) {
-                    Stepping.ensureSheetStep(Step.PAGE, sheet);
+                    sheet.ensureStep(Step.PAGE);
                 }
             } catch (Exception ex) {
                 logger.warn("Could not build book", ex);
@@ -909,7 +907,7 @@ public class ScoreActions
                 throws InterruptedException
         {
             try {
-                Stepping.ensureSheetStep(Step.PAGE, sheet);
+                sheet.ensureStep(Step.PAGE);
             } catch (Exception ex) {
                 logger.warn("Could not build page", ex);
             }
@@ -948,7 +946,7 @@ public class ScoreActions
                 throws InterruptedException
         {
             if (checkParameters(book)) {
-                bookManager.exportBook(book, null, null);
+                book.export();
             }
 
             return null;
@@ -983,8 +981,8 @@ public class ScoreActions
             sheet.getBook().setExportPath(bookExportPath);
 
             if (checkParameters(sheet)) {
-                Stepping.ensureSheetStep(Step.PAGE, sheet);
-                bookManager.exportSheet(sheet, null, null);
+                sheet.ensureStep(Step.PAGE);
+                sheet.export();
             }
 
             return null;

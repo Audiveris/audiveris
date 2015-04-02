@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.script;
 
+import omr.sheet.BasicBook;
 import omr.sheet.Book;
 import omr.sheet.Sheet;
 
@@ -65,10 +66,9 @@ public class Script
     private int offset;
 
     /** Collection of 1-based sheet ids explicitly included, if any. */
-    // To get all sheet numbers, space-separated, in a single element:
     @XmlList
     @XmlElement(name = "sheets")
-    private SortedSet<Integer> sheets;
+    private SortedSet<Integer> sheetIds;
 
     /** Sequence of tasks that compose the script. */
     @XmlElements({
@@ -101,14 +101,14 @@ public class Script
     {
         this.book = book;
 
-        filePath = book.getImagePath().toString();
+        filePath = book.getInputPath().toString();
         offset = book.getOffset();
 
         // Store sheet ids
-        sheets = new TreeSet<Integer>();
+        sheetIds = new TreeSet<Integer>();
 
         for (Sheet sheet : book.getSheets()) {
-            sheets.add(sheet.getIndex());
+            sheetIds.add(sheet.getIndex());
         }
     }
 
@@ -144,8 +144,8 @@ public class Script
     {
         logger.info(toString());
 
-        if ((sheets != null) && !sheets.isEmpty()) {
-            logger.info("Included sheets: {}", sheets);
+        if ((sheetIds != null) && !sheetIds.isEmpty()) {
+            logger.info("Included sheets: {}", sheetIds);
         }
 
         for (ScriptTask task : tasks) {
@@ -206,9 +206,9 @@ public class Script
                 return;
             }
 
-            book = new Book(Paths.get(filePath));
+            book = new BasicBook(Paths.get(filePath));
             book.setOffset(offset);
-            book.createSheets(sheets); // This loads all specified sheets indices
+            book.createSheets(sheetIds); // This loads all specified sheets indices
         }
 
         // Run the tasks in sequence
@@ -226,7 +226,7 @@ public class Script
                         continue;
                     }
                 } else {
-                    sheet = book.getFirstSheet();
+                    sheet = book.getSheets().get(0);
                 }
 
                 logger.debug("Running {} on {}", task, sheet);
@@ -280,8 +280,8 @@ public class Script
             sb.append(" ").append(book.getRadix());
         }
 
-        if ((sheets != null) && !sheets.isEmpty()) {
-            sb.append(" pages:").append(sheets);
+        if ((sheetIds != null) && !sheetIds.isEmpty()) {
+            sb.append(" pages:").append(sheetIds);
         }
 
         if (tasks != null) {

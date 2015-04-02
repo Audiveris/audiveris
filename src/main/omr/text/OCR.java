@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.text;
 
-import omr.sheet.Scale;
-
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.List;
@@ -57,7 +55,7 @@ public interface OCR
     /**
      * Launch the recognition of the provided image, whose language is specified.
      *
-     * @param scale        global sheet scale
+     * @param interline    typical interline value
      * @param image        the provided image
      * @param topLeft      absolute coordinates of the image top left corner, or null
      * @param languageCode language specification or null
@@ -68,7 +66,7 @@ public interface OCR
      *         The coordinates of any returned TextLine are absolute coordinates thanks to the topLeft
      *         parameter.
      */
-    List<TextLine> recognize (Scale scale,
+    List<TextLine> recognize (int interline,
                               BufferedImage image,
                               Point topLeft,
                               String languageCode,

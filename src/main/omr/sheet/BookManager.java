@@ -17,36 +17,20 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.score.OpusExporter;
 import omr.score.Score;
-import omr.score.ScoreExporter;
-import omr.score.ScoreReduction;
-import omr.score.entity.Page;
-import omr.score.ui.BookPdfOutput;
 
-import omr.script.ExportTask;
-import omr.script.PrintTask;
-import omr.script.ScriptActions;
-
-import omr.step.Step;
-import omr.step.Stepping;
-
-import omr.util.FileUtil;
 import omr.util.NameSet;
-
-import org.jdesktop.application.Application.ExitListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.EventObject;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -155,7 +139,7 @@ public class BookManager
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Constants constants = new Constants();
+    static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BookManager.class);
 
@@ -185,7 +169,7 @@ public class BookManager
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** All book instances. */
-    private final List<Book> instances = new ArrayList<Book>();
+    private final List<Book> books = new ArrayList<Book>();
 
     /** Image file history. (filled only when images (books) are successfully loaded) */
     private NameSet history;
@@ -199,24 +183,24 @@ public class BookManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // addInstance //
-    //-------------//
+    //---------//
+    // addBook //
+    //---------//
     /**
      * Insert this new book in the set of book instances.
      *
      * @param book the book to insert
      */
-    public synchronized void addInstance (Book book)
+    public synchronized void addBook (Book book)
     {
-        logger.debug("addInstance {}", book);
+        logger.debug("addBook {}", book);
 
         // Remove duplicate if any
-        for (Iterator<Book> it = instances.iterator(); it.hasNext();) {
+        for (Iterator<Book> it = books.iterator(); it.hasNext();) {
             Book b = it.next();
-            Path path = b.getImagePath();
+            Path path = b.getInputPath();
 
-            if (path.equals(book.getImagePath())) {
+            if (path.equals(book.getInputPath())) {
                 logger.debug("Removing duplicate {}", b);
                 it.remove();
                 b.close();
@@ -226,275 +210,120 @@ public class BookManager
         }
 
         // Insert new book instance
-        instances.add(book);
+        books.add(book);
     }
 
     //-----------//
-    // cleanBook //
+    // confirmed //
     //-----------//
     /**
-     * Cleanup the existing outputs of provided book.
+     * Check whether we have user confirmation to overwrite the target path.
+     * This is a no-op is there is no Gui or if target does not already exist.
      *
-     * @param book     the book whose outputs must be cleaned up
-     * @param bookPath export book path (sans extension) for a specific location, or null to let
-     *                 the program choose
+     * @param target the path to be checked
+     * @return false if explicitly not confirmed, true otherwise
      */
-    public void cleanBook (Book book,
-                           Path bookPath)
+    public static boolean confirmed (Path target)
     {
-        // Determine the output path for the provided book
-        if (bookPath == null) {
-            bookPath = getDefaultExportPath(book);
-        }
+        return ((Main.getGui() == null) || !Files.exists(target))
+               || Main.getGui().displayConfirmation("Overwrite " + target + "?");
+    }
 
-        // One-sheet book: <bookname>.mxl
-        // One-sheet book: <bookname>.mvt<M>.mxl
-        // One-sheet book: <bookname>/... (perhaps some day: 1 directory per book)
-        //
-        // Multi-sheet book: <bookname>/sheet#<N>.mxl
-        // Multi-sheet book: <bookname>/sheet#<N>.mvt<M>.mxl
-        // Multi-sheet book: <bookname>/sheet#<N>/... (perhaps some day: 1 directory per sheet)
-        final Path folder = book.isMultiSheet() ? bookPath : bookPath.getParent();
-        final Path bookName = bookPath.getFileName(); // bookname
-
-        final String dirGlob = "glob:**/" + bookName + "{/**,}";
-        final String filGlob = "glob:**/" + bookName + "{/**,.*}";
-        final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
-
+    //-------------//
+    // deletePaths //
+    //-------------//
+    /**
+     * Delete the provided files & dirs.
+     * If interactive mode, prompt user for confirmation beforehand.
+     *
+     * @param title scope indication for deletion
+     * @param paths the paths to delete
+     */
+    public static void deletePaths (String title,
+                                    List<Path> paths)
+    {
         if (!paths.isEmpty()) {
-            deletePaths(bookName + " deletion", paths);
-        } else {
-            logger.info("Nothing to delete");
-        }
-    }
+            if (Main.getGui() != null) {
+                StringBuilder sb = new StringBuilder();
 
-    //------------//
-    // cleanSheet //
-    //------------//
-    /**
-     * Cleanup the existing output of provided sheet.
-     *
-     * @param sheet    the sheet to clean up
-     * @param bookPath export book name (sans extension) for a specific location, or null to let
-     *                 the program choose
-     */
-    public void cleanSheet (Sheet sheet,
-                            Path bookPath)
-    {
-        final Book book = sheet.getBook();
-
-        if (!book.isMultiSheet()) {
-            cleanBook(book, null); // Simply delete the single-sheet book!
-        } else {
-            // path/to/scores/Book
-            bookPath = getActualPath(bookPath, getDefaultExportPath(book));
-
-            // Determine the output path (sans extension) for the provided sheet
-            final Path sheetPathSansExt = getSheetExportPath(bookPath, sheet);
-
-            // Multi-sheet book: <bookname>/sheet#<N>.mvt<M>.mxl
-            // Multi-sheet book: <bookname>/sheet#<N>.mxl
-            // Multi-sheet book: <bookname>/sheet#<N>/... (perhaps some day: 1 directory per sheet)
-            final Path folder = sheetPathSansExt.getParent();
-            final Path bookName = folder.getFileName(); // bookname
-            final Path sheetName = sheetPathSansExt.getFileName(); // sheet#N
-
-            final String dirGlob = "glob:**/" + bookName + "/" + sheetName + "{/**,}";
-            final String filGlob = "glob:**/" + bookName + "/" + sheetName + "{/**,.*}";
-            final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
-
-            if (!paths.isEmpty()) {
-                deletePaths(bookName + "/" + sheetName + " deletion", paths);
-            }
-        }
-    }
-
-    //------------//
-    // exportBook //
-    //------------//
-    /**
-     * Export a whole book in MusicXML.
-     * <p>
-     * The output is structured differently according to whether the book contains one or several
-     * scores.<ul>
-     * <li>A single-score book results in one score output.</li>
-     * <li>A multi-score book results in one opus output (if useOpus is set) or a series of scores
-     * (is useOpus is not set).</li>
-     * </ul>
-     *
-     * @param book     the book to export
-     * @param bookPath target book path (sans extension) for a specific location, or null to let
-     *                 the program choose
-     * @param signed   should we inject our signature?, may be null to use default
-     */
-    public void exportBook (Book book,
-                            Path bookPath,
-                            Boolean signed)
-    {
-        // Make sure all sheets have been transcribed
-        for (Sheet sheet : book.getSheets()) {
-            Stepping.ensureSheetStep(Step.PAGE, sheet);
-        }
-
-        // Group book pages into scores
-        book.retrieveScores();
-
-        final List<Score> scores = book.getScores();
-
-        for (Score score : scores) {
-            // Merges pages into their containing movement score (connecting the parts across pages)
-            // TODO: this may need the addition of dummy parts in some pages
-            new ScoreReduction(score).reduce();
-
-            for (Page page : score.getPages()) {
-                //                // - Retrieve the actual duration of every measure
-                //                page.accept(new DurationRetriever());
-                //
-                //                // - Check all voices timing, assign forward items if needed.
-                //                // - Detect special measures and assign proper measure ids
-                //                // If needed, we can trigger a reprocessing of this page
-                //                page.accept(new MeasureFixer());
-                //
-                // Check whether time signatures are consistent accross all pages in score
-                // TODO: to be implemented
-                //
-                // Connect slurs across pages
-                page.getFirstSystem().connectPageInitialSlurs(score);
-            }
-        }
-
-        // path/to/scores/Book
-        bookPath = getActualPath(bookPath, getDefaultExportPath(book));
-
-        final boolean compressed = useCompression();
-        final String ext = compressed ? COMPRESSED_SCORE_EXTENSION : SCORE_EXTENSION;
-        final boolean sig = (signed != null) ? signed : constants.defaultSigned.isSet();
-
-        // Export each movement score
-        String bookName = bookPath.getFileName().toString();
-        final boolean multiMovements = scores.size() > 1;
-
-        if (constants.useOpus.isSet()) {
-            // Export the book as one opus
-            final Path opusPath = bookPath.resolveSibling(bookName + OPUS_EXTENSION);
-
-            try {
-                if (!confirmed(opusPath)) {
-                    return;
-                }
-
-                new OpusExporter(book).export(opusPath, bookName, sig);
-                constants.defaultExportDirectory.setValue(bookPath.getParent().toString());
-            } catch (Exception ex) {
-                logger.warn("Could not export opus " + opusPath, ex);
-            }
-        } else {
-            for (Score score : scores) {
-                final String scoreName = (!multiMovements) ? bookName
-                        : (bookName + MOVEMENT_EXTENSION + score.getId());
-                final Path scorePath = bookPath.resolveSibling(scoreName + ext);
-
-                try {
-                    if (!confirmed(scorePath)) {
-                        return;
+                for (Path p : paths) {
+                    if (Files.isDirectory(p)) {
+                        sb.append("\ndir  ");
+                    } else {
+                        sb.append("\nfile ");
                     }
 
-                    new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
-                    constants.defaultExportDirectory.setValue(bookPath.getParent().toString());
-                    book.getScript().addTask(new ExportTask(bookPath.getParent().toFile()));
-                } catch (Exception ex) {
-                    logger.warn("Could not export score " + scoreName, ex);
+                    sb.append(p);
+                }
+
+                if (!Main.getGui().displayConfirmation("Confirm " + title + "?\n" + sb)) {
+                    return;
                 }
             }
-        }
 
-        book.getScript().addTask(new ExportTask(bookPath.getParent().toFile()));
+            // Do delete
+            int count = 0;
+
+            for (Path path : paths) {
+                try {
+                    Files.delete(path);
+                    count++;
+                } catch (IOException ex) {
+                    logger.warn("Error deleting " + path + " " + ex, ex);
+                }
+            }
+
+            logger.info("{} path(s) deleted.", count);
+        }
+    }
+
+    //---------------//
+    // getActualPath //
+    //---------------//
+    /**
+     * Report the actual path to be used as target (the provided target path if any,
+     * otherwise the provided default), making sure the path parent folder really exists.
+     *
+     * @param targetPath  the provided target path, if any
+     * @param defaultPath the default target path
+     * @return the path to use
+     */
+    public static Path getActualPath (Path targetPath,
+                                      Path defaultPath)
+    {
+        try {
+            if (targetPath == null) {
+                targetPath = defaultPath;
+            }
+
+            // Make sure the target folder exists
+            Path folder = targetPath.getParent();
+
+            if (!Files.exists(folder)) {
+                Files.createDirectories(folder);
+
+                logger.info("Creating folder {}", folder);
+            }
+
+            return targetPath;
+        } catch (IOException ex) {
+            logger.warn("Cannot get directory for " + targetPath, ex);
+
+            return null;
+        }
     }
 
     //-------------//
-    // exportSheet //
+    // getAllBooks //
     //-------------//
     /**
-     * Export a single sheet in MusicXML.
-     * <p>
-     * The output is structured differently according to whether the sheet contains one or several
-     * pages.<ul>
-     * <li>A single-page sheet results in one score output.</li>
-     * <li>A multi-page sheet results in one opus output (if useOpus is set) or a folder of scores
-     * (is useOpus is not set).</li>
-     * </ul>
+     * Report the current collection of books.
      *
-     * @param sheet    the sheet to export
-     * @param bookPath export book path (sans extension) for a specific location, or null to let
-     *                 the program choose (based on book or default location).
-     *                 Typically, assuming book name is "Book", something like: path/to/scores/Book
-     * @param signed   should we inject ProxyMusic signature?, null to use default
+     * @return an unmodifiable view of the books list
      */
-    public void exportSheet (Sheet sheet,
-                             Path bookPath,
-                             Boolean signed)
+    public List<Book> getAllBooks ()
     {
-        final List<Page> pages = sheet.getPages();
-
-        if (pages.isEmpty()) {
-            return;
-        }
-
-        final boolean compressed = useCompression();
-        final Book book = sheet.getBook();
-
-        // path/to/scores/Book
-        bookPath = getActualPath(bookPath, getDefaultExportPath(book));
-
-        // Determine the output path (sans extension) for the provided sheet
-        final Path sheetPathSansExt = getSheetExportPath(bookPath, sheet);
-
-        try {
-            if (book.isMultiSheet() && !Files.exists(bookPath)) {
-                Files.createDirectories(bookPath);
-            }
-
-            final String rootName = sheetPathSansExt.getFileName().toString();
-            final boolean sig = (signed != null) ? signed : constants.defaultSigned.isSet();
-
-            if (pages.size() > 1) {
-                // Export the sheet multiple pages as separate scores in folder 'pathSansExt'
-                final String ext = compressed ? COMPRESSED_SCORE_EXTENSION : SCORE_EXTENSION;
-                Files.createDirectories(sheetPathSansExt);
-
-                for (Page page : pages) {
-                    final Score score = new Score();
-                    score.addPage(page);
-
-                    final int idx = 1 + pages.indexOf(page);
-                    score.setId(idx);
-
-                    final String scoreName = rootName + MOVEMENT_EXTENSION + idx;
-                    final Path scorePath = sheetPathSansExt.resolve(scoreName + ext);
-                    new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
-                }
-            } else {
-                // Export the sheet single page as a score
-                final Score score = new Score();
-                score.setId(1);
-                score.addPage(sheet.getLastPage());
-
-                final String ext = compressed ? COMPRESSED_SCORE_EXTENSION : SCORE_EXTENSION;
-                final Path scorePath = sheetPathSansExt.resolveSibling(rootName + ext);
-                new ScoreExporter(score).export(scorePath, rootName, sig, compressed);
-            }
-
-            // Remember the book path in the book itself
-            sheet.getBook().setExportPath(bookPath);
-
-            constants.defaultExportDirectory.setValue(bookPath.getParent().toString());
-
-            if (!book.isMultiSheet()) {
-                book.getScript().addTask(new ExportTask(bookPath.getParent().toFile()));
-            }
-        } catch (Exception ex) {
-            logger.warn("Error storing " + sheet + ", " + ex, ex);
-        }
+        return Collections.unmodifiableList(books);
     }
 
     //---------------------//
@@ -526,9 +355,9 @@ public class BookManager
      *
      * @return the default file
      */
-    public File getDefaultDewarpDirectory ()
+    public String getDefaultDewarpDirectory ()
     {
-        return new File(constants.defaultDewarpDirectory.getValue());
+        return constants.defaultDewarpDirectory.getValue();
     }
 
     //----------------------//
@@ -540,7 +369,7 @@ public class BookManager
      * @param book the book to export
      * @return the default book path for export
      */
-    public Path getDefaultExportPath (Book book)
+    public static Path getDefaultExportPath (Book book)
     {
         if (book.getExportPath() != null) {
             return book.getExportPath();
@@ -581,7 +410,7 @@ public class BookManager
      * @param book the book to export
      * @return the default book path for print
      */
-    public Path getDefaultPrintPath (Book book)
+    public static Path getDefaultPrintPath (Book book)
     {
         if (book.getPrintPath() != null) {
             return book.getPrintPath();
@@ -598,40 +427,6 @@ public class BookManager
         }
 
         return Paths.get(constants.defaultPrintDirectory.getValue(), book.getRadix());
-    }
-
-    //-----------------//
-    // getExitListener //
-    //-----------------//
-    /**
-     * The Exit listener meant for GUI.
-     *
-     * @return the listener to register
-     */
-    public ExitListener getExitListener ()
-    {
-        return new ExitListener()
-        {
-            @Override
-            public boolean canExit (EventObject e)
-            {
-                // Are all scripts stored (or explicitly ignored)?
-                for (Book book : instances) {
-                    if (!ScriptActions.checkStored(book.getScript())) {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
-            @Override
-            public void willExit (EventObject e)
-            {
-                // Close all sheets, to record their bench data
-                closeAllBooks();
-            }
-        };
     }
 
     //--------------------//
@@ -689,37 +484,6 @@ public class BookManager
         return INSTANCE;
     }
 
-    //--------------------//
-    // getSheetExportPath //
-    //--------------------//
-    /**
-     * Report the path (sans extension) to which the sheet will be written.
-     * <ul>
-     * <li>If this sheet is the only one in the containing book, we use:<br/>
-     * &lt;book-name&gt;</li>
-     * <li>If the book contains several sheets, we use:<br/>
-     * &lt;book-name&gt;/sheet#&lt;N&gt;</li>
-     * </ul>
-     *
-     * @param bookPath the non-null bookPath
-     * @param sheet    the sheet to export
-     * @return the sheet path
-     */
-    public Path getSheetExportPath (Path bookPath,
-                                    Sheet sheet)
-    {
-        final Book book = sheet.getBook();
-
-        // Determine the output path (sans extension) for the provided sheet
-        // path/to/scores/Book            (for a single-sheet book)
-        // path/to/scores/Book/sheet#N    (for a multi-sheet book)
-        if (!book.isMultiSheet()) {
-            return bookPath;
-        } else {
-            return bookPath.resolve(SHEET_PREFIX + (book.getOffset() + sheet.getIndex()));
-        }
-    }
-
     //-------------//
     // isMultiBook //
     //-------------//
@@ -730,112 +494,30 @@ public class BookManager
      */
     public static boolean isMultiBook ()
     {
-        return getInstance().instances.size() > 1;
-    }
-
-    //-----------//
-    // printBook //
-    //-----------//
-    /**
-     * Print the book physical appearance into the provided PDF file.
-     *
-     * @param book     the provided book
-     * @param bookPath print book path (sans extension) for a specific location, or null to let
-     *                 the program choose (based on book or default location).
-     *                 Typically, assuming book name is "Book", something like: path/to/prints/Book
-     */
-    public void printBook (Book book,
-                           Path bookPath)
-    {
-        // Make sure all sheets have been transcribed
-        for (Sheet sheet : book.getSheets()) {
-            Stepping.ensureSheetStep(Step.PAGE, sheet);
-        }
-
-        // path/to/prints/Book
-        bookPath = getActualPath(bookPath, getDefaultPrintPath(book));
-
-        final String rootName = bookPath.getFileName().toString();
-        final Path pdfPath = bookPath.resolveSibling(rootName + ".pdf");
-
-        // Actually write the PDF
-        try {
-            // Prompt for overwrite?
-            if (!confirmed(pdfPath)) {
-                return;
-            }
-
-            new BookPdfOutput(book, pdfPath.toFile()).write(null);
-            logger.info("Book printed to {}", pdfPath);
-
-            book.setPrintPath(bookPath);
-            constants.defaultPrintDirectory.setValue(bookPath.getParent().toString());
-            book.getScript().addTask(new PrintTask(bookPath.getParent().toFile()));
-        } catch (Exception ex) {
-            logger.warn("Cannot write PDF to " + pdfPath, ex);
-        }
+        return getInstance().books.size() > 1;
     }
 
     //------------//
-    // printSheet //
+    // removeBook //
     //------------//
     /**
-     * Print the sheet physical appearance into the provided PDF file.
-     *
-     * @param sheet    the provided sheet
-     * @param bookPath print book path (sans extension) for a specific location, or null to let
-     *                 the program choose (based on book or default location).
-     *                 Typically, assuming book name is "Book", something like: path/to/prints/Book
-     */
-    public void printSheet (Sheet sheet,
-                            Path bookPath)
-    {
-        final Book book = sheet.getBook();
-        // path/to/prints/Book
-        bookPath = getActualPath(bookPath, getDefaultPrintPath(book));
-
-        // Determine the output path (sans extension) for the provided sheet
-        final Path sheetPathSansExt = getSheetExportPath(bookPath, sheet);
-        final String rootName = sheetPathSansExt.getFileName().toString();
-        final Path pdfPath = sheetPathSansExt.resolveSibling(rootName + ".pdf");
-
-        // Actually write the PDF
-        try {
-            // Prompt for overwrite?
-            if (!confirmed(pdfPath)) {
-                return;
-            }
-
-            if (book.isMultiSheet() && !Files.exists(bookPath)) {
-                Files.createDirectories(bookPath);
-            }
-
-            new BookPdfOutput(book, pdfPath.toFile()).write(sheet);
-            logger.info("Sheet printed to {}", pdfPath);
-
-            book.setPrintPath(bookPath);
-            constants.defaultPrintDirectory.setValue(bookPath.getParent().toString());
-
-            if (!book.isMultiSheet()) {
-                book.getScript().addTask(new PrintTask(bookPath.getParent().toFile()));
-            }
-        } catch (Exception ex) {
-            logger.warn("Cannot write PDF to " + pdfPath, ex);
-        }
-    }
-
-    //----------------//
-    // removeInstance //
-    //----------------//
-    /**
-     * Remove the provided book from the collection of instances.
+     * Remove the provided book from the collection of Book instances.
      *
      * @param book the book to remove
+     * @return true if actually removed
      */
-    public synchronized void removeInstance (Book book)
+    public synchronized boolean removeBook (Book book)
     {
-        logger.debug("removeInstance {}", book);
-        instances.remove(book);
+        logger.debug("removeBook {}", book);
+        return books.remove(book);
+    }
+
+    //---------------------------//
+    // setDefaultExportDirectory //
+    //---------------------------//
+    public static void setDefaultExportDirectory (String value)
+    {
+        constants.defaultExportDirectory.setValue(value);
     }
 
     //--------------------------//
@@ -844,11 +526,19 @@ public class BookManager
     /**
      * Remember the directory where images should be found.
      *
-     * @param directory the latest image directory
+     * @param value the latest image directory
      */
-    public void setDefaultInputDirectory (String directory)
+    public void setDefaultInputDirectory (String value)
     {
-        constants.defaultInputDirectory.setValue(directory);
+        constants.defaultInputDirectory.setValue(value);
+    }
+
+    //--------------------------//
+    // setDefaultPrintDirectory //
+    //--------------------------//
+    public static void setDefaultPrintDirectory (String value)
+    {
+        constants.defaultPrintDirectory.setValue(value);
     }
 
     //------------//
@@ -908,123 +598,20 @@ public class BookManager
         return constants.useCompression.getValue();
     }
 
-    //---------------//
-    // closeAllBooks //
-    //---------------//
-    /**
-     * Close all book instances.
-     */
-    private void closeAllBooks ()
+    //---------//
+    // useOpus //
+    //---------//
+    public static boolean useOpus ()
     {
-        int count = 0;
-
-        // NB: Use a COPY of instances, to avoid concurrent modification
-        for (Book book : new ArrayList<Book>(instances)) {
-            book.close();
-            count++;
-        }
-
-        logger.debug("{} book(s) closed", count);
+        return constants.useOpus.isSet();
     }
 
-    //-----------//
-    // confirmed //
-    //-----------//
-    /**
-     * Check whether we have user confirmation to overwrite the target path.
-     * This is a no-op is there is no Gui or if target does not already exist.
-     *
-     * @param target the path to be checked
-     * @return false if explicitly not confirmed, true otherwise
-     */
-    private boolean confirmed (Path target)
+    //--------------//
+    // useSignature //
+    //--------------//
+    public static boolean useSignature ()
     {
-        return ((Main.getGui() == null) || !Files.exists(target))
-               || Main.getGui().displayConfirmation("Overwrite " + target + "?");
-    }
-
-    //-------------//
-    // deletePaths //
-    //-------------//
-    /**
-     * Delete the provided files & dirs.
-     * If interactive mode, prompt user for confirmation beforehand.
-     *
-     * @param title scope indication for deletion
-     * @param paths the paths to delete
-     */
-    private void deletePaths (String title,
-                              List<Path> paths)
-    {
-        if (!paths.isEmpty()) {
-            if (Main.getGui() != null) {
-                StringBuilder sb = new StringBuilder();
-
-                for (Path p : paths) {
-                    if (Files.isDirectory(p)) {
-                        sb.append("\ndir  ");
-                    } else {
-                        sb.append("\nfile ");
-                    }
-
-                    sb.append(p);
-                }
-
-                if (!Main.getGui().displayConfirmation("Confirm " + title + "?\n" + sb)) {
-                    return;
-                }
-            }
-
-            // Do delete
-            int count = 0;
-
-            for (Path path : paths) {
-                try {
-                    Files.delete(path);
-                    count++;
-                } catch (IOException ex) {
-                    logger.warn("Error deleting " + path + " " + ex, ex);
-                }
-            }
-
-            logger.info("{} path(s) deleted.", count);
-        }
-    }
-
-    //---------------//
-    // getActualPath //
-    //---------------//
-    /**
-     * Report the actual path to be used as target (the provided target path if any,
-     * otherwise the provided default), making sure the path parent folder really exists.
-     *
-     * @param targetPath  the provided target path, if any
-     * @param defaultPath the default target path
-     * @return the path to use
-     */
-    private Path getActualPath (Path targetPath,
-                                Path defaultPath)
-    {
-        try {
-            if (targetPath == null) {
-                targetPath = defaultPath;
-            }
-
-            // Make sure the target folder exists
-            Path folder = targetPath.getParent();
-
-            if (!Files.exists(folder)) {
-                Files.createDirectories(folder);
-
-                logger.info("Creating folder {}", folder);
-            }
-
-            return targetPath;
-        } catch (IOException ex) {
-            logger.warn("Cannot get directory for " + targetPath, ex);
-
-            return null;
-        }
+        return constants.defaultSigned.isSet();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -1044,40 +631,40 @@ public class BookManager
                 true,
                 "Should we compress the MusicXML output?");
 
-        Constant.String defaultExportDirectory = new Constant.String(
+        final Constant.String defaultExportDirectory = new Constant.String(
                 WellKnowns.DEFAULT_SCORES_FOLDER.toString(),
                 "Default directory for saved scores");
 
-        Constant.Boolean saveBenchToDisk = new Constant.Boolean(
+        final Constant.Boolean saveBenchToDisk = new Constant.Boolean(
                 false,
                 "Should we save bench data to disk");
 
-        Constant.String defaultBenchDirectory = new Constant.String(
+        final Constant.String defaultBenchDirectory = new Constant.String(
                 WellKnowns.DEFAULT_BENCHES_FOLDER.toString(),
                 "Default directory for saved benches");
 
-        Constant.String defaultPrintDirectory = new Constant.String(
+        final Constant.String defaultPrintDirectory = new Constant.String(
                 WellKnowns.DEFAULT_PRINT_FOLDER.toString(),
                 "Default directory for printing sheet files");
 
-        Constant.Boolean defaultSigned = new Constant.Boolean(
+        final Constant.Boolean defaultSigned = new Constant.Boolean(
                 true,
                 "Should we inject ProxyMusic signature in the exported scores?");
 
-        Constant.String imagesHistory = new Constant.String(
+        final Constant.String imagesHistory = new Constant.String(
                 "",
                 "History of books most recently loaded");
 
-        Constant.Integer historySize = new Constant.Integer(
+        final Constant.Integer historySize = new Constant.Integer(
                 "count",
                 10,
                 "Maximum number of files names kept in history");
 
-        Constant.String defaultInputDirectory = new Constant.String(
+        final Constant.String defaultInputDirectory = new Constant.String(
                 WellKnowns.EXAMPLES_FOLDER.toString(),
                 "Default directory for selection of image files");
 
-        Constant.String defaultDewarpDirectory = new Constant.String(
+        final Constant.String defaultDewarpDirectory = new Constant.String(
                 WellKnowns.TEMP_FOLDER.toString(),
                 "Default directory for saved dewarped images");
     }

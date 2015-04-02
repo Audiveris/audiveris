@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
@@ -521,7 +522,7 @@ public class SheetAssembly
 
             // Set the model size
             if (sheet.getPicture() != null) {
-                rubberPanel.setModelSize(sheet.getDimension());
+                rubberPanel.setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
             }
 
             // Force scroll bar computations

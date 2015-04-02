@@ -15,10 +15,10 @@ import omr.constant.ConstantSet;
 
 import omr.script.ScriptManager;
 
+import omr.sheet.BasicBook;
 import omr.sheet.Book;
 
 import omr.step.Step;
-import omr.step.Stepping;
 
 import omr.util.BasicTask;
 import omr.util.Param;
@@ -31,7 +31,6 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 
 import javax.swing.TransferHandler;
 import javax.swing.TransferHandler.TransferSupport;
@@ -193,8 +192,8 @@ public class FileDropHandler
         {
             logger.info("Dropping book file {}", file);
 
-            final Book book = new Book(file.toPath());
-            Stepping.processBook(Collections.singleton(target), null, book);
+            final Book book = new BasicBook(file.toPath());
+            book.doStep(target, null);
 
             return null;
         }
@@ -221,7 +220,7 @@ public class FileDropHandler
         protected Void doInBackground ()
                 throws Exception
         {
-            ScriptManager.getInstance().loadAndRun(file);
+            ScriptManager.getInstance().loadAndRun(file, false);
 
             return null;
         }

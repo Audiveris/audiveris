@@ -55,8 +55,8 @@ public class TestStep
 
     //~ Methods ------------------------------------------------------------------------------------
     @Override
-    protected void doit (Collection<SystemInfo> systems,
-                         Sheet aSheet)
+    public void doit (Collection<SystemInfo> systems,
+                      Sheet aSheet)
             throws StepException
     {
         final Book book = aSheet.getBook();

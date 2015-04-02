@@ -12,7 +12,6 @@
 package omr.script;
 
 import omr.sheet.Book;
-import omr.sheet.BookManager;
 import omr.sheet.Sheet;
 
 import java.io.File;
@@ -62,7 +61,9 @@ public class PrintTask
     {
         Book book = sheet.getBook();
         Path bookPath = (folder != null) ? new File(folder, book.getRadix()).toPath() : null;
-        BookManager.getInstance().printBook(sheet.getBook(), bookPath);
+        book.setPrintPath(bookPath);
+        ///BookManager.getInstance().printBook(sheet.getBook(), bookPath);
+        book.print();
     }
 
     //-----------//

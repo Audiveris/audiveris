@@ -168,7 +168,7 @@ public class GlyphsModel
     }
 
     //---------//
-    // getNest //
+    // getGlyphNest //
     //---------//
     /**
      * Report the underlying glyph nest.

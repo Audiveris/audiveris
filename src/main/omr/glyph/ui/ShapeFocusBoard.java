@@ -249,7 +249,7 @@ public class ShapeFocusBoard
 
             // Count the number of glyphs assigned to current shape
             for (GlyphLayer layer : GlyphLayer.concreteValues()) {
-                for (Glyph glyph : sheet.getNest().getGlyphs(layer)) {
+                for (Glyph glyph : sheet.getGlyphNest().getGlyphs(layer)) {
                     if (glyph.getShape() == currentShape) {
                         browser.addId(glyph.getId());
                     }
@@ -288,7 +288,7 @@ public class ShapeFocusBoard
 
             // Retrieve the glyphs similar to the example
             for (GlyphLayer layer : GlyphLayer.concreteValues()) {
-                for (Glyph glyph : sheet.getNest().getGlyphs(layer)) {
+                for (Glyph glyph : sheet.getGlyphNest().getGlyphs(layer)) {
                     double dist = evaluator.measureDistance(glyph, pattern);
                     pairs.add(new DistIdPair(dist, glyph.getId()));
                 }
@@ -309,7 +309,7 @@ public class ShapeFocusBoard
                 System.out.println(indent + printer.getDashes());
 
                 for (DistIdPair pair : pairs) {
-                    Glyph glyph = sheet.getNest().getGlyph(pair.id);
+                    Glyph glyph = sheet.getGlyphNest().getGlyph(pair.id);
                     double[] gPat = ShapeDescription.features(glyph);
                     Shape shape = glyph.getShape();
                     System.out.printf("%18s", (shape != null) ? shape.toString() : "");

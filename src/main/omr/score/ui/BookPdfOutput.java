@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.io.File;
@@ -84,19 +83,20 @@ public class BookPdfOutput
             fos = new FileOutputStream(file);
 
             for (Sheet sh : sheets) {
-                Dimension dim = sh.getDimension();
+                final int width = sh.getWidth();
+                final int height = sh.getHeight();
 
                 if (document == null) {
-                    document = new Document(new Rectangle(dim.width, dim.height));
+                    document = new Document(new Rectangle(width, height));
                     writer = PdfWriter.getInstance(document, fos);
                     document.open();
                 } else {
-                    document.setPageSize(new Rectangle(dim.width, dim.height));
+                    document.setPageSize(new Rectangle(width, height));
                     document.newPage();
                 }
 
                 PdfContentByte cb = writer.getDirectContent();
-                Graphics2D g2 = cb.createGraphics(dim.width, dim.height);
+                Graphics2D g2 = cb.createGraphics(width, height);
 
                 // Scale: 1
                 g2.scale(1, 1);

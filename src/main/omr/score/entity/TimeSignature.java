@@ -405,7 +405,7 @@ public class TimeSignature
             }
 
             SystemInfo systemInfo = getSystem().getInfo();
-            GlyphNest nest = systemInfo.getSheet().getNest();
+            GlyphNest nest = systemInfo.getSheet().getGlyphNest();
             Glyph compound = nest.buildGlyph(getGlyphs(), false);
             compound = systemInfo.registerGlyph(compound);
             compound.setShape(shape, Evaluation.ALGORITHM);

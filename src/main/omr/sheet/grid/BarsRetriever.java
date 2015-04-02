@@ -203,7 +203,7 @@ public class BarsRetriever
                 new JunctionShiftPolicy(params.maxRunShift));
         sectionsBuilder.createSections(longVertTable, null, true);
 
-        sheet.setLag(Lags.VLAG, vLag);
+        sheet.getLagManager().setLag(Lags.VLAG, vLag);
 
         setVipSections();
     }
@@ -419,7 +419,7 @@ public class BarsRetriever
 
         BarGlyphFactory factory = new BarGlyphFactory(
                 sheet.getScale(),
-                sheet.getNest(),
+                sheet.getGlyphNest(),
                 GlyphLayer.DEFAULT,
                 VERTICAL);
 
@@ -464,7 +464,8 @@ public class BarsRetriever
         sections.removeAll(bottomGlyph.getMembers());
 
         // Now we have two end glyphs and a few sections in the middle
-        Glyph compound = sheet.getNest().buildGlyph(Arrays.asList(topGlyph, bottomGlyph), false);
+        Glyph compound = sheet.getGlyphNest()
+                .buildGlyph(Arrays.asList(topGlyph, bottomGlyph), false);
 
         boolean expanding;
 
@@ -484,7 +485,7 @@ public class BarsRetriever
             }
         } while (expanding);
 
-        return sheet.getNest().registerGlyph(compound);
+        return sheet.getGlyphNest().registerGlyph(compound);
     }
 
     //-------------//
@@ -568,7 +569,7 @@ public class BarsRetriever
                                    Rectangle roi)
     {
         // Retrieve all glyphs out of connected sections
-        GlyphNest nest = sheet.getNest();
+        GlyphNest nest = sheet.getGlyphNest();
         List<Glyph> glyphs = nest.retrieveGlyphsFromIsolatedSections(
                 sections,
                 GlyphLayer.DEFAULT,
@@ -1069,7 +1070,7 @@ public class BarsRetriever
 
         BarGlyphFactory factory = new BarGlyphFactory(
                 sheet.getScale(),
-                sheet.getNest(),
+                sheet.getGlyphNest(),
                 GlyphLayer.DEFAULT,
                 VERTICAL);
 
@@ -1562,7 +1563,7 @@ public class BarsRetriever
     private List<Section> getSectionsByWidth (int maxWidth)
     {
         List<Section> sections = new ArrayList<Section>();
-        Lag hLag = sheet.getLag(Lags.HLAG);
+        Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
 
         for (Lag lag : Arrays.asList(vLag, hLag)) {
             for (Section section : lag.getSections()) {
@@ -1722,7 +1723,7 @@ public class BarsRetriever
 
         // Look for intersected sections
         // Remove sections from bar peak (and from next peak if any)
-        Lag hLag = sheet.getLag(Lags.HLAG);
+        Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
         Set<Section> sections = hLag.intersectedSections(roi);
         sections.addAll(vLag.intersectedSections(roi));
         sections.removeAll(barGlyph.getMembers());

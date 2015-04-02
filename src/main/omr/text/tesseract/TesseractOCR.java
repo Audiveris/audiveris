@@ -124,7 +124,7 @@ public class TesseractOCR
     // recognize //
     //-----------//
     @Override
-    public List<TextLine> recognize (Scale scale,
+    public List<TextLine> recognize (int interline,
                                      BufferedImage bufferedImage,
                                      Point topLeft,
                                      String languageCode,
@@ -151,7 +151,8 @@ public class TesseractOCR
 
             // Post-processing
             if (lines != null) {
-                final int maxDashWidth = scale.toPixels(constants.maxDashWidth);
+                final int maxDashWidth = (int) Math.rint(
+                        interline * constants.maxDashWidth.getValue());
 
                 for (TextLine line : lines) {
                     // Chars: Fix long "—" vs short "-"
@@ -168,7 +169,7 @@ public class TesseractOCR
                         }
 
                         if (updated) {
-                            word.checkValue(); // Sp that word value is consistent with its chars
+                            word.checkValue(); // So that word value is consistent with its chars
                         }
                     }
 

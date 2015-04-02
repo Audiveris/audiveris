@@ -70,7 +70,7 @@ public class SpotsController
     public SpotsController (Sheet sheet,
                             Lag... lags)
     {
-        super(new GlyphsModel(sheet, sheet.getNest(), null));
+        super(new GlyphsModel(sheet, sheet.getGlyphNest(), null));
         this.lags = lags;
     }
 

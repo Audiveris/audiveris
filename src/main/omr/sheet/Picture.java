@@ -481,7 +481,10 @@ public class Picture
 
             case NO_STAFF:
                 // Built from complementary horizontal & vertical lags
-                src = Lags.buildBuffer(dimension, sheet.getLag(Lags.HLAG), sheet.getLag(Lags.VLAG));
+                src = Lags.buildBuffer(
+                        dimension,
+                        sheet.getLagManager().getLag(Lags.HLAG),
+                        sheet.getLagManager().getLag(Lags.VLAG));
 
                 break;
             }

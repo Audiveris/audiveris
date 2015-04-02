@@ -98,7 +98,7 @@ public class EditorMenu
     public boolean updateMenu (Rectangle rect)
     {
         // Update symbol menu (which is a specific case)
-        int symbolNb = symbolMenu.updateMenu(sheet.getNest().getSelectedGlyphSet());
+        int symbolNb = symbolMenu.updateMenu(sheet.getGlyphNest().getSelectedGlyphSet());
         symbolMenu.getMenu().setVisible(symbolNb > 0);
 
         return super.updateMenu(rect);

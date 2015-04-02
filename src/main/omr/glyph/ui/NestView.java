@@ -33,7 +33,6 @@ import omr.text.TextLine;
 import omr.text.TextWord;
 
 import omr.ui.Colors;
-import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
 import omr.ui.view.RubberPanel;
 
@@ -53,7 +52,6 @@ import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -83,9 +81,6 @@ public class NestView
     /** Related sheet, if any. */
     private final Sheet sheet;
 
-    /** Additional items rendering */
-    protected final Collection<ItemRenderer> itemRenderers;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a nest view.
@@ -100,13 +95,6 @@ public class NestView
     {
         this.nest = nest;
         this.sheet = sheet;
-
-        if (sheet != null) {
-            itemRenderers = sheet.getItemRenderers();
-        } else {
-            itemRenderers = null;
-        }
-
         this.lags.addAll(lags);
 
         setName(nest.getName() + "-View");
@@ -201,12 +189,8 @@ public class NestView
      */
     protected void renderItems (Graphics2D g)
     {
-        // Additional renderers if any
-        if (itemRenderers != null) {
-            for (ItemRenderer renderer : itemRenderers) {
-                renderer.renderItems(g);
-            }
-        }
+        // Global sheet renderers if any
+        sheet.renderItems(g);
 
         if (!ViewParameters.getInstance().isSectionMode()) {
             // Render the selected glyph(s) if any

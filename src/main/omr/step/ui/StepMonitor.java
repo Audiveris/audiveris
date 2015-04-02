@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.step;
+package omr.step.ui;
 
 import omr.constant.Constant;
 import omr.constant.Constant.Ratio;

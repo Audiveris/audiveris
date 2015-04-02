@@ -514,7 +514,7 @@ public abstract class Curve
 
         if (!sectionsIn.isEmpty()) {
             // Build glyph out of sections kept
-            GlyphNest nest = sheet.getNest();
+            GlyphNest nest = sheet.getGlyphNest();
             Glyph curveGlyph = nest.buildGlyph(
                     sectionsIn,
                     GlyphLayer.DEFAULT,

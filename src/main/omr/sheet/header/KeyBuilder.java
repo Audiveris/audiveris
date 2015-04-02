@@ -1075,7 +1075,7 @@ public class KeyBuilder
 
         SectionFactory sectionFactory = new SectionFactory(VERTICAL, new JunctionRatioPolicy());
         List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
-        List<Glyph> glyphs = sheet.getNest().retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
+        List<Glyph> glyphs = sheet.getGlyphNest().retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
         purgeGlyphs(glyphs, rect);
 
         KeyAdapter adapter = new KeyAdapter(glyphs, targetShapes);
@@ -1085,7 +1085,7 @@ public class KeyBuilder
             double grade = Inter.intrinsicRatio * adapter.bestEval.grade;
 
             if (grade >= minGrade) {
-                ///sheet.getNest().registerGlyph(adapter.bestGlyph);
+                ///sheet.getGlyphNest().registerGlyph(adapter.bestGlyph);
                 logger.debug("Glyph#{} {}", adapter.bestGlyph.getId(), adapter.bestEval);
 
                 KeyAlterInter alterInter = KeyAlterInter.create(
@@ -2059,7 +2059,7 @@ public class KeyBuilder
         @Override
         public GlyphNest getNest ()
         {
-            return sheet.getNest();
+            return sheet.getGlyphNest();
         }
 
         @Override

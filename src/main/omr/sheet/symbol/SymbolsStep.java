@@ -70,7 +70,7 @@ public class SymbolsStep
         }
 
         // Update glyph board if needed (to see OCR'ed data)
-        SelectionService service = sheet.getNest().getGlyphService();
+        SelectionService service = sheet.getGlyphNest().getGlyphService();
         GlyphEvent glyphEvent = (GlyphEvent) service.getLastEvent(GlyphEvent.class);
 
         if (glyphEvent != null) {

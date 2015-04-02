@@ -173,7 +173,7 @@ public class ClefBuilder
             List<Inter> inters = new ArrayList<Inter>();
 
             for (Entry<ClefKind, ClefInter> entry : adapter.bestMap.entrySet()) {
-                ///sheet.getNest().registerGlyph(adapter.bestGlyph);
+                ///sheet.getGlyphNest().registerGlyph(adapter.bestGlyph);
                 ClefInter inter = entry.getValue();
                 inter.increase(0.2); //TODO boost these StaffHeader clefs
                 inters.add(inter);
@@ -261,7 +261,7 @@ public class ClefBuilder
         // Extract parts
         SectionFactory sectionFactory = new SectionFactory(VERTICAL, JunctionAllPolicy.INSTANCE);
         List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
-        List<Glyph> parts = sheet.getNest().retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
+        List<Glyph> parts = sheet.getGlyphNest().retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
 
         // Keep only interesting parts
         purgeParts(parts, rect);
@@ -496,7 +496,7 @@ public class ClefBuilder
         @Override
         public GlyphNest getNest ()
         {
-            return sheet.getNest();
+            return sheet.getGlyphNest();
         }
 
         @Override

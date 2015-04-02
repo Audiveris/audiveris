@@ -20,6 +20,7 @@ import omr.glyph.GlyphRepository;
 
 import omr.script.RemoveTask;
 
+import omr.sheet.BasicBook;
 import omr.sheet.Book;
 import omr.sheet.BookManager;
 import omr.sheet.ScaleBuilder;
@@ -92,7 +93,7 @@ public class SheetActions
     @Action(enabledProperty = SHEET_AVAILABLE)
     public void closeBook (ActionEvent e)
     {
-        Book book = BookController.getCurrentBook();
+        Book book = SheetsController.getCurrentBook();
 
         if (book != null) {
             book.close();
@@ -449,7 +450,7 @@ public class SheetActions
         {
             if (file.exists()) {
                 // Actually open the image file
-                Book book = new Book(file.toPath());
+                Book book = new BasicBook(file.toPath());
                 book.createSheets(null);
             } else {
                 logger.warn("File {} does not exist", file);

@@ -22,20 +22,15 @@ import omr.math.Histogram.MaxEntry;
 import omr.math.Histogram.PeakEntry;
 import omr.math.IntegerHistogram;
 
-import omr.run.Orientation;
 import omr.run.Run;
 import omr.run.RunSequence;
 import omr.run.RunTable;
-import omr.run.RunTableFactory;
 
-import omr.sheet.Picture.SourceKey;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.StepException;
 
 import omr.util.StopWatch;
-
-import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
 
@@ -378,7 +372,7 @@ public class ScaleBuilder
             || (Main.getGui()
                 .displayModelessConfirm(msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
             if (book.isMultiSheet()) {
-                sheet.remove(false);
+                sheet.close(false);
                 throw new StepException("Sheet removed");
             } else {
                 throw new StepException("Sheet ignored");

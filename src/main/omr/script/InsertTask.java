@@ -117,7 +117,7 @@ public class InsertTask
         logger.debug("{}", this);
 
         // Take inserted glyph(s) as selected glyph(s)
-        sheet.getNest().getGlyphService().publish(
+        sheet.getGlyphNest().getGlyphService().publish(
                 new GlyphSetEvent(this, SelectionHint.GLYPH_INIT, MouseMovement.PRESSING, glyphs));
     }
 

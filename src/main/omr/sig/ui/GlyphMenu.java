@@ -64,7 +64,7 @@ public class GlyphMenu
         // We rebuild the menu items on each update, since the set of glyphs is brand new.
         removeAll();
 
-        Collection<Glyph> glyphs = sheet.getNest().getSelectedGlyphPile();
+        Collection<Glyph> glyphs = sheet.getGlyphNest().getSelectedGlyphPile();
 
         if (!glyphs.isEmpty()) {
             UIUtil.insertTitle(this, "Glyphs:");

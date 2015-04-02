@@ -141,8 +141,8 @@ public abstract class AbstractSystemStep<C>
      * @throws StepException raised if processing failed
      */
     @Override
-    protected void doit (Collection<SystemInfo> systems,
-                         Sheet sheet)
+    public void doit (Collection<SystemInfo> systems,
+                      Sheet sheet)
             throws StepException
     {
         // Preliminary actions

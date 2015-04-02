@@ -22,13 +22,15 @@ import omr.lag.Section;
 import omr.math.GeoPath;
 import omr.math.ReversePathIterator;
 
-import omr.score.Score;
 import omr.score.entity.Page;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 import omr.util.VerticalSide;
+
 import static omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
@@ -140,7 +142,7 @@ public class SystemManager
     {
         if (glyphs == null) {
             for (GlyphLayer layer : GlyphLayer.concreteValues()) {
-                dispatchGlyphs(sheet.getNest().getGlyphs(layer));
+                dispatchGlyphs(sheet.getGlyphNest().getGlyphs(layer));
             }
         } else {
             // Assign the glyphs to the proper system glyphs collection
@@ -172,7 +174,7 @@ public class SystemManager
         // Now dispatch the lag huge sections among the systems
         List<SystemInfo> relevants = new ArrayList<SystemInfo>();
 
-        for (Section section : sheet.getLag(Lags.LEDGER_LAG).getSections()) {
+        for (Section section : sheet.getLagManager().getLag(Lags.LEDGER_LAG).getSections()) {
             getSystemsOf(section.getCentroid(), relevants);
 
             for (SystemInfo system : relevants) {
@@ -526,7 +528,7 @@ public class SystemManager
         // Now dispatch the lag sections among relevant systems
         List<SystemInfo> relevants = new ArrayList<SystemInfo>();
 
-        for (Section section : sheet.getLag(Lags.HLAG).getSections()) {
+        for (Section section : sheet.getLagManager().getLag(Lags.HLAG).getSections()) {
             getSystemsOf(section.getCentroid(), relevants);
 
             for (SystemInfo system : relevants) {
@@ -567,7 +569,7 @@ public class SystemManager
         // Now dispatch the lag sections among relevant systems
         List<SystemInfo> relevants = new ArrayList<SystemInfo>();
 
-        for (Section section : sheet.getLag(Lags.VLAG).getSections()) {
+        for (Section section : sheet.getLagManager().getLag(Lags.VLAG).getSections()) {
             getSystemsOf(section.getCentroid(), relevants);
 
             for (SystemInfo system : relevants) {

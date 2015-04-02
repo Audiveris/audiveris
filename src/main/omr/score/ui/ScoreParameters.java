@@ -188,7 +188,7 @@ public class ScoreParameters
                     book,
                     null,
                     defaultTextPane,
-                    book.getTextParam());
+                    book.getLanguageParam());
             panes.add(scoreTextPane);
 
             FilterPane scoreFilterPane = new FilterPane(
@@ -214,7 +214,7 @@ public class ScoreParameters
                 for (Sheet sh : book.getSheets()) {
                     MyPanel panel = new MyPanel(
                             "Page settings",
-                            createTextPane(null, sh, scoreTextPane, sh.getTextParam()),
+                            createTextPane(null, sh, scoreTextPane, sh.getLanguageParam()),
                             new FilterPane(null, sh, scoreFilterPane, sh.getFilterParam()));
                     component.addTab("P#" + sh.getIndex(), null, panel, panel.getName());
 

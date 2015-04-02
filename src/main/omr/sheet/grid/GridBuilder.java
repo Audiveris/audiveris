@@ -80,7 +80,7 @@ public class GridBuilder
         barsRetriever = new BarsRetriever(sheet);
         linesRetriever = new LinesRetriever(sheet, barsRetriever);
 
-        if (constants.showGrid.isSet()) {
+        if (constants.showGrid.isSet() && Main.getGui() != null) {
             sheet.addItemRenderer(barsRetriever);
             sheet.addItemRenderer(linesRetriever);
         }
@@ -208,7 +208,7 @@ public class GridBuilder
     //---------------//
     private void displayEditor ()
     {
-        sheet.createSymbolsControllerAndEditor();
+        sheet.getSymbolsController();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

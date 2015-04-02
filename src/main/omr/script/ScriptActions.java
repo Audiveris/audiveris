@@ -18,8 +18,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.sheet.Book;
-import omr.sheet.ui.BookController;
 import omr.sheet.ui.SheetActions;
+import omr.sheet.ui.SheetsController;
 
 import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtil;
@@ -58,7 +58,7 @@ public class ScriptActions
 
     private static final Logger logger = LoggerFactory.getLogger(ScriptActions.class);
 
-    /** Singleton */
+    /** Singleton. */
     private static ScriptActions INSTANCE;
 
     /** Default parameter. */
@@ -66,9 +66,9 @@ public class ScriptActions
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Not meant to be instantiated.
+     * Singleton.
      */
-    protected ScriptActions ()
+    private ScriptActions ()
     {
     }
 
@@ -157,7 +157,7 @@ public class ScriptActions
     @Action(enabledProperty = SHEET_AVAILABLE)
     public Task<Void, Void> storeScript (ActionEvent e)
     {
-        final Book book = BookController.getCurrentBook();
+        final Book book = SheetsController.getCurrentBook();
 
         if (book == null) {
             return null;
@@ -178,7 +178,7 @@ public class ScriptActions
     @Action(enabledProperty = SHEET_AVAILABLE)
     public Task<Void, Void> storeScriptAs (ActionEvent e)
     {
-        final Book book = BookController.getCurrentBook();
+        final Book book = SheetsController.getCurrentBook();
 
         if (book == null) {
             return null;

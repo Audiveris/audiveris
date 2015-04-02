@@ -90,6 +90,49 @@ public enum Step
         this.helper = helper;
     }
 
+    //-------//
+    // first //
+    //-------//
+    /**
+     * Report the first step in enumeration
+     *
+     * @return the first step
+     */
+    public static Step first ()
+    {
+        return values()[0];
+    }
+
+    //------//
+    // last //
+    //------//
+    /**
+     * Report the last step in enumeration
+     *
+     * @return the last step
+     */
+    public static Step last ()
+    {
+        return values()[values().length - 1];
+    }
+
+    //------//
+    // next //
+    //------//
+    /**
+     * Report the step immediately after this one.
+     *
+     * @return the next step if any, otherwise null
+     */
+    public Step next ()
+    {
+        if (ordinal() < (values().length - 1)) {
+            return values()[ordinal() + 1];
+        }
+
+        return null;
+    }
+
     //-------------//
     // clearErrors //
     //-------------//
@@ -116,21 +159,21 @@ public enum Step
         helper.displayUI(this, sheet);
     }
 
-    //--------//
-    // doStep //
-    //--------//
+    //------//
+    // doit //
+    //------//
     /**
-     * Run the step and mark it as started then done
+     * Run the step.
      *
      * @param systems systems to process (null means all systems)
      * @param sheet   the sheet to work upon
      * @throws StepException if processing had to stop at this step
      */
-    public void doStep (Collection<SystemInfo> systems,
-                        Sheet sheet)
+    public void doit (Collection<SystemInfo> systems,
+                      Sheet sheet)
             throws StepException
     {
-        helper.doStep(this, systems, sheet);
+        helper.doit(systems, sheet);
     }
 
     //----------------//

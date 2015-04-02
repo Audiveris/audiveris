@@ -1334,7 +1334,7 @@ public class SystemInfo
      */
     public Glyph registerGlyph (Glyph glyph)
     {
-        glyph = sheet.getNest().registerGlyph(glyph);
+        glyph = sheet.getGlyphNest().registerGlyph(glyph);
         glyphs.add(glyph);
 
         return glyph;
@@ -1425,7 +1425,7 @@ public class SystemInfo
         allSections.addAll(getVerticalSections());
         allSections.addAll(getHorizontalSections());
 
-        final GlyphNest nest = sheet.getNest();
+        final GlyphNest nest = sheet.getGlyphNest();
         List<Glyph> newGlyphs = nest.retrieveGlyphs(allSections, GlyphLayer.DEFAULT, false);
 
         // Record them into the system

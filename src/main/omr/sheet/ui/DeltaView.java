@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -65,7 +66,7 @@ public class DeltaView
 
         view = new MyView();
         view.setName("Delta-View");
-        view.setPreferredSize(sheet.getDimension());
+        view.setPreferredSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
 
         // Inject dependency of pixel location
         view.setLocationService(sheet.getLocationService());
@@ -99,7 +100,7 @@ public class DeltaView
 
         public MyView ()
         {
-            setModelSize(sheet.getDimension());
+            setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
         }
 
         //~ Methods --------------------------------------------------------------------------------

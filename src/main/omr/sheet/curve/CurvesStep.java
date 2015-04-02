@@ -41,8 +41,8 @@ public class CurvesStep
     // doit //
     //------//
     @Override
-    protected void doit (Collection<SystemInfo> systems,
-                         Sheet sheet)
+    public void doit (Collection<SystemInfo> systems,
+                      Sheet sheet)
             throws StepException
     {
         new Curves(sheet).buildCurves();

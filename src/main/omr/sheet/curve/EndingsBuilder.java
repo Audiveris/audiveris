@@ -180,7 +180,7 @@ public class EndingsBuilder
         Scale scale = sheet.getScale();
         FilamentsFactory factory = new FilamentsFactory(
                 scale,
-                sheet.getNest(),
+                sheet.getGlyphNest(),
                 GlyphLayer.DEFAULT,
                 VERTICAL,
                 BasicGlyph.class);

@@ -53,7 +53,6 @@ import omr.sig.inter.StemInter;
 import omr.sig.inter.WordInter;
 
 import omr.ui.BoardsPane;
-import omr.ui.util.ItemRenderer;
 
 import ij.process.ByteProcessor;
 
@@ -108,11 +107,11 @@ public class SymbolsFilter
         this.sheet = sheet;
 
         // Needs the symLag
-        symLag = sheet.getLag(Lags.SYMBOL_LAG);
+        symLag = sheet.getLagManager().getLag(Lags.SYMBOL_LAG);
 
         if (symLag == null) {
             symLag = new BasicLag(Lags.SYMBOL_LAG, SYMBOL_ORIENTATION);
-            sheet.setLag(Lags.SYMBOL_LAG, symLag);
+            sheet.getLagManager().setLag(Lags.SYMBOL_LAG, symLag);
         }
     }
 
@@ -181,7 +180,7 @@ public class SymbolsFilter
         List<Section> sections = sectionsBuilder.createSections(runTable);
 
         // Glyphs
-        GlyphNest nest = sheet.getNest();
+        GlyphNest nest = sheet.getGlyphNest();
         List<Glyph> glyphs = nest.retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
         logger.debug("Symbol glyphs: {}", glyphs.size());
 
@@ -288,7 +287,7 @@ public class SymbolsFilter
         {
             super(buffer, g, sheet);
 
-            symLag = sheet.getLag(Lags.SYMBOL_LAG);
+            symLag = sheet.getLagManager().getLag(Lags.SYMBOL_LAG);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -420,7 +419,7 @@ public class SymbolsFilter
         {
             // Save the area corresponding glyph(s)?
             if (systemWeaks != null) {
-                //                List<Glyph> glyphs = sheet.getNest()
+                //                List<Glyph> glyphs = sheet.getGlyphNest()
                 //                        .retrieveGlyphs(
                 //                                glyph.getMembers(),
                 //                                GlyphLayer.SYMBOL,
@@ -445,7 +444,7 @@ public class SymbolsFilter
             // Save the glyph?
             if (systemWeaks != null) {
                 // The glyph may be made of several parts, so it's safer to restart from sections
-                List<Glyph> glyphs = sheet.getNest()
+                List<Glyph> glyphs = sheet.getGlyphNest()
                         .retrieveGlyphs(
                                 glyph.getMembers(),
                                 GlyphLayer.SYMBOL,
@@ -489,7 +488,7 @@ public class SymbolsFilter
             }
 
             // Glyphs
-            List<Glyph> glyphs = sheet.getNest().retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
+            List<Glyph> glyphs = sheet.getGlyphNest().retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
 
             for (Glyph glyph : glyphs) {
                 systemWeaks.add(glyph);
@@ -540,10 +539,8 @@ public class SymbolsFilter
                 }
             }
 
-            // Global sheet renderers?
-            for (ItemRenderer renderer : sheet.getItemRenderers()) {
-                renderer.renderItems(g);
-            }
+            // Global sheet renderers
+            sheet.renderItems(g);
         }
     }
 }

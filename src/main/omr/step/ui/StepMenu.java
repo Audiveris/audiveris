@@ -9,12 +9,14 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.step;
+package omr.step.ui;
 
 import omr.script.SheetStepTask;
 
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
+
+import omr.step.Step;
 
 import omr.util.BasicTask;
 
@@ -175,14 +177,15 @@ public class StepMenu
                 protected Void doInBackground ()
                         throws Exception
                 {
-                    Step sofar = Stepping.getLatestStep(sheet);
+                    Step sofar = sheet.getLatestStep();
 
                     if ((sofar == null) || (sofar.compareTo(step) <= 0)) {
                         // Here work on the sheet
                         new SheetStepTask(step).run(sheet);
                     } else {
                         // There we rebuild just the current sheet
-                        Stepping.reprocessSheet(step, sheet, null, true);
+                        ///Stepping.reprocessSheet(step, sheet, null, true);
+                        logger.info("Step {} already done", step);
                     }
 
                     return null;
@@ -193,7 +196,7 @@ public class StepMenu
                 {
                     // Select the assembly tab related to the target step
                     if (sheet != null) {
-                        Stepping.notifyStep(sheet, step);
+                        StepMonitoring.notifyStep(sheet, step);
                     }
                 }
             }.execute();

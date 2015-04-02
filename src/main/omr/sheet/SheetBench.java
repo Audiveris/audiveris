@@ -67,7 +67,7 @@ public class SheetBench
         sheetPrefix = String.format("p%02d.", sheet.getIndex());
         book = sheet.getBook();
 
-        addProp("image", book.getImagePath() + "#" + sheet.getIndex());
+        addProp("image", book.getInputPath() + "#" + sheet.getIndex());
 
         flushBench();
     }

@@ -24,7 +24,6 @@ import omr.sheet.rhythm.MeasureStack;
 
 import omr.sig.inter.ChordInter;
 
-import omr.util.Navigable;
 import omr.util.TreeNode;
 
 import org.slf4j.Logger;
@@ -183,12 +182,14 @@ public class Page
     //--------------//
     /**
      * Report the dimension of the sheet/page.
+     * TODO: check whether this is relevant (used only in PartwiseBuilder)
      *
      * @return the page/sheet dimension in pixels
      */
+    @Deprecated
     public Dimension getDimension ()
     {
-        return sheet.getDimension();
+        return new Dimension(sheet.getWidth(), sheet.getHeight());
     }
 
     //--------------------//

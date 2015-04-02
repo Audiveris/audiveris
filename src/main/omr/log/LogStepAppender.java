@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.log;
 
-import omr.step.Stepping;
+import omr.step.ui.StepMonitoring;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -34,7 +34,7 @@ public class LogStepAppender
     protected void append (ILoggingEvent event)
     {
         if (event.getLevel().toInt() >= Level.INFO_INT) {
-            Stepping.animate();
+            StepMonitoring.animate();
         }
     }
 }

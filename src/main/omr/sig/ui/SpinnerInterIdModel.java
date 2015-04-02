@@ -11,8 +11,9 @@
 // </editor-fold>
 package omr.sig.ui;
 
-import omr.sig.SigManager;
+import omr.sig.InterManager;
 import omr.sig.inter.Inter;
+
 import static omr.ui.field.SpinnerUtil.NO_VALUE;
 
 import org.slf4j.Logger;
@@ -21,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.AbstractSpinnerModel;
 
 /**
- * Class {@code SpinnerInterIdModel} is a spinner model backed by a {@link SigManager}
+ * Class {@code SpinnerInterIdModel} is a spinner model backed by a {@link InterManager}
  * instance.
  *
  * @author Hervé Bitteur
@@ -35,7 +36,7 @@ public class SpinnerInterIdModel
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying SIG manager. */
-    private final SigManager sigManager;
+    private final InterManager sigManager;
 
     /** Current inter id. */
     private int currentId = NO_VALUE;
@@ -46,7 +47,7 @@ public class SpinnerInterIdModel
      *
      * @param sigManager underlying SIG manager
      */
-    public SpinnerInterIdModel (SigManager sigManager)
+    public SpinnerInterIdModel (InterManager sigManager)
     {
         this.sigManager = sigManager;
     }

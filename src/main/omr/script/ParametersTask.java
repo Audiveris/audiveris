@@ -20,7 +20,6 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.step.Step;
-import omr.step.Stepping;
 
 import omr.util.LiveParam;
 
@@ -117,7 +116,7 @@ public class ParametersTask
 
         // Score Language
         if (language != null) {
-            if (book.getTextParam().setSpecific(language)) {
+            if (book.getLanguageParam().setSpecific(language)) {
                 sb.append(" language:").append(language);
             }
         }
@@ -159,7 +158,7 @@ public class ParametersTask
 
             // Page Language
             if (params.language != null) {
-                if (sh.getTextParam().setSpecific(params.language)) {
+                if (sh.getLanguageParam().setSpecific(params.language)) {
                     sb.append(" language:").append(params.language);
                 }
             }
@@ -183,14 +182,14 @@ public class ParametersTask
     @Override
     public void epilog (Sheet sheet)
     {
-        Step latestStep = Stepping.getLatestStep(sheet);
+        Step latestStep = sheet.getLatestStep();
 
         for (Sheet sh : sheet.getBook().getSheets()) {
             Step from = null;
 
             // Language
             if (latestStep.compareTo(Step.TEXTS) >= 0) {
-                LiveParam<String> param = sh.getTextParam();
+                LiveParam<String> param = sh.getLanguageParam();
 
                 if (param.needsUpdate()) {
                     logger.debug("Page {} needs TEXT with {}", sh.getId(), param.getTarget());
@@ -216,12 +215,12 @@ public class ParametersTask
                 }
             }
 
-            Stepping.reprocessSheet(from, sheet, null, true, false);
+            ///Stepping.reprocessSheet(from, sheet, null, true, false);
         }
 
         // Final PAGE step?
         if (latestStep == Step.PAGE) {
-            Stepping.reprocessSheet(Step.PAGE, sheet, null, true, true);
+            ///Stepping.reprocessSheet(Step.PAGE, sheet, null, true, true);
         }
 
         super.epilog(sheet);

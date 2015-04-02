@@ -359,7 +359,7 @@ public class SymbolsBuilder
         @Override
         public GlyphNest getNest ()
         {
-            return sheet.getNest();
+            return sheet.getGlyphNest();
         }
 
         @Override

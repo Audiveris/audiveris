@@ -61,7 +61,7 @@ public class SymbolsModel
      */
     public SymbolsModel (Sheet sheet)
     {
-        super(sheet, sheet.getNest(), Step.SYMBOLS);
+        super(sheet, sheet.getGlyphNest(), Step.SYMBOLS);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -87,7 +87,7 @@ public class SymbolsModel
             final Point centroid = glyph.getCentroid();
 
             for (SystemInfo system : systemManager.getSystemsOf(centroid)) {
-                String language = system.getSheet().getTextParam().getTarget();
+                String language = system.getSheet().getLanguageParam().getTarget();
                 TextBuilder textBuilder = system.getTextBuilder();
                 TextWord word = glyph.getTextWord();
                 List<TextLine> lines = new ArrayList<TextLine>();

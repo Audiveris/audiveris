@@ -146,7 +146,7 @@ public class VerticalsBuilder
     {
         sheet.getAssembly().addBoard(
                 SheetTab.DATA_TAB,
-                new VertCheckBoard(sheet, sheet.getNest().getGlyphService(), eventClasses));
+                new VertCheckBoard(sheet, sheet.getGlyphNest().getGlyphService(), eventClasses));
     }
 
     //----------------//
@@ -386,7 +386,7 @@ public class VerticalsBuilder
         // Use filament factory with straight lines as default
         final FilamentsFactory factory = new FilamentsFactory(
                 scale,
-                sheet.getNest(),
+                sheet.getGlyphNest(),
                 GlyphLayer.DEFAULT,
                 VERTICAL,
                 BasicGlyph.class);

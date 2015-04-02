@@ -190,7 +190,7 @@ public class SIGraph
         inter.setSig(this);
 
         if (inter.getId() == 0) {
-            system.getSheet().getSigManager().register(inter);
+            system.getSheet().getInterManager().register(inter);
         }
 
         return res;

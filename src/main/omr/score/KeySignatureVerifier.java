@@ -117,7 +117,7 @@ public class KeySignatureVerifier
             return null;
         }
 
-        GlyphNest nest = systemInfo.getSheet().getNest();
+        GlyphNest nest = systemInfo.getSheet().getGlyphNest();
         Glyph compound = nest.buildGlyph(glyphs, false);
 
         // Check if a proper key sig appears in the top evaluations

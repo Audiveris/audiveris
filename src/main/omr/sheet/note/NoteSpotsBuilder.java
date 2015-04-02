@@ -83,7 +83,7 @@ public class NoteSpotsBuilder
         List<Section> sections = sectionsBuilder.createSections(noteRuns);
 
         // Glyphs
-        GlyphNest nest = sheet.getNest();
+        GlyphNest nest = sheet.getGlyphNest();
         List<Glyph> spots = nest.retrieveGlyphs(sections, GlyphLayer.SPOT, true);
 
         // Dispose the runTable

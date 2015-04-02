@@ -416,7 +416,7 @@ public class TextBuilder
     {
         logger.debug("mapGlyphs");
 
-        GlyphNest nest = system.getSheet().getNest();
+        GlyphNest nest = system.getSheet().getGlyphNest();
 
         // To make sure that the same section is not assigned to several words
         for (Section section : allSections) {
@@ -663,7 +663,7 @@ public class TextBuilder
 
         List<Section> allSections = getSections(buffer, systemLines);
         watch.start("mapGlyphs");
-        mapGlyphs(systemLines, allSections, sheet.getTextParam().getActual());
+        mapGlyphs(systemLines, allSections, sheet.getLanguageParam().getActual());
 
         // Allocate corresponding inters
         watch.start("createInters");
@@ -705,7 +705,7 @@ public class TextBuilder
                                            String language)
     {
         return getOcr().recognize(
-                sheet.getScale(),
+                sheet.getScale().getInterline(),
                 glyph.getImage().getBufferedImage(),
                 glyph.getBounds().getLocation(),
                 language,
@@ -833,8 +833,8 @@ public class TextBuilder
      */
     public void switchLanguageTexts ()
     {
-        final GlyphNest nest = sheet.getNest();
-        final LiveParam<String> textParam = sheet.getTextParam();
+        final GlyphNest nest = sheet.getGlyphNest();
+        final LiveParam<String> textParam = sheet.getLanguageParam();
         final String language = textParam.getTarget();
 
         logger.debug("switchLanguageTexts lan:{}", language);

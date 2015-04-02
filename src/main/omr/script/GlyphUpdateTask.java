@@ -87,7 +87,7 @@ public abstract class GlyphUpdateTask
     {
         glyphs = new TreeSet<Glyph>(Glyph.byAbscissa);
 
-        GlyphNest nest = sheet.getNest();
+        GlyphNest nest = sheet.getGlyphNest();
 
         for (Collection<Section> set : sectionSets.getSets(sheet)) {
             Glyph glyph = nest.buildGlyph(set, GlyphLayer.DEFAULT, true, Glyph.Linking.NO_LINK);

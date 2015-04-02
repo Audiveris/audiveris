@@ -135,7 +135,7 @@ public class SectionSets
                 List<Section> sectionSet = new ArrayList<Section>();
 
                 for (SectionDesc sectionId : idSet.sections) {
-                    Lag lag = sheet.getLag(
+                    Lag lag = sheet.getLagManager().getLag(
                             (sectionId.orientation == Orientation.VERTICAL) ? Lags.VLAG : Lags.HLAG);
                     Section section = lag.getVertexById(sectionId.id);
 

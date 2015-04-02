@@ -17,7 +17,6 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.sheet.Book;
-import omr.sheet.ui.BookController;
 import omr.sheet.ui.SheetDependent;
 import omr.sheet.ui.SheetsController;
 
@@ -250,7 +249,7 @@ public class PluginManager
         }
 
         // Current score export file
-        final Book book = BookController.getCurrentBook();
+        final Book book = SheetsController.getCurrentBook();
 
         if (book == null) {
             return null;

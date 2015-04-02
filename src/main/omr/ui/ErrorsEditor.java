@@ -296,7 +296,7 @@ public class ErrorsEditor
 
                     // Use glyph location if available
                     if (record.glyph != null) {
-                        sheet.getNest().getGlyphService().publish(
+                        sheet.getGlyphNest().getGlyphService().publish(
                                 new GlyphEvent(this, SelectionHint.GLYPH_INIT, null, record.glyph));
                     } else {
                         // Otherwise use node location as possible

@@ -49,7 +49,7 @@ public class RemoveTask
     @Override
     public void core (Sheet sheet)
     {
-        sheet.remove(false);
+        sheet.close(false);
     }
 
     //-----------//

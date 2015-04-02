@@ -454,18 +454,21 @@ public class TimeBuilder
         //        List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
         // Needs a lag
         final String name = "LagForTime";
-        Lag lag = sheet.getLag(name);
+        Lag lag = sheet.getLagManager().getLag(name);
 
         if (lag == null) {
             lag = new BasicLag(name, SYMBOL_ORIENTATION);
-            sheet.setLag(name, lag);
+            sheet.getLagManager().setLag(name, lag);
 
             ////new LagController(sheet, lag, name).refresh();
         }
 
         SectionFactory sectionFactory = new SectionFactory(lag, new JunctionRatioPolicy());
         List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
-        List<Glyph> parts = sheet.getNest().retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
+        List<Glyph> parts = sheet.getGlyphNest().retrieveGlyphs(
+                sections,
+                GlyphLayer.SYMBOL,
+                true);
 
         // Keep only interesting parts
         purgeParts(parts, rect);
@@ -619,7 +622,7 @@ public class TimeBuilder
 
         if (!adapter.bestMap.isEmpty()) {
             for (Entry<Shape, Inter> entry : adapter.bestMap.entrySet()) {
-                ///sheet.getNest().registerGlyph(adapter.bestGlyph);
+                ///sheet.getGlyphNest().registerGlyph(adapter.bestGlyph);
                 Inter inter = entry.getValue();
 
                 Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
@@ -668,7 +671,7 @@ public class TimeBuilder
 
         if (!wholeAdapter.bestMap.isEmpty()) {
             for (Entry<Shape, Inter> entry : wholeAdapter.bestMap.entrySet()) {
-                ///sheet.getNest().registerGlyph(adapter.bestGlyph);
+                ///sheet.getGlyphNest().registerGlyph(adapter.bestGlyph);
                 Inter inter = entry.getValue();
 
                 Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
@@ -1226,7 +1229,7 @@ public class TimeBuilder
         @Override
         public GlyphNest getNest ()
         {
-            return sheet.getNest();
+            return sheet.getGlyphNest();
         }
 
         @Override

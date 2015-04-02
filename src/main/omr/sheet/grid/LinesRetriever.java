@@ -177,7 +177,7 @@ public class LinesRetriever
         // Create filament factory
         factory = new FilamentsFactory(
                 scale,
-                sheet.getNest(),
+                sheet.getGlyphNest(),
                 GlyphLayer.DEFAULT,
                 Orientation.HORIZONTAL,
                 LineFilament.class);
@@ -241,7 +241,7 @@ public class LinesRetriever
         SectionFactory sectionsBuilder = new SectionFactory(hLag, new JunctionRatioPolicy());
         sectionsBuilder.createSections(longHoriTable, null, true);
 
-        sheet.setLag(Lags.HLAG, hLag);
+        sheet.getLagManager().setLag(Lags.HLAG, hLag);
 
         setVipSections();
 
@@ -339,7 +339,7 @@ public class LinesRetriever
     public List<Section> createShortSections ()
     {
         // Note the current section id
-        sheet.setLongSectionMaxId(hLag.getLastVertexId());
+        sheet.getLagManager().setLongSectionMaxId(hLag.getLastVertexId());
 
         // Complete the horizontal hLag with the short sections
         // (it already contains all the other (long) horizontal sections)
@@ -736,7 +736,7 @@ public class LinesRetriever
     private void dispatchShortSections (List<Section> thickSections,
                                         List<Section> thinSections)
     {
-        final int maxLongId = sheet.getLongSectionMaxId();
+        final int maxLongId = sheet.getLagManager().getLongSectionMaxId();
 
         for (Section section : hLag.getSections()) {
             // Skip long sections

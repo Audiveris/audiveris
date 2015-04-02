@@ -26,7 +26,6 @@ import omr.sheet.Book;
 import omr.sheet.Sheet;
 
 import omr.step.Step;
-import omr.step.Stepping;
 
 import omr.ui.Colors;
 import omr.ui.util.SeparableMenu;
@@ -43,7 +42,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.concurrent.Callable;
 
 import javax.swing.AbstractAction;
@@ -156,7 +154,7 @@ public class SheetsController
                     defineTitleFor(sheet),
                     null,
                     assembly.getComponent(),
-                    sheet.getBook().getImagePath().toString());
+                    sheet.getBook().getInputPath().toString());
         }
     }
 
@@ -203,15 +201,15 @@ public class SheetsController
 
         sheet.getLocationService().dumpSubscribers();
 
-        for (Lag lag : sheet.getAllLags()) {
+        for (Lag lag : sheet.getLagManager().getAllLags()) {
             if (lag != null) {
                 lag.getSectionService().dumpSubscribers();
                 lag.getRunService().dumpSubscribers();
             }
         }
 
-        if (sheet.getNest() != null) {
-            sheet.getNest().getGlyphService().dumpSubscribers();
+        if (sheet.getGlyphNest() != null) {
+            sheet.getGlyphNest().getGlyphService().dumpSubscribers();
         }
     }
 
@@ -226,6 +224,25 @@ public class SheetsController
     public JComponent getComponent ()
     {
         return sheetsPane;
+    }
+
+    //----------------//
+    // getCurrentBook //
+    //----------------//
+    /**
+     * Convenient method to get the current book instance.
+     *
+     * @return the current book instance, or null
+     */
+    public static Book getCurrentBook ()
+    {
+        Sheet sheet = getCurrentSheet();
+
+        if (sheet != null) {
+            return sheet.getBook();
+        }
+
+        return null;
     }
 
     //-----------------//
@@ -326,7 +343,7 @@ public class SheetsController
             // Make sure the first sheet of a multipage score is OK
             // We need to modify the tab label for the book (new) first tab
             if (!book.getSheets().isEmpty()) {
-                Sheet firstSheet = book.getFirstSheet();
+                Sheet firstSheet = book.getSheets().get(0);
                 int firstIndex = sheetsPane.indexOfComponent(
                         firstSheet.getAssembly().getComponent());
 
@@ -472,7 +489,7 @@ public class SheetsController
                     public Void call ()
                             throws Exception
                     {
-                        boolean ok = Stepping.processSheet(Collections.singleton(earlyStep), sheet);
+                        boolean ok = sheet.doStep(earlyStep, null);
                         markTab(sheet, ok ? Color.BLACK : Color.RED);
 
                         return null;

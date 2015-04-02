@@ -17,9 +17,6 @@ import omr.sheet.Sheet;
 
 import omr.step.Step;
 import omr.step.StepException;
-import omr.step.Stepping;
-
-import java.util.Collections;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -64,7 +61,7 @@ public class SheetStepTask
     public void core (final Sheet sheet)
             throws StepException
     {
-        Stepping.processSheet(Collections.singleton(step), sheet);
+        sheet.doStep(step, null);
         logger.info("End of sheet step {}", step);
     }
 
