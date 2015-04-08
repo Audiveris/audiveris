@@ -572,7 +572,8 @@ public class ScaleBuilder
             int upper = (int) Math.min(
                     fore.length,
                     ((backPeak != null) ? ((backPeak.getKey().best * 3) / 2) : 20));
-            String xLabel = "Lengths - " + ((scale != null) ? scale : "*no scale*");
+            Scale theScale = (scale != null) ? scale : sheet.getScale();
+            String xLabel = "Lengths - " + ((theScale != null) ? theScale : "*no scale*");
 
             new HistogramPlotter(sheet, "vertical both", both, bothHisto, bothPeak, null, upper).plot(
                     new Point(0, 0),

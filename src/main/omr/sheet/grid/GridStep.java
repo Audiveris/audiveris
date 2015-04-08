@@ -19,8 +19,6 @@ import omr.glyph.ui.SymbolsEditor;
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.grid.GridBuilder;
-import omr.sheet.grid.LagWeaver;
 import omr.sheet.ui.ImageView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.ScrollImageView;

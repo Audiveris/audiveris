@@ -101,6 +101,9 @@ public abstract class CurvesBuilder
     /** (Current) orientation for walking along a curve. */
     protected boolean reverse;
 
+    /** (Debug) are being debugged. */
+    protected boolean debugArc;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SequencesBuilder object.
@@ -168,7 +171,7 @@ public abstract class CurvesBuilder
      */
     protected void buildCurve (Arc arc)
     {
-        curves.checkBreak(arc); // Debug
+        debugArc = curves.checkBreak(arc); // Debug
 
         Curve trunk = createCurve(arc, arc.getModel());
 
@@ -565,6 +568,11 @@ public abstract class CurvesBuilder
                          Collection<Arc> pastArcs,
                          Set<Curve> clump)
     {
+        // Debug
+        if (debugArc) {
+            curves.selectPoint(curve.getEnd(reverse));
+        }
+
         Set<Arc> browsed = new LinkedHashSet<Arc>(pastArcs);
         List<Curve> newCurves = new ArrayList<Curve>();
         clump.add(curve);

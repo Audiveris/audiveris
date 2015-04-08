@@ -229,7 +229,7 @@ public class LineFilamentAlignment
         }
 
         //~ Inner Classes --------------------------------------------------------------------------
-        /** Convey a point together with its relative cluster position */
+        /** Convey a point together with its relative cluster position.. */
         private class Neighbor
         {
             //~ Instance fields --------------------------------------------------------------------
@@ -252,7 +252,7 @@ public class LineFilamentAlignment
     // VirtualPoint //
     //--------------//
     /**
-     * Used for artificial intermediate points
+     * Used for artificial intermediate points.
      */
     private static class VirtualPoint
             extends Point2D.Double

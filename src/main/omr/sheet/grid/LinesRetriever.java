@@ -422,8 +422,8 @@ public class LinesRetriever
      * candidates for staff lines.
      * <ol>
      * <li>First, retrieve long horizontal sections and merge them into filaments.</li>
-     * <li>Second, detect series of filaments regularly spaced and aggregate them into clusters of
-     * lines (as staff candidates). </li>
+     * <li>Second, detect series of filaments regularly spaced vertically and aggregate them into
+     * clusters of lines (as staff candidates). </li>
      * </ol>
      * <p>
      * <b>Synopsis:</b>
@@ -529,9 +529,12 @@ public class LinesRetriever
         staffManager.reset();
 
         for (LineCluster cluster : allClusters) {
-            logger.debug(cluster.toString());
+            logger.debug("{}", cluster);
 
+            // Copy array of lines
             List<FilamentLine> lines = new ArrayList<FilamentLine>(cluster.getLines());
+
+            // Determine rough abscissa values for left & right sides
             double left = Integer.MAX_VALUE;
             double right = Integer.MIN_VALUE;
 
@@ -540,6 +543,7 @@ public class LinesRetriever
                 right = Math.max(right, line.getEndPoint(RIGHT).getX());
             }
 
+            // Allocate Staff instance
             Staff staff = new Staff(
                     ++staffId,
                     left,

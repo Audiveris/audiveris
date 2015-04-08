@@ -18,6 +18,8 @@ import omr.math.AreaUtil.CoreData;
 import omr.math.GeoPath;
 import omr.math.Projection;
 
+import omr.run.Orientation;
+
 import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -225,6 +227,7 @@ public class StaffProjector
     {
         if (projection == null) {
             computeProjection();
+            computeLineThresholds();
         }
 
         new Plotter().plot();
@@ -244,6 +247,9 @@ public class StaffProjector
 
         // Cumulate pixels for each abscissa
         computeProjection();
+
+        // Adjust thresholds according to actual line thicknesses in this staff
+        computeLineThresholds();
 
         // Retrieve all regions without staff lines
         findAllBlanks();
@@ -278,6 +284,52 @@ public class StaffProjector
     public String toString ()
     {
         return "StaffProjector#" + staff.getId();
+    }
+
+    //---------------------------//
+    // computeCoreLinesThickness //
+    //---------------------------//
+    /**
+     * Using the current definition on staff lines (made of only long filaments sofar)
+     * estimate the cumulated staff line thicknesses for the staff.
+     * Since we may have holes in lines, and short sections have been left apart, the measurement
+     * is under-estimated.
+     *
+     * @return the estimate of cumulated lines heights
+     */
+    private double computeCoreLinesThickness ()
+    {
+        double linesHeight = 0;
+
+        for (FilamentLine line : staff.getLines()) {
+            LineFilament fil = line.getFilament();
+            linesHeight += fil.getMeanThickness(Orientation.HORIZONTAL);
+        }
+
+        logger.info("Staff#{} linesheight: {}", staff.getId(), String.format("%.1f", linesHeight));
+
+        return linesHeight;
+    }
+
+    //-----------------------//
+    // computeLineThresholds //
+    //-----------------------//
+    /**
+     * Compute thresholds that closely depend on actual line thickness in this staff.
+     */
+    private void computeLineThresholds ()
+    {
+        final double linesCumul = computeCoreLinesThickness();
+        final double lineThickness = linesCumul / staff.getLines().size();
+
+        // For chunk threshold the strategy is to use the largest value
+        // among (4 times max fore) and (linesCumul + fraction)
+        params.linesThreshold = (int) Math.rint(linesCumul); ///4 * scale.getMainFore();
+        params.blankThreshold = (int) Math.rint(
+                constants.blankThreshold.getValue() * lineThickness);
+        params.chunkThreshold = Math.max(
+                4 * scale.getMaxFore(),
+                params.linesThreshold + scale.toPixels(constants.chunkThreshold));
     }
 
     //-------------------//
@@ -1021,12 +1073,6 @@ public class StaffProjector
 
         final int gapThreshold;
 
-        final int linesThreshold;
-
-        final int chunkThreshold;
-
-        final int blankThreshold;
-
         final int minWideBlankWidth;
 
         final int minSmallBlankWidth;
@@ -1034,6 +1080,13 @@ public class StaffProjector
         final int maxBarWidth;
 
         final int maxBarToEnd;
+
+        // Following threshold values depend on actual line height within this staff
+        int linesThreshold;
+
+        int blankThreshold;
+
+        int chunkThreshold;
 
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
@@ -1045,18 +1098,10 @@ public class StaffProjector
             barThreshold = scale.toPixels(constants.barThreshold);
             braceThreshold = scale.toPixels(constants.braceThreshold);
             gapThreshold = scale.toPixels(constants.gapThreshold);
-            linesThreshold = 4 * scale.getMainFore();
-            blankThreshold = scale.toPixels(constants.blankThreshold);
             minWideBlankWidth = scale.toPixels(constants.minWideBlankWidth);
             minSmallBlankWidth = scale.toPixels(constants.minSmallBlankWidth);
             maxBarWidth = scale.toPixels(constants.maxBarWidth);
             maxBarToEnd = scale.toPixels(constants.maxBarToEnd);
-
-            // For chunk threshold the strategy is to use the largest value
-            // among (4 times max fore) and (4 times mean fore) + fraction
-            chunkThreshold = Math.max(
-                    4 * scale.getMaxFore(),
-                    linesThreshold + scale.toPixels(constants.chunkThreshold));
         }
     }
 

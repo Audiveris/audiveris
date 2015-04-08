@@ -408,8 +408,7 @@ public class FilamentAlignment
     //-------------//
     /**
      * Compute cached data: curve, startPoint, stopPoint, slope.
-     * Curve goes from startPoint to stopPoint through intermediate points
-     * regularly spaced
+     * Curve goes from startPoint to stopPoint through intermediate points regularly spaced.
      */
     @Override
     protected void computeLine ()
@@ -585,15 +584,15 @@ public class FilamentAlignment
                 2,
                 "Typical length between filament curve intermediate points");
 
-        Constant.Boolean showFilamentPoints = new Constant.Boolean(
+        final Constant.Boolean showFilamentPoints = new Constant.Boolean(
                 false,
                 "Should we show filament points?");
 
-        Scale.Fraction filamentPointSize = new Scale.Fraction(
+        final Scale.Fraction filamentPointSize = new Scale.Fraction(
                 0.05,
                 "Size of displayed filament points");
 
-        Scale.Fraction minRadius = new Scale.Fraction(
+        final Scale.Fraction minRadius = new Scale.Fraction(
                 12,
                 "Minimum acceptable radius of curvature");
     }

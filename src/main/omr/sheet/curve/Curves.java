@@ -157,21 +157,24 @@ public class Curves
      * Debug method to break on a specific arc.
      *
      * @param arc current arc being processed
+     * @return true if a breakPoint exist for the arc
      */
-    public void checkBreak (Arc arc)
+    public boolean checkBreak (Arc arc)
     {
         if (arc == null) {
-            return;
+            return false;
         }
 
         for (Point pt : breakPoints) {
             if (pt.equals(arc.getEnd(false)) || pt.equals(arc.getEnd(true))) {
-                view.selectPoint(arc.getEnd(true));
-                logger.info("Curve break on {}", arc);
+                view.selectPoint(pt);
+                logger.info("Curve break on {}", arc); // <== BreakPoint here (debug)
 
-                break;
+                return true;
             }
         }
+
+        return false;
     }
 
     //-------------//

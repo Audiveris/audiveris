@@ -135,10 +135,10 @@ public class ClustersRetriever
             Point p2 = c2.getCenter();
 
             if (GeoUtil.xOverlap(c1.getBounds(), c2.getBounds()) < 0) {
-                // No abscissa overlap, we are side by side: use abscissa
+                // No abscissa overlap, we are side by side: use abscissae
                 return Integer.compare(p1.x, p2.x);
             } else {
-                // Abscissa overlap, we are one under the other: use ordinate
+                // Abscissa overlap, we are one under the other: use deskewed ordinates
                 return Double.compare(ordinateOf(p1), ordinateOf(p2));
             }
         }
