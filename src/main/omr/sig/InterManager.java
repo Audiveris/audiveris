@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sig;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -104,7 +104,7 @@ public class InterManager
             logger.info("VIP inters: {}", vipInters);
         }
 
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             interService = new SelectionService("inters", allowedEvents);
 
             // Subscriptions

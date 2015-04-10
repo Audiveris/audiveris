@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.text;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -162,7 +162,7 @@ public class SheetScanner
         cleaner.eraseInters();
 
         // Display for visual check?
-        if (constants.displayTexts.isSet() && (Main.getGui() != null)) {
+        if (constants.displayTexts.isSet() && (OMR.getGui() != null)) {
             sheet.getAssembly().addViewTab(
                     "Texts",
                     new ScrollImageView(

@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -36,6 +34,7 @@ import static omr.run.Orientation.*;
 
 import omr.sheet.Scale;
 
+import omr.util.Dumping;
 import omr.util.StopWatch;
 
 import org.slf4j.Logger;
@@ -1175,7 +1174,7 @@ public class FilamentsFactory
         //~ Methods --------------------------------------------------------------------------------
         public void dump (String title)
         {
-            Main.dumping.dump(this, title);
+            new Dumping().dump(this, title);
         }
 
         /**

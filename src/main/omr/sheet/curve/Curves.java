@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.curve;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -96,7 +96,7 @@ public class Curves
         BufferedImage img = skeleton.buildSkeleton();
 
         // Display skeleton buffer?
-        if ((Main.getGui() != null) && constants.displayCurves.isSet()) {
+        if ((OMR.getGui() != null) && constants.displayCurves.isSet()) {
             view = new Curves.MyView(img);
             sheet.getAssembly().addViewTab(
                     "Curves",

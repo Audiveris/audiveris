@@ -306,7 +306,7 @@ public class StaffProjector
             linesHeight += fil.getMeanThickness(Orientation.HORIZONTAL);
         }
 
-        logger.info("Staff#{} linesheight: {}", staff.getId(), String.format("%.1f", linesHeight));
+        logger.debug("Staff#{} linesheight: {}", staff.getId(), linesHeight);
 
         return linesHeight;
     }

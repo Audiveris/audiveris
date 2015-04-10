@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.script;
 
-import omr.Main;
 import omr.WellKnowns;
 
 import omr.constant.Constant;
@@ -42,6 +41,7 @@ import java.io.IOException;
 
 import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
+import omr.OMR;
 
 /**
  * Class {@code ScriptActions} gathers UI actions related to script handling.
@@ -138,7 +138,7 @@ public class ScriptActions
     {
         final File file = UIUtil.fileChooser(
                 false,
-                Main.getGui().getFrame(),
+                OMR.getGui().getFrame(),
                 new File(constants.defaultScriptDirectory.getValue()),
                 new OmrFileFilter(
                         "Score script files",
@@ -187,7 +187,7 @@ public class ScriptActions
         // Let the user select a script output file
         File scriptFile = UIUtil.fileChooser(
                 true,
-                Main.getGui().getFrame(),
+                OMR.getGui().getFrame(),
                 getDefaultScriptFile(book),
                 new OmrFileFilter("Script files", new String[]{ScriptManager.SCRIPT_EXTENSION}));
 

@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.curve;
 
-import omr.Main;
-
 import omr.constant.ConstantSet;
 import static omr.image.PixelSource.BACKGROUND;
 
@@ -32,6 +30,7 @@ import omr.sig.inter.Inter;
 
 import omr.ui.util.ItemRenderer;
 
+import omr.util.Dumping;
 import omr.util.Navigable;
 
 import ij.process.ByteProcessor;
@@ -1073,7 +1072,7 @@ public abstract class CurvesBuilder
             lineBoxDeltaOut = scale.toPixels(constants.lineBoxDeltaOut);
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
         }
     }

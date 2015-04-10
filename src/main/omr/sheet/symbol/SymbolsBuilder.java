@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.symbol;
 
-import omr.Main;
-
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
@@ -33,6 +31,7 @@ import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
+import omr.util.Dumping;
 import omr.util.Navigable;
 
 import org.jgrapht.Graphs;
@@ -319,7 +318,7 @@ public class SymbolsBuilder
             minWeight = scale.toPixels(constants.minWeight);
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
         }
     }

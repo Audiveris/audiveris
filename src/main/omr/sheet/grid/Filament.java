@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.Main;
-
 import omr.glyph.GlyphLayer;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.GlyphComposition.Linking;
@@ -22,6 +20,8 @@ import omr.lag.Section;
 import omr.run.Orientation;
 
 import omr.sheet.Scale;
+
+import omr.util.Dumping;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,8 +109,8 @@ public class Filament
     //----------//
     public void deepDump ()
     {
-        Main.dumping.dump(this);
-        Main.dumping.dump(getAlignment());
+        new Dumping().dump(this);
+        new Dumping().dump(getAlignment());
     }
 
     //------------------//

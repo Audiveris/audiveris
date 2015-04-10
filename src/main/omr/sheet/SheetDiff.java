@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -163,7 +163,7 @@ public class SheetDiff
         }
 
         // Display the filtered differences
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             sheet.getAssembly().addViewTab(
                     SheetTab.DIFF_TAB,
                     new ScrollView(new MyView(xor)),

@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.Main;
-
 import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
@@ -24,6 +22,7 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
+import omr.util.Dumping;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.TreeNode;
@@ -254,7 +253,7 @@ public class Beam
     public void dump ()
     {
         getLine();
-        Main.dumping.dump(this);
+        new Dumping().dump(this);
     }
 
     //-----------//

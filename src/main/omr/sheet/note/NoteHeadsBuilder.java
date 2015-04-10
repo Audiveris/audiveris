@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.note;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -60,6 +58,7 @@ import omr.sig.inter.VoidHeadInter;
 import omr.sig.inter.WholeInter;
 import omr.sig.relation.Exclusion;
 
+import omr.util.Dumping;
 import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.StopWatch;
@@ -196,7 +195,7 @@ public class NoteHeadsBuilder
         params = new Parameters(scale);
 
         if ((system.getId() == 1) && constants.printParameters.isSet()) {
-            Main.dumping.dump(params);
+            new Dumping().dump(params);
         }
 
         // Compute window in x

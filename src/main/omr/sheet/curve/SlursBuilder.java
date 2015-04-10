@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.curve;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -32,6 +30,8 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.SlurInter;
 
 import omr.ui.util.UIUtil;
+
+import omr.util.Dumping;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -973,7 +973,7 @@ public class SlursBuilder
             maxRunDistance = scale.toPixelsDouble(constants.maxRunDistance);
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
         }
     }

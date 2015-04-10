@@ -12,6 +12,7 @@
 package omr.sheet.ui;
 
 import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -19,8 +20,6 @@ import omr.constant.ConstantSet;
 import omr.score.entity.Container;
 
 import omr.sheet.Book;
-
-import omr.ui.MainGui;
 
 import omr.util.Dumper;
 import omr.util.Dumping.PackageRelevance;
@@ -195,7 +194,7 @@ public class BookBrowser
             frame.add(component);
 
             // Resources injection
-            ResourceMap resource = MainGui.getInstance().getContext().getResourceMap(getClass());
+            ResourceMap resource = OMR.getApplication().getContext().getResourceMap(getClass());
             resource.injectComponents(frame);
             frame.setTitle(resource.getString("frameTitleMask", book.getRadix()));
         }

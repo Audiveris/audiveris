@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -50,6 +50,7 @@ import omr.ui.Colors;
 import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
 
+import omr.util.Dumping;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.IntUtil;
@@ -170,7 +171,7 @@ public class LinesRetriever
      */
     public RunTable buildHorizontalLag (RunTable wholeVertTable)
     {
-        final RunsViewer runsViewer = (constants.displayRuns.isSet() && (Main.getGui() != null))
+        final RunsViewer runsViewer = (constants.displayRuns.isSet() && (OMR.getGui() != null))
                 ? new RunsViewer(sheet) : null;
         hLag = new BasicLag(Lags.HLAG, Orientation.HORIZONTAL);
 
@@ -1341,7 +1342,7 @@ public class LinesRetriever
             vipSections = IntUtil.parseInts(constants.horizontalVipSections.getValue());
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
 
             if (!vipSections.isEmpty()) {

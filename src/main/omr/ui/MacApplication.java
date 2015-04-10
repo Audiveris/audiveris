@@ -11,12 +11,12 @@
 // </editor-fold>
 package omr.ui;
 
+import omr.OMR;
 import omr.WellKnowns;
 
 import omr.script.Script;
 import omr.script.ScriptManager;
 
-import omr.sheet.BasicBook;
 import omr.sheet.Book;
 
 import org.slf4j.Logger;
@@ -133,7 +133,8 @@ public class MacApplication
                 worker.execute();
             } else {
                 // Actually load the sheet picture
-                Book book = new BasicBook(Paths.get(filename));
+                Book book = OMR.getEngine().loadInput(Paths.get(filename));
+                book.createSheets(null); // So that sheets are visible
             }
 
             break;

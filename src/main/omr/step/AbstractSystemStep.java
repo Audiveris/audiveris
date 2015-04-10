@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -75,6 +75,32 @@ public abstract class AbstractSystemStep<C>
                                    C context)
             throws StepException;
 
+    //------//
+    // doit //
+    //------//
+    /**
+     * Actually perform the step.
+     * This method is run when this step is explicitly selected
+     *
+     * @param systems systems to process (null means all systems)
+     * @param sheet   the sheet to process
+     * @throws StepException raised if processing failed
+     */
+    @Override
+    public void doit (Collection<SystemInfo> systems,
+                      Sheet sheet)
+            throws StepException
+    {
+        // Preliminary actions
+        final C context = doProlog(systems, sheet);
+
+        // Processing system per system
+        doitPerSystem(systems, sheet, context);
+
+        // Final actions
+        doEpilog(systems, sheet, context);
+    }
+
     //-------------------//
     // clearSystemErrors //
     //-------------------//
@@ -86,7 +112,7 @@ public abstract class AbstractSystemStep<C>
     protected void clearSystemErrors (Step step,
                                       SystemInfo system)
     {
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             system.getSheet().getErrorsEditor().clearSystem(step, system.getId());
         }
     }
@@ -127,32 +153,6 @@ public abstract class AbstractSystemStep<C>
     {
         // Empty by default
         return null;
-    }
-
-    //------//
-    // doit //
-    //------//
-    /**
-     * Actually perform the step.
-     * This method is run when this step is explicitly selected
-     *
-     * @param systems systems to process (null means all systems)
-     * @param sheet   the sheet to process
-     * @throws StepException raised if processing failed
-     */
-    @Override
-    public void doit (Collection<SystemInfo> systems,
-                      Sheet sheet)
-            throws StepException
-    {
-        // Preliminary actions
-        final C context = doProlog(systems, sheet);
-
-        // Processing system per system
-        doitPerSystem(systems, sheet, context);
-
-        // Final actions
-        doEpilog(systems, sheet, context);
     }
 
     //---------------//

@@ -12,6 +12,7 @@
 package omr.ui;
 
 import omr.Main;
+import omr.OMR;
 
 import omr.constant.UnitManager;
 import omr.constant.UnitModel;
@@ -105,10 +106,9 @@ public class Options
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            MainGui gui = Main.getGui();
-
-            if (gui != null) {
-                if (true == gui.displayConfirmation("Reset all constants to their factory value?")) {
+            if (OMR.getGui() != null) {
+                if (true == OMR.getGui()
+                        .displayConfirmation("Reset all constants to their factory value?")) {
                     UnitManager.getInstance().resetAllUnits();
                 }
             }

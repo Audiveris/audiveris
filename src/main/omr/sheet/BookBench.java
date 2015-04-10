@@ -109,7 +109,7 @@ public class BookBench
     @Override
     public final synchronized void flushBench ()
     {
-        BookManager.getInstance().storeBench(this, false);
+        BookManager.storeBench(this, false);
     }
 
     //---------//

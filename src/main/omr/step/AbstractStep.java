@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -48,7 +48,7 @@ public abstract class AbstractStep
     public void clearErrors (Step step,
                              Sheet sheet)
     {
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             sheet.getErrorsEditor().clearStep(step);
         }
     }

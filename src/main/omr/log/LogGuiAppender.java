@@ -11,9 +11,7 @@
 // </editor-fold>
 package omr.log;
 
-import omr.Main;
-
-import omr.ui.MainGui;
+import omr.OMR;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
@@ -41,7 +39,7 @@ public class LogGuiAppender
     private static final int LOG_MBX_SIZE = 10000;
 
     /** Temporary mail box for logged messages. */
-    private static ArrayBlockingQueue<ILoggingEvent> logMbx = new ArrayBlockingQueue<ILoggingEvent>(
+    private static final ArrayBlockingQueue<ILoggingEvent> logMbx = new ArrayBlockingQueue<ILoggingEvent>(
             LOG_MBX_SIZE);
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -69,10 +67,8 @@ public class LogGuiAppender
     {
         logMbx.offer(event);
 
-        MainGui gui = Main.getGui();
-
-        if (gui != null) {
-            gui.notifyLog();
+        if (OMR.getGui() != null) {
+            OMR.getGui().notifyLog();
         }
     }
 }

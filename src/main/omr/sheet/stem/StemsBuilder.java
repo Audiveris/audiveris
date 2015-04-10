@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.stem;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -61,6 +59,7 @@ import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
 
 import omr.util.Corner;
+import omr.util.Dumping;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
@@ -1915,7 +1914,7 @@ public class StemsBuilder
             }
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
         }
     }

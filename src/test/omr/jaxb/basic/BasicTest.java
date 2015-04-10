@@ -11,9 +11,8 @@
 // </editor-fold>
 package omr.jaxb.basic;
 
-import omr.Main;
-
 import omr.util.BaseTestCase;
+import omr.util.Dumping;
 
 import java.awt.Point;
 import java.io.*;
@@ -91,7 +90,7 @@ public class BasicTest
         //            um = jaxbContext.createUnmarshaller();
         //
         //            Waiter waiter = (Waiter) um.unmarshal(new File(fileName));
-        Main.dumping.dump(waiter);
+        new Dumping().dump(waiter);
 
         System.out.println("\ntips:");
 

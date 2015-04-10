@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -141,7 +141,7 @@ public class ShapeBoard
             getBody().add(shapesPanel);
 
             // Perhaps this is too much ... TODO
-            JFrame frame = Main.getGui().getFrame();
+            JFrame frame = OMR.getGui().getFrame();
             frame.invalidate();
             frame.validate();
             frame.repaint();
@@ -165,7 +165,7 @@ public class ShapeBoard
             getBody().add(rangesPanel);
 
             // Perhaps this is too much ... TODO
-            JFrame frame = Main.getGui().getFrame();
+            JFrame frame = OMR.getGui().getFrame();
             frame.invalidate();
             frame.validate();
             frame.repaint();
@@ -207,7 +207,7 @@ public class ShapeBoard
     private Panel shapesPanel;
 
     /** GlassPane */
-    private final GhostGlassPane glassPane = Main.getGui().getGlassPane();
+    private final GhostGlassPane glassPane = OMR.getGui().getGlassPane();
 
     // Update image and forward mouse location
     private final MyMotionAdapter motionAdapter = new MyMotionAdapter(glassPane);
@@ -358,31 +358,6 @@ public class ShapeBoard
                 "Should we publish the current location while dragging a shape?");
     }
 
-    //-------------//
-    // ShapeButton //
-    //-------------//
-    /**
-     * A button dedicated to a shape.
-     */
-    private static class ShapeButton
-            extends JButton
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final Shape shape;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public ShapeButton (Shape shape)
-        {
-            this.shape = shape;
-            setIcon(shape.getDecoratedSymbol());
-            setName(shape.toString());
-            setToolTipText(shape.toString());
-
-            setBorderPainted(true);
-        }
-    }
-
     //---------------//
     // MyDropAdapter //
     //---------------//
@@ -490,6 +465,11 @@ public class ShapeBoard
         }
 
         //~ Methods --------------------------------------------------------------------------------
+        public final void reset ()
+        {
+            prevComponent = new WeakReference<Component>(null);
+        }
+
         /**
          * In this specific implementation, we update the size of the
          * shape image according to the interline scale and to the
@@ -549,10 +529,30 @@ public class ShapeBoard
             // This triggers a repaint of glassPane
             glassPane.setPoint(screenPoint);
         }
+    }
 
-        public final void reset ()
+    //-------------//
+    // ShapeButton //
+    //-------------//
+    /**
+     * A button dedicated to a shape.
+     */
+    private static class ShapeButton
+            extends JButton
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Shape shape;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ShapeButton (Shape shape)
         {
-            prevComponent = new WeakReference<Component>(null);
+            this.shape = shape;
+            setIcon(shape.getDecoratedSymbol());
+            setName(shape.toString());
+            setToolTipText(shape.toString());
+
+            setBorderPainted(true);
         }
     }
 }

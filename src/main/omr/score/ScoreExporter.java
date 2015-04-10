@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score;
 
-import static omr.sheet.BookManager.SCORE_EXTENSION;
+import omr.OMR;
 
 import com.audiveris.proxymusic.ScorePartwise;
 import com.audiveris.proxymusic.mxl.Mxl;
@@ -117,7 +117,8 @@ public class ScoreExporter
                 scoreName = "score"; // Fall-back value
             }
 
-            mof.addEntry(new RootFile(scoreName + SCORE_EXTENSION, RootFile.MUSICXML_MEDIA_TYPE));
+            mof.addEntry(
+                    new RootFile(scoreName + OMR.SCORE_EXTENSION, RootFile.MUSICXML_MEDIA_TYPE));
             Marshalling.marshal(scorePartwise, zos, signed, 2);
             mof.close();
         } else {

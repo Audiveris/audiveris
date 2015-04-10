@@ -122,6 +122,13 @@ public interface Sheet
     // ---------------------
     //
     /**
+     * Convenient method to perform all needed transcription steps on this sheet.
+     *
+     * @return true if OK
+     */
+    boolean transcribe ();
+
+    /**
      * Perform a step, including intermediate ones if any, with online progress monitor.
      * If any step throws {@link StepException} the processing is stopped.
      *

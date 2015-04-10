@@ -11,24 +11,22 @@
 // </editor-fold>
 package omr.score.ui;
 
-import omr.Main;
-
 import omr.action.ActionManager;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import static omr.score.ui.PaintingLayer.*;
+import static omr.score.ui.PaintingParameters.PaintingLayer.*;
 
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationAction;
+import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -49,26 +47,62 @@ public class PaintingParameters
 
     private static final Logger logger = LoggerFactory.getLogger(PaintingParameters.class);
 
-    /** Should the annotations be painted */
+    /** Should the annotations be painted. */
     public static final String ANNOTATION_PAINTING = "annotationPainting";
 
-    /** Should the marks be painted */
+    /** Should the marks be painted. */
     public static final String MARK_PAINTING = "markPainting";
 
-    /** Should the slots be painted */
+    /** Should the slots be painted. */
     public static final String SLOT_PAINTING = "slotPainting";
 
-    /** A global property name for layers */
+    /** A global property name for layers. */
     public static final String LAYER_PAINTING = "layerPainting";
 
-    /** Should the voices be painted */
+    /** Should the voices be painted. */
     public static final String VOICE_PAINTING = "voicePainting";
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
-    /** Icons for layers combinations. (Must be lazily computed) */
-    private Map<PaintingLayer, Icon> layerIcons;
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * Enum {@code PaintingLayer} defines layers to be painted.
+     */
+    public static enum PaintingLayer
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
 
+        /** Input: image or glyphs. */
+        INPUT,
+        /** Union of input and output. */
+        INPUT_OUTPUT,
+        /** Output: score entities. */
+        OUTPUT;
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Icon assigned to layer. */
+        private Icon icon;
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Lazily building of layer icon.
+         *
+         * @return the layer icon
+         */
+        public Icon getIcon ()
+        {
+            if (icon == null) {
+                ResourceMap resource = Application.getInstance().getContext().getResourceMap(
+                        PaintingParameters.class);
+
+                String key = getClass().getSimpleName() + "." + this + ".icon";
+                String resourceName = resource.getString(key);
+                icon = new ImageIcon(PaintingParameters.class.getResource(resourceName));
+            }
+
+            return icon;
+        }
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Action for switching layers. (Must be lazily computed) */
     private ApplicationAction layerAction;
 
@@ -140,7 +174,6 @@ public class PaintingParameters
     //-----------------//
     public boolean isVoicePainting ()
     {
-        // return constants.voicePainting.getValue();
         return voicePainting;
     }
 
@@ -170,7 +203,6 @@ public class PaintingParameters
     public void setPaintingLayer (PaintingLayer value)
     {
         PaintingLayer oldValue = getPaintingLayer();
-        /// constants.paintingLayer.setValue(value); // For persistency
         paintingLayer = value;
         firePropertyChange(LAYER_PAINTING, oldValue, getPaintingLayer());
     }
@@ -190,12 +222,6 @@ public class PaintingParameters
     //------------------//
     public void setVoicePainting (boolean value)
     {
-        //        boolean oldValue = constants.voicePainting.getValue();
-        //        constants.voicePainting.setValue(value);
-        //        firePropertyChange(
-        //            VOICE_PAINTING,
-        //            oldValue,
-        //            constants.voicePainting.getValue());
         boolean oldValue = voicePainting;
         voicePainting = value;
         firePropertyChange(VOICE_PAINTING, oldValue, voicePainting);
@@ -205,23 +231,26 @@ public class PaintingParameters
     // switchLayers //
     //--------------//
     /**
-     * Action that switches among layer combinations
+     * Action that switches among layer combinations in a circular manner.
      *
      * @param e the event that triggered this action
      */
     @Action
     public void switchLayers (ActionEvent e)
     {
-        // Compute new layer
+        // Compute next layer
         int oldOrd = getPaintingLayer().ordinal();
         int ord = (oldOrd + 1) % PaintingLayer.values().length;
         PaintingLayer layer = PaintingLayer.values()[ord];
 
-        // Update toolbar/menu icon
-        Icon icon = getLayerIcons().get(layer);
-        ApplicationAction action = getLayerAction();
-        action.putValue(AbstractAction.LARGE_ICON_KEY, icon); // toolbar
-        action.putValue(AbstractAction.SMALL_ICON, icon); // menu
+        // Update toolbar/menu icon for this dedicated action
+        if (layerAction == null) {
+            layerAction = ActionManager.getInstance().getActionInstance(this, "switchLayers");
+        }
+
+        Icon icon = layer.getIcon();
+        layerAction.putValue(AbstractAction.LARGE_ICON_KEY, icon); // For toolbar
+        layerAction.putValue(AbstractAction.SMALL_ICON, icon); // For menu
 
         // Notify new layer
         setPaintingLayer(layer);
@@ -279,49 +308,6 @@ public class PaintingParameters
     {
     }
 
-    //----------------//
-    // getLayerAction //
-    //----------------//
-    /**
-     * Lazily retrieve which action is mapped to the "switchLayers"
-     * method.
-     *
-     * @return the mapped action
-     */
-    private ApplicationAction getLayerAction ()
-    {
-        if (layerAction == null) {
-            layerAction = ActionManager.getInstance().getActionInstance(this, "switchLayers");
-        }
-
-        return layerAction;
-    }
-
-    //---------------//
-    // getLayerIcons //
-    //---------------//
-    /**
-     * Build the map of icons, based on painting layer.
-     *
-     * @return the map (layer -> icon)
-     */
-    private Map<PaintingLayer, Icon> getLayerIcons ()
-    {
-        if (layerIcons == null) {
-            layerIcons = new HashMap<PaintingLayer, Icon>();
-
-            final String root = Main.getGui().getIconsRoot();
-
-            for (PaintingLayer layer : PaintingLayer.values()) {
-                layerIcons.put(
-                        layer,
-                        new ImageIcon(getClass().getResource(root + "/apps/" + layer.getImageName())));
-            }
-        }
-
-        return layerIcons;
-    }
-
     //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------//
     // Holder //
@@ -353,14 +339,5 @@ public class PaintingParameters
         final Constant.Boolean markPainting = new Constant.Boolean(
                 true,
                 "Should the marks be painted");
-
-        //        /** Which layers should be painted */
-        //        final PaintingLayer.Constant paintingLayer = new PaintingLayer.Constant(
-        //            PaintingLayer.INPUT_OUTPUT,
-        //            "Which layers should be painted");
-        //        /** Should the voices be painted */
-        //        final Constant.Boolean voicePainting = new Constant.Boolean(
-        //            false,
-        //            "Should the voices be painted");
     }
 }

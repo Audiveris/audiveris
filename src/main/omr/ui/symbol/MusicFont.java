@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.glyph.Shape;
 
@@ -156,8 +156,8 @@ public class MusicFont
             String msg = FONT_NAME + " font not found." + " Please install " + FONT_NAME + ".ttf";
             logger.error(msg);
 
-            if (Main.getGui() != null) {
-                Main.getGui().displayError(msg);
+            if (OMR.getGui() != null) {
+                OMR.getGui().displayError(msg);
             }
 
             return false;

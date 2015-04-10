@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.plugin.Plugin;
 
@@ -65,7 +65,7 @@ public class PluginStep
         Book book = sheet.getBook();
 
         // Interactive or Batch?
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             plugin.getTask(book).execute();
         } else {
             plugin.runPlugin(book);
@@ -100,9 +100,10 @@ public class PluginStep
         Plugin oldPlugin = this.plugin;
         this.plugin = plugin;
 
-        if (oldPlugin != null) {
-            // Update step tooltip with this new plugin
-            Main.getGui().getStepMenu().updateMenu();
-        }
+        //        if (oldPlugin != null) {
+        //            // Update step tooltip with this new plugin
+        //            MainGui gui = (MainGui) OMR.getGui();
+        //            gui.getStepMenu().updateMenu();
+        //        }
     }
 }

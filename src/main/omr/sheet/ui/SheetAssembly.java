@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.selection.LocationEvent;
 
@@ -20,7 +20,6 @@ import omr.sheet.Sheet;
 import omr.ui.Board;
 import omr.ui.BoardsPane;
 import omr.ui.GuiActions;
-import omr.ui.MainGui;
 import omr.ui.util.Panel;
 import omr.ui.util.UIUtil;
 import omr.ui.view.LogSlider;
@@ -232,7 +231,7 @@ public class SheetAssembly
 
         // Display the errors pane of this assembly?
         if (GuiActions.getInstance().isErrorsDisplayed()) {
-            Main.getGui().showErrors(getErrorsPane());
+            OMR.getGui().setErrorsPane(sheet.getErrorsEditor().getComponent());
         }
     }
 
@@ -240,13 +239,11 @@ public class SheetAssembly
     // close //
     //-------//
     /**
-     * Close the assembly, by removing it from the containing sheet
-     * tabbed pane.
+     * Close the assembly, by removing it from the containing sheet tabbed pane.
      */
     public void close ()
     {
-        MainGui gui = Main.getGui();
-        gui.removeBoardsPane();
+        OMR.getGui().removeBoardsPane();
 
         // Disconnect all keyboard bindings from PixelBoard's (as a workaround
         // for a Swing memory leak)
@@ -257,7 +254,7 @@ public class SheetAssembly
         tabs.clear(); // Useful ???
 
         // Hide the error messages (for this sheet)
-        Main.getGui().hideErrors(sheet.getErrorsEditor().getComponent());
+        OMR.getGui().removeErrorsPane(sheet.getErrorsEditor().getComponent());
     }
 
     //--------------//
@@ -455,19 +452,6 @@ public class SheetAssembly
         }
     }
 
-    //---------------//
-    // getErrorsPane //
-    //---------------//
-    /**
-     * Report the UI pane dedicated to the current errors.
-     *
-     * @return the errors pane
-     */
-    private JComponent getErrorsPane ()
-    {
-        return sheet.getErrorsEditor().getComponent();
-    }
-
     //---------//
     // getPane //
     //---------//
@@ -659,9 +643,9 @@ public class SheetAssembly
                 boardsPane.connect();
 
                 // Display the boards pane related to the selected view
-                Main.getGui().setBoardsPane(boardsPane.getComponent());
+                OMR.getGui().setBoardsPane(boardsPane.getComponent());
             } else {
-                Main.getGui().setBoardsPane(null);
+                OMR.getGui().setBoardsPane(null);
             }
         }
     }

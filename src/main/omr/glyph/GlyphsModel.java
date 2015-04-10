@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.glyph.facets.Glyph;
 
@@ -270,7 +270,7 @@ public class GlyphsModel
         // Should we persist the assigned glyph?
         if ((shape != null)
             && (grade == Evaluation.MANUAL)
-            && (Main.getGui() != null)
+            && (OMR.getGui() != null)
             && ScoreActions.getInstance().isManualPersisted()) {
             // Record the glyph description to disk
             GlyphRepository.getInstance().recordOneGlyph(glyph, sheet);

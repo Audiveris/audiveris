@@ -11,27 +11,23 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphNest;
-import omr.glyph.facets.BasicAlignment;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphComposition;
 
 import omr.lag.Section;
 
-import omr.math.BasicLine;
 import omr.math.GeoUtil;
-import omr.math.Line;
 
 import omr.run.Orientation;
 
 import omr.sheet.Scale;
 
+import omr.util.Dumping;
 import omr.util.StopWatch;
 
 import org.slf4j.Logger;
@@ -39,9 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -290,7 +284,7 @@ public class BarGlyphFactory
             minCoreSectionLength = scale.toPixels(constants.minCoreSectionLength);
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
         }
     }

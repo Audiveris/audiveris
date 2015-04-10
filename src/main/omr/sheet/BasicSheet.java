@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -35,17 +35,14 @@ import omr.score.Score;
 import omr.score.ScoreExporter;
 import omr.score.entity.Page;
 import omr.score.entity.SystemNode;
+import omr.score.ui.BookPdfOutput;
 
 import omr.script.ExportTask;
+import omr.script.PrintTask;
 
 import omr.selection.LocationEvent;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionService;
-
-import static omr.sheet.BookManager.COMPRESSED_SCORE_EXTENSION;
-import static omr.sheet.BookManager.MOVEMENT_EXTENSION;
-import static omr.sheet.BookManager.SCORE_EXTENSION;
-import static omr.sheet.BookManager.SHEET_PREFIX;
 
 import omr.sheet.stem.StemScale;
 import omr.sheet.ui.BinarizationBoard;
@@ -66,6 +63,8 @@ import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
 import omr.ui.util.ItemRenderer;
 
+import omr.util.Dumping;
+import omr.util.FileUtil;
 import omr.util.LiveParam;
 import omr.util.Navigable;
 import omr.util.StopWatch;
@@ -87,9 +86,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import omr.score.ui.BookPdfOutput;
-import omr.script.PrintTask;
-import omr.util.FileUtil;
 
 /**
  * Class {@code BasicSheet} is a basic implementation of {@link Sheet} interface.
@@ -230,11 +226,11 @@ public class BasicSheet
         textContext = new LiveParam<String>(book.getLanguageParam());
 
         // Update UI information if so needed
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             locationService = new SelectionService("sheet", allowedEvents);
             errorsEditor = new ErrorsEditor(this);
             itemRenderers = new HashSet<ItemRenderer>();
-            Main.getGui().sheetsController.addAssembly(assembly = new SheetAssembly(this));
+            SheetsController.getInstance().addAssembly(assembly = new SheetAssembly(this));
             addItemRenderer(staffManager);
         } else {
             locationService = null;
@@ -263,7 +259,7 @@ public class BasicSheet
                           Glyph glyph,
                           String text)
     {
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             getErrorsEditor().addError(container, glyph, text);
         }
     }
@@ -274,7 +270,7 @@ public class BasicSheet
     @Override
     public boolean addItemRenderer (ItemRenderer renderer)
     {
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             ///return itemRenderers.add(new WeakItemRenderer(renderer));
             return itemRenderers.add(renderer);
         }
@@ -318,6 +314,15 @@ public class BasicSheet
         }
     }
 
+    //------------//
+    // transcribe //
+    //------------//
+    @Override
+    public boolean transcribe ()
+    {
+        return doStep(Step.last(), null);
+    }
+
     //--------//
     // doStep //
     //--------//
@@ -351,7 +356,7 @@ public class BasicSheet
                 doOneStep(step, systems);
             }
 
-            if (Main.getGui() != null) {
+            if (OMR.getGui() != null) {
                 // Update sheet tab color
                 SheetsController.getInstance().markTab(this, Color.BLACK);
             }
@@ -387,7 +392,7 @@ public class BasicSheet
         int i = 0;
 
         for (SystemInfo system : getSystems()) {
-            Main.dumping.dump(system, "#" + i++);
+            new Dumping().dump(system, "#" + i++);
         }
 
         System.out.println("--- SystemInfos end ---");
@@ -431,7 +436,7 @@ public class BasicSheet
 
             final String rootName = sheetPathSansExt.getFileName().toString();
             final boolean compressed = BookManager.useCompression();
-            final String ext = compressed ? COMPRESSED_SCORE_EXTENSION : SCORE_EXTENSION;
+            final String ext = compressed ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION;
             final boolean sig = BookManager.useSignature();
 
             if (pages.size() > 1) {
@@ -445,7 +450,7 @@ public class BasicSheet
                     final int idx = 1 + pages.indexOf(page);
                     score.setId(idx);
 
-                    final String scoreName = rootName + MOVEMENT_EXTENSION + idx;
+                    final String scoreName = rootName + OMR.MOVEMENT_EXTENSION + idx;
                     final Path scorePath = sheetPathSansExt.resolve(scoreName + ext);
                     new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
                 }
@@ -902,7 +907,7 @@ public class BasicSheet
     @Override
     public void renderItems (Graphics2D g)
     {
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             for (ItemRenderer renderer : itemRenderers) {
                 renderer.renderItems(g);
             }
@@ -938,8 +943,8 @@ public class BasicSheet
             String msg = "Unsupported image format in file " + getBook().getInputPath() + "\n"
                          + ex.getMessage();
 
-            if (Main.getGui() != null) {
-                Main.getGui().displayWarning(msg);
+            if (OMR.getGui() != null) {
+                OMR.getGui().displayWarning(msg);
             } else {
                 logger.warn(msg);
             }
@@ -1016,7 +1021,7 @@ public class BasicSheet
         // to allow cleaning up of glyph data, before publication by a lag
         nest = new BasicNest("gNest", this);
 
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             nest.setServices(locationService);
         }
     }
@@ -1029,7 +1034,7 @@ public class BasicSheet
         SymbolsModel model = new SymbolsModel(this);
         symbolsController = new SymbolsController(model);
 
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             symbolsEditor = new SymbolsEditor(this, symbolsController);
         }
     }
@@ -1057,7 +1062,7 @@ public class BasicSheet
             reset(step);
 
             // Clear errors for this step
-            if (Main.getGui() != null) {
+            if (OMR.getGui() != null) {
                 getErrorsEditor().clearStep(step);
             }
 
@@ -1107,7 +1112,7 @@ public class BasicSheet
         if (!book.isMultiSheet()) {
             return bookPath;
         } else {
-            return bookPath.resolve(SHEET_PREFIX + (book.getOffset() + index));
+            return bookPath.resolve(OMR.SHEET_PREFIX + (book.getOffset() + index));
         }
     }
 
@@ -1136,7 +1141,7 @@ public class BasicSheet
         case GRID:
 
             if (nest != null) {
-                if (Main.getGui() != null) {
+                if (OMR.getGui() != null) {
                     nest.cutServices(locationService);
                 }
 
@@ -1189,7 +1194,7 @@ public class BasicSheet
     {
         this.picture = picture;
 
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             locationService.subscribeStrongly(LocationEvent.class, picture);
 
             // Display sheet picture if not batch mode

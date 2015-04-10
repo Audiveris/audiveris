@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -20,7 +20,6 @@ import omr.glyph.GlyphRepository;
 
 import omr.script.RemoveTask;
 
-import omr.sheet.BasicBook;
 import omr.sheet.Book;
 import omr.sheet.BookManager;
 import omr.sheet.ScaleBuilder;
@@ -32,7 +31,6 @@ import omr.sheet.stem.StemScaler;
 
 import omr.step.Step;
 
-import omr.ui.MainGui;
 import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtil;
 
@@ -133,8 +131,8 @@ public class SheetActions
         String allSuffixes = suffixes + " " + suffixes.toUpperCase();
         File file = UIUtil.fileChooser(
                 false,
-                Main.getGui().getFrame(),
-                new File(BookManager.getInstance().getDefaultInputDirectory()),
+                OMR.getGui().getFrame(),
+                new File(BookManager.getDefaultInputDirectory()),
                 new OmrFileFilter(
                         "Major image files" + " (" + suffixes + ")",
                         allSuffixes.split("\\s")));
@@ -225,7 +223,7 @@ public class SheetActions
             }
 
             // Display popup menu
-            JFrame frame = Main.getGui().getFrame();
+            JFrame frame = OMR.getGui().getFrame();
             popup.show(frame, frame.getWidth() / 6, frame.getHeight() / 4);
         }
     }
@@ -388,7 +386,7 @@ public class SheetActions
 
                 menu.setName("historyMenu");
 
-                ResourceMap resource = MainGui.getInstance().getContext()
+                ResourceMap resource = OMR.getApplication().getContext()
                         .getResourceMap(SheetActions.class);
                 resource.injectComponents(menu);
             }
@@ -450,8 +448,8 @@ public class SheetActions
         {
             if (file.exists()) {
                 // Actually open the image file
-                Book book = new BasicBook(file.toPath());
-                book.createSheets(null);
+                Book book = OMR.getEngine().loadInput(file.toPath());
+                book.createSheets(null); // So that sheets are visible
             } else {
                 logger.warn("File {} does not exist", file);
             }

@@ -9,11 +9,10 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-import omr.WellKnowns;
 
 /**
- * Class {@code Audiveris} is simply the entry point to OMR, which
- * delegates the call to {@link omr.Main#doMain}.
+ * Class {@code Audiveris} is simply a convenient entry point to OMR, which
+ * delegates the call to {@link omr.Main#main}.
  *
  * @author Hervé Bitteur
  */
@@ -27,21 +26,16 @@ public final class Audiveris
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //------//
     // main //
     //------//
     /**
-     * The main entry point, which just calls {@link omr.Main#doMain}.
+     * The main entry point, which just calls {@link omr.Main#main}.
      *
      * @param args These args are simply passed to Main
      */
     public static void main (final String[] args)
     {
-        // We need class WellKnowns to be elaborated before class Main
-        WellKnowns.ensureLoaded();
-
-        // Then we call Main...
-        omr.Main.doMain(args);
+        omr.Main.main(args);
     }
 }

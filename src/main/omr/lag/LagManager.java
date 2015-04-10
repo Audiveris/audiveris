@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.sheet.Sheet;
 
@@ -103,13 +103,13 @@ public class LagManager
     {
         Lag oldLag = getLag(key);
 
-        if ((oldLag != null) && (Main.getGui() != null)) {
+        if ((oldLag != null) && (OMR.getGui() != null)) {
             oldLag.cutServices();
         }
 
         lagMap.put(key, lag);
 
-        if ((lag != null) && (Main.getGui() != null)) {
+        if ((lag != null) && (OMR.getGui() != null)) {
             lag.setServices(sheet.getLocationService());
         }
     }

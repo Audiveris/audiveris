@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -30,6 +28,7 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
 
+import omr.util.Dumping;
 import omr.util.Wrapper;
 
 import org.slf4j.Logger;
@@ -1194,7 +1193,7 @@ public class ClustersRetriever
             clusterYMargin = scale.toPixels(constants.clusterYMargin);
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
         }
     }

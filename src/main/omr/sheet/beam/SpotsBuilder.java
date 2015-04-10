@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.beam;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -128,7 +128,7 @@ public class SpotsBuilder
             dispatchSheetSpots(spots);
 
             // Display on all spot glyphs?
-            if ((Main.getGui() != null) && constants.displayBeamSpots.isSet()) {
+            if ((OMR.getGui() != null) && constants.displayBeamSpots.isSet()) {
                 SpotsController spotController = new SpotsController(sheet, spotLag);
                 spotController.refresh();
             }
@@ -191,7 +191,7 @@ public class SpotsBuilder
             }
 
             // Display the gray-level view of all spots
-            if ((Main.getGui() != null) && constants.displayGraySpots.isSet()) {
+            if ((OMR.getGui() != null) && constants.displayGraySpots.isSet()) {
                 if (img == null) {
                     img = buffer.getBufferedImage();
                 }

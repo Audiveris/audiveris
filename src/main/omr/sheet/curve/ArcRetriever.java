@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.curve;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -29,6 +27,7 @@ import omr.sheet.Staff;
 import static omr.sheet.curve.Skeleton.*;
 import omr.sheet.grid.FilamentLine;
 
+import omr.util.Dumping;
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -703,7 +702,7 @@ public class ArcRetriever
             maxRunLength = scale.toPixels(constants.maxRunLength);
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
         }
     }

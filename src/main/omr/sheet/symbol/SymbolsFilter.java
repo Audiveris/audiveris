@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.symbol;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -149,7 +149,7 @@ public class SymbolsFilter
         }
 
         // Display for visual check?
-        if (constants.displaySymbols.isSet() && (Main.getGui() != null)) {
+        if (constants.displaySymbols.isSet() && (OMR.getGui() != null)) {
             sheet.getAssembly().addViewTab(
                     "Symbols",
                     new ScrollImageView(sheet, new MyView(img, optionalsMap)),
@@ -444,11 +444,10 @@ public class SymbolsFilter
             // Save the glyph?
             if (systemWeaks != null) {
                 // The glyph may be made of several parts, so it's safer to restart from sections
-                List<Glyph> glyphs = sheet.getGlyphNest()
-                        .retrieveGlyphs(
-                                glyph.getMembers(),
-                                GlyphLayer.SYMBOL,
-                                true);
+                List<Glyph> glyphs = sheet.getGlyphNest().retrieveGlyphs(
+                        glyph.getMembers(),
+                        GlyphLayer.SYMBOL,
+                        true);
 
                 systemWeaks.addAll(glyphs);
             }
@@ -488,7 +487,8 @@ public class SymbolsFilter
             }
 
             // Glyphs
-            List<Glyph> glyphs = sheet.getGlyphNest().retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
+            List<Glyph> glyphs = sheet.getGlyphNest()
+                    .retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
 
             for (Glyph glyph : glyphs) {
                 systemWeaks.add(glyph);

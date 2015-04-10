@@ -11,12 +11,11 @@
 // </editor-fold>
 package omr.glyph.ui;
 
+import omr.OMR;
 import omr.WellKnowns;
 
 import omr.glyph.GlyphRepository;
 import omr.glyph.Shape;
-
-import omr.ui.MainGui;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -130,7 +129,7 @@ public class SampleVerifier
         frame.add(vertSplitPane);
 
         // Resource injection
-        ResourceMap resource = MainGui.getInstance().getContext().getResourceMap(getClass());
+        ResourceMap resource = OMR.getApplication().getContext().getResourceMap(getClass());
         resource.injectComponents(frame);
     }
 
@@ -162,7 +161,7 @@ public class SampleVerifier
      */
     public void setVisible (boolean bool)
     {
-        MainGui.getInstance().show(frame);
+        OMR.getApplication().show(frame);
     }
 
     //--------//

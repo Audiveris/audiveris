@@ -11,11 +11,12 @@
 // </editor-fold>
 package omr.ui;
 
+import omr.OMR;
+
 import omr.constant.ConstantSet;
 
 import omr.script.ScriptManager;
 
-import omr.sheet.BasicBook;
 import omr.sheet.Book;
 
 import omr.step.Step;
@@ -192,7 +193,7 @@ public class FileDropHandler
         {
             logger.info("Dropping book file {}", file);
 
-            final Book book = new BasicBook(file.toPath());
+            final Book book = OMR.getEngine().loadInput(file.toPath());
             book.doStep(target, null);
 
             return null;

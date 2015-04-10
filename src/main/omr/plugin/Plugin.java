@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.plugin;
 
+import omr.OMR;
 import omr.WellKnowns;
 
 import omr.sheet.Book;
-import omr.sheet.BookManager;
 import omr.sheet.Sheet;
 
 import omr.step.Step;
@@ -184,7 +184,7 @@ public class Plugin
             Invocable inv = (Invocable) engine;
             Object obj = inv.invokeFunction(
                     "pluginCli",
-                    exportPath + BookManager.COMPRESSED_SCORE_EXTENSION);
+                    exportPath + OMR.COMPRESSED_SCORE_EXTENSION);
 
             if (obj instanceof List) {
                 args = (List<String>) obj; // Unchecked by compiler

@@ -11,11 +11,11 @@
 // </editor-fold>
 package omr.action;
 
+import omr.OMR;
 import omr.WellKnowns;
 
 import omr.action.Actions.Domain;
 
-import omr.ui.MainGui;
 import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtil;
 
@@ -114,7 +114,7 @@ public class ActionManager
     public ApplicationAction getActionInstance (Object instance,
                                                 String methodName)
     {
-        ActionMap actionMap = MainGui.getInstance().getContext().getActionMap(instance);
+        ActionMap actionMap = OMR.getApplication().getContext().getActionMap(instance);
 
         return (ApplicationAction) actionMap.get(methodName);
     }
@@ -247,7 +247,7 @@ public class ActionManager
             }
 
             // Proper menu decoration
-            ResourceMap resource = MainGui.getInstance().getContext().getResourceMap(Actions.class);
+            ResourceMap resource = OMR.getApplication().getContext().getResourceMap(Actions.class);
             menu.setText(domain); // As default
             menu.setName(domain);
 

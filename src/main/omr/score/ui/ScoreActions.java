@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.ui;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -23,14 +23,12 @@ import omr.script.Script;
 
 import omr.sheet.Book;
 import omr.sheet.BookManager;
-import static omr.sheet.BookManager.PDF_EXTENSION;
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetDependent;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.Step;
 
-import omr.ui.MainGui;
 import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtil;
 
@@ -78,23 +76,20 @@ public class ScoreActions
     /** Singleton */
     private static ScoreActions INSTANCE;
 
-    /** The book manager. */
-    private static final BookManager bookManager = BookManager.getInstance();
-
     /** .mxl filter for user selection. */
     private static final OmrFileFilter MXL_FILTER = new OmrFileFilter(
             "MXL files",
-            new String[]{BookManager.COMPRESSED_SCORE_EXTENSION});
+            new String[]{OMR.COMPRESSED_SCORE_EXTENSION});
 
     /** .xml filter for user selection. */
     private static final OmrFileFilter XML_FILTER = new OmrFileFilter(
             "XML files",
-            new String[]{BookManager.SCORE_EXTENSION});
+            new String[]{OMR.SCORE_EXTENSION});
 
     /** .pdf filter for user selection. */
     private static final OmrFileFilter PDF_FILTER = new OmrFileFilter(
             "PDF files",
-            new String[]{BookManager.PDF_EXTENSION});
+            new String[]{OMR.PDF_EXTENSION});
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
@@ -183,7 +178,7 @@ public class ScoreActions
     @Action(enabledProperty = SHEET_AVAILABLE)
     public void browseBook (ActionEvent e)
     {
-        MainGui.getInstance().show(SheetsController.getCurrentBook().getBrowserFrame());
+        OMR.getApplication().show(SheetsController.getCurrentBook().getBrowserFrame());
     }
 
     //-----------//
@@ -354,7 +349,7 @@ public class ScoreActions
         }
 
         // Select book folder name to be used as radix (since this method assumes a multi-sheet book)
-        final File defaultBookFile = bookManager.getDefaultExportPath(book).toFile();
+        final File defaultBookFile = BookManager.getDefaultExportPath(book).toFile();
         final String ext = BookManager.getExportExtension();
         String title = "Choose target book radix [no extension]";
         final File bookFile = UIUtil.directoryChooser(null, defaultBookFile, title);
@@ -417,7 +412,7 @@ public class ScoreActions
 
         // Let the user select book output
         final Book book = sheet.getBook();
-        final File defaultBookFile = bookManager.getDefaultExportPath(book).toFile();
+        final File defaultBookFile = BookManager.getDefaultExportPath(book).toFile();
         final String ext = BookManager.getExportExtension();
         final File bookFile;
 
@@ -513,7 +508,7 @@ public class ScoreActions
 
         // Select book folder name (to be used as radix)
         // (since this method assumes a multi-sheet book)
-        final File defaultBookFile = bookManager.getDefaultPrintPath(book).toFile();
+        final File defaultBookFile = BookManager.getDefaultPrintPath(book).toFile();
         String title = "Choose target book radix [no extension]";
         final File bookFile = UIUtil.directoryChooser(null, defaultBookFile, title);
 
@@ -522,7 +517,7 @@ public class ScoreActions
         }
 
         // Remove .pdf extension if any
-        final Path bookPath = FileUtil.avoidExtension(bookFile.toPath(), PDF_EXTENSION);
+        final Path bookPath = FileUtil.avoidExtension(bookFile.toPath(), OMR.PDF_EXTENSION);
 
         return new PrintBookTask(book, bookPath);
     }
@@ -575,7 +570,7 @@ public class ScoreActions
 
         // Let the user select a PDF output file
         final Book book = sheet.getBook();
-        final File defaultBookFile = bookManager.getDefaultPrintPath(book).toFile();
+        final File defaultBookFile = BookManager.getDefaultPrintPath(book).toFile();
         final File bookFile;
 
         if (book.isMultiSheet()) {
@@ -593,7 +588,7 @@ public class ScoreActions
         }
 
         // Remove .pdf extension if any
-        final Path bookPath = FileUtil.avoidExtension(bookFile.toPath(), PDF_EXTENSION);
+        final Path bookPath = FileUtil.avoidExtension(bookFile.toPath(), OMR.PDF_EXTENSION);
 
         // Make sure book folder is created
         if (book.isMultiSheet() && !checkBookFolder(bookPath)) {
@@ -672,7 +667,7 @@ public class ScoreActions
             final String frameTitle = (sheet != null)
                     ? (sheet.getBook().getRadix() + " parameters")
                     : "General parameters";
-            final JDialog dialog = new JDialog(Main.getGui().getFrame(), frameTitle, true); // Modal flag
+            final JDialog dialog = new JDialog(OMR.getGui().getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
             dialog.setName("scoreParams");
 
@@ -708,7 +703,7 @@ public class ScoreActions
                     });
 
             dialog.pack();
-            MainGui.getInstance().show(dialog);
+            OMR.getApplication().show(dialog);
 
             return apply.value;
         } catch (Exception ex) {

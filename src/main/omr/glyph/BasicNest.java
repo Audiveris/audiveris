@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -40,6 +38,7 @@ import omr.selection.UserEvent;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
+import omr.util.Dumping;
 import omr.util.IntUtil;
 
 import org.bushe.swing.event.EventSubscriber;
@@ -995,7 +994,7 @@ public class BasicNest
             vipGlyphs = IntUtil.parseInts(constants.vipGlyphs.getValue());
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
 
             if (!vipGlyphs.isEmpty()) {

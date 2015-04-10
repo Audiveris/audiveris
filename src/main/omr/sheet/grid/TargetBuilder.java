@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -122,7 +122,7 @@ public class TargetBuilder
         RenderedImage dewarpedImage = dewarper.dewarpImage(sheet.getPicture().getImage(null));
 
         // Add a view on dewarped image?
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             sheet.getAssembly().addViewTab(
                     "Dewarped",
                     new ScrollView(new DewarpedView(dewarpedImage)),
@@ -385,9 +385,7 @@ public class TargetBuilder
     private void storeImage (RenderedImage dewarpedImage)
     {
         String sheetId = sheet.getId();
-        File file = new File(
-                BookManager.getInstance().getDefaultDewarpDirectory(),
-                sheetId + ".dewarped.png");
+        File file = new File(BookManager.getDefaultDewarpDirectory(), sheetId + ".dewarped.png");
 
         try {
             String path = file.getCanonicalPath();

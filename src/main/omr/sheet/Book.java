@@ -173,6 +173,15 @@ public interface Book
     // ---------------------
     //
     /**
+     * Convenient method to perform all needed transcription steps on (all or some sheets
+     * of) this book.
+     *
+     * @return true if OK
+     * @param sheetIds specific set of sheet IDs if any, null for all
+     */
+    boolean transcribe (SortedSet<Integer> sheetIds);
+
+    /**
      * Perform a specific step (and all needed intermediate steps) on all or some sheets
      * of this book.
      *

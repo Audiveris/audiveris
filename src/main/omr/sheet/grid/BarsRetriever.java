@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -76,6 +74,7 @@ import omr.ui.Colors;
 import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
 
+import omr.util.Dumping;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.IntUtil;
@@ -2617,7 +2616,7 @@ public class BarsRetriever
                 "Typical thickness of bracket serif");
 
         final Scale.AreaFraction serifMinWeight = new Scale.AreaFraction(
-                0.25,
+                0.15,
                 "Minimum weight for bracket serif");
 
         final Constant.Double serifMinSlope = new Constant.Double(
@@ -2726,7 +2725,7 @@ public class BarsRetriever
             vipSections = IntUtil.parseInts(constants.verticalVipSections.getValue());
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
 
             if (!vipSections.isEmpty()) {

@@ -11,8 +11,9 @@
 // </editor-fold>
 package omr.score;
 
+import omr.OMR;
+
 import omr.sheet.Book;
-import static omr.sheet.BookManager.SCORE_EXTENSION;
 
 import com.audiveris.proxymusic.ScorePartwise;
 import com.audiveris.proxymusic.mxl.Mxl;
@@ -120,7 +121,7 @@ public class OpusExporter
             // Reference each score/movement in opus
             String entryName = rootName
                                + (multi ? (".mvt" + score.getId()) : "")
-                               + SCORE_EXTENSION;
+                               + OMR.SCORE_EXTENSION;
             com.audiveris.proxymusic.opus.Score oScore = opusFactory.createScore();
             oScore.setHref(entryName);
             oScore.setNewPage(YesNo.YES);

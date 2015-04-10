@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -80,7 +80,7 @@ public class GridBuilder
         barsRetriever = new BarsRetriever(sheet);
         linesRetriever = new LinesRetriever(sheet, barsRetriever);
 
-        if (constants.showGrid.isSet() && Main.getGui() != null) {
+        if (constants.showGrid.isSet() && (OMR.getGui() != null)) {
             sheet.addItemRenderer(barsRetriever);
             sheet.addItemRenderer(linesRetriever);
         }
@@ -106,7 +106,7 @@ public class GridBuilder
             buildAllLags();
 
             // Display
-            if (Main.getGui() != null) {
+            if (OMR.getGui() != null) {
                 displayEditor();
 
                 // Inter board

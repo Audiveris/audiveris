@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.beam;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -48,6 +46,7 @@ import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
 
 import omr.util.Corner;
+import omr.util.Dumping;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
@@ -2034,7 +2033,7 @@ public class BeamsBuilder
             cueBeamRatio = constants.cueBeamRatio.getValue();
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
         }
     }

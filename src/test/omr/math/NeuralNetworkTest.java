@@ -11,9 +11,8 @@
 // </editor-fold>
 package omr.math;
 
-import omr.Main;
-
 import omr.util.BaseTestCase;
+import omr.util.Dumping;
 import static junit.framework.Assert.*;
 
 import java.io.File;
@@ -146,7 +145,7 @@ public class NeuralNetworkTest
         System.out.println("Unmarshalling from " + file);
         nn = NeuralNetwork.unmarshal(new FileInputStream(file));
         System.out.println("Unmarshalled");
-        Main.dumping.dump(nn);
+        new Dumping().dump(nn);
         nn.dump();
     }
 

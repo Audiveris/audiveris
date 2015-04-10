@@ -11,11 +11,12 @@
 // </editor-fold>
 package omr.glyph.ui.panel;
 
+import omr.OMR;
+
 import omr.constant.ConstantManager;
 
 import omr.glyph.GlyphNetwork;
 
-import omr.ui.MainGui;
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
 
@@ -150,7 +151,7 @@ public class GlyphTrainer
         }
 
         // Resource injection
-        ResourceMap resource = MainGui.getInstance().getContext().getResourceMap(getClass());
+        ResourceMap resource = OMR.getApplication().getContext().getResourceMap(getClass());
         resource.injectComponents(frame);
         frameTitle = frame.getTitle();
     }
@@ -164,7 +165,7 @@ public class GlyphTrainer
      */
     public static void launch ()
     {
-        MainGui.getInstance().show(getInstance().frame);
+        OMR.getApplication().show(getInstance().frame);
     }
 
     //------//

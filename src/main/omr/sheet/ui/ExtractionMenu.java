@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
@@ -78,7 +78,7 @@ public class ExtractionMenu
         // Let the user select an output file
         File file = UIUtil.fileChooser(
                 true,
-                Main.getGui().getFrame(),
+                OMR.getGui().getFrame(),
                 new File(Picture.getDefaultExtractionDirectory(), sheet.getId() + "-ext.png"),
                 new OmrFileFilter(".png images", new String[]{".png"}));
 

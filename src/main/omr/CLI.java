@@ -11,6 +11,12 @@
 // </editor-fold>
 package omr;
 
+import omr.script.ExportTask;
+import omr.script.PrintTask;
+
+import omr.sheet.Book;
+
+import omr.step.ProcessingCancellationException;
 import omr.step.Step;
 
 import omr.util.Dumping;
@@ -29,12 +35,15 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 
 /**
  * Class {@code CLI} parses and holds the parameters of the command line interface.
@@ -126,6 +135,146 @@ public class CLI
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // getBenchFolder //
+    //----------------//
+    /**
+     * Report the bench folder if present on the CLI
+     *
+     * @return the CLI bench folder, or null
+     */
+    public Path getBenchFolder ()
+    {
+        if (params.benchFolder == null) {
+            return null;
+        }
+
+        return params.benchFolder.toPath();
+    }
+
+    //-----------------//
+    // getExportFolder //
+    //-----------------//
+    /**
+     * Report the export folder if present on the CLI
+     *
+     * @return the CLI export path, or null
+     */
+    public Path getExportFolder ()
+    {
+        if (params.exportFolder == null) {
+            return null;
+        }
+
+        return params.exportFolder.toPath();
+    }
+
+    //---------------//
+    // getFilesTasks //
+    //---------------//
+    /**
+     * Prepare the processing of image files listed on command line.
+     * On each input file, we apply the actions specified if any via -step, -print, -export.
+     *
+     * @return the collection of proper callable instances
+     */
+    public List<Callable<Void>> getFilesTasks ()
+    {
+        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+
+        // Launch desired step on each book
+        for (final File input : params.inputFiles) {
+            final Path path = input.toPath();
+
+            tasks.add(
+                    new Callable<Void>()
+                    {
+                        @Override
+                        public Void call ()
+                        throws Exception
+                        {
+                            final Step target = params.step;
+                            final SortedSet<Integer> sheetIds = params.getSheetIds();
+
+                            if (target != null) {
+                                logger.info(
+                                        "Launching {} on {} {}",
+                                        target,
+                                        input,
+                                        (!sheetIds.isEmpty()) ? ("sheets " + sheetIds) : "");
+                            }
+
+                            if (Files.exists(path)) {
+                                final Book book = OMR.getEngine().loadInput(path);
+
+                                try {
+                                    // Create book sheets and perform desired steps if any
+                                    book.doStep(target, sheetIds);
+
+                                    // Book print output?
+                                    if (params.print || (params.printFolder != null)) {
+                                        logger.debug("Print output");
+                                        new PrintTask(params.printFolder).core(
+                                                book.getSheets().get(0));
+                                    }
+
+                                    // Book export output?
+                                    if (params.export || (params.exportFolder != null)) {
+                                        logger.debug("Export output");
+                                        new ExportTask(params.exportFolder).core(
+                                                book.getSheets().get(0));
+                                    }
+                                } catch (ProcessingCancellationException pce) {
+                                    logger.warn("Cancelled " + book, pce);
+                                    book.getBench().recordCancellation();
+                                    throw pce;
+                                } catch (Throwable ex) {
+                                    logger.warn("Exception occurred", ex);
+                                    throw ex;
+                                } finally {
+                                    // Close (when in batch mode only)
+                                    if ((OMR.getGui() == null) /* &&
+                                     * constants.closeBookOnEnd.isSet() */) {
+                                        book.close();
+                                    }
+                                }
+
+                                return null;
+                            } else {
+                                String msg = "Could not find file " + path;
+                                logger.warn(msg);
+                                throw new RuntimeException(msg);
+                            }
+                        }
+
+                        @Override
+                        public String toString ()
+                        {
+                            return "Input " + path;
+                        }
+                    });
+        }
+
+        return tasks;
+    }
+
+    //------------//
+    // getOptions //
+    //------------//
+    /**
+     * Report the properties set at the CLI level
+     *
+     * @return the CLI-defined constant values
+     */
+    public Properties getOptions ()
+    {
+        if (params == null) {
+            return null;
+        }
+
+        return params.options;
+    }
+
     //---------------//
     // getParameters //
     //---------------//
@@ -153,6 +302,64 @@ public class CLI
         }
 
         return params;
+    }
+
+    //----------------//
+    // getPrintFolder //
+    //----------------//
+    /**
+     * Report the print folder if present on the CLI
+     *
+     * @return the CLI print path, or null
+     */
+    public Path getPrintFolder ()
+    {
+        if (params.printFolder == null) {
+            return null;
+        }
+
+        return params.printFolder.toPath();
+    }
+
+    //-----------------//
+    // getScriptsTasks //
+    //-----------------//
+    /**
+     * Prepare the processing of scripts listed on command line
+     *
+     * @return the collection of proper script callables
+     */
+    public List<Callable<Void>> getScriptsTasks ()
+    {
+        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+
+        // Launch desired scripts in parallel
+        for (File scriptFile : params.scriptFiles) {
+            tasks.add(
+                    new Callable<Void>()
+                    {
+                        @Override
+                        public Void call ()
+                        throws Exception
+                        {
+                            OMR.getEngine().loadScript(scriptFile.toPath());
+
+                            //                            ScriptManager.getInstance().loadAndRun(
+                            //                                    scriptFile,
+                            //                                    constants.closeBookOnEnd.isSet());
+                            //
+                            return null;
+                        }
+
+                        @Override
+                        public String toString ()
+                        {
+                            return "Script " + scriptFile;
+                        }
+                    });
+        }
+
+        return tasks;
     }
 
     //------------------//
@@ -209,6 +416,9 @@ public class CLI
     //-----------------------//
     // IntArrayOptionHandler //
     //-----------------------//
+    /**
+     * Argument handler for an array of integers.
+     */
     public static class IntArrayOptionHandler
             extends OptionHandler<Integer>
     {
@@ -334,9 +544,12 @@ public class CLI
         }
     }
 
-    //-----------------------/:
+    //-----------------------//
     // PropertyOptionHandler //
-    //-----------------------/:
+    //-----------------------//
+    /**
+     * Argument handler for a property definition.
+     */
     public static class PropertyOptionHandler
             extends OptionHandler<Properties>
     {
@@ -384,59 +597,4 @@ public class CLI
             return 1;
         }
     }
-//
-//    //------------------------//
-//    // StepArrayOptionHandler //
-//    //------------------------//
-//    public static class StepArrayOptionHandler
-//            extends OptionHandler<Step>
-//    {
-//        //~ Constructors ---------------------------------------------------------------------------
-//
-//        public StepArrayOptionHandler (CmdLineParser parser,
-//                                       OptionDef option,
-//                                       Setter<Step> setter)
-//        {
-//            super(parser, option, setter);
-//        }
-//
-//        //~ Methods --------------------------------------------------------------------------------
-//        @Override
-//        public String getDefaultMetaVariable ()
-//        {
-//            return "Step[]";
-//        }
-//
-//        @Override
-//        public int parseArguments (org.kohsuke.args4j.spi.Parameters params)
-//                throws CmdLineException
-//        {
-//            int counter = 0;
-//
-//            for (; counter < params.size(); counter++) {
-//                String param = params.getParameter(counter);
-//
-//                if (param.startsWith("-")) {
-//                    break;
-//                }
-//
-//                for (String p : param.split(" ")) {
-//                    String s = p.replaceAll("-", "_");
-//
-//                    try {
-//                        Step value = Step.valueOf(s.toUpperCase());
-//                        setter.addValue(value);
-//                    } catch (IllegalArgumentException ex) {
-//                        throw new CmdLineException(
-//                                owner,
-//                                Messages.ILLEGAL_OPERAND,
-//                                params.getParameter(-1),
-//                                s);
-//                    }
-//                }
-//            }
-//
-//            return counter;
-//        }
-//    }
 }

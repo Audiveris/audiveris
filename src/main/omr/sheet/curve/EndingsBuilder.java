@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.curve;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -42,6 +40,8 @@ import omr.sig.inter.EndingInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SegmentInter;
 import omr.sig.relation.EndingBarRelation;
+
+import omr.util.Dumping;
 import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
 
@@ -429,7 +429,7 @@ public class EndingsBuilder
             maxSlope = constants.maxSlope.getValue();
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
         }
     }

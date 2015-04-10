@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.ui;
 
+import omr.OMR;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -148,7 +150,7 @@ public class MemoryMeter
     //----------//
     private void defineUI ()
     {
-        ApplicationContext applicationContext = MainGui.getInstance().getContext();
+        ApplicationContext applicationContext = OMR.getApplication().getContext();
         component.setLayout(new BorderLayout());
 
         // Progress bar

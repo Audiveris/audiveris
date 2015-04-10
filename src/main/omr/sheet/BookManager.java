@@ -12,12 +12,18 @@
 package omr.sheet;
 
 import omr.Main;
+import omr.OMR;
+import omr.OmrEngine;
 import omr.WellKnowns;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.score.Score;
+
+import omr.script.ScriptManager;
+
+import omr.ui.OmrGui;
 
 import omr.util.NameSet;
 
@@ -31,7 +37,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -136,6 +141,7 @@ import java.util.List;
  * @author Brenton Partridge
  */
 public class BookManager
+        implements OmrEngine
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -143,33 +149,15 @@ public class BookManager
 
     private static final Logger logger = LoggerFactory.getLogger(BookManager.class);
 
-    /** The extension used for score output files: {@value}. */
-    public static final String SCORE_EXTENSION = ".xml";
-
-    /** The extension used for compressed score output files: {@value}. */
-    public static final String COMPRESSED_SCORE_EXTENSION = ".mxl";
-
-    /** The extension used for compressed score print files: {@value}. */
-    public static final String PDF_EXTENSION = ".pdf";
-
-    /** The (double) extension used for opus output files: {@value}. */
-    public static final String OPUS_EXTENSION = ".opus.mxl";
-
-    /** The extension prefix used for movement output files: {@value}. */
-    public static final String MOVEMENT_EXTENSION = ".mvt";
-
-    /** The prefix used for sheet output files in a multi-sheet book: {@value}. */
-    public static final String SHEET_PREFIX = "sheet#";
-
-    /** The extension used for bench files: {@value}. */
-    public static final String BENCH_EXTENSION = ".bench.properties";
-
     /** The single instance of this class. */
     private static volatile BookManager INSTANCE;
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /** OMR master gui, if any. */
+    private OmrGui gui;
+
     /** All book instances. */
-    private final List<Book> books = new ArrayList<Book>();
+    final List<Book> books = new ArrayList<Book>();
 
     /** Image file history. (filled only when images (books) are successfully loaded) */
     private NameSet history;
@@ -183,36 +171,6 @@ public class BookManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // addBook //
-    //---------//
-    /**
-     * Insert this new book in the set of book instances.
-     *
-     * @param book the book to insert
-     */
-    public synchronized void addBook (Book book)
-    {
-        logger.debug("addBook {}", book);
-
-        // Remove duplicate if any
-        for (Iterator<Book> it = books.iterator(); it.hasNext();) {
-            Book b = it.next();
-            Path path = b.getInputPath();
-
-            if (path.equals(book.getInputPath())) {
-                logger.debug("Removing duplicate {}", b);
-                it.remove();
-                b.close();
-
-                break;
-            }
-        }
-
-        // Insert new book instance
-        books.add(book);
-    }
-
     //-----------//
     // confirmed //
     //-----------//
@@ -225,8 +183,8 @@ public class BookManager
      */
     public static boolean confirmed (Path target)
     {
-        return ((Main.getGui() == null) || !Files.exists(target))
-               || Main.getGui().displayConfirmation("Overwrite " + target + "?");
+        return ((OMR.getGui() == null) || !Files.exists(target))
+               || OMR.getGui().displayConfirmation("Overwrite " + target + "?");
     }
 
     //-------------//
@@ -243,7 +201,7 @@ public class BookManager
                                     List<Path> paths)
     {
         if (!paths.isEmpty()) {
-            if (Main.getGui() != null) {
+            if (OMR.getGui() != null) {
                 StringBuilder sb = new StringBuilder();
 
                 for (Path p : paths) {
@@ -256,7 +214,7 @@ public class BookManager
                     sb.append(p);
                 }
 
-                if (!Main.getGui().displayConfirmation("Confirm " + title + "?\n" + sb)) {
+                if (!OMR.getGui().displayConfirmation("Confirm " + title + "?\n" + sb)) {
                     return;
                 }
             }
@@ -321,6 +279,7 @@ public class BookManager
      *
      * @return an unmodifiable view of the books list
      */
+    @Override
     public List<Book> getAllBooks ()
     {
         return Collections.unmodifiableList(books);
@@ -335,10 +294,10 @@ public class BookManager
      * @param book the book to export
      * @return the default file
      */
-    public Path getDefaultBenchPath (Book book)
+    public static Path getDefaultBenchPath (Book book)
     {
-        final String child = book.getRadix() + BENCH_EXTENSION;
-        final Path mainPath = Main.getBenchFolder();
+        final String child = book.getRadix() + OMR.BENCH_EXTENSION;
+        final Path mainPath = Main.getCli().getBenchFolder();
 
         if (mainPath != null) {
             return mainPath.resolve(child);
@@ -355,7 +314,7 @@ public class BookManager
      *
      * @return the default file
      */
-    public String getDefaultDewarpDirectory ()
+    public static String getDefaultDewarpDirectory ()
     {
         return constants.defaultDewarpDirectory.getValue();
     }
@@ -375,7 +334,7 @@ public class BookManager
             return book.getExportPath();
         }
 
-        Path mainPath = Main.getExportFolder();
+        Path mainPath = Main.getCli().getExportFolder();
 
         if (mainPath != null) {
             if (Files.isDirectory(mainPath)) {
@@ -396,7 +355,7 @@ public class BookManager
      *
      * @return the latest image directory
      */
-    public String getDefaultInputDirectory ()
+    public static String getDefaultInputDirectory ()
     {
         return constants.defaultInputDirectory.getValue();
     }
@@ -416,7 +375,7 @@ public class BookManager
             return book.getPrintPath();
         }
 
-        final Path mainPath = Main.getPrintFolder();
+        final Path mainPath = Main.getCli().getPrintFolder();
 
         if (mainPath != null) {
             if (Files.isDirectory(mainPath)) {
@@ -441,30 +400,10 @@ public class BookManager
     public static String getExportExtension ()
     {
         if (useCompression()) {
-            return COMPRESSED_SCORE_EXTENSION;
+            return OMR.COMPRESSED_SCORE_EXTENSION;
         } else {
-            return SCORE_EXTENSION;
+            return OMR.SCORE_EXTENSION;
         }
-    }
-
-    //------------//
-    // getHistory //
-    //------------//
-    /**
-     * Get access to the list of previously handled images.
-     *
-     * @return the history set of image files
-     */
-    public NameSet getHistory ()
-    {
-        if (history == null) {
-            history = new NameSet(
-                    "Images History",
-                    constants.imagesHistory,
-                    constants.historySize.getValue());
-        }
-
-        return history;
     }
 
     //-------------//
@@ -497,21 +436,6 @@ public class BookManager
         return getInstance().books.size() > 1;
     }
 
-    //------------//
-    // removeBook //
-    //------------//
-    /**
-     * Remove the provided book from the collection of Book instances.
-     *
-     * @param book the book to remove
-     * @return true if actually removed
-     */
-    public synchronized boolean removeBook (Book book)
-    {
-        logger.debug("removeBook {}", book);
-        return books.remove(book);
-    }
-
     //---------------------------//
     // setDefaultExportDirectory //
     //---------------------------//
@@ -528,17 +452,9 @@ public class BookManager
      *
      * @param value the latest image directory
      */
-    public void setDefaultInputDirectory (String value)
+    public static void setDefaultInputDirectory (String value)
     {
         constants.defaultInputDirectory.setValue(value);
-    }
-
-    //--------------------------//
-    // setDefaultPrintDirectory //
-    //--------------------------//
-    public static void setDefaultPrintDirectory (String value)
-    {
-        constants.defaultPrintDirectory.setValue(value);
     }
 
     //------------//
@@ -550,11 +466,11 @@ public class BookManager
      * @param bench    the bench to write to disk
      * @param complete true if we need to complete the bench data
      */
-    public void storeBench (BookBench bench,
-                            boolean complete)
+    public static void storeBench (BookBench bench,
+                                   boolean complete)
     {
         // Check if we do save bench data
-        if ((Main.getBenchFolder() == null) && !constants.saveBenchToDisk.isSet()) {
+        if ((Main.getCli().getBenchFolder() == null) && !constants.saveBenchToDisk.isSet()) {
             return;
         }
 
@@ -598,6 +514,107 @@ public class BookManager
         return constants.useCompression.getValue();
     }
 
+    //--------------//
+    // useSignature //
+    //--------------//
+    public static boolean useSignature ()
+    {
+        return constants.defaultSigned.isSet();
+    }
+
+    //------------//
+    // getHistory //
+    //------------//
+    /**
+     * Get access to the list of previously handled images.
+     *
+     * @return the history set of image files
+     */
+    public NameSet getHistory ()
+    {
+        if (history == null) {
+            history = new NameSet(
+                    "Images History",
+                    constants.imagesHistory,
+                    constants.historySize.getValue());
+        }
+
+        return history;
+    }
+
+    //------------//
+    // initialize //
+    //------------//
+    @Override
+    public void initialize ()
+    {
+        // void
+    }
+
+    //-----------//
+    // loadInput //
+    //-----------//
+    @Override
+    public Book loadInput (Path path)
+    {
+        final Book book = new BasicBook(path);
+        addBook(book);
+
+        return book;
+    }
+
+    //-------------//
+    // loadProject //
+    //-------------//
+    @Override
+    public Book loadProject (Path path)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    //------------//
+    // loadScript //
+    //------------//
+    @Override
+    public Book loadScript (Path path)
+    {
+        return ScriptManager.getInstance().loadAndRun(path.toFile(), false);
+    }
+
+    //------------//
+    // removeBook //
+    //------------//
+    /**
+     * Remove the provided book from the collection of Book instances.
+     *
+     * @param book the book to remove
+     * @return true if actually removed
+     */
+    @Override
+    public synchronized boolean removeBook (Book book)
+    {
+        logger.debug("removeBook {}", book);
+
+        return books.remove(book);
+    }
+
+    //--------------------------//
+    // setDefaultPrintDirectory //
+    //--------------------------//
+    public static void setDefaultPrintDirectory (String value)
+    {
+        constants.defaultPrintDirectory.setValue(value);
+    }
+
+    //-----------//
+    // terminate //
+    //-----------//
+    @Override
+    public void terminate ()
+    {
+        // void
+    }
+
     //---------//
     // useOpus //
     //---------//
@@ -606,12 +623,37 @@ public class BookManager
         return constants.useOpus.isSet();
     }
 
-    //--------------//
-    // useSignature //
-    //--------------//
-    public static boolean useSignature ()
+    //---------//
+    // addBook //
+    //---------//
+    /**
+     * Insert this new book in the set of book instances.
+     *
+     * @param book the book to insert
+     */
+    private void addBook (Book book)
     {
-        return constants.defaultSigned.isSet();
+        logger.debug("addBook {}", book);
+
+        //
+        //        // Remove duplicate if any
+        //        for (Iterator<Book> it = books.iterator(); it.hasNext();) {
+        //            Book b = it.next();
+        //            Path path = b.getInputPath();
+        //
+        //            if (path.equals(book.getInputPath())) {
+        //                logger.debug("Removing duplicate {}", b);
+        //                it.remove();
+        //                b.close();
+        //
+        //                break;
+        //            }
+        //        }
+        //
+        // Insert new book instance
+        synchronized (books) {
+            books.add(book);
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

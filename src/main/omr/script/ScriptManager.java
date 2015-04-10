@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.script;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.sheet.Book;
 
@@ -100,8 +100,9 @@ public class ScriptManager
      *
      * @param file           the provided script file
      * @param closeBookOnEnd true do close book at script end (when running in batch)
+     * @return the book created
      */
-    public void loadAndRun (File file,
+    public Book loadAndRun (File file,
                             boolean closeBookOnEnd)
     {
         Script script = null;
@@ -131,14 +132,21 @@ public class ScriptManager
             logger.warn(ex.toString(), ex);
         } finally {
             // Close when in batch mode?
-            if ((Main.getGui() == null) && (script != null) && closeBookOnEnd) {
+            if ((OMR.getGui() == null) && (script != null) && closeBookOnEnd) {
                 Book book = script.getBook();
 
                 if (book != null) {
                     book.close();
                 }
             }
+
         }
+
+        if (script == null) {
+            return null;
+        }
+
+        return script.getBook();
     }
 
     //-------//

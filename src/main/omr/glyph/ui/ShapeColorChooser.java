@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.glyph.ui;
 
+import omr.OMR;
+
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
-
-import omr.ui.MainGui;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -135,7 +135,7 @@ public class ShapeColorChooser
             resource.injectComponents(frame);
         }
 
-        MainGui.getInstance().show(frame);
+        OMR.getApplication().show(frame);
     }
 
     //--------------//

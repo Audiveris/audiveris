@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.script;
 
-import omr.sheet.BasicBook;
+import omr.OMR;
+
 import omr.sheet.Book;
 import omr.sheet.Sheet;
 
@@ -206,7 +207,7 @@ public class Script
                 return;
             }
 
-            book = new BasicBook(Paths.get(filePath));
+            book = OMR.getEngine().loadInput(Paths.get(filePath));
             book.setOffset(offset);
             book.createSheets(sheetIds); // This loads all specified sheets indices
         }

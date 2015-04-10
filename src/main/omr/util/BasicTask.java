@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.util;
 
-import omr.ui.MainGui;
+import omr.OMR;
 
 import org.jdesktop.application.Task;
 
@@ -31,6 +31,6 @@ public abstract class BasicTask
      */
     public BasicTask ()
     {
-        super(MainGui.getInstance());
+        super(OMR.getApplication());
     }
 }

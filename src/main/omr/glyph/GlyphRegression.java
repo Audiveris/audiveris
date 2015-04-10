@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -90,8 +90,8 @@ public class GlyphRegression
         }
 
         // Listen to application exit
-        if (Main.getGui() != null) {
-            Main.getGui().addExitListener(
+        if (OMR.getGui() != null) {
+            OMR.getGui().addExitListener(
                     new ExitListener()
                     {
                         @Override
@@ -112,6 +112,37 @@ public class GlyphRegression
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // getName //
+    //---------//
+    @Override
+    public final String getName ()
+    {
+        return "Linear Evaluator";
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Provide access to the single instance of GlyphRegression for the
+     * application
+     *
+     * @return the GlyphRegression instance
+     */
+    public static GlyphRegression getInstance ()
+    {
+        if (INSTANCE == null) {
+            synchronized (GlyphRegression.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new GlyphRegression();
+                }
+            }
+        }
+
+        return INSTANCE;
+    }
+
     //------//
     // dump //
     //------//
@@ -192,28 +223,6 @@ public class GlyphRegression
         return engine;
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Provide access to the single instance of GlyphRegression for the
-     * application
-     *
-     * @return the GlyphRegression instance
-     */
-    public static GlyphRegression getInstance ()
-    {
-        if (INSTANCE == null) {
-            synchronized (GlyphRegression.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new GlyphRegression();
-                }
-            }
-        }
-
-        return INSTANCE;
-    }
-
     //------------//
     // getMaximum //
     //------------//
@@ -262,15 +271,6 @@ public class GlyphRegression
         Range range = ranges[paramIndex];
 
         return (range != null) ? range.min : null;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    @Override
-    public final String getName ()
-    {
-        return "Linear Evaluator";
     }
 
     //-----------------------//
@@ -463,6 +463,15 @@ public class GlyphRegression
         marshal();
     }
 
+    //-------------//
+    // getFileName //
+    //-------------//
+    @Override
+    protected String getFileName ()
+    {
+        return BACKUP_FILE_NAME;
+    }
+
     //    //--------------------//
     //    // constraintsMatched //
     //    //--------------------//
@@ -535,15 +544,6 @@ public class GlyphRegression
         } else {
             return false;
         }
-    }
-
-    //-------------//
-    // getFileName //
-    //-------------//
-    @Override
-    protected String getFileName ()
-    {
-        return BACKUP_FILE_NAME;
     }
 
     //---------//

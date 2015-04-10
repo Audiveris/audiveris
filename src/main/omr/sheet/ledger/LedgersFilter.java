@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.ledger;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -135,7 +135,7 @@ public class LedgersFilter
         sheet.getLagManager().setLag(Lags.LEDGER_LAG, lag);
         sheet.getSystemManager().dispatchLedgerSections();
 
-        if ((Main.getGui() != null) && constants.displayLedgers.isSet()) {
+        if ((OMR.getGui() != null) && constants.displayLedgers.isSet()) {
             // Display a view on this lag
             new LagController(sheet, lag, SheetTab.LEDGER_TAB).refresh();
         }

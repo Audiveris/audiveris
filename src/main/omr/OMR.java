@@ -11,76 +11,118 @@
 // </editor-fold>
 package omr;
 
-import omr.sheet.Book;
+import omr.ui.OmrGui;
 
-import java.nio.file.Path;
-import java.util.List;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.SingleFrameApplication;
 
 /**
- * Interface {@code OMR} defines the API of an OMR service.
+ * Class {@code OMR} gathers definitions and dependencies for an OMR application.
  * <p>
- * Apart from the session-related methods {@link #initialize()} and {@link #terminate()}, OMR deals
- * with instances of {@link Book} class.
- * <p>
- * A Book instance can be obtained from:<ul>
- * <li>An input image file, via {@link #loadInput(java.io.Path)},</li>
- * <li>A script file, via {@link #loadScript(java.io.Path)},</li>
- * <li>A project file, via {@link #loadProject(java.io.Path)}.</li>
- * </ul>
- * Subsequent actions are performed on a Book instance.
+ * <img alt="OMR diagram" src="doc-files/Omr.png" />
  *
  * @author Hervé Bitteur
  */
-public interface OMR
+public class OMR
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    /** The extension used for bench files: {@value}. */
+    public static final String BENCH_EXTENSION = ".bench.properties";
+
+    /** The extension used for compressed score output files: {@value}. */
+    public static final String COMPRESSED_SCORE_EXTENSION = ".mxl";
+
+    /** The extension prefix used for movement output files: {@value}. */
+    public static final String MOVEMENT_EXTENSION = ".mvt";
+
+    /** The (double) extension used for opus output files: {@value}. */
+    public static final String OPUS_EXTENSION = ".opus.mxl";
+
+    /** The extension used for compressed score print files: {@value}. */
+    public static final String PDF_EXTENSION = ".pdf";
+
+    /** The extension used for score output files: {@value}. */
+    public static final String SCORE_EXTENSION = ".xml";
+
+    /** The prefix used for sheet output files in a multi-sheet book: {@value}. */
+    public static final String SHEET_PREFIX = "sheet#";
+
+    /** OMR engine. */
+    private static OmrEngine engine;
+
+    /** Master view, if any. */
+    private static OmrGui gui;
+
+    //~ Constructors -------------------------------------------------------------------------------
+    /** Do not instantiate. */
+    private OMR ()
+    {
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
-
+    //----------------//
+    // getApplication //
+    //----------------//
     /**
-     * Report the list of all books handled.
+     * Report the single instance of this GUI SAF application.
      *
-     * @return the non-mutable list of all books handled by the OMR service
+     * @return the SingleFrameApplication instance
      */
-    List<Book> getAllBooks ();
+    public static SingleFrameApplication getApplication ()
+    {
+        return (SingleFrameApplication) Application.getInstance();
+    }
 
+    //-----------//
+    // getEngine //
+    //-----------//
     /**
-     * Needed to be called first to initialize OMR internals.
-     */
-    void initialize ();
-
-    /**
-     * Build a book out of an input file.
+     * Report the omr engine.
      *
-     * @param path path to the input file, which may contain several images
-     * @return the allocated book
+     * @return the engine
      */
-    Book loadInput (Path path);
+    public static OmrEngine getEngine ()
+    {
+        return engine;
+    }
 
+    //--------//
+    // getGui //
+    //--------//
     /**
-     * Build a book out of a project file, which has previously been saved.
+     * Report the omr Gui, if any.
      *
-     * @param path path to the input project file
-     * @return the allocated book
+     * @return the main gui, or null when in batch mode
      */
-    Book loadProject (Path path);
+    public static OmrGui getGui ()
+    {
+        return gui;
+    }
 
+    //-----------//
+    // setEngine //
+    //-----------//
     /**
-     * Build a book out of a script file.
+     * Assign the omr engine.
      *
-     * @param path path to the input script file
-     * @return the allocated book
+     * @param engine the engine to set
      */
-    Book loadScript (Path path);
+    public static void setEngine (OmrEngine engine)
+    {
+        OMR.engine = engine;
+    }
 
+    //--------//
+    // setGui //
+    //--------//
     /**
-     * Remove the provided book from OMR service.
+     * Assign the omr Gui.
      *
-     * @param book the book to remove
-     * @return true if book is actually removed
+     * @param gui the main gui.
      */
-    boolean removeBook (Book book);
-
-    /**
-     * Close the service, and release all OMR data.
-     */
-    void terminate ();
+    public static void setGui (OmrGui gui)
+    {
+        OMR.gui = gui;
+    }
 }

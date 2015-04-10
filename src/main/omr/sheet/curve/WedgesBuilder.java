@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.curve;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -30,6 +28,7 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.SegmentInter;
 import omr.sig.inter.WedgeInter;
 
+import omr.util.Dumping;
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -286,7 +285,7 @@ public class WedgesBuilder
             openMaxBias = Math.tan(Math.toRadians(constants.openMaxBias.getValue()));
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
         }
     }

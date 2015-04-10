@@ -12,6 +12,7 @@
 package omr.ui;
 
 import omr.Main;
+import omr.OMR;
 import omr.WellKnowns;
 
 import omr.action.ActionManager;
@@ -35,7 +36,6 @@ import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Book;
-import omr.sheet.BookManager;
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
@@ -57,7 +57,6 @@ import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
-import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +89,7 @@ import javax.swing.SwingUtilities;
  * @author Hervé Bitteur
  */
 public class MainGui
-        extends SingleFrameApplication
+        extends OmrGui
         implements EventSubscriber<SheetEvent>, PropertyChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -133,8 +132,7 @@ public class MainGui
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code MainGui} instance, to handle any user
-     * display and interaction.
+     * Creates a new {@code MainGui} instance, to handle any user display and interaction.
      */
     public MainGui ()
     {
@@ -145,9 +143,7 @@ public class MainGui
     //----------//
     // clearLog //
     //----------//
-    /**
-     * Erase the content of the log window.
-     */
+    @Override
     public void clearLog ()
     {
         logPane.clearLog();
@@ -156,12 +152,7 @@ public class MainGui
     //---------------------//
     // displayConfirmation //
     //---------------------//
-    /**
-     * Allow to display a modal confirmation dialog with a message.
-     *
-     * @param message the message asking for confirmation
-     * @return true if confirmed, false otherwise
-     */
+    @Override
     public boolean displayConfirmation (String message)
     {
         int answer = JOptionPane.showConfirmDialog(
@@ -176,11 +167,7 @@ public class MainGui
     //--------------//
     // displayError //
     //--------------//
-    /**
-     * Allow to display a modal dialog with an error message.
-     *
-     * @param message the error message
-     */
+    @Override
     public void displayError (String message)
     {
         JOptionPane.showMessageDialog(
@@ -193,11 +180,7 @@ public class MainGui
     //----------------//
     // displayMessage //
     //----------------//
-    /**
-     * Allow to display a modal dialog with an html content.
-     *
-     * @param htmlStr the HTML string
-     */
+    @Override
     public void displayMessage (String htmlStr)
     {
         JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
@@ -208,12 +191,7 @@ public class MainGui
     //------------------------//
     // displayModelessConfirm //
     //------------------------//
-    /**
-     * Allow to display a non-modal confirmation dialog.
-     *
-     * @param message the confirmation message
-     * @return the option chosen
-     */
+    @Override
     public int displayModelessConfirm (String message)
     {
         return ModelessOptionPane.showModelessConfirmDialog(
@@ -226,11 +204,7 @@ public class MainGui
     //----------------//
     // displayWarning //
     //----------------//
-    /**
-     * Allow to display a modal dialog with a message.
-     *
-     * @param message the warning message
-     */
+    @Override
     public void displayWarning (String message)
     {
         JOptionPane.showMessageDialog(
@@ -243,11 +217,7 @@ public class MainGui
     //----------//
     // getFrame //
     //----------//
-    /**
-     * Report the concrete frame.
-     *
-     * @return the ui frame
-     */
+    @Override
     public JFrame getFrame ()
     {
         return frame;
@@ -256,44 +226,17 @@ public class MainGui
     //--------------//
     // getGlassPane //
     //--------------//
-    /**
-     * Report the main window glassPane, needed for shape drag and drop.
-     *
-     * @return the ghost glass pane
-     */
+    @Override
     public GhostGlassPane getGlassPane ()
     {
         return glassPane;
-    }
-
-    //--------------//
-    // getIconsRoot //
-    //--------------//
-    public String getIconsRoot ()
-    {
-        ResourceMap resource = Application.getInstance().getContext().getResourceMap(getClass());
-
-        return resource.getString("icons.root");
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this application.
-     *
-     * @return the SingleFrameApplication instance
-     */
-    public static SingleFrameApplication getInstance ()
-    {
-        return (SingleFrameApplication) Application.getInstance();
     }
 
     //---------//
     // getName //
     //---------//
     /**
-     * Report an Observer name.
+     * Report an Observer name, as an EventSubscriber.
      *
      * @return observer name
      */
@@ -302,41 +245,10 @@ public class MainGui
         return "MainGui";
     }
 
-    //-------------//
-    // getStepMenu //
-    //-------------//
-    /**
-     * Report the menu dedicated to steps
-     *
-     * @return the step menu
-     */
-    public StepMenu getStepMenu ()
-    {
-        return stepMenu;
-    }
-
-    //------------//
-    // hideErrors //
-    //------------//
-    /**
-     * Remove the specific component of the errors pane.
-     *
-     * @param component the precise component to remove
-     */
-    public void hideErrors (JComponent component)
-    {
-        // To avoid race conditions, check we remove the proper component
-        if ((component != null) && (component == bottomPane.getRightComponent())) {
-            bottomPane.setRightComponent(null);
-        }
-    }
-
     //-----------//
     // notifyLog //
     //-----------//
-    /**
-     * Tell that one or several new log records are waiting for display.
-     */
+    @Override
     public void notifyLog ()
     {
         logPane.notifyLog();
@@ -465,36 +377,38 @@ public class MainGui
     //------------------//
     // removeBoardsPane //
     //------------------//
-    /**
-     * Remove the current boardsScrollPane, if any.
-     */
+    @Override
     public void removeBoardsPane ()
     {
         boardsScrollPane.setBoards(null);
     }
 
+    //------------------//
+    // removeErrorsPane //
+    //------------------//
+    @Override
+    public void removeErrorsPane (JComponent errorsPane)
+    {
+        // To avoid race conditions, check we remove the proper errors pane
+        if ((errorsPane != null) && (errorsPane == bottomPane.getRightComponent())) {
+            bottomPane.setRightComponent(null);
+        }
+    }
+
     //---------------//
     // setBoardsPane //
     //---------------//
-    /**
-     * Set a new boardspane to the boards holder.
-     *
-     * @param boards the boards pane to be shown
-     */
+    @Override
     public void setBoardsPane (JComponent boards)
     {
         boardsScrollPane.setBoards(boards);
     }
 
-    //------------//
-    // showErrors //
-    //------------//
-    /**
-     * Show the provided errors.
-     *
-     * @param errorsPane the errors to be shown
-     */
-    public void showErrors (JComponent errorsPane)
+    //---------------//
+    // setErrorsPane //
+    //---------------//
+    @Override
+    public void setErrorsPane (JComponent errorsPane)
     {
         bottomPane.setRightComponent(errorsPane);
     }
@@ -502,14 +416,13 @@ public class MainGui
     //------------//
     // initialize //
     //------------//
-    /** {@inheritDoc} */
     @Override
     protected void initialize (String[] args)
     {
         logger.debug("MainGui. 1/initialize");
 
         // Launch background pre-loading tasks?
-        if (constants.preloadCostlyPackages.getValue()) {
+        if (constants.preloadCostlyPackages.isSet()) {
             JaiLoader.preload();
             PartwiseBuilder.preload();
         }
@@ -518,7 +431,6 @@ public class MainGui
     //-------//
     // ready //
     //-------//
-    /** {@inheritDoc} */
     @Override
     protected void ready ()
     {
@@ -527,12 +439,12 @@ public class MainGui
         // Set application exit listener
         addExitListener(new GuiExitListener());
 
-        // Weakly listen to GUI Actions parameters
+        // Weakly listen to OmrGui Actions parameters
         PropertyChangeListener weak = new WeakPropertyChangeListener(this);
         GuiActions.getInstance().addPropertyChangeListener(weak);
 
-        // Make the GUI instance available for the other classes
-        Main.setGui(this);
+        // Make the OmrGui instance available for the other classes
+        OMR.setGui(this);
 
         // Check MusicFont is loaded
         MusicFont.checkMusicFont();
@@ -541,12 +453,12 @@ public class MainGui
         notifyLog();
 
         // Launch scores
-        for (Callable<Void> task : Main.getFilesTasks()) {
+        for (Callable<Void> task : Main.getCli().getFilesTasks()) {
             OmrExecutors.getCachedLowExecutor().submit(task);
         }
 
         // Launch scripts
-        for (Callable<Void> task : Main.getScriptsTasks()) {
+        for (Callable<Void> task : Main.getCli().getScriptsTasks()) {
             OmrExecutors.getCachedLowExecutor().submit(task);
         }
     }
@@ -554,7 +466,6 @@ public class MainGui
     //---------//
     // startup //
     //---------//
-    /** {@inheritDoc} */
     @Override
     protected void startup ()
     {
@@ -795,7 +706,7 @@ public class MainGui
         public boolean canExit (EventObject eo)
         {
             // Are all scripts stored (or explicitly ignored)?
-            for (Book book : BookManager.getInstance().getAllBooks()) {
+            for (Book book : OMR.getEngine().getAllBooks()) {
                 if (!ScriptActions.checkStored(book.getScript())) {
                     return false;
                 }
@@ -814,7 +725,7 @@ public class MainGui
             int count = 0;
 
             // NB: Use a COPY of instances, to avoid concurrent modification
-            for (Book book : new ArrayList<Book>(BookManager.getInstance().getAllBooks())) {
+            for (Book book : new ArrayList<Book>(OMR.getEngine().getAllBooks())) {
                 book.close();
                 count++;
             }

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui;
 
-import omr.Main;
+import omr.OMR;
 import omr.WellKnowns;
 
 import omr.constant.Constant;
@@ -131,7 +131,7 @@ public class GuiActions
     @Action
     public void clearLog (ActionEvent e)
     {
-        Main.getGui().clearLog();
+        OMR.getGui().clearLog();
     }
 
     //---------------//
@@ -189,7 +189,7 @@ public class GuiActions
     @Action
     public void exit (ActionEvent e)
     {
-        MainGui.getInstance().exit();
+        OMR.getApplication().exit();
     }
 
     //-------------------//
@@ -343,7 +343,7 @@ public class GuiActions
     // toggleBoards //
     //--------------//
     /**
-     * Action that toggles the display of baords window
+     * Action that toggles the display of boards window
      *
      * @param e the event that triggered this action
      */
@@ -479,7 +479,7 @@ public class GuiActions
                 aboutBox = createAboutBox();
             }
 
-            MainGui.getInstance().show(aboutBox);
+            OMR.getApplication().show(aboutBox);
         }
 
         private JDialog createAboutBox ()
@@ -667,7 +667,7 @@ public class GuiActions
 
         public OptionsTask ()
         {
-            super(MainGui.getInstance());
+            super(OMR.getApplication());
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -686,7 +686,7 @@ public class GuiActions
         protected void succeeded (Options options)
         {
             if (options != null) {
-                MainGui.getInstance().show(options.getComponent());
+                OMR.getApplication().show(options.getComponent());
             }
         }
     }

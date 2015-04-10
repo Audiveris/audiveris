@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.note;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -103,7 +103,7 @@ public class DistancesBuilder
         paintLines();
 
         // Display distances image in a template view?
-        if ((Main.getGui() != null) && constants.displayTemplates.isSet()) {
+        if ((OMR.getGui() != null) && constants.displayTemplates.isSet()) {
             SelectionService templateService = new SelectionService(
                     "Templates",
                     new Class[]{AnchoredTemplateEvent.class});

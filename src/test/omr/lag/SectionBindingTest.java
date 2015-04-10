@@ -4,8 +4,6 @@
  */
 package omr.lag;
 
-import omr.Main;
-
 import omr.glyph.Shape;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
@@ -16,6 +14,7 @@ import omr.run.Run;
 import omr.run.RunTable;
 
 import omr.util.BaseTestCase;
+import omr.util.Dumping;
 
 import org.junit.BeforeClass;
 
@@ -101,7 +100,7 @@ public class SectionBindingTest
         InputStream is = new FileInputStream(fileNameValue);
         GlyphValue newValue = (GlyphValue) um.unmarshal(is);
         System.out.println("Unmarshalled from " + fileNameValue);
-        Main.dumping.dump(newValue);
+        new Dumping().dump(newValue);
 
         Glyph glyph = new BasicGlyph(newValue);
         System.out.println("Glyph: " + glyph);

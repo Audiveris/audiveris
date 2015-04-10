@@ -193,7 +193,7 @@ public class ConstantManager
         }
 
         // Value set at CLI level?
-        Properties cliConstants = Main.getCliConstants();
+        Properties cliConstants = Main.getCli().getOptions();
 
         if (cliConstants != null) {
             String cliValue = cliConstants.getProperty(qName);

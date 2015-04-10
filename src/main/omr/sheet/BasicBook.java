@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.Main;
+import omr.OMR;
 
 import omr.image.FilterDescriptor;
 import omr.image.ImageLoading;
@@ -28,10 +28,7 @@ import omr.script.ExportTask;
 import omr.script.PrintTask;
 import omr.script.Script;
 import omr.script.ScriptActions;
-import static omr.sheet.BookManager.COMPRESSED_SCORE_EXTENSION;
-import static omr.sheet.BookManager.MOVEMENT_EXTENSION;
-import static omr.sheet.BookManager.OPUS_EXTENSION;
-import static omr.sheet.BookManager.SCORE_EXTENSION;
+
 import omr.sheet.ui.BookBrowser;
 import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
@@ -148,8 +145,9 @@ public class BasicBook
 
         bench = new BookBench(this);
 
-        // Register this book instance
-        BookManager.getInstance().addBook(this);
+        //
+        //        // Register this book instance
+        //        BookManager.getInstance().addBook(this);
     }
 
     /**
@@ -171,8 +169,9 @@ public class BasicBook
         // Related bench
         bench = new BookBench(this);
 
-        // Register this book instance
-        BookManager.getInstance().addBook(this);
+        //
+        //        // Register this book instance
+        //        BookManager.getInstance().addBook(this);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -212,7 +211,7 @@ public class BasicBook
         setClosing(true);
 
         // Check whether the book script has been saved (or user has declined)
-        if ((Main.getGui() != null) && !ScriptActions.checkStored(getScript())) {
+        if ((OMR.getGui() != null) && !ScriptActions.checkStored(getScript())) {
             return;
         }
 
@@ -227,10 +226,10 @@ public class BasicBook
         }
 
         // Complete and store all bench data
-        BookManager.getInstance().storeBench(bench, true);
+        BookManager.storeBench(bench, true);
 
-        // Remove from score instances
-        BookManager.getInstance().removeBook(this);
+        // Remove from OMR instances
+        OMR.getEngine().removeBook(this);
     }
 
     //--------------//
@@ -266,7 +265,7 @@ public class BasicBook
                         firstSheet = sheet;
 
                         // Let the UI focus on first sheet
-                        if (Main.getGui() != null) {
+                        if (OMR.getGui() != null) {
                             SheetsController.getInstance().showAssembly(firstSheet);
                         }
                     }
@@ -279,12 +278,12 @@ public class BasicBook
             }
 
             // Remember (even across runs) the parent directory
-            BookManager.getInstance().setDefaultInputDirectory(imagePath.getParent().toString());
+            BookManager.setDefaultInputDirectory(imagePath.getParent().toString());
 
             // Insert in sheet history
             BookManager.getInstance().getHistory().add(getInputPath().toString());
 
-            if (Main.getGui() != null) {
+            if (OMR.getGui() != null) {
                 SheetActions.HistoryMenu.getInstance().setEnabled(true);
             }
         }
@@ -336,6 +335,10 @@ public class BasicBook
                 // Create book sheets if not yet done
                 // This will usually trigger the early step on first sheet in synchronous mode
                 createSheets(sheetIds);
+            }
+
+            if (target == null) {
+                return true; // Nothing to
             }
 
             // Find the least advanced step performed across all book sheets
@@ -486,7 +489,7 @@ public class BasicBook
                 BookManager.getDefaultExportPath(this));
 
         final boolean compressed = BookManager.useCompression();
-        final String ext = compressed ? COMPRESSED_SCORE_EXTENSION : SCORE_EXTENSION;
+        final String ext = compressed ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION;
         final boolean sig = BookManager.useSignature();
 
         // Export each movement score
@@ -495,7 +498,7 @@ public class BasicBook
 
         if (BookManager.useOpus()) {
             // Export the book as one opus
-            final Path opusPath = bookPath.resolveSibling(bookName + OPUS_EXTENSION);
+            final Path opusPath = bookPath.resolveSibling(bookName + OMR.OPUS_EXTENSION);
 
             try {
                 if (!BookManager.confirmed(opusPath)) {
@@ -510,7 +513,7 @@ public class BasicBook
         } else {
             for (Score score : scores) {
                 final String scoreName = (!multiMovements) ? bookName
-                        : (bookName + MOVEMENT_EXTENSION + score.getId());
+                        : (bookName + OMR.MOVEMENT_EXTENSION + score.getId());
                 final Path scorePath = bookPath.resolveSibling(scoreName + ext);
 
                 try {
@@ -868,5 +871,14 @@ public class BasicBook
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //------------//
+    // transcribe //
+    //------------//
+    @Override
+    public boolean transcribe (SortedSet<Integer> sheetIds)
+    {
+        return doStep(Step.last(), sheetIds);
     }
 }

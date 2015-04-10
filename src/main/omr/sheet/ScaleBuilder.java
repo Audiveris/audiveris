@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.Main;
+import omr.OMR;
 import static omr.WellKnowns.LINE_SEPARATOR;
 
 import omr.constant.Constant;
@@ -363,13 +363,13 @@ public class ScaleBuilder
 
         Book book = sheet.getBook();
 
-        if (Main.getGui() != null) {
+        if (OMR.getGui() != null) {
             // Make sheet visible to the user
             SheetsController.getInstance().showAssembly(sheet);
         }
 
-        if ((Main.getGui() == null)
-            || (Main.getGui()
+        if ((OMR.getGui() == null)
+            || (OMR.getGui()
                 .displayModelessConfirm(msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
             if (book.isMultiSheet()) {
                 sheet.close(false);

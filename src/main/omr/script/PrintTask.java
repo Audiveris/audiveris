@@ -62,7 +62,6 @@ public class PrintTask
         Book book = sheet.getBook();
         Path bookPath = (folder != null) ? new File(folder, book.getRadix()).toPath() : null;
         book.setPrintPath(bookPath);
-        ///BookManager.getInstance().printBook(sheet.getBook(), bookPath);
         book.print();
     }
 

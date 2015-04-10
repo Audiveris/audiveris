@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import omr.ui.MainGui;
+import omr.OMR;
+
 import omr.ui.field.IntegerListSpinner;
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LHexaSpinner;
@@ -219,7 +220,7 @@ public class SymbolRipper
         // Frame behavior
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
-        MainGui.getInstance().show(frame);
+        OMR.getApplication().show(frame);
 
         // Actions
         image = buildImage();

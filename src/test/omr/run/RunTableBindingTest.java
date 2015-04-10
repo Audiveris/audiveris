@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.run;
 
-import omr.Main;
-
 import static omr.run.Orientation.HORIZONTAL;
 
 import omr.util.BaseTestCase;
@@ -32,6 +30,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.PropertyException;
 import javax.xml.bind.Unmarshaller;
+import omr.util.Dumping;
 
 /**
  * Class {@code RunTableBindingTest} tests the (un-)marshaling of RunTable.
@@ -80,7 +79,7 @@ public class RunTableBindingTest
         InputStream is = new FileInputStream(fileSequence);
         RunSequence newSequence = (RunSequence) um.unmarshal(is);
         System.out.println("Unmarshalled from " + fileSequence);
-        Main.dumping.dump(newSequence);
+        new Dumping().dump(newSequence);
         System.out.println("newSequence: " + newSequence);
     }
 
@@ -102,7 +101,7 @@ public class RunTableBindingTest
         InputStream is = new FileInputStream(fileTable);
         RunTable newTable = (RunTable) um.unmarshal(is);
         System.out.println("Unmarshalled from " + fileTable);
-        Main.dumping.dump(newTable);
+        new Dumping().dump(newTable);
         newTable.dumpSequences();
     }
 

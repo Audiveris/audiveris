@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.util;
 
-import omr.Main;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,7 +132,7 @@ public abstract class TreeNode
      */
     public boolean dumpNode (int level)
     {
-        Main.dumping.dump(this, level);
+        new Dumping().dump(this, level);
 
         return true; // Let computation continue down the tree
     }

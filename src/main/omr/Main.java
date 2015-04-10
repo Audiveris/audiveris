@@ -17,23 +17,12 @@ import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
 
-import omr.script.ExportTask;
-import omr.script.PrintTask;
-import omr.script.ScriptManager;
-
-import omr.sheet.BasicBook;
-import omr.sheet.Book;
 import omr.sheet.BookManager;
-
-import omr.step.ProcessingCancellationException;
-import omr.step.Step;
 
 import omr.ui.MainGui;
 import omr.ui.symbol.MusicFont;
 
 import omr.util.ClassUtil;
-import omr.util.Clock;
-import omr.util.Dumping;
 import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
@@ -43,14 +32,9 @@ import org.kohsuke.args4j.CmdLineException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
-import java.util.SortedSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -69,22 +53,19 @@ public class Main
     //~ Static fields/initializers -----------------------------------------------------------------
 
     static {
-        /** Time stamp */
-        Clock.resetTime();
+        // We need class WellKnowns to be elaborated before anything else
+        WellKnowns.ensureLoaded();
     }
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     private static final Constants constants = new Constants();
 
-    /** Master View. */
-    private static MainGui gui;
+    /** CLI parameters. */
+    private static CLI cli;
 
     /** Parameters read from CLI. */
     private static Parameters parameters;
-
-    /** The application dumping service. */
-    public static final Dumping dumping = new Dumping(Main.class.getPackage());
 
     //~ Constructors -------------------------------------------------------------------------------
     private Main ()
@@ -93,18 +74,31 @@ public class Main
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
-    // doMain //
+    // getCli //
     //--------//
+    /**
+     * Points to the command line interface parameters
+     *
+     * @return CLI instance
+     */
+    public static CLI getCli ()
+    {
+        return cli;
+    }
+
+    //------//
+    // main //
+    //------//
     /**
      * Specific starting method for the application.
      *
      * @param args command line parameters
      * @see omr.CLI the possible command line parameters
      */
-    public static void doMain (String[] args)
+    public static void main (String[] args)
     {
         // Process CLI arguments
-        process(args);
+        processCli(args);
 
         // Initialize tool parameters
         initialize();
@@ -118,72 +112,22 @@ public class Main
         // Native libs
         loadNativeLibraries();
 
+        // Engine
+        OMR.setEngine(BookManager.getInstance());
+
         if (!parameters.batchMode) {
-            // For interactive mode
+            // Here we are in interactive mode
             logger.debug("Main. Launching MainGui");
             Application.launch(MainGui.class, args);
         } else {
-            // For batch mode
-
-            // Remember if at least one task failed
-            boolean failure = false;
+            // Here we are in batch mode
 
             // Check MusicFont is loaded
             MusicFont.checkMusicFont();
 
-            // Launch the required tasks, if any
-            List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
-            tasks.addAll(getFilesTasks());
-            tasks.addAll(getScriptsTasks());
+            // Run the required tasks, if any (and remember if at least one task failed)
+            boolean failure = runBatchTasks();
 
-            if (!tasks.isEmpty()) {
-                // Run all tasks in parallel or one task at a time
-                if (constants.batchTasksInParallel.isSet()) {
-                    try {
-                        logTasks(tasks, true);
-
-                        List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor().invokeAll(
-                                tasks,
-                                constants.processTimeOut.getValue(),
-                                TimeUnit.SECONDS);
-                        logger.info("Checking {} task(s)", tasks.size());
-
-                        // Check for time-out
-                        for (Future<Void> future : futures) {
-                            try {
-                                future.get();
-                            } catch (Exception ex) {
-                                logger.warn("Future exception", ex);
-                                failure = true;
-                            }
-                        }
-                    } catch (Exception ex) {
-                        logger.warn("Error in processing tasks", ex);
-                        failure = true;
-                    }
-                } else {
-                    logTasks(tasks, false);
-
-                    for (Callable<Void> task : tasks) {
-                        try {
-                            Future<Void> future = OmrExecutors.getCachedLowExecutor().submit(task);
-
-                            // Check for time-out
-                            try {
-                                future.get(constants.processTimeOut.getValue(), TimeUnit.SECONDS);
-                            } catch (Exception ex) {
-                                logger.warn("Future exception", ex);
-                                failure = true;
-                            }
-                        } catch (Exception ex) {
-                            logger.warn("Error in processing task " + task, ex);
-                            failure = true;
-                        }
-                    }
-                }
-            }
-
-            List<Book> books = BookManager.getInstance().getAllBooks();
             // At this point all tasks have completed (normally or not)
             // So shutdown immediately the executors
             OmrExecutors.shutdown(true);
@@ -199,240 +143,6 @@ public class Main
                 System.exit(-1);
             }
         }
-    }
-
-    //----------------//
-    // getBenchFolder //
-    //----------------//
-    /**
-     * Report the bench folder if present on the CLI
-     *
-     * @return the CLI bench folder, or null
-     */
-    public static Path getBenchFolder ()
-    {
-        if (parameters.benchFolder == null) {
-            return null;
-        }
-
-        return parameters.benchFolder.toPath();
-    }
-
-    //-----------------//
-    // getCliConstants //
-    //-----------------//
-    /**
-     * Report the properties set at the CLI level
-     *
-     * @return the CLI-defined constant values
-     */
-    public static Properties getCliConstants ()
-    {
-        if (parameters == null) {
-            return null;
-        } else {
-            return parameters.options;
-        }
-    }
-
-    //-----------------//
-    // getExportFolder //
-    //-----------------//
-    /**
-     * Report the export folder if present on the CLI
-     *
-     * @return the CLI export path, or null
-     */
-    public static Path getExportFolder ()
-    {
-        if (parameters.exportFolder == null) {
-            return null;
-        }
-
-        return parameters.exportFolder.toPath();
-    }
-
-    //---------------//
-    // getFilesTasks //
-    //---------------//
-    /**
-     * Prepare the processing of image files listed on command line.
-     * On each input file, we apply the actions specified if any via -step, -print, -export.
-     *
-     * @return the collection of proper callable instances
-     */
-    public static List<Callable<Void>> getFilesTasks ()
-    {
-        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
-
-        // Launch desired step on each book
-        for (final File input : parameters.inputFiles) {
-            final Path path = input.toPath();
-
-            tasks.add(
-                    new Callable<Void>()
-                    {
-                        @Override
-                        public Void call ()
-                        throws Exception
-                        {
-                            final Step target = parameters.step;
-                            final SortedSet<Integer> sheetIds = parameters.getSheetIds();
-
-                            if (target != null) {
-                                logger.info(
-                                        "Launching {} on {} {}",
-                                        target,
-                                        input,
-                                        (!sheetIds.isEmpty()) ? ("sheets " + sheetIds) : "");
-                            }
-
-                            if (Files.exists(path)) {
-                                final Book book = new BasicBook(path);
-
-                                try {
-                                    // Create book sheets and perform desired steps if any
-                                    book.doStep(target, sheetIds);
-
-                                    // Book print output?
-                                    if (parameters.print || (parameters.printFolder != null)) {
-                                        logger.debug("Print output");
-                                        new PrintTask(parameters.printFolder).core(
-                                                book.getSheets().get(0));
-                                    }
-
-                                    // Book export output?
-                                    if (parameters.export || (parameters.exportFolder != null)) {
-                                        logger.debug("Export output");
-                                        new ExportTask(parameters.exportFolder).core(
-                                                book.getSheets().get(0));
-                                    }
-                                } catch (ProcessingCancellationException pce) {
-                                    logger.warn("Cancelled " + book, pce);
-                                    book.getBench().recordCancellation();
-                                    throw pce;
-                                } catch (Throwable ex) {
-                                    logger.warn("Exception occurred", ex);
-                                    throw ex;
-                                } finally {
-                                    // Close (when in batch mode only)
-                                    if ((gui == null) && constants.closeBookOnEnd.isSet()) {
-                                        book.close();
-                                    }
-                                }
-
-                                return null;
-                            } else {
-                                String msg = "Could not find file " + path;
-                                logger.warn(msg);
-                                throw new RuntimeException(msg);
-                            }
-                        }
-
-                        @Override
-                        public String toString ()
-                        {
-                            return "Input " + path;
-                        }
-                    });
-        }
-
-        return tasks;
-    }
-
-    //--------//
-    // getGui //
-    //--------//
-    /**
-     * Points to the single instance of the User Interface, if any.
-     *
-     * @return MainGui instance, which may be null
-     */
-    public static MainGui getGui ()
-    {
-        return gui;
-    }
-
-    //-------------//
-    // getPagesIds //
-    //-------------//
-    /**
-     * Report the set of page ids if present on the CLI
-     *
-     * @return the CLI page ids, or null
-     */
-    public static SortedSet<Integer> getPageIds ()
-    {
-        return parameters.getSheetIds();
-    }
-
-    //----------------//
-    // getPrintFolder //
-    //----------------//
-    /**
-     * Report the print folder if present on the CLI
-     *
-     * @return the CLI print path, or null
-     */
-    public static Path getPrintFolder ()
-    {
-        if (parameters.printFolder == null) {
-            return null;
-        }
-
-        return parameters.printFolder.toPath();
-    }
-
-    //-----------------//
-    // getScriptsTasks //
-    //-----------------//
-    /**
-     * Prepare the processing of scripts listed on command line
-     *
-     * @return the collection of proper script callables
-     */
-    public static List<Callable<Void>> getScriptsTasks ()
-    {
-        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
-
-        // Launch desired scripts in parallel
-        for (File scriptFile : parameters.scriptFiles) {
-            tasks.add(
-                    new Callable<Void>()
-                    {
-                        @Override
-                        public Void call ()
-                        throws Exception
-                        {
-                            ScriptManager.getInstance().loadAndRun(
-                                    scriptFile,
-                                    constants.closeBookOnEnd.isSet());
-
-                            return null;
-                        }
-
-                        @Override
-                        public String toString ()
-                        {
-                            return "Script " + scriptFile;
-                        }
-                    });
-        }
-
-        return tasks;
-    }
-
-    //--------//
-    // setGui //
-    //--------//
-    /**
-     * Register the GUI (done by the GUI itself when it is ready)
-     *
-     * @param gui the MainGui instance
-     */
-    public static void setGui (MainGui gui)
-    {
-        Main.gui = gui;
     }
 
     //-------------//
@@ -498,8 +208,8 @@ public class Main
             // Inform user of OCR installation problem
             String msg = "Tesseract OCR is not installed properly";
 
-            if (Main.getGui() != null) {
-                Main.getGui().displayError(msg);
+            if (OMR.getGui() != null) {
+                OMR.getGui().displayError(msg);
             } else {
                 logger.warn(msg);
             }
@@ -523,30 +233,21 @@ public class Main
         logger.info(sb.toString());
     }
 
-    //---------//
-    // process //
-    //---------//
-    private static void process (String[] args)
+    //------------//
+    // processCli //
+    //------------//
+    private static void processCli (String[] args)
     {
         try {
             // First get the provided arguments if any
-            parameters = new CLI(WellKnowns.TOOL_NAME).getParameters(args);
+            cli = new CLI(WellKnowns.TOOL_NAME);
+            parameters = cli.getParameters(args);
 
             // Interactive or Batch mode ?
             if (parameters.batchMode) {
                 logger.info("Running in batch mode");
 
-                ///System.setProperty("java.awt.headless", "true");
-                //            // Check MIDI output is not asked for
-                //            Step midiStep = Steps.valueOf(Steps.MIDI);
-                //
-                //            if ((midiStep != null) &&
-                //                parameters.steps.contains(midiStep)) {
-                //                logger.warn(
-                //                    "MIDI output is not compatible with -batch mode." +
-                //                    " MIDI output is ignored.");
-                //                parameters.steps.remove(midiStep);
-                //            }
+                ///System.setProperty("java.awt.headless", "true"); //TODO: Useful?
             } else {
                 logger.debug("Running in interactive mode");
             }
@@ -557,6 +258,66 @@ public class Main
             // Stop the JVM, with failure status (1)
             Runtime.getRuntime().exit(1);
         }
+    }
+
+    //---------------//
+    // runBatchTasks //
+    //---------------//
+    private static boolean runBatchTasks ()
+    {
+        boolean failure = false;
+        final List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+        tasks.addAll(cli.getFilesTasks());
+        tasks.addAll(cli.getScriptsTasks());
+
+        if (!tasks.isEmpty()) {
+            // Run all tasks in parallel or one task at a time
+            if (constants.batchTasksInParallel.isSet()) {
+                try {
+                    logTasks(tasks, true);
+
+                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor().invokeAll(
+                            tasks,
+                            constants.processTimeOut.getValue(),
+                            TimeUnit.SECONDS);
+                    logger.info("Checking {} task(s)", tasks.size());
+
+                    // Check for time-out
+                    for (Future<Void> future : futures) {
+                        try {
+                            future.get();
+                        } catch (Exception ex) {
+                            logger.warn("Future exception", ex);
+                            failure = true;
+                        }
+                    }
+                } catch (Exception ex) {
+                    logger.warn("Error in processing tasks", ex);
+                    failure = true;
+                }
+            } else {
+                logTasks(tasks, false);
+
+                for (Callable<Void> task : tasks) {
+                    try {
+                        Future<Void> future = OmrExecutors.getCachedLowExecutor().submit(task);
+
+                        // Check for time-out
+                        try {
+                            future.get(constants.processTimeOut.getValue(), TimeUnit.SECONDS);
+                        } catch (Exception ex) {
+                            logger.warn("Future exception", ex);
+                            failure = true;
+                        }
+                    } catch (Exception ex) {
+                        logger.warn("Error in processing task " + task, ex);
+                        failure = true;
+                    }
+                }
+            }
+        }
+
+        return failure;
     }
 
     //-----------------//
