@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet.curve;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -28,6 +26,8 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.SegmentInter;
 
 import omr.ui.util.UIUtil;
+
+import omr.util.Dumping;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,10 +97,12 @@ public class SegmentsBuilder
             List<Arc> relevants = getSeedArcs();
 
             for (Arc arc : relevants) {
+                ///logger.info("buildSegments for {}", arc);
                 buildCurve(arc);
             }
 
             // Purge duplicates
+            ///logger.info("purgeDuplicates...");
             purgeDuplicates();
 
             logger.info("{}Segments: {}", sheet.getLogPrefix(), segments.size());
@@ -396,7 +398,7 @@ public class SegmentsBuilder
             maxRunDistance = scale.toPixelsDouble(constants.maxRunDistance);
 
             if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
+                new Dumping().dump(this);
             }
         }
     }
