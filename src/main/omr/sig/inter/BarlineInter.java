@@ -135,4 +135,22 @@ public class BarlineInter
     {
         staffEnd.add(side);
     }
+
+    //--------//
+    // delete //
+    //--------//
+    /**
+     * Since a BarlineInter instance is held by its containing staff, make sure staff
+     * bar collection is updated.
+     */
+    @Override
+    public void delete ()
+    {
+        super.delete();
+
+        if (staff != null) {
+            staff.removeBar(this);
+        }
+    }
+
 }

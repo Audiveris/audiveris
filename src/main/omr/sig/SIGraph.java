@@ -26,6 +26,7 @@ import omr.selection.InterListEvent;
 
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
+import omr.sheet.header.StaffHeader;
 
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.Inter;
@@ -294,6 +295,21 @@ public class SIGraph
 
         for (Inter inter : vertexSet()) {
             if (inter.getContextualGrade() < Inter.minContextualGrade) {
+                // Staff headers are preserved, even with low grade
+                Staff staff = inter.getStaff();
+
+                if (staff != null) {
+                    StaffHeader header = staff.getHeader();
+
+                    if ((header.clef == inter) || (header.key == inter) || (header.time == inter)) {
+                        if (inter.isVip()) {
+                            logger.info("VIP header {} preserved", inter);
+                        }
+
+                        continue;
+                    }
+                }
+
                 if (inter.isVip()) {
                     logger.info("VIP deleted weak {}", inter);
                 }

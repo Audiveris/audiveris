@@ -19,6 +19,8 @@ import omr.glyph.Shape;
 import omr.math.GeoUtil;
 import omr.math.TableUtil;
 
+import omr.sheet.Scale;
+
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.TemplateSymbol;
 
@@ -304,34 +306,36 @@ public class Template
      * Collect the image foreground pixels located under the template foreground areas,
      * with some additional margin.
      *
-     * @param box    absolute positioning of template box in global image
-     * @param image  global image to be read
-     * @param margin margin added around glyph (specified in pixels)
+     * @param box     absolute positioning of template box in global image
+     * @param image   global image to be read
+     * @param dilated true for applying dilation before processing
      * @return the collection of foreground pixels, relative to template box.
      */
     public List<Point> getForegroundPixels (Rectangle box,
                                             ByteProcessor image,
-                                            int margin)
+                                            boolean dilated)
     {
         final List<Point> fores = getForegroundPixels(box, image);
 
-        if (margin <= 0) {
+        if (!dilated) {
             return fores;
         }
 
+        int dilation = new Scale(interline).toPixels(constants.dilation);
+
         // Populate an enlarged buffer with these foreground pixels
         final Rectangle bufBox = new Rectangle(box);
-        bufBox.grow(margin, margin);
+        bufBox.grow(dilation, dilation);
 
         final ByteProcessor buf = new ByteProcessor(bufBox.width, bufBox.height);
         buf.invert();
 
         for (Point p : fores) {
-            buf.set(p.x + margin, p.y + margin, 0);
+            buf.set(p.x + dilation, p.y + dilation, 0);
         }
 
         // Dilate the foreground areas
-        for (int i = 0; i < margin; i++) {
+        for (int i = 0; i < dilation; i++) {
             buf.dilate();
         }
 
@@ -341,7 +345,7 @@ public class Template
         for (int y = 0; y < bufBox.height; y++) {
             for (int x = 0; x < bufBox.width; x++) {
                 if (buf.get(x, y) == 0) {
-                    fores.add(new Point(x - margin, y - margin));
+                    fores.add(new Point(x - dilation, y - dilation));
                 }
             }
         }
@@ -531,5 +535,9 @@ public class Template
         final Constant.Ratio backWeight = new Constant.Ratio(
                 1.0,
                 "Weight assigned to template background pixels");
+
+        final Scale.Fraction dilation = new Scale.Fraction(
+                0.15,
+                "Dilation applied on a note head to be erased");
     }
 }

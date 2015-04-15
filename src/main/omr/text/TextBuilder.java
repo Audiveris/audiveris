@@ -767,7 +767,8 @@ public class TextBuilder
 
         for (TextWord word : words) {
             List<TextWord> subWords = null; // Results of split
-            Glyph wordGlyph = word.getGlyph();
+            final Glyph wordGlyph = word.getGlyph();
+            final int maxCharGap = getMaxCharGap(word); // Max gap depends on word font size
 
             if (wordGlyph != null) {
                 if (!wordGlyph.getTextValue().equals(word.getInternalValue())) {
@@ -781,7 +782,7 @@ public class TextBuilder
                                 new WordScanner.ManualScanner(
                                         wordGlyph.getTextValue(),
                                         line.isLyrics(),
-                                        params.maxCharDx,
+                                        maxCharGap,
                                         word.getChars()));
 
                         // If no subdivision was made, allocate a new TextWord
@@ -807,7 +808,7 @@ public class TextBuilder
                         new WordScanner.OcrScanner(
                                 word.getValue(),
                                 line.isLyrics(),
-                                params.maxCharDx,
+                                maxCharGap,
                                 word.getChars()));
             }
 
@@ -1018,6 +1019,25 @@ public class TextBuilder
         rect.height = Math.max(1, rect.height); // To allow containment test
 
         return rect;
+    }
+
+    //---------------//
+    // getMaxCharGap //
+    //---------------//
+    /**
+     * Compute max abscissa gap between two chars in a word.
+     *
+     * @param word the word at hand
+     * @return max number of pixels for abscissa gap, according to the word font size
+     */
+    private int getMaxCharGap (TextWord word)
+    {
+        int pointSize = word.getFontInfo().pointsize;
+
+        // TODO: very rough value to be refined and explained!
+        int val = (int) Math.rint(constants.maxCharDx.getValue() * pointSize / 2.0);
+
+        return val;
     }
 
     //-------------//

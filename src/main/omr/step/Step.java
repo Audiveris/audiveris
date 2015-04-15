@@ -61,8 +61,8 @@ public enum Step
     CURVES("Retrieve slurs, wedges & endings", DATA_TAB, new CurvesStep()),
     SYMBOLS("Retrieve fixed-shape symbols", DATA_TAB, new SymbolsStep()),
     MEASURES("Retrieve raw measures from groups of bar lines", DATA_TAB, new MeasuresStep()),
-    SYMBOL_REDUCTION("Reduce symbols", DATA_TAB, new SymbolReductionStep()),
     RHYTHMS("Handle rhythms within measures", DATA_TAB, new RhythmsStep()),
+    SYMBOL_REDUCTION("Reduce symbols", DATA_TAB, new SymbolReductionStep()),
     PAGE("Connect systems within page", DATA_TAB, new PageStep());
 
     /** Related short label. */

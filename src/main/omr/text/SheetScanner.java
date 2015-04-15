@@ -215,11 +215,9 @@ public class SheetScanner
                 0.25,
                 "Vertical margin around staff core area");
 
-        // There is no point in making this a Scale.Fraction variable
-        final Constant.Integer noteMargin = new Constant.Integer(
-                "pixels",
-                3, //2,
-                "Number of pixels added around notes");
+        final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
+                0.05,
+                "Minimum weight for any glyph to be kept before OCR");
     }
 
     //--------------//
@@ -293,6 +291,7 @@ public class SheetScanner
             buffer.threshold(127);
 
             // Build all glyphs out of buffer and erase those that intersect a staff core area
+            // Also purge image of too small glyphs
             SectionFactory factory = new SectionFactory(VERTICAL, JunctionAllPolicy.INSTANCE);
             List<Section> sections = factory.createSections(buffer, null);
             List<Glyph> glyphs = sheet.getGlyphNest().retrieveGlyphs(sections, null, false);
@@ -310,10 +309,7 @@ public class SheetScanner
             final Rectangle box = desc.getBounds(inter.getBounds());
 
             // Use underlying glyph (enlarged)
-            final List<Point> fores = tpl.getForegroundPixels(
-                    box,
-                    buffer,
-                    constants.noteMargin.getValue());
+            final List<Point> fores = tpl.getForegroundPixels(box, buffer, true);
 
             // Erase foreground pixels
             for (final Point p : fores) {
@@ -333,7 +329,19 @@ public class SheetScanner
         private void eraseBorderGlyphs (List<Glyph> glyphs,
                                         List<Area> cores)
         {
+            final int minWeight = sheet.getScale().toPixels(constants.minGlyphWeight);
+
             for (Glyph glyph : glyphs) {
+                // Check weight
+                if (glyph.getWeight() < minWeight) {
+                    for (Section section : glyph.getMembers()) {
+                        g.fill(section.getPolygon());
+                    }
+
+                    continue;
+                }
+
+                // Check position WRT staves cores
                 Rectangle glyphBox = glyph.getBounds();
                 glyphBox.grow(1, 1); // To catch touching glyphs (on top of intersecting ones)
 

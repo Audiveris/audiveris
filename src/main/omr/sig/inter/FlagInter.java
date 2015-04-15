@@ -12,13 +12,14 @@
 package omr.sig.inter;
 
 import omr.glyph.Shape;
-import static omr.glyph.ShapeSet.FlagsUp;
-import omr.glyph.facets.Glyph;
 
-import omr.lag.Section;
+import static omr.glyph.ShapeSet.FlagsUp;
+
+import omr.glyph.facets.Glyph;
 
 import omr.math.GeoOrder;
 import omr.math.LineUtil;
+
 import static omr.run.Orientation.VERTICAL;
 
 import omr.sheet.Scale;
@@ -26,7 +27,6 @@ import omr.sheet.SystemInfo;
 import omr.sheet.rhythm.Voice;
 
 import omr.sig.SIGraph;
-import omr.sig.SigReducer;
 import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.Relation;
 
@@ -110,19 +110,23 @@ public class FlagInter
         final boolean isFlagUp = FlagsUp.contains(shape);
         final int stemWidth = system.getSheet().getMaxStem();
         final Rectangle flagBox = glyph.getBounds();
-        final int height = (int) Math.rint(flagBox.height / 3.0);
-        final int y = isFlagUp ? ((flagBox.y + flagBox.height) - height - maxStemFlagGapY)
-                : (flagBox.y + maxStemFlagGapY);
+        final int footHeight = (int) Math.rint(flagBox.height / 3.0);
 
         // We need a flag ref point to compute x and y distances to stem
-        final Section section = glyph.getFirstSection();
         final Point refPt = new Point(
                 flagBox.x,
-                isFlagUp ? section.getStartCoord() : section.getStopCoord());
-        final int midFootY = (section.getStartCoord() + section.getStopCoord()) / 2;
+                isFlagUp ? ((flagBox.y + flagBox.height) - footHeight) : (flagBox.y + footHeight));
+        final int y = isFlagUp ? ((flagBox.y + flagBox.height) - footHeight
+                                  - maxStemFlagGapY) : (flagBox.y + maxStemFlagGapY);
+        final int midFootY = isFlagUp ? (refPt.y + (footHeight / 2))
+                : (refPt.y - (footHeight / 2));
 
         //TODO: -1 is used to cope with stem margin when erased (To be improved)
-        final Rectangle luBox = new Rectangle((flagBox.x - 1) - stemWidth, y, stemWidth, height);
+        final Rectangle luBox = new Rectangle(
+                (flagBox.x - 1) - stemWidth,
+                y,
+                2 * stemWidth,
+                footHeight);
         glyph.addAttachment("fs", luBox);
 
         List<Inter> stems = SIGraph.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);

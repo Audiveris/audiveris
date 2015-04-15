@@ -362,7 +362,7 @@ public class StackTuner
                             failures.add(config);
 
                             List<ChordInter> rests = voice.getRests();
-                            logger.info("{} Abnormal rest-only {} rests:{}", stack, voice, rests);
+                            logger.debug("{} Abnormal rest-only {} rests:{}", stack, voice, rests);
 
                             RhythmConfig newConfig = config.copy();
                             newConfig.inters.removeAll(rests);

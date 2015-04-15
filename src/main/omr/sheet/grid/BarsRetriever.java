@@ -789,6 +789,7 @@ public class BarsRetriever
                                 peak.getImpacts(),
                                 median,
                                 peak.getWidth());
+                        inter.setStaff(staff);
 
                         for (HorizontalSide side : HorizontalSide.values()) {
                             if (peak.isStaffEnd(side)) {

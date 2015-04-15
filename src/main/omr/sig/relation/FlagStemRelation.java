@@ -134,7 +134,7 @@ public class FlagStemRelation
         //~ Instance fields ------------------------------------------------------------------------
 
         final Scale.Fraction yGapMax = new Scale.Fraction(
-                0.4,
+                0.5,
                 "Maximum vertical gap between stem & flag");
 
         final Scale.Fraction xInGapMax = new Scale.Fraction(

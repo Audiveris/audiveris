@@ -22,7 +22,6 @@ import omr.math.GeoUtil;
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AbstractInterVisitor;
-import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.BarConnectionInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.BraceInter;
@@ -54,7 +53,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
+
 import static java.awt.BasicStroke.*;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -215,7 +216,7 @@ public abstract class PageCleaner
     public void visit (ChordInter inter)
     {
         for (Inter member : inter.getNotes()) {
-            visit((AbstractNoteInter) member);
+            member.accept(this);
         }
     }
 

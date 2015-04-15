@@ -33,7 +33,7 @@ import java.util.Map;
  * <p>
  * The strategy is to use a properly scaled instance of this class to carry out the drawing of music
  * symbols with the correct size. The scaling should combine two factors:<ul>
- * <li>An interline value different from default {@link #DEFAULT_INTERLINE}</p>
+ * <li>An interline value different from default {@link #DEFAULT_INTERLINE}</li>
  * <li>A zoom ratio different from 1</li></ul>
  * <p>
  * To get a properly scaled instance, use the convenient method {@link #getFont(int)} which expects
@@ -170,8 +170,7 @@ public class MusicFont
     // getFont //
     //---------//
     /**
-     * Report the (cached) best font according to the desired interline
-     * value.
+     * Report the (cached) best font according to the desired interline value.
      *
      * @param interline the desired (zoomed) interline in pixels
      * @return the font with proper size
@@ -199,9 +198,8 @@ public class MusicFont
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a Shape, using its related String of
-     * MusicFont characters, and potentially sized by an
-     * AffineTransform instance.
+     * Build a TextLayout from a Shape, using its related String of MusicFont characters,
+     * and potentially sized by an AffineTransform instance.
      *
      * @param shape the shape to be drawn with MusicFont chars
      * @param fat   potential affine transformation

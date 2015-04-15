@@ -134,14 +134,15 @@ public class SymbolsFilter
         logger.debug("SymbolsFilter running...");
 
         Picture picture = sheet.getPicture();
-        ByteProcessor buf = picture.getSource(Picture.SourceKey.NO_STAFF);
-        BufferedImage img = buf.getBufferedImage();
+        ByteProcessor rawBuf = picture.getSource(Picture.SourceKey.NO_STAFF);
+        BufferedImage img = rawBuf.getBufferedImage();
         ByteProcessor buffer = new ByteProcessor(img);
 
         // Prepare the ground for symbols retrieval, noting optional (weak) glyphs per system
         Graphics2D g = img.createGraphics();
         SymbolsCleaner eraser = new SymbolsCleaner(buffer, g, sheet);
         eraser.eraseInters(optionalsMap);
+        buffer.threshold(127);
 
         // Keep a copy on disk?
         if (constants.keepSymbolsBuffer.isSet()) {
@@ -227,11 +228,6 @@ public class SymbolsFilter
         final Constant.Boolean keepSymbolsBuffer = new Constant.Boolean(
                 false,
                 "Should we store skeleton images on disk?");
-
-        final Constant.Integer margin = new Constant.Integer(
-                "pixels",
-                3, //2,
-                "Number of pixels added around notes");
 
         final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 0.5,
@@ -369,10 +365,7 @@ public class SymbolsFilter
             final Rectangle box = desc.getBounds(inter.getBounds());
 
             // Use underlying glyph (enlarged only for strong inters)
-            final List<Point> fores = tpl.getForegroundPixels(
-                    box,
-                    buffer,
-                    (systemWeaks == null) ? constants.margin.getValue() : 0);
+            final List<Point> fores = tpl.getForegroundPixels(box, buffer, systemWeaks == null);
 
             // Erase foreground pixels
             for (final Point p : fores) {

@@ -47,59 +47,54 @@ import java.util.concurrent.Callable;
 
 /**
  * Class {@code CLI} parses and holds the parameters of the command line interface.
- *
+ * <p>
+ * At any location in the command line, an item starting with the &#64; character will be
+ * interpreted as an indirection to a file, whose content must be expanded in line.
  * <p>
  * The command line parameters can be (order and case are not relevant):
  * <dl>
  *
- * <dt> <b>-help</b> </dt> <dd> to print a quick usage help and leave the
- * application. </dd>
+ * <dt><b>-batch</b></dt>
+ * <dd>Runs with no graphic user interface</dd>
  *
- * <dt> <b>-batch</b> </dt> <dd> to run in batch mode, with no user
- * interface. </dd>
+ * <dt><b>-bench</b></dt>
+ * <dd>Outputs bench data (to default directory)</dd>
  *
- * <dt> <b>-steps (STEPNAME | &#64;STEPLIST)+</b> </dt> <dd> to run all the
- * specified steps (including the steps which are mandatory to get to the
- * specified ones). 'STEPNAME' can be any one of the step names (the case is
- * irrelevant) as defined in the {@link Step} class. These steps will
- * be performed on each sheet referenced from the command line.</dd>
  *
- * <dt> <b>-option (KEY=VALUE | &#64;OPTIONLIST)+</b> </dt> <dd> to specify
- * the value of some application parameters (that can also be set via the
- * pull-down menu "Tools|Options"), either by stating the key=value pair or by
- * referencing (flagged by a &#64; sign) a file that lists key=value pairs (or
- * even other files list recursively).
- * A list file is a simple text file, with one key=value pair per line.
- * <b>Nota</b>: The syntax used is the Properties syntax, so for example
- * back-slashes must be escaped.</dd>
+ * <dt><b>-benchDir DIR</b></dt>
+ * <dd>Outputs bench data to provided directory</dd>
  *
- * <dt> <b>-script (SCRIPTNAME | &#64;SCRIPTLIST)+</b> </dt> <dd> to specify
- * some scripts to be read, using the same mechanism than input command belows.
- * These script files contain actions generally recorded during a previous run.
- * </dd>
+ * <dt><b>-export</b></dt>
+ * <dd>Outputs MusicXML data (to default directory)</dd>
  *
- * <dt> <b>-input (FILENAME | &#64;FILELIST)+</b> </dt> <dd> to specify some
- * image files to be read, either by naming the image file or by referencing
- * (flagged by a &#64; sign) a file that lists image files (or even other files
- * list recursively).
- * A list file is a simple text file, with one image file name per line.</dd>
+ * <dt><b>-exportDir DIR</b></dt>
+ * <dd>Outputs MusicXML data to provided directory</dd>
  *
- * <dt> <b>-pages (PAGE | &#64;PAGELIST)+</b> </dt> <dd> to specify some
- * specific pages, counted from 1, to be loaded out of the input file.</dd>
+ * <dt><b>-help</b></dt>
+ * <dd>Displays help about application then stops</dd>
  *
- * <dt> <b>-bench (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
- * path to bench data file (or directory).
- * <b>Nota</b>: If the path refers to an existing directory, each processed
- * score will output its bench data to a score-specific file created in the
- * provided directory. Otherwise, all bench data, whatever its related score,
- * will be written to the provided single file.</dd>
+ * <dt><b>-input FILE</b></dt>
+ * <dd>Reads the provided input image file</dd>
  *
- * <dt> <b>-print (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
- * path to PDF file (or directory). Same note as for -bench.</dd>
+ * <dt><b>-option KEY=VALUE</b></dt>
+ * <dd>Defines an application constant (that could also be set via the pull-down menu
+ * "Tools|Options" in the GUI)</dd>
  *
- * <dt> <b>-export (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
- * path to MusicXML file (or directory). Same note as for -bench.</dd>
+ * <dt><b>-print</b></dt>
+ * <dd>Prints out score (to default directory)</dd>
  *
+ * <dt><b>-printDir DIR</b></dt>
+ * <dd>Prints out score to provided directory</dd>
+ *
+ * <dt><b>-script FILE</b></dt>
+ * <dd>Runs the provided script file</dd>
+ *
+ * <dt><b>-sheets N...</b></dt>
+ * <dd>Defines specific sheets (counted from 1) to process in input file</dd>
+ *
+ * <dt><b>-step STEP</b></dt>
+ * <dd>Defines a specific transcription target step. This step will be performed on each input
+ * referenced from the command line</dd>
  * </dl>
  *
  * @author Hervé Bitteur
@@ -481,7 +476,7 @@ public class CLI
         boolean batchMode;
 
         /** Specific step. */
-        @Option(name = "-step", usage = "Defines a specific transcription step")
+        @Option(name = "-step", usage = "Defines a specific transcription target step")
         Step step;
 
         /** The map of application options. */

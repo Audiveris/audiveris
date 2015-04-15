@@ -51,8 +51,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -144,9 +146,6 @@ public class Staff
 
     /** Sequence of brace / bracket / bar lines peaks kept. */
     private List<StaffPeak> peaks;
-
-    /** Sequence of removed (false bar lines) peaks. TODO: is this useful? */
-    private SortedSet<StaffPeak> removedPeaks;
 
     /** Sequence of bar lines. */
     private List<BarlineInter> bars;
@@ -1013,6 +1012,31 @@ public class Staff
         return attachments.removeAttachments(prefix);
     }
 
+    //-----------//
+    // removeBar //
+    //-----------//
+    /**
+     * Remove the provided instance of Barline from internal staff collection.
+     *
+     * @param bar the provided bar to remove
+     * @return true if actually removed
+     */
+    public boolean removeBar (BarlineInter bar)
+    {
+        // Purge sideBars if needed
+        for (Iterator<Entry<HorizontalSide, BarlineInter>> it = sideBars.entrySet().iterator();
+                it.hasNext();) {
+            Entry<HorizontalSide, BarlineInter> entry = it.next();
+
+            if (entry.getValue() == bar) {
+                it.remove();
+            }
+        }
+
+        // Purge bars
+        return bars.remove(bar);
+    }
+
     //--------------//
     // removeLedger //
     //--------------//
@@ -1044,12 +1068,7 @@ public class Staff
     //-------------//
     public void removePeaks (Collection<? extends StaffPeak> toRemove)
     {
-        if (removedPeaks == null) {
-            removedPeaks = new TreeSet<StaffPeak>();
-        }
-
         peaks.removeAll(toRemove);
-        removedPeaks.addAll(toRemove);
     }
 
     //--------//

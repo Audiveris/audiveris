@@ -23,14 +23,18 @@ import omr.sheet.PageCleaner;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
+import omr.sheet.grid.FilamentLine;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.Inter;
 
 import omr.ui.util.ItemRenderer;
 
+import omr.util.HorizontalSide;
 import omr.util.Navigable;
+import omr.util.VerticalSide;
 
 import ij.process.ByteProcessor;
 
@@ -40,6 +44,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -311,6 +317,9 @@ public class Skeleton
     /**
      * Generate the skeleton from page binary image.
      * <p>
+     * Since this skeleton is meant for curves (slurs, wedges, endings) we can limit processing past
+     * some reasonable distance from staves (both in vertical and horizontal directions).
+     * <p>
      * We must keep track of erased shapes at system level.<ul>
      * <li>Notes and beams cannot be crossed by a curve.
      * Question: Should we indicate this with a specific background value (after binarization)?</li>
@@ -361,7 +370,9 @@ public class Skeleton
 
         // Erase vertical seeds (?)
         ///erasedSeeds = eraser.eraseGlyphs(Arrays.asList(Shape.VERTICAL_SEED));
-        //
+        // Erase regions too far froms staves
+        cleaner.eraseDistantRegions();
+
         // Build buffer
         buffer = new ByteProcessor(img);
         buffer.threshold(127);
@@ -481,6 +492,14 @@ public class Skeleton
         final Scale.Fraction systemVerticalMargin = new Scale.Fraction(
                 2.0,
                 "Margin erased above & below system header area");
+
+        final Scale.Fraction maxDxFromStaff = new Scale.Fraction(
+                1,
+                "Maximum horizontal gap from any staff");
+
+        final Scale.Fraction maxDyFromStaff = new Scale.Fraction(
+                10,
+                "Maximum vertical gap from any staff");
     }
 
     //---------------//
@@ -515,29 +534,49 @@ public class Skeleton
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        //    //-------------//
-        //    // eraseGlyphs //
-        //    //-------------//
-        //    public Map<SystemInfo, List<Glyph>> eraseGlyphs (Collection<Shape> shapes)
-        //    {
-        //        final Map<SystemInfo, List<Glyph>> erasedMap = new TreeMap<SystemInfo, List<Glyph>>();
-        //
-        //        for (SystemInfo system : sheet.getSystems()) {
-        //            final List<Glyph> erased = new ArrayList<Glyph>();
-        //            erasedMap.put(system, erased);
-        //
-        //            for (Shape shape : shapes) {
-        //                for (Glyph glyph : system.lookupShapedGlyphs(shape)) {
-        //                    for (Section section : glyph.getMembers()) {
-        //                        section.render(g, false, Color.WHITE);
-        //                    }
-        //                }
-        //            }
-        //        }
-        //
-        //        return erasedMap;
-        //    }
-        //
+        //---------------------//
+        // eraseDistantRegions //
+        //---------------------//
+        /**
+         * In the provided image, erase the areas that lie too far from staves.
+         * <p>
+         * We define an area as large as image, then remove enlarged staves areas, and finally print
+         * the remaining area with white color.
+         */
+        public void eraseDistantRegions ()
+        {
+            final Scale scale = sheet.getScale();
+            final int maxDx = scale.toPixels(constants.maxDxFromStaff);
+            final int maxDy = scale.toPixels(constants.maxDyFromStaff);
+            final Area sheetArea = new Area(new Rectangle(buffer.getWidth(), buffer.getHeight()));
+
+            for (Staff staff : sheet.getStaffManager().getStaves()) {
+                Rectangle staffRect = null;
+
+                for (VerticalSide vSide : VerticalSide.values()) {
+                    FilamentLine line = staff.getLine(vSide);
+
+                    for (HorizontalSide hSide : HorizontalSide.values()) {
+                        int x = staff.getAbscissa(hSide);
+                        int y = line.yAt(x);
+
+                        if (staffRect == null) {
+                            staffRect = new Rectangle(x, y, 0, 0);
+                        } else {
+                            staffRect.add(x, y);
+                        }
+                    }
+                }
+
+                staffRect.grow(maxDx, maxDy);
+
+                Area staffArea = new Area(staffRect);
+                sheetArea.subtract(staffArea);
+            }
+
+            g.fill(sheetArea);
+        }
+
         //-------------//
         // eraseShapes //
         //-------------//
