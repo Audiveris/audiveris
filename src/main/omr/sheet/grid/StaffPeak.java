@@ -31,6 +31,8 @@ import java.util.EnumSet;
 
 /**
  * Class {@code StaffPeak} represents a peak in staff projection onto x-axis.
+ * <p>
+ * Such peak can represent a brace peak or a bar peak (bar-line or bracket).
  *
  * @author Hervé Bitteur
  */
@@ -139,6 +141,7 @@ public abstract class StaffPeak
     @Override
     public int compareTo (StaffPeak that)
     {
+        // Peaks are implicitly sorted by abscissa
         return Integer.compare(start, that.start);
     }
 
@@ -352,6 +355,9 @@ public abstract class StaffPeak
         set((side == TOP) ? BEYOND_TOP : BEYOND_BOTTOM);
     }
 
+    //---------------//
+    // setBracketEnd //
+    //---------------//
     /**
      * Set peak as bracket end on provided side.
      *
@@ -416,7 +422,13 @@ public abstract class StaffPeak
     //-----------//
     protected String internals ()
     {
-        return "";
+        StringBuilder sb = new StringBuilder();
+
+        if (!attrs.isEmpty()) {
+            sb.append(" ").append(attrs);
+        }
+
+        return sb.toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -488,28 +500,13 @@ public abstract class StaffPeak
         {
             this.inter = inter;
         }
-
-        //-----------//
-        // internals //
-        //-----------//
-        @Override
-        protected String internals ()
-        {
-            StringBuilder sb = new StringBuilder(super.internals());
-
-            if (!attrs.isEmpty()) {
-                sb.append(" ").append(attrs);
-            }
-
-            return sb.toString();
-        }
     }
 
     //-------//
     // Brace //
     //-------//
     /**
-     * Class {@code Brace} is a peak meant for brace.
+     * Class {@code Brace} is a peak meant for brace portion.
      */
     public static class Brace
             extends StaffPeak
@@ -556,21 +553,6 @@ public abstract class StaffPeak
         public void setInter (BraceInter inter)
         {
             this.inter = inter;
-        }
-
-        //-----------//
-        // internals //
-        //-----------//
-        @Override
-        protected String internals ()
-        {
-            StringBuilder sb = new StringBuilder(super.internals());
-
-            if (!attrs.isEmpty()) {
-                sb.append(" ").append(attrs);
-            }
-
-            return sb.toString();
         }
     }
 }

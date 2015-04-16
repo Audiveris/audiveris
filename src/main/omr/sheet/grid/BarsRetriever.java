@@ -33,8 +33,6 @@ import omr.lag.SectionFactory;
 import omr.math.AreaUtil;
 import omr.math.AreaUtil.CoreData;
 import omr.math.BasicLine;
-import omr.math.Clustering;
-import omr.math.Clustering.Gaussian;
 import omr.math.GeoPath;
 import omr.math.GeoUtil;
 import omr.math.Histogram;
@@ -107,7 +105,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
@@ -1650,6 +1647,67 @@ public class BarsRetriever
     }
 
     //---------------//
+    // groupBarPeaks //
+    //---------------//
+    /**
+     * Dispatch all bar peaks into either isolated or grouped ones.
+     *
+     * @param isolated (output) collection of isolated peaks
+     * @param groups   (output) collection of grouped peaks
+     */
+    private void groupBarPeaks (List<StaffPeak.Bar> isolated,
+                                List<List<StaffPeak.Bar>> groups)
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            for (Staff staff : system.getStaves()) {
+                List<StaffPeak.Bar> group = null;
+                StaffPeak.Bar prevPeak = null;
+
+                for (StaffPeak p : staff.getPeaks()) {
+                    if (p instanceof StaffPeak.Brace || p.isBracket()) {
+                        if ((group == null) && (prevPeak != null)) {
+                            isolated.add(prevPeak);
+                        }
+
+                        group = null;
+                        prevPeak = null;
+                    } else {
+                        StaffPeak.Bar peak = (StaffPeak.Bar) p;
+
+                        if (prevPeak != null) {
+                            int gap = peak.getStart() - prevPeak.getStop() - 1;
+
+                            if (gap <= params.maxDoubleBarGap) {
+                                // We are in a group with previous peak
+                                if (group == null) {
+                                    groups.add(group = new ArrayList<StaffPeak.Bar>());
+                                    group.add(prevPeak);
+                                }
+
+                                group.add(peak);
+                            } else {
+                                // We are NOT grouped with previous peak
+                                if (group != null) {
+                                    group = null;
+                                } else {
+                                    isolated.add(prevPeak);
+                                }
+                            }
+                        }
+
+                        prevPeak = peak;
+                    }
+                }
+
+                // End of staff
+                if ((group == null) && (prevPeak != null)) {
+                    isolated.add(prevPeak);
+                }
+            }
+        }
+    }
+
+    //---------------//
     // groupBarlines //
     //---------------//
     /**
@@ -1954,89 +2012,54 @@ public class BarsRetriever
      * When this method is called, some peaks are still due to stems. We don't know the average
      * stem width, but typically stem peaks are thinner or equal to bar peaks.
      * <p>
-     * Thin and thick Gaussian laws are computed on width histogram.
-     * If there is a significant delta between thin and thick mean values then widths are
-     * partitioned, else they are all considered as thin.
+     * Isolated bars are thin (TODO: unless we hit a thick bar but missed a thin candidate nearby,
+     * however this could be fixed using the global sheet population of thin bars).
+     * <p>
+     * We look for grouped bars and compare widths within the same group. If significant difference
+     * is found, then we discriminate thins & thicks, otherwise they are all considered as thin.
      */
     private void partitionWidths ()
     {
-        final Gaussian thin = new Gaussian(params.typicalThinBarWidth, 1.0);
-        final Gaussian thick = new Gaussian(params.typicalThickBarWidth, 1.0);
+        // Dispatch peaks into isolated peaks and groups of peaks
+        final List<StaffPeak.Bar> isolated = new ArrayList<StaffPeak.Bar>();
+        final List<List<StaffPeak.Bar>> groups = new ArrayList<List<StaffPeak.Bar>>();
+        groupBarPeaks(isolated, groups);
 
-        final Histogram<Integer> histo = getWidthHistogram();
-        final double[] table = new double[histo.getTotalCount()];
-        int index = 0;
-
-        for (Map.Entry<Integer, Integer> entry : histo.entrySet()) {
-            int key = entry.getKey();
-            int count = entry.getValue();
-
-            for (int i = 0; i < count; i++) {
-                table[index++] = key;
-            }
+        // Isolated peaks are considered thin
+        for (StaffPeak.Bar peak : isolated) {
+            peak.set(THIN);
         }
 
-        final double[] pi = Clustering.EM(table, new Gaussian[]{thin, thick});
-        final double deltaMean = thick.getMean() - thin.getMean();
-        final double normedDelta = scale.pixelsToFrac(deltaMean);
+        // Process groups is any
+        for (List<StaffPeak.Bar> group : groups) {
+            // Read maximum width difference within this group
+            int minWidth = Integer.MAX_VALUE;
+            int maxWidth = Integer.MIN_VALUE;
 
-        if (logger.isDebugEnabled()) {
-            logger.info(String.format("THIN  %.3f * %s", pi[0], thin));
-            logger.info(String.format("THICK %.3f * %s", pi[1], thick));
-            logger.info(
-                    String.format(
-                            "Peaks mean widths thin:%.3f thick:%.3f delta:%.3f(%.3f)",
-                            thin.getMean(),
-                            thick.getMean(),
-                            deltaMean,
-                            normedDelta));
-        }
-
-        Double threshold = null;
-
-        if (normedDelta >= constants.minThinThickDelta.getValue()) {
-            SortedMap<Integer, Integer> thins = new TreeMap<Integer, Integer>();
-            SortedMap<Integer, Integer> thicks = new TreeMap<Integer, Integer>();
-
-            for (Map.Entry<Integer, Integer> entry : histo.entrySet()) {
-                int w = entry.getKey();
-                int count = entry.getValue();
-
-                if (w <= thin.getMean()) {
-                    thins.put(w, count);
-                } else if (w >= thick.getMean()) {
-                    thicks.put(w, count);
-                } else {
-                    double thinProba = thin.proba(w);
-                    double thickProba = thick.proba(w);
-
-                    if (logger.isDebugEnabled()) {
-                        logger.info(
-                                String.format("k:%2d thin:%.3f thick:%.3f", w, thinProba, thickProba));
-                    }
-
-                    if (thickProba > thinProba) {
-                        thicks.put(w, count);
-                    } else {
-                        thins.put(w, count);
-                    }
-                }
+            for (StaffPeak.Bar peak : group) {
+                int width = peak.getWidth();
+                minWidth = Math.min(minWidth, width);
+                maxWidth = Math.max(maxWidth, width);
             }
 
-            logger.info("{}Thin peaks:{}, Thick peaks:{}", sheet.getLogPrefix(), thins, thicks);
-            threshold = (thins.lastKey() + thicks.firstKey()) / 2.0;
-        } else {
-            logger.info("{}All thin peaks: {}", sheet.getLogPrefix(), histo.dataString());
-        }
+            double normedDelta = (maxWidth - minWidth) / (double) scale.getInterline();
+            logger.debug("min:{} max:{} nDelta:{} {}", minWidth, maxWidth, normedDelta, group);
 
-        for (Staff staff : staffManager.getStaves()) {
-            for (StaffPeak peak : staff.getPeaks()) {
-                if (!(peak instanceof StaffPeak.Brace) && !peak.isBracket()) {
-                    if ((threshold == null) || (peak.getWidth() <= threshold)) {
+            if (normedDelta >= params.minNormedDeltaWidth) {
+                // Hetero (thins & thicks)
+                for (StaffPeak.Bar peak : group) {
+                    int width = peak.getWidth();
+
+                    if ((width - minWidth) <= (maxWidth - width)) {
                         peak.set(THIN);
                     } else {
                         peak.set(THICK);
                     }
+                }
+            } else {
+                // Homo => all thins
+                for (StaffPeak.Bar peak : group) {
+                    peak.set(THIN);
                 }
             }
         }
@@ -2502,17 +2525,9 @@ public class BarsRetriever
                 "",
                 "(Debug) Comma-separated values of VIP vertical sections IDs");
 
-        final Scale.Fraction typicalThinBarWidth = new Scale.Fraction(
-                0.25,
-                "Typical width for a THIN bar line");
-
-        final Scale.Fraction typicalThickBarWidth = new Scale.Fraction(
-                0.45,
-                "Typical width for a THICK bar line");
-
         final Scale.Fraction minThinThickDelta = new Scale.Fraction(
                 0.2,
-                "Minimum difference between THIN/THICK mean values");
+                "Minimum difference between THIN/THICK width values");
 
         final Scale.Fraction maxBraceThickness = new Scale.Fraction(
                 1.0,
@@ -2633,9 +2648,7 @@ public class BarsRetriever
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final int typicalThinBarWidth;
-
-        final int typicalThickBarWidth;
+        final double minNormedDeltaWidth;
 
         final int maxBraceThickness;
 
@@ -2694,8 +2707,7 @@ public class BarsRetriever
          */
         public Parameters (Scale scale)
         {
-            typicalThinBarWidth = scale.toPixels(constants.typicalThinBarWidth);
-            typicalThickBarWidth = scale.toPixels(constants.typicalThickBarWidth);
+            minNormedDeltaWidth = constants.minThinThickDelta.getValue();
             maxBraceThickness = scale.toPixels(constants.maxBraceThickness);
             maxBraceWidth = scale.toPixels(constants.maxBraceWidth);
             maxBraceExtension = scale.toPixels(constants.maxBraceExtension);

@@ -14,9 +14,8 @@ package omr.ui;
 import java.awt.Color;
 
 /**
- * Class {@code Colors} gathers alphabetically in one place the various
- * colors used by Audiveris displays, in order to ensure consistency
- * and compatibility.
+ * Class {@code Colors} gathers alphabetically in one place the various colors used by
+ * Audiveris displays, in order to ensure consistency and compatibility.
  *
  * @author Hervé Bitteur
  */
