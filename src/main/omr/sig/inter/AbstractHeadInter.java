@@ -178,9 +178,10 @@ public abstract class AbstractHeadInter
      * this note if any, the accidental of previous note with same step within the same
      * measure, and finally the current key signature.
      *
+     * @param fifths fifths value for current key signature
      * @return the actual alteration
      */
-    public int getAlter ()
+    public int getAlter (Integer fifths)
     {
         // Look for local accidental
         AlterInter accidental = getAccidental();
@@ -222,10 +223,8 @@ public abstract class AbstractHeadInter
         }
 
         // Finally, use the current key signature
-        KeyInter ks = measure.getKeyBefore(getCenter(), getStaff());
-
-        if (ks != null) {
-            return ks.getAlterFor(getStep());
+        if (fifths != null) {
+            return KeyInter.getAlterFor(getStep(), fifths);
         }
 
         // Nothing found, so...

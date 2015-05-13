@@ -19,7 +19,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.BasicNest;
 import omr.glyph.GlyphNest;
 import omr.glyph.SymbolsModel;
-import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolsController;
 import omr.glyph.ui.SymbolsEditor;
 
@@ -33,8 +32,7 @@ import omr.math.Population;
 
 import omr.score.Score;
 import omr.score.ScoreExporter;
-import omr.score.entity.Page;
-import omr.score.entity.SystemNode;
+import omr.score.Page;
 import omr.score.ui.BookPdfOutput;
 
 import omr.script.ExportTask;
@@ -245,25 +243,25 @@ public class BasicSheet
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // addError //
-    //----------//
-    /**
-     * Register an error in the sheet ErrorsWindow
-     *
-     * @param container the immediate container for the error location
-     * @param glyph     the related glyph if any
-     * @param text      the error message
-     */
-    public void addError (SystemNode container,
-                          Glyph glyph,
-                          String text)
-    {
-        if (OMR.getGui() != null) {
-            getErrorsEditor().addError(container, glyph, text);
-        }
-    }
-
+//    //----------//
+//    // addError //
+//    //----------//
+//    /**
+//     * Register an error in the sheet ErrorsWindow
+//     *
+//     * @param container the immediate container for the error location
+//     * @param glyph     the related glyph if any
+//     * @param text      the error message
+//     */
+//    public void addError (OldSystemNode container,
+//                          Glyph glyph,
+//                          String text)
+//    {
+//        if (OMR.getGui() != null) {
+//            getErrorsEditor().addError(container, glyph, text);
+//        }
+//    }
+//
     //-----------------//
     // addItemRenderer //
     //-----------------//

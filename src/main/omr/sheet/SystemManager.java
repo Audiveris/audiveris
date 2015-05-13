@@ -22,7 +22,7 @@ import omr.lag.Section;
 import omr.math.GeoPath;
 import omr.math.ReversePathIterator;
 
-import omr.score.entity.Page;
+import omr.score.Page;
 
 import omr.util.HorizontalSide;
 

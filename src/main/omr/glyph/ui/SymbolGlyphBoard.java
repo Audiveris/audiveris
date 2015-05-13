@@ -15,9 +15,7 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.Text.CreatorText.CreatorType;
-import omr.score.entity.TimeRational;
-import omr.score.entity.TimeSignature;
+import omr.score.TimeRational;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
@@ -26,8 +24,9 @@ import omr.selection.UserEvent;
 
 import omr.sheet.ui.SheetsController;
 
+import omr.sig.inter.TimeInter;
+
 import omr.text.TextRole;
-import omr.text.TextRoleInfo;
 import omr.text.TextWord;
 
 import omr.ui.field.LCheckBox;
@@ -82,9 +81,6 @@ public class SymbolGlyphBoard
 
     /** ComboBox for text role */
     private final LComboBox<TextRole> roleCombo;
-
-    /** ComboBox for text role type */
-    private final LComboBox<CreatorType> typeCombo;
 
     /** Output : textual confidence */
     protected LDoubleField confField;
@@ -155,10 +151,6 @@ public class SymbolGlyphBoard
         roleCombo = new LComboBox<TextRole>("Role", "Role of the Text", TextRole.values());
         roleCombo.getField().setMaximumRowCount(TextRole.values().length);
         roleCombo.addActionListener(paramAction);
-
-        // Additional combo for text type
-        typeCombo = new LComboBox<CreatorType>("Type", "Type of the Text", CreatorType.values());
-        typeCombo.addActionListener(paramAction);
 
         // Confidence and Text fields
         confField = new LDoubleField(false, "Conf", "Confidence in text value", "%.2f");
@@ -260,7 +252,6 @@ public class SymbolGlyphBoard
                         confField.setVisible(false);
                         textField.setVisible(true);
                         roleCombo.setVisible(true);
-                        typeCombo.setVisible(false);
 
                         roleCombo.setEnabled(true);
                         textField.setEnabled(true);
@@ -280,12 +271,7 @@ public class SymbolGlyphBoard
                         }
 
                         if (glyph.getTextRole() != null) {
-                            roleCombo.setSelectedItem(glyph.getTextRole().role);
-
-                            if (glyph.getTextRole().role == TextRole.Creator) {
-                                typeCombo.setVisible(true);
-                                typeCombo.setSelectedItem(glyph.getTextRole().creatorType);
-                            }
+                            roleCombo.setSelectedItem(glyph.getTextRole());
                         } else {
                             roleCombo.setSelectedItem(TextRole.UnknownRole);
                         }
@@ -295,7 +281,6 @@ public class SymbolGlyphBoard
                         confField.setVisible(false);
                         textField.setVisible(false);
                         roleCombo.setVisible(false);
-                        typeCombo.setVisible(false);
                     }
                 }
 
@@ -310,7 +295,7 @@ public class SymbolGlyphBoard
 
                         TimeRational timeRational = (shape == Shape.CUSTOM_TIME)
                                 ? glyph.getTimeRational()
-                                : TimeSignature.rationalOf(shape);
+                                : TimeInter.rationalOf(shape);
 
                         if (timeRational != null) {
                             timeNum.setValue(timeRational.num);
@@ -395,10 +380,6 @@ public class SymbolGlyphBoard
             builder.add(roleCombo.getLabel(), cst.xyw(1, r, 1));
             builder.add(roleCombo.getField(), cst.xyw(3, r, 3));
             roleCombo.setVisible(false);
-
-            builder.add(typeCombo.getLabel(), cst.xyw(7, r, 1));
-            builder.add(typeCombo.getField(), cst.xyw(9, r, 3));
-            typeCombo.setVisible(false);
         }
     }
 
@@ -443,17 +424,10 @@ public class SymbolGlyphBoard
                             textField.getText().trim(),
                             roleCombo.getSelectedItem());
 
-                    CreatorType type = null;
                     TextRole role = roleCombo.getSelectedItem();
-
-                    if (role == TextRole.Creator) {
-                        type = typeCombo.getSelectedItem();
-                    }
-
-                    TextRoleInfo roleInfo = new TextRoleInfo(role, type);
                     SheetsController.getCurrentSheet().getSymbolsController().asyncAssignTexts(
                             glyphs,
-                            roleInfo,
+                            role,
                             textField.getText());
                 } else if (shape == Shape.CUSTOM_TIME) {
                     int num = timeNum.getValue();

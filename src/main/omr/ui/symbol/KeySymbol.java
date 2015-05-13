@@ -13,7 +13,7 @@ package omr.ui.symbol;
 
 import omr.glyph.Shape;
 
-import omr.score.entity.KeySignature;
+import omr.sig.inter.KeyInter;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
@@ -74,7 +74,7 @@ public abstract class KeySymbol
         p.itemRect = new Rectangle((int) Math.ceil(r2.getWidth()), (int) Math.ceil(r2.getHeight()));
 
         for (int k = 1; k <= (key * sign); k++) {
-            int position = KeySignature.getItemPosition(k * sign, null);
+            int position = KeyInter.getItemPosition(k * sign, null);
             Rectangle r = new Rectangle(
                     (int) Math.rint((k - 1) * p.itemDx),
                     (int) Math.rint(position * p.stepDy),
@@ -89,7 +89,7 @@ public abstract class KeySymbol
         }
 
         p.rect.x = (p.rect.width / 2);
-        p.rect.y = -(int) Math.rint(KeySignature.getStandardPosition(key) * p.stepDy);
+        p.rect.y = -(int) Math.rint(KeyInter.getStandardPosition(key) * p.stepDy);
 
         return p;
     }
@@ -106,12 +106,12 @@ public abstract class KeySymbol
         MyParams p = (MyParams) params;
         Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         loc.x -= (p.rect.width / 2);
-        loc.y -= (int) Math.rint(KeySignature.getStandardPosition(key) * p.stepDy);
+        loc.y -= (int) Math.rint(KeyInter.getStandardPosition(key) * p.stepDy);
 
         int sign = Integer.signum(key);
 
         for (int k = 1; k <= (key * sign); k++) {
-            int position = KeySignature.getItemPosition(k * sign, null);
+            int position = KeyInter.getItemPosition(k * sign, null);
             MusicFont.paint(
                     g,
                     p.layout,

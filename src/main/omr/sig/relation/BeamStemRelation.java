@@ -42,27 +42,16 @@ public class BeamStemRelation
     /** Which portion of beam is used?. */
     private BeamPortion beamPortion;
 
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new BeamStemRelation object.
-     */
-    public BeamStemRelation ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // getBeamPortion //
+    //----------------//
     /**
      * @return the beamPortion
      */
     public BeamPortion getBeamPortion ()
     {
         return beamPortion;
-    }
-
-    @Override
-    public String getName ()
-    {
-        return "Beam-Stem";
     }
 
     //----------------//

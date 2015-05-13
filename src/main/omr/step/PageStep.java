@@ -12,12 +12,16 @@
 package omr.step;
 
 import omr.score.MeasureFixer;
+import omr.score.Page;
 import omr.score.PageReduction;
-import omr.score.entity.Page;
 
+import omr.sheet.Part;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.rhythm.MeasureFiller;
+
+import omr.sig.SIGraph;
+import omr.sig.inter.Inter;
+import omr.sig.inter.LyricLineInter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +36,7 @@ import java.util.Collection;
  * inserted (with its proper staves and minimal measures).</li>
  * <li>Slurs are connected across systems.</li>
  * <li>Tied voices.</li>
- * <li>Refined lyric syllables (?) </li>
+ * <li>Refined lyric syllables.</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -64,19 +68,41 @@ public class PageStep
 
             // Inter-system connections
             for (SystemInfo system : page.getSystems()) {
-                //                system.connectSystemInitialSlurs();
+                final SIGraph sig = system.getSig();
+
+                connectSystemInitialSlurs(system);
+
                 //                system.connectTiedVoices();
                 //                system.refineLyricSyllables();
+                for (Inter inter : sig.inters(LyricLineInter.class)) {
+                    LyricLineInter line = (LyricLineInter) inter;
+                    line.refineLyricSyllables();
+                }
             }
 
             // Refine voices ids (and thus colors) across all systems of the page
             ///new PageVoiceFixer(page).refine();
             // Merge / renumber measure stacks within the page
             new MeasureFixer().process(page);
+        }
+    }
 
-            // Populate each measure with its data
-            for (SystemInfo system : page.getSystems()) {
-                new MeasureFiller(system).process();
+    //---------------------------//
+    // connectSystemInitialSlurs //
+    //---------------------------//
+    /**
+     * Retrieve the connections between the (orphan) slurs at the beginning of the
+     * provided system and the (orphan) slurs at the end of the previous system if any.
+     */
+    private void connectSystemInitialSlurs (SystemInfo system)
+    {
+        SystemInfo prevSystem = system.getPrecedingInPage();
+
+        if (prevSystem != null) {
+            // Examine every part in sequence
+            for (Part part : system.getParts()) {
+                // Ending orphans in preceding system/part (if such part exists)
+                part.connectSlursWith(part.getPrecedingInPage());
             }
         }
     }

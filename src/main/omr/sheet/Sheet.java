@@ -20,7 +20,7 @@ import omr.lag.LagManager;
 
 import omr.math.Population;
 
-import omr.score.entity.Page;
+import omr.score.Page;
 
 import omr.selection.SelectionService;
 

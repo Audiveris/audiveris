@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 /**
  * Class {@code KeyAlterRelation} represents the support relation between the
  * alterations items of a key signature.
@@ -18,16 +21,46 @@ package omr.sig.relation;
  * @author Hervé Bitteur
  */
 public class KeyAlterRelation
-        extends BasicSupport
+        extends AbstractSupport
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    //---------//
-    // getName //
-    //---------//
+    private static final Constants constants = new Constants();
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
     @Override
-    public String getName ()
+    protected double getSourceCoeff ()
     {
-        return "Key-Alter";
+        return constants.keySupportCoeff.getValue();
+    }
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    @Override
+    protected double getTargetCoeff ()
+    {
+        return constants.alterSupportCoeff.getValue();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Ratio keySupportCoeff = new Constant.Ratio(
+                5,
+                "Value for (source) key coeff in support formula");
+
+        final Constant.Ratio alterSupportCoeff = new Constant.Ratio(
+                5,
+                "Value for (target) alter coeff in support formula");
     }
 }

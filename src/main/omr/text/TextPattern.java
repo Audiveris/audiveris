@@ -14,15 +14,12 @@ package omr.text;
 import omr.glyph.facets.Glyph;
 import omr.glyph.pattern.GlyphPattern;
 
-import omr.lag.Section;
-
 import omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -73,7 +70,7 @@ public class TextPattern
 
         // Check each sentence for inactive, non-text glyph, modified value
         // Use a input copy of sentences collection, since it can get modified
-        for (TextLine line : new LinkedHashSet<TextLine>(system.getSentences())) {
+        for (TextLine line : new LinkedHashSet<TextLine>(system.getTextLines())) {
             checkModifiedValue(line);
 
             purgeWords(line);
@@ -84,19 +81,19 @@ public class TextPattern
             }
         }
 
-        system.getSentences().removeAll(toRemove);
+        system.getTextLines().removeAll(toRemove);
 
         // Look for active text glyphs left over (no word, or no line)
         checkOrphanGlyphs();
 
         // Global recomposition of all lines
-        List<TextLine> lines = textBuilder.recomposeLines(system.getSentences());
-        system.getSentences().clear();
-        system.getSentences().addAll(lines);
+        List<TextLine> lines = textBuilder.recomposeLines(system.getTextLines());
+        system.getTextLines().clear();
+        system.getTextLines().addAll(lines);
 
         // Purge lines
-        purgeLines(system.getSentences());
-        textBuilder.purgeSentences();
+        purgeLines(system.getTextLines());
+        textBuilder.purgeTextLines();
 
         return 0; // Useless
     }
@@ -112,37 +109,37 @@ public class TextPattern
      */
     private void checkModifiedValue (TextLine line)
     {
-        String language = system.getSheet().getLanguageParam().getTarget();
-        boolean altered = false;
-        List<Section> lineSections = new ArrayList<Section>();
-
-        // Use a copy to avoid concurrent modifs
-        List<TextWord> words = new ArrayList<TextWord>(line.getWords());
-
-        for (TextWord word : words) {
-            Glyph glyph = word.getGlyph();
-
-            if (glyph == null) {
-                continue;
-            } else {
-                lineSections.addAll(glyph.getMembers());
-            }
-
-            if (!glyph.isActive() || !glyph.isText()) {
-                continue;
-            }
-
-            if (!glyph.getTextValue().equals(word.getInternalValue())) {
-                // Here the glyph (manual) value has been modified
-                altered = true;
-                textBuilder.splitWords(Arrays.asList(word), line);
-            }
-        }
-
-        // Remap glyphs if line has been altered
-        if (altered) {
-            textBuilder.mapGlyphs(Arrays.asList(line), lineSections, language);
-        }
+//        String language = system.getSheet().getLanguageParam().getTarget();
+//        boolean altered = false;
+//        List<Section> lineSections = new ArrayList<Section>();
+//
+//        // Use a copy to avoid concurrent modifs
+//        List<TextWord> words = new ArrayList<TextWord>(line.getWords());
+//
+//        for (TextWord word : words) {
+//            Glyph glyph = word.getGlyph();
+//
+//            if (glyph == null) {
+//                continue;
+//            } else {
+//                lineSections.addAll(glyph.getMembers());
+//            }
+//
+//            if (!glyph.isActive() || !glyph.isText()) {
+//                continue;
+//            }
+//
+//            if (!glyph.getTextValue().equals(word.getInternalValue())) {
+//                // Here the glyph (manual) value has been modified
+//                altered = true;
+//                textBuilder.splitWords(Arrays.asList(word), line);
+//            }
+//        }
+//
+//        // Remap glyphs if line has been altered
+//        if (altered) {
+//            textBuilder.mapGlyphs(Arrays.asList(line), lineSections, language);
+//        }
     }
 
     //-------------------//
@@ -155,46 +152,46 @@ public class TextPattern
      */
     private void checkOrphanGlyphs ()
     {
-        String language = system.getSheet().getLanguageParam().getTarget();
-
-        for (Glyph glyph : system.getGlyphs()) {
-            if (!isOrphan(glyph)) {
-                continue;
-            }
-
-            if (glyph.getManualValue() != null) {
-                // Build a TextLine/TextWord manually
-                TextWord word = TextWord.createManualWord(glyph, glyph.getManualValue());
-                glyph.setTextWord(language, word);
-
-                TextLine line = new TextLine(Arrays.asList(word));
-                List<TextLine> lines = Arrays.asList(line);
-                lines = textBuilder.recomposeLines(lines);
-                system.getSentences().addAll(lines);
-                textBuilder.purgeSentences();
-            } else {
-                // Use OCR on this glyph
-                logger.debug("Orphan text {}", glyph.idString());
-
-                List<TextLine> lines = textBuilder.retrieveOcrLine(glyph, language);
-
-                if ((lines != null) && !lines.isEmpty()) {
-                    lines = textBuilder.recomposeLines(lines);
-
-                    if (!lines.isEmpty()) {
-                        textBuilder.mapGlyphs(lines, glyph.getMembers(), language);
-                    }
-                }
-
-                if ((lines == null) || lines.isEmpty()) {
-                    logger.debug("{} No valid text in {}", system.idString(), glyph.idString());
-
-                    if (!glyph.isManualShape()) {
-                        glyph.setShape(null);
-                    }
-                }
-            }
-        }
+//        String language = system.getSheet().getLanguageParam().getTarget();
+//
+//        for (Glyph glyph : system.getGlyphs()) {
+//            if (!isOrphan(glyph)) {
+//                continue;
+//            }
+//
+//            if (glyph.getManualValue() != null) {
+//                // Build a TextLine/TextWord manually
+//                TextWord word = TextWord.createManualWord(glyph, glyph.getManualValue());
+//                glyph.setTextWord(language, word);
+//
+//                TextLine line = new TextLine(Arrays.asList(word));
+//                List<TextLine> lines = Arrays.asList(line);
+//                lines = textBuilder.recomposeLines(lines);
+//                system.getTextLines().addAll(lines);
+//                textBuilder.purgeTextLines();
+//            } else {
+//                // Use OCR on this glyph
+//                logger.debug("Orphan text {}", glyph.idString());
+//
+//                List<TextLine> lines = textBuilder.retrieveOcrLine(glyph, language);
+//
+//                if ((lines != null) && !lines.isEmpty()) {
+//                    lines = textBuilder.recomposeLines(lines);
+//
+//                    if (!lines.isEmpty()) {
+//                        textBuilder.mapGlyphs(lines, glyph.getMembers(), language);
+//                    }
+//                }
+//
+//                if ((lines == null) || lines.isEmpty()) {
+//                    logger.debug("{} No valid text in {}", system.idString(), glyph.idString());
+//
+//                    if (!glyph.isManualShape()) {
+//                        glyph.setShape(null);
+//                    }
+//                }
+//            }
+//        }
     }
 
     //----------//

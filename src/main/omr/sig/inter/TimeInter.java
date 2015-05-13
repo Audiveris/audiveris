@@ -15,12 +15,14 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
+
 import static omr.glyph.Shape.CUSTOM_TIME;
+
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.TimeRational;
-import omr.score.entity.TimeValue;
+import omr.score.TimeRational;
+import omr.score.TimeValue;
 
 import omr.sheet.Staff;
 

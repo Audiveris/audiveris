@@ -111,7 +111,7 @@ public class SymbolsBuilder
      * <b>Synopsis:</b>
      * <pre>
      * - getSymbolsGlyphs()                             // Retrieve all glyphs usable for symbols
-     * - buildGlyphsGraph()                             // Build graph with distances
+     * - buildLinks()                                   // Build graph with distances
      * - processClusters():                             // Group connected glyphs into clusters
      *    + FOREACH cluster of connected glyphs:
      *       + cluster.decompose()                      // Decompose cluster into all subsets

@@ -114,61 +114,52 @@ public class SIGraph
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // getInter //
-    //----------//
+    //--------------//
+    // getRelations //
+    //--------------//
     /**
-     * Report the (first) interpretation if any of desired class for
-     * the glyph at hand.
-     * TODO: Could we have several inters of desired class for the same glyph?
-     * Interpretations are no longer automatically linked back from
-     * glyph!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     * Report the set of relations of desired class out of the provided relations
      *
-     * @param glyph  the underlying glyph
-     * @param classe the interpretation class desired
-     * @return the existing interpretation if any, or null
+     * @param relations the provided relation collection
+     * @param classe    the desired class of relation
+     * @return the set of filtered relations, perhaps empty but not null
      */
-    @Deprecated
-    public static Inter getInter (Glyph glyph,
-                                  Class classe)
+    public static Set<Relation> getRelations (Collection<? extends Relation> relations,
+                                              Class classe)
     {
-        for (Inter inter : glyph.getInterpretations()) {
-            if (classe.isInstance(inter)) {
-                return inter;
-            }
-        }
+        Set<Relation> found = new LinkedHashSet<Relation>();
 
-        return null;
-    }
-
-    //-------------------//
-    // intersectedGlyphs //
-    //-------------------//
-    /**
-     * Lookup the provided list of glyph instances which intersect the given box.
-     *
-     * @param glyphs           the list of glyph instances to search for
-     * @param sortedByAbscissa true if the list is already sorted by abscissa, to speedup the search
-     * @param box              the intersecting box
-     * @return the intersected glyph instances found
-     */
-    public static List<Glyph> intersectedGlyphs (List<Glyph> glyphs,
-                                                 boolean sortedByAbscissa,
-                                                 Rectangle2D box)
-    {
-        List<Glyph> found = new ArrayList<Glyph>();
-
-        for (Glyph glyph : glyphs) {
-            Rectangle glyphBox = glyph.getBounds();
-
-            if (box.intersects(glyphBox)) {
-                found.add(glyph);
-            } else if (sortedByAbscissa && (glyphBox.x >= box.getMaxX())) {
-                break;
+        for (Relation rel : relations) {
+            if (classe.isInstance(rel)) {
+                found.add(rel);
             }
         }
 
         return found;
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Select in the provided collection the inters that relate to the specified staff.
+     *
+     * @param staff  the specified staff
+     * @param inters the collection to filter
+     * @return the list of interpretations
+     */
+    public static List<Inter> inters (Staff staff,
+                                      Collection<? extends Inter> inters)
+    {
+        List<Inter> filtered = new ArrayList<Inter>();
+
+        for (Inter inter : inters) {
+            if (inter.getStaff() == staff) {
+                filtered.add(inter);
+            }
+        }
+
+        return filtered;
     }
 
     //-----------//
@@ -323,6 +314,27 @@ public class SIGraph
         return removed;
     }
 
+    //------------//
+    // exclusions //
+    //------------//
+    /**
+     * Report the set of exclusion relations currently present in SIG
+     *
+     * @return the set of exclusions
+     */
+    public Set<Relation> exclusions ()
+    {
+        Set<Relation> exclusions = new HashSet<Relation>();
+
+        for (Relation rel : edgeSet()) {
+            if (rel instanceof Exclusion) {
+                exclusions.add(rel);
+            }
+        }
+
+        return exclusions;
+    }
+
     //--------------//
     // getExclusion //
     //--------------//
@@ -358,6 +370,58 @@ public class SIGraph
     public Set<Relation> getExclusions (Inter inter)
     {
         return getRelations(inter, Exclusion.class);
+    }
+
+    //----------//
+    // getInter //
+    //----------//
+    /**
+     * Report the (first) interpretation if any of desired class for
+     * the glyph at hand.
+     * TODO: Could we have several inters of desired class for the same glyph?
+     * Interpretations are no longer automatically linked back from
+     * glyph!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     *
+     * @param glyph  the underlying glyph
+     * @param classe the interpretation class desired
+     * @return the existing interpretation if any, or null
+     */
+    @Deprecated
+    public static Inter getInter (Glyph glyph,
+                                  Class classe)
+    {
+        for (Inter inter : glyph.getInterpretations()) {
+            if (classe.isInstance(inter)) {
+                return inter;
+            }
+        }
+
+        return null;
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations for which the provided predicate applies within the
+     * provided collection.
+     *
+     * @param collection the collection of inters to browse
+     * @param predicate  the predicate to apply, or null
+     * @return the list of compliant interpretations
+     */
+    public static List<Inter> inters (Collection<? extends Inter> collection,
+                                      Predicate<Inter> predicate)
+    {
+        List<Inter> found = new ArrayList<Inter>();
+
+        for (Inter inter : collection) {
+            if ((predicate == null) || predicate.check(inter)) {
+                found.add(inter);
+            }
+        }
+
+        return found;
     }
 
     //------------------//
@@ -733,30 +797,6 @@ public class SIGraph
     // inters //
     //--------//
     /**
-     * Select in the provided collection the inters that relate to the specified staff.
-     *
-     * @param staff  the specified staff
-     * @param inters the collection to filter
-     * @return the list of interpretations
-     */
-    public static List<Inter> inters (Staff staff,
-                                      Collection<? extends Inter> inters)
-    {
-        List<Inter> filtered = new ArrayList<Inter>();
-
-        for (Inter inter : inters) {
-            if (inter.getStaff() == staff) {
-                filtered.add(inter);
-            }
-        }
-
-        return filtered;
-    }
-
-    //--------//
-    // inters //
-    //--------//
-    /**
      * Lookup for interpretations of the provided shape.
      *
      * @param shape the shape to check for
@@ -767,127 +807,30 @@ public class SIGraph
         return inters(new ShapePredicate(shape));
     }
 
-    //--------//
-    // inters //
-    //--------//
+    //-------------------//
+    // intersectedGlyphs //
+    //-------------------//
     /**
-     * Lookup for interpretations of the provided class.
+     * Lookup the provided list of glyph instances which intersect the given box.
      *
-     * @param classe the class to search for
-     * @return the interpretations of desired class
+     * @param glyphs           the list of glyph instances to search for
+     * @param sortedByAbscissa true if the list is already sorted by abscissa, to speedup the search
+     * @param box              the intersecting box
+     * @return the intersected glyph instances found
      */
-    public List<Inter> inters (final Class classe)
+    public static List<Glyph> intersectedGlyphs (List<Glyph> glyphs,
+                                                 boolean sortedByAbscissa,
+                                                 Rectangle2D box)
     {
-        return inters(new ClassPredicate(classe));
-    }
+        List<Glyph> found = new ArrayList<Glyph>();
 
-    //--------//
-    // inters //
-    //--------//
-    /**
-     * Lookup for interpretations of the specified class within the provided collection.
-     *
-     * @param collection the provided collection to browse
-     * @param classe     the class to search for
-     * @return the interpretations of desired class
-     */
-    public List<Inter> inters (Collection<? extends Inter> collection,
-                               final Class classe)
-    {
-        return inters(collection, new ClassPredicate(classe));
-    }
+        for (Glyph glyph : glyphs) {
+            Rectangle glyphBox = glyph.getBounds();
 
-    //--------//
-    // inters //
-    //--------//
-    /**
-     * Lookup for interpretations of the provided classes.
-     *
-     * @param classes array of desired classes
-     * @return the interpretations of desired classes
-     */
-    public List<Inter> inters (final Class[] classes)
-    {
-        return inters(new ClassesPredicate(classes));
-    }
-
-    //--------//
-    // inters //
-    //--------//
-    /**
-     * Lookup for interpretations of the provided class, attached to the specified staff.
-     *
-     * @param staff  the specified staff
-     * @param classe the class to search for
-     * @return the list of interpretations found
-     */
-    public List<Inter> inters (final Staff staff,
-                               final Class classe)
-    {
-        return inters(new StaffClassPredicate(staff, classe));
-    }
-
-    //--------//
-    // inters //
-    //--------//
-    /**
-     * Lookup for interpretations of the provided collection of shapes.
-     *
-     * @param shapes the shapes to check for
-     * @return the interpretations of desired shapes
-     */
-    public List<Inter> inters (final Collection<Shape> shapes)
-    {
-        return inters(new ShapesPredicate(shapes));
-    }
-
-    //--------//
-    // inters //
-    //--------//
-    /**
-     * Select the inters that relate to the specified staff.
-     *
-     * @param staff the specified staff
-     * @return the list of selected inters
-     */
-    public List<Inter> inters (Staff staff)
-    {
-        return inters(staff, vertexSet());
-    }
-
-    //--------//
-    // inters //
-    //--------//
-    /**
-     * Lookup for interpretations for which the provided predicate applies.
-     *
-     * @param predicate the predicate to apply, or null
-     * @return the list of compliant interpretations
-     */
-    public List<Inter> inters (Predicate<Inter> predicate)
-    {
-        return inters(vertexSet(), predicate);
-    }
-
-    //--------//
-    // inters //
-    //--------//
-    /**
-     * Lookup for interpretations for which the provided predicate applies within the
-     * provided collection.
-     *
-     * @param collection the collection of inters to browse
-     * @param predicate  the predicate to apply, or null
-     * @return the list of compliant interpretations
-     */
-    public List<Inter> inters (Collection<? extends Inter> collection,
-                               Predicate<Inter> predicate)
-    {
-        List<Inter> found = new ArrayList<Inter>();
-
-        for (Inter inter : collection) {
-            if ((predicate == null) || predicate.check(inter)) {
-                found.add(inter);
+            if (box.intersects(glyphBox)) {
+                found.add(glyph);
+            } else if (sortedByAbscissa && (glyphBox.x >= box.getMaxX())) {
+                break;
             }
         }
 
@@ -1020,25 +963,106 @@ public class SIGraph
         return found;
     }
 
-    //------------//
-    // exclusions //
-    //------------//
+    //--------//
+    // inters //
+    //--------//
     /**
-     * Report the set of exclusion relations currently present in SIG
+     * Lookup for interpretations of the specified class within the provided collection.
      *
-     * @return the set of exclusions
+     * @param collection the provided collection to browse
+     * @param classe     the class to search for
+     * @return the interpretations of desired class
      */
-    public Set<Relation> exclusions ()
+    public List<Inter> inters (Collection<? extends Inter> collection,
+                               final Class classe)
     {
-        Set<Relation> exclusions = new HashSet<Relation>();
+        return inters(collection, new ClassPredicate(classe));
+    }
 
-        for (Relation rel : edgeSet()) {
-            if (rel instanceof Exclusion) {
-                exclusions.add(rel);
-            }
-        }
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations of the provided classes.
+     *
+     * @param classes array of desired classes
+     * @return the interpretations of desired classes
+     */
+    public List<Inter> inters (final Class[] classes)
+    {
+        return inters(new ClassesPredicate(classes));
+    }
 
-        return exclusions;
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations of the provided class, attached to the specified staff.
+     *
+     * @param staff  the specified staff
+     * @param classe the class to search for
+     * @return the list of interpretations found
+     */
+    public List<Inter> inters (final Staff staff,
+                               final Class classe)
+    {
+        return inters(new StaffClassPredicate(staff, classe));
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations of the provided collection of shapes.
+     *
+     * @param shapes the shapes to check for
+     * @return the interpretations of desired shapes
+     */
+    public List<Inter> inters (final Collection<Shape> shapes)
+    {
+        return inters(new ShapesPredicate(shapes));
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Select the inters that relate to the specified staff.
+     *
+     * @param staff the specified staff
+     * @return the list of selected inters
+     */
+    public List<Inter> inters (Staff staff)
+    {
+        return inters(staff, vertexSet());
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations for which the provided predicate applies.
+     *
+     * @param predicate the predicate to apply, or null
+     * @return the list of compliant interpretations
+     */
+    public List<Inter> inters (Predicate<Inter> predicate)
+    {
+        return inters(vertexSet(), predicate);
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations of the provided class.
+     *
+     * @param classe the class to search for
+     * @return the interpretations of desired class
+     */
+    public List<Inter> inters (final Class classe)
+    {
+        return inters(new ClassPredicate(classe));
     }
 
     //-----------//
@@ -1456,28 +1480,6 @@ public class SIGraph
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        Constant.Integer maxSupportCount = new Constant.Integer(
-                "count",
-                6,
-                "Upper limit on number of supports used for contextual grade");
-
-        Constant.Ratio deltaGradeStrict = new Constant.Ratio(
-                0.00001,
-                "Minimum grade delta to reduce an exclusion in STRICT mode");
-
-        Constant.Ratio deltaGradeRelaxed = new Constant.Ratio(
-                0.01,
-                "Minimum grade delta to reduce an exclusion in RELAXED mode");
-    }
-
     //----------------//
     // ClassPredicate //
     //----------------//
@@ -1530,6 +1532,28 @@ public class SIGraph
 
             return false;
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        Constant.Integer maxSupportCount = new Constant.Integer(
+                "count",
+                6,
+                "Upper limit on number of supports used for contextual grade");
+
+        Constant.Ratio deltaGradeStrict = new Constant.Ratio(
+                0.00001,
+                "Minimum grade delta to reduce an exclusion in STRICT mode");
+
+        Constant.Ratio deltaGradeRelaxed = new Constant.Ratio(
+                0.01,
+                "Minimum grade delta to reduce an exclusion in RELAXED mode");
     }
 
     //--------------//

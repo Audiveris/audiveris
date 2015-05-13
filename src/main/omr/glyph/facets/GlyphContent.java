@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.text.TextRoleInfo;
+import omr.text.TextRole;
 import omr.text.TextWord;
 
 import java.awt.Point;
@@ -42,7 +42,7 @@ public interface GlyphContent
      *
      * @return the manual role for this glyph, or null
      */
-    TextRoleInfo getManualRole ();
+    TextRole getManualRole ();
 
     /**
      * Report the manually assigned text, if any.
@@ -71,7 +71,7 @@ public interface GlyphContent
      *
      * @return the role of this textual glyph
      */
-    TextRoleInfo getTextRole ();
+    TextRole getTextRole ();
 
     /**
      * Report the string value of this text glyph if any.
@@ -93,7 +93,7 @@ public interface GlyphContent
      *
      * @param manualRole the role for this text glyph
      */
-    void setManualRole (TextRoleInfo manualRole);
+    void setManualRole (TextRole manualRole);
 
     /**
      * Manually assign a text meaning to the glyph.

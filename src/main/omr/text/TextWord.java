@@ -13,8 +13,6 @@ package omr.text;
 
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.ChordInfo;
-
 import omr.ui.symbol.TextFont;
 
 import omr.util.Navigable;
@@ -81,9 +79,6 @@ public class TextWord
 
     /** Precise font size, lazily computed. */
     private Float preciseFontSize;
-
-    /** Possible chord info, if any. */
-    private ChordInfo chordInfo;
 
     //~ Constructors -------------------------------------------------------------------------------
     //
@@ -268,19 +263,6 @@ public class TextWord
         return chars;
     }
 
-    //--------------//
-    // getChordInfo //
-    //--------------//
-    /**
-     * Report the related chord info, if any.
-     *
-     * @return the chordInfo or null
-     */
-    public ChordInfo getChordInfo ()
-    {
-        return chordInfo;
-    }
-
     //-------------//
     // getFontInfo //
     //-------------//
@@ -376,20 +358,6 @@ public class TextWord
         } else {
             return getInternalValue();
         }
-    }
-
-    //----------------//
-    // guessChordInfo //
-    //----------------//
-    /**
-     * Try to guess a chord info, based on text content.
-     * If positive, record the info into the instance
-     *
-     * @return the guessed chordInfo or null
-     */
-    public ChordInfo guessChordInfo ()
-    {
-        return chordInfo = ChordInfo.create(getValue());
     }
 
     //----------//

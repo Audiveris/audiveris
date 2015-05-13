@@ -14,15 +14,14 @@ package omr.glyph.ui;
 import omr.glyph.SymbolsModel;
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.Note;
-import omr.score.entity.TimeRational;
+import omr.score.TimeRational;
 
 import omr.script.RationalTask;
 import omr.script.SegmentTask;
 import omr.script.SlurTask;
 import omr.script.TextTask;
 
-import omr.text.TextRoleInfo;
+import omr.text.TextRole;
 
 import org.jdesktop.application.Task;
 
@@ -86,15 +85,15 @@ public class SymbolsController
      * glyphs
      *
      * @param glyphs      the impacted glyphs
-     * @param roleInfo    the role of this textual element
+     * @param role        the role of this textual element
      * @param textContent the content as a string (if not empty)
      * @return the task that carries out the processing
      */
     public Task<Void, Void> asyncAssignTexts (Collection<Glyph> glyphs,
-                                              TextRoleInfo roleInfo,
+                                              TextRole role,
                                               String textContent)
     {
-        return new TextTask(sheet, roleInfo, textContent, glyphs).launch(sheet);
+        return new TextTask(sheet, role, textContent, glyphs).launch(sheet);
     }
 
     //--------------//
@@ -137,23 +136,6 @@ public class SymbolsController
     public SymbolsModel getModel ()
     {
         return (SymbolsModel) model;
-    }
-
-    //------------------//
-    // showTranslations //
-    //------------------//
-    public void showTranslations (Collection<Glyph> glyphs)
-    {
-        for (Glyph glyph : glyphs) {
-            for (Object entity : glyph.getTranslations()) {
-                if (entity instanceof Note) {
-                    Note note = (Note) entity;
-                    logger.info("{}->{}", note, note.getChord());
-                } else {
-                    logger.info(entity.toString());
-                }
-            }
-        }
     }
 
     //----------//

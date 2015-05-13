@@ -20,7 +20,7 @@ import omr.score.OpusExporter;
 import omr.score.Score;
 import omr.score.ScoreExporter;
 import omr.score.ScoreReduction;
-import omr.score.entity.Page;
+import omr.score.Page;
 import omr.score.ui.BookPdfOutput;
 
 import omr.script.BookStepTask;
@@ -36,6 +36,7 @@ import omr.sheet.ui.SheetsController;
 import omr.step.ProcessingCancellationException;
 import omr.step.Step;
 import omr.step.StepException;
+
 import static omr.step.ui.StepMonitoring.notifyStart;
 import static omr.step.ui.StepMonitoring.notifyStop;
 

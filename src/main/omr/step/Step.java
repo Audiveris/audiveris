@@ -25,10 +25,10 @@ import omr.sheet.rhythm.MeasuresStep;
 import omr.sheet.rhythm.RhythmsStep;
 import omr.sheet.stem.StemSeedsStep;
 import omr.sheet.stem.StemsStep;
+import omr.sheet.symbol.LinksStep;
 import omr.sheet.symbol.SymbolReductionStep;
 import omr.sheet.symbol.SymbolsStep;
 import omr.sheet.ui.SheetTab;
-import static omr.sheet.ui.SheetTab.*;
 
 import omr.text.TextsStep;
 
@@ -44,29 +44,27 @@ import java.util.Collection;
 public enum Step
 {
 
-    LOAD("Load the sheet (gray) picture", PICTURE_TAB, new LoadStep()),
-    BINARY("Binarize the sheet picture", BINARY_TAB, new BinaryStep()),
-    SCALE("Compute sheet line thickness, interline, beam thickness", BINARY_TAB, new ScaleStep()),
-    GRID("Retrieve Staff lines, bar-lines, systems & parts", DATA_TAB, new GridStep()),
-    HEADERS("Retrieve Clef-Key-Time systems headers", DATA_TAB, new HeadersStep()),
-    STEM_SEEDS("Retrieve Stem thickness & seeds for stems", DATA_TAB, new StemSeedsStep()),
-    BEAMS("Retrieve beams", DATA_TAB, new BeamsStep()),
-    LEDGERS("Retrieve ledgers", DATA_TAB, new LedgersStep()),
-    HEADS("Retrieve note heads & whole notes", DATA_TAB, new HeadsStep()),
-    STEMS("Build stems connected to heads & beams", DATA_TAB, new StemsStep()),
-    REDUCTION("Reduce structures of heads, stems & beams", DATA_TAB, new ReductionStep()),
-    CUE_BEAMS("Retrieve cue beams", DATA_TAB, new CueBeamsStep()),
-    TEXTS("Call OCR on textual items", DATA_TAB, new TextsStep()),
-    CHORDS("Gather notes heads into chords", DATA_TAB, new ChordsStep()),
-    CURVES("Retrieve slurs, wedges & endings", DATA_TAB, new CurvesStep()),
-    SYMBOLS("Retrieve fixed-shape symbols", DATA_TAB, new SymbolsStep()),
-    MEASURES("Retrieve raw measures from groups of bar lines", DATA_TAB, new MeasuresStep()),
-    RHYTHMS("Handle rhythms within measures", DATA_TAB, new RhythmsStep()),
-    SYMBOL_REDUCTION("Reduce symbols", DATA_TAB, new SymbolReductionStep()),
-    PAGE("Connect systems within page", DATA_TAB, new PageStep());
-
-    /** Related short label. */
-    private final SheetTab tab;
+    LOAD("Load the sheet (gray) picture", new LoadStep()),
+    BINARY("Binarize the sheet picture", new BinaryStep()),
+    SCALE("Compute sheet line thickness, interline, beam thickness", new ScaleStep()),
+    GRID("Retrieve Staff lines, bar-lines, systems & parts", new GridStep()),
+    HEADERS("Retrieve Clef-Key-Time systems headers", new HeadersStep()),
+    STEM_SEEDS("Retrieve Stem thickness & seeds for stems", new StemSeedsStep()),
+    BEAMS("Retrieve beams", new BeamsStep()),
+    LEDGERS("Retrieve ledgers", new LedgersStep()),
+    HEADS("Retrieve note heads & whole notes", new HeadsStep()),
+    STEMS("Build stems connected to heads & beams", new StemsStep()),
+    REDUCTION("Reduce structures of heads, stems & beams", new ReductionStep()),
+    CUE_BEAMS("Retrieve cue beams", new CueBeamsStep()),
+    TEXTS("Call OCR on textual items", new TextsStep()),
+    CHORDS("Gather notes heads into chords", new ChordsStep()),
+    MEASURES("Retrieve raw measures from groups of bar lines", new MeasuresStep()),
+    CURVES("Retrieve slurs, wedges & endings", new CurvesStep()),
+    SYMBOLS("Retrieve fixed-shape symbols", new SymbolsStep()),
+    SYMBOL_REDUCTION("Reduce symbols", new SymbolReductionStep()),
+    RHYTHMS("Handle rhythms within measures", new RhythmsStep()),
+    LINKS("Link symbols", new LinksStep()),
+    PAGE("Connect systems within page", new PageStep());
 
     /** Description of the step. */
     private final String description;
@@ -78,14 +76,11 @@ public enum Step
      * Create an instance of {@code Step}.
      *
      * @param description step description
-     * @param tab         tab for related sheet assembly
      * @param helper      step implementation
      */
     private Step (String description,
-                  SheetTab tab,
                   AbstractStep helper)
     {
-        this.tab = tab;
         this.description = description;
         this.helper = helper;
     }
@@ -116,28 +111,11 @@ public enum Step
         return values()[values().length - 1];
     }
 
-    //------//
-    // next //
-    //------//
-    /**
-     * Report the step immediately after this one.
-     *
-     * @return the next step if any, otherwise null
-     */
-    public Step next ()
-    {
-        if (ordinal() < (values().length - 1)) {
-            return values()[ordinal() + 1];
-        }
-
-        return null;
-    }
-
     //-------------//
     // clearErrors //
     //-------------//
     /**
-     * Clear the errors that relate to this step on the provided sheet.
+     * Clear the errors that relate to this step on the provided sheet. (Not used)
      *
      * @param sheet the sheet to work upon
      */
@@ -189,17 +167,17 @@ public enum Step
         return description;
     }
 
-    //--------//
-    // getTab //
-    //--------//
+    //-------------//
+    // getSheetTab //
+    //-------------//
     /**
-     * Related assembly view tab, selected when steps completes
+     * Related assembly view tab, selected when step completes
      *
      * @return the related view tab
      */
-    public SheetTab getTab ()
+    public SheetTab getSheetTab ()
     {
-        return tab;
+        return helper.getSheetTab();
     }
 
     //----------//
@@ -224,15 +202,15 @@ public enum Step
             return (Step) getCachedValue();
         }
 
-        public void setValue (Step val)
+        public void setValue (Step step)
         {
-            setTuple(val.toString(), val);
+            setTuple(step.toString(), step);
         }
 
         @Override
-        public void setValue (java.lang.String string)
+        public void setValue (java.lang.String str)
         {
-            setValue(decode(string));
+            setValue(decode(str));
         }
 
         @Override

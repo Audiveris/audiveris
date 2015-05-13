@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.rhythm;
 
-import omr.score.entity.Page;
+import omr.score.Page;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;

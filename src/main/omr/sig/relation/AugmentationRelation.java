@@ -40,15 +40,6 @@ public class AugmentationRelation
     };
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // getName //
-    //---------//
-    @Override
-    public String getName ()
-    {
-        return "Augmentation";
-    }
-
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
@@ -84,20 +75,6 @@ public class AugmentationRelation
     protected double getSourceCoeff ()
     {
         return constants.dotSupportCoeff.getValue();
-    }
-
-    //----------------//
-    // getTargetCoeff //
-    //----------------//
-    /**
-     * AugmentationRelation brings no support on target (note or rest) side.
-     *
-     * @return 0
-     */
-    @Override
-    protected double getTargetCoeff ()
-    {
-        return 0;
     }
 
     @Override

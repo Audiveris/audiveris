@@ -125,7 +125,7 @@ public class StemPattern
         }
 
         // Extract brand new glyphs (removeInactiveGlyphs + retrieveGlyphs)
-        system.removeInactiveGlyphs();
+        ///system.removeInactiveGlyphs();
         system.retrieveGlyphs();
 
         // Try to recognize each glyph in turn

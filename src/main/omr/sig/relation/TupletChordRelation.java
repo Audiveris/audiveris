@@ -23,7 +23,7 @@ import omr.glyph.Shape;
  * @author Hervé Bitteur
  */
 public class TupletChordRelation
-        extends BasicSupport
+        extends AbstractSupport
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -43,22 +43,13 @@ public class TupletChordRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Override
-    public String getName ()
-    {
-        return "Tuplet-Chord";
-    }
-
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
     @Override
     protected double getSourceCoeff ()
     {
         return tupletCoeff;
-    }
-
-    @Override
-    protected double getTargetCoeff ()
-    {
-        return 0;
     }
 
     //----------------//

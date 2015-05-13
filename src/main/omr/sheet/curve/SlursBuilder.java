@@ -26,12 +26,16 @@ import omr.sheet.grid.FilamentLine;
 
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;
+import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SlurInter;
+import omr.sig.relation.Relation;
+import omr.sig.relation.SlurHeadRelation;
 
 import omr.ui.util.UIUtil;
 
 import omr.util.Dumping;
+import omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,6 +140,9 @@ public class SlursBuilder
                     buildCurve(arc);
                 }
             }
+
+            // Handle slurs collision on same head
+            handleCollisions();
 
             logger.info("{}Slurs: {}", sheet.getLogPrefix(), pageSlurs.size());
         } catch (Throwable ex) {
@@ -686,6 +693,47 @@ public class SlursBuilder
         Collections.sort(list, Arc.byReverseLength);
 
         return list;
+    }
+
+    //------------------//
+    // handleCollisions //
+    //------------------//
+    /**
+     * In crowded areas, a head may got linked to more than one slur on the same side.
+     */
+    private void handleCollisions ()
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            SIGraph sig = system.getSig();
+            List<Inter> slurs = sig.inters(SlurInter.class);
+
+            for (Inter inter : slurs) {
+                SlurInter slur = (SlurInter) inter;
+
+                // Check on both sides of this slur
+                for (HorizontalSide side : HorizontalSide.values()) {
+                    AbstractHeadInter head = slur.getHead(side);
+
+                    if (head != null) {
+                        // Check this head for colliding slur links
+                        Set<Relation> rels = sig.getRelations(head, SlurHeadRelation.class);
+
+                        for (Relation rel : rels) {
+                            SlurHeadRelation shRel = (SlurHeadRelation) rel;
+                            HorizontalSide relSide = shRel.getSide();
+
+                            if (relSide == side) {
+                                SlurInter s = (SlurInter) sig.getOppositeInter(head, rel);
+
+                                if (slur != s) {
+                                    logger.warn("{} collision {} & {} @ {}", side, slur, s, head);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     //-----------------------//

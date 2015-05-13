@@ -11,10 +11,6 @@
 // </editor-fold>
 package omr.score;
 
-import omr.score.entity.Page;
-import omr.score.entity.TimeRational;
-import omr.score.entity.TimeSignature;
-
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.rhythm.Measure;
@@ -170,13 +166,13 @@ public class TimeSignatureFixer
 
         if (!sigs.isEmpty()) {
             TimeRational bestRational = sigs.get(0);
-
-            if (!TimeSignature.isAcceptable(bestRational)) {
-                logger.debug("Time sig too uncommon: {}", bestRational);
-
-                return;
-            }
-
+            // BINGO
+            //            if (!OldTimeSignature.isAcceptable(bestRational)) {
+            //                logger.debug("Time sig too uncommon: {}", bestRational);
+            //
+            //                return;
+            //            }
+            //
             logger.debug("Best sig: {}", bestRational);
 
             // Loop on every staff in the vertical startStack

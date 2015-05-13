@@ -15,8 +15,8 @@ import omr.glyph.Shape;
 
 import omr.math.Rational;
 
+import omr.score.Page;
 import omr.score.Score;
-import omr.score.entity.Page;
 
 import omr.sheet.Part;
 import omr.sheet.Skew;
@@ -46,13 +46,14 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code MeasureStack} represents a vertical stack of measures, embracing all
- * parts of a system.
+ * Class {@code MeasureStack} represents a vertical stack of {@link Measure} instances,
+ * embracing all parts of a system.
  * <p>
  * This approach is convenient to use vertical alignments when dealing with time slots.
  * <p>
@@ -70,6 +71,8 @@ import java.util.Set;
  * <li>IDs, as exported in MusicXML, combine the page-based IDs to provide score-based (absolute)
  * IDs.</li>
  * </ol>
+ *
+ * @see Measure
  *
  * @author Hervé Bitteur
  */
@@ -311,7 +314,7 @@ public class MeasureStack
         //                }
         //            }
         //
-        //            OldChord leftChord = leftNote.getChord();
+        //            ChordInter leftChord = leftNote.getChord();
         //            OldVoice leftVoice = leftChord.getVoice();
         //
         //            // Voice on right
@@ -321,7 +324,7 @@ public class MeasureStack
         //                continue;
         //            }
         //
-        //            OldChord rightChord = rightNote.getChord();
+        //            ChordInter rightChord = rightNote.getChord();
         //            OldVoice rightVoice = rightChord.getVoice();
         //
         //            if (leftVoice.getId() != rightVoice.getId()) {
@@ -341,7 +344,7 @@ public class MeasureStack
         for (Inter inter : systemInters) {
             Point center = inter.getCenter();
 
-            // Rough limits
+            // Rough abscissa limits
             if ((center.x < left) || (center.x > right)) {
                 continue;
             }
@@ -352,11 +355,12 @@ public class MeasureStack
             if (staff != null) {
                 measure = staff.getPart().getMeasureAt(center);
             } else {
-                List<Staff> stavesArounds = system.getStavesAround(center); // 1 or 2 staves
-                staff = stavesArounds.get(0);
+                List<Staff> stavesAround = system.getStavesAround(center); // 1 or 2 staves
+                staff = stavesAround.get(0);
                 measure = getMeasureAt(staff);
             }
 
+            // Precise abscissa limits
             if ((measure.getAbscissa(LEFT, staff) <= center.x)
                 && (center.x <= measure.getAbscissa(RIGHT, staff))) {
                 kept.add(inter);
@@ -396,6 +400,46 @@ public class MeasureStack
         return beamGroups;
     }
 
+    //---------------//
+    // getChordAbove //
+    //---------------//
+    /**
+     * Retrieve the closest chord within staff above.
+     *
+     * @param point the system-based location
+     * @return the most suitable chord, or null
+     */
+    public ChordInter getChordAbove (Point2D point)
+    {
+        Collection<ChordInter> aboves = getChordsAbove(point);
+
+        if (!aboves.isEmpty()) {
+            return getClosestChord(aboves, point);
+        }
+
+        return null;
+    }
+
+    //---------------//
+    // getChordBelow //
+    //---------------//
+    /**
+     * Retrieve the closest chord within staff below.
+     *
+     * @param point the system-based location
+     * @return the most suitable chord, or null
+     */
+    public ChordInter getChordBelow (Point2D point)
+    {
+        Collection<ChordInter> belows = getChordsBelow(point);
+
+        if (!belows.isEmpty()) {
+            return getClosestChord(belows, point);
+        }
+
+        return null;
+    }
+
     //-----------//
     // getChords //
     //-----------//
@@ -410,6 +454,91 @@ public class MeasureStack
     }
 
     //----------------//
+    // getChordsAbove //
+    //----------------//
+    /**
+     * Report the collection of chords whose head is located in the staff above the
+     * provided point.
+     *
+     * @param point the provided point
+     * @return the (perhaps empty) collection of chords
+     */
+    public Collection<ChordInter> getChordsAbove (Point2D point)
+    {
+        Staff desiredStaff = getSystem().getStaffAtOrAbove(point);
+        Collection<ChordInter> found = new ArrayList<ChordInter>();
+
+        for (ChordInter chord : chords) {
+            if (chord.getStaff() == desiredStaff) {
+                Point head = chord.getHeadLocation();
+
+                if ((head != null) && (head.y < point.getY())) {
+                    found.add(chord);
+                }
+            }
+        }
+
+        return found;
+    }
+
+    //----------------//
+    // getChordsBelow //
+    //----------------//
+    /**
+     * Report the collection of chords whose head is located in the staff below the
+     * provided point.
+     *
+     * @param point the provided point
+     * @return the (perhaps empty) collection of chords
+     */
+    public Collection<ChordInter> getChordsBelow (Point2D point)
+    {
+        Staff desiredStaff = getSystem().getStaffAtOrBelow(point);
+        Collection<ChordInter> found = new ArrayList<ChordInter>();
+
+        for (ChordInter chord : chords) {
+            if (chord.getStaff() == desiredStaff) {
+                Point head = chord.getHeadLocation();
+
+                if ((head != null) && (head.y > point.getY())) {
+                    found.add(chord);
+                }
+            }
+        }
+
+        return found;
+    }
+
+    //-----------------//
+    // getClosestChord //
+    //-----------------//
+    /**
+     * From a provided Chord collection, report the chord which has the closest abscissa
+     * to a provided point.
+     *
+     * @param chords the collection of chords to browse
+     * @param point  the reference point
+     * @return the abscissa-wise closest chord
+     */
+    public ChordInter getClosestChord (Collection<ChordInter> chords,
+                                       Point2D point)
+    {
+        ChordInter bestChord = null;
+        double bestDx = Double.MAX_VALUE;
+
+        for (ChordInter chord : chords) {
+            double dx = Math.abs(chord.getHeadLocation().x - point.getX());
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestChord = chord;
+            }
+        }
+
+        return bestChord;
+    }
+
+    //----------------//
     // getClosestSlot //
     //----------------//
     /**
@@ -418,7 +547,7 @@ public class MeasureStack
      * @param point the reference point
      * @return the abscissa-wise closest slot
      */
-    public Slot getClosestSlot (Point point)
+    public Slot getClosestSlot (Point2D point)
     {
         final double xOffset = getXOffset(point);
         Slot bestSlot = null;
@@ -507,6 +636,28 @@ public class MeasureStack
         }
 
         return null; // Not found !!!
+    }
+
+    //---------------//
+    // getEventChord //
+    //---------------//
+    /**
+     * Retrieve the most suitable chord to connect the event point to.
+     *
+     * @param point the system-based location
+     * @return the most suitable chord, or null
+     */
+    public ChordInter getEventChord (Point2D point)
+    {
+        // First, try staff just above
+        ChordInter above = getChordAbove(point);
+
+        if (above != null) {
+            return above;
+        }
+
+        // Second, try staff just below
+        return getChordBelow(point);
     }
 
     //-----------//
@@ -868,25 +1019,25 @@ public class MeasureStack
         return tuplets;
     }
 
+    //---------------//
+    // getVoiceCount //
+    //---------------//
+    /**
+     * Report the number of voices in this measure stack.
+     *
+     * @return the number of voices computed
+     */
+    public int getVoiceCount ()
+    {
+        return voices.size();
+    }
+
     //-----------//
     // getVoices //
     //-----------//
     public List<Voice> getVoices ()
     {
         return voices;
-    }
-
-    //-----------------//
-    // getVoicesNumber //
-    //-----------------//
-    /**
-     * Report the number of voices in this measure stack.
-     *
-     * @return the number of voices computed
-     */
-    public int getVoicesNumber ()
-    {
-        return voices.size();
     }
 
     //--------------------//
@@ -918,7 +1069,7 @@ public class MeasureStack
     // getXOffset //
     //------------//
     /**
-     * Report the abscissa offset since stack left border of the provided point.
+     * Report the precise abscissa offset since stack left border of the provided point.
      *
      * @param point        the provided point
      * @param stavesAround one or two staves that surround the provided point
@@ -937,7 +1088,7 @@ public class MeasureStack
             double y1 = line1.yAt(point.getX());
             double offset1 = point.getX() - left1.x;
 
-            Staff staff2 = stavesAround.get(stavesAround.size() - 1);
+            Staff staff2 = stavesAround.get(1);
             Measure measure2 = getMeasureAt(staff2);
             Point left2 = measure2.getSidePoint(HorizontalSide.LEFT, staff2);
             FilamentLine line2 = staff2.getLines().get(staff2.getLines().size() / 2);

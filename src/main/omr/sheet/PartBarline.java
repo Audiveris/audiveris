@@ -14,8 +14,6 @@ package omr.sheet;
 import omr.math.GeoUtil;
 import omr.math.PointUtil;
 
-import omr.score.entity.StaffBarline;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +60,7 @@ public class PartBarline
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Underlying {@link StaffBarline} instances, one per staff in the part. */
+    /** * Underlying {@link StaffBarline} instances, one per staff in the part. */
     private final List<StaffBarline> staffBarlines = new ArrayList<StaffBarline>();
 
     //~ Constructors -------------------------------------------------------------------------------

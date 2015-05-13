@@ -20,7 +20,7 @@ import omr.constant.ConstantSet;
  * @author Hervé Bitteur
  */
 public class BeamHeadRelation
-        extends BasicSupport
+        extends AbstractSupport
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -38,18 +38,9 @@ public class BeamHeadRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Override
-    public String getName ()
-    {
-        return "Beam-Head";
-    }
-
-    @Override
-    protected double getSourceCoeff ()
-    {
-        return constants.beamSupportCoeff.getValue();
-    }
-
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
     @Override
     protected double getTargetCoeff ()
     {
@@ -65,10 +56,8 @@ public class BeamHeadRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio beamSupportCoeff = new Constant.Ratio(0, "Supporting coeff for beam");
-
         final Constant.Ratio headSupportCoeff = new Constant.Ratio(
                 0.75,
-                "Supporting coeff for head");
+                "Supporting coeff for (target) head");
     }
 }

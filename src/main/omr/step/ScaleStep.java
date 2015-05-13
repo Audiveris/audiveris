@@ -85,6 +85,15 @@ public class ScaleStep
         sheet.getBench().recordScale(scale);
     }
 
+    //-------------//
+    // getSheetTab //
+    //-------------//
+    @Override
+    public SheetTab getSheetTab ()
+    {
+        return SheetTab.BINARY_TAB;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //

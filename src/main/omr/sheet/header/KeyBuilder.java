@@ -33,6 +33,7 @@ import omr.lag.SectionFactory;
 import omr.math.Clustering;
 import omr.math.Population;
 import omr.math.Projection;
+
 import static omr.run.Orientation.VERTICAL;
 
 import omr.sheet.Picture;
@@ -73,7 +74,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -463,16 +463,16 @@ public class KeyBuilder
         return measureStart;
     }
 
-    //--------------//
-    // getSignature //
-    //--------------//
+    //-----------//
+    // getFifths //
+    //-----------//
     /**
      * Staff key signature is dynamically computed using the keyShape and the count of
      * alteration slices.
      *
      * @return the signature as an int
      */
-    public int getSignature ()
+    public int getFifths ()
     {
         if (slices.isEmpty()) {
             return 0;
@@ -930,7 +930,7 @@ public class KeyBuilder
 
         grade /= alters.size();
 
-        keyInter = new KeyInter(box, grade, getSignature(), alters);
+        keyInter = new KeyInter(box, grade, getFifths(), alters);
         keyInter.setStaff(staff);
         sig.addVertex(keyInter);
         staff.getHeader().key = keyInter;
@@ -1500,7 +1500,7 @@ public class KeyBuilder
 
             KeyInter key = staff.getHeader().key;
 
-            return (key != null) ? ("key:" + key.getSignature()) : null;
+            return (key != null) ? ("key:" + key.getFifths()) : null;
         }
 
         //--------------//

@@ -83,7 +83,7 @@ public interface ShapeEvaluator
 
     /**
      * Run the evaluator with the specified glyph, and return the natural sequence of
-     * interpretations (ordered by Shape ordinal) with no additional check.
+     * all interpretations (ordered by Shape ordinal) with no additional check.
      *
      * @param glyph the glyph to be examined
      * @return all shape-ordered evaluations

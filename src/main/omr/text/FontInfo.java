@@ -99,13 +99,16 @@ public class FontInfo
     }
 
     //----------//
-    // toString //
+    // getMnemo //
     //----------//
-    @Override
-    public String toString ()
+    /**
+     * Report a very short description of font characteristics.
+     *
+     * @return a short description
+     */
+    public String getMnemo ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(fontName).append(' ');
+        StringBuilder sb = new StringBuilder();
 
         if (isBold) {
             sb.append('B');
@@ -132,6 +135,19 @@ public class FontInfo
         }
 
         sb.append('-').append(pointsize);
+
+        return sb.toString();
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder("{");
+        sb.append(fontName);
+        sb.append(' ').append(getMnemo());
         sb.append("}");
 
         return sb.toString();

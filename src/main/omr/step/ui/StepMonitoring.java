@@ -126,7 +126,7 @@ public abstract class StepMonitoring
                             // Update sheet view for this step?
                             if (finished) {
                                 step.displayUI(sheet);
-                                sheet.getAssembly().selectViewTab(step.getTab());
+                                sheet.getAssembly().selectViewTab(step.getSheetTab());
                             }
 
                             // Call attention to this sheet (only if displayed),

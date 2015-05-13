@@ -360,7 +360,7 @@ public abstract class AbstractEvaluationEngine
     // getSortedEvaluations //
     //----------------------//
     /**
-     * Run the evaluator with the specified glyph, and return a sequence of
+     * Run the evaluator with the specified glyph, and return a sequence of all
      * interpretations (ordered from best to worst) with no additional check.
      *
      * @param glyph the glyph to be examined

@@ -16,7 +16,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.sheet.Sheet;
 
-import omr.text.TextRoleInfo;
+import omr.text.TextRole;
 
 import java.util.Collection;
 
@@ -36,8 +36,8 @@ public class TextTask
 
     /** Role of the textual glyph */
     // TODO: Define proper mapping for RoleInfo class
-    @XmlElement(name = "role-info")
-    private final TextRoleInfo roleInfo;
+    @XmlElement(name = "role")
+    private final TextRole role;
 
     /** String content of the textual glyph */
     @XmlAttribute
@@ -47,25 +47,25 @@ public class TextTask
     /**
      * Creates a new TextTask object.
      *
-     * @param sheet    the sheet impacted
-     * @param roleInfo the role of this text item
-     * @param content  The content as a string
-     * @param glyphs   the impacted glyph(s)
+     * @param sheet   the sheet impacted
+     * @param role    the role of this text item
+     * @param content The content as a string
+     * @param glyphs  the impacted glyph(s)
      */
     public TextTask (Sheet sheet,
-                     TextRoleInfo roleInfo,
+                     TextRole role,
                      String content,
                      Collection<Glyph> glyphs)
     {
         super(sheet, glyphs);
-        this.roleInfo = roleInfo;
+        this.role = role;
         this.content = content;
     }
 
     /** No-arg constructor for JAXB only. */
     private TextTask ()
     {
-        roleInfo = null;
+        role = null;
         content = null;
     }
 
@@ -79,7 +79,7 @@ public class TextTask
     {
         sheet.getSymbolsController().getModel().assignText(
                 getInitialGlyphs(),
-                roleInfo,
+                role,
                 content,
                 Evaluation.MANUAL);
     }
@@ -93,11 +93,7 @@ public class TextTask
         StringBuilder sb = new StringBuilder(super.internals());
         sb.append(" text");
 
-        sb.append(" ").append(roleInfo.role);
-
-        if (roleInfo.creatorType != null) {
-            sb.append(" ").append(roleInfo.creatorType);
-        }
+        sb.append(" ").append(role);
 
         sb.append(" \"").append(content).append("\"");
 

@@ -13,8 +13,6 @@ package omr.score;
 
 import omr.score.PartConnection.Candidate;
 import omr.score.PartConnection.Result;
-import omr.score.entity.LogicalPart;
-import omr.score.entity.Page;
 
 import omr.sheet.Part;
 

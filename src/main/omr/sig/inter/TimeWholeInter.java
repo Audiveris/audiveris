@@ -14,7 +14,7 @@ package omr.sig.inter;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.TimeValue;
+import omr.score.TimeValue;
 
 import omr.sheet.Staff;
 

@@ -99,6 +99,7 @@ class BasicComposition
         // Otherwise, there is a risk of using the glyph box (which depends on
         // its member sections) before the section is in the glyph members.
         // This phenomenum was sometimes observed when using parallelism.
+        //
         /** First, update glyph data */
         members.add(section);
 

@@ -11,13 +11,21 @@
 // </editor-fold>
 package omr.sheet.rhythm;
 
+import omr.sheet.Part;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
+import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.ChordInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.KeyInter;
+import omr.sig.inter.SlurInter;
+
+import omr.util.HorizontalSide;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -30,6 +38,8 @@ import java.util.List;
 public class MeasureFiller
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(MeasureFiller.class);
 
     /** Filling classes. */
     public static final Class<?>[] fillingClasses = new Class<?>[]{
@@ -69,6 +79,29 @@ public class MeasureFiller
                 if (staff != null) {
                     Measure measure = stack.getMeasureAt(staff);
                     measure.addInter(inter);
+                }
+            }
+        }
+
+        // Slurs to their containing part
+        final List<Inter> slurs = system.getSig().inters(SlurInter.class);
+
+        for (Inter inter : slurs) {
+            SlurInter slur = (SlurInter) inter;
+            Part slurPart = null;
+
+            for (HorizontalSide side : HorizontalSide.values()) {
+                AbstractHeadInter head = slur.getHead(side);
+
+                if (head != null) {
+                    Part headPart = system.getPartOf(head.getStaff());
+
+                    if (slurPart == null) {
+                        slurPart = headPart;
+                        slurPart.addSlur(slur);
+                    } else if (slurPart != headPart) {
+                        logger.warn("Slur crosses parts " + slur);
+                    }
                 }
             }
         }

@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.sig.GradeImpacts;
 
 /**
@@ -20,10 +23,13 @@ import omr.sig.GradeImpacts;
  * @author Hervé Bitteur
  */
 public class BarConnectionRelation
-        extends BasicSupport
+        extends AbstractSupport
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarConnectionRelation object.
      *
@@ -33,5 +39,38 @@ public class BarConnectionRelation
     {
         super(impacts.getGrade());
         setImpacts(impacts);
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
+    @Override
+    protected double getSourceCoeff ()
+    {
+        return constants.barSupportCoeff.getValue();
+    }
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    @Override
+    protected double getTargetCoeff ()
+    {
+        return constants.barSupportCoeff.getValue();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Ratio barSupportCoeff = new Constant.Ratio(
+                5,
+                "Value for source/target (bar) coeff in support formula");
     }
 }

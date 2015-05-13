@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.score.entity.LogicalPart;
-import omr.score.entity.SystemNode;
+import omr.score.LogicalPart;
+import omr.score.StaffPosition;
 
 import omr.sheet.rhythm.Measure;
 import omr.sheet.rhythm.MeasureStack;
@@ -20,6 +20,7 @@ import omr.sheet.rhythm.Voice;
 
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.KeyInter;
+import omr.sig.inter.LyricLineInter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.TimeInter;
 
@@ -116,6 +117,9 @@ public class Part
     /** Slurs in this part. */
     private final List<SlurInter> slurs = new ArrayList<SlurInter>();
 
+    /** Lyric lines in this part. */
+    private final List<LyricLineInter> lyrics = new ArrayList<LyricLineInter>();
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of {@code Part}.
@@ -134,6 +138,14 @@ public class Part
     public void addMeasure (Measure measure)
     {
         measures.add(measure);
+    }
+
+    //---------//
+    // addSlur //
+    //---------//
+    public void addSlur (SlurInter slur)
+    {
+        slurs.add(slur);
     }
 
     //----------//
@@ -161,19 +173,9 @@ public class Part
             List<SlurInter> orphans = getSlurs(SlurInter.isBeginningOrphan);
             Collections.sort(orphans, SlurInter.verticalComparator);
 
-            //            for (SlurInter slur : orphans) {
-            //                // Nullify a potential link to zombie slurs
-            //                slur.resetLeftExtension();
-            //            }
-            //
             List<SlurInter> precedingOrphans = precedingPart.getSlurs(SlurInter.isEndingOrphan);
             Collections.sort(precedingOrphans, SlurInter.verticalComparator);
 
-            //            for (Slur slur : precedingOrphans) {
-            //                // Nullify a potential link to zombie slurs
-            //                slur.resetRightExtension();
-            //            }
-            //
             // Connect the orphans as much as possible
             SlurLoop:
             for (SlurInter slur : orphans) {
@@ -204,19 +206,24 @@ public class Part
     /**
      * Create a dummy system part, parallel to this part in the same system, just to
      * fill needed measures for another logical part.
-     * This is only meant to ease the MusicXML export of the page.
      * <ul>
-     * <li>Clef is taken from first measure of part to be extended (this part, called the refPart,
-     * has the provided id and is found in a following system, or in a preceding system)</li>
+     * <li>Clef is taken from first measure of part to be extended (a part, called the refPart,
+     * which has the provided id and is found in a following system, or in a preceding system)</li>
      * <li>Key sig is taken from this part</li>
      * <li>Time sig is taken from this part</li>
-     * <li>Measures are defined as parallel to this part, and filled with just one whole rest</li>
+     * <li>Measures are defined as parallel to this part, and filled with just one whole measure
+     * rest</li>
+     * </ul>
+     * NOTA: This structure is transient, only meant to ease the MusicXML export of the page:
+     * <ul>
+     * <li>The created inters (clef, key, time, rests) are <b>not</b> inserted in sig, only in the
+     * (dummy) measures of the (dummy) part.</li>
+     * <li>The created dummy part is <b>not</b> inserted in system list of parts.</li>
+     * <li> Similarly, the (dummy) measures of this dummy part are <b>not</b> inserted in
+     * MeasureStack instances that play only with real measures.</li>
      * </ul>
      * <p>
-     * The created dummy part is not inserted in system list of parts.
-     * <p>
-     * The (dummy) measures of this dummy part are not inserted in MeasureStack instances that play
-     * only with real measures.
+     * <img alt="Dummy part creation" src="doc-files/DummyPart.png" />
      *
      * @param id the id for the desired dummy part
      * @return the created dummy part, ready to be exported
@@ -267,7 +274,7 @@ public class Part
                 }
 
                 // Replicate Key if any (from current measure in this part)
-                KeyInter firstKey = measure.getFirstMeasureKey(staffIndex);
+                KeyInter firstKey = measure.getKey(staffIndex);
 
                 if (firstKey != null) {
                     KeyInter dummyKey = firstKey.replicate(dummyStaff);
@@ -322,6 +329,25 @@ public class Part
         return staves.get(0);
     }
 
+    //--------------------//
+    // getPrecedingInPage //
+    //--------------------//
+    /**
+     * Report the corresponding part (if any) in the following system in current page.
+     *
+     * @return the corresponding part, or null
+     */
+    public Part getFollowingInPage ()
+    {
+        SystemInfo nextSystem = getSystem().getFollowingInPage();
+
+        if (nextSystem == null) {
+            return null;
+        }
+
+        return nextSystem.getPartById(id);
+    }
+
     //-------//
     // getId //
     //-------//
@@ -363,6 +389,22 @@ public class Part
         return staves.get(staves.size() - 1);
     }
 
+    //----------------//
+    // getLogicalPart //
+    //----------------//
+    public LogicalPart getLogicalPart ()
+    {
+        return logicalPart;
+    }
+
+    //-----------//
+    // getLyrics //
+    //-----------//
+    public List<LyricLineInter> getLyrics ()
+    {
+        return lyrics;
+    }
+
     //--------------//
     // getMeasureAt //
     //--------------//
@@ -376,6 +418,10 @@ public class Part
     public Measure getMeasureAt (Point point)
     {
         Staff staff = getStaffJustAbove(point);
+
+        if (staff == null) {
+            return null;
+        }
 
         if ((point.x >= staff.getAbscissa(LEFT)) && (point.x <= staff.getAbscissa(RIGHT))) {
             for (Measure measure : measures) {
@@ -420,6 +466,19 @@ public class Part
         return name;
     }
 
+    //--------//
+    // getPid //
+    //--------//
+    /**
+     * Report a pid string, using format "Pn", where 'n' is the id
+     *
+     * @return the Pid
+     */
+    public String getPid ()
+    {
+        return "P" + id;
+    }
+
     //--------------------//
     // getPrecedingInPage //
     //--------------------//
@@ -437,14 +496,6 @@ public class Part
         }
 
         return prevSystem.getPartById(id);
-    }
-
-    //----------------//
-    // getLogicalPart //
-    //----------------//
-    public LogicalPart getLogicalPart ()
-    {
-        return logicalPart;
     }
 
     //----------//
@@ -482,7 +533,11 @@ public class Part
     {
         List<Staff> relevants = StaffManager.getStavesOf(point, staves, null);
 
-        return relevants.get(0);
+        if (!relevants.isEmpty()) {
+            return relevants.get(0);
+        }
+
+        return null;
     }
 
     //-------------------//
@@ -510,17 +565,17 @@ public class Part
      * @param point the point whose ordinate is to be checked
      * @return the StaffPosition value
      */
-    public SystemNode.StaffPosition getStaffPosition (Point2D point)
+    public StaffPosition getStaffPosition (Point2D point)
     {
         if (point.getY() < getFirstStaff().getFirstLine().yAt(point.getX())) {
-            return SystemNode.StaffPosition.ABOVE_STAVES;
+            return StaffPosition.ABOVE_STAVES;
         }
 
         if (point.getY() > getLastStaff().getLastLine().yAt(point.getX())) {
-            return SystemNode.StaffPosition.BELOW_STAVES;
+            return StaffPosition.BELOW_STAVES;
         }
 
-        return SystemNode.StaffPosition.WITHIN_STAVES;
+        return StaffPosition.WITHIN_STAVES;
     }
 
     //--------------------//
@@ -601,6 +656,14 @@ public class Part
         this.id = id;
     }
 
+    //----------------//
+    // setLogicalPart //
+    //----------------//
+    public void setLogicalPart (LogicalPart logicalPart)
+    {
+        this.logicalPart = logicalPart;
+    }
+
     //---------//
     // setName //
     //---------//
@@ -610,14 +673,6 @@ public class Part
     public void setName (String name)
     {
         this.name = name;
-    }
-
-    //----------------//
-    // setLogicalPart //
-    //----------------//
-    public void setLogicalPart (LogicalPart logicalPart)
-    {
-        this.logicalPart = logicalPart;
     }
 
     //--------------------//

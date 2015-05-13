@@ -40,15 +40,6 @@ public class DotFermataRelation
     };
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // getName //
-    //---------//
-    @Override
-    public String getName ()
-    {
-        return "Dot-Fermata";
-    }
-
     //---------------//
     // getOutWeights //
     //---------------//

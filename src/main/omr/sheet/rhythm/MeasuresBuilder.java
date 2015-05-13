@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.rhythm;
 
-import omr.score.entity.StaffBarline;
+import omr.sheet.StaffBarline;
 
 import omr.sheet.Part;
 import omr.sheet.PartBarline;

@@ -16,9 +16,6 @@ import omr.OMR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.score.Score;
-import omr.score.entity.LogicalPart;
-
 import omr.script.Script;
 
 import omr.sheet.Book;
@@ -724,40 +721,6 @@ public class ScoreActions
             logger.warn("Could not create folder " + bookPath, ex);
 
             return false;
-        }
-
-        return true;
-    }
-
-    //----------------------------//
-    // fillParametersWithDefaults //
-    //----------------------------//
-    /**
-     * For some needed key parameters, fill them with default values if
-     * they are not yet set.
-     *
-     * @param score the related book
-     * @return true
-     */
-    private static boolean fillParametersWithDefaults (Score score)
-    {
-        if (score.getLogicalParts() != null) {
-            for (LogicalPart logicalPart : score.getLogicalParts()) {
-                // Part name
-                if (logicalPart.getName() == null) {
-                    logicalPart.setName(logicalPart.getDefaultName());
-                }
-
-                // Part midi program
-                if (logicalPart.getMidiProgram() == null) {
-                    logicalPart.setMidiProgram(logicalPart.getDefaultProgram());
-                }
-            }
-        }
-
-        // Score global data
-        if (!score.hasVolume()) {
-            score.setVolume(Score.getDefaultVolume());
         }
 
         return true;

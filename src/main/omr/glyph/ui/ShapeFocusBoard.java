@@ -201,12 +201,6 @@ public class ShapeFocusBoard
         case UNKNOWN:
             return (glyph == null) || !glyph.isKnown();
 
-        case TRANSLATED:
-            return (glyph != null) && glyph.isKnown() && glyph.isTranslated();
-
-        case UNTRANSLATED:
-            return (glyph != null) && glyph.isKnown() && !glyph.isTranslated();
-
         default:
         case ALL:
             return true;

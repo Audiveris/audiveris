@@ -120,9 +120,9 @@ public class SheetScanner
 
         try {
             // Get clean page image
-            watch.start("getImage");
+            watch.start("getCleanImage");
 
-            BufferedImage image = getImage(); // This also sets buffer member
+            BufferedImage image = getCleanImage(); // This also sets buffer member
 
             // Proper text params
             final LiveParam<String> textParam = sheet.getLanguageParam();
@@ -147,10 +147,10 @@ public class SheetScanner
         }
     }
 
-    //----------//
-    // getImage //
-    //----------//
-    private BufferedImage getImage ()
+    //---------------//
+    // getCleanImage //
+    //---------------//
+    private BufferedImage getCleanImage ()
     {
         Picture picture = sheet.getPicture();
         ByteProcessor buf = picture.getSource(Picture.SourceKey.NO_STAFF);
@@ -214,10 +214,10 @@ public class SheetScanner
         final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 0.25,
                 "Vertical margin around staff core area");
-
-        final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
-                0.05,
-                "Minimum weight for any glyph to be kept before OCR");
+//
+//        final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
+//                0.05,
+//                "Minimum weight for any glyph to be kept before OCR");
     }
 
     //--------------//
@@ -291,7 +291,6 @@ public class SheetScanner
             buffer.threshold(127);
 
             // Build all glyphs out of buffer and erase those that intersect a staff core area
-            // Also purge image of too small glyphs
             SectionFactory factory = new SectionFactory(VERTICAL, JunctionAllPolicy.INSTANCE);
             List<Section> sections = factory.createSections(buffer, null);
             List<Glyph> glyphs = sheet.getGlyphNest().retrieveGlyphs(sections, null, false);
@@ -322,6 +321,8 @@ public class SheetScanner
         //-------------------//
         /**
          * Erase from text image the glyphs that intersect or touch a staff core area.
+         * <p>
+         * (We also tried to remove too small glyphs, but this led to poor recognition by OCR)
          *
          * @param glyphs all the glyphs in image
          * @param cores  all staves cores
@@ -329,17 +330,17 @@ public class SheetScanner
         private void eraseBorderGlyphs (List<Glyph> glyphs,
                                         List<Area> cores)
         {
-            final int minWeight = sheet.getScale().toPixels(constants.minGlyphWeight);
+            ///final int minWeight = sheet.getScale().toPixels(constants.minGlyphWeight);
 
             for (Glyph glyph : glyphs) {
-                // Check weight
-                if (glyph.getWeight() < minWeight) {
-                    for (Section section : glyph.getMembers()) {
-                        g.fill(section.getPolygon());
-                    }
-
-                    continue;
-                }
+//                // Check weight
+//                if (glyph.getWeight() < minWeight) {
+//                    for (Section section : glyph.getMembers()) {
+//                        g.fill(section.getPolygon());
+//                    }
+//
+//                    continue;
+//                }
 
                 // Check position WRT staves cores
                 Rectangle glyphBox = glyph.getBounds();

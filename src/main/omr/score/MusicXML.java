@@ -12,10 +12,10 @@
 package omr.score;
 
 import omr.glyph.Shape;
+
 import static omr.glyph.Shape.*;
 
-import omr.score.entity.LyricsItem;
-
+import omr.sig.inter.LyricItemInter;
 import omr.sheet.PartBarline;
 
 import omr.sig.inter.AbstractNoteInter;
@@ -97,7 +97,7 @@ public abstract class MusicXML
     // barStyleOf //
     //------------//
     /**
-     * Report the MusicXML bar style for a recognized OldBarline style
+     * Report the MusicXML bar style for a recognized Barline style
      *
      * @param style the Audiveris barline style
      * @return the MusicXML bar style
@@ -296,7 +296,7 @@ public abstract class MusicXML
     //-------------//
     // getSyllabic //
     //-------------//
-    public static Syllabic getSyllabic (LyricsItem.SyllabicType type)
+    public static Syllabic getSyllabic (LyricItemInter.SyllabicType type)
     {
         return Syllabic.valueOf(type.toString());
     }
@@ -305,12 +305,12 @@ public abstract class MusicXML
     // kindOf //
     //--------//
     /**
-     * Convert from Audiveris ChordInfo.Kind.Type type to Proxymusic KindValue type
+     * Convert from Audiveris ChordNameInter.Kind.Type type to Proxymusic KindValue type
      *
      * @param type Audiveris enum ChordSymbol.Type
      * @return Proxymusic enum KindValue
      */
-    public static KindValue kindOf (omr.score.entity.ChordInfo.Kind.Type type)
+    public static KindValue kindOf (omr.sig.inter.ChordNameInter.Kind.Type type)
     {
         return KindValue.valueOf(type.toString());
     }
@@ -333,12 +333,12 @@ public abstract class MusicXML
     // typeOf //
     //--------//
     /**
-     * Convert from Audiveris ChordInfo.Degree.DegreeType to Proxymusic DegreeTypeValue
+     * Convert from Audiveris ChordNameInter.Degree.DegreeType to Proxymusic DegreeTypeValue
      *
      * @param type Audiveris enum DegreeType
      * @return Proxymusic enum DegreeTypeValue
      */
-    public static DegreeTypeValue typeOf (omr.score.entity.ChordInfo.Degree.DegreeType type)
+    public static DegreeTypeValue typeOf (omr.sig.inter.ChordNameInter.Degree.DegreeType type)
     {
         return DegreeTypeValue.valueOf(type.toString());
     }

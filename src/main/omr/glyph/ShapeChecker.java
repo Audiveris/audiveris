@@ -17,21 +17,9 @@ import static omr.glyph.Shape.*;
 import static omr.glyph.ShapeSet.*;
 import omr.glyph.facets.Glyph;
 
-import omr.run.Orientation;
-
-import omr.score.entity.Clef;
-import omr.score.entity.OldBarline;
-import omr.score.entity.OldMeasure;
-import omr.score.entity.OldStaff;
-import omr.score.entity.OldSystemPart;
-import omr.score.entity.ScoreSystem;
-
 import omr.sheet.Scale;
-import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
-
-import omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,23 +29,16 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.List;
 
 /**
- * Class {@code ShapeChecker} gathers additional specific shape checks, still working
- * on symbols in isolation from other symbols, meant to complement the work done by a
- * shape evaluator.
+ * Class {@code ShapeChecker} gathers additional specific shape checks, meant to
+ * complement the work done by a shape evaluator.
  * <p>
  * Typically, physical shapes (the *_set shape names) must be mapped to the right logical shapes
  * using proper additional tests.
  * <p>
- * Checks are made on the glyph only, the only knowledge about current glyph environment being its
- * staff-based pitch position and the attached stems and ledgers.
- * <p>
- * Checks made in relation with other symbols are not handled here (because the other symbols may
- * not have been recognized yet). Such more elaborated checks are the purpose of
- * {@link omr.glyph.pattern.PatternsChecker}.
+ * The available context varies according to the symbol candidate shape.
  *
  * @author Hervé Bitteur
  */
@@ -111,6 +92,18 @@ public class ShapeChecker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    public static ShapeChecker getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new ShapeChecker();
+        }
+
+        return INSTANCE;
+    }
+
     //----------//
     // annotate //
     //----------//
@@ -155,63 +148,6 @@ public class ShapeChecker
 
                 return;
             }
-        }
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    public static ShapeChecker getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new ShapeChecker();
-        }
-
-        return INSTANCE;
-    }
-
-    //
-    //    //-----------//
-    //    // checkStem //
-    //    //-----------//
-    //    /**
-    //     * Basic check for a stem candidate, using gap to closest staff.
-    //     *
-    //     * @param system containing system
-    //     * @param glyph  stem candidate
-    //     * @return true if OK
-    //     */
-    //    public boolean checkStem (SystemInfo system,
-    //                              Glyph glyph)
-    //    {
-    //        return stemChecker.check(system, null, glyph, null);
-    //    }
-    //-------//
-    // relax //
-    //-------//
-    /**
-     * Take into account the fact that the provided glyph has been
-     * (certainly manually) assigned the provided shape.
-     * So update the tests internals accordingly.
-     *
-     * @param shape    the assigned shape
-     * @param glyph    the glyph at hand
-     * @param features the glyph features
-     * @param sheet    the containing sheet
-     */
-    public void relax (Shape shape,
-                       Glyph glyph,
-                       double[] features,
-                       Sheet sheet)
-    {
-        Collection<Checker> checks = checkerMap.get(shape);
-
-        if (checks == null) {
-            return;
-        }
-
-        for (Checker checker : checks) {
-            checker.relax(shape, glyph, features, sheet);
         }
     }
 
@@ -311,43 +247,6 @@ public class ShapeChecker
      */
     private void registerChecks ()
     {
-        //        // General constraint check on weight, width, height
-        //        new Checker("Constraint", allPhysicalShapes) {
-        //                @Override
-        //                public boolean check (SystemInfo system,
-        //                                      Evaluation eval,
-        //                                      Glyph      glyph,
-        //                                      double[]   features)
-        //                {
-        //                    if (!constants.applyConstraintsCheck.getValue()) {
-        //                        return true;
-        //                    }
-        //
-        //                    // Apply registered parameters constraints
-        //                    return GlyphRegression.getInstance()
-        //                                          .constraintsMatched(features, eval);
-        //                }
-        //
-        //                @Override
-        //                public void relax (Shape    shape,
-        //                                   Glyph    glyph,
-        //                                   double[] features,
-        //                                   Sheet    sheet)
-        //                {
-        //                    // Here relax the constraints if so needed
-        //                    boolean extended = GlyphRegression.getInstance()
-        //                                                      .includeSample(
-        //                        features,
-        //                        shape);
-        //                    logger.info(
-        //                        "Constraints " + (extended ? "extended" : "included") +
-        //                        " for glyph#" + glyph.getId() + " as " + shape);
-        //
-        //                    // Record the glyph description to disk
-        //                    GlyphRepository.getInstance()
-        //                                   .recordOneGlyph(glyph, sheet);
-        //                }
-        //            };
         new Checker("NotWithinWidth", allPhysicalShapes)
         {
             @Override
@@ -441,7 +340,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker("WithinDMZ", SmallClefs)
+        new Checker("WithinHeader", SmallClefs)
         {
             @Override
             public boolean check (SystemInfo system,
@@ -454,164 +353,41 @@ public class ShapeChecker
             }
         };
 
-        new Checker("TooFarFromLeftBar", Keys)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                // They must be rather close to the left side of the measure
-                ScoreSystem scoreSystem = system.getScoreSystem();
-                Scale scale = scoreSystem.getScale();
-                double maxKeyXOffset = scale.toPixels(constants.maxKeyXOffset);
-                Rectangle box = glyph.getBounds();
-                Point point = box.getLocation();
-                OldSystemPart part = scoreSystem.getPartAt(point);
-                OldMeasure measure = part.getMeasureAt(point);
-
-                if (measure == null) {
-                    return true;
-                }
-
-                OldBarline insideBar = measure.getInsideBarline();
-                OldStaff staff = part.getStaffAt(point);
-
-                if (staff == null) {
-                    return false;
-                }
-
-                Clef clef = measure.getFirstMeasureClef(staff.getId());
-                int start = (clef != null) ? (clef.getBox().x + clef.getBox().width)
-                        : ((insideBar != null) ? insideBar.getLeftX() : measure.getLeftX());
-
-                return (point.x - start) <= maxKeyXOffset;
-            }
-        };
-
-        new Checker("CommonCutTime", COMMON_TIME)
-        {
-            private Predicate<Glyph> stemPredicate = new Predicate<Glyph>()
-            {
-                @Override
-                public boolean check (Glyph entity)
-                {
-                    return entity.getShape() == Shape.STEM;
-                }
-            };
-
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                // COMMON_TIME shape is easily confused with CUT_TIME
-                // Check presence of a "pseudo-stem"
-                Rectangle box = glyph.getBounds();
-                box.grow(-box.width / 4, 0);
-
-                List<Glyph> neighbors = system.lookupIntersectedGlyphs(box, glyph);
-
-                if (Glyphs.contains(neighbors, stemPredicate)) {
-                    eval.shape = Shape.CUT_TIME;
-                }
-
-                return true;
-            }
-        };
-
-        new Checker("Hook", BEAM_HOOK)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                // Check we have exactly 1 stem
-                if (glyph.getStemNumber() != 1) {
-                    eval.failure = new Evaluation.Failure("stem!=1");
-
-                    return false;
-                }
-
-                // Hook slope is not reliable, so this test is disabled
-                //                    if (!validBeamHookSlope(glyph)) {
-                //                        eval.failure = new Evaluation.Failure("slope");
-                //
-                //                        return false;
-                //                    }
-                return true;
-            }
-        };
-
-        new Checker("Beams", shapesOf(BEAM))
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                Integer singleThickness = system.getScoreSystem().getScale().getMainBeam();
-
-                if (singleThickness != null) {
-                    // Check we have thickness consistent with the number of
-                    // beams (since we know single beam thickness)
-                    double meanThickness = glyph.getMeanThickness(Orientation.HORIZONTAL);
-
-                    int nb = (int) Math.rint(meanThickness / singleThickness);
-
-                    switch (nb) {
-                    case 1:
-                        return correctShape(system, glyph, eval, BEAM);
-
-                    //
-                    //                    case 2:
-                    //                        return correctShape(system, glyph, eval, BEAM_2);
-                    //
-                    //                    case 3:
-                    //                        return correctShape(system, glyph, eval, BEAM_3);
-                    default:
-                        ///logger.warn("Bad beam #" + glyph.getId() + " nb:" + nb);
-                        eval.failure = new Evaluation.Failure("beamThickness");
-
-                        return false;
-                    }
-                } else {
-                    return true;
-                }
-            }
-        };
-
         //
-        //        // Shapes that require a stem on the left side
-        //        new Checker("noLeftStem", shapesOf(FlagSets, shapesOf(Flags.getShapes())))
+        //        new Checker("CommonCutTime", COMMON_TIME)
         //        {
+        //            // TODO: this no longer works, since shape is not recorded in glyph!
+        //            private Predicate<Glyph> stemPredicate = new Predicate<Glyph>()
+        //            {
+        //                @Override
+        //                public boolean check (Glyph entity)
+        //                {
+        //                    return entity.getShape() == Shape.STEM;
+        //                }
+        //            };
+        //
         //            @Override
         //            public boolean check (SystemInfo system,
         //                                  Evaluation eval,
         //                                  Glyph glyph,
         //                                  double[] features)
         //            {
-        //                return glyph.getStem(HorizontalSide.LEFT) != null;
+        //                // COMMON_TIME shape is easily confused with CUT_TIME
+        //                // Check presence of a "pseudo-stem"
+        //                Rectangle box = glyph.getBounds();
+        //                box.grow(-box.width / 4, 0);
+        //
+        //                List<Glyph> neighbors = system.lookupIntersectedGlyphs(box, glyph);
+        //
+        //                if (Glyphs.contains(neighbors, stemPredicate)) {
+        //                    eval.shape = Shape.CUT_TIME;
+        //                }
+        //
+        //                return true;
         //            }
         //        };
-        //        // Shapes that require a stem nearby
-        //        new Checker("noStem", StemSymbols)
-        //        {
-        //            @Override
-        //            public boolean check (SystemInfo system,
-        //                                  Evaluation eval,
-        //                                  Glyph glyph,
-        //                                  double[] features)
-        //            {
-        //                return glyph.getStemNumber() >= 1;
-        //            }
-        //        };
-        new Checker("Text", TEXT, CHARACTER)
+        //
+        new Checker("Text", TEXT)
         {
             @Override
             public boolean check (SystemInfo system,
@@ -630,61 +406,8 @@ public class ShapeChecker
                     return false;
                 }
 
-                //                    // Check there is no huge horizontal gap between parts
-                //                    if (hugeGapBetweenParts(glyph)) {
-                //                        eval.failure = new Evaluation.Failure("gaps");
-                //
-                //                        return false;
-                //                    }
                 return true;
             }
-
-            //                /**
-            //                 * Browse the collection of provided glyphs to make sure there
-            //                 * is no huge horizontal gap included
-            //                 * @param glyphs the collection of glyphs that compose the text
-            //                 * candidate
-            //                 * @param sheet needed for scale of the context
-            //                 * @return true if gap found
-            //                 */
-            //                private boolean hugeGapBetweenParts (Glyph compound)
-            //                {
-            //                    if (compound.getParts()
-            //                                .isEmpty()) {
-            //                        return false;
-            //                    }
-            //
-            //                    // Sort glyphs by abscissa
-            //                    List<Glyph> glyphs = new ArrayList<Glyph>(
-            //                        compound.getParts());
-            //                    Collections.sort(glyphs, Glyph.abscissaComparator);
-            //
-            //                    final Scale scale = new Scale(glyphs.get(0).getInterline());
-            //                    final int   maxGap = scale.toPixels(constants.maxTextGap);
-            //                    int         gapStart = 0;
-            //                    Glyph       prev = null;
-            //
-            //                    for (Glyph glyph : glyphs) {
-            //                        Rectangle box = glyph.getBounds();
-            //
-            //                        if (prev != null) {
-            //                            if ((box.x - gapStart) > maxGap) {
-            //                                if (logger.isDebugEnabled()) {
-            //                                    logger.debug(
-            //                                        "huge gap detected between glyphs #" +
-            //                                        prev.getId() + " & " + glyph.getId());
-            //                                }
-            //
-            //                                return true;
-            //                            }
-            //                        }
-            //
-            //                        prev = glyph;
-            //                        gapStart = (box.x + box.width) - 1;
-            //                    }
-            //
-            //                    return false;
-            //                }
         };
 
         new Checker("FullTimeSig", WholeTimes)
@@ -741,7 +464,6 @@ public class ShapeChecker
         new Checker(
                 "StaffGap",
                 Notes.getShapes(),
-                NoteHeads.getShapes(),
                 Rests.getShapes(),
                 Dynamics.getShapes(),
                 Articulations.getShapes())
@@ -768,38 +490,6 @@ public class ShapeChecker
                     }
                 };
 
-        //        stemChecker = new Checker(
-        //                "StaffStemGap",
-        //                shapesOf(shapesOf(STEM), shapesOf(Beams.getShapes(), Flags.getShapes(), FlagSets)))
-        //        {
-        //            @Override
-        //            public boolean check (SystemInfo system,
-        //                                  Evaluation eval,
-        //                                  Glyph glyph,
-        //                                  double[] features)
-        //            {
-        //                // A beam / flag / stem  cannot be too far from a staff
-        //                Point center = glyph.getAreaCenter();
-        //                StaffInfo staff = system.getStaffAt(center);
-        //
-        //                // Staff may be null for a very long glyph across systems
-        //                if (staff == null) {
-        //                    return false;
-        //                }
-        //
-        //                // Horizontal: not in staff header
-        //                if (center.x < staff.getHeaderEnd()) {
-        //                    return false;
-        //                }
-        //
-        //                // Vertical: A beam / flag / stem  cannot be too far from a staff
-        //                int yGap = staff.gapTo(glyph.getBounds());
-        //                int maxYGap = system.getScoreSystem().getScale()
-        //                        .toPixels(constants.maxStemGapToStaff);
-        //
-        //                return yGap <= maxYGap;
-        //            }
-        //        };
         //        new Checker("SmallDynamics", SmallDynamics)
         //        {
         //            @Override
@@ -959,78 +649,6 @@ public class ShapeChecker
             }
         };
 
-        new Checker("Braces", BRACE, BRACKET)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                // Must be centered on left of part barline
-                Rectangle box = glyph.getBounds();
-                Point left = new Point(box.x, box.y + (box.height / 2));
-
-                if (left.x > system.getLeft()) {
-                    eval.failure = new Evaluation.Failure("notOnLeft");
-
-                    return false;
-                }
-
-                // Make sure at least a staff interval is embraced
-                boolean embraced = false;
-                int intervalTop = Integer.MIN_VALUE;
-
-                for (Staff staff : system.getStaves()) {
-                    if (intervalTop != Integer.MIN_VALUE) {
-                        int intervalBottom = staff.getFirstLine().yAt(box.x);
-
-                        if ((intervalTop >= box.y) && (intervalBottom <= (box.y + box.height))) {
-                            embraced = true; // Ok for this one
-
-                            break;
-                        }
-                    }
-
-                    intervalTop = staff.getLastLine().yAt(box.x);
-                }
-
-                if (!embraced) {
-                    eval.failure = new Evaluation.Failure("noStaffEmbraced");
-
-                    return false;
-                }
-
-                return true;
-            }
-        };
-
-        new Checker("WholeSansLedgers", WHOLE_NOTE)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
-            {
-                // Check that whole notes are not too far from staves without ledgers
-                Point point = glyph.getAreaCenter();
-                Staff staff = system.getClosestStaff(point);
-
-                if (staff == null) {
-                    return false;
-                }
-
-                double pitch = staff.pitchPositionOf(point);
-
-                if (Math.abs(pitch) <= 6) {
-                    return true;
-                }
-
-                return staff.getClosestLedger(point) != null;
-            }
-        };
-
         new Checker("SystemTop", DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK)
         {
             @Override
@@ -1052,146 +670,67 @@ public class ShapeChecker
                 return pitch <= -5;
             }
         };
-
-        //        new Checker("Fermata_set", FERMATA_set)
-        //        {
-        //            @Override
-        //            public boolean check (SystemInfo system,
-        //                                  Evaluation eval,
-        //                                  Glyph glyph,
-        //                                  double[] features)
-        //            {
-        //                // Use moment n21 to differentiate between V & ^
-        //                // TBD: We could use pitch position as well?
-        //                double n21 = glyph.getGeometricMoments().getN21();
-        //                Shape newShape = (n21 > 0) ? FERMATA : FERMATA_BELOW;
-        //
-        //                ///logLogical(system, glyph, eval, newShape);
-        //                eval.shape = newShape;
-        //
-        //                return true;
-        //            }
-        //        };
-        //
-        //        new Checker("FLAG_*_set", FlagSets)
-        //        {
-        //            @Override
-        //            public boolean check (SystemInfo system,
-        //                                  Evaluation eval,
-        //                                  Glyph glyph,
-        //                                  double[] features)
-        //            {
-        //                Shape newShape = null;
-        //                boolean covar = glyph.getGeometricMoments().getN11() > 0;
-        //
-        //                switch (eval.shape) {
-        //                case FLAG_1_set:
-        //                    newShape = covar ? FLAG_1 : FLAG_1_UP;
-        //
-        //                    break;
-        //
-        //                case FLAG_2_set:
-        //                    newShape = covar ? FLAG_2 : FLAG_2_UP;
-        //
-        //                    break;
-        //
-        //                case FLAG_3_set:
-        //                    newShape = covar ? FLAG_3 : FLAG_3_UP;
-        //
-        //                    break;
-        //
-        //                case FLAG_4_set:
-        //                    newShape = covar ? FLAG_4 : FLAG_4_UP;
-        //
-        //                    break;
-        //
-        //                case FLAG_5_set:
-        //                    newShape = covar ? FLAG_5 : FLAG_5_UP;
-        //
-        //                    break;
-        //                }
-        //
-        //                ///logLogical(system, glyph, eval, newShape);
-        //                eval.shape = newShape;
-        //
-        //                return true;
-        //            }
-        //        };
-        //
-        //        new Checker("TIME_69_set", TIME_69_set)
-        //        {
-        //            @Override
-        //            public boolean check (SystemInfo system,
-        //                                  Evaluation eval,
-        //                                  Glyph glyph,
-        //                                  double[] features)
-        //            {
-        //                // Use moment n12 to differentiate between <(6) & >(9)
-        //                double n12 = glyph.getGeometricMoments().getN12();
-        //                Shape newShape = (n12 > 0) ? TIME_NINE : TIME_SIX;
-        //                ///logLogical(system, glyph, eval, newShape);
-        //                eval.shape = newShape;
-        //
-        //                return true;
-        //            }
-        //        };
-        //
-        //        new Checker("TURN_set", TURN_set)
-        //        {
-        //            @Override
-        //            public boolean check (SystemInfo system,
-        //                                  Evaluation eval,
-        //                                  Glyph glyph,
-        //                                  double[] features)
-        //            {
-        //                Shape newShape;
-        //
-        //                // Use aspect to detect turn_up
-        //                double aspect = glyph.getAspect(Orientation.VERTICAL);
-        //
-        //                if (aspect > 1) {
-        //                    newShape = TURN_UP;
-        //                } else {
-        //                    // Use xy covariance
-        //                    boolean covar = glyph.getGeometricMoments().getN11() > 0;
-        //
-        //                    newShape = covar ? TURN : TURN_INVERTED;
-        //                }
-        //
-        //                ///logLogical(system, glyph, eval, newShape);
-        //                eval.shape = newShape;
-        //
-        //                return true;
-        //            }
-        //        };
-        //
-        //        new Checker("Wedge_set", WEDGE_set)
-        //        {
-        //            @Override
-        //            public boolean check (SystemInfo system,
-        //                                  Evaluation eval,
-        //                                  Glyph glyph,
-        //                                  double[] features)
-        //            {
-        //                // Use moment n12 to differentiate between < & >
-        //                double n12 = glyph.getGeometricMoments().getN12();
-        //                Shape newShape = (n12 > 0) ? CRESCENDO : DIMINUENDO;
-        //
-        //                ///logLogical(system, glyph, eval, newShape);
-        //                eval.shape = newShape;
-        //
-        //                return true;
-        //            }
-        //        };
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        Constant.Boolean applySpecificCheck = new Constant.Boolean(
+                true,
+                "Should we apply specific checks on shape candidates?");
+
+        Scale.Fraction maxTitleHeight = new Scale.Fraction(
+                4.0,
+                "Maximum normalized height for a title text");
+
+        Scale.Fraction maxLyricsHeight = new Scale.Fraction(
+                2.5,
+                "Maximum normalized height for a lyrics text");
+
+        Constant.Double minTitlePitchPosition = new Constant.Double(
+                "PitchPosition",
+                15.0,
+                "Minimum absolute pitch position for a title");
+
+        Constant.Double maxTupletPitchPosition = new Constant.Double(
+                "PitchPosition",
+                15.0,
+                "Maximum absolute pitch position for a tuplet");
+
+        Constant.Double maxTimePitchPositionMargin = new Constant.Double(
+                "PitchPosition",
+                1.0,
+                "Maximum absolute pitch position margin for a time signature");
+
+        Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(
+                1.5,
+                "Maximum height for small dynamics (no p, no f)");
+
+        Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(
+                2.0,
+                "Maximum height for small dynamics (with p, no f)");
+
+        Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(
+                2.5,
+                "Maximum height for tall dynamics (with f)");
+
+        Scale.Fraction maxGapToStaff = new Scale.Fraction(
+                8.0,
+                "Maximum vertical gap between a note-like glyph and closest staff");
+    }
+
     //---------//
     // Checker //
     //---------//
     /**
-     * A checker runs a specific check for a given glyph with respect to
-     * a collection of candidate shapes.
+     * A checker runs a specific check for a given glyph with respect to a set of
+     * candidate shapes.
      */
     private abstract class Checker
     {
@@ -1277,96 +816,10 @@ public class ShapeChecker
                                        Glyph glyph,
                                        double[] features);
 
-        /**
-         * Take into account the fact that the provided glyph has been
-         * (certainly manually) assigned the provided shape.
-         * So update the test internals accordingly.
-         *
-         * @param shape    the assigned shape
-         * @param glyph    the glyph at hand
-         * @param features the glyph features
-         * @param sheet    the containing sheet
-         */
-        public void relax (Shape shape,
-                           Glyph glyph,
-                           double[] features,
-                           Sheet sheet)
-        {
-            // Void by default
-        }
-
         @Override
         public String toString ()
         {
             return name;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        Constant.Boolean applySpecificCheck = new Constant.Boolean(
-                true,
-                "Should we apply specific checks on shape candidates?");
-
-        Constant.Boolean applyConstraintsCheck = new Constant.Boolean(
-                true,
-                "Should we apply constraints checks on shape candidates?");
-
-        Scale.Fraction maxTitleHeight = new Scale.Fraction(
-                4d,
-                "Maximum normalized height for a title text");
-
-        Scale.Fraction maxLyricsHeight = new Scale.Fraction(
-                2.5d,
-                "Maximum normalized height for a lyrics text");
-
-        Constant.Double minTitlePitchPosition = new Constant.Double(
-                "PitchPosition",
-                15d,
-                "Minimum absolute pitch position for a title");
-
-        Constant.Double maxTupletPitchPosition = new Constant.Double(
-                "PitchPosition",
-                15d,
-                "Minimum absolute pitch position for a tuplet");
-
-        Constant.Double maxTimePitchPositionMargin = new Constant.Double(
-                "PitchPosition",
-                1d,
-                "Maximum absolute pitch position margin for a time signature");
-
-        Scale.Fraction maxTextGap = new Scale.Fraction(
-                5.0,
-                "Maximum value for a horizontal gap between glyphs of the same text");
-
-        Scale.Fraction maxKeyXOffset = new Scale.Fraction(
-                2,
-                "Maximum horizontal offset for a key since clef or measure start");
-
-        Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(
-                1.5,
-                "Maximum height for small dynamics (no p, no f)");
-
-        Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(
-                2,
-                "Maximum height for small dynamics (no p, no f)");
-
-        Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(
-                2.5,
-                "Maximum height for small dynamics (no p, no f)");
-
-        Scale.Fraction maxGapToStaff = new Scale.Fraction(
-                8,
-                "Maximum vertical gap between a note-like glyph and closest staff");
-
-        Scale.Fraction maxStemGapToStaff = new Scale.Fraction(
-                12,
-                "Maximum vertical gap between a stem and closest staff");
     }
 }

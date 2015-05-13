@@ -50,7 +50,6 @@ import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SentenceInter;
 import omr.sig.inter.StemInter;
-import omr.sig.inter.WordInter;
 
 import omr.ui.BoardsPane;
 
@@ -227,7 +226,7 @@ public class SymbolsFilter
 
         final Constant.Boolean keepSymbolsBuffer = new Constant.Boolean(
                 false,
-                "Should we store skeleton images on disk?");
+                "Should we store symbols image on disk?");
 
         final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 0.5,
@@ -317,17 +316,15 @@ public class SymbolsFilter
                         continue;
                     }
 
-                    // Special case for one-char words: they are not erased
+                    // Special case for one-char sentences: they are not erased
+                    // since they might be isolated one-letter symbols
                     if (SentenceInter.class.isInstance(inter)) {
                         SentenceInter sentence = (SentenceInter) inter;
-                        List<? extends Inter> members = sentence.getMembers();
 
-                        WordInter word = (WordInter) members.get(0);
-                        String value = word.getValue();
-
-                        if (value.length() == 1) {
+                        if (sentence.getValue().length() == 1) {
                             continue;
                         }
+
                     }
 
                     if (canHide(inter)) {

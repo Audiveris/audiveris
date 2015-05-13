@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * @author Hervé Bitteur
  */
 public abstract class AbstractConnection
-        extends BasicSupport
+        extends AbstractSupport
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

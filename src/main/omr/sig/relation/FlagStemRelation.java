@@ -12,17 +12,20 @@
 package omr.sig.relation;
 
 import omr.constant.ConstantSet;
+
 import static omr.glyph.ShapeSet.FlagsUp;
 
 import omr.sheet.Scale;
 
 import omr.sig.inter.Inter;
+
 import static omr.sig.relation.StemPortion.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Line2D;
+import omr.constant.Constant;
 
 /**
  * Class {@code FlagStemRelation} represents the relation support between a flag and a
@@ -39,22 +42,22 @@ public class FlagStemRelation
 
     private static final Logger logger = LoggerFactory.getLogger(FlagStemRelation.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new {@code FlagStemRelation} object.
-     */
-    public FlagStemRelation ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // getName //
-    //---------//
+    //----------------//
+    // getStemPortion //
+    //----------------//
     @Override
-    public String getName ()
+    public StemPortion getStemPortion (Inter source,
+                                       Line2D stemLine,
+                                       Scale scale)
     {
-        return "Flag-Stem";
+        final double margin = scale.getInterline(); // TODO: use a constant instead?
+
+        if (FlagsUp.contains(source.getShape())) {
+            return (anchorPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
+        } else {
+            return (anchorPoint.getY() < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
+        }
     }
 
     //------------------//
@@ -82,20 +85,21 @@ public class FlagStemRelation
     }
 
     //----------------//
-    // getStemPortion //
+    // getSourceCoeff //
     //----------------//
     @Override
-    public StemPortion getStemPortion (Inter source,
-                                       Line2D stemLine,
-                                       Scale scale)
+    protected double getSourceCoeff ()
     {
-        final double margin = scale.getInterline(); // TODO: use a constant instead?
+        return constants.flagSupportCoeff.getValue();
+    }
 
-        if (FlagsUp.contains(source.getShape())) {
-            return (anchorPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
-        } else {
-            return (anchorPoint.getY() < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
-        }
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    @Override
+    protected double getTargetCoeff ()
+    {
+        return constants.stemSupportCoeff.getValue();
     }
 
     @Override
@@ -132,6 +136,14 @@ public class FlagStemRelation
             extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Ratio flagSupportCoeff = new Constant.Ratio(
+                5,
+                "Value for source (flag) coeff in support formula");
+
+        final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
+                5,
+                "Value for target (stem) coeff in support formula");
 
         final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.5,

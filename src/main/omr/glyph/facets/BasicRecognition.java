@@ -15,7 +15,7 @@ import omr.glyph.Evaluation;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 
-import omr.score.entity.TimeRational;
+import omr.score.TimeRational;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

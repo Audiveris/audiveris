@@ -17,8 +17,6 @@ import omr.OMR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.score.entity.Container;
-
 import omr.sheet.Book;
 
 import omr.util.Dumper;
@@ -516,8 +514,7 @@ public class BookBrowser
             //            return !isLeaf(node);
 
             // We display dummy containers only when they are not empty
-            if (constants.hideEmptyDummies.getValue()
-                && (node instanceof NamedCollection || (node instanceof Container))) {
+            if (constants.hideEmptyDummies.getValue() && node instanceof NamedCollection) {
                 return getChildCount(node) > 0;
             } else {
                 return true;

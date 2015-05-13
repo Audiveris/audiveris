@@ -28,7 +28,7 @@ import java.awt.geom.Line2D;
  * @author Hervé Bitteur
  */
 public class WedgeInter
-        extends AbstractInter
+        extends AbstractDirectionInter
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -36,8 +36,10 @@ public class WedgeInter
 
     private final SegmentInter s2;
 
+    /** Top line. */
     private final Line2D l1;
 
+    /** Bottom line. */
     private final Line2D l2;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -91,6 +93,18 @@ public class WedgeInter
     public Line2D getLine2 ()
     {
         return l2;
+    }
+
+    //-----------//
+    // getSpread //
+    //-----------//
+    public double getSpread ()
+    {
+        if (shape == Shape.CRESCENDO) {
+            return l2.getY2() - l1.getY2();
+        } else {
+            return l2.getY1() - l1.getY1();
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

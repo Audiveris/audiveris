@@ -154,7 +154,11 @@ public class SymbolFactory
         if (Clefs.contains(shape)) {
             sig.addVertex(ClefInter.create(glyph, shape, grade, closestStaff)); // Staff is OK
         } else if (Rests.contains(shape)) {
-            sig.addVertex(RestInter.create(glyph, shape, grade, closestStaff)); // Staff should be OK
+            RestInter rest = RestInter.create(glyph, shape, grade, system, systemChords);
+
+            if (rest != null) {
+                sig.addVertex(rest);
+            }
         } else if (Alterations.contains(shape)) {
             AlterInter alterInter = AlterInter.create(glyph, shape, grade, closestStaff); // Staff is very questionable!
             sig.addVertex(alterInter);

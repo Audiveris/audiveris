@@ -14,7 +14,7 @@ package omr.script;
 import omr.glyph.Evaluation;
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.TimeRational;
+import omr.score.TimeRational;
 
 import omr.sheet.Sheet;
 

@@ -21,29 +21,20 @@ import omr.constant.ConstantSet;
  * @author Hervé Bitteur
  */
 public class FermataBarRelation
-        extends BasicSupport
+        extends AbstractSupport
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Override
-    public String getName ()
-    {
-        return "Fermata-Bar";
-    }
-
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
     @Override
     protected double getSourceCoeff ()
     {
         return constants.fermataSupportCoeff.getValue();
-    }
-
-    @Override
-    protected double getTargetCoeff ()
-    {
-        return 0;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -57,6 +48,6 @@ public class FermataBarRelation
 
         final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(
                 5,
-                "Supporting coeff for fermata");
+                "Supporting coeff for (source) fermata");
     }
 }

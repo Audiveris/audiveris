@@ -58,8 +58,8 @@ public class TextCheckerPattern
     {
         //        if (system.getId() == 1) {
         //            logger.info("{} Sentences: {}",
-        //                        system.idString(), system.getSentences().size());
-        //            for (TextLine sentence : system.getSentences()) {
+        //                        system.idString(), system.getTextLines().size());
+        //            for (TextLine sentence : system.getTextLines()) {
         //                logger.debug("   {}", sentence);
         //            }
         //        }
@@ -88,7 +88,7 @@ public class TextCheckerPattern
         // Check sentences
         int sentencesAltered = 0;
 
-        for (TextLine sentence : system.getSentences()) {
+        for (TextLine sentence : system.getTextLines()) {
             int modifs = 0;
 
             for (TextWord word : sentence.getWords()) {
@@ -110,7 +110,7 @@ public class TextCheckerPattern
                     "{} Text sentences altered: {}/{}",
                     system.idString(),
                     sentencesAltered,
-                    system.getSentences().size());
+                    system.getTextLines().size());
         }
 
         return 0; // Useless

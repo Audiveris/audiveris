@@ -162,8 +162,7 @@ public class SymbolMenu
         register(0, new DumpTextAction());
 
         // Display score counterpart
-        register(0, new TranslationAction());
-
+        ///register(0, new TranslationAction());
         // Display all glyphs of the same shape
         register(0, new ShapeAction());
 
@@ -796,55 +795,55 @@ public class SymbolMenu
             }
         }
     }
-
-    //-------------------//
-    // TranslationAction //
-    //-------------------//
-    /**
-     * Display the score entity that translates this glyph.
-     */
-    private class TranslationAction
-            extends DynAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public TranslationAction ()
-        {
-            super(40);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
-            ((SymbolsController) controller).showTranslations(glyphs);
-        }
-
-        @Override
-        public void update ()
-        {
-            if (glyphNb > 0) {
-                for (Glyph glyph : nest.getSelectedGlyphSet()) {
-                    if (glyph.isTranslated()) {
-                        setEnabled(true);
-
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("Show translations");
-                        putValue(NAME, sb.toString());
-                        putValue(SHORT_DESCRIPTION, "Show translations related to the glyph(s)");
-
-                        return;
-                    }
-                }
-            }
-
-            // No translation to show
-            setEnabled(false);
-            putValue(NAME, "Translations");
-            putValue(SHORT_DESCRIPTION, "No translation");
-        }
-    }
+//
+//    //-------------------//
+//    // TranslationAction //
+//    //-------------------//
+//    /**
+//     * Display the score entity that translates this glyph.
+//     */
+//    private class TranslationAction
+//            extends DynAction
+//    {
+//        //~ Constructors ---------------------------------------------------------------------------
+//
+//        public TranslationAction ()
+//        {
+//            super(40);
+//        }
+//
+//        //~ Methods --------------------------------------------------------------------------------
+//        @Override
+//        public void actionPerformed (ActionEvent e)
+//        {
+//            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
+//            ((SymbolsController) controller).showTranslations(glyphs);
+//        }
+//
+//        @Override
+//        public void update ()
+//        {
+//            if (glyphNb > 0) {
+//                for (Glyph glyph : nest.getSelectedGlyphSet()) {
+//                    if (glyph.isTranslated()) {
+//                        setEnabled(true);
+//
+//                        StringBuilder sb = new StringBuilder();
+//                        sb.append("Show translations");
+//                        putValue(NAME, sb.toString());
+//                        putValue(SHORT_DESCRIPTION, "Show translations related to the glyph(s)");
+//
+//                        return;
+//                    }
+//                }
+//            }
+//
+//            // No translation to show
+//            setEnabled(false);
+//            putValue(NAME, "Translations");
+//            putValue(SHORT_DESCRIPTION, "No translation");
+//        }
+//    }
 
     //----------------//
     // TrimSlurAction //

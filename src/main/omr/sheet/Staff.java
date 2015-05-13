@@ -17,8 +17,6 @@ import omr.glyph.ui.BasicAttachmentHolder;
 import omr.math.GeoUtil;
 import omr.math.Population;
 
-import omr.score.entity.OldStaff;
-
 import omr.sheet.grid.FilamentLine;
 import omr.sheet.grid.LineInfo;
 import omr.sheet.grid.StaffPeak;
@@ -875,20 +873,6 @@ public class Staff
         return Collections.unmodifiableList(peaks);
     }
 
-    //---------------//
-    // getScoreStaff //
-    //---------------//
-    /**
-     * Report the related score staff entity.
-     *
-     * @return the corresponding scoreStaff
-     */
-    @Deprecated
-    public OldStaff getScoreStaff ()
-    {
-        return null;
-    }
-
     //------------//
     // getSideBar //
     //------------//
@@ -976,9 +960,8 @@ public class Staff
     // pitchPositionOf //
     //-----------------//
     /**
-     * Compute an approximation of the pitch position of a pixel point,
-     * since it is based only on distance to staff, with no
-     * consideration for ledgers.
+     * Compute an approximation of the pitch position of a pixel point, since it is
+     * based only on distance to staff, with no consideration for ledgers.
      *
      * @param pt the pixel point
      * @return the pitch position
@@ -1217,19 +1200,6 @@ public class Staff
     {
         header.keyRange.stop = keyStop;
         header.keyRange.valid = true;
-    }
-
-    //---------------//
-    // setScoreStaff //
-    //---------------//
-    /**
-     * Remember the related score staff entity.
-     *
-     * @param scoreStaff the corresponding scoreStaff to set
-     */
-    @Deprecated
-    public void setScoreStaff (OldStaff scoreStaff)
-    {
     }
 
     //------------//

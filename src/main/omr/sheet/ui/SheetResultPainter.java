@@ -220,7 +220,7 @@ public class SheetResultPainter
                     layout = basicLayout(slotStartTime.toString(), at);
                 }
 
-                Point topInt = PointUtil.integer(top);
+                Point topInt = PointUtil.rounded(top);
                 topInt.translate(0, -annotationDy);
                 paint(layout, topInt, BOTTOM_CENTER);
             }

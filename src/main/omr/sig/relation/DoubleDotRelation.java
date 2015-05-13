@@ -56,15 +56,6 @@ public class DoubleDotRelation
         return constants.yGapMax;
     }
 
-    //---------//
-    // getName //
-    //---------//
-    @Override
-    public String getName ()
-    {
-        return "DoubleDot";
-    }
-
     //---------------//
     // getOutWeights //
     //---------------//
@@ -75,17 +66,15 @@ public class DoubleDotRelation
     }
 
     //----------------//
-    // getTargetCoeff //
+    // getSourceCoeff //
     //----------------//
     /**
-     * DoubleDotRelation brings no support on target (first dot) side.
-     *
-     * @return 0
+     * @return the supporting coefficient for (source) second dot
      */
     @Override
-    protected double getTargetCoeff ()
+    protected double getSourceCoeff ()
     {
-        return 0;
+        return constants.secondDotSupportCoeff.getValue();
     }
 
     @Override
@@ -108,6 +97,10 @@ public class DoubleDotRelation
             extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Ratio secondDotSupportCoeff = new Constant.Ratio(
+                5,
+                "Supporting coeff for (source) second dot");
 
         final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 1.25,

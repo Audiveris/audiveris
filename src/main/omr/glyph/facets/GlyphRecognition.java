@@ -14,7 +14,7 @@ package omr.glyph.facets;
 import omr.glyph.Evaluation;
 import omr.glyph.Shape;
 
-import omr.score.entity.TimeRational;
+import omr.score.TimeRational;
 
 /**
  * Interface {@code GlyphRecognition} defines a facet that deals with

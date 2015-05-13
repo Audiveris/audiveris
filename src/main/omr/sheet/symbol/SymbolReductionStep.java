@@ -20,7 +20,7 @@ import omr.step.AbstractSystemStep;
 import omr.step.StepException;
 
 /**
- * Class {@code SymbolReductionStep}implements <b>SYMBOL_REDUCTION</b> step, which tries
+ * Class {@code SymbolReductionStep} implements <b>SYMBOL_REDUCTION</b> step, which tries
  * to reduce the SIG incrementally after symbols have been retrieved.
  *
  * @author Hervé Bitteur

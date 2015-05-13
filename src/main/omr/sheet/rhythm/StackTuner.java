@@ -14,11 +14,10 @@ package omr.sheet.rhythm;
 import omr.math.Combinations;
 import omr.math.Rational;
 
-import omr.score.entity.StaffBarline;
-
 import omr.sheet.Part;
 import omr.sheet.PartBarline;
 import omr.sheet.Staff;
+import omr.sheet.StaffBarline;
 import omr.sheet.beam.BeamGroup;
 
 import omr.sig.SIGraph;
@@ -225,6 +224,9 @@ public class StackTuner
                 logger.warn("No good config found for {}", stack);
             }
         }
+//
+//        // Populate each measure within stack
+//        populateMeasures();
     }
 
     //---------------//

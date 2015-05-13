@@ -36,8 +36,11 @@ import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
 import omr.sig.SIGraph;
+import omr.sig.inter.ChordNameInter;
 import omr.sig.inter.Inter;
+import omr.sig.inter.LyricLineInter;
 import omr.sig.inter.SentenceInter;
+import omr.sig.inter.WordInter;
 import static omr.text.TextRole.PartName;
 import omr.text.tesseract.TesseractOCR;
 
@@ -100,7 +103,7 @@ public class TextBuilder
     /** Regexp for abnormal words. */
     private static final Pattern ABNORMAL_WORDS = getAbnormalWords();
 
-    /** Needed for font size computation */
+    /** Needed for font size computation. */
     protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -308,20 +311,20 @@ public class TextBuilder
     }
 
     //---------------//
-    // dumpSentences //
+    // dumpTextLines //
     //---------------//
     /**
-     * Debug method to list current system sentences.
+     * Debug method to list current system text lines.
      *
      * @param title a title for the dump
      */
-    public void dumpSentences (String title)
+    public void dumpTextLines (String title)
     {
-        Set<TextLine> sentences = system.getSentences();
-        logger.info("{} {} sentences: {}", title, sheet.getLogPrefix(), sentences.size());
+        Set<TextLine> textLines = system.getTextLines();
+        logger.info("{} {} lines: {}", title, sheet.getLogPrefix(), textLines.size());
 
-        for (TextLine sentence : sentences) {
-            logger.info("   {}", sentence);
+        for (TextLine line : textLines) {
+            logger.info("   {}", line);
         }
     }
 
@@ -393,93 +396,18 @@ public class TextBuilder
                         line);
 
                 return false;
+            } else if (fontInfo.pointsize < params.minFontSize) {
+                logger.debug(
+                        "Too small font {} vs {} on {}",
+                        fontInfo.pointsize,
+                        params.minFontSize,
+                        line);
+
+                return false;
             }
         }
 
         return true;
-    }
-
-    //-----------//
-    // mapGlyphs //
-    //-----------//
-    /**
-     * By searching through the provided sections, build one glyph for each word and
-     * one sentence for each line.
-     *
-     * @param lines       the lines (and contained words) to be mapped
-     * @param allSections the population of sections to browse
-     * @param language    the OCR language specification
-     */
-    public void mapGlyphs (List<TextLine> lines,
-                           Collection<Section> allSections,
-                           String language)
-    {
-        logger.debug("mapGlyphs");
-
-        GlyphNest nest = system.getSheet().getGlyphNest();
-
-        // To make sure that the same section is not assigned to several words
-        for (Section section : allSections) {
-            section.setProcessed(false);
-        }
-
-        for (TextLine line : lines) {
-            logger.debug("  mapping {}", line);
-
-            // Browse all words, starting by shorter ones
-            List<TextWord> sortedWords = new ArrayList<TextWord>(line.getWords());
-            Collections.sort(sortedWords, TextWord.bySize);
-
-            List<TextWord> toRemove = new ArrayList<TextWord>();
-
-            for (TextWord word : sortedWords) {
-                // Isolate proper word glyph from its enclosed sections
-                Rectangle roi = word.getBounds();
-                SortedSet<Section> wordSections = retrieveSections(word.getChars(), allSections);
-
-                if (!wordSections.isEmpty()) {
-                    Glyph wordGlyph = system.registerGlyph(
-                            nest.buildGlyph(wordSections, GlyphLayer.DEFAULT, true, Glyph.Linking.LINK));
-
-                    // Link TextWord -> Glyph
-                    word.setGlyph(wordGlyph);
-
-                    if (word.isVip()) {
-                        line.setVip();
-                    }
-
-                    if (word.isVip()) {
-                        logger.info("    mapped {}", word);
-                    } else {
-                        logger.debug("    mapped {}", word);
-                    }
-
-                    // Link Glyph -> TextWord
-                    wordGlyph.setTextWord(language, word);
-                } else {
-                    logger.debug("No section found for {}", word);
-                    toRemove.add(word);
-                }
-            }
-
-            // Purge words if any
-            line.removeWords(toRemove);
-
-            //            // Assign proper shape to each word glyph
-            //            for (TextWord word : line.getWords()) {
-            //                Glyph g = word.getGlyph();
-            //
-            //                if (g != null) {
-            //                    boolean many = word.getValue().length() > 1;
-            //                    g.setShape(many ? Shape.TEXT : Shape.CHARACTER);
-            //                }
-            //            }
-            //
-            system.getSentences().add(line);
-        }
-
-        // Purge duplications, if any, in system sentences
-        purgeSentences();
     }
 
     //------------//
@@ -506,17 +434,17 @@ public class TextBuilder
     }
 
     //----------------//
-    // purgeSentences //
+    // purgeTextLines //
     //----------------//
     /**
      * Remove words whose glyphs no longer point back to them,
-     * and finally remove sentences which have no word left.
+     * and finally remove text lines which have no word left.
      * <p>
      * TODO: is this still useful?
      */
-    public void purgeSentences ()
+    public void purgeTextLines ()
     {
-        for (Iterator<TextLine> itLine = system.getSentences().iterator(); itLine.hasNext();) {
+        for (Iterator<TextLine> itLine = system.getTextLines().iterator(); itLine.hasNext();) {
             TextLine line = itLine.next();
             List<TextWord> toRemove = new ArrayList<TextWord>();
 
@@ -568,7 +496,7 @@ public class TextBuilder
         // Process lyrics
         if (!lyrics.isEmpty()) {
             lyrics = purgeInvalidLines("lyrics", lyrics);
-            lyrics = mergeLyricsLines(lyrics);
+            lyrics = mergeLyricLines(lyrics);
 
             logger.debug("splitWords for lyrics");
 
@@ -636,6 +564,7 @@ public class TextBuilder
         List<TextLine> systemLines = new ArrayList<TextLine>();
 
         // We pick up the words that are contained by system area
+        // Beware a text located between two systems must be copied to each system!
         Area area = system.getArea();
 
         for (TextLine sheetLine : sheetLines) {
@@ -665,21 +594,12 @@ public class TextBuilder
         watch.start("mapGlyphs");
         mapGlyphs(systemLines, allSections, sheet.getLanguageParam().getActual());
 
-        // Allocate corresponding inters
+        // Allocate corresponding inters based on role (Sentences or LyricLines of LyricItems)
         watch.start("createInters");
+        createInters();
 
-        SIGraph sig = system.getSig();
-
-        for (TextLine line : system.getSentences()) {
-            SentenceInter sentenceInter = SentenceInter.create(line);
-
-            for (Inter wordInter : sentenceInter.getMembers()) {
-                sig.addVertex(wordInter);
-            }
-
-            sig.addVertex(sentenceInter);
-            assignSentence(sentenceInter);
-        }
+        watch.start("numberLyricLines()");
+        numberLyricLines();
 
         if (constants.printWatch.isSet()) {
             watch.print();
@@ -842,7 +762,7 @@ public class TextBuilder
 
         textParam.setActual(language);
 
-        for (TextLine oldLine : new ArrayList<TextLine>(system.getSentences())) {
+        for (TextLine oldLine : new ArrayList<TextLine>(system.getTextLines())) {
             // Launch OCR on the whole line image
             List<Glyph> glyphs = oldLine.getWordGlyphs();
             Glyph compound = (glyphs.size() == 1) ? glyphs.get(0)
@@ -893,6 +813,25 @@ public class TextBuilder
         }
     }
 
+    //-----------//
+    // checkRole //
+    //-----------//
+    /**
+     * Try to assign a role to the provided line, if none is already assigned.
+     *
+     * @param line the line to check for role
+     */
+    private void checkRole (TextLine line)
+    {
+        if (line.getRole() == null) {
+            TextRole role = TextRole.guessRole(line, system);
+
+            if (role != null) {
+                line.setRole(role);
+            }
+        }
+    }
+
     //------------------//
     // getAbnormalWords //
     //------------------//
@@ -923,7 +862,7 @@ public class TextBuilder
      */
     private void assignSentence (SentenceInter sentence)
     {
-        switch (sentence.getRole().role) {
+        switch (sentence.getRole()) {
         case PartName:
 
             // Assign the sentence as part name
@@ -937,21 +876,56 @@ public class TextBuilder
         }
     }
 
-    //-----------//
-    // checkRole //
-    //-----------//
+    //--------------//
+    // createInters //
+    //--------------//
     /**
-     * Try to assign a role to the provided line, if none is already assigned.
-     *
-     * @param line the line to check for role
+     * Allocate corresponding inters based on text role.
+     * <ul>
+     * <li>For any role other than Lyrics, a plain Sentence is created for each text line.</li>
+     * <li>For Lyrics role, a specific LyricLine (sub-class of Sentence) is created.</li>
+     * </ul>
      */
-    private void checkRole (TextLine line)
+    private void createInters ()
     {
-        if (line.getRole() == null) {
-            TextRoleInfo roleInfo = TextRole.guessRole(line, system);
+        final SIGraph sig = system.getSig();
 
-            if (roleInfo != null) {
-                line.setRole(roleInfo);
+        for (TextLine line : system.getTextLines()) {
+            final TextRole role = line.getRole();
+            final SentenceInter sentence = (role == TextRole.Lyrics) ? LyricLineInter.create(line)
+                    : ((role == TextRole.ChordName)
+                            ? ChordNameInter.create(line)
+                            : SentenceInter.create(line));
+
+            // Related staff (can still be modified later)
+            final Point loc = sentence.getLocation();
+            Staff staff = null;
+
+            if (role != TextRole.ChordName) {
+                staff = system.getStaffAtOrAbove(loc);
+            }
+
+            if (staff == null) {
+                staff = system.getStaffAtOrBelow(loc);
+            }
+
+            if (staff != null) {
+                sentence.setStaff(staff);
+
+                for (Inter wInter : sentence.getMembers()) {
+                    WordInter wordInter = (WordInter) wInter;
+                    wordInter.setStaff(staff);
+                }
+
+                // For PartName. TODO: Perhaps later in transcription?
+                assignSentence(sentence);
+
+                // Populate sig
+                for (Inter wordInter : sentence.getMembers()) {
+                    sig.addVertex(wordInter);
+                }
+
+                sig.addVertex(sentence);
             }
         }
     }
@@ -1035,7 +1009,7 @@ public class TextBuilder
         int pointSize = word.getFontInfo().pointsize;
 
         // TODO: very rough value to be refined and explained!
-        int val = (int) Math.rint(constants.maxCharDx.getValue() * pointSize / 2.0);
+        int val = (int) Math.rint((constants.maxCharDx.getValue() * pointSize) / 2.0);
 
         return val;
     }
@@ -1149,6 +1123,79 @@ public class TextBuilder
         return line.isChordName() ? params.maxChordDx : params.maxWordDx;
     }
 
+    //-----------//
+    // mapGlyphs //
+    //-----------//
+    /**
+     * By searching through the provided sections, build one glyph for each word and
+     * one sentence for each line.
+     *
+     * @param lines       the lines (and contained words) to be mapped
+     * @param allSections the population of sections to browse
+     * @param language    the OCR language specification
+     */
+    private void mapGlyphs (List<TextLine> lines,
+                            Collection<Section> allSections,
+                            String language)
+    {
+        logger.debug("mapGlyphs");
+
+        GlyphNest nest = system.getSheet().getGlyphNest();
+
+        // To make sure that the same section is not assigned to several words
+        for (Section section : allSections) {
+            section.setProcessed(false);
+        }
+
+        for (TextLine line : lines) {
+            logger.debug("  mapping {}", line);
+
+            // Browse all words, starting by shorter ones
+            List<TextWord> sortedWords = new ArrayList<TextWord>(line.getWords());
+            Collections.sort(sortedWords, TextWord.bySize);
+
+            List<TextWord> toRemove = new ArrayList<TextWord>();
+
+            for (TextWord word : sortedWords) {
+                // Isolate proper word glyph from its enclosed sections
+                Rectangle roi = word.getBounds();
+                SortedSet<Section> wordSections = retrieveSections(word.getChars(), allSections);
+
+                if (!wordSections.isEmpty()) {
+                    Glyph wordGlyph = system.registerGlyph(
+                            nest.buildGlyph(wordSections, GlyphLayer.DEFAULT, true, Glyph.Linking.LINK));
+
+                    // Link TextWord -> Glyph
+                    word.setGlyph(wordGlyph);
+
+                    if (word.isVip()) {
+                        line.setVip();
+                    }
+
+                    if (word.isVip()) {
+                        logger.info("    mapped {}", word);
+                    } else {
+                        logger.debug("    mapped {}", word);
+                    }
+
+                    // Link Glyph -> TextWord
+                    wordGlyph.setTextWord(language, word);
+                } else {
+                    logger.debug("No section found for {}", word);
+                    toRemove.add(word);
+                }
+            }
+
+            // Purge words if any
+            line.removeWords(toRemove);
+
+            system.getTextLines().add(line);
+        }
+
+        // Purge duplications, if any, in system text lines
+        purgeTextLines();
+    }
+
     //-------------//
     // mergeChunks //
     //-------------//
@@ -1183,16 +1230,16 @@ public class TextBuilder
         return line;
     }
 
-    //------------------//
-    // mergeLyricsLines //
-    //------------------//
+    //-----------------//
+    // mergeLyricLines //
+    //-----------------//
     /**
      * For lyrics, separate lines with similar ordinate trigger a line merge.
      *
      * @param oldLyrics collection of lyrics chunks
      * @return resulting lyrics lines
      */
-    private List<TextLine> mergeLyricsLines (List<TextLine> oldLyrics)
+    private List<TextLine> mergeLyricLines (List<TextLine> oldLyrics)
     {
         logger.debug("mergeLyricsLines");
 
@@ -1207,11 +1254,9 @@ public class TextBuilder
 
             if (chunks.isEmpty()) {
                 chunks.add(line);
-                lastY = y;
             } else if ((y - lastY) <= params.maxLyricsDy) {
                 // Compatible line
                 chunks.add(line);
-                lastY = y;
             } else {
                 // Non compatible line
 
@@ -1223,8 +1268,9 @@ public class TextBuilder
                 // Start a new collection of chunks
                 chunks.clear();
                 chunks.add(line);
-                lastY = y;
             }
+
+            lastY = y;
         }
 
         // Complete pending chunks, if any
@@ -1356,6 +1402,47 @@ public class TextBuilder
             line.addWords(toAdd);
             line.removeWords(toRemove);
             checkRole(line);
+        }
+    }
+
+    //------------------//
+    // numberLyricLines //
+    //------------------//
+    /**
+     * Order and number the lyric lines per part.
+     */
+    private void numberLyricLines ()
+    {
+        // Sort lyric lines by (deskewed) ordinate
+        final SIGraph sig = system.getSig();
+        List<Inter> lyricInters = sig.inters(LyricLineInter.class);
+
+        if (lyricInters.isEmpty()) {
+            return;
+        }
+
+        List<LyricLineInter> lines = new ArrayList<LyricLineInter>();
+
+        for (Inter inter : lyricInters) {
+            lines.add((LyricLineInter) inter);
+        }
+
+        Collections.sort(lines, SentenceInter.byOrdinate);
+
+        // Assign sequential number to lyric line in its part
+        int lyricNumber = 0;
+        Part part = null;
+
+        for (LyricLineInter line : lines) {
+            Staff staff = line.getStaff();
+            Part newPart = system.getPartOf(staff);
+
+            if (newPart != part) {
+                lyricNumber = 0;
+                part = newPart;
+            }
+
+            line.setNumber(++lyricNumber);
         }
     }
 
@@ -1526,12 +1613,12 @@ public class TextBuilder
                 "Should we print out the stop watch?");
 
         Constant.String abnormalWordRegexp = new Constant.String(
-                "^[\\.°>]$",
+                "^[\\.°>']$",
                 "Regular expression to detect abnormal words");
 
         Constant.Double minConfidence = new Constant.Double(
                 "0..1",
-                0.70,
+                0.68,
                 "Minimum confidence for OCR validity");
 
         Constant.Double lowConfidence = new Constant.Double(
@@ -1568,7 +1655,13 @@ public class TextBuilder
                 1.5,
                 "Maximum ratio between ocr and glyph diagonals");
 
-        Scale.Fraction maxFontSize = new Scale.Fraction(7.0, "Max font size wrt interline");
+        Scale.Fraction minFontSize = new Scale.Fraction(
+                1.5,
+                "Minimum font size with respect to interline");
+
+        Scale.Fraction maxFontSize = new Scale.Fraction(
+                7.0,
+                "Maximum font size with respect to interline");
 
         Scale.Fraction maxLyricsDy = new Scale.Fraction(
                 1.0,
@@ -1602,6 +1695,8 @@ public class TextBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        final int minFontSize;
+
         final int maxFontSize;
 
         final int maxLyricsDy;
@@ -1629,6 +1724,7 @@ public class TextBuilder
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
+            minFontSize = scale.toPixels(constants.minFontSize);
             maxFontSize = scale.toPixels(constants.maxFontSize);
             maxLyricsDy = scale.toPixels(constants.maxLyricsDy);
             maxCharDx = scale.toPixels(constants.maxCharDx);

@@ -31,15 +31,14 @@ import omr.moments.GeometricMoments;
 
 import omr.run.Orientation;
 
-import omr.score.entity.PartNode;
-import omr.score.entity.TimeRational;
+import omr.score.TimeRational;
 
 import omr.sheet.Scale;
 
 import omr.sig.inter.Inter;
 
 import omr.text.BasicContent;
-import omr.text.TextRoleInfo;
+import omr.text.TextRole;
 import omr.text.TextWord;
 
 import omr.util.HorizontalSide;
@@ -56,7 +55,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -90,8 +88,6 @@ public class BasicGlyph
     final GlyphGeometry geometry;
 
     final GlyphRecognition recognition;
-
-    final GlyphTranslation translation;
 
     final GlyphAlignment alignment;
 
@@ -134,7 +130,6 @@ public class BasicGlyph
         addFacet(environment = new BasicEnvironment(this));
         addFacet(geometry = new BasicGeometry(this, interline));
         addFacet(recognition = new BasicRecognition(this));
-        addFacet(translation = new BasicTranslation(this));
         addFacet(interpretation = new BasicInterpret(this));
         addFacet(alignment = new BasicAlignment(this));
     }
@@ -183,7 +178,6 @@ public class BasicGlyph
         addFacet(environment = new BasicEnvironment(this));
         addFacet(geometry = new BasicGeometry(this, interline));
         addFacet(recognition = new BasicRecognition(this));
-        addFacet(translation = new BasicTranslation(this));
         addFacet(interpretation = new BasicInterpret(this));
 
         GlyphAlignment theAlignment = null;
@@ -227,12 +221,6 @@ public class BasicGlyph
     }
 
     @Override
-    public void addTranslation (PartNode entity)
-    {
-        translation.addTranslation(entity);
-    }
-
-    @Override
     public void allowShape (Shape shape)
     {
         recognition.allowShape(shape);
@@ -242,12 +230,6 @@ public class BasicGlyph
     public String asciiDrawing ()
     {
         return display.asciiDrawing();
-    }
-
-    @Override
-    public void clearTranslations ()
-    {
-        translation.clearTranslations();
     }
 
     @Override
@@ -472,7 +454,7 @@ public class BasicGlyph
     }
 
     @Override
-    public TextRoleInfo getManualRole ()
+    public TextRole getManualRole ()
     {
         return getContent().getManualRole();
     }
@@ -639,7 +621,7 @@ public class BasicGlyph
     }
 
     @Override
-    public TextRoleInfo getTextRole ()
+    public TextRole getTextRole ()
     {
         return getContent().getTextRole();
     }
@@ -673,12 +655,6 @@ public class BasicGlyph
     public TimeRational getTimeRational ()
     {
         return recognition.getTimeRational();
-    }
-
-    @Override
-    public Collection<PartNode> getTranslations ()
-    {
-        return translation.getTranslations();
     }
 
     @Override
@@ -784,12 +760,6 @@ public class BasicGlyph
     }
 
     @Override
-    public boolean isTranslated ()
-    {
-        return translation.isTranslated();
-    }
-
-    @Override
     public boolean isVip ()
     {
         return administration.isVip();
@@ -882,7 +852,7 @@ public class BasicGlyph
     }
 
     @Override
-    public void setManualRole (TextRoleInfo manualRole)
+    public void setManualRole (TextRole manualRole)
     {
         getContent().setManualRole(manualRole);
     }
@@ -960,12 +930,6 @@ public class BasicGlyph
     public void setTimeRational (TimeRational timeRational)
     {
         recognition.setTimeRational(timeRational);
-    }
-
-    @Override
-    public void setTranslation (PartNode entity)
-    {
-        translation.setTranslation(entity);
     }
 
     @Override
@@ -1083,10 +1047,6 @@ public class BasicGlyph
         if (box != null) {
             sb.append(" bounds=[").append(box.x).append(",").append(box.y).append(",")
                     .append(box.width).append(",").append(box.height).append("]");
-        }
-
-        if (isTranslated()) {
-            sb.append(" trans=[").append(getTranslations()).append("]");
         }
 
         if (!getFailures().isEmpty()) {

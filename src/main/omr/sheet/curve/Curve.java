@@ -14,21 +14,20 @@ package omr.sheet.curve;
 import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphNest;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.GlyphComposition;
+import static omr.glyph.facets.GlyphComposition.Linking.NO_LINK;
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
 
+import omr.lag.JunctionAllPolicy;
 import omr.lag.Section;
-import omr.lag.Sections;
-
-import omr.math.GeoUtil;
-
+import omr.lag.SectionFactory;
+import static omr.run.Orientation.VERTICAL;
 import omr.run.Run;
+import omr.run.RunSequence;
 import omr.run.RunTable;
 
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 import omr.sheet.grid.FilamentLine;
 
 import org.slf4j.Logger;
@@ -36,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.util.ArrayList;
@@ -307,9 +305,16 @@ public abstract class Curve
     //-----------//
     public Rectangle getBounds ()
     {
-        return getModel().getBounds();
+        if (glyph != null) {
+            return glyph.getBounds(); // Exact
+        }
+
+        return model.getBounds(); // Less precise
     }
 
+    //----------------//
+    // getCrossedLine //
+    //----------------//
     /**
      * @return the last crossed Line
      */
@@ -436,93 +441,57 @@ public abstract class Curve
     /**
      * Retrieve the underlying glyph of a curve.
      * <p>
-     * Based on each point of curve sequence of points, we find the containing run (either
-     * horizontal or vertical), then the containing section.
+     * This method works with runs rather than predefined sections.
+     * Based on each point of curve sequence of points, we find the containing vertical run, and
+     * check whether the run extrema remain close enough to curve.
+     * If not, the run is not considered as part of the curve.
      * <p>
-     * However, we have to check that the containing section is actually compatible with the curve,
-     * to avoid picking up sections that cannot be part of the curve.
-     * Compatibility is checked for all vertices of section polygon.
-     * <p>
-     * TODO: A more efficient approach could work with runs only, if we could build a glyph instance
-     * directly from a set of runs.
+     * With accepted runs, we build (sections then) the whole glyph.
      *
      * @param sheet          the containing sheet
-     * @param maxRunDistance maximum distance from any section vertex to curve points
-     * @return the curve glyph
+     * @param maxRunDistance maximum acceptable distance from any run extrema to curve points
+     * @return the curve glyph, or null
      */
     public Glyph retrieveGlyph (Sheet sheet,
                                 double maxRunDistance)
     {
-        RunTable table = sheet.getPicture().getTable(Picture.TableKey.BINARY);
-        Set<Section> sectionsIn = new HashSet<Section>(); // Sections kept
-        Set<Section> sectionsOut = new HashSet<Section>(); // Sections discarded
+        // Sheet global vertical run table
+        RunTable sheetTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
 
-        // Restrain to first system that contains the curve
-        // Slur bounds can be significantly larger than necessary, use bounds center point instead
-        List<SystemInfo> relevants = sheet.getSystemManager()
-                .getSystemsOf(GeoUtil.centerOf(getBounds()), null);
+        // Allocate a curve run table with proper dimension
+        Rectangle box = getRealBounds();
+        box.grow(0, (int) Math.ceil(maxRunDistance));
 
-        if (relevants.isEmpty()) {
-            return null;
+        if (box.y < 0) {
+            box.height += box.y;
+            box.y = 0;
         }
 
-        SystemInfo system = relevants.get(0);
-        Rectangle bounds = getRealBounds();
-        Collection<Section> hSections = Sections.intersectedSections(
-                bounds,
-                system.getHorizontalSections());
-        Collection<Section> vSections = Sections.intersectedSections(
-                bounds,
-                system.getVerticalSections());
-        Section prevSection = null; // Cached section to speed up search
+        RunTable curveTable = new RunTable("C" + getId(), VERTICAL, box.width, box.height);
 
+        // Populate the curve run table
         for (int index = 0; index < points.size(); index++) {
-            Point point = points.get(index); // Point of curve
-            Run wholeRun = table.getRunAt(point.x, point.y);
+            final Point point = points.get(index); // Point of curve
+            final Run run = sheetTable.getRunAt(point.x, point.y); // Containing run
 
-            for (int y = wholeRun.getStart(); y <= wholeRun.getStop(); y++) {
-                // Find section that contains (point.x, y)
-                if ((prevSection != null) && prevSection.contains(point.x, y)) {
-                    continue; // Section just processed
-                }
-
-                Section section = Sections.containingSection(point.x, y, hSections);
-
-                if (section == null) {
-                    section = Sections.containingSection(point.x, y, vSections);
-                }
-
-                prevSection = section;
-
-                if (section == null) {
-                    continue;
-                }
-
-                // Section already processed?
-                if (sectionsIn.contains(section) || sectionsOut.contains(section)) {
-                    continue;
-                }
-
-                // Check whether section can be part of curve glyph (expensive operation)
-                if (isCloseToCurve(section, maxRunDistance, index)) {
-                    sectionsIn.add(section);
-                } else {
-                    sectionsOut.add(section);
-                }
+            if (isCloseToCurve(point.x, run.getStart(), maxRunDistance, index)
+                && ((run.getLength() <= 1)
+                    || isCloseToCurve(point.x, run.getStop(), maxRunDistance, index))) {
+                RunSequence seq = curveTable.getSequence(point.x - box.x);
+                seq.addRun(run.getStart() - box.y, run.getLength());
             }
         }
 
-        if (!sectionsIn.isEmpty()) {
-            // Build glyph out of sections kept
-            GlyphNest nest = sheet.getGlyphNest();
-            Glyph curveGlyph = nest.buildGlyph(
-                    sectionsIn,
-                    GlyphLayer.DEFAULT,
-                    true,
-                    GlyphComposition.Linking.NO_LINK);
-            logger.debug("{} -> {}", this, curveGlyph);
+        // Build sections (TODO: to be removed ASAP)
+        SectionFactory factory = new SectionFactory(VERTICAL, JunctionAllPolicy.INSTANCE);
+        List<Section> sections = factory.createSections(curveTable, box.getLocation(), false);
 
+        // Build glyph
+        if (!sections.isEmpty()) {
+            GlyphNest nest = sheet.getGlyphNest();
+            Glyph curveGlyph = nest.buildGlyph(sections, GlyphLayer.DEFAULT, true, NO_LINK);
             setGlyph(curveGlyph);
+            logger.debug("{} -> {}", this, curveGlyph);
 
             return curveGlyph;
         } else {
@@ -532,31 +501,6 @@ public abstract class Curve
         }
     }
 
-    //    //-------------------//
-    //    // retrieveJunctions //
-    //    //-------------------//
-    //    /**
-    //     * Retrieve both ending junctions for the sequence.
-    //     */
-    //    public void retrieveJunctions ()
-    //    {
-    //        // Check orientation of all arcs
-    //        if (parts.size() > 1) {
-    //            for (int i = 0; i < (parts.size() - 1); i++) {
-    //                Arc a0 = parts.get(i);
-    //                Arc a1 = parts.get(i + 1);
-    //                Point common = junctionOf(a0, a1);
-    //
-    //                if ((a1.getJunction(false) != null) && a1.getJunction(false).equals(common)) {
-    //                    a1.reverse();
-    //                }
-    //            }
-    //        }
-    //
-    //        firstJunction = parts.get(0).getJunction(true);
-    //        lastJunction = parts.get(parts.size() - 1).getJunction(false);
-    //    }
-    //
     //----------------//
     // setCrossedLine //
     //----------------//
@@ -598,6 +542,41 @@ public abstract class Curve
     public void setGlyph (Glyph glyph)
     {
         this.glyph = glyph;
+    }
+
+    //---------------//
+    // getRealBounds //
+    //---------------//
+    protected Rectangle getRealBounds ()
+    {
+        int xMin = Integer.MAX_VALUE;
+        int xMax = Integer.MIN_VALUE;
+        int yMin = Integer.MAX_VALUE;
+        int yMax = Integer.MIN_VALUE;
+
+        for (Point p : points) {
+            final int x = p.x;
+
+            if (x < xMin) {
+                xMin = x;
+            }
+
+            if (x > xMax) {
+                xMax = x;
+            }
+
+            final int y = p.y;
+
+            if (y < yMin) {
+                yMin = y;
+            }
+
+            if (y > yMax) {
+                yMax = y;
+            }
+        }
+
+        return new Rectangle(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
     }
 
     //
@@ -645,95 +624,48 @@ public abstract class Curve
         return sb.toString();
     }
 
-    private Rectangle getRealBounds ()
-    {
-        int xMin = Integer.MAX_VALUE;
-        int xMax = Integer.MIN_VALUE;
-        int yMin = Integer.MAX_VALUE;
-        int yMax = Integer.MIN_VALUE;
-
-        for (Point p : points) {
-            final int x = p.x;
-
-            if (x < xMin) {
-                xMin = x;
-            }
-
-            if (x > xMax) {
-                xMax = x;
-            }
-
-            final int y = p.y;
-
-            if (y < yMin) {
-                yMin = y;
-            }
-
-            if (y > yMax) {
-                yMax = y;
-            }
-        }
-
-        return new Rectangle(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
-    }
-
     //----------------//
     // isCloseToCurve //
     //----------------//
     /**
-     * Check whether all run end points of the provided section are close enough to curve.
+     * Check whether the provided coordinates are close enough to curve.
      *
-     * @param section        the section to check
+     * @param x              point abscissa
+     * @param y              point ordinate
      * @param maxRunDistance maximum acceptable distance from a run end to nearest curve point
      * @param index          current position in points sequence
      * @return true for OK
      */
-    private boolean isCloseToCurve (Section section,
+    private boolean isCloseToCurve (int x,
+                                    int y,
                                     double maxRunDistance,
                                     int index)
     {
         final double maxD2 = maxRunDistance * maxRunDistance;
-        final Polygon poly = section.getPolygon();
 
-        for (int i = 0; i < poly.npoints; i++) {
-            int x = poly.xpoints[i];
-            int y = poly.ypoints[i];
-            boolean close = false;
+        for (int ip = index; ip < points.size(); ip++) {
+            Point point = points.get(ip);
+            double dx = point.x - x;
+            double dy = point.y - y;
+            double d2 = (dx * dx) + (dy * dy);
 
-            for (int ip = index; ip < points.size(); ip++) {
-                Point point = points.get(ip);
-                double dx = point.x - x;
-                double dy = point.y - y;
-                double d2 = (dx * dx) + (dy * dy);
-
-                if (d2 <= maxD2) {
-                    close = true;
-
-                    break;
-                }
-            }
-
-            if (!close) {
-                for (int ip = index - 1; ip >= 0; ip--) {
-                    Point point = points.get(ip);
-                    double dx = point.x - x;
-                    double dy = point.y - y;
-                    double d2 = (dx * dx) + (dy * dy);
-
-                    if (d2 <= maxD2) {
-                        close = true;
-
-                        break;
-                    }
-                }
-            }
-
-            if (!close) {
-                return false;
+            if (d2 <= maxD2) {
+                return true;
             }
         }
 
-        return true;
+        for (int ip = index - 1; ip >= 0; ip--) {
+            Point point = points.get(ip);
+            double dx = point.x - x;
+            double dy = point.y - y;
+            double d2 = (dx * dx) + (dy * dy);
+
+            if (d2 <= maxD2) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //------------//

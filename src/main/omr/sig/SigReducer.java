@@ -326,6 +326,7 @@ public class SigReducer
         do {
             // First, remove all inters with too low contextual grade
             deletions = purgeWeakInters(purge);
+
             deletions += checkSlurOnTuplet();
 
             do {

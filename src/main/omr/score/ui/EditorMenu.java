@@ -11,9 +11,7 @@
 // </editor-fold>
 package omr.score.ui;
 
-import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolMenu;
-import omr.glyph.ui.SymbolsController;
 
 import omr.math.GeoUtil;
 
@@ -27,8 +25,6 @@ import omr.sheet.rhythm.MeasureStack;
 import omr.sheet.rhythm.Slot;
 import omr.sheet.ui.ExtractionMenu;
 
-import omr.sig.inter.AbstractNoteInter;
-import omr.sig.inter.ChordInter;
 import omr.sig.ui.GlyphMenu;
 import omr.sig.ui.InterMenu;
 
@@ -40,11 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
@@ -113,7 +105,7 @@ public class EditorMenu
         addMenu(new GlyphMenu(sheet));
         addMenu(new MeasureMenu());
         addMenu(new SlotMenu());
-        addMenu(new ChordMenu());
+        ///addMenu(new ChordMenu());
         addMenu(symbolMenu);
         addMenu(new StaffMenu());
         addMenu(new ExtractionMenu(sheet));
@@ -134,101 +126,101 @@ public class EditorMenu
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // ChordMenu //
-    //-----------//
-    /**
-     * Dump the chords that translate the selected glyphs.
-     */
-    private class ChordMenu
-            extends LocationDependentMenu
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Selected chords. */
-        private final Set<ChordInter> selectedChords = new HashSet<ChordInter>();
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public ChordMenu ()
-        {
-            super("Chord");
-            add(new JMenuItem(new DumpAction()));
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void updateUserLocation (Rectangle rect)
-        {
-            SymbolsController controller = sheet.getSymbolsController();
-            Set<Glyph> glyphs = controller.getNest().getSelectedGlyphSet();
-            selectedChords.clear();
-            setText("");
-
-            if (glyphs != null) {
-                for (Glyph glyph : glyphs) {
-                    for (Object obj : glyph.getTranslations()) {
-                        if (obj instanceof AbstractNoteInter) {
-                            AbstractNoteInter note = (AbstractNoteInter) obj;
-                            ChordInter chord = note.getChord();
-
-                            if (chord != null) {
-                                selectedChords.add(chord);
-                            }
-                        } else if (obj instanceof ChordInter) {
-                            selectedChords.add((ChordInter) obj);
-                        }
-                    }
-                }
-
-                if (!selectedChords.isEmpty()) {
-                    List<ChordInter> chordList = new ArrayList<ChordInter>(selectedChords);
-                    Collections.sort(chordList, ChordInter.byAbscissa);
-
-                    StringBuilder sb = new StringBuilder();
-
-                    for (ChordInter chord : chordList) {
-                        if (sb.length() > 0) {
-                            sb.append(", ");
-                        }
-
-                        sb.append("Chord #").append(chord.getId());
-                    }
-
-                    sb.append(" ...");
-                    setText(sb.toString());
-                }
-            }
-
-            setVisible(!selectedChords.isEmpty());
-        }
-
-        //~ Inner Classes --------------------------------------------------------------------------
-        /**
-         * Dump the current chord(s)
-         */
-        private class DumpAction
-                extends AbstractAction
-        {
-            //~ Constructors -----------------------------------------------------------------------
-
-            public DumpAction ()
-            {
-                putValue(NAME, "Dump chord(s)");
-                putValue(SHORT_DESCRIPTION, "Dump the selected chord(s)");
-            }
-
-            //~ Methods ----------------------------------------------------------------------------
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                // Dump the selected chords
-                for (ChordInter chord : selectedChords) {
-                    logger.info(chord.toString());
-                }
-            }
-        }
-    }
-
+//    //-----------//
+//    // ChordMenu //
+//    //-----------//
+//    /**
+//     * Dump the chords that translate the selected glyphs.
+//     */
+//    private class ChordMenu
+//            extends LocationDependentMenu
+//    {
+//        //~ Instance fields ------------------------------------------------------------------------
+//
+//        /** Selected chords. */
+//        private final Set<ChordInter> selectedChords = new HashSet<ChordInter>();
+//
+//        //~ Constructors ---------------------------------------------------------------------------
+//        public ChordMenu ()
+//        {
+//            super("Chord");
+//            add(new JMenuItem(new DumpAction()));
+//        }
+//
+//        //~ Methods --------------------------------------------------------------------------------
+//        @Override
+//        public void updateUserLocation (Rectangle rect)
+//        {
+//            SymbolsController controller = sheet.getSymbolsController();
+//            Set<Glyph> glyphs = controller.getNest().getSelectedGlyphSet();
+//            selectedChords.clear();
+//            setText("");
+//
+//            if (glyphs != null) {
+//                for (Glyph glyph : glyphs) {
+//                    for (Object obj : glyph.getTranslations()) {
+//                        if (obj instanceof AbstractNoteInter) {
+//                            AbstractNoteInter note = (AbstractNoteInter) obj;
+//                            ChordInter chord = note.getChord();
+//
+//                            if (chord != null) {
+//                                selectedChords.add(chord);
+//                            }
+//                        } else if (obj instanceof ChordInter) {
+//                            selectedChords.add((ChordInter) obj);
+//                        }
+//                    }
+//                }
+//
+//                if (!selectedChords.isEmpty()) {
+//                    List<ChordInter> chordList = new ArrayList<ChordInter>(selectedChords);
+//                    Collections.sort(chordList, ChordInter.byAbscissa);
+//
+//                    StringBuilder sb = new StringBuilder();
+//
+//                    for (ChordInter chord : chordList) {
+//                        if (sb.length() > 0) {
+//                            sb.append(", ");
+//                        }
+//
+//                        sb.append("Chord #").append(chord.getId());
+//                    }
+//
+//                    sb.append(" ...");
+//                    setText(sb.toString());
+//                }
+//            }
+//
+//            setVisible(!selectedChords.isEmpty());
+//        }
+//
+//        //~ Inner Classes --------------------------------------------------------------------------
+//        /**
+//         * Dump the current chord(s)
+//         */
+//        private class DumpAction
+//                extends AbstractAction
+//        {
+//            //~ Constructors -----------------------------------------------------------------------
+//
+//            public DumpAction ()
+//            {
+//                putValue(NAME, "Dump chord(s)");
+//                putValue(SHORT_DESCRIPTION, "Dump the selected chord(s)");
+//            }
+//
+//            //~ Methods ----------------------------------------------------------------------------
+//            @Override
+//            public void actionPerformed (ActionEvent e)
+//            {
+//                // Dump the selected chords
+//                for (ChordInter chord : selectedChords) {
+//                    logger.info(chord.toString());
+//                }
+//            }
+//        }
+//    }
+//
     //-------------//
     // MeasureMenu //
     //-------------//

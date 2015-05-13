@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 /**
  * Class {@code TimeNumberRelation} represents the relation between a top number and a
  * bottom number in a time signature.
@@ -18,16 +21,42 @@ package omr.sig.relation;
  * @author Hervé Bitteur
  */
 public class TimeNumberRelation
-        extends BasicSupport
+        extends AbstractSupport
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    //---------//
-    // getName //
-    //---------//
+    private static final Constants constants = new Constants();
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
     @Override
-    public String getName ()
+    protected double getSourceCoeff ()
     {
-        return "Num-Den";
+        return constants.numberSupportCoeff.getValue();
+    }
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    @Override
+    protected double getTargetCoeff ()
+    {
+        return constants.numberSupportCoeff.getValue();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Ratio numberSupportCoeff = new Constant.Ratio(
+                5,
+                "Value for (source/target) number coeff in support formula");
     }
 }

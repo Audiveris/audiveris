@@ -45,8 +45,6 @@ public interface Glyph
         GlyphGeometry,
         /** For shape assignment */
         GlyphRecognition,
-        /** For translation to score items */
-        GlyphTranslation,
         /** For mean line */
         GlyphAlignment,
         /** For textual content */

@@ -15,8 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.SystemNode.StaffPosition;
-import static omr.score.entity.Text.CreatorText.CreatorType.*;
+import omr.score.StaffPosition;
 
 import omr.sheet.Part;
 import omr.sheet.Scale;
@@ -51,44 +50,35 @@ public enum TextRole
     Number,
     /** Name for the part. */
     PartName,
-    /** A creator (composer, etc...). */
+    /** A creator (with no precise type). */
     Creator,
+    /** A creator (arranger). */
+    CreatorArranger,
+    /** A creator (composer). */
+    CreatorComposer,
+    /** A creator (lyricist). */
+    CreatorLyricist,
     /** Copyright notice. */
     Rights,
     /** Chord mark. */
     ChordName;
 
-    /** Specific application parameters. */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility. */
     private static final Logger logger = LoggerFactory.getLogger(TextRole.class);
 
-    //-----------------//
-    // getStringHolder //
-    //-----------------//
+    //-----------//
+    // isCreator //
+    //-----------//
     /**
-     * Forge a string to be used in lieu of real text value.
+     * Report whether this role is a creator role (perhaps with additional type info).
      *
-     * @param NbOfChars the number of characters desired
-     *
-     * @return a dummy string of NbOfChars chars
+     * @return true if a creator role
      */
-    public String getStringHolder (int NbOfChars)
+    public boolean isCreator ()
     {
-        if (NbOfChars > 1000) {
-            logger.warn("Abnormal text length:{}", NbOfChars);
-
-            return "<<" + Integer.toString(NbOfChars) + ">>";
-        } else {
-            StringBuilder sb = new StringBuilder("[");
-
-            while (sb.length() < (NbOfChars - 1)) {
-                sb.append(toString()).append("-");
-            }
-
-            return sb.substring(0, Math.max(NbOfChars - 1, 0)) + "]";
-        }
+        return (this == CreatorArranger) || (this == CreatorComposer)
+               || ((this == CreatorLyricist) || (this == Creator));
     }
 
     //-----------//
@@ -104,8 +94,8 @@ public enum TextRole
      * @param system the containing system
      * @return the role information inferred for the provided sentence glyph
      */
-    public static TextRoleInfo guessRole (TextLine line,
-                                          SystemInfo system)
+    public static TextRole guessRole (TextLine line,
+                                      SystemInfo system)
     {
         if (line == null) {
             return null;
@@ -113,6 +103,12 @@ public enum TextRole
 
         if (line.isVip()) {
             logger.info("TextRoleInfo. guessRole for {}", line.getValue());
+        }
+
+        Rectangle box = line.getBounds();
+
+        if (box == null) {
+            return null;
         }
 
         int chordCount = 0;
@@ -136,12 +132,6 @@ public enum TextRole
 
         // Is line made entirely of potential chord symbols?
         boolean isAllChord = chordCount == line.getWords().size();
-
-        Rectangle box = line.getBounds();
-
-        if (box == null) {
-            return null;
-        }
 
         // Is line mainly in italic?
         boolean isMainlyItalic = TextBuilder.isMainlyItalic(line);
@@ -213,40 +203,40 @@ public enum TextRole
 
         // Decisions ...
         switch (systemPosition) {
-        case ABOVE_STAVES: // Title, Number, Creator, Direction, Chord
+        case ABOVE_STAVES: // Title, Number, Creator, Direction, ChordName
 
             if (tinySentence) {
                 if (isAllChord) {
-                    return new TextRoleInfo(ChordName);
+                    return ChordName;
                 } else {
-                    return new TextRoleInfo(UnknownRole);
+                    return UnknownRole;
                 }
             }
 
             if (firstSystem) {
                 if (leftOfStaves) {
-                    return new TextRoleInfo(Creator, lyricist);
+                    return CreatorLyricist;
                 } else if (rightAligned) {
-                    return new TextRoleInfo(Creator, composer);
+                    return CreatorComposer;
                 } else if (closeToStaff) {
                     if (isAllChord) {
-                        return new TextRoleInfo(ChordName);
+                        return ChordName;
                     } else {
-                        return new TextRoleInfo(Direction);
+                        return Direction;
                     }
                 } else if (pageCentered) { // Title, Number
 
                     if (highText) {
-                        return new TextRoleInfo(Title);
+                        return Title;
                     } else {
-                        return new TextRoleInfo(Number);
+                        return Number;
                     }
                 }
             } else {
                 if (isAllChord) {
-                    return new TextRoleInfo(ChordName);
+                    return ChordName;
                 } else {
-                    return new TextRoleInfo(Direction);
+                    return Direction;
                 }
             }
 
@@ -255,32 +245,36 @@ public enum TextRole
         case WITHIN_STAVES: // Name, Lyrics, Direction
 
             if (leftOfStaves) {
-                return new TextRoleInfo(PartName);
+                return PartName;
             } else if ((partPosition == StaffPosition.BELOW_STAVES) && !isMainlyItalic) {
-                return new TextRoleInfo(Lyrics);
-            } else {
-                return new TextRoleInfo(Direction);
+                return Lyrics;
+            } else if (!tinySentence) {
+                return Direction;
             }
 
-        case BELOW_STAVES: // Copyright, Lyrics for single-staff part
+        case BELOW_STAVES: // Copyright, Lyrics for single-staff part, Direction
 
             if (tinySentence) {
-                return new TextRoleInfo(UnknownRole);
+                return UnknownRole;
+            }
+
+            if (isMainlyItalic) {
+                return Direction;
             }
 
             if (pageCentered && shortSentence && lastSystem) {
-                return new TextRoleInfo(Rights);
+                return Rights;
             }
 
             if (part.getStaves().size() == 1) {
                 if ((partPosition == StaffPosition.BELOW_STAVES) && !isMainlyItalic) {
-                    return new TextRoleInfo(Lyrics);
+                    return Lyrics;
                 }
             }
         }
 
         // Default
-        return new TextRoleInfo(UnknownRole);
+        return UnknownRole;
     }
 
     //-----------//
@@ -313,3 +307,30 @@ public enum TextRole
         Scale.Fraction minTitleHeight = new Scale.Fraction(3, "Minimum height for a title text");
     }
 }
+//
+//    //-----------------//
+//    // getStringHolder //
+//    //-----------------//
+//    /**
+//     * Forge a string to be used in lieu of real text value.
+//     *
+//     * @param NbOfChars the number of characters desired
+//     *
+//     * @return a dummy string of NbOfChars chars
+//     */
+//    public String getStringHolder (int NbOfChars)
+//    {
+//        if (NbOfChars > 1000) {
+//            logger.warn("Abnormal text length:{}", NbOfChars);
+//
+//            return "<<" + Integer.toString(NbOfChars) + ">>";
+//        } else {
+//            StringBuilder sb = new StringBuilder("[");
+//
+//            while (sb.length() < (NbOfChars - 1)) {
+//                sb.append(toString()).append("-");
+//            }
+//
+//            return sb.substring(0, Math.max(NbOfChars - 1, 0)) + "]";
+//        }
+//    }

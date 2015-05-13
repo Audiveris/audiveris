@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.text;
 
+import omr.math.PointUtil;
+
 import omr.util.Vip;
 
 import java.awt.Point;
@@ -125,7 +127,7 @@ public abstract class TextBasedItem
             return null;
         }
 
-        return new Point((int) Math.rint(bl.getX1()), (int) Math.rint(bl.getY1()));
+        return PointUtil.rounded(bl.getP1());
     }
 
     //-------//

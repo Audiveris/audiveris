@@ -45,14 +45,6 @@ public class HeadStemRelation
     /** Which side of head is used?. */
     private HorizontalSide headSide;
 
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new HeadStemRelation object.
-     */
-    public HeadStemRelation ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
     /**
      * @return the headSide
@@ -60,12 +52,6 @@ public class HeadStemRelation
     public HorizontalSide getHeadSide ()
     {
         return headSide;
-    }
-
-    @Override
-    public String getName ()
-    {
-        return "Head-Stem";
     }
 
     //----------------//
@@ -184,11 +170,11 @@ public class HeadStemRelation
 
         final Constant.Ratio headSupportCoeff = new Constant.Ratio(
                 2,
-                "Value for head coeff in support formula");
+                "Value for (source) head coeff in support formula");
 
         final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
                 2,
-                "Value for stem coeff in support formula");
+                "Value for (target) stem coeff in support formula");
 
         final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.8,

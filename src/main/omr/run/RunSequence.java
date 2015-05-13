@@ -33,6 +33,16 @@ public interface RunSequence
     boolean add (Run run);
 
     /**
+     * Insert a run.
+     *
+     * @param start  start of run
+     * @param length length of run
+     * @return true if addition was performed, false otherwise
+     */
+    boolean addRun (int start,
+                    int length);
+
+    /**
      * Report whether the sequence contains no foreground run
      *
      * @return true if empty

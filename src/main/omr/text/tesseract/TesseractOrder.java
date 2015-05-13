@@ -232,8 +232,8 @@ public class TesseractOrder
     // getLines //
     //----------//
     /**
-     * Build the hierarchy of TextLine / TextWord / TextChar instances
-     * out of the raw results of OCR recognition
+     * Build the hierarchy of TextLine / TextWord / TextChar instances out of the raw
+     * results of OCR recognition.
      *
      * @return the sequence of lines
      */

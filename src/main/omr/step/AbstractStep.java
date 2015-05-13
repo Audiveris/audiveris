@@ -15,6 +15,7 @@ import omr.OMR;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.SheetTab;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,4 +77,17 @@ public abstract class AbstractStep
     public abstract void doit (Collection<SystemInfo> systems,
                                Sheet sheet)
             throws StepException;
+
+    //-------------//
+    // getSheetTab //
+    //-------------//
+    /**
+     * Report the related assembly view tab, selected when step completes
+     *
+     * @return the related tab
+     */
+    public SheetTab getSheetTab ()
+    {
+        return SheetTab.DATA_TAB;
+    }
 }

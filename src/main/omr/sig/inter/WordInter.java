@@ -35,13 +35,13 @@ public class WordInter
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Word text content. */
-    private final String value;
+    protected final String value;
 
     /** Detected font attributes. */
-    private final FontInfo fontInfo;
+    protected final FontInfo fontInfo;
 
     /** Precise word starting point. */
-    private final Point location;
+    protected final Point location;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

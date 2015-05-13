@@ -22,16 +22,8 @@ import omr.sig.inter.Inter;
 public abstract class AbstractRelation
         implements Relation, Cloneable
 {
-    //~ Constructors -------------------------------------------------------------------------------
-
-    /**
-     * Creates a new {@code BasicRelation} object.
-     */
-    public AbstractRelation ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // duplicate //
     //-----------//
@@ -60,7 +52,7 @@ public abstract class AbstractRelation
     @Override
     public String getName ()
     {
-        return "Relation";
+        return getClass().getSimpleName().replaceFirst("Relation", "");
     }
 
     //----------//

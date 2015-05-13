@@ -133,7 +133,7 @@ public class DotPattern
     {
         Rectangle glyphBox = glyph.getBounds();
 
-        for (TextLine sentence : system.getSentences()) {
+        for (TextLine sentence : system.getTextLines()) {
             Line2D baseline = sentence.getBaseline();
 
             // Check in abscissa: not before sentence beginning

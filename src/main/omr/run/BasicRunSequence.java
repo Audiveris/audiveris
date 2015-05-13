@@ -104,10 +104,17 @@ public class BasicRunSequence
     @Override
     public boolean add (Run run)
     {
-        // Check run validity
-        int start = run.getStart();
-        int length = run.getLength();
+        return addRun(run.getStart(), run.getLength());
+    }
 
+    //--------//
+    // addRun //
+    //--------//
+    @Override
+    public boolean addRun (int start,
+                           int length)
+    {
+        // Check run validity
         if (start < 0) {
             throw new RuntimeException("Illegal run start " + start);
         }
@@ -134,7 +141,7 @@ public class BasicRunSequence
 
                 int b1 = back - (r.getStart() - start);
                 int f = length;
-                int b2 = r.getStart() - run.getStop() - 1;
+                int b2 = r.getStart() - start - length;
 
                 if ((b1 == 0) && (b2 == 0)) {
                     // ...F(B)F... -> ...F(0F0)F... -> ...F++...
@@ -171,7 +178,9 @@ public class BasicRunSequence
         // Append the run at end of sequence
         int b = start - it.loc;
 
-        if (b == 0) {
+        if (b < 0) {
+            return false;
+        } else if (b == 0) {
             // ...F -> ...F+
             rle[rle.length - 1] += (short) length;
         } else {
@@ -364,7 +373,7 @@ public class BasicRunSequence
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Current index in sequence array.
-         * Always on an even value, pointing to the F to be returned by next() */
+         * Always on an even value, pointing to the length of Foreground to be returned by next() */
         private int cursor = 0;
 
         /** Start location of foreground run to be returned by next(). */

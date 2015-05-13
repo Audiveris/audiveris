@@ -17,8 +17,7 @@ import omr.math.LineUtil;
 import omr.math.Population;
 import omr.math.Rational;
 
-import omr.score.entity.DurationFactor;
-
+import omr.sheet.DurationFactor;
 import omr.sheet.beam.BeamGroup;
 import omr.sheet.rhythm.Measure;
 import omr.sheet.rhythm.Slot;
@@ -61,31 +60,32 @@ public abstract class ChordInter
 
     private static final Logger logger = LoggerFactory.getLogger(ChordInter.class);
 
-    /**
-     * Compare two notes of the same chord, ordered by increasing distance from chord
-     * head ordinate.
-     */
-    public static final Comparator<AbstractNoteInter> noteHeadComparator = new Comparator<AbstractNoteInter>()
-    {
-        @Override
-        public int compare (AbstractNoteInter n1,
-                            AbstractNoteInter n2)
-        {
-            if (n1 == n2) {
-                return 0;
-            }
-
-            ChordInter c1 = (ChordInter) n1.getEnsemble();
-
-            if (c1 != n2.getEnsemble()) {
-                logger.error("Ordering notes from different chords");
-            }
-
-            return c1.getStemDir() * (n2.getCenter().y - n1.getCenter().y);
-        }
-    };
-
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    //    /**
+    //     * Compare two notes of the same chord, ordered by increasing distance from chord
+    //     * head ordinate.
+    //     */
+    //    public static final Comparator<AbstractNoteInter> noteHeadComparator = new Comparator<AbstractNoteInter>()
+    //    {
+    //        @Override
+    //        public int compare (AbstractNoteInter n1,
+    //                            AbstractNoteInter n2)
+    //        {
+    //            if (n1 == n2) {
+    //                return 0;
+    //            }
+    //
+    //            ChordInter c1 = (ChordInter) n1.getEnsemble();
+    //
+    //            if (c1 != n2.getEnsemble()) {
+    //                logger.error("Ordering notes from different chords");
+    //            }
+    //
+    //            return c1.getStemDir() * (n2.getCenter().y - n1.getCenter().y);
+    //        }
+    //    };
+    //
     /** Chord notes (both heads and rests). */
     protected final List<AbstractNoteInter> notes = new ArrayList<AbstractNoteInter>();
 
@@ -185,6 +185,11 @@ public abstract class ChordInter
         if (member instanceof AbstractNoteInter) {
             AbstractNoteInter note = (AbstractNoteInter) member;
             notes.add(note);
+
+            if (notes.size() > 1) {
+                Collections.sort(notes, AbstractPitchedInter.bottomUp);
+            }
+
             note.setEnsemble(this);
             reset();
         } else {
@@ -219,7 +224,7 @@ public abstract class ChordInter
             dotsNumber = (int) Math.rint(val);
 
             if (std != 0) {
-                logger.info("Inconsistent dots in {}, assumed {}", this, dotsNumber);
+                logger.debug("Inconsistent dots in {}, assumed {}", this, dotsNumber);
 
                 if (dotsNumber == 0) {
                     // Delete the discarded augmentation relations
@@ -498,10 +503,6 @@ public abstract class ChordInter
         int count = 0;
 
         if (stem != null) {
-            if (stem.isDeleted()) {
-                logger.warn("BINGO stem {} is deleted!", stem);
-            }
-
             final Set<Relation> rels = sig.getRelations(stem, FlagStemRelation.class);
 
             for (Relation rel : rels) {

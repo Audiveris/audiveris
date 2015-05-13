@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 /**
  * Class {@code ClefKeyRelation} represents a support relation between a clef and a
  * compatible key signature.
@@ -18,16 +21,46 @@ package omr.sig.relation;
  * @author Hervé Bitteur
  */
 public class ClefKeyRelation
-        extends BasicSupport
+        extends AbstractSupport
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    //---------//
-    // getName //
-    //---------//
+    private static final Constants constants = new Constants();
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
     @Override
-    public String getName ()
+    protected double getSourceCoeff ()
     {
-        return "Clef-Key";
+        return constants.clefSupportCoeff.getValue();
+    }
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    @Override
+    protected double getTargetCoeff ()
+    {
+        return constants.keySupportCoeff.getValue();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Ratio clefSupportCoeff = new Constant.Ratio(
+                5,
+                "Value for (source) clef coeff in support formula");
+
+        final Constant.Ratio keySupportCoeff = new Constant.Ratio(
+                5,
+                "Value for (target) key coeff in support formula");
     }
 }

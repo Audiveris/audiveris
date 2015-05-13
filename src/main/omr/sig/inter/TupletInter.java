@@ -18,7 +18,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.math.GeoOrder;
 
-import omr.score.entity.DurationFactor;
+import omr.sheet.DurationFactor;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;

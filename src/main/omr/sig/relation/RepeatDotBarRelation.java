@@ -56,15 +56,6 @@ public class RepeatDotBarRelation
         return constants.yGapMax;
     }
 
-    //---------//
-    // getName //
-    //---------//
-    @Override
-    public String getName ()
-    {
-        return "RepeatDot-Bar";
-    }
-
     //---------------//
     // getOutWeights //
     //---------------//
@@ -75,25 +66,29 @@ public class RepeatDotBarRelation
     }
 
     //----------------//
-    // getTargetCoeff //
+    // getSourceCoeff //
     //----------------//
     /**
-     * RepeatDotBarRelation brings no support on target (bar line) side.
-     *
-     * @return 0
+     * @return the supporting coefficient for (source) repeat dot
      */
     @Override
-    protected double getTargetCoeff ()
+    protected double getSourceCoeff ()
     {
-        return 0;
+        return constants.repeatDotSupportCoeff.getValue();
     }
 
+    //---------------//
+    // getXOutGapMax //
+    //---------------//
     @Override
     protected Scale.Fraction getXOutGapMax ()
     {
         return getXOutGapMaximum();
     }
 
+    //------------//
+    // getYGapMax //
+    //------------//
     @Override
     protected Scale.Fraction getYGapMax ()
     {
@@ -108,6 +103,10 @@ public class RepeatDotBarRelation
             extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Ratio repeatDotSupportCoeff = new Constant.Ratio(
+                5,
+                "Supporting coeff for (source) repeat dot");
 
         final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 1.5,

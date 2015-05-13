@@ -13,9 +13,6 @@ package omr.score;
 
 import omr.math.Rational;
 
-import omr.score.entity.Page;
-import omr.score.entity.TimeSignature.InvalidTimeSignature;
-
 import omr.sheet.Part;
 import omr.sheet.PartBarline;
 import omr.sheet.SystemInfo;

@@ -21,25 +21,25 @@ import omr.constant.ConstantSet;
  * @author Hervé Bitteur
  */
 public class FermataChordRelation
-        extends BasicSupport
+        extends AbstractSupport
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Override
-    public String getName ()
-    {
-        return "Fermata-Chord";
-    }
-
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
     @Override
     protected double getSourceCoeff ()
     {
         return constants.fermataSupportCoeff.getValue();
     }
 
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
     @Override
     protected double getTargetCoeff ()
     {
@@ -57,10 +57,10 @@ public class FermataChordRelation
 
         final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(
                 5,
-                "Supporting coeff for fermata");
+                "Supporting coeff for (source) fermata");
 
         final Constant.Ratio chordSupportCoeff = new Constant.Ratio(
                 2,
-                "Supporting coeff for chord");
+                "Supporting coeff for (target) chord");
     }
 }

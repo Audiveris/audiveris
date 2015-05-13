@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.score;
 
-import omr.score.entity.LogicalPart;
-import omr.score.entity.Page;
 
 import omr.sheet.Part;
 import omr.sheet.SystemInfo;

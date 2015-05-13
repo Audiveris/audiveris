@@ -44,24 +44,7 @@ public class AccidHeadRelation
         constants.yWeight.getValue()
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new AccidNoteRelation object.
-     */
-    public AccidHeadRelation ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // getName //
-    //---------//
-    @Override
-    public String getName ()
-    {
-        return "Accid-Head";
-    }
-
     //------------------//
     // getXInGapMaximum //
     //------------------//
@@ -105,17 +88,17 @@ public class AccidHeadRelation
     }
 
     //----------------//
-    // getTargetCoeff //
+    // getSourceCoeff //
     //----------------//
     /**
-     * AccidHeadRelation brings no support on target (Note) side.
+     * Support coeff for accidental.
      *
-     * @return 0
+     * @return coeff for accid.
      */
     @Override
-    protected double getTargetCoeff ()
+    protected double getSourceCoeff ()
     {
-        return 0;
+        return constants.AccidentalCoeff.getValue();
     }
 
     @Override
@@ -144,6 +127,10 @@ public class AccidHeadRelation
             extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Ratio AccidentalCoeff = new Constant.Ratio(
+                3,
+                "Supporting coeff for (source) accidental");
 
         final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.4,

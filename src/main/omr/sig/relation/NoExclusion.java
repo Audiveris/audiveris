@@ -19,42 +19,6 @@ package omr.sig.relation;
  * @author Hervé Bitteur
  */
 public class NoExclusion
-        extends BasicSupport
+        extends AbstractSupport
 {
-    //~ Constructors -------------------------------------------------------------------------------
-
-    /**
-     * Creates a new {@code NoExclusion} object.
-     */
-    public NoExclusion ()
-    {
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // getName //
-    //---------//
-    @Override
-    public String getName ()
-    {
-        return "No-Exclusion";
-    }
-
-    //----------------//
-    // getSourceCoeff //
-    //----------------//
-    @Override
-    protected double getSourceCoeff ()
-    {
-        return 0;
-    }
-
-    //----------------//
-    // getTargetCoeff //
-    //----------------//
-    @Override
-    protected double getTargetCoeff ()
-    {
-        return 0;
-    }
 }

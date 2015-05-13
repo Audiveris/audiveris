@@ -13,7 +13,7 @@ package omr.glyph;
 
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.TimeRational;
+import omr.score.TimeRational;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -24,7 +24,6 @@ import omr.step.Step;
 import omr.text.TextBuilder;
 import omr.text.TextLine;
 import omr.text.TextRole;
-import omr.text.TextRoleInfo;
 import omr.text.TextWord;
 
 import org.slf4j.Logger;
@@ -72,12 +71,12 @@ public class SymbolsModel
      * Assign a collection of glyphs as textual element
      *
      * @param glyphs      the collection of glyphs
-     * @param roleInfo    the text role
+     * @param role        the text role
      * @param textContent the ASCII content
      * @param grade       the grade WRT this assignment
      */
     public void assignText (Collection<Glyph> glyphs,
-                            TextRoleInfo roleInfo,
+                            TextRole role,
                             String textContent,
                             double grade)
     {
@@ -99,23 +98,23 @@ public class SymbolsModel
                     TextLine line = new TextLine(Arrays.asList(word));
                     lines = Arrays.asList(line);
                     lines = textBuilder.recomposeLines(lines);
-                    system.getSentences().remove(line);
-                    system.getSentences().addAll(lines);
+                    system.getTextLines().remove(line);
+                    system.getTextLines().addAll(lines);
                 } else if (word.getTextLine() != null) {
                     lines = Arrays.asList(word.getTextLine());
                 }
 
                 // Force text role
-                glyph.setManualRole(roleInfo);
+                glyph.setManualRole(role);
 
                 for (TextLine line : lines) {
                     // For Chord role, we don't spread the role to other words
                     // but rather trigger a line split
-                    if ((roleInfo.role == TextRole.ChordName) && (line.getWords().size() > 1)) {
-                        line.setRole(roleInfo);
+                    if ((role == TextRole.ChordName) && (line.getWords().size() > 1)) {
+                        line.setRole(role);
 
                         List<TextLine> subLines = textBuilder.recomposeLines(Arrays.asList(line));
-                        system.getSentences().remove(line);
+                        system.getTextLines().remove(line);
 
                         for (TextLine l : subLines) {
                             if (!l.getWords().contains(word)) {
@@ -123,9 +122,9 @@ public class SymbolsModel
                             }
                         }
 
-                        system.getSentences().addAll(subLines);
+                        system.getTextLines().addAll(subLines);
                     } else {
-                        line.setRole(roleInfo);
+                        line.setRole(role);
                     }
                 }
             }

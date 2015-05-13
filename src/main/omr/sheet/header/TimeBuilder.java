@@ -34,8 +34,8 @@ import omr.lag.SectionFactory;
 
 import omr.math.Projection;
 
-import omr.score.entity.TimeRational;
-import omr.score.entity.TimeValue;
+import omr.score.TimeRational;
+import omr.score.TimeValue;
 
 import omr.sheet.Picture;
 import omr.sheet.Scale;
@@ -43,6 +43,7 @@ import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.header.HeaderBuilder.Plotter;
+
 import static omr.sheet.header.TimeBuilder.TimeKind.*;
 import static omr.sheet.symbol.SymbolsFilter.SYMBOL_ORIENTATION;
 

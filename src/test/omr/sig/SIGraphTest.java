@@ -14,7 +14,7 @@ package omr.sig;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.BasicExclusion;
 import omr.sig.relation.Relation;
-import omr.sig.relation.BasicSupport;
+import omr.sig.relation.AbstractSupport;
 import omr.sig.inter.AbstractInter;
 import omr.sig.inter.Inter;
 import omr.glyph.Shape;
@@ -121,8 +121,8 @@ public class SIGraphTest
 
         sig.addEdge(head, blanche, new BasicExclusion(Cause.OVERLAP));
 
-        sig.addEdge(beam, stem, new BasicSupport(0.2));
-        sig.addEdge(hook, stem, new BasicSupport(0.4));
+        sig.addEdge(beam, stem, new AbstractSupport(0.2));
+        sig.addEdge(hook, stem, new AbstractSupport(0.4));
 
         Inter stem2 = new TestInter(Shape.STEM, 0.5);
         sig.addVertex(stem2);

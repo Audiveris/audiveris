@@ -37,11 +37,19 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Class {@code Measure} represents a measure in a system part, it vertically embraces
  * all the staves (usually 1 or 2) of the containing part.
+ *
+ * @see MeasureStack
  *
  * @author Hervé Bitteur
  */
@@ -74,11 +82,11 @@ public class Measure
     /** Voices within this measure, sorted by increasing voice id. */
     private final List<Voice> voices = new ArrayList<Voice>();
 
-    /** Possibly several Clefs per staff. */
-    private final List<ClefInter> clefs = new ArrayList<ClefInter>();
+    /** Possibly several Clefs per staff. (Abscissa-ordered) */
+    private final TreeSet<ClefInter> clefs = new TreeSet<ClefInter>(Inter.byFullAbscissa);
 
-    /** Possibly several Key signatures per staff. */
-    private final List<KeyInter> keySigs = new ArrayList<KeyInter>();
+    /** Possibly one Key signature per staff. Keys may vary between staves of the same part */
+    private final Map<Integer, KeyInter> keys = new TreeMap<Integer, KeyInter>();
 
     /** Potential one Time signature per staff. */
     private final List<TimeInter> timeSigs = new ArrayList<TimeInter>();
@@ -121,9 +129,9 @@ public class Measure
 
         RestInter whole = new RestInter(null, Shape.WHOLE_REST, 0, staff, -1);
         chord.addMember(whole);
-        wholeChords.add(chord);
+        addInter(chord);
 
-        Voice.createWholeVoice(chord, this);
+        voices.add(Voice.createWholeVoice(chord, this));
 
         return whole;
     }
@@ -143,7 +151,9 @@ public class Measure
         } else if (inter instanceof ClefInter) {
             clefs.add((ClefInter) inter);
         } else if (inter instanceof KeyInter) {
-            keySigs.add((KeyInter) inter);
+            KeyInter key = (KeyInter) inter;
+            List<Staff> staves = part.getStaves();
+            keys.put(staves.indexOf(key.getStaff()), key);
         } else if (inter instanceof TimeInter) {
             timeSigs.add((TimeInter) inter);
         }
@@ -254,26 +264,58 @@ public class Measure
         return barline;
     }
 
-    //-----------//
-    // getChords //
-    //-----------//
+    //----------------//
+    // getChordsAbove //
+    //----------------//
     /**
-     * Report the collection of chords.
+     * Report the collection of chords whose head is located in the staff above the
+     * provided point.
      *
-     * @return the list of chords
+     * @param point the provided point
+     * @return the (perhaps empty) collection of chords
      */
-    public List<ChordInter> getChords ()
+    public Collection<ChordInter> getChordsAbove (Point point)
     {
-        return chords;
+        Staff desiredStaff = stack.getSystem().getStaffAtOrAbove(point);
+        Collection<ChordInter> found = new ArrayList<ChordInter>();
+
+        for (ChordInter chord : chords) {
+            if (chord.getStaff() == desiredStaff) {
+                Point head = chord.getHeadLocation();
+
+                if ((head != null) && (head.y < point.y)) {
+                    found.add(chord);
+                }
+            }
+        }
+
+        return found;
     }
 
+    //
+    //    //-----------//
+    //    // getChords //
+    //    //-----------//
+    //    /**
+    //     * Report the collection of chords.
+    //     *
+    //     * @return the list of chords
+    //     */
+    //    public List<ChordInter> getChords ()
+    //    {
+    //        return chords;
+    //    }
+    //
     //---------------//
     // getClefBefore //
     //---------------//
     /**
      * Report the first clef, if any, defined before this measure point
-     * (looking in the beginning of the measure, then in previous measures, then in
-     * previous systems) while staying in the same logical staff.
+     * (looking in the beginning of the measure, then in previous measures in the same
+     * system) while staying in the same physical staff.
+     * <p>
+     * NOTA: There is no point in looking before the current system, since any system staff is
+     * required to start with a clef.
      *
      * @param point the point before which to look
      * @param staff the containing staff (cannot be null)
@@ -289,14 +331,11 @@ public class Measure
             return clef;
         }
 
-        // Which (logical) staff we are in
-        int staffIndexInPart = part.getStaves().indexOf(staff);
-
-        // Look in all preceding measures, with the same staff id
+        // Look in preceding measures, within the same system/part, within the same staff
         Measure measure = this;
 
-        while ((measure = measure.getPrecedingInPage()) != null) {
-            clef = measure.getLastMeasureClef(staffIndexInPart);
+        while ((measure = measure.getPreviousSibling()) != null) {
+            clef = measure.getLastMeasureClef(staff);
 
             if (clef != null) {
                 return clef;
@@ -312,52 +351,9 @@ public class Measure
     /**
      * @return the clefs
      */
-    public List<ClefInter> getClefs ()
+    public SortedSet<ClefInter> getClefs ()
     {
         return clefs;
-    }
-
-    //-------------------------//
-    // getCurrentTimeSignature //
-    //-------------------------//
-    /**
-     * Report the time signature which applies in this measure, whether a time signature
-     * actually starts this measure in whatever staff, or whether a time signature was
-     * found in a previous measure, even in preceding pages.
-     * <p>
-     * <b>NOTA</b>This method looks up for time sig in preceding pages as well</p>
-     *
-     * @return the current time signature, or null if not found at all
-     */
-    public TimeInter getCurrentTimeSignature ()
-    {
-        // Backward from this measure to the beginning of the score
-        Measure measure = this;
-
-        while (measure != null) {
-            // Check in the measure
-            TimeInter ts = measure.getTimeSignature();
-
-            if (ts != null) {
-                return ts;
-            }
-
-            // Move to preceding measure (same part)
-            measure = measure.getPrecedingInPage();
-
-            //
-            //            if (measure == null) {
-            //                page = page.getPrecedingInScore();
-            //
-            //                if (page == null) {
-            //                    return null;
-            //                } else {
-            //                    measure = page.getLastSystem().getLastPart().getLastMeasure();
-            //                }
-            //            }
-        }
-
-        return null; // Not found !!!
     }
 
     //---------------------//
@@ -382,126 +378,82 @@ public class Measure
         return null;
     }
 
-    //--------------------//
-    // getFirstMeasureKey //
-    //--------------------//
-    /**
-     * Report the first key signature (if any) in this measure, if tagged with the
-     * specified staff index.
-     *
-     * @param staffIndexInPart the imposed part-based staff index
-     * @return the first key signature, or null
-     */
-    public KeyInter getFirstMeasureKey (int staffIndexInPart)
-    {
-        for (KeyInter key : keySigs) {
-            if (key.getStaff().getIndexInPart() == staffIndexInPart) {
-                return key;
-            }
-        }
-
-        return null;
-    }
-
-    //--------------//
-    // getKeyBefore //
-    //--------------//
-    /**
-     * Report the key signature which applies in this measure, whether a key signature
-     * actually starts this measure in the same staff, or whether a key signature was
-     * found in a previous measure, for the same staff.
-     *
-     * @param point the point before which to look
-     * @param staff the containing staff (cannot be null)
-     * @return the current key signature, or null if not found
-     */
-    public KeyInter getKeyBefore (Point point,
-                                  Staff staff)
-    {
-        if (point == null) {
-            throw new NullPointerException();
-        }
-
-        int staffIndexInPart = staff.getIndexInPart();
-
-        // Look in this measure, with same staff, going backwards
-        // TODO: make sure keysigs is sorted by abscissa !!!!!
-        for (int ik = keySigs.size() - 1; ik >= 0; ik--) {
-            final KeyInter ks = keySigs.get(ik);
-
-            if ((ks.getStaff() == staff) && (ks.getCenter().x < point.x)) {
-                return ks;
-            }
-        }
-
-        // Look in previous measures in the system part and the preceding ones
-        Measure measure = this;
-
-        while ((measure = measure.getPrecedingInPage()) != null) {
-            final KeyInter ks = measure.getLastMeasureKey(staffIndexInPart);
-
-            if (ks != null) {
-                return ks;
-            }
-        }
-
-        return null; // Not found (in this page)
-    }
-
-    //-----------------//
-    // getKeySignature //
-    //-----------------//
-    /**
-     * Report the potential key signature in this measure (whatever the staff).
-     *
-     * @return the measure key signature, or null if not found
-     */
-    public KeyInter getKeySignature ()
-    {
-        if (!keySigs.isEmpty()) {
-            return keySigs.get(0);
-        }
-
-        return null; // Not found
-    }
-
-    //-----------------//
-    // getKeySignature //
-    //-----------------//
+    //
+    //    //--------------//
+    //    // getKeyBefore //
+    //    //--------------//
+    //    /**
+    //     * Report the key signature which applies in this measure, whether a key signature
+    //     * actually starts this measure in the same staff, or whether a key signature was
+    //     * found in a previous measure, for the same staff.
+    //     *
+    //     * @param point the point before which to look
+    //     * @param staff the containing staff (cannot be null)
+    //     * @return the current key signature, or null if not found
+    //     */
+    //    public KeyInter getKeyBefore (Point point,
+    //                                  Staff staff)
+    //    {
+    //        if (point == null) {
+    //            throw new NullPointerException();
+    //        }
+    //
+    //        int staffIndexInPart = staff.getIndexInPart();
+    //
+    //        // Look in this measure, with same staff, going backwards
+    //        // TODO: make sure keysigs is sorted by abscissa !!!!!
+    //        for (int ik = keySigs.size() - 1; ik >= 0; ik--) {
+    //            final KeyInter ks = keySigs.get(ik);
+    //
+    //            if ((ks.getStaff() == staff) && (ks.getCenter().x < point.x)) {
+    //                return ks;
+    //            }
+    //        }
+    //
+    //        // Look in previous measures in the system part and the preceding ones
+    //        Measure measure = this;
+    //
+    //        while ((measure = measure.getPrecedingInPage()) != null) {
+    //            final KeyInter ks = measure.getLastMeasureKey(staffIndexInPart);
+    //
+    //            if (ks != null) {
+    //                return ks;
+    //            }
+    //        }
+    //
+    //        return null; // Not found (in this page)
+    //    }
+    //
+    //--------//
+    // getKey //
+    //--------//
     /**
      * Report the potential key signature in this measure for the specified staff index.
      *
      * @param staffIndexInPart imposed part-based staff index
      * @return the staff key signature, or null if not found
      */
-    public KeyInter getKeySignature (int staffIndexInPart)
+    public KeyInter getKey (int staffIndexInPart)
     {
-        for (KeyInter ks : keySigs) {
-            if (ks.getStaff().getId() == staffIndexInPart) {
-                return ks;
-            }
-        }
-
-        return null; // Not found
+        return keys.get(staffIndexInPart);
     }
 
     //--------------------//
     // getLastMeasureClef //
     //--------------------//
     /**
-     * Report the last clef (if any) in this measure, if tagged with the specified staff
-     * index.
+     * Report the last clef (if any) in this measure, with the specified staff.
      *
-     * @param staffIndexInPart the imposed part-based staff index
+     * @param staff the imposed staff
      * @return the last clef, or null
      */
-    public ClefInter getLastMeasureClef (int staffIndexInPart)
+    public ClefInter getLastMeasureClef (Staff staff)
     {
         // Going backwards
-        for (int ic = clefs.size() - 1; ic >= 0; ic--) {
-            ClefInter clef = clefs.get(ic);
+        for (Iterator<ClefInter> it = clefs.descendingIterator(); it.hasNext();) {
+            ClefInter clef = it.next();
 
-            if (clef.getStaff().getIndexInPart() == staffIndexInPart) {
+            if (clef.getStaff() == staff) {
                 return clef;
             }
         }
@@ -509,30 +461,31 @@ public class Measure
         return null;
     }
 
-    //-------------------//
-    // getLastMeasureKey //
-    //-------------------//
-    /**
-     * Report the last key signature (if any) in this measure, if tagged with the
-     * specified staff index.
-     *
-     * @param staffIndexInPart the imposed part-based staff index
-     * @return the last key signature, or null
-     */
-    public KeyInter getLastMeasureKey (int staffIndexInPart)
-    {
-        // Going backwards
-        for (int ik = keySigs.size() - 1; ik >= 0; ik--) {
-            KeyInter key = keySigs.get(ik);
-
-            if (key.getStaff().getIndexInPart() == staffIndexInPart) {
-                return key;
-            }
-        }
-
-        return null;
-    }
-
+    //
+    //    //-------------------//
+    //    // getLastMeasureKey //
+    //    //-------------------//
+    //    /**
+    //     * Report the last key signature (if any) in this measure, if tagged with the
+    //     * specified staff index.
+    //     *
+    //     * @param staffIndexInPart the imposed part-based staff index
+    //     * @return the last key signature, or null
+    //     */
+    //    public KeyInter getLastMeasureKey (int staffIndexInPart)
+    //    {
+    //        // Going backwards
+    //        for (int ik = keySigs.size() - 1; ik >= 0; ik--) {
+    //            KeyInter key = keySigs.get(ik);
+    //
+    //            if (key.getStaff().getIndexInPart() == staffIndexInPart) {
+    //                return key;
+    //            }
+    //        }
+    //
+    //        return null;
+    //    }
+    //
     //----------------//
     // getLeftBarline //
     //----------------//
@@ -560,8 +513,8 @@ public class Measure
         }
 
         // Look in this measure, with same staff, going backwards
-        for (int ic = clefs.size() - 1; ic >= 0; ic--) {
-            ClefInter clef = clefs.get(ic);
+        for (Iterator<ClefInter> it = clefs.descendingIterator(); it.hasNext();) {
+            ClefInter clef = it.next();
 
             if ((clef.getStaff() == staff) && (clef.getCenter().x <= point.x)) {
                 return clef;
@@ -768,19 +721,9 @@ public class Measure
         return voices;
     }
 
-    //-----------------//
-    // getVoicesNumber //
-    //-----------------//
-    /**
-     * Report the number of voices in this measure.
-     *
-     * @return the number of voices computed
-     */
-    public int getVoicesNumber ()
-    {
-        return voices.size();
-    }
-
+    //----------------//
+    // getWholeChords //
+    //----------------//
     /**
      * @return the wholeChords
      */
@@ -804,6 +747,54 @@ public class Measure
         final int right = getAbscissa(RIGHT, firstStaff);
 
         return right - left;
+    }
+
+    //---------//
+    // hasKeys //
+    //---------//
+    /**
+     * Report whether there is at least one key signature, whatever the staff, in this
+     * measure.
+     *
+     * @return true if one key was found
+     */
+    public boolean hasKeys ()
+    {
+        return !keys.isEmpty();
+    }
+
+    //-------------//
+    // hasSameKeys //
+    //-------------//
+    /**
+     * Report whether all key signatures, whatever the staff, are the same.
+     *
+     * @return true if identical
+     */
+    public boolean hasSameKeys ()
+    {
+        if (keys.isEmpty()) {
+            return true;
+        }
+
+        final int staffCount = part.getStaves().size();
+        Integer prevFifths = null;
+
+        for (int index = 0; index < staffCount; index++) {
+            KeyInter key = keys.get(index);
+
+            if (key == null) {
+                return false;
+            }
+
+            if ((prevFifths != null) && !prevFifths.equals(key.getFifths())) {
+                return false;
+            }
+
+            prevFifths = key.getFifths();
+        }
+
+        return true;
     }
 
     //---------//
@@ -863,7 +854,7 @@ public class Measure
     public void mergeWithRight (Measure right)
     {
         clefs.addAll(right.clefs);
-        keySigs.addAll(right.keySigs);
+        keys.putAll(right.keys);
         timeSigs.addAll(right.timeSigs);
         chords.addAll(right.chords);
         ///beamGroups.addAll(right.beamGroups);

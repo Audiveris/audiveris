@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
@@ -28,11 +31,12 @@ import org.slf4j.LoggerFactory;
  * @author Hervé Bitteur
  */
 public class SlurHeadRelation
-        extends BasicSupport
+        extends AbstractSupport
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    //    private static final Constants constants = new Constants();
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(SlurHeadRelation.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -62,15 +66,6 @@ public class SlurHeadRelation
 
     //~ Methods ------------------------------------------------------------------------------------
     //---------//
-    // getName //
-    //---------//
-    @Override
-    public String getName ()
-    {
-        return "Slur-Head";
-    }
-
-    //---------//
     // getSide //
     //---------//
     /**
@@ -91,19 +86,15 @@ public class SlurHeadRelation
     }
 
     //----------------//
-    // getTargetCoeff //
+    // getSourceCoeff //
     //----------------//
-    /**
-     * SlurHeadRelation brings no support on target (note) side.
-     *
-     * @return 0
-     */
     @Override
-    protected double getTargetCoeff ()
+    protected double getSourceCoeff ()
     {
-        return 0;
+        return constants.slurSupportCoeff.getValue();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //    //-------------------//
     //    // getXOutGapMaximum //
     //    //-------------------//
@@ -179,32 +170,37 @@ public class SlurHeadRelation
     //    }
     //
     //    //~ Inner Classes ------------------------------------------------------------------------------
-    //    //-----------//
-    //    // Constants //
-    //    //-----------//
-    //    private static final class Constants
-    //            extends ConstantSet
-    //    {
-    //        //~ Instance fields ------------------------------------------------------------------------
-    //
-    //        final Scale.Fraction xInGapMax = new Scale.Fraction(
-    //                0.5,
-    //                "Maximum horizontal overlap between slur end & note reference point");
-    //
-    //        final Scale.Fraction xOutGapMax = new Scale.Fraction(
-    //                0.75,
-    //                "Maximum horizontal gap between slur end & note reference point");
-    //
-    //        final Scale.Fraction yGapMax = new Scale.Fraction(
-    //                6.0,
-    //                "Maximum vertical gap between slur end & note reference point");
-    //
-    //        final Constant.Ratio xInWeight = new Constant.Ratio(3, "Relative impact weight for xInGap");
-    //
-    //        final Constant.Ratio xOutWeight = new Constant.Ratio(
-    //                3,
-    //                "Relative impact weight for xOutGap");
-    //
-    //        final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
-    //    }
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Ratio slurSupportCoeff = new Constant.Ratio(
+                5,
+                "Value for (source) slur coeff in support formula");
+
+        //
+        //            final Scale.Fraction xInGapMax = new Scale.Fraction(
+        //                    0.5,
+        //                    "Maximum horizontal overlap between slur end & note reference point");
+        //
+        //            final Scale.Fraction xOutGapMax = new Scale.Fraction(
+        //                    0.75,
+        //                    "Maximum horizontal gap between slur end & note reference point");
+        //
+        //            final Scale.Fraction yGapMax = new Scale.Fraction(
+        //                    6.0,
+        //                    "Maximum vertical gap between slur end & note reference point");
+        //
+        //            final Constant.Ratio xInWeight = new Constant.Ratio(3, "Relative impact weight for xInGap");
+        //
+        //            final Constant.Ratio xOutWeight = new Constant.Ratio(
+        //                    3,
+        //                    "Relative impact weight for xOutGap");
+        //
+        //            final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
+    }
 }

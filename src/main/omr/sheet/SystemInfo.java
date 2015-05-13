@@ -13,26 +13,22 @@ package omr.sheet;
 
 import omr.glyph.CompoundBuilder;
 import omr.glyph.CompoundBuilder.CompoundAdapter;
-import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphNest;
-import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
-import omr.glyph.pattern.PatternsChecker;
 
 import omr.lag.Section;
 
+import omr.score.LogicalPart;
+import omr.score.Page;
 import omr.score.Score;
-import omr.score.SystemTranslator;
-import omr.score.entity.LogicalPart;
-import omr.score.entity.Page;
-import omr.score.entity.ScoreSystem;
-import omr.score.entity.SystemNode;
+import omr.score.StaffPosition;
 
 import omr.sheet.grid.LineInfo;
 import omr.sheet.grid.PartGroup;
 import omr.sheet.note.NotePosition;
+import omr.sheet.rhythm.Measure;
 import omr.sheet.rhythm.MeasureStack;
 
 import omr.sig.SIGraph;
@@ -41,7 +37,9 @@ import omr.text.TextBuilder;
 import omr.text.TextLine;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -108,12 +106,6 @@ public class SystemInfo
     /** Dedicated compound builder */
     private final CompoundBuilder compoundBuilder;
 
-    /** Dedicated glyph inspector */
-    private final GlyphInspector glyphInspector;
-
-    /** Dedicated system translator */
-    private final SystemTranslator translator;
-
     /** Real staves of this system (no dummy staves included). */
     private List<Staff> staves = new ArrayList<Staff>();
 
@@ -125,9 +117,6 @@ public class SystemInfo
 
     /** PartGroups in this system */
     private final List<PartGroup> partGroups = new ArrayList<PartGroup>();
-
-    /** Related System in Score hierarchy */
-    private ScoreSystem scoreSystem;
 
     /** Horizontal sections. */
     private final List<Section> hSections = new ArrayList<Section>();
@@ -143,14 +132,8 @@ public class SystemInfo
     /** Unmodifiable view of the glyphs collection */
     private final SortedSet<Glyph> glyphsView = Collections.unmodifiableSortedSet(glyphs);
 
-    /** Glyph flagged as optional. */
-    private List<Glyph> optionalGlyphs;
-
-    /** Set of sentence made of text glyphs */
-    private final Set<TextLine> sentences = new LinkedHashSet<TextLine>();
-
-    /** Used to assign a unique ID to system sentences */
-    private int sentenceCount = 0;
+    /** Set of text lines. */
+    private final Set<TextLine> textLines = new LinkedHashSet<TextLine>();
 
     /** Unique Id (sequential vertical number starting from 1 in containing sheet). */
     private final int id;
@@ -202,8 +185,6 @@ public class SystemInfo
         sig = new SIGraph(this);
         textBuilder = new TextBuilder(this);
         compoundBuilder = new CompoundBuilder(this);
-        glyphInspector = new GlyphInspector(this);
-        translator = new SystemTranslator(this);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -627,7 +608,7 @@ public class SystemInfo
     // getLedgerSections //
     //-------------------//
     /**
-     * Report the (unmodifiable) collection of ledger sections in the system related area.
+     * Report the (unmodifiable) collection of ledger sections in system related area.
      *
      * @return the area ledger sections
      */
@@ -668,6 +649,32 @@ public class SystemInfo
         }
 
         return sb.toString();
+    }
+
+    //-------------------//
+    // getMeasureStackAt //
+    //-------------------//
+    /**
+     * Report the measure stack that contains the provided point.
+     *
+     * @param point the provided point
+     * @return the containing measure stack or null if none
+     */
+    public MeasureStack getMeasureStackAt (Point2D point)
+    {
+        final Staff staff = getStavesAround(point).get(0);
+        final double x = point.getX();
+
+        for (MeasureStack stack : stacks) {
+            Measure measure = stack.getMeasureAt(staff);
+
+            if ((x >= measure.getAbscissa(LEFT, staff))
+                && (x <= measure.getAbscissa(RIGHT, staff))) {
+                return stack;
+            }
+        }
+
+        return null;
     }
 
     //------------------//
@@ -723,19 +730,6 @@ public class SystemInfo
         return vSections;
     }
 
-    //------------------//
-    // getNewSentenceId //
-    //------------------//
-    /**
-     * Report the id for a new sentence.
-     *
-     * @return the next id
-     */
-    public int getNewSentenceId ()
-    {
-        return ++sentenceCount;
-    }
-
     //----------------//
     // getNoteStaffAt //
     //----------------//
@@ -787,14 +781,6 @@ public class SystemInfo
         }
 
         return pos;
-    }
-
-    /**
-     * @return the optionalGlyphs
-     */
-    public List<Glyph> getOptionalGlyphs ()
-    {
-        return optionalGlyphs;
     }
 
     //---------//
@@ -852,28 +838,6 @@ public class SystemInfo
         return null;
     }
 
-    //-----------------//
-    // getPhysicalPart //
-    //-----------------//
-    /**
-     * Report the system part which implements the provided LogicalPart in this system.
-     *
-     * @param logicalPart the provided part model
-     * @return the corresponding system part, if any
-     */
-    public Part getPhysicalPart (LogicalPart logicalPart)
-    {
-        for (Part part : parts) {
-            if (part.getLogicalPart() == logicalPart) {
-                return part;
-            }
-        }
-
-        logger.debug("{} No system part for {}", this, logicalPart);
-
-        return null;
-    }
-
     //---------------//
     // getPartGroups //
     //---------------//
@@ -918,6 +882,28 @@ public class SystemInfo
         return parts;
     }
 
+    //-----------------//
+    // getPhysicalPart //
+    //-----------------//
+    /**
+     * Report the system part which implements the provided LogicalPart in this system.
+     *
+     * @param logicalPart the provided part model
+     * @return the corresponding system part, if any
+     */
+    public Part getPhysicalPart (LogicalPart logicalPart)
+    {
+        for (Part part : parts) {
+            if (part.getLogicalPart() == logicalPart) {
+                return part;
+            }
+        }
+
+        logger.debug("{} No system part for {}", this, logicalPart);
+
+        return null;
+    }
+
     //--------------------//
     // getPrecedingInPage //
     //--------------------//
@@ -957,30 +943,17 @@ public class SystemInfo
         return left + width;
     }
 
-    //----------------//
-    // getScoreSystem //
-    //----------------//
-    /**
-     * Report the related logical score system.
-     *
-     * @return the logical score System counterpart
-     */
-    public ScoreSystem getScoreSystem ()
-    {
-        return scoreSystem;
-    }
-
     //--------------//
-    // getSentences //
+    // getTextLines //
     //--------------//
     /**
-     * Report the various sentences retrieved in this system.
+     * Report the various text lines retrieved in this system.
      *
-     * @return the (perhaps empty) collection of sentences found
+     * @return the (perhaps empty) collection of text lines found
      */
-    public Set<TextLine> getSentences ()
+    public Set<TextLine> getTextLines ()
     {
-        return sentences;
+        return textLines;
     }
 
     //----------//
@@ -1046,6 +1019,61 @@ public class SystemInfo
         return above;
     }
 
+    //-------------------//
+    // getStaffAtOrAbove //
+    //-------------------//
+    public Staff getStaffAtOrAbove (Point2D point)
+    {
+        final Staff closest = getClosestStaff(point);
+
+        if (closest == null) {
+            return null;
+        }
+
+        final double toTop = closest.getFirstLine().yAt(point.getX()) - point.getY();
+
+        if (toTop <= 0) {
+            // Closest staff contains or is above point, so select it
+            return closest;
+        }
+
+        // Closest staff is below point, so select previous staff if any
+        final int index = staves.indexOf(closest);
+
+        if (index > 0) {
+            return staves.get(index - 1);
+        }
+
+        return null;
+    }
+
+    //-------------------//
+    // getStaffAtOrBelow //
+    //-------------------//
+    public Staff getStaffAtOrBelow (Point2D point)
+    {
+        final Staff closest = getClosestStaff(point);
+
+        if (closest == null) {
+            return null;
+        }
+        final double toBottom = closest.getLastLine().yAt(point.getX()) - point.getY();
+
+        if (toBottom >= 0) {
+            // Closest staff contains or is below point, so select it
+            return closest;
+        }
+
+        // Closest staff is above point, so select next staff if any
+        final int index = staves.indexOf(closest);
+
+        if (index < (staves.size() - 1)) {
+            return staves.get(index + 1);
+        }
+
+        return null;
+    }
+
     //---------------//
     // getStaffBelow //
     //---------------//
@@ -1078,17 +1106,17 @@ public class SystemInfo
      * @param point the point whose ordinate is to be checked
      * @return the StaffPosition value
      */
-    public SystemNode.StaffPosition getStaffPosition (Point2D point)
+    public StaffPosition getStaffPosition (Point2D point)
     {
         if (point.getY() < getFirstStaff().getFirstLine().yAt(point.getX())) {
-            return SystemNode.StaffPosition.ABOVE_STAVES;
+            return StaffPosition.ABOVE_STAVES;
         }
 
         if (point.getY() > getLastStaff().getLastLine().yAt(point.getX())) {
-            return SystemNode.StaffPosition.BELOW_STAVES;
+            return StaffPosition.BELOW_STAVES;
         }
 
-        return SystemNode.StaffPosition.WITHIN_STAVES;
+        return StaffPosition.WITHIN_STAVES;
     }
 
     //-----------//
@@ -1217,23 +1245,6 @@ public class SystemInfo
     public String idString ()
     {
         return "system#" + id;
-    }
-
-    //---------------//
-    // inspectGlyphs //
-    //---------------//
-    /**
-     * Process the given system, by retrieving unassigned glyphs,
-     * evaluating and assigning them if OK, or trying compounds
-     * otherwise.
-     *
-     * @param minGrade the minimum acceptable grade for this processing
-     * @param wide     flag for extra wide compound box
-     */
-    public void inspectGlyphs (double minGrade,
-                               boolean wide)
-    {
-        glyphInspector.inspectGlyphs(minGrade, wide);
     }
 
     //------------//
@@ -1372,45 +1383,6 @@ public class SystemInfo
         glyph.cutSections();
     }
 
-    //----------------------//
-    // removeInactiveGlyphs //
-    //----------------------//
-    /**
-     * On a specified system, look for all inactive glyphs and remove
-     * them from its glyphs collection (but leave them in the
-     * containing nest).
-     * Purpose is to prepare room for a new glyph extraction
-     */
-    public void removeInactiveGlyphs ()
-    {
-        // To avoid concurrent modifs exception
-        Collection<Glyph> toRemove = new ArrayList<Glyph>();
-
-        for (Glyph glyph : getGlyphs()) {
-            if (!glyph.isActive()) {
-                toRemove.add(glyph);
-            }
-        }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("removeInactiveGlyphs: {} {}", toRemove.size(), Glyphs.toString(toRemove));
-        }
-
-        for (Glyph glyph : toRemove) {
-            // Remove glyph from system & cut sections links to it
-            removeGlyph(glyph);
-        }
-    }
-
-    //----------------//
-    // resetSentences //
-    //----------------//
-    public void resetSentences ()
-    {
-        sentences.clear();
-        sentenceCount = 0;
-    }
-
     //----------------//
     // retrieveGlyphs //
     //----------------//
@@ -1430,19 +1402,6 @@ public class SystemInfo
 
         // Record them into the system
         glyphs.addAll(newGlyphs);
-    }
-
-    //-------------//
-    // runPatterns //
-    //-------------//
-    /**
-     * Run the series of glyphs patterns.
-     *
-     * @return true if some progress has been made
-     */
-    public boolean runPatterns ()
-    {
-        return new PatternsChecker(this).runPatterns();
     }
 
     //---------//
@@ -1477,20 +1436,39 @@ public class SystemInfo
         this.indented = indented;
     }
 
-    /**
-     * @param optionalGlyphs the optionalGlyphs to set
-     */
-    public void setOptionalGlyphs (List<Glyph> optionalGlyphs)
-    {
-        this.optionalGlyphs = optionalGlyphs;
-    }
-
     //---------//
     // setPage //
     //---------//
     public void setPage (Page page)
     {
         this.page = page;
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the IDs of the system collection.
+     *
+     * @param systems the collection of systems
+     * @return the string built
+     */
+    public static String toString (Collection<SystemInfo> systems)
+    {
+        if (systems == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(" systems[");
+
+        for (SystemInfo system : systems) {
+            sb.append("#").append(system.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
     }
 
     //-----------//
@@ -1508,6 +1486,35 @@ public class SystemInfo
         }
 
         updateCoordinates();
+    }
+
+    //-------------------//
+    // updateCoordinates //
+    //-------------------//
+    public final void updateCoordinates ()
+    {
+        Staff firstStaff = getFirstStaff();
+        LineInfo firstLine = firstStaff.getFirstLine();
+        Point2D topLeft = firstLine.getEndPoint(LEFT);
+
+        Staff lastStaff = getLastStaff();
+        LineInfo lastLine = lastStaff.getLastLine();
+        Point2D botLeft = lastLine.getEndPoint(LEFT);
+
+        left = Integer.MAX_VALUE;
+
+        int right = 0;
+
+        for (Staff staff : staves) {
+            left = Math.min(left, staff.getAbscissa(LEFT));
+            right = Math.max(right, staff.getAbscissa(RIGHT));
+        }
+
+        top = (int) Math.rint(topLeft.getY());
+        width = right - left + 1;
+        deltaY = (int) Math.rint(
+                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+        bottom = (int) Math.rint(botLeft.getY());
     }
 
     //
@@ -1549,86 +1556,6 @@ public class SystemInfo
         }
 
         sb.append("}");
-
-        return sb.toString();
-    }
-
-    //----------------//
-    // translateFinal //
-    //----------------//
-    /**
-     * Launch from this system the final processing of impacted systems
-     * to translate them to score entities.
-     */
-    public void translateFinal ()
-    {
-        translator.translateFinal();
-    }
-
-    //-----------------//
-    // translateSystem //
-    //-----------------//
-    /**
-     * Translate the physical Sheet system data into Score system
-     * entities.
-     */
-    public void translateSystem ()
-    {
-        translator.translateSystem();
-    }
-
-    //-------------------//
-    // updateCoordinates //
-    //-------------------//
-    public final void updateCoordinates ()
-    {
-        Staff firstStaff = getFirstStaff();
-        LineInfo firstLine = firstStaff.getFirstLine();
-        Point2D topLeft = firstLine.getEndPoint(LEFT);
-
-        Staff lastStaff = getLastStaff();
-        LineInfo lastLine = lastStaff.getLastLine();
-        Point2D botLeft = lastLine.getEndPoint(LEFT);
-
-        left = Integer.MAX_VALUE;
-
-        int right = 0;
-
-        for (Staff staff : staves) {
-            left = Math.min(left, staff.getAbscissa(LEFT));
-            right = Math.max(right, staff.getAbscissa(RIGHT));
-        }
-
-        top = (int) Math.rint(topLeft.getY());
-        width = right - left + 1;
-        deltaY = (int) Math.rint(
-                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
-        bottom = (int) Math.rint(botLeft.getY());
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Convenient method, to build a string with just the IDs of the system collection.
-     *
-     * @param systems the collection of systems
-     * @return the string built
-     */
-    public static String toString (Collection<SystemInfo> systems)
-    {
-        if (systems == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(" systems[");
-
-        for (SystemInfo system : systems) {
-            sb.append("#").append(system.getId());
-        }
-
-        sb.append("]");
 
         return sb.toString();
     }

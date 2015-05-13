@@ -52,12 +52,6 @@ public class EndingBarRelation
         return endingSide;
     }
 
-    @Override
-    public String getName ()
-    {
-        return "Ending-Bar";
-    }
-
     //-----------//
     // internals //
     //-----------//

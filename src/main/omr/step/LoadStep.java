@@ -14,6 +14,7 @@ package omr.step;
 import omr.sheet.Book;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.SheetTab;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,5 +59,14 @@ public class LoadStep
         if (image != null) {
             sheet.setImage(image);
         }
+    }
+
+    //-------------//
+    // getSheetTab //
+    //-------------//
+    @Override
+    public SheetTab getSheetTab ()
+    {
+        return SheetTab.PICTURE_TAB;
     }
 }

@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.sig.inter;
 
-import omr.score.entity.TimeRational;
-import omr.score.entity.TimeValue;
+import omr.score.TimeRational;
+import omr.score.TimeValue;
 
 import omr.sheet.Staff;
 

@@ -21,25 +21,16 @@ import omr.constant.ConstantSet;
  * @author Hervé Bitteur
  */
 public class FermataNoteRelation
-        extends BasicSupport
+        extends AbstractSupport
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Override
-    public String getName ()
-    {
-        return "Fermata-Note";
-    }
-
-    @Override
-    protected double getSourceCoeff ()
-    {
-        return 0; // No support for fermata (since done via chord in FermataChordRelation)
-    }
-
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
     @Override
     protected double getTargetCoeff ()
     {

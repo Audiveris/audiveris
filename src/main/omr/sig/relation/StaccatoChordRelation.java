@@ -48,15 +48,6 @@ public class StaccatoChordRelation
         return constants.xGapMax;
     }
 
-    //---------//
-    // getName //
-    //---------//
-    @Override
-    public String getName ()
-    {
-        return "Staccato-Chord";
-    }
-
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
@@ -92,25 +83,29 @@ public class StaccatoChordRelation
     }
 
     //----------------//
-    // getTargetCoeff //
+    // getSourceCoeff //
     //----------------//
     /**
-     * StaccatoChordRelation brings no support on target (chord) side.
-     *
-     * @return 0
+     * @return the supporting coefficient for (source) staccato dot
      */
     @Override
-    protected double getTargetCoeff ()
+    protected double getSourceCoeff ()
     {
-        return 0;
+        return constants.staccatoDotSupportCoeff.getValue();
     }
 
+    //---------------//
+    // getXOutGapMax //
+    //---------------//
     @Override
     protected Scale.Fraction getXOutGapMax ()
     {
         return getXOutGapMaximum();
     }
 
+    //------------//
+    // getYGapMax //
+    //------------//
     @Override
     protected Scale.Fraction getYGapMax ()
     {
@@ -125,6 +120,10 @@ public class StaccatoChordRelation
             extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Ratio staccatoDotSupportCoeff = new Constant.Ratio(
+                5,
+                "Supporting coeff for (source) staccato dot");
 
         final Scale.Fraction xGapMax = new Scale.Fraction(
                 0.75,

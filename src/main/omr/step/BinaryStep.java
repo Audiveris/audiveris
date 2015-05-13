@@ -109,6 +109,15 @@ public class BinaryStep
         }
     }
 
+    //-------------//
+    // getSheetTab //
+    //-------------//
+    @Override
+    public SheetTab getSheetTab ()
+    {
+        return SheetTab.BINARY_TAB;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //

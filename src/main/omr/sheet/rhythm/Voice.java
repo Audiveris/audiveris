@@ -14,8 +14,8 @@ package omr.sheet.rhythm;
 import omr.math.GCD;
 import omr.math.Rational;
 
-import omr.score.entity.Mark;
-import omr.score.entity.TimeRational;
+import omr.score.Mark;
+import omr.score.TimeRational;
 
 import omr.sheet.Part;
 import omr.sheet.beam.BeamGroup;
@@ -164,8 +164,13 @@ public class Voice
     {
         this.measure = measure;
 
-        MeasureStack stack = measure.getStack();
-        id = stack.getVoicesNumber() + 1;
+        if (measure.isDummy()) {
+            id = measure.getVoices().size() + 1;
+        } else {
+            MeasureStack stack = measure.getStack();
+            id = stack.getVoiceCount() + 1;
+        }
+
         chord.setVoice(this);
 
         if (chord.isWholeRest()) {

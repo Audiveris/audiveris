@@ -36,12 +36,6 @@ public class BarGroupRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Override
-    public String getName ()
-    {
-        return "BarGroup";
-    }
-
     //-----------//
     // internals //
     //-----------//

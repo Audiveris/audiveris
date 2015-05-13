@@ -18,8 +18,8 @@ import omr.image.GlobalDescriptor;
 
 import omr.plugin.PluginManager;
 
-import omr.score.entity.LogicalPart;
-import omr.score.midi.MidiAbstractions;
+import omr.score.LogicalPart;
+import omr.score.MidiAbstractions;
 
 import omr.script.ParametersTask;
 import omr.script.ParametersTask.PartData;
@@ -973,21 +973,21 @@ public class ScoreParameters
         private final LTextField id = new LTextField("Id", "Id of the score part");
 
         /** Name of the part */
-        private LTextField name = new LTextField(true, "Name", "Name for the score part");
+        private final LTextField name = new LTextField(true, "Name", "Name for the score part");
 
         /** Midi Instrument */
-        private JLabel midiLabel = new JLabel("Midi");
+        private final JLabel midiLabel = new JLabel("Midi");
 
-        private JComboBox<String> midiBox = new JComboBox<String>(
+        private final JComboBox<String> midiBox = new JComboBox<String>(
                 MidiAbstractions.getProgramNames());
 
         //~ Constructors ---------------------------------------------------------------------------
-        public PartPanel (LogicalPart logicalPart)
+        public PartPanel (LogicalPart part)
         {
-            label = new JLabel("Part #" + logicalPart.getId());
+            label = new JLabel("Part #" + part.getId());
 
             // Let's impose the id!
-            id.setText(logicalPart.getPid());
+            id.setText(part.getPid());
         }
 
         //~ Methods --------------------------------------------------------------------------------

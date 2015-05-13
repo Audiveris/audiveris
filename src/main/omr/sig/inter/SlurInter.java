@@ -19,7 +19,10 @@ import omr.math.PointUtil;
 
 import omr.sheet.Scale;
 import omr.sheet.Staff;
+import omr.sheet.SystemInfo;
 import omr.sheet.curve.SlurInfo;
+import omr.sheet.rhythm.Measure;
+import omr.sheet.rhythm.MeasureStack;
 
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;
@@ -34,6 +37,7 @@ import omr.util.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.geom.Point2D;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.Map;
@@ -90,18 +94,21 @@ public class SlurInter
         public boolean check (SlurInter slur)
         {
             if (slur.getHead(RIGHT) == null) {
-                //                // Check we are in last measure
-                //                Point2D p2 = slur.getCurve().getP2();
-                //                OldMeasure measure = slur.getPart()
-                //                        .getMeasureAt(new Point((int) p2.getX(), (int) p2.getY()));
-                //
-                //                if (measure == slur.getPart().getLastMeasure()) {
-                //                    // Check slur ends in last measure half
-                //                    if (p2.getX() > measure.getCenter().x) {
-                //                        return true;
-                //                    }
-                //                }
-                return true;
+                // Check we are in last measure
+                Point2D end = slur.getInfo().getCurve().getP2();
+                SystemInfo system = slur.getSig().getSystem();
+                MeasureStack stack = system.getMeasureStackAt(end);
+
+                if (stack == system.getLastMeasureStack()) {
+                    // Check slur ends in last measure half
+                    Staff staff = system.getClosestStaff(end);
+                    Measure measure = stack.getMeasureAt(staff);
+                    int middle = measure.getAbscissa(LEFT, staff) + (measure.getWidth() / 2);
+
+                    if (end.getX() > middle) {
+                        return true;
+                    }
+                }
             }
 
             return false;
@@ -115,18 +122,21 @@ public class SlurInter
         public boolean check (SlurInter slur)
         {
             if (slur.getHead(LEFT) == null) {
-                //                // Check we are in first measure
-                //                Point2D p1 = slur.getCurve().getP1();
-                //                OldMeasure measure = slur.getPart()
-                //                        .getMeasureAt(new Point((int) p1.getX(), (int) p1.getY()));
-                //
-                //                if (measure == slur.getPart().getFirstMeasure()) {
-                //                    // Check slur begins in first measure half
-                //                    if (p1.getX() < measure.getCenter().x) {
-                //                        return true;
-                //                    }
-                //                }
-                return true;
+                // Check we are in first measure
+                Point2D end = slur.getInfo().getCurve().getP1();
+                SystemInfo system = slur.getSig().getSystem();
+                MeasureStack stack = system.getMeasureStackAt(end);
+
+                if (stack == system.getFirstMeasureStack()) {
+                    // Check slur ends in first measure half
+                    Staff staff = system.getClosestStaff(end);
+                    Measure measure = stack.getMeasureAt(staff);
+                    int middle = measure.getAbscissa(LEFT, staff) + (measure.getWidth() / 2);
+
+                    if (end.getX() < middle) {
+                        return true;
+                    }
+                }
             }
 
             return false;
@@ -207,7 +217,7 @@ public class SlurInter
         prevSlur.tie = isATie;
         this.tie = isATie;
 
-        logger.debug("{} connection {} -> {}", isATie ? "Tie" : "Slur", prevSlur, this);
+        logger.info("{} connection {} -> {}", isATie ? "Tie" : "Slur", prevSlur, this);
     }
 
     //------------//
@@ -333,10 +343,10 @@ public class SlurInter
 
         // Retrieve prev position, using the right point of the prev slur
         double prevPp = prevStaff.pitchPositionOf(
-                PointUtil.integer(prevSlur.getInfo().getCurve().getP2()));
+                PointUtil.rounded(prevSlur.getInfo().getCurve().getP2()));
 
         // Retrieve position, using the left point of the slur
-        double pp = thisStaff.pitchPositionOf(PointUtil.integer(info.getCurve().getP1()));
+        double pp = thisStaff.pitchPositionOf(PointUtil.rounded(info.getCurve().getP1()));
 
         // Compare pitch positions (very roughly)
         double deltaPitch = pp - prevPp;

@@ -14,11 +14,6 @@ package omr.score;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.score.entity.LogicalPart;
-import omr.score.entity.Page;
-import omr.score.entity.ScoreNode;
-import omr.score.entity.Tempo;
-import omr.score.visitor.ScoreVisitor;
 
 import omr.script.ParametersTask.PartData;
 
@@ -26,7 +21,6 @@ import omr.sheet.Book;
 import omr.sheet.SystemInfo;
 
 import omr.util.Param;
-import omr.util.TreeNode;
 
 import com.audiveris.proxymusic.util.Source;
 
@@ -43,7 +37,6 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class Score
-        extends ScoreNode
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -79,19 +72,9 @@ public class Score
      */
     public Score ()
     {
-        super(null); // No container
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
     //---------//
     // addPage //
     //---------//
@@ -136,23 +119,6 @@ public class Score
     public void close ()
     {
         logger.info("Closing {}", this);
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * Dump a whole score hierarchy.
-     */
-    public void dump ()
-    {
-        System.out.println("----------------------------------------------------------------");
-
-        if (dumpNode()) {
-            dumpChildren(1);
-        }
-
-        System.out.println("----------------------------------------------------------------");
     }
 
     //------------------//
@@ -294,20 +260,6 @@ public class Score
         return partsParam;
     }
 
-    //---------------//
-    // getScorePages //
-    //---------------//
-    /**
-     * Report the collection of pages in that score.
-     *
-     * @return the pages
-     */
-    @Deprecated
-    public List<TreeNode> getScorePages ()
-    {
-        return getChildren();
-    }
-
     //----------------//
     // getTempoParam //
     //---------------//
@@ -421,22 +373,6 @@ public class Score
         this.volume = volume;
     }
 
-    //
-    //    //------------------//
-    //    // simpleDurationOf //
-    //    //------------------//
-    //    /**
-    //     * Export a duration to its simplest form, based on the greatest duration divisor of
-    //     * the score.
-    //     *
-    //     * @param value the raw duration
-    //     * @return the simple duration expression, in the param of proper divisions
-    //     */
-    //    public int simpleDurationOf (Rational value)
-    //    {
-    //        return value.num * (getDurationDivisor() / value.den);
-    //    }
-    //
     //----------//
     // toString //
     //----------//
@@ -447,60 +383,6 @@ public class Score
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //
-    //    //------------------------//
-    //    // computeDurationDivisor //
-    //    //------------------------//
-    //    /**
-    //     * Browse the whole score to determine the global duration divisor.
-    //     * <p>
-    //     * TODO: Here we retrieve divisor for the whole score. We could work on each part only.
-    //     *
-    //     * @return the score duration divisor
-    //     */
-    //    private int computeDurationDivisor ()
-    //    {
-    //        try {
-    //            final SortedSet<Rational> durations = new TreeSet<Rational>();
-    //
-    //            // Collect duration values for each chord in score
-    //            for (Page page : getPages()) {
-    //                for (SystemInfo system : page.getSystems()) {
-    //                    for (MeasureStack stack : system.getMeasureStacks()) {
-    //                        for (ChordInter chord : stack.getChords()) {
-    //                            try {
-    //                                final Rational duration = chord.isWholeDuration()
-    //                                        ? stack.getExpectedDuration()
-    //                                        : chord.getDuration();
-    //
-    //                                if (duration != null) {
-    //                                    durations.add(duration);
-    //                                }
-    //                            } catch (TimeSignature.InvalidTimeSignature ex) {
-    //                                // Ignored here (TBC)
-    //                            } catch (Exception ex) {
-    //                                logger.warn(
-    //                                        getClass().getSimpleName() + " Error visiting " + chord,
-    //                                        ex);
-    //                            }
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //
-    //            // Compute greatest duration divisor for the score
-    //            Rational[] durationArray = durations.toArray(new Rational[durations.size()]);
-    //            Rational divisor = Rational.gcd(durationArray);
-    //            logger.debug("durations={} divisor={}", Arrays.deepToString(durationArray), divisor);
-    //
-    //            return divisor.den;
-    //        } catch (Exception ex) {
-    //            logger.warn(getClass().getSimpleName() + " Error visiting " + this, ex);
-    //
-    //            return 0;
-    //        }
-    //    }
-    //
     //-----------//
     // Constants //
     //-----------//

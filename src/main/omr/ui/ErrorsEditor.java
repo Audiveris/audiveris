@@ -13,14 +13,6 @@ package omr.ui;
 
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.MeasureNode;
-import omr.score.entity.OldMeasure;
-import omr.score.entity.SystemNode;
-
-import omr.selection.GlyphEvent;
-import omr.selection.LocationEvent;
-import omr.selection.SelectionHint;
-
 import omr.sheet.Sheet;
 
 import omr.step.Step;
@@ -28,9 +20,6 @@ import omr.step.Step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -39,7 +28,6 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -93,78 +81,77 @@ public class ErrorsEditor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // addError //
-    //----------//
-    /**
-     * Record an error within a SystemNode entity.
-     *
-     * @param node the node in the score hierarchy
-     * @param text the message text
-     */
-    public void addError (SystemNode node,
-                          String text)
-    {
-        addError(node, null, text);
-    }
-
-    //----------//
-    // addError //
-    //----------//
-    /**
-     * Record an error within a SystemNode entity, and related to a
-     * specific glyph.
-     *
-     * @param node  the containing node in score hierarchy
-     * @param glyph the related glyph
-     * @param text  the message text
-     */
-    public void addError (final SystemNode node,
-                          final Glyph glyph,
-                          final String text)
-    {
-        final Step step = getCurrentStep();
-
-        SwingUtilities.invokeLater(
-                new Runnable()
-                {
-                    // This part is run on swing thread
-                    @Override
-                    public void run ()
-                    {
-                        if (recordSet.add(new Record(step, node, glyph, text))) {
-                            // Update the model
-                            model.removeAllElements();
-
-                            for (Record record : recordSet) {
-                                model.addElement(record);
-                            }
-                        }
-                    }
-                });
-    }
-
-    //-------//
-    // clear //
-    //-------//
-    /**
-     * Remove all errors from the editor. (Not used?)
-     */
-    public void clear ()
-    {
-        SwingUtilities.invokeLater(
-                new Runnable()
-                {
-                    // This part is run on swing thread
-                    @Override
-                    public void run ()
-                    {
-                        recordSet.clear();
-                        model.removeAllElements();
-                    }
-                });
-    }
-
+    //    //----------//
+    //    // addError //
+    //    //----------//
+    //    /**
+    //     * Record an error within a SystemNode entity.
+    //     *
+    //     * @param node the node in the score hierarchy
+    //     * @param text the message text
+    //     */
+    //    public void addError (OldSystemNode node,
+    //                          String text)
+    //    {
+    //        addError(node, null, text);
+    //    }
+    //
+    //    //----------//
+    //    // addError //
+    //    //----------//
+    //    /**
+    //     * Record an error within a SystemNode entity, and related to a
+    //     * specific glyph.
+    //     *
+    //     * @param node  the containing node in score hierarchy
+    //     * @param glyph the related glyph
+    //     * @param text  the message text
+    //     */
+    //    public void addError (final OldSystemNode node,
+    //                          final Glyph glyph,
+    //                          final String text)
+    //    {
+    //        final Step step = getCurrentStep();
+    //
+    //        SwingUtilities.invokeLater(
+    //                new Runnable()
+    //                {
+    //                    // This part is run on swing thread
+    //                    @Override
+    //                    public void run ()
+    //                    {
+    //                        if (recordSet.add(new Record(step, node, glyph, text))) {
+    //                            // Update the model
+    //                            model.removeAllElements();
+    //
+    //                            for (Record record : recordSet) {
+    //                                model.addElement(record);
+    //                            }
+    //                        }
+    //                    }
+    //                });
+    //    }
+    //
+    //    //-------//
+    //    // clear //
+    //    //-------//
+    //    /**
+    //     * Remove all errors from the editor. (Not used?)
+    //     */
+    //    public void clear ()
+    //    {
+    //        SwingUtilities.invokeLater(
+    //                new Runnable()
+    //                {
+    //                    // This part is run on swing thread
+    //                    @Override
+    //                    public void run ()
+    //                    {
+    //                        recordSet.clear();
+    //                        model.removeAllElements();
+    //                    }
+    //                });
+    //    }
     //-----------//
     // clearStep //
     //-----------//
@@ -175,34 +162,34 @@ public class ErrorsEditor
      */
     public void clearStep (final Step step)
     {
-        SwingUtilities.invokeLater(
-                new Runnable()
-                {
-                    // This part is run on swing thread
-                    @Override
-                    public void run ()
-                    {
-                        logger.debug("Clearing errors for {}", step);
-
-                        for (Iterator<Record> it = recordSet.iterator(); it.hasNext();) {
-                            Record record = it.next();
-
-                            if (record.step == step) {
-                                it.remove();
-                            }
-                        }
-
-                        // Update the model
-                        model.removeAllElements();
-
-                        for (Record record : recordSet) {
-                            model.addElement(record);
-                        }
-                    }
-                });
+//            SwingUtilities.invokeLater(
+//                    new Runnable()
+//                    {
+//                        // This part is run on swing thread
+//                        @Override
+//                        public void run ()
+//                        {
+//                            logger.debug("Clearing errors for {}", step);
+//
+//                            for (Iterator<Record> it = recordSet.iterator(); it.hasNext();) {
+//                                Record record = it.next();
+//
+//                                if (record.step == step) {
+//                                    it.remove();
+//                                }
+//                            }
+//
+//                            // Update the model
+//                            model.removeAllElements();
+//
+//                            for (Record record : recordSet) {
+//                                model.addElement(record);
+//                            }
+//                        }
+//                    });
     }
 
-    //-------------//
+        //-------------//
     // clearSystem //
     //-------------//
     /**
@@ -216,32 +203,32 @@ public class ErrorsEditor
     public void clearSystem (final Step step,
                              final int systemId)
     {
-        SwingUtilities.invokeLater(
-                new Runnable()
-                {
-                    // This part is run on swing thread
-                    @Override
-                    public void run ()
-                    {
-                        logger.debug("Clearing errors for {} system {}", step, systemId);
-
-                        for (Iterator<Record> it = recordSet.iterator(); it.hasNext();) {
-                            Record record = it.next();
-
-                            if ((record.step == step)
-                                && (record.node.getSystem().getId() == systemId)) {
-                                it.remove();
-                            }
-                        }
-
-                        // Update the model
-                        model.removeAllElements();
-
-                        for (Record record : recordSet) {
-                            model.addElement(record);
-                        }
-                    }
-                });
+//            SwingUtilities.invokeLater(
+//                    new Runnable()
+//                    {
+//                        // This part is run on swing thread
+//                        @Override
+//                        public void run ()
+//                        {
+//                            logger.debug("Clearing errors for {} system {}", step, systemId);
+//
+//                            for (Iterator<Record> it = recordSet.iterator(); it.hasNext();) {
+//                                Record record = it.next();
+//
+//                                if ((record.step == step)
+//                                    && (record.node.getSystem().getId() == systemId)) {
+//                                    it.remove();
+//                                }
+//                            }
+//
+//                            // Update the model
+//                            model.removeAllElements();
+//
+//                            for (Record record : recordSet) {
+//                                model.addElement(record);
+//                            }
+//                        }
+//                    });
     }
 
     //--------------//
@@ -257,22 +244,23 @@ public class ErrorsEditor
         return scrollPane;
     }
 
-    //----------------//
-    // getCurrentStep //
-    //----------------//
-    /**
-     * Retrieve the step being performed on the sheet.
-     * Beware, during SCORE step and following steps, just the first sheet has a current step
-     * assigned.
-     *
-     * @return the step being done
-     */
-    private Step getCurrentStep ()
-    {
-        return sheet.getCurrentStep();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+    //
+    //    //----------------//
+    //    // getCurrentStep //
+    //    //----------------//
+    //    /**
+    //     * Retrieve the step being performed on the sheet.
+    //     * Beware, during SCORE step and following steps, just the first sheet has a current step
+    //     * assigned.
+    //     *
+    //     * @return the step being done
+    //     */
+    //    private Step getCurrentStep ()
+    //    {
+    //        return sheet.getCurrentStep();
+    //    }
+    //
     //------------//
     // MyListener //
     //------------//
@@ -288,49 +276,49 @@ public class ErrorsEditor
         @Override
         public void valueChanged (ListSelectionEvent e)
         {
-            if ((e.getSource() == list) && !e.getValueIsAdjusting()) {
-                Record record = list.getSelectedValue();
-
-                if (record != null) {
-                    logger.debug("value={}", record);
-
-                    // Use glyph location if available
-                    if (record.glyph != null) {
-                        sheet.getGlyphNest().getGlyphService().publish(
-                                new GlyphEvent(this, SelectionHint.GLYPH_INIT, null, record.glyph));
-                    } else {
-                        // Otherwise use node location as possible
-                        try {
-                            Point pixPt = null;
-
-                            try {
-                                pixPt = record.node.getCenter();
-                            } catch (Exception ex) {
-                            }
-
-                            if (pixPt == null) {
-                                if (record.node instanceof MeasureNode) {
-                                    MeasureNode mn = (MeasureNode) record.node;
-                                    OldMeasure measure = mn.getMeasure();
-
-                                    if (measure != null) {
-                                        pixPt = measure.getCenter();
-                                    }
-                                }
-                            }
-
-                            sheet.getLocationService().publish(
-                                    new LocationEvent(
-                                            ErrorsEditor.this,
-                                            SelectionHint.LOCATION_INIT,
-                                            null,
-                                            new Rectangle(pixPt)));
-                        } catch (Exception ex) {
-                            logger.warn("Failed pointing to " + record.node, ex);
-                        }
-                    }
-                }
-            }
+            //            if ((e.getSource() == list) && !e.getValueIsAdjusting()) {
+            //                Record record = list.getSelectedValue();
+            //
+            //                if (record != null) {
+            //                    logger.debug("value={}", record);
+            //
+            //                    // Use glyph location if available
+            //                    if (record.glyph != null) {
+            //                        sheet.getGlyphNest().getGlyphService().publish(
+            //                                new GlyphEvent(this, SelectionHint.GLYPH_INIT, null, record.glyph));
+            //                    } else {
+            //                        // Otherwise use node location as possible
+            //                        try {
+            //                            Point pixPt = null;
+            //
+            //                            try {
+            //                                pixPt = record.node.getCenter();
+            //                            } catch (Exception ex) {
+            //                            }
+            //
+            //                            if (pixPt == null) {
+            //                                if (record.node instanceof OldMeasureNode) {
+            //                                    OldMeasureNode mn = (OldMeasureNode) record.node;
+            //                                    OldMeasure measure = mn.getMeasure();
+            //
+            //                                    if (measure != null) {
+            //                                        pixPt = measure.getCenter();
+            //                                    }
+            //                                }
+            //                            }
+            //
+            //                            sheet.getLocationService().publish(
+            //                                    new LocationEvent(
+            //                                            ErrorsEditor.this,
+            //                                            SelectionHint.LOCATION_INIT,
+            //                                            null,
+            //                                            new Rectangle(pixPt)));
+            //                        } catch (Exception ex) {
+            //                            logger.warn("Failed pointing to " + record.node, ex);
+            //                        }
+            //                    }
+            //                }
+            //            }
         }
     }
 
@@ -347,20 +335,21 @@ public class ErrorsEditor
 
         final Step step;
 
-        final SystemNode node;
-
+        //
+        //        final OldSystemNode node;
+        //
         final Glyph glyph;
 
         final String text;
 
         //~ Constructors ---------------------------------------------------------------------------
         public Record (Step step,
-                       SystemNode node,
+                       //                       OldSystemNode node,
                        Glyph glyph,
                        String text)
         {
             this.step = step;
-            this.node = node;
+            //            this.node = node;
             this.glyph = glyph;
             this.text = text;
         }
@@ -377,8 +366,8 @@ public class ErrorsEditor
         public String toString ()
         {
             StringBuilder sb = new StringBuilder();
-            sb.append(node.getContextString());
 
+            //            sb.append(node.getContextString());
             if (glyph != null) {
                 sb.append(" [").append(glyph.idString()).append("]");
             }

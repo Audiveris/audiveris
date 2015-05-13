@@ -22,7 +22,6 @@ import omr.graph.DigraphView;
 import omr.lag.Lag;
 import omr.lag.Section;
 
-import omr.score.entity.PartNode;
 import omr.score.ui.PaintingParameters;
 
 import omr.sheet.Sheet;
@@ -45,8 +44,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
@@ -255,13 +252,13 @@ public class NestView
                         renderGlyphSentence(glyph, g);
                     }
                 }
-
-                // Display translation links, if any
-                if (ViewParameters.getInstance().isTranslationPainting()) {
-                    for (Glyph glyph : glyphs) {
-                        renderGlyphTranslations(glyph, g);
-                    }
-                }
+//
+//                // Display translation links, if any
+//                if (ViewParameters.getInstance().isTranslationPainting()) {
+//                    for (Glyph glyph : glyphs) {
+//                        renderGlyphTranslations(glyph, g);
+//                    }
+//                }
             }
         } else {
             // Section selection mode
@@ -353,54 +350,55 @@ public class NestView
 
         g.setColor(oldColor);
     }
-
-    //-------------------------//
-    // renderGlyphTranslations //
-    //-------------------------//
-    private void renderGlyphTranslations (Glyph glyph,
-                                          Graphics2D g)
-    {
-        if (glyph.getTranslations().isEmpty()) {
-            return;
-        }
-
-        Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-        Color oldColor = g.getColor();
-        g.setColor(Colors.TRANSLATION_LINK);
-
-        // Compute end radius, with fixed size whatever the current zoom
-        double r = 1 / g.getTransform().getScaleX();
-
-        for (PartNode node : glyph.getTranslations()) {
-            for (Line2D line : node.getTranslationLinks(glyph)) {
-                // Draw line
-                g.draw(line);
-
-                // Draw ending points
-                Ellipse2D e1 = new Ellipse2D.Double(
-                        line.getX1() - r,
-                        line.getY1() - r,
-                        2 * r,
-                        2 * r);
-                g.draw(e1);
-
-                Ellipse2D e2 = new Ellipse2D.Double(
-                        line.getX2() - r,
-                        line.getY2() - r,
-                        2 * r,
-                        2 * r);
-                g.draw(e2);
-            }
-        }
-
-        g.setColor(oldColor);
-        g.setStroke(oldStroke);
-    }
-
+//
+//    //-------------------------//
+//    // renderGlyphTranslations //
+//    //-------------------------//
+//    private void renderGlyphTranslations (Glyph glyph,
+//                                          Graphics2D g)
+//    {
+//        if (glyph.getTranslations().isEmpty()) {
+//            return;
+//        }
+//
+//        Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+//        Color oldColor = g.getColor();
+//        g.setColor(Colors.TRANSLATION_LINK);
+//
+//        // Compute end radius, with fixed size whatever the current zoom
+//        double r = 1 / g.getTransform().getScaleX();
+//
+//        for (OldPartNode node : glyph.getTranslations()) {
+//            for (Line2D line : node.getTranslationLinks(glyph)) {
+//                // Draw line
+//                g.draw(line);
+//
+//                // Draw ending points
+//                Ellipse2D e1 = new Ellipse2D.Double(
+//                        line.getX1() - r,
+//                        line.getY1() - r,
+//                        2 * r,
+//                        2 * r);
+//                g.draw(e1);
+//
+//                Ellipse2D e2 = new Ellipse2D.Double(
+//                        line.getX2() - r,
+//                        line.getY2() - r,
+//                        2 * r,
+//                        2 * r);
+//                g.draw(e2);
+//            }
+//        }
+//
+//        g.setColor(oldColor);
+//        g.setStroke(oldStroke);
+//    }
+//
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
+
     private static final class Constants
             extends ConstantSet
     {

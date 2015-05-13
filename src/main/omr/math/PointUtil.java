@@ -101,14 +101,6 @@ public abstract class PointUtil
                 p2.getY() + ((dist * (p2.getY() - p1.getY())) / seg));
     }
 
-    //---------//
-    // integer //
-    //---------//
-    public static Point integer (Point2D p2d)
-    {
-        return new Point((int) Math.rint(p2d.getX()), (int) Math.rint(p2d.getY()));
-    }
-
     //--------//
     // length //
     //--------//
@@ -134,7 +126,7 @@ public abstract class PointUtil
      */
     public static Point rounded (Point2D p)
     {
-        return new Point((int) p.getX(), (int) p.getY());
+        return new Point((int) Math.rint(p.getX()), (int) Math.rint(p.getY()));
     }
 
     //-------------//

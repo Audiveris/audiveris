@@ -28,7 +28,7 @@ public class PedalInter
      * Creates a new {@code PedalInter} object.
      *
      * @param glyph the pedal glyph
-     * @param shape PEDAL_MARK or PEDAL_UP_MARK
+     * @param shape PEDAL_MARK (start) or PEDAL_UP_MARK (stop)
      * @param grade the interpretation quality
      */
     public PedalInter (Glyph glyph,

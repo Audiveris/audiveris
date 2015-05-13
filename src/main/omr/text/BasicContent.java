@@ -51,7 +51,7 @@ public class BasicContent
     private String manualValue;
 
     /** Manual role if any. */
-    private TextRoleInfo manualRole;
+    private TextRole manualRole;
 
     /** Language used for OCR. */
     private String ocrLanguage;
@@ -119,7 +119,7 @@ public class BasicContent
     // getManualRole //
     //---------------//
     @Override
-    public TextRoleInfo getManualRole ()
+    public TextRole getManualRole ()
     {
         return manualRole;
     }
@@ -159,7 +159,7 @@ public class BasicContent
     // getTextRole //
     //-------------//
     @Override
-    public TextRoleInfo getTextRole ()
+    public TextRole getTextRole ()
     {
         if (manualRole != null) {
             return manualRole;
@@ -215,7 +215,7 @@ public class BasicContent
     // setManualRole //
     //---------------//
     @Override
-    public void setManualRole (TextRoleInfo manualRole)
+    public void setManualRole (TextRole manualRole)
     {
         this.manualRole = manualRole;
     }

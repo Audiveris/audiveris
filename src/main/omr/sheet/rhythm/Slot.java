@@ -16,6 +16,7 @@ import omr.math.Population;
 import omr.math.Rational;
 
 import omr.sheet.Scale;
+import omr.sheet.Staff;
 import omr.sheet.beam.BeamGroup;
 
 import omr.sig.inter.ChordInter;
@@ -166,6 +167,69 @@ public class Slot
     public int compareTo (Slot other)
     {
         return Double.compare(xOffset, other.xOffset);
+    }
+
+    //-------------------//
+    // getChordJustAbove //
+    //-------------------//
+    /**
+     * Report the chord which is in staff just above the given point in this slot.
+     *
+     * @param point the given point
+     * @return the chord above, or null
+     */
+    public ChordInter getChordJustAbove (Point2D point)
+    {
+        ChordInter chordAbove = null;
+
+        // Staff at or above point
+        Staff staff = stack.getSystem().getStaffAtOrAbove(point);
+
+        if (staff != null) {
+            // We look for the chord just above
+            for (ChordInter chord : getChords()) {
+                Point head = chord.getHeadLocation();
+
+                if ((head != null) && (head.y < point.getY())) {
+                    if (chord.getStaff() == staff) {
+                        chordAbove = chord;
+                    }
+                } else {
+                    break; // Since slot chords are sorted from top to bottom
+                }
+            }
+        }
+
+        return chordAbove;
+    }
+
+    //-------------------//
+    // getChordJustBelow //
+    //-------------------//
+    /**
+     * Report the chord which is in staff just below the given point in this slot.
+     *
+     * @param point the given point
+     * @return the chord below, or null
+     */
+    public ChordInter getChordJustBelow (Point2D point)
+    {
+        // Staff at or below point
+        Staff staff = stack.getSystem().getStaffAtOrBelow(point);
+
+        if (staff != null) {
+            // We look for the chord just below
+            for (ChordInter chord : getChords()) {
+                Point head = chord.getHeadLocation();
+
+                if ((head != null) && (head.y > point.getY()) && (chord.getStaff() == staff)) {
+                    return chord;
+                }
+            }
+        }
+
+        // Not found
+        return null;
     }
 
     //
@@ -478,7 +542,7 @@ public class Slot
         }
 
         boolean started = false;
-        int voiceMax = stack.getVoicesNumber();
+        int voiceMax = stack.getVoiceCount();
 
         for (int iv = 1; iv <= voiceMax; iv++) {
             if (started) {
@@ -603,7 +667,12 @@ public class Slot
                 && (newChord.getVoice() != oldChord.getVoice())) {
                 return INCOMPATIBLE_VOICES;
             } else if (newChord.getStaff() != oldChord.getStaff()) {
-                return STAFF_DIFF;
+                // Different staves, but are they in same part?
+                if (newChord.getStaff().getPart() != oldChord.getStaff().getPart()) {
+                    return INCOMPATIBLE_VOICES;
+                } else {
+                    return STAFF_DIFF;
+                }
             } else {
                 int ds = 0;
                 BeamGroup group = oldChord.getBeamGroup();

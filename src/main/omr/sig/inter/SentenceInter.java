@@ -13,20 +13,31 @@ package omr.sig.inter;
 
 import omr.glyph.Shape;
 
+import omr.sheet.Part;
+
 import omr.text.FontInfo;
 import omr.text.TextLine;
-import omr.text.TextRoleInfo;
+import omr.text.TextRole;
 import omr.text.TextWord;
+
+import omr.ui.symbol.TextFont;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
  * Class {@code SentenceInter} represents a full sentence of words.
+ * <p>
+ * This class is used for any text role other than Lyrics (Title, Direction, Number, PartName,
+ * Creator & al, Rights, ChordName, UnknownRole)
+ * For Lyrics role , the specific subclass {@link LyricLineInter} is used.
  *
  * @author Hervé Bitteur
  */
@@ -38,34 +49,50 @@ public class SentenceInter
 
     private static final Logger logger = LoggerFactory.getLogger(SentenceInter.class);
 
+    /** For ordering sentences by their de-skewed ordinate. */
+    public static Comparator<SentenceInter> byOrdinate = new Comparator<SentenceInter>()
+    {
+        @Override
+        public int compare (SentenceInter s1,
+                            SentenceInter s2)
+        {
+            Point2D dsk1 = s1.getSig().getSystem().getSkew().deskewed(s1.getLocation());
+            Point2D dsk2 = s2.getSig().getSystem().getSkew().deskewed(s2.getLocation());
+
+            return Double.compare(dsk1.getY(), dsk2.getY());
+        }
+    };
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** Average font for the sentence. */
-    private final FontInfo meanFont;
+    protected final FontInfo meanFont;
 
     /** Role of this sentence. */
-    private final TextRoleInfo roleInfo;
+    protected final TextRole role;
 
     /** Sequence of sentence words. */
-    private final List<WordInter> words;
+    protected final List<WordInter> words;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SentenceInter} object.
      *
-     * @param box   the bounding box
-     * @param grade the interpretation quality
-     * @param words the sequence of words
+     * @param box      the bounding box
+     * @param grade    the interpretation quality
+     * @param meanFont the font averaged on whole text line
+     * @param role     text role for the line
+     * @param words    the sequence of words
      */
-    private SentenceInter (Rectangle box,
-                           double grade,
-                           FontInfo meanFont,
-                           TextRoleInfo roleInfo,
-                           List<WordInter> words)
+    protected SentenceInter (Rectangle box,
+                             double grade,
+                             FontInfo meanFont,
+                             TextRole role,
+                             List<WordInter> words)
     {
         super(null, box, Shape.TEXT, grade);
 
         this.meanFont = meanFont;
-        this.roleInfo = roleInfo;
+        this.role = role;
         this.words = words;
 
         for (WordInter word : words) {
@@ -74,12 +101,6 @@ public class SentenceInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Override
-    public void addMember (Inter member)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     //--------//
     // create //
     //--------//
@@ -118,6 +139,15 @@ public class SentenceInter
     }
 
     //-----------//
+    // addMember //
+    //-----------//
+    @Override
+    public void addMember (Inter member)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    //-----------//
     // getBounds //
     //-----------//
     /**
@@ -139,6 +169,51 @@ public class SentenceInter
         }
 
         return bounds;
+    }
+
+    //---------------------//
+    // getExportedFontSize //
+    //---------------------//
+    /**
+     * Report the font size to be exported for this text
+     *
+     * @return the exported font size
+     */
+    public int getExportedFontSize ()
+    {
+        return (int) Math.rint(meanFont.pointsize * TextFont.TO_POINT);
+    }
+
+    //--------------//
+    // getFirstWord //
+    //--------------//
+    public WordInter getFirstWord ()
+    {
+        if (words.isEmpty()) {
+            return null;
+        }
+
+        return words.get(0);
+    }
+
+    //-------------//
+    // getLastWord //
+    //-------------//
+    public WordInter getLastWord ()
+    {
+        if (words.isEmpty()) {
+            return null;
+        }
+
+        return words.get(words.size() - 1);
+    }
+
+    //-------------//
+    // getLocation //
+    //-------------//
+    public Point getLocation ()
+    {
+        return words.get(0).getLocation();
     }
 
     //-------------//
@@ -164,6 +239,19 @@ public class SentenceInter
     }
 
     //---------//
+    // getPart //
+    //---------//
+    /**
+     * Report the part that contains this sentence.
+     *
+     * @return the containing part
+     */
+    public Part getPart ()
+    {
+        return staff.getPart();
+    }
+
+    //---------//
     // getRole //
     //---------//
     /**
@@ -171,9 +259,9 @@ public class SentenceInter
      *
      * @return the roleInfo
      */
-    public TextRoleInfo getRole ()
+    public TextRole getRole ()
     {
-        return roleInfo;
+        return role;
     }
 
     //----------//
@@ -228,5 +316,19 @@ public class SentenceInter
     public String shapeString ()
     {
         return "SENTENCE_\"" + getValue() + "\"";
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        sb.append(' ').append(meanFont.getMnemo());
+        sb.append(' ').append(role);
+
+        return sb.toString();
     }
 }

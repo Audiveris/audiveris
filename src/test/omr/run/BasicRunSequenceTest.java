@@ -83,7 +83,7 @@ public class BasicRunSequenceTest
         System.out.println("testAddMid");
 
         List<Run> list = Arrays.asList(new Run(0, 3),
-                new Run(30, 5));
+                                       new Run(30, 5));
         BasicRunSequence seq = new BasicRunSequence(list);
         System.out.printf("beforeAdd seq: %s%n", seq);
         dump(seq);
@@ -92,6 +92,57 @@ public class BasicRunSequenceTest
         System.out.printf("afterAdd seq: %s%n", seq);
         dump(seq);
         assertEquals("[3, 7, 4, 16, 5]", seq.toString());
+    }
+
+    @Test
+    public void testOverwrite1 ()
+    {
+        System.out.println("testOverwrite1");
+
+        List<Run> list = Arrays.asList(new Run(0, 3),
+                                       new Run(30, 5));
+        BasicRunSequence seq = new BasicRunSequence(list);
+        System.out.printf("beforeAdd seq: %s%n", seq);
+        dump(seq);
+
+        boolean bool = seq.add(new Run(30, 2));
+        System.out.printf("afterAdd seq: %s%n", seq);
+        dump(seq);
+        assertFalse(bool);
+    }
+
+    @Test
+    public void testOverwrite2 ()
+    {
+        System.out.println("testOverwrite2");
+
+        List<Run> list = Arrays.asList(new Run(0, 3),
+                                       new Run(30, 5));
+        BasicRunSequence seq = new BasicRunSequence(list);
+        System.out.printf("beforeAdd seq: %s%n", seq);
+        dump(seq);
+
+        boolean bool = seq.add(new Run(32, 1));
+        System.out.printf("afterAdd seq: %s%n", seq);
+        dump(seq);
+        assertFalse(bool);
+    }
+
+    @Test
+    public void testOverwrite3 ()
+    {
+        System.out.println("testOverwrite3");
+
+        List<Run> list = Arrays.asList(new Run(0, 3),
+                                       new Run(30, 5));
+        BasicRunSequence seq = new BasicRunSequence(list);
+        System.out.printf("beforeAdd seq: %s%n", seq);
+        dump(seq);
+
+        boolean bool = seq.add(new Run(30, 6));
+        System.out.printf("afterAdd seq: %s%n", seq);
+        dump(seq);
+        assertFalse(bool);
     }
 
     @Test
@@ -136,8 +187,8 @@ public class BasicRunSequenceTest
         System.out.println("testEncode3");
 
         List<Run> list = Arrays.asList(new Run(0, 3),
-                new Run(23, 5),
-                new Run(30, 4));
+                                       new Run(23, 5),
+                                       new Run(30, 4));
         BasicRunSequence seq = new BasicRunSequence(list);
         System.out.printf("seq: %s%n", seq);
         assertEquals("[3, 20, 5, 2, 4]", seq.toString());
@@ -162,8 +213,8 @@ public class BasicRunSequenceTest
         System.out.println("testIterator");
 
         List<Run> list = Arrays.asList(new Run(0, 3),
-                new Run(23, 5),
-                new Run(30, 4));
+                                       new Run(23, 5),
+                                       new Run(30, 4));
         BasicRunSequence seq = new BasicRunSequence(list);
 
         for (Run run : seq) {
@@ -177,8 +228,8 @@ public class BasicRunSequenceTest
         System.out.println("testIterator2");
 
         List<Run> list = Arrays.asList(new Run(0, 3),
-                new Run(23, 5),
-                new Run(30, 4));
+                                       new Run(23, 5),
+                                       new Run(30, 4));
         BasicRunSequence seq = new BasicRunSequence(list);
 
         for (Iterator<Run> it = seq.iterator(); it.hasNext();) {
@@ -215,8 +266,8 @@ public class BasicRunSequenceTest
         System.out.println("testRemove1");
 
         List<Run> list = Arrays.asList(new Run(0, 1),
-                new Run(20, 2),
-                new Run(40, 4));
+                                       new Run(20, 2),
+                                       new Run(40, 4));
         BasicRunSequence seq = new BasicRunSequence(list);
         System.out.printf("before seq: %s%n", seq);
         dump(seq);
@@ -247,8 +298,8 @@ public class BasicRunSequenceTest
         System.out.println("testSize3");
 
         List<Run> list = Arrays.asList(new Run(0, 3),
-                new Run(23, 5),
-                new Run(30, 4));
+                                       new Run(23, 5),
+                                       new Run(30, 4));
         BasicRunSequence seq = new BasicRunSequence(list);
         System.out.printf("seq: %s%n", seq);
         dump(seq);

@@ -35,7 +35,7 @@ public abstract class Grades
     /** Minimum grade for a bass clef glyph */
     public static final double bassMinGrade = constants.bassMinGrade.getValue();
 
-    /** Minimum grade for a bass clef glyph */
+    /** Minimum grade for a clef glyph */
     public static final double clefMinGrade = constants.clefMinGrade.getValue();
 
     /** Minimum grade for a consistent note */

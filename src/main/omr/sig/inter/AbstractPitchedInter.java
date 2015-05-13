@@ -19,6 +19,7 @@ import omr.sheet.Staff;
 import omr.sig.GradeImpacts;
 
 import java.awt.Rectangle;
+import java.util.Comparator;
 
 /**
  * Class {@code AbstractPitchedInter} is an abstract Inter class to carry pitch
@@ -29,8 +30,20 @@ import java.awt.Rectangle;
 public abstract class AbstractPitchedInter
         extends AbstractInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** To order from bottom to top. */
+    public static Comparator<AbstractPitchedInter> bottomUp = new Comparator<AbstractPitchedInter>()
+    {
+        @Override
+        public int compare (AbstractPitchedInter p1,
+                            AbstractPitchedInter p2)
+        {
+            return Double.compare(p2.pitch, p1.pitch);
+        }
+    };
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The assigned pitch. */
     protected double pitch;
 

@@ -13,9 +13,6 @@ package omr.text;
 
 import omr.glyph.facets.Glyph;
 
-import omr.score.entity.OldSystemPart;
-import omr.score.entity.PartNode;
-
 import omr.sheet.Skew;
 
 import org.slf4j.Logger;
@@ -52,16 +49,12 @@ public class TextLine
     private FontInfo meanFont;
 
     /** Role of this text line. */
-    private TextRoleInfo roleInfo;
+    private TextRole role;
 
     /** Temporary processed flag. */
     private boolean processed;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //----------//
-    // TextLine //
-    //----------//
     /**
      * Creates a new TextLine object from a sequence of words.
      *
@@ -78,9 +71,6 @@ public class TextLine
         }
     }
 
-    //----------//
-    // TextLine //
-    //----------//
     /**
      * Creates a new TextLine object, without its contained words which are assumed
      * to be added later.
@@ -387,30 +377,11 @@ public class TextLine
     /**
      * Report the line role.
      *
-     * @return the roleInfo
+     * @return the role
      */
-    public TextRoleInfo getRole ()
+    public TextRole getRole ()
     {
-        return roleInfo;
-    }
-
-    //---------------//
-    // getSystemPart //
-    //---------------//
-    /**
-     * Report the containing system part.
-     *
-     * @return the containing system part
-     */
-    public OldSystemPart getSystemPart ()
-    {
-        throw new RuntimeException("getSystemPart. Not yet implemented");
-
-        //        final TextRole role = getRole().role;
-        //        final Point location = getFirstWord().getLocation();
-        //        final Staff staff = system.getScoreSystem().getTextStaff(role, location);
-        //
-        //        return staff.getPart();
+        return role;
     }
 
     //----------//
@@ -492,7 +463,7 @@ public class TextLine
      */
     public boolean isChordName ()
     {
-        return getRole().role == TextRole.ChordName;
+        return getRole() == TextRole.ChordName;
     }
 
     //----------//
@@ -505,7 +476,7 @@ public class TextLine
      */
     public boolean isLyrics ()
     {
-        return getRole().role == TextRole.Lyrics;
+        return getRole() == TextRole.Lyrics;
     }
 
     //-------------//
@@ -532,25 +503,6 @@ public class TextLine
         }
     }
 
-    //----------------------//
-    // setGlyphsTranslation //
-    //----------------------//
-    /**
-     * Forward the informationto all the words that compose this line.
-     *
-     * @param entity the same score entity for all sentence items
-     */
-    public void setGlyphsTranslation (PartNode entity)
-    {
-        for (TextWord word : words) {
-            Glyph glyph = word.getGlyph();
-
-            if (glyph != null) {
-                glyph.setTranslation(entity);
-            }
-        }
-    }
-
     //--------------//
     // setProcessed //
     //--------------//
@@ -565,11 +517,11 @@ public class TextLine
     /**
      * Assign role information.
      *
-     * @param roleInfo the roleInfo to set
+     * @param role the role to set
      */
-    public void setRole (TextRoleInfo roleInfo)
+    public void setRole (TextRole role)
     {
-        this.roleInfo = roleInfo;
+        this.role = role;
     }
 
     //-----------//
@@ -602,8 +554,8 @@ public class TextLine
     {
         StringBuilder sb = new StringBuilder(super.internals());
 
-        if (roleInfo != null) {
-            sb.append(" ").append(roleInfo);
+        if (role != null) {
+            sb.append(" ").append(role);
         }
 
         return sb.toString();
@@ -619,7 +571,7 @@ public class TextLine
         setBaseline(null);
         setConfidence(null);
 
-        roleInfo = null;
+        role = null;
         meanFont = null;
     }
 }
