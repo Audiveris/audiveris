@@ -329,7 +329,7 @@ public class RubberPanel
     public void selectPoint (Point point)
     {
         pointSelected(point, MouseMovement.PRESSING);
-        showFocusLocation(new Rectangle(point), true);
+        ///showFocusLocation(new Rectangle(point), true);
     }
 
     //--------------------//

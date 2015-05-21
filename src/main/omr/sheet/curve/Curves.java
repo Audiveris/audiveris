@@ -119,8 +119,8 @@ public class Curves
         watch.start("Junctions retrieval");
         new JunctionRetriever(skeleton).scanImage();
 
-        // Scan arcs between junctions
-        slursBuilder = new SlursBuilder(this);
+        // Scan & evaluate arcs between junctions
+        slursBuilder = new SlursBuilder(this); // We need slursBuilder to evaluate a slur shape
         watch.start("Arcs retrieval");
         new ArcRetriever(this).scanImage();
 

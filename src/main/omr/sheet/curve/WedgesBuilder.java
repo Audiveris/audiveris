@@ -16,12 +16,11 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 
-import omr.math.GeoUtil;
 import omr.math.LineUtil;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
+import omr.sheet.Staff;
 
 import omr.sig.GradeImpacts;
 import omr.sig.inter.Inter;
@@ -37,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.Collections;
 import java.util.List;
 
@@ -188,20 +188,15 @@ public class WedgesBuilder
         Shape shape = rev ? Shape.CRESCENDO : Shape.DIMINUENDO;
 
         // Determine precise closed ends
-        Line2D l1 = new Line2D.Double(
-                s1.getInfo().getEnd(true),
-                s1.getInfo().getEnd(false));
-        Line2D l2 = new Line2D.Double(
-                s2.getInfo().getEnd(true),
-                s2.getInfo().getEnd(false));
+        Line2D l1 = new Line2D.Double(s1.getInfo().getEnd(true), s1.getInfo().getEnd(false));
+        Line2D l2 = new Line2D.Double(s2.getInfo().getEnd(true), s2.getInfo().getEnd(false));
 
         WedgeInter inter = new WedgeInter(s1, s2, l1, l2, box, shape, impacts);
 
-        List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(GeoUtil.centerOf(box));
-
-        for (SystemInfo system : systems) {
-            system.getSig().addVertex(inter);
-        }
+        /* For a wedge, we can restrict the containing systems as just the closest one. */
+        Point2D refPoint = (shape == Shape.CRESCENDO) ? l1.getP1() : l1.getP2();
+        Staff staff = sheet.getStaffManager().getClosestStaff(refPoint);
+        staff.getSystem().getSig().addVertex(inter);
 
         return inter;
     }

@@ -16,11 +16,14 @@ import static omr.image.PixelSource.FOREGROUND;
 import static omr.sheet.curve.Skeleton.*;
 
 import ij.process.ByteProcessor;
-import static java.lang.Math.max;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code JunctionRetriever} scans all image pixels to retrieve junction pixels
  * and flag them as such with a specific color.
+ * <p>
  * A point is a junction point if it has more than 2 immediate neighbors in the 8 peripheral cells
  * of the 3x3 square centered on the point.
  * We use pixel color to detect if a given point has already been visited.
@@ -29,8 +32,11 @@ import static java.lang.Math.max;
  */
 public class JunctionRetriever
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(JunctionRetriever.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Skeleton buffer. */
     private final ByteProcessor buf;
 
@@ -49,6 +55,9 @@ public class JunctionRetriever
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------//
+    // scanImage //
+    //-----------//
     /**
      * Scan the whole image.
      */
@@ -66,6 +75,9 @@ public class JunctionRetriever
         }
     }
 
+    //---------------//
+    // checkJunction //
+    //---------------//
     /**
      * Check whether the point at (x, y) is a junction.
      * The point needs to have more than 2 neighbors, and no other junction point side-connected
@@ -94,6 +106,9 @@ public class JunctionRetriever
         }
     }
 
+    //--------------//
+    // dirNeighbors //
+    //--------------//
     /**
      * Count the immediate neighbors in the provided directions.
      *
@@ -119,6 +134,9 @@ public class JunctionRetriever
         return n;
     }
 
+    //-----------//
+    // sideGrade //
+    //-----------//
     /**
      * Look for side-connected junction pixels and return their highest junction grade.
      *
@@ -138,7 +156,7 @@ public class JunctionRetriever
 
             if (isJunction(pix)) {
                 // Point already evaluated
-                bestGrade = max(bestGrade, pix - JUNCTION);
+                bestGrade = Math.max(bestGrade, pix - JUNCTION);
             } else {
                 if (pix == FOREGROUND) {
                     int n = vicinityOf(nx, ny);
@@ -146,7 +164,7 @@ public class JunctionRetriever
                     if (n > 2) {
                         int grade = vicinity.getGrade();
                         buf.set(nx, ny, JUNCTION + grade);
-                        bestGrade = max(bestGrade, grade);
+                        bestGrade = Math.max(bestGrade, grade);
                     } else {
                         buf.set(nx, ny, ARC);
                     }
@@ -157,6 +175,9 @@ public class JunctionRetriever
         return bestGrade;
     }
 
+    //------------//
+    // vicinityOf //
+    //------------//
     /**
      * Count the immediate neighbors in all directions.
      * Details are written in structure "vicinity".

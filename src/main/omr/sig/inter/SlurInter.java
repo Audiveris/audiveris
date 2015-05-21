@@ -31,7 +31,9 @@ import omr.sig.relation.Relation;
 import omr.sig.relation.SlurHeadRelation;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Predicate;
 
 import org.slf4j.Logger;
@@ -147,7 +149,7 @@ public class SlurInter
     /** Physical characteristics. */
     private final SlurInfo info;
 
-    /** Is a this a tie?. (or a plain slur) */
+    /** Is this a tie?. (or a plain slur) */
     private boolean tie;
 
     /** Extension slur, if any. (at most one per slur) */
@@ -289,6 +291,17 @@ public class SlurInter
     public boolean isTie ()
     {
         return tie;
+    }
+
+    //--------//
+    // setTie //
+    //--------//
+    /**
+     * Set this slur as being a tie.
+     */
+    public void setTie ()
+    {
+        tie = true;
     }
 
     //----------------//

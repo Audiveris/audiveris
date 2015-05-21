@@ -37,9 +37,7 @@ import omr.text.TextBuilder;
 import omr.text.TextLine;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -943,19 +941,6 @@ public class SystemInfo
         return left + width;
     }
 
-    //--------------//
-    // getTextLines //
-    //--------------//
-    /**
-     * Report the various text lines retrieved in this system.
-     *
-     * @return the (perhaps empty) collection of text lines found
-     */
-    public Set<TextLine> getTextLines ()
-    {
-        return textLines;
-    }
-
     //----------//
     // getSheet //
     //----------//
@@ -1057,6 +1042,7 @@ public class SystemInfo
         if (closest == null) {
             return null;
         }
+
         final double toBottom = closest.getLastLine().yAt(point.getX()) - point.getY();
 
         if (toBottom >= 0) {
@@ -1192,6 +1178,19 @@ public class SystemInfo
     public TextBuilder getTextBuilder ()
     {
         return textBuilder;
+    }
+
+    //--------------//
+    // getTextLines //
+    //--------------//
+    /**
+     * Report the various text lines retrieved in this system.
+     *
+     * @return the (perhaps empty) collection of text lines found
+     */
+    public Set<TextLine> getTextLines ()
+    {
+        return textLines;
     }
 
     //--------//
@@ -1444,33 +1443,6 @@ public class SystemInfo
         this.page = page;
     }
 
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Convenient method, to build a string with just the IDs of the system collection.
-     *
-     * @param systems the collection of systems
-     * @return the string built
-     */
-    public static String toString (Collection<SystemInfo> systems)
-    {
-        if (systems == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(" systems[");
-
-        for (SystemInfo system : systems) {
-            sb.append("#").append(system.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
     //-----------//
     // setStaves //
     //-----------//
@@ -1486,35 +1458,6 @@ public class SystemInfo
         }
 
         updateCoordinates();
-    }
-
-    //-------------------//
-    // updateCoordinates //
-    //-------------------//
-    public final void updateCoordinates ()
-    {
-        Staff firstStaff = getFirstStaff();
-        LineInfo firstLine = firstStaff.getFirstLine();
-        Point2D topLeft = firstLine.getEndPoint(LEFT);
-
-        Staff lastStaff = getLastStaff();
-        LineInfo lastLine = lastStaff.getLastLine();
-        Point2D botLeft = lastLine.getEndPoint(LEFT);
-
-        left = Integer.MAX_VALUE;
-
-        int right = 0;
-
-        for (Staff staff : staves) {
-            left = Math.min(left, staff.getAbscissa(LEFT));
-            right = Math.max(right, staff.getAbscissa(RIGHT));
-        }
-
-        top = (int) Math.rint(topLeft.getY());
-        width = right - left + 1;
-        deltaY = (int) Math.rint(
-                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
-        bottom = (int) Math.rint(botLeft.getY());
     }
 
     //
@@ -1556,6 +1499,62 @@ public class SystemInfo
         }
 
         sb.append("}");
+
+        return sb.toString();
+    }
+
+    //-------------------//
+    // updateCoordinates //
+    //-------------------//
+    public final void updateCoordinates ()
+    {
+        Staff firstStaff = getFirstStaff();
+        LineInfo firstLine = firstStaff.getFirstLine();
+        Point2D topLeft = firstLine.getEndPoint(LEFT);
+
+        Staff lastStaff = getLastStaff();
+        LineInfo lastLine = lastStaff.getLastLine();
+        Point2D botLeft = lastLine.getEndPoint(LEFT);
+
+        left = Integer.MAX_VALUE;
+
+        int right = 0;
+
+        for (Staff staff : staves) {
+            left = Math.min(left, staff.getAbscissa(LEFT));
+            right = Math.max(right, staff.getAbscissa(RIGHT));
+        }
+
+        top = (int) Math.rint(topLeft.getY());
+        width = right - left + 1;
+        deltaY = (int) Math.rint(
+                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+        bottom = (int) Math.rint(botLeft.getY());
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the IDs of the system collection.
+     *
+     * @param systems the collection of systems
+     * @return the string built
+     */
+    public static String toString (Collection<SystemInfo> systems)
+    {
+        if (systems == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(" systems[");
+
+        for (SystemInfo system : systems) {
+            sb.append("#").append(system.getId());
+        }
+
+        sb.append("]");
 
         return sb.toString();
     }

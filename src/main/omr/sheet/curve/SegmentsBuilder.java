@@ -19,7 +19,6 @@ import omr.glyph.facets.Glyph;
 import omr.math.LineUtil;
 
 import omr.sheet.Scale;
-import omr.sheet.grid.FilamentLine;
 
 import omr.sig.GradeImpacts;
 import omr.sig.inter.Inter;
@@ -106,6 +105,7 @@ public class SegmentsBuilder
             purgeDuplicates();
 
             logger.info("{}Segments: {}", sheet.getLogPrefix(), segments.size());
+            logger.debug("Segment maxClumpSize: {}", maxClumpSize);
         } catch (Throwable ex) {
             logger.warn("Error in SegmentsBuilder: " + ex, ex);
         }
@@ -235,14 +235,7 @@ public class SegmentsBuilder
     }
 
     @Override
-    protected FilamentLine getTangentLine (Curve curve)
-    {
-        return null;
-    }
-
-    @Override
-    protected void weed (Set<Curve> clump,
-                         boolean reverse)
+    protected void weed (Set<Curve> clump)
     {
         // Simply keep the one with longest X range.
         List<Curve> list = new ArrayList<Curve>(clump);
@@ -254,9 +247,11 @@ public class SegmentsBuilder
     //----------------//
     // computeImpacts //
     //----------------//
-    private GradeImpacts computeImpacts (SegmentInfo segment,
-                                         boolean b)
+    @Override
+    protected SegmentInter.Impacts computeImpacts (Curve curve,
+                                                   boolean ignored)
     {
+        SegmentInfo segment = (SegmentInfo) curve;
         double dist = segment.getModel().getDistance();
         double distImpact = 1 - (dist / params.maxSegmentDistance);
 
@@ -306,6 +301,9 @@ public class SegmentsBuilder
         return list;
     }
 
+    //-----------------//
+    // purgeDuplicates //
+    //-----------------//
     private void purgeDuplicates ()
     {
         Collections.sort(segments, Inter.byAbscissa);

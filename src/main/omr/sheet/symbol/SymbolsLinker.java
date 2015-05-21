@@ -188,12 +188,19 @@ class SymbolsLinker
             for (HorizontalSide side : HorizontalSide.values()) {
                 final Point2D location = (side == LEFT) ? topLine.getP1() : topLine.getP2();
                 final MeasureStack stack = system.getMeasureStackAt(location);
+
                 final ChordInter chordAbove = stack.getChordAbove(location);
 
                 if (chordAbove != null) {
                     sig.addEdge(chordAbove, wedge, new ChordWedgeRelation(side));
                 } else {
-                    logger.info("No chord above {} {}", wedge, side);
+                    final ChordInter chordBelow = stack.getChordBelow(location);
+
+                    if (chordBelow != null) {
+                        sig.addEdge(chordBelow, wedge, new ChordWedgeRelation(side));
+                    } else {
+                        logger.info("No chord for {} {}", wedge, side);
+                    }
                 }
             }
         }

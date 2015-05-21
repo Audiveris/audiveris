@@ -24,8 +24,8 @@ import omr.sheet.Sheet;
 import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
 import static omr.sheet.curve.Skeleton.*;
-import omr.sheet.grid.FilamentLine;
 
+import omr.sig.GradeImpacts;
 import omr.sig.inter.Inter;
 
 import omr.ui.util.ItemRenderer;
@@ -46,10 +46,14 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -91,17 +95,25 @@ public abstract class CurvesBuilder
     /** For unique curve IDs. (per page and per type of curve: slur or segment) */
     protected int globalId = 0;
 
-    /** (Current) clump on left side of aggregated candidates. */
-    protected final Set<Curve> leftClump = new LinkedHashSet<Curve>();
-
-    /** (Current) clump on right side of aggregated lines candidates. */
-    protected final Set<Curve> rightClump = new LinkedHashSet<Curve>();
-
     /** (Current) orientation for walking along a curve. */
     protected boolean reverse;
 
-    /** (Debug) are being debugged. */
+    /** To sort Extension instances by decreasing grade. */
+    private Comparator<Extension> byReverseGrade = new Comparator<Extension>()
+    {
+        @Override
+        public int compare (Extension e1,
+                            Extension e2)
+        {
+            return Double.compare(e2.getGrade(), e1.getGrade());
+        }
+    };
+
+    /** (Debug) tells whether an arc is being debugged. */
     protected boolean debugArc;
+
+    // Debug, to be removed ASAP.
+    protected int maxClumpSize = 0;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -180,18 +192,23 @@ public abstract class CurvesBuilder
             trunk.setModel(computeModel(arc.getPoints()));
         }
 
-        logger.debug("Trunk: {}", trunk);
-        leftClump.clear();
-        rightClump.clear();
+        if (debugArc) {
+            logger.info("Trunk: {}", trunk);
+        }
+
+        // Try to extend the trunk as much as possible, on right end then on left end.
+        final Set<Curve> leftClump = new LinkedHashSet<Curve>();
+        final Set<Curve> rightClump = new LinkedHashSet<Curve>();
 
         for (boolean rev : new boolean[]{false, true}) {
             Set<Curve> clump = rev ? leftClump : rightClump;
             reverse = rev;
             trunk.setCrossedLine(null);
-            extend(trunk, trunk.getParts(), clump);
+            extend(trunk, clump);
 
             if (clump.size() > 1) {
-                weed(clump, rev); // Filter out the least interesting candidates
+                weed(clump); // Filter out the least interesting candidates
+                maxClumpSize = Math.max(maxClumpSize, clump.size());
             }
         }
 
@@ -218,12 +235,22 @@ public abstract class CurvesBuilder
             }
         }
 
-        // Finally, filter candidates using their potential links to embraced chords
+        // Finally, filter candidates using their potential links to embraced head-chords
         if (!inters.isEmpty()) {
             ///register(inters); // For DEBUG only
             filterInters(inters);
         }
     }
+
+    /**
+     * Compute impacts for curve candidate.
+     *
+     * @param curve     the curve to evaluate
+     * @param bothSides true for both sides, false for current side
+     * @return grade impacts
+     */
+    protected abstract GradeImpacts computeImpacts (Curve curve,
+                                                    boolean bothSides);
 
     /**
      * Check whether the provided points can represent a curve.
@@ -306,63 +333,54 @@ public abstract class CurvesBuilder
     /**
      * Define extension area on current side of the curve.
      * (side is defined by 'reverse' current value)
-     * <p>
-     * Shape and size of lookup area depend highly on the potential crossing of a staff line.
      *
-     * @param curve  the curve to extend
-     * @param tgLine slur tangent staff line, if any
+     * @param curve the curve to extend
      * @return the extension lookup area
      */
-    protected Area defineExtArea (Curve curve,
-                                  FilamentLine tgLine)
+    protected Area defineExtArea (Curve curve)
     {
         Point ce = curve.getEnd(reverse); // Curve End
         Point2D uv = getEndVector(curve); // Unit Vector
         GeoPath path;
 
-        if (tgLine != null) {
-            int xDir = (uv.getX() > 0) ? 1 : (-1);
-            double lg = xDir * params.lineBoxLength;
-            double dx = xDir * params.lineBoxIn;
-            int yDir = (uv.getY() > 0) ? 1 : (-1);
-            double dl1 = yDir * params.lineBoxDeltaIn;
-            double dl2 = yDir * params.lineBoxDeltaOut;
-            double yLine = tgLine.yAt(ce.x);
-            path = new GeoPath(
-                    new Line2D.Double(
-                            new Point2D.Double(ce.x - dx, yLine),
-                            new Point2D.Double(ce.x - dx, yLine + dl1)));
-            yLine = tgLine.yAt(ce.x + lg);
-            path.append(
-                    new Line2D.Double(
-                            new Point2D.Double(ce.x + lg, yLine + dl2),
-                            new Point2D.Double(ce.x + lg, yLine)),
-                    true);
-        } else {
-            if (uv == null) {
-                return null;
-            }
-
-            double lg = params.gapBoxLength;
-            Point2D lgVect = new Point2D.Double(lg * uv.getX(), lg * uv.getY());
-            Point2D ce2 = PointUtil.addition(ce, lgVect);
-
-            double dl1 = params.gapBoxDeltaIn;
-            Point2D dlVect = new Point2D.Double(-dl1 * uv.getY(), dl1 * uv.getX());
-            path = new GeoPath(
-                    new Line2D.Double(
-                            PointUtil.addition(ce, dlVect),
-                            PointUtil.subtraction(ce, dlVect)));
-
-            double dl2 = params.gapBoxDeltaOut;
-            dlVect = new Point2D.Double(-dl2 * uv.getY(), dl2 * uv.getX());
-            path.append(
-                    new Line2D.Double(
-                            PointUtil.subtraction(ce2, dlVect),
-                            PointUtil.addition(ce2, dlVect)),
-                    true);
+        //        if (tgLine != null) {
+        //            int xDir = (uv.getX() > 0) ? 1 : (-1);
+        //            double lg = xDir * params.lineBoxLength;
+        //            double dx = xDir * params.lineBoxIn;
+        //            int yDir = (uv.getY() > 0) ? 1 : (-1);
+        //            double dl1 = yDir * params.lineBoxDeltaIn;
+        //            double dl2 = yDir * params.lineBoxDeltaOut;
+        //            double yLine = tgLine.yAt(ce.x);
+        //            path = new GeoPath(
+        //                    new Line2D.Double(
+        //                            new Point2D.Double(ce.x - dx, yLine),
+        //                            new Point2D.Double(ce.x - dx, yLine + dl1)));
+        //            yLine = tgLine.yAt(ce.x + lg);
+        //            path.append(
+        //                    new Line2D.Double(
+        //                            new Point2D.Double(ce.x + lg, yLine + dl2),
+        //                            new Point2D.Double(ce.x + lg, yLine)),
+        //                    true);
+        //        } else {
+        if (uv == null) {
+            return null;
         }
 
+        double lg = params.gapBoxLength;
+        Point2D lgVect = new Point2D.Double(lg * uv.getX(), lg * uv.getY());
+        Point2D ce2 = PointUtil.addition(ce, lgVect);
+
+        double dl1 = params.gapBoxDeltaIn;
+        Point2D dlVect = new Point2D.Double(-dl1 * uv.getY(), dl1 * uv.getX());
+        path = new GeoPath(
+                new Line2D.Double(PointUtil.addition(ce, dlVect), PointUtil.subtraction(ce, dlVect)));
+
+        double dl2 = params.gapBoxDeltaOut;
+        dlVect = new Point2D.Double(-dl2 * uv.getY(), dl2 * uv.getX());
+        path.append(
+                new Line2D.Double(PointUtil.subtraction(ce2, dlVect), PointUtil.addition(ce2, dlVect)),
+                true);
+        //        }
         path.closePath();
 
         Area area = new Area(path);
@@ -393,14 +411,6 @@ public abstract class CurvesBuilder
      * @return the unit vector which extends the curve end
      */
     protected abstract Point2D getEndVector (Curve curve);
-
-    /**
-     * Check whether the curve end is getting tangent to staff line.
-     *
-     * @param curve the curve to check (on current side)
-     * @return the tangent staff line or null
-     */
-    protected abstract FilamentLine getTangentLine (Curve curve);
 
     //------------//
     // projection //
@@ -434,13 +444,12 @@ public abstract class CurvesBuilder
     }
 
     /**
-     * Among the clump of curves built from a common trunk, weed out some of them.
+     * Among the clump of curves built from a common trunk on 'reverse' side, weed out
+     * some of them.
      *
-     * @param clump   the competing curves on the same side of a given seed
-     * @param reverse browsing orientation
+     * @param clump the competing curves on the same side of a given seed
      */
-    protected abstract void weed (Set<Curve> clump,
-                                  boolean reverse);
+    protected abstract void weed (Set<Curve> clump);
 
     //-------------//
     // createCurve //
@@ -480,8 +489,8 @@ public abstract class CurvesBuilder
                                  List<Point> points,
                                  Model model)
     {
-        Point firstJunction;
-        Point lastJunction;
+        final Point firstJunction;
+        final Point lastJunction;
 
         if (reverse) {
             firstJunction = arcView.getJunction(reverse);
@@ -557,54 +566,112 @@ public abstract class CurvesBuilder
     // extend //
     //--------//
     /**
-     * Try to recursively extend a curve in the current orientation.
+     * Try to extend a trunk, using the current 'reverse' orientation.
      *
-     * @param curve    the curve to extend
-     * @param pastArcs collection of arcs already browsed
-     * @param clump    (output) the clump to populate with candidates (on top of current curve)
+     * @param trunk the trunk to extend
+     * @param clump (output) the clump to populate with candidates
      */
-    private void extend (Curve curve,
-                         Collection<Arc> pastArcs,
+    private void extend (Curve trunk,
                          Set<Curve> clump)
     {
-        // Debug
+        // Debug: display the trunk end point
         if (debugArc) {
-            curves.selectPoint(curve.getEnd(reverse));
+            curves.selectPoint(trunk.getEnd(reverse));
         }
 
-        Set<Arc> browsed = new LinkedHashSet<Arc>(pastArcs);
-        List<Curve> newCurves = new ArrayList<Curve>();
-        clump.add(curve);
+        clump.add(trunk);
 
-        // Check whether this curve end is getting tangent to a staff line
-        FilamentLine tgLine = getTangentLine(curve);
+        // Extensions kept for clump
+        final Set<Extension> candidates = new LinkedHashSet<Extension>();
 
-        if (tgLine != null) {
-            // Check beyond staff line: scan arcs ending in extension window
-            scanGap(curve, browsed, newCurves, tgLine);
-        } else {
-            Point pivot = curve.getJunction(reverse);
+        // Map of pivot points reached so far
+        final Map<Point, Extension> pivots = new LinkedHashMap<Point, Extension>();
 
-            if (pivot != null) {
-                // Check beyond pivot: scan arcs ending at pivot
-                scanPivot(curve, pivot, browsed, newCurves);
-            } else {
-                // Check beyond gap: scan arcs ending in extension window
-                scanGap(curve, browsed, newCurves, null);
-            }
+        // Extensions created in last pass
+        List<Extension> rookies = new ArrayList<Extension>();
+        Extension trunkExt = new Extension(trunk, trunk.getParts());
+        Point trunkPivot = trunk.getJunction(reverse);
+
+        if (trunkPivot != null) {
+            pivots.put(trunkPivot, trunkExt);
         }
 
-        if (!newCurves.isEmpty()) {
-            for (Curve s : newCurves) {
-                ////browsed.addAll(s.getParts());
-                if ((s.getCrossedLine() == null) && (curve.getCrossedLine() != null)) {
-                    s.setCrossedLine(curve.getCrossedLine());
+        rookies.add(trunkExt);
+
+        // Gather all interesting trunk extensions (in current orientation)
+        // We use a breadth-first strategy, to detect converging extensions ASAP
+        do {
+            final List<Extension> actives = rookies;
+            rookies = new ArrayList<Extension>();
+
+            for (Extension ext : actives) {
+                Point pivot = ext.curve.getJunction(reverse);
+
+                if (pivot != null) {
+                    if (debugArc) {
+                        curves.selectPoint(pivot);
+                    }
+
+                    // Check beyond pivot: scan arcs starting at pivot
+                    scanPivot(ext, pivot, rookies);
+                } else {
+                    // Check beyond gap: scan arcs starting in extension window
+                    scanGap(ext, rookies);
                 }
             }
 
-            for (Curve s : newCurves) {
-                extend(s, browsed, clump); // Increment further
+            if (rookies.size() > 1) {
+                Collections.sort(rookies, byReverseGrade);
             }
+
+            // Check junction point at end of each rookie
+            for (int i = 0; i < rookies.size(); i++) {
+                Extension rookie = rookies.get(i);
+                Point pivot = rookie.curve.getJunction(reverse);
+
+                if (pivot != null) {
+                    if (debugArc) {
+                        curves.selectPoint(pivot);
+                    }
+
+                    // Have we already met this pivot?
+                    // If so, make a decision between such competing paths
+                    Extension other = pivots.get(pivot);
+
+                    if (other != null) {
+                        // Compete with other extension
+                        if (rookie.getGrade() <= other.getGrade()) {
+                            ///logger.info("Weaker {} than {} at {}", rookie, other, pivot);
+                            // Rookie is not better, so delete rookie
+                            rookies.remove(rookie);
+                        } else {
+                            // Rookie is better, so delete other
+                            ///logger.info("Better {} than {} at {}", rookie, other, pivot);
+                            if (rookies.contains(other)) {
+                                rookies.remove(other);
+                            } else {
+                                if (actives.contains(other)) {
+                                    actives.remove(other);
+                                } else {
+                                    candidates.remove(other);
+                                }
+
+                                //TODO: We could update the extensions of 'other', if any
+                            }
+
+                            pivots.put(pivot, rookie);
+                        }
+                    } else {
+                        pivots.put(pivot, rookie);
+                    }
+                }
+            }
+
+            candidates.addAll(actives);
+        } while (!rookies.isEmpty());
+
+        for (Extension ext : candidates) {
+            clump.add(ext.curve);
         }
     }
 
@@ -667,49 +734,19 @@ public abstract class CurvesBuilder
         }
     }
 
-    //
-    //    //------------------//
-    //    // findHiddenInters //
-    //    //------------------//
-    //    /**
-    //     * Retrieve all the hidden inters that are relevant for the considered extensions.
-    //     *
-    //     * @param curve         curve being extended (on 'reverse' side)
-    //     * @param reachableArcs the arcs nearby
-    //     * @return the collection of relevant erased inters
-    //     */
-    //    private Set<Inter> findHiddenInters (Curve curve,
-    //                                         Set<ArcView> reachableArcs)
-    //    {
-    //        final Set<Inter> hiddens = new HashSet<Inter>();
-    //        final Point ce = curve.getEnd(reverse);
-    //        final Rectangle extBox = getExtensionBox(curve, reachableArcs);
-    //        final List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(ce);
-    //
-    //        for (SystemInfo system : systems) {
-    //            hiddens.addAll(erasedInters(system, extBox, true));
-    //        }
-    //
-    //        return hiddens;
-    //    }
-    //
     //-------------------//
     // findReachableArcs //
     //-------------------//
     /**
      * Retrieve all arcs within reach from curve end (over some white gap)
      *
-     * @param curve   current curve (on 'reverse' side)
-     * @param browsed arcs already considered
-     * @param tgLine  tangent line nearby if any
+     * @param ext extension (on 'reverse' side)
      * @return the set of (new) reachable arcs
      */
-    private Set<ArcView> findReachableArcs (Curve curve,
-                                            Set<Arc> browsed,
-                                            FilamentLine tgLine)
+    private Set<ArcView> findReachableArcs (Extension ext)
     {
         final Set<ArcView> reachableArcs = new HashSet<ArcView>();
-        final Area area = defineExtArea(curve, tgLine);
+        final Area area = defineExtArea(ext.curve);
 
         if (area != null) {
             // Check for reachable arcs in the extension area
@@ -721,14 +758,14 @@ public abstract class CurvesBuilder
                 if (area.contains(end)) {
                     final Arc arc = skeleton.arcsMap.get(end);
 
-                    if (!arc.isAssigned() && !browsed.contains(arc)) {
+                    if (!arc.isAssigned() && !ext.browsed.contains(arc)) {
                         // Check for lack of junction point
-                        ArcView arcView = curve.getArcView(arc, reverse);
+                        ArcView arcView = ext.curve.getArcView(arc, reverse);
                         Point pivot = arcView.getJunction(!reverse);
 
                         if (pivot == null) {
                             reachableArcs.add(arcView);
-                            browsed.add(arc);
+                            ext.browsed.add(arc);
                         }
                     }
                 } else if (end.x > xMax) {
@@ -866,44 +903,36 @@ public abstract class CurvesBuilder
      * account.</li>
      * </ol>
      *
-     * @param curve     the curve to extend
-     * @param browsed   arcs already browsed (kept or not)
-     * @param newCurves (output) to be populated with new curves found
-     * @param tgLine    tangent staff line if any
+     * @param ext     the curve being extended
+     * @param rookies (output) to be populated with new extensions found
      */
-    private void scanGap (Curve curve,
-                          Set<Arc> browsed,
-                          List<Curve> newCurves,
-                          FilamentLine tgLine)
+    private void scanGap (Extension ext,
+                          List<Extension> rookies)
     {
         // Find arcs within reach
-        final Set<ArcView> reachables = findReachableArcs(curve, browsed, tgLine);
+        final Set<ArcView> reachables = findReachableArcs(ext);
 
         if (reachables.isEmpty()) {
             return;
         }
 
         // Remove extensions that hit non-crossable inters
-        filterReachableArcs(curve, reachables);
+        filterReachableArcs(ext.curve, reachables);
 
         // Closer look at actual white gap for each allowed extension
         for (ArcView arcView : reachables) {
             curves.checkBreak(arcView.getArc());
 
             // Check true gaps in the extension
-            if (!isGapAcceptable(curve, arcView)) {
+            if (!isGapAcceptable(ext.curve, arcView)) {
                 continue;
             }
 
             // OK, let's try to append arc to curve and check resulting model
-            Curve sl = addArc(arcView, curve);
+            Curve sl = addArc(arcView, ext.curve);
 
             if (sl != null) {
-                newCurves.add(sl);
-
-                if (tgLine != null) {
-                    sl.setCrossedLine(tgLine);
-                }
+                rookies.add(new Extension(sl, ext.browsed));
             }
         }
     }
@@ -914,21 +943,20 @@ public abstract class CurvesBuilder
     /**
      * Build all possible curve extensions, just one arc past the ending junction
      *
-     * @param curve     the curve to extend
-     * @param pivot     the ending junction
-     * @param browsed   arcs already browsed (kept or not)
-     * @param newCurves (output) to be populated with new curves found
+     * @param ext     the curve being extended
+     * @param pivot   the ending junction
+     * @param rookies (output) to be populated with new extensions
      */
-    private void scanPivot (Curve curve,
+    private void scanPivot (Extension ext,
                             Point pivot,
-                            Set<Arc> browsed,
-                            List<Curve> newCurves)
+                            List<Extension> rookies)
     {
         // What was the last direction?
-        final Point prevPoint = curve.getEnd(reverse);
+        final Point prevPoint = ext.curve.getEnd(reverse);
         final int lastDir = getDir(prevPoint, pivot);
 
         // Try to go past this pivot, keeping only the acceptable possibilities
+        List<Curve> newCurves = new ArrayList<Curve>();
         final Point np = new Point();
         boolean sideJunctionMet = false;
         List<Arc> arcs = new ArrayList<Arc>();
@@ -936,7 +964,7 @@ public abstract class CurvesBuilder
         for (int dir : scans[lastDir]) {
             // If junction has already been met on side dir, stop here
             if (!isSide(dir) && sideJunctionMet) {
-                return;
+                break;
             }
 
             np.move(pivot.x + dxs[dir], pivot.y + dys[dir]);
@@ -969,10 +997,10 @@ public abstract class CurvesBuilder
             }
 
             for (Arc arc : arcs) {
-                if (!arc.isAssigned() && !browsed.contains(arc)) {
-                    browsed.add(arc);
+                if (!arc.isAssigned() && !ext.browsed.contains(arc)) {
+                    ext.browsed.add(arc);
 
-                    Curve sl = addArc(curve.getArcView(arc, reverse), curve);
+                    Curve sl = addArc(ext.curve.getArcView(arc, reverse), ext.curve);
 
                     if (sl != null) {
                         newCurves.add(sl);
@@ -983,6 +1011,10 @@ public abstract class CurvesBuilder
                     }
                 }
             }
+        }
+
+        for (Curve sl : newCurves) {
+            rookies.add(new Extension(sl, ext.browsed));
         }
     }
 
@@ -1026,6 +1058,64 @@ public abstract class CurvesBuilder
         final Scale.Fraction lineBoxDeltaOut = new Scale.Fraction(
                 0.3,
                 "Delta for line box on extension side");
+    }
+
+    //-----------//
+    // Extension //
+    //-----------//
+    /**
+     * Meant to handle the process of extending a curve, by keeping track of arcs
+     * already browsed (regardless whether these arcs were actually kept or not).
+     */
+    private class Extension
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Curve as defined so far. */
+        Curve curve;
+
+        /** Arcs considered for curve immediate extension. */
+        Set<Arc> browsed;
+
+        /** Curve quality. */
+        private Double grade;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Extension (Curve curve,
+                          Set<Arc> browsed)
+        {
+            this.curve = curve;
+            this.browsed = new LinkedHashSet<Arc>(browsed); // Copy is needed
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public double getGrade ()
+        {
+            if (grade == null) {
+                GradeImpacts impacts = computeImpacts(curve, false);
+
+                if (impacts != null) {
+                    grade = impacts.getGrade();
+                } else {
+                    grade = 0.0;
+                }
+            }
+
+            return grade;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("{Ext ");
+            sb.append(String.format("%.3f", getGrade()));
+            sb.append(curve);
+            ///sb.append(" browsed:").append(browsed);
+            sb.append('}');
+
+            return sb.toString();
+        }
     }
 
     //------------//

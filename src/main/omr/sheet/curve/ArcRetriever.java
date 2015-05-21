@@ -175,9 +175,6 @@ public class ArcRetriever
 
         // Sort arcsEnds by abscissa
         Collections.sort(skeleton.arcsEnds, PointUtil.byAbscissa);
-
-        // Sort arcsPivots by abscissa
-        Collections.sort(skeleton.arcsPivots, PointUtil.byAbscissa);
     }
 
     //-------//

@@ -86,7 +86,7 @@ public abstract class Curve
     /** Unique id. (within containing sheet) */
     protected final int id;
 
-    /** Arcs that compose this curve. (Needed only when setting the arcs as assigned) */
+    /** Arcs that compose this curve. */
     private final Set<Arc> parts = new HashSet<Arc>();
 
     /** Area for extension on first side. */
@@ -101,8 +101,11 @@ public abstract class Curve
     /** Staff line most recently crossed, if any. */
     private FilamentLine crossedLine;
 
-    /** Underlying glyph that compose the curve. */
+    /** Underlying glyph made of relevant runs. (generally thicker than the curve line) */
     protected Glyph glyph;
+
+    /** Bounds of points that compose the curve line. */
+    protected Rectangle bounds;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -128,6 +131,28 @@ public abstract class Curve
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------------//
+    // getAbscissaComparator //
+    //-----------------------//
+    /**
+     * Report a comparator on abscissa
+     *
+     * @param reverse which side is concerned
+     * @return the comparator ready for use
+     */
+    public static Comparator<Curve> getAbscissaComparator (final boolean reverse)
+    {
+        return new Comparator<Curve>()
+        {
+            @Override
+            public int compare (Curve a1,
+                                Curve a2)
+            {
+                return Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
+            }
+        };
+    }
+
     //---------------//
     // addAttachment //
     //---------------//
@@ -157,51 +182,6 @@ public abstract class Curve
         }
     }
 
-    //-----------------------//
-    // getAbscissaComparator //
-    //-----------------------//
-    /**
-     * Report a comparator on abscissa
-     *
-     * @param reverse which side is concerned
-     * @return the comparator ready for use
-     */
-    public static Comparator<Curve> getAbscissaComparator (final boolean reverse)
-    {
-        return new Comparator<Curve>()
-        {
-            @Override
-            public int compare (Curve a1,
-                                Curve a2)
-            {
-                return Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
-            }
-        };
-    }
-
-    //    //------------//
-    //    // getAllArcs //
-    //    //------------//
-    //    /**
-    //     * Report the sequence of sequence arcs, augmented by the provided arc.
-    //     *
-    //     * @param arc     additional arc
-    //     * @param reverse desired side
-    //     * @return proper sequence of all arcs
-    //     */
-    //    public List<Arc> getAllArcs (Arc arc,
-    //                                 boolean reverse)
-    //    {
-    //        List<Arc> allArcs = new ArrayList<Arc>(parts);
-    //
-    //        if (reverse) {
-    //            allArcs.add(0, arc);
-    //        } else {
-    //            allArcs.add(arc);
-    //        }
-    //
-    //        return allArcs;
-    //    }
     //--------------//
     // getAllPoints //
     //--------------//
@@ -305,11 +285,38 @@ public abstract class Curve
     //-----------//
     public Rectangle getBounds ()
     {
-        if (glyph != null) {
-            return glyph.getBounds(); // Exact
+        if (bounds == null) {
+            int xMin = Integer.MAX_VALUE;
+            int xMax = Integer.MIN_VALUE;
+            int yMin = Integer.MAX_VALUE;
+            int yMax = Integer.MIN_VALUE;
+
+            for (Point p : points) {
+                final int x = p.x;
+
+                if (x < xMin) {
+                    xMin = x;
+                }
+
+                if (x > xMax) {
+                    xMax = x;
+                }
+
+                final int y = p.y;
+
+                if (y < yMin) {
+                    yMin = y;
+                }
+
+                if (y > yMax) {
+                    yMax = y;
+                }
+            }
+
+            bounds = new Rectangle(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
         }
 
-        return model.getBounds(); // Less precise
+        return new Rectangle(bounds);
     }
 
     //----------------//
@@ -459,7 +466,7 @@ public abstract class Curve
         RunTable sheetTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
 
         // Allocate a curve run table with proper dimension
-        Rectangle box = getRealBounds();
+        Rectangle box = getBounds();
         box.grow(0, (int) Math.ceil(maxRunDistance));
 
         if (box.y < 0) {
@@ -542,41 +549,6 @@ public abstract class Curve
     public void setGlyph (Glyph glyph)
     {
         this.glyph = glyph;
-    }
-
-    //---------------//
-    // getRealBounds //
-    //---------------//
-    protected Rectangle getRealBounds ()
-    {
-        int xMin = Integer.MAX_VALUE;
-        int xMax = Integer.MIN_VALUE;
-        int yMin = Integer.MAX_VALUE;
-        int yMax = Integer.MIN_VALUE;
-
-        for (Point p : points) {
-            final int x = p.x;
-
-            if (x < xMin) {
-                xMin = x;
-            }
-
-            if (x > xMax) {
-                xMax = x;
-            }
-
-            final int y = p.y;
-
-            if (y < yMin) {
-                yMin = y;
-            }
-
-            if (y > yMax) {
-                yMax = y;
-            }
-        }
-
-        return new Rectangle(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
     }
 
     //

@@ -57,7 +57,7 @@ public class SlurInfo
     private Point2D bisUnit;
 
     /** True for slur rather horizontal. */
-    private boolean horizontal;
+    private Boolean horizontal;
 
     /** Area for first chords. */
     private Area firstChordArea;
@@ -204,7 +204,7 @@ public class SlurInfo
             }
 
             // Assume we have circle models on both ends
-            if (!(leftModel instanceof CircleModel) || !(leftModel instanceof CircleModel)) {
+            if (!(leftModel instanceof CircleModel) || !(rightModel instanceof CircleModel)) {
                 return null;
             }
 
@@ -453,7 +453,10 @@ public class SlurInfo
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" ").append(horizontal ? "H" : "V");
+
+        if (horizontal != null) {
+            sb.append(" ").append(horizontal ? "H" : "V");
+        }
 
         return sb.toString();
     }

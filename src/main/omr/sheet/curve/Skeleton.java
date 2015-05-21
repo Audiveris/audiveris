@@ -166,11 +166,8 @@ public class Skeleton
     /** Map of void arcs. (pivot -> arc(s)) */
     public final Map<Point, List<Arc>> voidArcsMap = new LinkedHashMap<Point, List<Arc>>();
 
-    /** List of arcs end points, with no junction, by abscissa. */
+    /** List of arcs end points, with no junction, ordered by abscissa. */
     public final List<Point> arcsEnds = new ArrayList<Point>();
-
-    /** List of arc pivot points, by abscissa. */
-    public final List<Point> arcsPivots = new ArrayList<Point>();
 
     /** Map of non crossable erased inters. */
     private Map<SystemInfo, List<Inter>> nonCrossables;
@@ -212,11 +209,6 @@ public class Skeleton
             }
 
             arcs.add(arc);
-
-            // Register pivot points
-            if (!arcsPivots.contains(junctionPt)) {
-                arcsPivots.add(junctionPt);
-            }
         }
     }
 
@@ -321,8 +313,7 @@ public class Skeleton
      * some reasonable distance from staves (both in vertical and horizontal directions).
      * <p>
      * We must keep track of erased shapes at system level.<ul>
-     * <li>Notes and beams cannot be crossed by a curve.
-     * Question: Should we indicate this with a specific background value (after binarization)?</li>
+     * <li>Notes and beams cannot be crossed by a curve.</li>
      * <li>Bar lines, connections and stems can be crossed by a curve.
      * Perhaps another specific background value could be used?</li>
      * </ul>
@@ -333,8 +324,8 @@ public class Skeleton
     {
         // First, get a skeleton of binary image
         Picture picture = sheet.getPicture();
-        ByteProcessor buffer = picture.getSource(Picture.SourceKey.NO_STAFF);
-        ///ByteProcessor buffer = picture.getSource(Picture.SourceKey.BINARY);
+        ///ByteProcessor buffer = picture.getSource(Picture.SourceKey.NO_STAFF);
+        ByteProcessor buffer = picture.getSource(Picture.SourceKey.BINARY);
         buffer = (ByteProcessor) buffer.duplicate();
         buffer.skeletonize();
 
@@ -370,6 +361,7 @@ public class Skeleton
 
         // Erase vertical seeds (?)
         ///erasedSeeds = eraser.eraseGlyphs(Arrays.asList(Shape.VERTICAL_SEED));
+        //
         // Erase regions too far froms staves
         cleaner.eraseDistantRegions();
 
