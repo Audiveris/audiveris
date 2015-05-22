@@ -1055,15 +1055,6 @@ public class BasicSection
         return glyph != null;
     }
 
-    //---------//
-    // isKnown //
-    //---------//
-    @Override
-    public boolean isKnown ()
-    {
-        return (glyph != null) && glyph.isWellKnown();
-    }
-
     //-------------//
     // isProcessed //
     //-------------//

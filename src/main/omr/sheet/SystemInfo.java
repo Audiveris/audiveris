@@ -291,67 +291,6 @@ public class SystemInfo
         }
     }
 
-    //------------//
-    // dumpGlyphs //
-    //------------//
-    /**
-     * Dump all glyphs handled by this system.
-     */
-    public void dumpGlyphs ()
-    {
-        dumpGlyphs(null);
-    }
-
-    //------------//
-    // dumpGlyphs //
-    //------------//
-    /**
-     * Dump the glyphs handled by this system and that are contained
-     * by the provided rectangle.
-     *
-     * @param rect the region of interest
-     */
-    public void dumpGlyphs (Rectangle rect)
-    {
-        for (Glyph glyph : getGlyphs()) {
-            if ((rect == null) || (rect.contains(glyph.getBounds()))) {
-                System.out.println(
-                        (glyph.isActive() ? "active " : "       ")
-                        + (glyph.isKnown() ? "known " : "      ")
-                        + (glyph.isWellKnown() ? "wellKnown " : "          ") + glyph.toString());
-            }
-        }
-    }
-
-    //--------------//
-    // dumpSections //
-    //--------------//
-    /**
-     * Dump all (vertical) sections handled by this system.
-     */
-    public void dumpSections ()
-    {
-        dumpSections(null);
-    }
-
-    //--------------//
-    // dumpSections //
-    //--------------//
-    /**
-     * Dump the (vertical) sections handled by this system and that are
-     * contained by the provided rectangle.
-     *
-     * @param rect the region of interest
-     */
-    public void dumpSections (Rectangle rect)
-    {
-        for (Section section : getVerticalSections()) {
-            if ((rect == null) || (rect.contains(section.getBounds()))) {
-                System.out.println((section.isKnown() ? "known " : "      ") + section.toString());
-            }
-        }
-    }
-
     //---------//
     // getArea //
     //---------//

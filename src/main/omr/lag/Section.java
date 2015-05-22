@@ -466,14 +466,6 @@ public interface Section
     public boolean isGlyphMember ();
 
     /**
-     * Check that the section at hand is a member section, aggregated
-     * to a known glyph.
-     *
-     * @return true if member of a known glyph
-     */
-    public boolean isKnown ();
-
-    /**
      * Report whether this section has been "processed".
      *
      * @return the processed
