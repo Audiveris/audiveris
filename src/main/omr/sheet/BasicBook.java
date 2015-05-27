@@ -524,13 +524,13 @@ public class BasicBook
 
                     new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
                     BookManager.setDefaultExportDirectory(bookPath.getParent().toString());
-                    getScript().addTask(new ExportTask(bookPath.getParent().toFile()));
                 } catch (Exception ex) {
                     logger.warn("Could not export score " + scoreName, ex);
                 }
             }
         }
 
+        // Save task into book script
         getScript().addTask(new ExportTask(bookPath.getParent().toFile()));
     }
 
@@ -696,9 +696,9 @@ public class BasicBook
     // getSheet //
     //----------//
     @Override
-    public Sheet getSheet (int sheetIndex)
+    public Sheet getSheet (int sheetId)
     {
-        return sheets.get(sheetIndex);
+        return sheets.get(sheetId - 1);
     }
 
     //-----------//

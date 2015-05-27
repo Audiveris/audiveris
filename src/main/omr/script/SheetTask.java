@@ -71,7 +71,7 @@ public abstract class SheetTask
         StringBuilder sb = new StringBuilder(super.internals());
 
         if (index != null) {
-            sb.append(" page#").append(index);
+            sb.append(" sheet#").append(index);
         }
 
         return sb.toString();

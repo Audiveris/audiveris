@@ -181,7 +181,7 @@ public class StepMenu
 
                     if ((sofar == null) || (sofar.compareTo(step) <= 0)) {
                         // Here work on the sheet
-                        new SheetStepTask(step).run(sheet);
+                        new SheetStepTask(sheet, step).run(sheet);
                     } else {
                         // There we rebuild just the current sheet
                         ///Stepping.reprocessSheet(step, sheet, null, true);

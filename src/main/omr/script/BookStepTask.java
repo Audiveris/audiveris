@@ -76,19 +76,4 @@ public class BookStepTask
 
         return sb.toString();
     }
-
-    //--------------//
-    // isRecordable //
-    //--------------//
-    /**
-     * This is an implementation trick, because of a "chicken and egg" problem to allow
-     * to run the LOAD step while the sheet does not exist yet!
-     *
-     * @return false!
-     */
-    @Override
-    boolean isRecordable ()
-    {
-        return false;
-    }
 }

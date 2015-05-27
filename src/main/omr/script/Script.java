@@ -84,7 +84,8 @@ public class Script
         @XmlElement(name = "remove", type = RemoveTask.class),
         @XmlElement(name = "segment", type = SegmentTask.class),
         @XmlElement(name = "slur", type = SlurTask.class),
-        @XmlElement(name = "step", type = BookStepTask.class),
+        @XmlElement(name = "book-step", type = BookStepTask.class),
+        @XmlElement(name = "sheet-step", type = SheetStepTask.class),
         @XmlElement(name = "text", type = TextTask.class)
     })
     private final List<ScriptTask> tasks = new ArrayList<ScriptTask>();

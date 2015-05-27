@@ -30,9 +30,6 @@ import org.slf4j.LoggerFactory;
  * The whole processing of a task is run synchronously by the {@link #run} method, and this is what
  * the calling {@link Script} engine does. To run a task asynchronously, use the {@link #launch}
  * method, and this is what any UI module should do.</p>
- * <p>
- * Running a task has the side-effect of writing this task in the current book script, unless the
- * task is defined as not recordable.</p>
  *
  * @author Hervé Bitteur
  */
@@ -71,11 +68,6 @@ public abstract class ScriptTask
         prolog(sheet);
         core(sheet);
         epilog(sheet);
-
-        // Record the task instance in the current script?
-        if (isRecordable()) {
-            sheet.getBook().getScript().addTask(this);
-        }
     }
 
     //------//
@@ -174,18 +166,5 @@ public abstract class ScriptTask
     protected String internals ()
     {
         return "";
-    }
-
-    //--------------//
-    // isRecordable //
-    //--------------//
-    /**
-     * Report whether this task should be written in the current script
-     *
-     * @return true if recordable
-     */
-    boolean isRecordable ()
-    {
-        return true;
     }
 }

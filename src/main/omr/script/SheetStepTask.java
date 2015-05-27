@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class SheetStepTask
-        extends ScriptTask
+        extends SheetTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -41,10 +41,13 @@ public class SheetStepTask
     /**
      * Create a task to apply a given step to the related sheet.
      *
-     * @param step the step to apply
+     * @param sheet the sheet to process
+     * @param step  the step to apply
      */
-    public SheetStepTask (Step step)
+    public SheetStepTask (Sheet sheet,
+                          Step step)
     {
+        super(sheet);
         this.step = step;
     }
 
@@ -63,6 +66,7 @@ public class SheetStepTask
     {
         sheet.doStep(step, null);
         logger.info("End of sheet step {}", step);
+        sheet.getBook().getScript().addTask(this);
     }
 
     //-----------//
@@ -75,20 +79,5 @@ public class SheetStepTask
         sb.append(" sheet-step ").append(step);
 
         return sb.toString();
-    }
-
-    //--------------//
-    // isRecordable //
-    //--------------//
-    /**
-     * This is an implementation trick, because of a "chicken and egg" problem to allow
-     * to run the LOAD step while the sheet does not exist yet!
-     *
-     * @return false!
-     */
-    @Override
-    boolean isRecordable ()
-    {
-        return false;
     }
 }

@@ -143,12 +143,12 @@ public interface Book
     boolean isMultiSheet ();
 
     /**
-     * Report the sheet with provided id (sheet-index, counted from 1).
+     * Report the sheet with provided id (counted from 1).
      *
-     * @param sheetIndex the desired value for sheet index
+     * @param sheetId the desired value for sheet id
      * @return the proper sheet, or null if not found
      */
-    Sheet getSheet (int sheetIndex);
+    Sheet getSheet (int sheetId);
 
     /**
      * Report the sheets contained in this book.
