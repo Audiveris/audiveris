@@ -19,6 +19,8 @@ import omr.glyph.facets.Glyph;
 import omr.math.LineUtil;
 
 import omr.sheet.Scale;
+import omr.sheet.Staff;
+import omr.sheet.StaffManager;
 
 import omr.sig.GradeImpacts;
 import omr.sig.inter.Inter;
@@ -166,7 +168,7 @@ public class SegmentsBuilder
         if (dist <= params.maxExtDistance) {
             List<Point> pts = curve.getAllPoints(arcView, reverse);
             SegmentInfo s = (SegmentInfo) createCurve(curve, arcView, pts, null);
-            s.setModel(computeModel(pts));
+            s.setModel(computeModel(pts, false));
             logger.debug("{} extended as {} dist:{}", segment, s, dist);
 
             return s;
@@ -177,11 +179,26 @@ public class SegmentsBuilder
         }
     }
 
+    //----------------//
+    // computeImpacts //
+    //----------------//
+    @Override
+    protected SegmentInter.Impacts computeImpacts (Curve curve,
+                                                   boolean ignored)
+    {
+        SegmentInfo segment = (SegmentInfo) curve;
+        double dist = segment.getModel().getDistance();
+        double distImpact = 1 - (dist / params.maxSegmentDistance);
+
+        return new SegmentInter.Impacts(distImpact);
+    }
+
     //--------------//
     // computeModel //
     //--------------//
     @Override
-    protected Model computeModel (List<Point> points)
+    protected Model computeModel (List<Point> points,
+                                  boolean isSeed)
     {
         return new LineModel(points);
     }
@@ -244,33 +261,21 @@ public class SegmentsBuilder
         clump.add(list.get(0));
     }
 
-    //----------------//
-    // computeImpacts //
-    //----------------//
-    @Override
-    protected SegmentInter.Impacts computeImpacts (Curve curve,
-                                                   boolean ignored)
-    {
-        SegmentInfo segment = (SegmentInfo) curve;
-        double dist = segment.getModel().getDistance();
-        double distImpact = 1 - (dist / params.maxSegmentDistance);
-
-        return new SegmentInter.Impacts(distImpact);
-    }
-
     //-------------//
     // getSeedArcs //
     //-------------//
     /**
      * Build the arcs that can be used to start line/wedge building.
-     * They contain only arcs with relevant shape and of sufficient length.
+     * They contain only arcs with relevant shape and of sufficient length, located outside staves.
      *
      * @return the collection sorted by decreasing length
      */
     private List<Arc> getSeedArcs ()
     {
-        Set<Arc> set = new HashSet<Arc>();
+        final StaffManager staffManager = sheet.getStaffManager();
+        final Set<Arc> set = new HashSet<Arc>();
 
+        ArcLoop:
         for (Arc arc : skeleton.arcsMap.values()) {
             // Reset the assigned flag that was perhaps set by SlursBuilder
             arc.setAssigned(false);
@@ -290,6 +295,17 @@ public class SegmentsBuilder
 
             if (slope > params.maxWedgeSlope) {
                 continue;
+            }
+
+            // Check location with respect to staves
+            for (boolean rev : new boolean[]{true, false}) {
+                Point end = arc.getEnd(rev);
+                Staff staff = staffManager.getClosestStaff(end);
+                double dist = staff.distanceTo(end);
+
+                if (dist <= 0) {
+                    continue ArcLoop; // Since end point is within staff height
+                }
             }
 
             set.add(arc);

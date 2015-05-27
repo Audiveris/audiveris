@@ -160,6 +160,12 @@ public enum Shape
     FLAG_5_UP("Quintuple flag up"),
 
     //
+    // Small Flags -------------------------------------------------------------
+    //
+    SMALL_FLAG("Flag for grace note"),
+    SMALL_FLAG_SLASH("Flag for slashed grace note"),
+
+    //
     // Notes -------------------------------------------------------------------
     //
     BREVE("Double Whole"),
@@ -200,8 +206,6 @@ public enum Shape
     //
     // Ornaments ---------------------------------------------------------------
     //
-    GRACE_NOTE_SLASH("Grace Note with a Slash"),
-    GRACE_NOTE("Grace Note with no slash"),
     TR("Trill"),
     TURN("Turn"),
     TURN_INVERTED("Inverted Turn"),
@@ -361,6 +365,12 @@ public enum Shape
     //
     KEY_FLAT_1("One Flat"),
     KEY_SHARP_1("One Sharp"),
+    //
+    // Ornaments ---------------------------------------------------------------
+    //
+    GRACE_NOTE_SLASH("Grace Note with a Slash"),
+    GRACE_NOTE("Grace Note with no slash"),
+
     //
     // Other stuff -------------------------------------------------------------
     //

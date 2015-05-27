@@ -16,7 +16,9 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
 import omr.glyph.Shape;
+
 import static omr.glyph.ShapeSet.*;
+
 import omr.glyph.facets.Glyph;
 
 import omr.sheet.Scale;
@@ -33,7 +35,6 @@ import omr.sig.inter.ClefInter;
 import omr.sig.inter.DynamicsInter;
 import omr.sig.inter.FermataInter;
 import omr.sig.inter.FingeringInter;
-import omr.sig.inter.FlagInter;
 import omr.sig.inter.FretInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.PedalInter;
@@ -50,6 +51,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
+import omr.sig.inter.AbstractFlagInter;
 
 /**
  * Class {@code SymbolFactory} generates the inter instances corresponding to
@@ -164,7 +166,7 @@ public class SymbolFactory
             sig.addVertex(alterInter);
             alterInter.detectNoteRelation(systemHeads);
         } else if (Flags.contains(shape)) {
-            FlagInter.create(glyph, shape, grade, system, systemStems);
+            AbstractFlagInter.create(glyph, shape, grade, system, systemStems);
         } else if (PartialTimes.contains(shape)) {
             TimeNumberInter timeNumberInter = TimeNumberInter.create(
                     glyph,

@@ -506,7 +506,7 @@ public abstract class ChordInter
             final Set<Relation> rels = sig.getRelations(stem, FlagStemRelation.class);
 
             for (Relation rel : rels) {
-                FlagInter flagInter = (FlagInter) sig.getOppositeInter(stem, rel);
+                AbstractFlagInter flagInter = (AbstractFlagInter) sig.getOppositeInter(stem, rel);
                 count += flagInter.getValue();
             }
         }

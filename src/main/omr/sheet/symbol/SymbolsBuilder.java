@@ -279,7 +279,7 @@ public class SymbolsBuilder
                 "Maximum distance between two compound parts");
 
         private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
-                0.03,
+                0.015,
                 "Minimum weight for glyph consideration");
 
         private final Scale.Fraction maxSymbolWidth = new Scale.Fraction(

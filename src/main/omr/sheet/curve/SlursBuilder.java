@@ -279,7 +279,7 @@ public class SlursBuilder
                 s.setSideModel(slur.getSideModel(!reverse), !reverse);
             }
 
-            Model sModel = computeModel(pts);
+            Model sModel = computeModel(pts, false);
             s.setModel(sModel);
 
             return s;
@@ -424,7 +424,8 @@ public class SlursBuilder
     // computeModel //
     //--------------//
     @Override
-    protected Model computeModel (List<Point> points)
+    protected Model computeModel (List<Point> points,
+                                  boolean isSeed)
     {
         Point p0 = points.get(0);
         Point p1 = points.get(points.size() / 2);
@@ -435,8 +436,9 @@ public class SlursBuilder
 
         // Minimum circle radius
         double radius = rough.getRadius();
+        double minRadius = isSeed ? params.minSeedCircleRadius : params.minCircleRadius;
 
-        if (radius < params.minCircleRadius) {
+        if (radius < minRadius) {
             logger.debug("Arc radius too small {} at {}", radius, p0);
 
             return null;
@@ -920,7 +922,7 @@ public class SlursBuilder
                 "Minimum circle radius for a straight slur end");
 
         final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
-                0.8,
+                0.5, //0.8,
                 "Minimum arc length for starting a slur build");
 
         final Scale.Fraction maxStaffLineDy = new Scale.Fraction(
@@ -950,6 +952,10 @@ public class SlursBuilder
         final Scale.Fraction minCircleRadius = new Scale.Fraction(
                 0.4,
                 "Minimum circle radius for a slur");
+
+        final Scale.Fraction minSeedCircleRadius = new Scale.Fraction(
+                0.3,
+                "Minimum circle radius for a slur seed");
 
         final Scale.Fraction minSlurWidthLow = new Scale.Fraction(
                 0.7,
@@ -1030,6 +1036,8 @@ public class SlursBuilder
 
         final double maxArcsDistance;
 
+        final double minSeedCircleRadius;
+
         final double minCircleRadius;
 
         final double minSlurWidthLow;
@@ -1071,6 +1079,7 @@ public class SlursBuilder
             maxSlurDistance = scale.toPixelsDouble(constants.maxSlurDistance);
             maxExtDistance = scale.toPixelsDouble(constants.maxExtDistance);
             maxArcsDistance = scale.toPixelsDouble(constants.maxArcsDistance);
+            minSeedCircleRadius = scale.toPixelsDouble(constants.minSeedCircleRadius);
             minCircleRadius = scale.toPixelsDouble(constants.minCircleRadius);
             minStraightEndRadius = scale.toPixelsDouble(constants.minStraightEndRadius);
             minSlurWidthLow = scale.toPixelsDouble(constants.minSlurWidthLow);

@@ -215,6 +215,9 @@ public abstract class Symbols
         flagsDown(5, FLAG_5);
         flagsUp(5, FLAG_5_UP);
 
+        small(SMALL_FLAG, 106);
+        sym.put(SMALL_FLAG_SLASH, new SlashedFlagSymbol(false));
+
         //        STEM?
         map(COMMON_TIME, 99);
         sym.put(CUSTOM_TIME, new CustomNumDenSymbol());

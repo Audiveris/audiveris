@@ -186,14 +186,14 @@ public abstract class CurvesBuilder
 
         Curve trunk = createCurve(arc, arc.getModel());
 
+        if (debugArc) {
+            logger.info("Trunk: {}", trunk);
+        }
+
         if (arc.getModel() != null) {
             trunk.setModel(arc.getModel());
         } else {
-            trunk.setModel(computeModel(arc.getPoints()));
-        }
-
-        if (debugArc) {
-            logger.info("Trunk: {}", trunk);
+            trunk.setModel(computeModel(arc.getPoints(), true));
         }
 
         // Try to extend the trunk as much as possible, on right end then on left end.
@@ -256,9 +256,11 @@ public abstract class CurvesBuilder
      * Check whether the provided points can represent a curve.
      *
      * @param points the provided points
+     * @param isSeed true for the very first model computed on a curve seed
      * @return the model if OK, null if not
      */
-    protected abstract Model computeModel (List<Point> points);
+    protected abstract Model computeModel (List<Point> points,
+                                           boolean isSeed);
 
     //-------------//
     // createCurve //
@@ -524,7 +526,7 @@ public abstract class CurvesBuilder
         Model model = curve.getModel();
 
         if (model == null) {
-            model = computeModel(curve.getPoints());
+            model = computeModel(curve.getPoints(), false);
             curve.setModel(model);
         }
 

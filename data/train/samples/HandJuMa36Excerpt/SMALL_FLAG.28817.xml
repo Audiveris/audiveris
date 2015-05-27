@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="28817" interline="19" shape="SMALL_FLAG">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-1.6533333333333333</pitch-position>
+    <section first-pos="1621" orientation="VERTICAL" id="628">
+        <run start="1343" length="8"/>
+    </section>
+    <section first-pos="1622" orientation="VERTICAL" id="629">
+        <run start="1345" length="6"/>
+    </section>
+    <section first-pos="1623" orientation="VERTICAL" id="630">
+        <run start="1346" length="3"/>
+    </section>
+    <section first-pos="1624" orientation="VERTICAL" id="632">
+        <run start="1348" length="1"/>
+    </section>
+    <section first-pos="1625" orientation="VERTICAL" id="633">
+        <run start="1351" length="1"/>
+    </section>
+    <section first-pos="1626" orientation="VERTICAL" id="634">
+        <run start="1351" length="3"/>
+    </section>
+    <section first-pos="1627" orientation="VERTICAL" id="635">
+        <run start="1352" length="4"/>
+    </section>
+    <section first-pos="1628" orientation="VERTICAL" id="636">
+        <run start="1355" length="3"/>
+    </section>
+    <section first-pos="1629" orientation="VERTICAL" id="638">
+        <run start="1358" length="6"/>
+    </section>
+</glyph>

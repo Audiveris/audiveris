@@ -13,19 +13,25 @@ package omr.sheet.symbol;
 
 import omr.sheet.SystemInfo;
 import omr.sheet.rhythm.MeasureStack;
+import omr.sheet.rhythm.Voice;
 
 import omr.sig.SIGraph;
+import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.ChordInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.LyricItemInter;
 import omr.sig.inter.PedalInter;
 import omr.sig.inter.SentenceInter;
+import omr.sig.inter.SlurInter;
+import omr.sig.inter.SmallChordInter;
 import omr.sig.inter.WedgeInter;
 import omr.sig.inter.WordInter;
 import omr.sig.relation.ChordNameRelation;
 import omr.sig.relation.ChordPedalRelation;
 import omr.sig.relation.ChordSentenceRelation;
 import omr.sig.relation.ChordWedgeRelation;
+import omr.sig.relation.Relation;
+import omr.sig.relation.SlurHeadRelation;
 
 import omr.text.TextRole;
 
@@ -81,6 +87,39 @@ class SymbolsLinker
         linkTexts();
         linkPedals();
         linkWedges();
+        linkGraces();
+    }
+
+    //------------//
+    // linkGraces //
+    //------------//
+    /**
+     * Link grace chords with their standard chord.
+     */
+    private void linkGraces ()
+    {
+        SmallLoop:
+        for (Inter chordInter : sig.inters(SmallChordInter.class)) {
+            final SmallChordInter smallChord = (SmallChordInter) chordInter;
+
+            for (Inter interNote : smallChord.getNotes()) {
+                for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
+                    SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
+                    AbstractHeadInter head = slur.getHead(HorizontalSide.RIGHT);
+
+                    if (head != null) {
+                        Voice voice = head.getVoice();
+
+                        if (voice != null) {
+                            smallChord.setVoice(voice);
+                            logger.info("{} assigned {}", smallChord, voice);
+
+                            continue SmallLoop;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     //------------//

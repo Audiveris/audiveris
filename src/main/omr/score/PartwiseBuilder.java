@@ -40,12 +40,15 @@ import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.AlterInter;
 import omr.sig.inter.ChordInter;
 import omr.sig.inter.ClefInter;
+import omr.sig.inter.HeadChordInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.KeyInter;
 import omr.sig.inter.LyricItemInter;
 import omr.sig.inter.PedalInter;
 import omr.sig.inter.SentenceInter;
 import omr.sig.inter.SlurInter;
+import omr.sig.inter.SmallChordInter;
+import omr.sig.inter.StemInter;
 import omr.sig.inter.TimeInter;
 import omr.sig.inter.TupletInter;
 import omr.sig.inter.WedgeInter;
@@ -53,6 +56,7 @@ import omr.sig.relation.ChordPedalRelation;
 import omr.sig.relation.ChordSentenceRelation;
 import omr.sig.relation.ChordSyllableRelation;
 import omr.sig.relation.ChordWedgeRelation;
+import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.SlurHeadRelation;
 
@@ -87,6 +91,7 @@ import com.audiveris.proxymusic.FontStyle;
 import com.audiveris.proxymusic.FontWeight;
 import com.audiveris.proxymusic.FormattedText;
 import com.audiveris.proxymusic.Forward;
+import com.audiveris.proxymusic.Grace;
 import com.audiveris.proxymusic.Identification;
 import com.audiveris.proxymusic.Key;
 import com.audiveris.proxymusic.LeftCenterRight;
@@ -323,77 +328,6 @@ public class PartwiseBuilder
                && Objects.equals(left.getClefOctaveChange(), right.getClefOctaveChange());
     }
 
-    //-----------//
-    // buildClef //
-    //-----------//
-    private Clef buildClef (ClefInter clef)
-    {
-        Clef pmClef = factory.createClef();
-
-        // Staff number (only for multi-staff parts)
-        if (current.logicalPart.isMultiStaff()) {
-            pmClef.setNumber(new BigInteger("" + (1 + clef.getStaff().getIndexInPart())));
-        }
-
-        // Line (General computation that could be overridden by more specific shape test below)
-        pmClef.setLine(new BigInteger("" + (3 - (int) Math.rint(clef.getPitch() / 2.0))));
-
-        Shape shape = clef.getShape();
-
-        switch (shape) {
-        case G_CLEF:
-        case G_CLEF_SMALL:
-            pmClef.setSign(ClefSign.G);
-
-            break;
-
-        case G_CLEF_8VA:
-            pmClef.setSign(ClefSign.G);
-            pmClef.setClefOctaveChange(new BigInteger("1"));
-
-            break;
-
-        case G_CLEF_8VB:
-            pmClef.setSign(ClefSign.G);
-            pmClef.setClefOctaveChange(new BigInteger("-1"));
-
-            break;
-
-        case C_CLEF:
-            pmClef.setSign(ClefSign.C);
-
-            break;
-
-        case F_CLEF:
-        case F_CLEF_SMALL:
-            pmClef.setSign(ClefSign.F);
-
-            break;
-
-        case F_CLEF_8VA:
-            pmClef.setSign(ClefSign.F);
-            pmClef.setClefOctaveChange(new BigInteger("1"));
-
-            break;
-
-        case F_CLEF_8VB:
-            pmClef.setSign(ClefSign.F);
-            pmClef.setClefOctaveChange(new BigInteger("-1"));
-
-            break;
-
-        case PERCUSSION_CLEF:
-            pmClef.setSign(ClefSign.PERCUSSION);
-
-            break;
-
-        default:
-            logger.error("Clef shape not exported {}", shape);
-        }
-
-        return pmClef;
-    }
-
     //------------------//
     // getArticulations //
     //------------------//
@@ -416,24 +350,6 @@ public class PartwiseBuilder
         getNotations().getTiedOrSlurOrTuplet().add(articulations);
 
         return articulations;
-    }
-
-    //---------------//
-    // getAttributes //
-    //---------------//
-    /**
-     * Report (after creating it if necessary) the measure attributes element.
-     *
-     * @return the measure attributes element
-     */
-    private Attributes getAttributes ()
-    {
-        if (current.pmAttributes == null) {
-            current.pmAttributes = new Attributes();
-            current.pmMeasure.getNoteOrBackupOrForward().add(current.pmAttributes);
-        }
-
-        return current.pmAttributes;
     }
 
     //---------------//
@@ -547,6 +463,122 @@ public class PartwiseBuilder
         }
 
         getNotations().getTiedOrSlurOrTuplet().add(pmSlur);
+    }
+
+    //-----------//
+    // buildClef //
+    //-----------//
+    private Clef buildClef (ClefInter clef)
+    {
+        Clef pmClef = factory.createClef();
+
+        // Staff number (only for multi-staff parts)
+        if (current.logicalPart.isMultiStaff()) {
+            pmClef.setNumber(new BigInteger("" + (1 + clef.getStaff().getIndexInPart())));
+        }
+
+        // Line (General computation that could be overridden by more specific shape test below)
+        pmClef.setLine(new BigInteger("" + (3 - (int) Math.rint(clef.getPitch() / 2.0))));
+
+        Shape shape = clef.getShape();
+
+        switch (shape) {
+        case G_CLEF:
+        case G_CLEF_SMALL:
+            pmClef.setSign(ClefSign.G);
+
+            break;
+
+        case G_CLEF_8VA:
+            pmClef.setSign(ClefSign.G);
+            pmClef.setClefOctaveChange(new BigInteger("1"));
+
+            break;
+
+        case G_CLEF_8VB:
+            pmClef.setSign(ClefSign.G);
+            pmClef.setClefOctaveChange(new BigInteger("-1"));
+
+            break;
+
+        case C_CLEF:
+            pmClef.setSign(ClefSign.C);
+
+            break;
+
+        case F_CLEF:
+        case F_CLEF_SMALL:
+            pmClef.setSign(ClefSign.F);
+
+            break;
+
+        case F_CLEF_8VA:
+            pmClef.setSign(ClefSign.F);
+            pmClef.setClefOctaveChange(new BigInteger("1"));
+
+            break;
+
+        case F_CLEF_8VB:
+            pmClef.setSign(ClefSign.F);
+            pmClef.setClefOctaveChange(new BigInteger("-1"));
+
+            break;
+
+        case PERCUSSION_CLEF:
+            pmClef.setSign(ClefSign.PERCUSSION);
+
+            break;
+
+        default:
+            logger.error("Clef shape not exported {}", shape);
+        }
+
+        return pmClef;
+    }
+
+    //---------------//
+    // getAttributes //
+    //---------------//
+    /**
+     * Report (after creating it if necessary) the measure attributes element.
+     *
+     * @return the measure attributes element
+     */
+    private Attributes getAttributes ()
+    {
+        if (current.pmAttributes == null) {
+            current.pmAttributes = new Attributes();
+            current.pmMeasure.getNoteOrBackupOrForward().add(current.pmAttributes);
+        }
+
+        return current.pmAttributes;
+    }
+
+    //----------//
+    // getGrace //
+    //----------//
+    /**
+     * Report the grace chord, if any, which precedes the provided head-chord.
+     *
+     * @param chord the standard chord to check
+     * @return the linked grace chord if any
+     */
+    private SmallChordInter getGrace (HeadChordInter chord)
+    {
+        final SIGraph sig = chord.getSig();
+
+        for (Inter interNote : chord.getNotes()) {
+            for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
+                SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
+                AbstractHeadInter head = slur.getHead(HorizontalSide.LEFT);
+
+                if ((head != null) && head.getShape().isSmall()) {
+                    return (SmallChordInter) head.getChord();
+                }
+            }
+        }
+
+        return null;
     }
 
     //--------------//
@@ -1409,6 +1441,15 @@ public class PartwiseBuilder
                                 timeCounter = startTime;
                             }
 
+                            // Grace note before this chord?
+                            if (chord instanceof HeadChordInter) {
+                                SmallChordInter small = getGrace((HeadChordInter) chord);
+
+                                if (small != null) {
+                                    processChord(small);
+                                }
+                            }
+
                             // Delegate to the chord children directly
                             processChord(chord);
                             timeCounter = timeCounter.plus(chord.getDuration());
@@ -1462,11 +1503,12 @@ public class PartwiseBuilder
             final SIGraph sig = note.getSig();
             current.note = note;
 
-            ChordInter chord = note.getChord();
+            final ChordInter chord = note.getChord();
+            final boolean isFirstInChord = chord.getNotes().indexOf(note) == 0;
 
             // For first note in chord
             if (!current.measure.isDummy()) {
-                if (chord.getNotes().indexOf(note) == 0) {
+                if (isFirstInChord) {
                     // Chord direction events (statement, pedal, TODO: others?)
                     for (Relation rel : sig.edgesOf(chord)) {
                         if (rel instanceof ChordSentenceRelation) {
@@ -1493,7 +1535,7 @@ public class PartwiseBuilder
             Staff staff = note.getStaff();
 
             // Chord notation events for first note in chord
-            if (chord.getNotes().indexOf(note) == 0) {
+            if (isFirstInChord) {
                 //                for (Notation node : chord.getNotations()) {
                 //                    ///node.accept(this);
                 //                    process(node);
@@ -1532,6 +1574,25 @@ public class PartwiseBuilder
 
                 current.pmNote.setRest(rest);
             } else {
+                // Grace?
+                if (isFirstInChord && note.getShape().isSmall()) {
+                    Grace grace = factory.createGrace();
+                    current.pmNote.setGrace(grace);
+
+                    // Slash? (check the flag)
+                    StemInter stem = chord.getStem();
+
+                    if (stem != null) {
+                        for (Relation rel : sig.getRelations(stem, FlagStemRelation.class)) {
+                            if (Shape.SMALL_FLAG_SLASH == sig.getOppositeInter(stem, rel).getShape()) {
+                                grace.setSlash(YesNo.YES);
+
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 // Pitch
                 Pitch pitch = factory.createPitch();
                 pitch.setStep(stepOf(note.getStep()));
@@ -1567,20 +1628,22 @@ public class PartwiseBuilder
                 current.pmNote.setTimeModification(timeModification);
             }
 
-            // Duration
-            try {
-                final Rational dur;
+            // Duration (not for grace note)
+            if (current.pmNote.getGrace() == null) {
+                try {
+                    final Rational dur;
 
-                if (chord.isWholeRest()) {
-                    dur = current.measure.getStack().getActualDuration();
-                } else {
-                    dur = chord.getDuration();
-                }
+                    if (chord.isWholeRest()) {
+                        dur = current.measure.getStack().getActualDuration();
+                    } else {
+                        dur = chord.getDuration();
+                    }
 
-                current.pmNote.setDuration(new BigDecimal(current.page.simpleDurationOf(dur)));
-            } catch (Exception ex) {
-                if (current.page.getDurationDivisor() != null) {
-                    logger.warn("Not able to get duration of note", ex);
+                    current.pmNote.setDuration(new BigDecimal(current.page.simpleDurationOf(dur)));
+                } catch (Exception ex) {
+                    if (current.page.getDurationDivisor() != null) {
+                        logger.warn("Not able to get duration of note", ex);
+                    }
                 }
             }
 

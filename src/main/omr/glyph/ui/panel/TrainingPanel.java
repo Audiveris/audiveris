@@ -256,12 +256,15 @@ class TrainingPanel
     //-----------------//
     // checkPopulation //
     //-----------------//
+    /**
+     * Check that all trainable shapes are present in the training population and that
+     * only legal shapes are present.
+     * If illegal (non trainable) shapes are found, they are removed from the population.
+     *
+     * @param glyphs the population of glyphs to check
+     */
     private void checkPopulation (List<Glyph> glyphs)
     {
-        // Check that all trainable shapes are present in the training
-        // population and that only legal shapes are present. If illegal
-        // (non trainable) shapes are found, they are removed from the
-        // population.
         boolean[] present = new boolean[LAST_PHYSICAL_SHAPE.ordinal() + 1];
         Arrays.fill(present, false);
 
@@ -275,7 +278,7 @@ class TrainingPanel
                 if (physicalShape.isTrainable()) {
                     present[physicalShape.ordinal()] = true;
                 } else {
-                    logger.warn("Removing non trainable shape:{}", physicalShape);
+                    logger.warn("Removing non trainable shape: {}", physicalShape);
                     it.remove();
                 }
             } catch (Exception ex) {

@@ -102,30 +102,31 @@ public class FlagStemRelation
         return constants.stemSupportCoeff.getValue();
     }
 
+    //--------------//
+    // getXInGapMax //
+    //--------------//
     @Override
     protected Scale.Fraction getXInGapMax ()
     {
         return getXInGapMaximum();
     }
 
+    //---------------//
+    // getXOutGapMax //
+    //---------------//
     @Override
     protected Scale.Fraction getXOutGapMax ()
     {
         return getXOutGapMaximum();
     }
 
+    //------------//
+    // getYGapMax //
+    //------------//
     @Override
     protected Scale.Fraction getYGapMax ()
     {
         return getYGapMaximum();
-    }
-
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        return sb.toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -138,11 +139,11 @@ public class FlagStemRelation
         //~ Instance fields ------------------------------------------------------------------------
 
         final Constant.Ratio flagSupportCoeff = new Constant.Ratio(
-                5,
+                3,
                 "Value for source (flag) coeff in support formula");
 
         final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
-                5,
+                3,
                 "Value for target (stem) coeff in support formula");
 
         final Scale.Fraction yGapMax = new Scale.Fraction(

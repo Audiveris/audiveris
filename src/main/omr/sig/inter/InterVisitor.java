@@ -22,6 +22,8 @@ public interface InterVisitor
 
     void visit (AbstractBeamInter inter);
 
+    void visit (AbstractFlagInter inter);
+
     void visit (AbstractHeadInter inter);
 
     void visit (BarConnectionInter inter);
@@ -39,8 +41,6 @@ public interface InterVisitor
     void visit (ClefInter inter);
 
     void visit (EndingInter inter);
-
-    void visit (FlagInter inter);
 
     void visit (Inter inter);
 

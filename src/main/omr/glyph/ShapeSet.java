@@ -116,6 +116,11 @@ public class ShapeSet
             FLAG_4,
             FLAG_5);
 
+    /** Small flags */
+    public static final EnumSet<Shape> SmallFlags = EnumSet.of(
+            SMALL_FLAG,
+            SMALL_FLAG_SLASH);
+
     /** All flags up */
     public static final EnumSet<Shape> FlagsUp = EnumSet.of(
             FLAG_1_UP,
@@ -288,7 +293,7 @@ public class ShapeSet
     public static final ShapeSet Flags = new ShapeSet(
             FLAG_1,
             new Color(0x99cc00),
-            shapesOf(FlagsDown, FlagsUp));
+            shapesOf(FlagsDown, FlagsUp, SmallFlags));
 
     public static final ShapeSet Keys = new ShapeSet(
             KEY_SHARP_3,

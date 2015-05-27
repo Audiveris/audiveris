@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="4692" interline="18" shape="SMALL_FLAG">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-5.226666666671603</pitch-position>
+    <section first-pos="2073" orientation="VERTICAL" id="1700">
+        <run start="1045" length="5"/>
+        <run start="1046" length="5"/>
+        <run start="1048" length="4"/>
+        <run start="1049" length="4"/>
+    </section>
+    <section first-pos="2077" orientation="VERTICAL" id="1705">
+        <run start="1051" length="3"/>
+        <run start="1053" length="3"/>
+        <run start="1055" length="3"/>
+    </section>
+    <section first-pos="2080" orientation="VERTICAL" id="1712">
+        <run start="1058" length="12"/>
+    </section>
+</glyph>

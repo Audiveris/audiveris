@@ -290,7 +290,7 @@ public class ArcRetriever
         }
 
         // Circle?
-        Model fittedModel = curves.getSlursBuilder().computeModel(points);
+        Model fittedModel = curves.getSlursBuilder().computeModel(points, false);
 
         if (fittedModel instanceof CircleModel) {
             arc.setModel(fittedModel);

@@ -80,7 +80,7 @@ public class StackTuner
     /** Relevant rhythm classes. */
     public static final Class<?>[] rhythmClasses = new Class<?>[]{
         ChordInter.class, // Chords (heads & rests)
-        FlagInter.class, // Flags
+        FlagInter.class, // (standard) Flags
         TupletInter.class, // Tuplet signs
         AugmentationDotInter.class // Augmentation dots
     };

@@ -29,6 +29,12 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
+    public void visit (AbstractFlagInter inter)
+    {
+        // Void by default
+    }
+
+    @Override
     public void visit (AbstractHeadInter inter)
     {
         // Void by default
@@ -78,12 +84,6 @@ public abstract class AbstractInterVisitor
 
     @Override
     public void visit (EndingInter inter)
-    {
-        // Void by default
-    }
-
-    @Override
-    public void visit (FlagInter inter)
     {
         // Void by default
     }

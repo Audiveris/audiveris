@@ -18,17 +18,18 @@ import omr.sheet.Scale;
 import omr.sheet.rhythm.Voice;
 
 import omr.sig.GradeImpacts;
-import omr.sig.SIGraph;
 import omr.sig.relation.BeamStemRelation;
 import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.StemConnection;
 import omr.sig.relation.StemPortion;
+
 import static omr.sig.relation.StemPortion.STEM_BOTTOM;
 import static omr.sig.relation.StemPortion.STEM_TOP;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
 
@@ -173,6 +174,26 @@ public class StemInter
     public boolean isGood ()
     {
         return getGrade() >= 0.45; // BINGO DIRTY HACK
+    }
+
+    //-------------//
+    // isGraceStem //
+    //-------------//
+    /**
+     * Report whether this stem is linked to grace note heads (rather than standard heads)
+     *
+     * @return true if connected head is small
+     */
+    public boolean isGraceStem ()
+    {
+        for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
+            Shape shape = sig.getOppositeInter(this, rel).getShape();
+
+            // First head tested is enough.
+            return (shape == Shape.NOTEHEAD_BLACK_SMALL) || (shape == Shape.NOTEHEAD_VOID_SMALL);
+        }
+
+        return false;
     }
 
     //------------//

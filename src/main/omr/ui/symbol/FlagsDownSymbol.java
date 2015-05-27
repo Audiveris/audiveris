@@ -30,7 +30,7 @@ public class FlagsDownSymbol
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The number of flags */
+    /** The number of flags. */
     protected final int fn;
 
     //~ Constructors -------------------------------------------------------------------------------

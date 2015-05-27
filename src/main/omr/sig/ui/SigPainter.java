@@ -32,7 +32,6 @@ import omr.sig.inter.BracketInter;
 import omr.sig.inter.ChordInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.EndingInter;
-import omr.sig.inter.FlagInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.InterVisitor;
 import omr.sig.inter.KeyAlterInter;
@@ -51,15 +50,19 @@ import omr.sig.relation.Relation;
 import omr.text.FontInfo;
 
 import omr.ui.symbol.Alignment;
+
 import static omr.ui.symbol.Alignment.*;
+
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.OmrFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
+
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
+
 import omr.ui.symbol.TextFont;
 
 import org.slf4j.Logger;
@@ -78,6 +81,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.CubicCurve2D;
 import java.util.HashSet;
 import java.util.Set;
+import omr.sig.inter.AbstractFlagInter;
 
 /**
  * Class {@code SigPainter} paints all the {@link Inter} instances of a SIG.
@@ -168,6 +172,34 @@ public class SigPainter
     {
         setColor(beam);
         g.fill(beam.getArea());
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (AbstractFlagInter flag)
+    {
+        setColor(flag);
+
+        SIGraph sig = flag.getSig();
+        Set<Relation> rels = sig.getRelations(flag, FlagStemRelation.class);
+
+        if (rels.isEmpty()) {
+            // The flag exists in sig, but is not yet linked to a stem, use default painting
+            visit((Inter) flag);
+        } else {
+            // Paint the flag precisely on stem abscissa
+            StemInter stem = (StemInter) sig.getOppositeInter(flag, rels.iterator().next());
+            Point location = new Point(stem.getCenterLeft().x, flag.getCenter().y);
+            ShapeSymbol symbol = Symbols.getSymbol(flag.getShape());
+
+            if (symbol != null) {
+                symbol.paintSymbol(g, musicFont, location, Alignment.MIDDLE_LEFT);
+            } else {
+                logger.error("No symbol to paint {}", flag);
+            }
+        }
     }
 
     //-------//
@@ -325,29 +357,6 @@ public class SigPainter
     // visit //
     //-------//
     @Override
-    public void visit (FlagInter flag)
-    {
-        setColor(flag);
-
-        SIGraph sig = flag.getSig();
-        Set<Relation> rels = sig.getRelations(flag, FlagStemRelation.class);
-
-        if (rels.isEmpty()) {
-            // The flag exists in sig, but is not yet linked to a stem, use default painting
-            visit((Inter) flag);
-        } else {
-            // Paint the flag precisely on stem abscissa
-            StemInter stem = (StemInter) sig.getOppositeInter(flag, rels.iterator().next());
-            Point location = new Point(stem.getCenterLeft().x, flag.getCenter().y);
-            ShapeSymbol symbol = Symbols.getSymbol(flag.getShape());
-            symbol.paintSymbol(g, musicFont, location, Alignment.MIDDLE_LEFT);
-        }
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
     public void visit (ChordInter inter)
     {
         // Nothing: let note & stem be painted on their own
@@ -369,7 +378,12 @@ public class SigPainter
         ///Point center = (glyph != null) ? glyph.getCentroid() : GeoUtil.centerOf(inter.getBounds());
         Point center = GeoUtil.centerOf(inter.getBounds());
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
-        symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+
+        if (symbol != null) {
+            symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+        } else {
+            logger.error("No symbol to paint {}", inter);
+        }
     }
 
     //-------//

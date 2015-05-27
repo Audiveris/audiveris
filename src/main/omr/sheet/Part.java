@@ -188,13 +188,13 @@ public class Part
                 }
 
                 // No connection for this orphan
-                logger.warn(" Could not left-connect slur #" + slur.getId());
+                logger.info("Could not left-connect slur #" + slur.getId());
             }
 
             // Check previous orphans
             for (SlurInter prevSlur : precedingOrphans) {
                 if (prevSlur.getExtension(RIGHT) == null) {
-                    logger.warn(" Could not right-connect slur #" + prevSlur.getId());
+                    logger.info("Could not right-connect slur #" + prevSlur.getId());
                 }
             }
         }

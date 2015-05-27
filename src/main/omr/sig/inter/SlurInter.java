@@ -219,7 +219,7 @@ public class SlurInter
         prevSlur.tie = isATie;
         this.tie = isATie;
 
-        logger.info("{} connection {} -> {}", isATie ? "Tie" : "Slur", prevSlur, this);
+        logger.debug("{} connection {} -> {}", isATie ? "Tie" : "Slur", prevSlur, this);
     }
 
     //------------//
