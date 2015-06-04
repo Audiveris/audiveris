@@ -404,7 +404,7 @@ class SelectionPanel
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer maxSimilar = new Constant.Integer(
+        private final Constant.Integer maxSimilar = new Constant.Integer(
                 "Glyphs",
                 10,
                 "Absolute maximum number of instances for the same shape" + " used in training");

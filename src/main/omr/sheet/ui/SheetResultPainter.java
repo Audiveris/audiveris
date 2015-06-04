@@ -480,12 +480,12 @@ public class SheetResultPainter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer basicFontSize = new Constant.Integer(
+        private final Constant.Integer basicFontSize = new Constant.Integer(
                 "points",
                 30,
                 "Standard font size for annotations");
 
-        final Scale.Fraction keySigItemDx = new Scale.Fraction(
+        private final Scale.Fraction keySigItemDx = new Scale.Fraction(
                 1.1,
                 "dx between items in a key signature");
     }

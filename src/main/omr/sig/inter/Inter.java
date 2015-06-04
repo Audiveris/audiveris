@@ -521,19 +521,19 @@ public interface Inter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio intrinsicRatio = new Constant.Ratio(
+        private final Constant.Ratio intrinsicRatio = new Constant.Ratio(
                 0.8,
                 "Reduction ratio applied on any intrinsic grade");
 
-        final Constant.Ratio minGrade = new Constant.Ratio(
+        private final Constant.Ratio minGrade = new Constant.Ratio(
                 0.1,
                 "Default minimum interpretation grade");
 
-        final Constant.Ratio minContextualGrade = new Constant.Ratio(
+        private final Constant.Ratio minContextualGrade = new Constant.Ratio(
                 0.5,
                 "Default minimum interpretation contextual grade");
 
-        final Constant.Ratio goodGrade = new Constant.Ratio(
+        private final Constant.Ratio goodGrade = new Constant.Ratio(
                 0.5,
                 "Default good interpretation grade");
     }

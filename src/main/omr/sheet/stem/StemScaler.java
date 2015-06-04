@@ -233,31 +233,31 @@ public class StemScaler
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print the StopWatch on stem computation?");
 
-        final Constant.Boolean keepStemImage = new Constant.Boolean(
+        private final Constant.Boolean keepStemImage = new Constant.Boolean(
                 false,
                 "Should we store stem images on disk?");
 
-        final Constant.Boolean useHeader = new Constant.Boolean(
+        private final Constant.Boolean useHeader = new Constant.Boolean(
                 true,
                 "Should we erase the header at system start");
 
-        final Scale.Fraction systemVerticalMargin = new Scale.Fraction(
+        private final Scale.Fraction systemVerticalMargin = new Scale.Fraction(
                 2.0,
                 "Margin erased above & below system header area");
 
-        final Constant.Ratio quorumRatio = new Constant.Ratio(
+        private final Constant.Ratio quorumRatio = new Constant.Ratio(
                 0.1,
                 "Absolute ratio of total pixels for peak acceptance");
 
-        final Constant.Ratio spreadRatio = new Constant.Ratio(
+        private final Constant.Ratio spreadRatio = new Constant.Ratio(
                 0.30,
                 "Relative ratio of best count for stem spread reading");
 
-        final Constant.Ratio stemAsForeRatio = new Constant.Ratio(
+        private final Constant.Ratio stemAsForeRatio = new Constant.Ratio(
                 1.0,
                 "Default stem thickness defined as ratio of foreground peak");
     }

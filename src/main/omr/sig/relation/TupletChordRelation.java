@@ -78,11 +78,11 @@ public class TupletChordRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio tupletThreeSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio tupletThreeSupportCoeff = new Constant.Ratio(
                 2 * 0.33,
                 "Supporting coeff for tuplet 3");
 
-        final Constant.Ratio tupletSixSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio tupletSixSupportCoeff = new Constant.Ratio(
                 2 * 0.17,
                 "Supporting coeff for tuplet 6");
     }

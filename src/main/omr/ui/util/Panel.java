@@ -318,33 +318,39 @@ public class Panel
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.String buttonWidth = new Constant.String("45dlu", "Width of a standard button");
+        private final Constant.String buttonWidth = new Constant.String(
+                "45dlu",
+                "Width of a standard button");
 
-        Constant.String fieldInterline = new Constant.String(
+        private final Constant.String fieldInterline = new Constant.String(
                 "1dlu",
                 "Vertical Gap between two lines");
 
-        Constant.String fieldInterval = new Constant.String(
+        private final Constant.String fieldInterval = new Constant.String(
                 "3dlu",
                 "Horizontal gap between two fields");
 
-        Constant.String fieldWidth = new Constant.String("35dlu", "Width of a field value");
+        private final Constant.String fieldWidth = new Constant.String(
+                "35dlu",
+                "Width of a field value");
 
-        PixelCount insetBottom = new PixelCount(6, "Value of Bottom inset");
+        private final PixelCount insetBottom = new PixelCount(6, "Value of Bottom inset");
 
-        PixelCount insetLeft = new PixelCount(6, "Value of Left inset");
+        private final PixelCount insetLeft = new PixelCount(6, "Value of Left inset");
 
-        PixelCount insetRight = new PixelCount(6, "Value of Right inset");
+        private final PixelCount insetRight = new PixelCount(6, "Value of Right inset");
 
-        PixelCount insetTop = new PixelCount(6, "Value of Top inset");
+        private final PixelCount insetTop = new PixelCount(6, "Value of Top inset");
 
-        Constant.String labelInterval = new Constant.String(
+        private final Constant.String labelInterval = new Constant.String(
                 "1dlu",
                 "Gap between a field label and its field value");
 
-        Constant.String labelWidth = new Constant.String("25dlu", "Width of the label of a field");
+        private final Constant.String labelWidth = new Constant.String(
+                "25dlu",
+                "Width of the label of a field");
 
-        Constant.String panelInterline = new Constant.String(
+        private final Constant.String panelInterline = new Constant.String(
                 "6dlu",
                 "Vertical Gap between two panels");
     }

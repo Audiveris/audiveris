@@ -220,15 +220,15 @@ public class SymbolsFilter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean displaySymbols = new Constant.Boolean(
+        private final Constant.Boolean displaySymbols = new Constant.Boolean(
                 false,
                 "Should we display the symbols image?");
 
-        final Constant.Boolean keepSymbolsBuffer = new Constant.Boolean(
+        private final Constant.Boolean keepSymbolsBuffer = new Constant.Boolean(
                 false,
                 "Should we store symbols image on disk?");
 
-        final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
+        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 0.5,
                 "Margin erased above & below staff header area");
     }

@@ -1075,37 +1075,39 @@ public class ClustersRetriever
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.Fraction samplingDx = new Scale.Fraction(
+        private final Scale.Fraction samplingDx = new Scale.Fraction(
                 1,
                 "Typical delta X between two vertical samplings");
 
-        Scale.Fraction maxExpandDx = new Scale.Fraction(
+        private final Scale.Fraction maxExpandDx = new Scale.Fraction(
                 2,
                 "Maximum dx to aggregate a filament to a cluster");
 
-        Scale.Fraction maxExpandDy = new Scale.Fraction(
+        private final Scale.Fraction maxExpandDy = new Scale.Fraction(
                 0.175,
                 "Maximum dy to aggregate a filament to a cluster");
 
-        Scale.Fraction maxMergeDx = new Scale.Fraction(10, "Maximum dx to merge two clusters");
+        private final Scale.Fraction maxMergeDx = new Scale.Fraction(
+                10,
+                "Maximum dx to merge two clusters");
 
-        Scale.Fraction maxMergeDy = new Scale.Fraction(0.4, "Maximum dy to merge two clusters");
+        private final Scale.Fraction maxMergeDy = new Scale.Fraction(
+                0.4,
+                "Maximum dy to merge two clusters");
 
-        Scale.Fraction maxMergeCenterDy = new Scale.Fraction(
+        private final Scale.Fraction maxMergeCenterDy = new Scale.Fraction(
                 1.0,
                 "Maximum center dy to merge two clusters");
 
-        Scale.Fraction clusterXMargin = new Scale.Fraction(
+        private final Scale.Fraction clusterXMargin = new Scale.Fraction(
                 4,
                 "Rough margin around cluster abscissa");
 
-        Scale.Fraction clusterYMargin = new Scale.Fraction(
+        private final Scale.Fraction clusterYMargin = new Scale.Fraction(
                 2,
                 "Rough margin around cluster ordinate");
 
-        Constant.Ratio maxJitter = new Constant.Ratio(0.1, "Maximum gap from standard comb dy");
-
-        Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
+        private final Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
                 0.3,
                 "Minimum cluster length (as ratio of median length)");
     }

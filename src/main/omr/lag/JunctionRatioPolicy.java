@@ -106,7 +106,7 @@ public class JunctionRatioPolicy
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio maxLengthRatio = new Constant.Ratio(
+        private final Constant.Ratio maxLengthRatio = new Constant.Ratio(
                 1.25,
                 "Maximum ratio in length for a run to be combined with" + " an existing section");
     }

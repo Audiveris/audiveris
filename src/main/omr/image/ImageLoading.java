@@ -279,7 +279,7 @@ public abstract class ImageLoading
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer pdfResolution = new Constant.Integer(
+        private final Constant.Integer pdfResolution = new Constant.Integer(
                 "DPI",
                 300,
                 "DPI resolution for PDF images");

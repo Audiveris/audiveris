@@ -100,71 +100,79 @@ public abstract class Grades
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Evaluation.Grade compoundPartMaxGrade = new Evaluation.Grade(
+        private final Evaluation.Grade compoundPartMaxGrade = new Evaluation.Grade(
                 0.90,
                 "*MAXIMUM* grade for a suitable compound part");
 
         //----------------------------------------------------------------------
         // Minimum values (please keep them sorted by decreasing value)
         //
-        Evaluation.Grade validationMinGrade = new Evaluation.Grade(
+        private final Evaluation.Grade validationMinGrade = new Evaluation.Grade(
                 0.80,
                 "Minimum grade for a validation");
 
-        Evaluation.Grade symbolMinGrade = new Evaluation.Grade(0.15, "Minimum grade for a symbol");
+        private final Evaluation.Grade symbolMinGrade = new Evaluation.Grade(
+                0.15,
+                "Minimum grade for a symbol");
 
-        Evaluation.Grade patternsMinGrade = new Evaluation.Grade(
+        private final Evaluation.Grade patternsMinGrade = new Evaluation.Grade(
                 0.67,
                 "Minimum grade for pattern phase");
 
-        Evaluation.Grade partMinGrade = new Evaluation.Grade(
+        private final Evaluation.Grade partMinGrade = new Evaluation.Grade(
                 0.35,
                 "Minimum grade for a part of a split glyph");
 
-        Evaluation.Grade bassMinGrade = new Evaluation.Grade(0.33, "Minimum grade for a bass clef");
+        private final Evaluation.Grade bassMinGrade = new Evaluation.Grade(
+                0.33,
+                "Minimum grade for a bass clef");
 
-        Evaluation.Grade hookMinGrade = new Evaluation.Grade(
+        private final Evaluation.Grade hookMinGrade = new Evaluation.Grade(
                 0.20,
                 "Minimum grade for beam hook verification");
 
-        Evaluation.Grade mergedNoteMinGrade = new Evaluation.Grade(
+        private final Evaluation.Grade mergedNoteMinGrade = new Evaluation.Grade(
                 0.20,
                 "Minimum grade for a merged note");
 
-        Evaluation.Grade leftOverMinGrade = new Evaluation.Grade(
+        private final Evaluation.Grade leftOverMinGrade = new Evaluation.Grade(
                 0.10,
                 "Minimum grade for a glyph left over");
 
-        Evaluation.Grade ledgerNoteMinGrade = new Evaluation.Grade(
+        private final Evaluation.Grade ledgerNoteMinGrade = new Evaluation.Grade(
                 0.10,
                 "Minimum grade for a ledger note");
 
-        Evaluation.Grade clefMinGrade = new Evaluation.Grade(0.03, "Minimum grade for a clef");
+        private final Evaluation.Grade clefMinGrade = new Evaluation.Grade(
+                0.03,
+                "Minimum grade for a clef");
 
-        Evaluation.Grade consistentNoteMinGrade = new Evaluation.Grade(
+        private final Evaluation.Grade consistentNoteMinGrade = new Evaluation.Grade(
                 0.1,
                 "Minimum grade for a consistent note head");
 
-        Evaluation.Grade forteMinGrade = new Evaluation.Grade(
+        private final Evaluation.Grade forteMinGrade = new Evaluation.Grade(
                 0.01,
                 "Minimum grade for glyph close to Forte");
 
-        Evaluation.Grade keySigMinGrade = new Evaluation.Grade(
+        private final Evaluation.Grade keySigMinGrade = new Evaluation.Grade(
                 0.01,
                 "Minimum grade for a key signature");
 
-        Evaluation.Grade textMinGrade = new Evaluation.Grade(
+        private final Evaluation.Grade textMinGrade = new Evaluation.Grade(
                 0.01,
                 "Minimum grade for a text symbol");
 
-        Evaluation.Grade keyAlterMinGrade = new Evaluation.Grade(
+        private final Evaluation.Grade keyAlterMinGrade = new Evaluation.Grade(
                 0.0001,
                 "Minimum grade for a key signature item symbol");
 
-        Evaluation.Grade keyAlterMinGrade2 = new Evaluation.Grade(
+        private final Evaluation.Grade keyAlterMinGrade2 = new Evaluation.Grade(
                 0.000001,
                 "Minimum grade for a key signature item symbol, on second phase");
 
-        Evaluation.Grade timeMinGrade = new Evaluation.Grade(0.1, "Minimum grade for a time sig");
+        private final Evaluation.Grade timeMinGrade = new Evaluation.Grade(
+                0.1,
+                "Minimum grade for a time sig");
     }
 }

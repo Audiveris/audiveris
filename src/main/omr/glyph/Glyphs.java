@@ -100,10 +100,11 @@ public abstract class Glyphs
     public static SimpleGraph<Glyph, GlyphLink> buildLinks (Collection<Glyph> glyphs,
                                                             double maxGap)
     {
-        List<Glyph> sortedGlyphs = new ArrayList<Glyph>(glyphs);
+        final int gapInt = (int) Math.ceil(maxGap);
+        final List<Glyph> sortedGlyphs = new ArrayList<Glyph>(glyphs);
         Collections.sort(sortedGlyphs, Glyph.byAbscissa);
 
-        /** Graph of glyphs, linked by their distance. */
+        /** Graph of glyph instances, linked by their distance. */
         SimpleGraph<Glyph, GlyphLink> graph = new SimpleGraph<Glyph, GlyphLink>(GlyphLink.class);
 
         // Populate graph with all glyphs as vertices
@@ -114,7 +115,6 @@ public abstract class Glyphs
         // Populate edges (glyph to glyph distances) when applicable
         for (int i = 0; i < sortedGlyphs.size(); i++) {
             final Glyph glyph = sortedGlyphs.get(i);
-            final int gapInt = (int) Math.ceil(maxGap);
             final Rectangle fatBox = glyph.getBounds();
             fatBox.grow(gapInt, gapInt);
 

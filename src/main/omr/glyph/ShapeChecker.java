@@ -681,46 +681,46 @@ public class ShapeChecker
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean applySpecificCheck = new Constant.Boolean(
+        private final Constant.Boolean applySpecificCheck = new Constant.Boolean(
                 true,
                 "Should we apply specific checks on shape candidates?");
 
-        Scale.Fraction maxTitleHeight = new Scale.Fraction(
+        private final Scale.Fraction maxTitleHeight = new Scale.Fraction(
                 4.0,
                 "Maximum normalized height for a title text");
 
-        Scale.Fraction maxLyricsHeight = new Scale.Fraction(
+        private final Scale.Fraction maxLyricsHeight = new Scale.Fraction(
                 2.5,
                 "Maximum normalized height for a lyrics text");
 
-        Constant.Double minTitlePitchPosition = new Constant.Double(
+        private final Constant.Double minTitlePitchPosition = new Constant.Double(
                 "PitchPosition",
                 15.0,
                 "Minimum absolute pitch position for a title");
 
-        Constant.Double maxTupletPitchPosition = new Constant.Double(
+        private final Constant.Double maxTupletPitchPosition = new Constant.Double(
                 "PitchPosition",
                 15.0,
                 "Maximum absolute pitch position for a tuplet");
 
-        Constant.Double maxTimePitchPositionMargin = new Constant.Double(
+        private final Constant.Double maxTimePitchPositionMargin = new Constant.Double(
                 "PitchPosition",
                 1.0,
                 "Maximum absolute pitch position margin for a time signature");
 
-        Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(
+        private final Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(
                 1.5,
                 "Maximum height for small dynamics (no p, no f)");
 
-        Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(
+        private final Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(
                 2.0,
                 "Maximum height for small dynamics (with p, no f)");
 
-        Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(
+        private final Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(
                 2.5,
                 "Maximum height for tall dynamics (with f)");
 
-        Scale.Fraction maxGapToStaff = new Scale.Fraction(
+        private final Scale.Fraction maxGapToStaff = new Scale.Fraction(
                 8.0,
                 "Maximum vertical gap between a note-like glyph and closest staff");
     }

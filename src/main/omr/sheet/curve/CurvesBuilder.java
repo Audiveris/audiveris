@@ -206,32 +206,22 @@ public abstract class CurvesBuilder
             trunk.setCrossedLine(null);
             extend(trunk, clump);
 
-            if (clump.size() > 1) {
-                weed(clump); // Filter out the least interesting candidates
-                maxClumpSize = Math.max(maxClumpSize, clump.size());
+            weed(clump); // Filter out the least interesting candidates
+            maxClumpSize = Math.max(maxClumpSize, clump.size());
+
+            if (clump.isEmpty()) {
+                return;
             }
         }
 
         // Combine candidates from both sides
         Set<Inter> inters = new HashSet<Inter>();
 
-        if (leftClump.isEmpty()) {
-            // Use rights
-            for (Curve curve : rightClump) {
+        // Connect lefts & rights
+        for (Curve sl : leftClump) {
+            for (Curve sr : rightClump) {
+                Curve curve = (sl == sr) ? sl : createCurve(sl, sr);
                 createInter(curve, inters);
-            }
-        } else if (rightClump.isEmpty()) {
-            // Use lefts
-            for (Curve curve : leftClump) {
-                createInter(curve, inters);
-            }
-        } else {
-            // Connect lefts & rights
-            for (Curve sl : leftClump) {
-                for (Curve sr : rightClump) {
-                    Curve curve = (sl == sr) ? sl : createCurve(sl, sr);
-                    createInter(curve, inters);
-                }
             }
         }
 
@@ -1029,35 +1019,35 @@ public abstract class CurvesBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction gapMaxLength = new Scale.Fraction(
+        private final Scale.Fraction gapMaxLength = new Scale.Fraction(
                 0.25,
                 "Maximum acceptable length for true gap");
 
-        final Scale.Fraction gapBoxLength = new Scale.Fraction(
+        private final Scale.Fraction gapBoxLength = new Scale.Fraction(
                 1.0,
                 "Length used for gap lookup box");
 
-        final Scale.Fraction gapBoxDeltaIn = new Scale.Fraction(
+        private final Scale.Fraction gapBoxDeltaIn = new Scale.Fraction(
                 0.2,
                 "Delta for gap box on slur side");
 
-        final Scale.Fraction gapBoxDeltaOut = new Scale.Fraction(
+        private final Scale.Fraction gapBoxDeltaOut = new Scale.Fraction(
                 0.3,
                 "Delta for gap box on extension side");
 
-        final Scale.Fraction lineBoxLength = new Scale.Fraction(
+        private final Scale.Fraction lineBoxLength = new Scale.Fraction(
                 1.8,
                 "Length for box across staff line");
 
-        final Scale.Fraction lineBoxIn = new Scale.Fraction(
+        private final Scale.Fraction lineBoxIn = new Scale.Fraction(
                 0.2,
                 "Overlap for line box on slur side");
 
-        final Scale.Fraction lineBoxDeltaIn = new Scale.Fraction(
+        private final Scale.Fraction lineBoxDeltaIn = new Scale.Fraction(
                 0.2,
                 "Delta for line box on slur side");
 
-        final Scale.Fraction lineBoxDeltaOut = new Scale.Fraction(
+        private final Scale.Fraction lineBoxDeltaOut = new Scale.Fraction(
                 0.3,
                 "Delta for line box on extension side");
     }

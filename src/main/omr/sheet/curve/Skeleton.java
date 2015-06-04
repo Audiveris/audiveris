@@ -324,6 +324,7 @@ public class Skeleton
     {
         // First, get a skeleton of binary image
         Picture picture = sheet.getPicture();
+
         ///ByteProcessor buffer = picture.getSource(Picture.SourceKey.NO_STAFF);
         ByteProcessor buffer = picture.getSource(Picture.SourceKey.BINARY);
         buffer = (ByteProcessor) buffer.duplicate();
@@ -473,23 +474,23 @@ public class Skeleton
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean keepSkeleton = new Constant.Boolean(
+        private final Constant.Boolean keepSkeleton = new Constant.Boolean(
                 false,
                 "Should we store skeleton images on disk?");
 
-        final Constant.Boolean useHeader = new Constant.Boolean(
+        private final Constant.Boolean useHeader = new Constant.Boolean(
                 true,
                 "Should we erase the header at staff start");
 
-        final Scale.Fraction systemVerticalMargin = new Scale.Fraction(
+        private final Scale.Fraction systemVerticalMargin = new Scale.Fraction(
                 2.0,
                 "Margin erased above & below system header area");
 
-        final Scale.Fraction maxDxFromStaff = new Scale.Fraction(
+        private final Scale.Fraction maxDxFromStaff = new Scale.Fraction(
                 1,
                 "Maximum horizontal gap from any staff");
 
-        final Scale.Fraction maxDyFromStaff = new Scale.Fraction(
+        private final Scale.Fraction maxDyFromStaff = new Scale.Fraction(
                 10,
                 "Maximum vertical gap from any staff");
     }

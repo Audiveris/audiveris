@@ -253,15 +253,15 @@ public class BarGlyphFactory
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean registerEachAndEveryGlyph = new Constant.Boolean(
+        private final Constant.Boolean registerEachAndEveryGlyph = new Constant.Boolean(
                 false,
                 "(Debug) should we register each and every glyph?");
 
-        Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        Scale.Fraction minCoreSectionLength = new Scale.Fraction(
+        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
                 1,
                 "Minimum length for a section to be considered as core");
     }

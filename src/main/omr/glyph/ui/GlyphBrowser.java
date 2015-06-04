@@ -345,7 +345,7 @@ class GlyphBrowser
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean confirmDeletions = new Constant.Boolean(
+        private final Constant.Boolean confirmDeletions = new Constant.Boolean(
                 true,
                 "Should user confirm each glyph deletion" + " from training material");
     }

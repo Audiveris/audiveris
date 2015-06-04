@@ -428,20 +428,20 @@ public abstract class AdaptiveFilter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer halfWindowSize = new Constant.Integer(
+        private final Constant.Integer halfWindowSize = new Constant.Integer(
                 "Pixels",
                 18,
                 "Half size of window around a given pixel");
 
-        Constant.Ratio meanCoeff = new Constant.Ratio(
+        private final Constant.Ratio meanCoeff = new Constant.Ratio(
                 0.7,
                 "Threshold formula coefficient for mean pixel value");
 
-        Constant.Ratio stdDevCoeff = new Constant.Ratio(
+        private final Constant.Ratio stdDevCoeff = new Constant.Ratio(
                 0.9,
                 "Threshold formula coefficient for pixel standard deviation");
 
-        Constant.String className = new Constant.String(
+        private final Constant.String className = new Constant.String(
                 "omr.image.VerticalFilter",
                 "omr.image.VerticalFilter or omr.image.RandomFilter");
     }

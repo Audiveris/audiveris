@@ -369,7 +369,7 @@ public class BasicSheet
         } finally {
             StepMonitoring.notifyStop();
 
-            if (constants.printStepWatch.isSet()) {
+            if (constants.printWatch.isSet()) {
                 watch.print();
             }
         }
@@ -1213,7 +1213,7 @@ public class BasicSheet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean printStepWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch for steps?");
     }

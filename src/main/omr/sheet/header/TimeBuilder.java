@@ -43,7 +43,6 @@ import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.header.HeaderBuilder.Plotter;
-
 import static omr.sheet.header.TimeBuilder.TimeKind.*;
 import static omr.sheet.symbol.SymbolsFilter.SYMBOL_ORIENTATION;
 
@@ -1009,49 +1008,49 @@ public class TimeBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction roiWidth = new Scale.Fraction(
+        private final Scale.Fraction roiWidth = new Scale.Fraction(
                 4.0,
                 "Width of region of interest for time signature");
 
-        final Scale.Fraction yMargin = new Scale.Fraction(
+        private final Scale.Fraction yMargin = new Scale.Fraction(
                 0.10,
                 "Vertical white margin on raw rectangle");
 
-        final Scale.Fraction maxTimeWidth = new Scale.Fraction(
+        private final Scale.Fraction maxTimeWidth = new Scale.Fraction(
                 2.0,
                 "Maximum width for a time signature");
 
-        final Scale.Fraction minTimeWidth = new Scale.Fraction(
+        private final Scale.Fraction minTimeWidth = new Scale.Fraction(
                 1.2,
                 "Minimum width for a time signature");
 
-        final Scale.Fraction maxPartGap = new Scale.Fraction(
+        private final Scale.Fraction maxPartGap = new Scale.Fraction(
                 1.0,
                 "Maximum distance between two parts of a single time symbol");
 
-        final Scale.AreaFraction minWholeTimeWeight = new Scale.AreaFraction(
+        private final Scale.AreaFraction minWholeTimeWeight = new Scale.AreaFraction(
                 1.0,
                 "Minimum weight for a whole time signature");
 
-        final Scale.AreaFraction minHalfTimeWeight = new Scale.AreaFraction(
+        private final Scale.AreaFraction minHalfTimeWeight = new Scale.AreaFraction(
                 0.75,
                 "Minimum weight for a half time signature");
 
-        final Scale.Fraction maxSpaceCumul = new Scale.Fraction(
+        private final Scale.Fraction maxSpaceCumul = new Scale.Fraction(
                 0.4,
                 "Maximum cumul value in space");
 
-        final Scale.Fraction minFirstSpaceWidth = new Scale.Fraction(
+        private final Scale.Fraction minFirstSpaceWidth = new Scale.Fraction(
                 0.2,
                 "Minimum initial space before time signature");
 
         // Beware: A too small value might miss the whole time-sig
-        final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(
+        private final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(
                 2.5,
                 "Maximum initial space before time signature");
 
         // Beware: A too small value might miss some time-sig items
-        final Scale.Fraction maxInnerSpace = new Scale.Fraction(
+        private final Scale.Fraction maxInnerSpace = new Scale.Fraction(
                 0.5,
                 "Maximum inner space within time signature");
     }

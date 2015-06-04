@@ -730,91 +730,79 @@ public class LedgersBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Double maxSlopeForCheck = new Constant.Double(
+        private final Constant.Double maxSlopeForCheck = new Constant.Double(
                 "slope",
                 0.1,
                 "Maximum slope for displaying check board");
 
-        Constant.Double convexityLow = new Constant.Double(
+        private final Constant.Double convexityLow = new Constant.Double(
                 "end number",
                 -0.5,
                 "Minimum convexity ends");
 
         // Constants specified WRT mean line thickness
         // -------------------------------------------
-        Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
+        private final Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
                 1.5, //  1.0,
                 "Maximum delta position between two overlapping filaments");
 
-        Scale.LineFraction maxThicknessHigh = new Scale.LineFraction(
+        private final Scale.LineFraction maxThicknessHigh = new Scale.LineFraction(
                 3,
                 "High Maximum thickness of an interesting stick (WRT staff line)");
 
-        Scale.LineFraction maxThicknessLow = new Scale.LineFraction(
+        private final Scale.LineFraction maxThicknessLow = new Scale.LineFraction(
                 1.0,
                 "Low Maximum thickness of an interesting stick (WRT staff line)");
 
         // Constants specified WRT mean interline
         // --------------------------------------
-        Scale.Fraction maxThicknessHigh2 = new Scale.Fraction(
+        private final Scale.Fraction maxThicknessHigh2 = new Scale.Fraction(
                 0.3,
                 "High Maximum thickness of an interesting stick (WRT interline)");
 
-        Scale.Fraction minCoreSectionLength = new Scale.Fraction(
+        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
                 0.5,
                 "Minimum length for a section to be considered as core");
 
-        Scale.Fraction maxCoordGap = new Scale.Fraction(
+        private final Scale.Fraction maxCoordGap = new Scale.Fraction(
                 0.0,
                 "Maximum abscissa gap between ledger filaments");
 
-        Scale.Fraction maxPosGap = new Scale.Fraction(
+        private final Scale.Fraction maxPosGap = new Scale.Fraction(
                 0.3, //0.2,
                 "Maximum ordinate gap between ledger filaments");
 
-        Scale.Fraction maxOverlapSpace = new Scale.Fraction(
+        private final Scale.Fraction maxOverlapSpace = new Scale.Fraction(
                 0.0,
                 "Maximum space between overlapping filaments");
 
-        Scale.Fraction ledgerMarginY = new Scale.Fraction(
+        private final Scale.Fraction ledgerMarginY = new Scale.Fraction(
                 0.35,
                 "Margin on ledger ordinate WRT theoretical ordinate");
 
-        Scale.Fraction minLedgerLengthHigh = new Scale.Fraction(
+        private final Scale.Fraction minLedgerLengthHigh = new Scale.Fraction(
                 1.5,
                 "High Minimum length for a ledger");
 
-        Scale.Fraction minLedgerLengthLow = new Scale.Fraction(
+        private final Scale.Fraction minLedgerLengthLow = new Scale.Fraction(
                 1.0,
                 "Low Minimum length for a ledger");
 
-        Scale.Fraction minThicknessHigh = new Scale.Fraction(
+        private final Scale.Fraction minThicknessHigh = new Scale.Fraction(
                 0.25,
                 "High Minimum thickness of an interesting stick");
 
-        Scale.Fraction maxInterLedgerDx = new Scale.Fraction(
+        private final Scale.Fraction maxInterLedgerDx = new Scale.Fraction(
                 2.5,
                 "Maximum inter-ledger abscissa gap for ordinate compatibility test");
 
-        Scale.Fraction maxInterLedgerDy = new Scale.Fraction(
-                0.2,
-                "Maximum inter-ledger ordinate gap");
-
-        Scale.Fraction maxDistanceHigh = new Scale.Fraction(
+        private final Scale.Fraction maxDistanceHigh = new Scale.Fraction(
                 0.3,
                 "Maximum average distance to straight line");
 
-        Scale.Fraction maxShortLength = new Scale.Fraction(
+        private final Scale.Fraction maxShortLength = new Scale.Fraction(
                 2.0,
                 "Maximum length for 'short' ledgers");
-
-        Constant.Ratio minWhiteLow = new Constant.Ratio(
-                0.2,
-                "Low Minimum for ratio of white pixels above or below ledger");
-
-        Constant.Ratio minWhiteHigh = new Constant.Ratio(
-                0.5,
-                "High Minimum for ratio of white pixels above or below ledger");
     }
 
     //--------------//

@@ -269,15 +269,15 @@ public class OmrExecutors
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean printEnvironment = new Constant.Boolean(
+        private final Constant.Boolean printEnvironment = new Constant.Boolean(
                 false,
                 "Should we print out current environment?");
 
-        Constant.Boolean useParallelism = new Constant.Boolean(
+        private final Constant.Boolean useParallelism = new Constant.Boolean(
                 true,
                 "Should we use parallelism when we have several processors?");
 
-        Constant.Integer graceDelay = new Constant.Integer(
+        private final Constant.Integer graceDelay = new Constant.Integer(
                 "seconds",
                 60,
                 "Time to wait for terminating tasks");

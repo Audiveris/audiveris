@@ -195,29 +195,25 @@ public class SheetScanner
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        final Constant.Boolean displayTexts = new Constant.Boolean(
+        private final Constant.Boolean displayTexts = new Constant.Boolean(
                 false,
                 "Should we display the texts image?");
 
-        final Constant.Boolean keepTextsBuffer = new Constant.Boolean(
+        private final Constant.Boolean keepTextsBuffer = new Constant.Boolean(
                 false,
                 "Should we store texts buffer on disk?");
 
-        final Scale.Fraction staffHorizontalMargin = new Scale.Fraction(
+        private final Scale.Fraction staffHorizontalMargin = new Scale.Fraction(
                 0.25,
                 "Horizontal margin around staff core area");
 
-        final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
+        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 0.25,
                 "Vertical margin around staff core area");
-//
-//        final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
-//                0.05,
-//                "Minimum weight for any glyph to be kept before OCR");
     }
 
     //--------------//
@@ -331,16 +327,15 @@ public class SheetScanner
                                         List<Area> cores)
         {
             ///final int minWeight = sheet.getScale().toPixels(constants.minGlyphWeight);
-
             for (Glyph glyph : glyphs) {
-//                // Check weight
-//                if (glyph.getWeight() < minWeight) {
-//                    for (Section section : glyph.getMembers()) {
-//                        g.fill(section.getPolygon());
-//                    }
-//
-//                    continue;
-//                }
+                //                // Check weight
+                //                if (glyph.getWeight() < minWeight) {
+                //                    for (Section section : glyph.getMembers()) {
+                //                        g.fill(section.getPolygon());
+                //                    }
+                //
+                //                    continue;
+                //                }
 
                 // Check position WRT staves cores
                 Rectangle glyphBox = glyph.getBounds();

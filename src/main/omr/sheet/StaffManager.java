@@ -647,15 +647,11 @@ public class StaffManager
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean showStaffLines = new Constant.Boolean(
+        private final Constant.Boolean showStaffLines = new Constant.Boolean(
                 true,
                 "Should we show the staff lines on all views?");
 
-        Scale.Fraction samplingDx = new Scale.Fraction(
-                4d,
-                "Abscissa sampling to compute top & bottom limits of staff areas");
-
-        Scale.Fraction verticalAreaMargin = new Scale.Fraction(
+        private final Scale.Fraction verticalAreaMargin = new Scale.Fraction(
                 1.0,
                 "Vertical margin on system & staff areas");
     }

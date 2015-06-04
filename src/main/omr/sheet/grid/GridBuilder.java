@@ -220,15 +220,15 @@ public class GridBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
+        private final Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
                 false,
                 "Should we build a dewarped target?");
 
-        Constant.Boolean showGrid = new Constant.Boolean(
+        private final Constant.Boolean showGrid = new Constant.Boolean(
                 false,
                 "Should we show the details of grid?");
     }

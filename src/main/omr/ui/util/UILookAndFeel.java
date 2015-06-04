@@ -120,7 +120,7 @@ public class UILookAndFeel
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.String lookAndFeel = new Constant.String(
+        private final Constant.String lookAndFeel = new Constant.String(
                 "com.jgoodies.looks.plastic.Plastic3DLookAndFeel",
                 "Full class path to the desired UI Look & Feel");
     }

@@ -69,7 +69,7 @@ public class BarConnectionRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio barSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio barSupportCoeff = new Constant.Ratio(
                 5,
                 "Value for source/target (bar) coeff in support formula");
     }

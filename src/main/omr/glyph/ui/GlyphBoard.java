@@ -465,13 +465,11 @@ public class GlyphBoard
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Exact pixel height for the shape icon field */
-        PixelCount shapeIconHeight = new PixelCount(
+        private final PixelCount shapeIconHeight = new PixelCount(
                 70,
                 "Exact pixel height for the shape icon field");
 
-        /** Exact pixel width for the shape icon field */
-        PixelCount shapeIconWidth = new PixelCount(
+        private final PixelCount shapeIconWidth = new PixelCount(
                 50,
                 "Exact pixel width for the shape icon field");
     }

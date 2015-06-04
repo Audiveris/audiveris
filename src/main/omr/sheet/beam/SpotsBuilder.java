@@ -369,45 +369,45 @@ public class SpotsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean displayBeamSpots = new Constant.Boolean(
+        private final Constant.Boolean displayBeamSpots = new Constant.Boolean(
                 false,
                 "Should we display the beam Spots view?");
 
-        final Constant.Boolean displayGraySpots = new Constant.Boolean(
+        private final Constant.Boolean displayGraySpots = new Constant.Boolean(
                 false,
                 "Should we display the gray Spots view?");
 
-        final Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        final Constant.Boolean keepBeamSpots = new Constant.Boolean(
+        private final Constant.Boolean keepBeamSpots = new Constant.Boolean(
                 false,
                 "Should we store sheet beam spot images on disk?");
 
-        final Constant.Boolean keepNoteSpots = new Constant.Boolean(
+        private final Constant.Boolean keepNoteSpots = new Constant.Boolean(
                 false,
                 "Should we store sheet note spot images on disk?");
 
-        final Constant.Boolean keepCueSpots = new Constant.Boolean(
+        private final Constant.Boolean keepCueSpots = new Constant.Boolean(
                 false,
                 "Should we store cue spot images on disk?");
 
-        final Constant.Ratio beamCircleDiameterRatio = new Constant.Ratio(
+        private final Constant.Ratio beamCircleDiameterRatio = new Constant.Ratio(
                 0.8,
                 "Diameter of circle used to close beam spots, as ratio of beam height");
 
-        final Constant.Integer beamBinarizationThreshold = new Constant.Integer(
+        private final Constant.Integer beamBinarizationThreshold = new Constant.Integer(
                 "pixel",
                 140,
                 "Global binarization threshold for beams");
 
-        final Constant.Integer noteBinarizationThreshold = new Constant.Integer(
+        private final Constant.Integer noteBinarizationThreshold = new Constant.Integer(
                 "pixel",
                 170,
                 "Global binarization threshold for notes");
 
-        final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
+        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 2.0,
                 "Margin erased above & below staff header area");
     }

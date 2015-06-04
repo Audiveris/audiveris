@@ -233,7 +233,7 @@ public class TemplateView
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio minZoomRatio = new Constant.Ratio(
+        private final Constant.Ratio minZoomRatio = new Constant.Ratio(
                 4.0,
                 "Minimum zoom ratio to show template key points");
     }

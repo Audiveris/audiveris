@@ -55,11 +55,11 @@ public class KeyAlterRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio keySupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio keySupportCoeff = new Constant.Ratio(
                 5,
                 "Value for (source) key coeff in support formula");
 
-        final Constant.Ratio alterSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio alterSupportCoeff = new Constant.Ratio(
                 5,
                 "Value for (target) alter coeff in support formula");
     }

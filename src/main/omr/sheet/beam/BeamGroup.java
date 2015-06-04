@@ -650,12 +650,12 @@ public class BeamGroup
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer maxSplitLoops = new Constant.Integer(
+        private final Constant.Integer maxSplitLoops = new Constant.Integer(
                 "loops",
                 10,
                 "Maximum number of loops allowed for splitting beam groups");
 
-        Scale.Fraction maxChordDy = new Scale.Fraction(
+        private final Scale.Fraction maxChordDy = new Scale.Fraction(
                 0.5,
                 "Maximum vertical gap between a chord and a beam");
     }

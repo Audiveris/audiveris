@@ -172,7 +172,7 @@ public class RestInter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Double suspiciousPitchPosition = new Constant.Double(
+        private final Constant.Double suspiciousPitchPosition = new Constant.Double(
                 "PitchPosition",
                 2.0,
                 "Maximum absolute pitch position for a rest to avoid additional checks");

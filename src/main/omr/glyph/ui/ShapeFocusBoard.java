@@ -479,7 +479,7 @@ public class ShapeFocusBoard
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean printDistances = new Constant.Boolean(
+        private final Constant.Boolean printDistances = new Constant.Boolean(
                 false,
                 "Should we print out distance details when looking for similar glyphs?");
     }

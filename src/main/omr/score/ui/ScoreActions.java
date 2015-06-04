@@ -805,7 +805,7 @@ public class ScoreActions
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean promptParameters = new Constant.Boolean(
+        private final Constant.Boolean promptParameters = new Constant.Boolean(
                 false,
                 "Should we prompt the user for score parameters?");
     }

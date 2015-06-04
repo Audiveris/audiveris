@@ -52,7 +52,7 @@ public class GlyphClassifier
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        ClassifierKind.Constant defaultKind = new ClassifierKind.Constant(
+        private final ClassifierKind.Constant defaultKind = new ClassifierKind.Constant(
                 ClassifierKind.NEURAL,
                 "Default kind of glyph classifier (NEURAL or BAYESIAN)");
     }

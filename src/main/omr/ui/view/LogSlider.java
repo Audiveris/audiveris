@@ -192,7 +192,7 @@ public class LogSlider
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer resolution = new Constant.Integer(
+        private final Constant.Integer resolution = new Constant.Integer(
                 "Values",
                 480,
                 "Number of values between two major ticks");

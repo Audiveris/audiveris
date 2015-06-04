@@ -237,7 +237,7 @@ public class SelectionService
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean checkPublishedEvents = new Constant.Boolean(
+        private final Constant.Boolean checkPublishedEvents = new Constant.Boolean(
                 true,
                 "(debug) Should we check published events?");
     }

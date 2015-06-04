@@ -353,28 +353,28 @@ public class SegmentsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
+        private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
                 1.5,
                 "Minimum arc length for starting a wedge build");
 
-        final Constant.Double maxWedgeAngle = new Constant.Double(
+        private final Constant.Double maxWedgeAngle = new Constant.Double(
                 "degree",
                 20.0,
                 "Maximum angle (in degrees) for a wedge branch with x-axis");
 
-        final Scale.Fraction maxExtDistance = new Scale.Fraction(
+        private final Scale.Fraction maxExtDistance = new Scale.Fraction(
                 0.35,
                 "Maximum line distance for extension arc");
 
-        final Scale.Fraction maxSegmentDistance = new Scale.Fraction(
+        private final Scale.Fraction maxSegmentDistance = new Scale.Fraction(
                 0.3,
                 "Maximum line distance for final segment");
 
-        final Scale.Fraction minProjection = new Scale.Fraction(
+        private final Scale.Fraction minProjection = new Scale.Fraction(
                 -1.0,
                 "Minimum projection on curve for arc extension");
 
-        final Scale.Fraction maxRunDistance = new Scale.Fraction(
+        private final Scale.Fraction maxRunDistance = new Scale.Fraction(
                 0.2,
                 "Maximum distance from any run end to curve points");
     }

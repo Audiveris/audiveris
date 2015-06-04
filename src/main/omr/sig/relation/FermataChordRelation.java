@@ -55,11 +55,11 @@ public class FermataChordRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(
                 5,
                 "Supporting coeff for (source) fermata");
 
-        final Constant.Ratio chordSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio chordSupportCoeff = new Constant.Ratio(
                 2,
                 "Supporting coeff for (target) chord");
     }

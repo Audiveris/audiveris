@@ -117,9 +117,7 @@ public class ShapeSet
             FLAG_5);
 
     /** Small flags */
-    public static final EnumSet<Shape> SmallFlags = EnumSet.of(
-            SMALL_FLAG,
-            SMALL_FLAG_SLASH);
+    public static final EnumSet<Shape> SmallFlags = EnumSet.of(SMALL_FLAG, SMALL_FLAG_SLASH);
 
     /** All flags up */
     public static final EnumSet<Shape> FlagsUp = EnumSet.of(
@@ -909,15 +907,15 @@ public class ShapeSet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean supportSmallHeadNotes = new Constant.Boolean(
+        private final Constant.Boolean supportSmallHeadNotes = new Constant.Boolean(
                 true,
                 "Should we support NOTEHEAD_BLACK_SMALL shape?");
 
-        final Constant.Boolean supportSmallVoidNotes = new Constant.Boolean(
+        private final Constant.Boolean supportSmallVoidNotes = new Constant.Boolean(
                 false,
                 "Should we support NOTEHEAD_VOID_SMALL shape?");
 
-        final Constant.Boolean supportSmallWholeNotes = new Constant.Boolean(
+        private final Constant.Boolean supportSmallWholeNotes = new Constant.Boolean(
                 false,
                 "Should we support WHOLE_NOTE_SMALL shape?");
     }

@@ -220,8 +220,7 @@ public class BookBrowser
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Should we hide empty dummy containers */
-        Constant.Boolean hideEmptyDummies = new Constant.Boolean(
+        private final Constant.Boolean hideEmptyDummies = new Constant.Boolean(
                 false,
                 "Should we hide empty dummy containers");
     }

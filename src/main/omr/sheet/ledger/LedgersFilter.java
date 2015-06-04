@@ -166,23 +166,23 @@ public class LedgersFilter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean displayLedgers = new Constant.Boolean(
+        private final Constant.Boolean displayLedgers = new Constant.Boolean(
                 false,
                 "Should we display the view on ledgers?");
 
-        final Scale.Fraction minDistanceFromStaff = new Scale.Fraction(
+        private final Scale.Fraction minDistanceFromStaff = new Scale.Fraction(
                 0.25,
                 "Minimum vertical distance from nearest staff");
 
-        final Scale.Fraction maxRunShift = new Scale.Fraction(
+        private final Scale.Fraction maxRunShift = new Scale.Fraction(
                 0, //0.05,
                 "Max shift between two runs of ledger sections");
 
-        final Scale.Fraction minRunLength = new Scale.Fraction(
+        private final Scale.Fraction minRunLength = new Scale.Fraction(
                 0.15,
                 "Minimum length for a ledger run (not section)");
 
-        final Constant.String ledgerVipSections = new Constant.String(
+        private final Constant.String ledgerVipSections = new Constant.String(
                 "",
                 "(Debug) Comma-separated values of VIP ledger sections IDs");
     }

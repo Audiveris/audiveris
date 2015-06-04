@@ -132,7 +132,7 @@ public class TextsStep
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
     }

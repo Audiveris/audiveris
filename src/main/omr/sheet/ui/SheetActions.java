@@ -466,8 +466,7 @@ public class SheetActions
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Valid extensions for image files */
-        Constant.String validImageExtensions = new Constant.String(
+        private final Constant.String validImageExtensions = new Constant.String(
                 ".bmp .gif .jpg .png .tiff .tif .pdf",
                 "Valid image file extensions, whitespace-separated");
     }

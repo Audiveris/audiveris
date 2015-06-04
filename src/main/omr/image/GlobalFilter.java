@@ -126,7 +126,7 @@ public class GlobalFilter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer defaultThreshold = new Constant.Integer(
+        private final Constant.Integer defaultThreshold = new Constant.Integer(
                 "GrayLevel",
                 140,
                 "Default threshold value (in 0..255)");

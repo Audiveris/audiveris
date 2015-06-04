@@ -19,7 +19,6 @@ import omr.glyph.facets.Glyph;
 import omr.math.GeoOrder;
 
 import omr.sheet.DurationFactor;
-
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 import omr.sheet.rhythm.Voice;

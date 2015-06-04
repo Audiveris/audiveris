@@ -31,6 +31,9 @@ import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
+import omr.sig.inter.Inter;
+import omr.sig.inter.SmallChordInter;
+
 import omr.util.Dumping;
 import omr.util.Navigable;
 
@@ -80,6 +83,9 @@ public class SymbolsBuilder
     /** Companion factory for symbols inters. */
     private final SymbolFactory factory;
 
+    /** Aras where fine glyphs may be needed. */
+    private final List<Rectangle> fineBoxes = new ArrayList<Rectangle>();
+
     /** Scale-dependent global constants. */
     private final Parameters params;
 
@@ -127,6 +133,9 @@ public class SymbolsBuilder
     public void buildSymbols (Map<SystemInfo, List<Glyph>> optionalsMap)
     {
         logger.debug("System#{} buildSymbols", system.getId());
+
+        // Identify areas for fine glyphs
+        retrieveFineBoxes();
 
         // Retrieve all candidate glyphs
         List<Glyph> glyphs = getSymbolsGlyphs(optionalsMap);
@@ -206,6 +215,14 @@ public class SymbolsBuilder
     //------------------//
     /**
      * Report the collection of glyphs as symbols candidates.
+     * <p>
+     * Using a too low weight threshold would result in explosion of symbols (and inter-symbol
+     * relations), which would be a disaster in terms of resources. However, we need really fine
+     * glyphs to detect small flags (slashed or not).
+     * <p>
+     * So, we define a list of "fine boxes" at system level, which represents the boxes of system
+     * small head-chords. And we use a different threshold depending on whether a glyph candidate
+     * intersects or not a fine box.
      *
      * @return the candidates (ordered by abscissa)
      */
@@ -214,8 +231,16 @@ public class SymbolsBuilder
         List<Glyph> glyphs = new ArrayList<Glyph>(); // Sorted by abscissa, ordinate, id
 
         for (Glyph glyph : system.getGlyphs()) {
-            if ((glyph.getLayer() == GlyphLayer.SYMBOL) && (glyph.getWeight() >= params.minWeight)) {
-                glyphs.add(glyph);
+            if (glyph.getLayer() == GlyphLayer.SYMBOL) {
+                final int weight = glyph.getWeight();
+
+                if (weight >= params.minWeight) {
+                    glyphs.add(glyph);
+                } else {
+                    if ((weight >= params.minFineWeight) && hitFineBox(glyph)) {
+                        glyphs.add(glyph);
+                    }
+                }
             }
         }
 
@@ -224,13 +249,41 @@ public class SymbolsBuilder
 
         if ((optionals != null) && !optionals.isEmpty()) {
             for (Glyph glyph : optionals) {
-                if (glyph.getWeight() >= params.minWeight) {
+                final int weight = glyph.getWeight();
+
+                if (weight >= params.minWeight) {
                     glyphs.add(glyph);
+                } else {
+                    if ((weight >= params.minFineWeight) && hitFineBox(glyph)) {
+                        glyphs.add(glyph);
+                    }
                 }
             }
         }
 
         return glyphs;
+    }
+
+    //------------//
+    // hitFineBox //
+    //------------//
+    /**
+     * Check whether the provided glyph intersects a fine box.
+     *
+     * @param glyph the glyph to check
+     * @return true if in fine area
+     */
+    private boolean hitFineBox (Glyph glyph)
+    {
+        final Rectangle glyphBounds = glyph.getBounds();
+
+        for (Rectangle box : fineBoxes) {
+            if (box.intersects(glyphBounds)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //-----------------//
@@ -265,6 +318,24 @@ public class SymbolsBuilder
         }
     }
 
+    //-------------------//
+    // retrieveFineBoxes //
+    //-------------------//
+    private void retrieveFineBoxes ()
+    {
+        List<Inter> smallChords = system.getSig().inters(SmallChordInter.class);
+
+        for (Inter inter : smallChords) {
+            Rectangle box = inter.getBounds();
+            Rectangle fineBox = new Rectangle(
+                    box.x + box.width,
+                    box.y,
+                    params.smallChordMargin,
+                    box.height);
+            fineBoxes.add(fineBox);
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -279,8 +350,16 @@ public class SymbolsBuilder
                 "Maximum distance between two compound parts");
 
         private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
-                0.015,
+                0.03, //0.03,
                 "Minimum weight for glyph consideration");
+
+        private final Scale.AreaFraction minFineWeight = new Scale.AreaFraction(
+                0.006,
+                "Minimum weight for glyph consideration in a fine area");
+
+        private final Scale.Fraction smallChordMargin = new Scale.Fraction(
+                1,
+                "Margin to right side of small chords to ");
 
         private final Scale.Fraction maxSymbolWidth = new Scale.Fraction(
                 4.0,
@@ -307,7 +386,11 @@ public class SymbolsBuilder
 
         final int maxSymbolHeight;
 
+        final int smallChordMargin;
+
         final int minWeight;
+
+        final int minFineWeight;
 
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
@@ -315,7 +398,9 @@ public class SymbolsBuilder
             maxGap = scale.toPixelsDouble(constants.maxGap);
             maxSymbolWidth = scale.toPixels(constants.maxSymbolWidth);
             maxSymbolHeight = scale.toPixels(constants.maxSymbolHeight);
+            smallChordMargin = scale.toPixels(constants.smallChordMargin);
             minWeight = scale.toPixels(constants.minWeight);
+            minFineWeight = scale.toPixels(constants.minFineWeight);
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);

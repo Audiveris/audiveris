@@ -23,8 +23,8 @@ import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 
-import omr.sig.SIGraph;
 import omr.sig.InterManager;
+import omr.sig.SIGraph;
 import omr.sig.inter.Inter;
 
 import omr.ui.Board;
@@ -32,9 +32,7 @@ import omr.ui.PixelCount;
 import omr.ui.field.LCheckBox;
 import omr.ui.field.LTextField;
 import omr.ui.field.SpinnerUtil;
-
 import static omr.ui.field.SpinnerUtil.NO_VALUE;
-
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -447,13 +445,11 @@ public class InterBoard
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Exact pixel height for the shape icon field */
-        PixelCount shapeIconHeight = new PixelCount(
+        private final PixelCount shapeIconHeight = new PixelCount(
                 70,
                 "Exact pixel height for the shape icon field");
 
-        /** Exact pixel width for the shape icon field */
-        PixelCount shapeIconWidth = new PixelCount(
+        private final PixelCount shapeIconWidth = new PixelCount(
                 50,
                 "Exact pixel width for the shape icon field");
     }

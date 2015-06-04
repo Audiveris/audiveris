@@ -261,7 +261,10 @@ public class ClefBuilder
         // Extract parts
         SectionFactory sectionFactory = new SectionFactory(VERTICAL, JunctionAllPolicy.INSTANCE);
         List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
-        List<Glyph> parts = sheet.getGlyphNest().retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
+        List<Glyph> parts = sheet.getGlyphNest().retrieveGlyphs(
+                sections,
+                GlyphLayer.SYMBOL,
+                true);
 
         // Keep only interesting parts
         purgeParts(parts, rect);
@@ -526,35 +529,35 @@ public class ClefBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction maxClefEnd = new Scale.Fraction(
+        private final Scale.Fraction maxClefEnd = new Scale.Fraction(
                 4.5,
                 "Maximum x distance from measure start to end of clef");
 
-        final Scale.Fraction beltMargin = new Scale.Fraction(
+        private final Scale.Fraction beltMargin = new Scale.Fraction(
                 0.15,
                 "White margin within raw rectangle");
 
-        final Scale.Fraction xCoreMargin = new Scale.Fraction(
+        private final Scale.Fraction xCoreMargin = new Scale.Fraction(
                 0.4,
                 "Horizontal margin around core rectangle");
 
-        final Scale.Fraction yCoreMargin = new Scale.Fraction(
+        private final Scale.Fraction yCoreMargin = new Scale.Fraction(
                 0.5,
                 "Vertical margin around core rectangle");
 
-        final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(
+        private final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(
                 0.01,
                 "Minimum weight for a glyph part");
 
-        final Scale.Fraction maxPartGap = new Scale.Fraction(
+        private final Scale.Fraction maxPartGap = new Scale.Fraction(
                 1.0,
                 "Maximum distance between two parts of a single clef symbol");
 
-        final Scale.Fraction maxGlyphHeight = new Scale.Fraction(
+        private final Scale.Fraction maxGlyphHeight = new Scale.Fraction(
                 8.0,
                 "Maximum height for clef glyph");
 
-        final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
+        private final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
                 0.3,
                 "Minimum weight for clef glyph");
     }

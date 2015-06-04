@@ -318,7 +318,7 @@ public class InterManager
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.String vipInters = new Constant.String(
+        private final Constant.String vipInters = new Constant.String(
                 "",
                 "(Debug) Comma-separated values of VIP inters IDs");
     }

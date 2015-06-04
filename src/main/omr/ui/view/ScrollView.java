@@ -317,7 +317,7 @@ public class ScrollView
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer unitIncrement = new Constant.Integer(
+        private final Constant.Integer unitIncrement = new Constant.Integer(
                 "Pixels",
                 20,
                 "Size of mouse wheel increment for ScrollView");

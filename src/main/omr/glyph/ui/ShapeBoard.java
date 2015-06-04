@@ -353,7 +353,7 @@ public class ShapeBoard
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean publishLocationWhileDragging = new Constant.Boolean(
+        private final Constant.Boolean publishLocationWhileDragging = new Constant.Boolean(
                 false,
                 "Should we publish the current location while dragging a shape?");
     }

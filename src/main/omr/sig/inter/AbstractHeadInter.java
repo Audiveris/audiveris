@@ -107,43 +107,6 @@ public abstract class AbstractHeadInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------------//
-    // getShrinkHoriRatio //
-    //--------------------//
-    public static double getShrinkHoriRatio ()
-    {
-        return constants.shrinkHoriRatio.getValue();
-    }
-
-    //--------------------//
-    // getShrinkVertRatio //
-    //--------------------//
-    public static double getShrinkVertRatio ()
-    {
-        return constants.shrinkVertRatio.getValue();
-    }
-
-    //--------//
-    // shrink //
-    //--------//
-    /**
-     * Shrink a bit a bounding box when checking for note overlap.
-     *
-     * @param box the bounding box
-     * @return the shrunk box
-     */
-    public static Rectangle2D shrink (Rectangle box)
-    {
-        double newWidth = constants.shrinkHoriRatio.getValue() * box.width;
-        double newHeight = constants.shrinkVertRatio.getValue() * box.height;
-
-        return new Rectangle2D.Double(
-                box.getCenterX() - (newWidth / 2.0),
-                box.getCenterY() - (newHeight / 2.0),
-                newWidth,
-                newHeight);
-    }
-
     //--------//
     // accept //
     //--------//
@@ -257,6 +220,22 @@ public abstract class AbstractHeadInter
         return descriptor;
     }
 
+    //--------------------//
+    // getShrinkHoriRatio //
+    //--------------------//
+    public static double getShrinkHoriRatio ()
+    {
+        return constants.shrinkHoriRatio.getValue();
+    }
+
+    //--------------------//
+    // getShrinkVertRatio //
+    //--------------------//
+    public static double getShrinkVertRatio ()
+    {
+        return constants.shrinkVertRatio.getValue();
+    }
+
     //----------//
     // overlaps //
     //----------//
@@ -353,6 +332,27 @@ public abstract class AbstractHeadInter
         glyph = nest.buildGlyph(sections, GlyphLayer.DEFAULT, true, Glyph.Linking.NO_LINK);
     }
 
+    //--------//
+    // shrink //
+    //--------//
+    /**
+     * Shrink a bit a bounding box when checking for note overlap.
+     *
+     * @param box the bounding box
+     * @return the shrunk box
+     */
+    public static Rectangle2D shrink (Rectangle box)
+    {
+        double newWidth = constants.shrinkHoriRatio.getValue() * box.width;
+        double newHeight = constants.shrinkVertRatio.getValue() * box.height;
+
+        return new Rectangle2D.Double(
+                box.getCenterX() - (newWidth / 2.0),
+                box.getCenterY() - (newHeight / 2.0),
+                newWidth,
+                newHeight);
+    }
+
     //--------------//
     // alterationOf //
     //--------------//
@@ -429,19 +429,19 @@ public abstract class AbstractHeadInter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
+        private final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
                 0.5,
                 "Horizontal shrink ratio to apply when checking note overlap");
 
-        final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
+        private final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
                 0.5,
                 "Vertical shrink ratio to apply when checking note overlap");
 
-        final Constant.Ratio maxOverlapDxRatio = new Constant.Ratio(
+        private final Constant.Ratio maxOverlapDxRatio = new Constant.Ratio(
                 0.2,
                 "Maximum acceptable abscissa overlap ratio between notes");
 
-        final Constant.Ratio maxOverlapAreaRatio = new Constant.Ratio(
+        private final Constant.Ratio maxOverlapAreaRatio = new Constant.Ratio(
                 0.2,
                 "Maximum acceptable box area overlap ratio between notes");
     }

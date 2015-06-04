@@ -1040,15 +1040,15 @@ public class SlotsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.Fraction maxSlotDx = new Scale.Fraction(
+        private final Scale.Fraction maxSlotDx = new Scale.Fraction(
                 1,
                 "Maximum horizontal delta between a slot and a chord");
 
-        Scale.Fraction minInterSlotDx = new Scale.Fraction(
+        private final Scale.Fraction minInterSlotDx = new Scale.Fraction(
                 0.5,
                 "Minimum horizontal delta between two slots");
 
-        Scale.Fraction maxAdjacencyXGap = new Scale.Fraction(
+        private final Scale.Fraction maxAdjacencyXGap = new Scale.Fraction(
                 0.5,
                 "Maximum horizontal gap between adjacent chords bounds");
     }

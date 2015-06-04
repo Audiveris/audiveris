@@ -157,7 +157,7 @@ public class Language
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.String defaultSpecification = new Constant.String(
+        private final Constant.String defaultSpecification = new Constant.String(
                 "fra+eng+deu",
                 "List of 3-letter codes, separated by '+'");
     }

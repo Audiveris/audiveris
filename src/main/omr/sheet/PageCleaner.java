@@ -53,9 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
-
 import static java.awt.BasicStroke.*;
-
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -431,11 +429,11 @@ public abstract class PageCleaner
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction symbolSize = new Scale.Fraction(
+        private final Scale.Fraction symbolSize = new Scale.Fraction(
                 1.1,
                 "Symbols size to use with eraser music font");
 
-        final Scale.Fraction lineMargin = new Scale.Fraction(
+        private final Scale.Fraction lineMargin = new Scale.Fraction(
                 0.1,
                 "Thickness of white lines drawn on items borders");
     }

@@ -107,7 +107,7 @@ public class GridStep
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean displayNoStaff = new Constant.Boolean(
+        private final Constant.Boolean displayNoStaff = new Constant.Boolean(
                 false,
                 "Should we display the staff-free image?");
     }

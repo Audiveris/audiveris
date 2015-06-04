@@ -509,7 +509,7 @@ public abstract class AbstractEvaluationEngine
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.AreaFraction minWeight = new Scale.AreaFraction(
+        private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
                 0.08,
                 "Minimum normalized weight to be considered not a noise");
     }

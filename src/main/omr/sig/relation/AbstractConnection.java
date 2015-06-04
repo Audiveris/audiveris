@@ -209,12 +209,16 @@ public abstract class AbstractConnection
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio xInWeight = new Constant.Ratio(1, "Relative impact weight for xInGap");
+        private final Constant.Ratio xInWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for xInGap");
 
-        final Constant.Ratio xOutWeight = new Constant.Ratio(
+        private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 2,
                 "Relative impact weight for xOutGap");
 
-        final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for yGap");
     }
 }

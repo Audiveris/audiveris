@@ -221,13 +221,15 @@ public class TesseractOCR
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean useOCR = new Constant.Boolean(true, "Should we use the OCR feature?");
+        private final Constant.Boolean useOCR = new Constant.Boolean(
+                true,
+                "Should we use the OCR feature?");
 
-        Constant.Boolean keepImages = new Constant.Boolean(
+        private final Constant.Boolean keepImages = new Constant.Boolean(
                 false,
                 "Should we keep the images sent to Tesseract?");
 
-        Scale.Fraction maxDashWidth = new Scale.Fraction(
+        private final Scale.Fraction maxDashWidth = new Scale.Fraction(
                 1.0,
                 "Maximum width for a dash character");
     }

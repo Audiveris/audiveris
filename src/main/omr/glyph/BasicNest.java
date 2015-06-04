@@ -834,7 +834,7 @@ public class BasicNest
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.String vipGlyphs = new Constant.String(
+        private final Constant.String vipGlyphs = new Constant.String(
                 "",
                 "(Debug) Comma-separated values of VIP glyphs IDs");
     }

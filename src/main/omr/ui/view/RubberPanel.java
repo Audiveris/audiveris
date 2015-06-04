@@ -110,6 +110,45 @@ public class RubberPanel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------//
+    // setRubber //
+    //-----------//
+    /**
+     * Allows to provide the rubber instance, only after this RubberPanel
+     * has been built. This can be used to solve circular elaboration problems.
+     *
+     * @param rubber the rubber instance to be used
+     */
+    public final void setRubber (Rubber rubber)
+    {
+        this.rubber = rubber;
+
+        rubber.setZoom(zoom);
+        rubber.connectComponent(this);
+        rubber.setMouseMonitor(this);
+    }
+
+    //---------//
+    // setZoom //
+    //---------//
+    /**
+     * Assign a zoom to this panel
+     *
+     * @param zoom the zoom assigned
+     */
+    public final void setZoom (final Zoom zoom)
+    {
+        // Clean up if needed
+        unsetZoom(this.zoom);
+
+        this.zoom = zoom;
+
+        if (zoom != null) {
+            // Add a listener on this zoom
+            zoom.addChangeListener(this);
+        }
+    }
+
     //--------------//
     // contextAdded //
     //--------------//
@@ -329,6 +368,7 @@ public class RubberPanel
     public void selectPoint (Point point)
     {
         pointSelected(point, MouseMovement.PRESSING);
+
         ///showFocusLocation(new Rectangle(point), true);
     }
 
@@ -378,45 +418,6 @@ public class RubberPanel
     public void setModelSize (Dimension modelSize)
     {
         this.modelSize = new Dimension(modelSize);
-    }
-
-    //-----------//
-    // setRubber //
-    //-----------//
-    /**
-     * Allows to provide the rubber instance, only after this RubberPanel
-     * has been built. This can be used to solve circular elaboration problems.
-     *
-     * @param rubber the rubber instance to be used
-     */
-    public final void setRubber (Rubber rubber)
-    {
-        this.rubber = rubber;
-
-        rubber.setZoom(zoom);
-        rubber.connectComponent(this);
-        rubber.setMouseMonitor(this);
-    }
-
-    //---------//
-    // setZoom //
-    //---------//
-    /**
-     * Assign a zoom to this panel
-     *
-     * @param zoom the zoom assigned
-     */
-    public final void setZoom (final Zoom zoom)
-    {
-        // Clean up if needed
-        unsetZoom(this.zoom);
-
-        this.zoom = zoom;
-
-        if (zoom != null) {
-            // Add a listener on this zoom
-            zoom.addChangeListener(this);
-        }
     }
 
     //-------------------//
@@ -652,6 +653,6 @@ public class RubberPanel
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        PixelCount focusMargin = new PixelCount(20, "Margin visible around a focus");
+        private final PixelCount focusMargin = new PixelCount(20, "Margin visible around a focus");
     }
 }

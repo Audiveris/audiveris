@@ -618,37 +618,37 @@ public class ArcRetriever
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Double maxAlpha = new Constant.Double(
+        private final Constant.Double maxAlpha = new Constant.Double(
                 "degree",
                 4.0,
                 "Maximum angle (in degrees) for 3 points colinearity");
 
-        final Scale.Fraction arcMinQuorum = new Scale.Fraction(
+        private final Scale.Fraction arcMinQuorum = new Scale.Fraction(
                 1.5,
                 "Minimum arc length for quorum");
 
-        final Scale.Fraction maxLineDistance = new Scale.Fraction(
+        private final Scale.Fraction maxLineDistance = new Scale.Fraction(
                 0.1,
                 "Maximum distance from straight line");
 
-        final Scale.Fraction minStaffArcLength = new Scale.Fraction(
+        private final Scale.Fraction minStaffArcLength = new Scale.Fraction(
                 0.5,
                 "Minimum length for a staff arc");
 
-        final Scale.Fraction maxStaffArcLength = new Scale.Fraction(
+        private final Scale.Fraction maxStaffArcLength = new Scale.Fraction(
                 5.0,
                 "Maximum length for a staff arc");
 
-        final Scale.Fraction minStaffLineDistance = new Scale.Fraction(
+        private final Scale.Fraction minStaffLineDistance = new Scale.Fraction(
                 0.15,
                 "Minimum distance from staff line");
 
-        final Constant.Double minSlope = new Constant.Double(
+        private final Constant.Double minSlope = new Constant.Double(
                 "(co)tangent",
                 0.03,
                 "Minimum (inverted) slope, to detect vertical and horizontal lines");
 
-        final Scale.Fraction maxRunLength = new Scale.Fraction(
+        private final Scale.Fraction maxRunLength = new Scale.Fraction(
                 0.6,
                 "Maximum length for a vertical run");
     }

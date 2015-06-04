@@ -346,46 +346,52 @@ public class EndingsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction minLengthLow = new Scale.Fraction(6, "Low minimum ending length");
+        private final Scale.Fraction minLengthLow = new Scale.Fraction(
+                6,
+                "Low minimum ending length");
 
-        final Scale.Fraction minLengthHigh = new Scale.Fraction(
+        private final Scale.Fraction minLengthHigh = new Scale.Fraction(
                 10,
                 "High minimum ending length");
 
-        final Scale.Fraction minLegLow = new Scale.Fraction(1.0, "Low minimum leg length");
+        private final Scale.Fraction minLegLow = new Scale.Fraction(
+                1.0,
+                "Low minimum leg length");
 
-        final Scale.Fraction minLegHigh = new Scale.Fraction(2.5, "High minimum leg length");
+        private final Scale.Fraction minLegHigh = new Scale.Fraction(
+                2.5,
+                "High minimum leg length");
 
-        final Scale.Fraction maxBarShift = new Scale.Fraction(
+        private final Scale.Fraction maxBarShift = new Scale.Fraction(
                 2.0,
                 "High maximum abscissa shift between ending and bar line");
 
-        final Scale.Fraction maxLegShift = new Scale.Fraction(
+        private final Scale.Fraction maxLegShift = new Scale.Fraction(
                 0.25,
                 "High maximum abscissa shift between leg and bar line");
 
-        final Scale.Fraction maxLegGap = new Scale.Fraction(
+        private final Scale.Fraction maxLegGap = new Scale.Fraction(
                 0.5,
                 "High maximum ordinate gap between leg and ending");
 
-        final Constant.Double maxSlope = new Constant.Double(
+        private final Constant.Double maxSlope = new Constant.Double(
                 "tangent",
                 0.02,
                 "Maximum ending slope");
 
-        final Constant.Ratio stemRatio = new Constant.Ratio(
+        private final Constant.Ratio stemRatio = new Constant.Ratio(
                 1.4,
                 "Maximum leg thickness as ratio of stem thickness");
 
-        final Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
+        private final Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
                 1.0,
                 "Maximum delta position between two overlapping filaments");
 
-        final Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(
+        private final Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(
                 0.3,
                 "Maximum space between overlapping filaments");
 
-        final Scale.Fraction maxCoordGap = new Scale.Fraction(
+        private final Scale.Fraction maxCoordGap = new Scale.Fraction(
                 0.5,
                 "Maximum delta coordinate for a gap between filaments");
     }

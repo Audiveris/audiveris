@@ -765,29 +765,21 @@ public class Picture
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch(es)?");
 
-        Constant.Boolean useMaxChannelInColorToGray = new Constant.Boolean(
-                true,
-                "Should we use max channel rather than standard luminance?");
-
-        Constant.Boolean filterImage = new Constant.Boolean(
-                true,
-                "Should we slightly filter the source image?");
-
-        Constant.Integer gaussianRadius = new Constant.Integer(
+        private final Constant.Integer gaussianRadius = new Constant.Integer(
                 "pixels",
                 1,
                 "Radius of Gaussian filtering kernel (1 for 3x3, 2 for 5x5, etc)");
 
-        Constant.Integer medianRadius = new Constant.Integer(
+        private final Constant.Integer medianRadius = new Constant.Integer(
                 "pixels",
                 1,
                 "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
 
-        Constant.String defaultExtractionDirectory = new Constant.String(
+        private final Constant.String defaultExtractionDirectory = new Constant.String(
                 WellKnowns.DEFAULT_SCRIPTS_FOLDER.toString(),
                 "Default directory for image extractions");
     }

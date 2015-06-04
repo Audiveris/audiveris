@@ -274,30 +274,30 @@ public class LogicalPart
         //~ Instance fields ------------------------------------------------------------------------
 
         // Default Part names
-        Constant.String defaultSingleStaffPartName = new Constant.String(
+        private final Constant.String defaultSingleStaffPartName = new Constant.String(
                 "Voice",
                 "Default name for a part with one staff");
 
-        Constant.String defaultDoubleStaffPartName = new Constant.String(
+        private final Constant.String defaultDoubleStaffPartName = new Constant.String(
                 "Piano",
                 "Default name for a part with two staves");
 
-        Constant.String defaultPartName = new Constant.String(
+        private final Constant.String defaultPartName = new Constant.String(
                 "NoName",
                 "Default name for a part with more than two staves");
 
         // Default Midi program numbers
-        Constant.Integer defaultSingleStaffPartProgram = new Constant.Integer(
+        private final Constant.Integer defaultSingleStaffPartProgram = new Constant.Integer(
                 "MidiProgram",
                 54,
                 "Default program number for a part with one staff");
 
-        Constant.Integer defaultDoubleStaffPartProgram = new Constant.Integer(
+        private final Constant.Integer defaultDoubleStaffPartProgram = new Constant.Integer(
                 "MidiProgram",
                 1,
                 "Default program number for a part with two staves");
 
-        Constant.Integer defaultPartProgram = new Constant.Integer(
+        private final Constant.Integer defaultPartProgram = new Constant.Integer(
                 "MidiProgram",
                 1,
                 "Default program number for a part with more than two staves");

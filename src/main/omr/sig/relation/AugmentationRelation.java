@@ -98,22 +98,22 @@ public class AugmentationRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio dotSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio dotSupportCoeff = new Constant.Ratio(
                 0.5,
                 "Supporting coeff for (source) dot");
 
-        final Scale.Fraction xOutGapMax = new Scale.Fraction(
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 2.0,
                 "Maximum horizontal gap between dot center & note/rest reference point");
 
-        final Scale.Fraction yGapMax = new Scale.Fraction(
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.75,
                 "Maximum vertical gap between dot center & note/rest reference point");
 
-        final Constant.Ratio xOutWeight = new Constant.Ratio(
+        private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 0,
                 "Relative impact weight for xOutGap");
 
-        final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
     }
 }

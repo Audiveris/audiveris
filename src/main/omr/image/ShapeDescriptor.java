@@ -739,15 +739,15 @@ public class ShapeDescriptor
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean keepTemplates = new Constant.Boolean(
+        private final Constant.Boolean keepTemplates = new Constant.Boolean(
                 false,
                 "Should we keep the templates images?");
 
-        final Constant.Ratio stemDx = new Constant.Ratio(
+        private final Constant.Ratio stemDx = new Constant.Ratio(
                 0.05,
                 "(Ratio) abscissa of stem anchor WRT symbol width");
 
-        final Constant.Ratio stemDy = new Constant.Ratio(
+        private final Constant.Ratio stemDy = new Constant.Ratio(
                 0.15,
                 "(Ratio) ordinate of stem anchor WRT symbol height");
     }

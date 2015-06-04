@@ -271,15 +271,15 @@ public class Curves
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean displayCurves = new Constant.Boolean(
+        private final Constant.Boolean displayCurves = new Constant.Boolean(
                 false,
                 "Should we display the view on curves?");
 
-        Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        Constant.String breakPointCoordinates = new Constant.String(
+        private final Constant.String breakPointCoordinates = new Constant.String(
                 "",
                 "(Debug) Comma-separated coordinates of curve break points if any");
     }

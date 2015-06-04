@@ -33,7 +33,6 @@ import omr.lag.SectionFactory;
 import omr.math.Clustering;
 import omr.math.Population;
 import omr.math.Projection;
-
 import static omr.run.Orientation.VERTICAL;
 
 import omr.sheet.Picture;
@@ -444,25 +443,6 @@ public class KeyBuilder
         return range.browseStart;
     }
 
-    //-------//
-    // getId //
-    //-------//
-    public int getId ()
-    {
-        return staff.getId();
-    }
-
-    //-----------------//
-    // getMeasureStart //
-    //-----------------//
-    /**
-     * @return the measureStart
-     */
-    public int getMeasureStart ()
-    {
-        return measureStart;
-    }
-
     //-----------//
     // getFifths //
     //-----------//
@@ -483,6 +463,25 @@ public class KeyBuilder
         } else {
             return -slices.size();
         }
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    public int getId ()
+    {
+        return staff.getId();
+    }
+
+    //-----------------//
+    // getMeasureStart //
+    //-----------------//
+    /**
+     * @return the measureStart
+     */
+    public int getMeasureStart ()
+    {
+        return measureStart;
     }
 
     //-----------//
@@ -1075,7 +1074,8 @@ public class KeyBuilder
 
         SectionFactory sectionFactory = new SectionFactory(VERTICAL, new JunctionRatioPolicy());
         List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
-        List<Glyph> glyphs = sheet.getGlyphNest().retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
+        List<Glyph> glyphs = sheet.getGlyphNest()
+                .retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
         purgeGlyphs(glyphs, rect);
 
         KeyAdapter adapter = new KeyAdapter(glyphs, targetShapes);
@@ -1802,107 +1802,109 @@ public class KeyBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction maxSliceDist = new Scale.Fraction(
+        private final Scale.Fraction maxSliceDist = new Scale.Fraction(
                 0.5,
                 "Maximum x distance to theoretical slice");
 
-        final Scale.LineFraction maxSpaceCumul = new Scale.LineFraction(
+        private final Scale.LineFraction maxSpaceCumul = new Scale.LineFraction(
                 2.0,
                 "Maximum cumul value in space (specified WRT staff line thickness)");
 
-        final Scale.Fraction typicalAlterationHeight = new Scale.Fraction(
+        private final Scale.Fraction typicalAlterationHeight = new Scale.Fraction(
                 3.0,
                 "Typical alteration height (flat or sharp)");
 
-        final Constant.Ratio peakHeightRatio = new Constant.Ratio(
+        private final Constant.Ratio peakHeightRatio = new Constant.Ratio(
                 0.5,
                 "Ratio of height to detect peaks");
 
-        final Scale.Fraction preStaffMargin = new Scale.Fraction(
+        private final Scale.Fraction preStaffMargin = new Scale.Fraction(
                 2.0,
                 "Horizontal margin before staff left (for plot display)");
 
-        final Scale.Fraction maxFirstPeakOffset = new Scale.Fraction(
+        private final Scale.Fraction maxFirstPeakOffset = new Scale.Fraction(
                 2.0,
                 "Maximum x offset of first peak (WRT browse start)");
 
-        final Scale.Fraction maxPeakCumul = new Scale.Fraction(
+        private final Scale.Fraction maxPeakCumul = new Scale.Fraction(
                 4.0,
                 "Maximum cumul value to accept peak (absolute value)");
 
-        final Scale.Fraction maxPeakWidth = new Scale.Fraction(
+        private final Scale.Fraction maxPeakWidth = new Scale.Fraction(
                 0.4,
                 "Maximum width to accept peak (measured at threshold height)");
 
-        final Scale.Fraction minFlatDerivative = new Scale.Fraction(
+        private final Scale.Fraction minFlatDerivative = new Scale.Fraction(
                 0.8,
                 "Minimum derivative at peak for a flat item");
 
-        final Scale.Fraction maxFlatHeading = new Scale.Fraction(
+        private final Scale.Fraction maxFlatHeading = new Scale.Fraction(
                 0.4,
                 "Maximum heading length before peak for a flat item");
 
-        final Scale.Fraction flatTrail = new Scale.Fraction(
+        private final Scale.Fraction flatTrail = new Scale.Fraction(
                 1.0,
                 "Typical trailing length after peak for a flat item");
 
-        final Scale.Fraction minFlatTrail = new Scale.Fraction(
+        private final Scale.Fraction minFlatTrail = new Scale.Fraction(
                 0.8,
                 "Minimum trailing length after peak for a flat item");
 
-        final Scale.Fraction maxFlatTrail = new Scale.Fraction(
+        private final Scale.Fraction maxFlatTrail = new Scale.Fraction(
                 1.3,
                 "Maximum trailing length after peak for a flat item");
 
-        final Scale.Fraction sharpTrail = new Scale.Fraction(
+        private final Scale.Fraction sharpTrail = new Scale.Fraction(
                 0.3,
                 "Typical trailing length after last peak for a sharp item");
 
-        final Scale.Fraction minSharpTrail = new Scale.Fraction(
+        private final Scale.Fraction minSharpTrail = new Scale.Fraction(
                 0.2,
                 "Minimum trailing length after last peak for a sharp item");
 
-        final Scale.Fraction maxSharpTrail = new Scale.Fraction(
+        private final Scale.Fraction maxSharpTrail = new Scale.Fraction(
                 0.5,
                 "Maximum trailing length after last peak for a sharp item");
 
-        final Scale.Fraction maxPeakDx = new Scale.Fraction(
+        private final Scale.Fraction maxPeakDx = new Scale.Fraction(
                 1.4,
                 "Maximum delta abscissa between peaks");
 
-        final Scale.Fraction maxSharpDelta = new Scale.Fraction(
+        private final Scale.Fraction maxSharpDelta = new Scale.Fraction(
                 0.75,
                 "Maximum short peak delta for sharps");
 
-        final Scale.Fraction minFlatDelta = new Scale.Fraction(
+        private final Scale.Fraction minFlatDelta = new Scale.Fraction(
                 0.5,
                 "Minimum short peak delta for flats");
 
-        final Scale.Fraction offsetThreshold = new Scale.Fraction(
+        private final Scale.Fraction offsetThreshold = new Scale.Fraction(
                 0.1,
                 "Threshold on first peak offset that differentiates flat & sharp");
 
-        final Scale.Fraction minFirstSpaceWidth = new Scale.Fraction(
+        private final Scale.Fraction minFirstSpaceWidth = new Scale.Fraction(
                 0.2,
                 "Minimum initial space before key signature");
 
-        final Scale.Fraction maxGlyphGap = new Scale.Fraction(
+        private final Scale.Fraction maxGlyphGap = new Scale.Fraction(
                 1.5,
                 "Maximum distance between two glyphs of a single alter symbol");
 
-        final Scale.Fraction maxGlyphHeight = new Scale.Fraction(3.5, "Maximum glyph height");
+        private final Scale.Fraction maxGlyphHeight = new Scale.Fraction(
+                3.5,
+                "Maximum glyph height");
 
-        final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
+        private final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
                 0.3,
                 "Minimum glyph weight");
 
         // Beware: A too small value might miss the whole key-sig
-        final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(
+        private final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(
                 1.75,
                 "Maximum initial space before key signature");
 
         // Beware: A too small value might miss some key-sig items
-        final Scale.Fraction maxInnerSpace = new Scale.Fraction(
+        private final Scale.Fraction maxInnerSpace = new Scale.Fraction(
                 0.7,
                 "Maximum inner space within key signature");
     }

@@ -224,11 +224,11 @@ public class ScriptActions
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.String defaultScriptDirectory = new Constant.String(
+        private final Constant.String defaultScriptDirectory = new Constant.String(
                 WellKnowns.DEFAULT_SCRIPTS_FOLDER.toString(),
                 "Default directory for saved scripts");
 
-        final Constant.Boolean closeConfirmation = new Constant.Boolean(
+        private final Constant.Boolean closeConfirmation = new Constant.Boolean(
                 true,
                 "Should we ask confirmation for closing a sheet with unsaved script?");
     }

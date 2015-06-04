@@ -467,51 +467,51 @@ public class StemsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        final Scale.Fraction vicinityMargin = new Scale.Fraction(
+        private final Scale.Fraction vicinityMargin = new Scale.Fraction(
                 1.0,
                 "Rough abscissa margin when looking for neighbors");
 
-        final Constant.Double slopeMargin = new Constant.Double(
+        private final Constant.Double slopeMargin = new Constant.Double(
                 "tangent",
                 0.02,
                 "Margin around slope to define corner lookup area");
 
-        final Scale.Fraction minHeadSectionContribution = new Scale.Fraction(
+        private final Scale.Fraction minHeadSectionContribution = new Scale.Fraction(
                 0.2,
                 "Minimum stem contribution for a section near head");
 
-        final Scale.Fraction minStemExtension = new Scale.Fraction(
+        private final Scale.Fraction minStemExtension = new Scale.Fraction(
                 0.8,
                 "Minimum vertical distance from head to end of stem");
 
-        final Scale.Fraction minHeadBeamDistance = new Scale.Fraction(
+        private final Scale.Fraction minHeadBeamDistance = new Scale.Fraction(
                 0.125,
                 "Minimum vertical distance between head and beam");
 
-        final Scale.Fraction maxInterBeamGap = new Scale.Fraction(
+        private final Scale.Fraction maxInterBeamGap = new Scale.Fraction(
                 1.0, // TODO: A bit too large! Cf Dichterliebe sheet#1 (1592,555)
                 // We could measure actual gaps out of BEAMS step
                 "Maximum vertical gap between two consecutive beams of the same group");
 
-        final Scale.Fraction minBeamStemsGap = new Scale.Fraction(
+        private final Scale.Fraction minBeamStemsGap = new Scale.Fraction(
                 1.0,
                 "Minimum x gap between two stems on the same beam");
 
-        final Constant.Ratio maxSeedJitter = new Constant.Ratio(
+        private final Constant.Ratio maxSeedJitter = new Constant.Ratio(
                 2.0,
                 "Maximum distance from stem seed to theoretical line,"
                 + " as ratio of typical stem width");
 
-        final Constant.Ratio maxSectionJitter = new Constant.Ratio(
+        private final Constant.Ratio maxSectionJitter = new Constant.Ratio(
                 1.0,
                 "Maximum distance from section center to target line,"
                 + " as ratio of typical stem width");
 
-        final Scale.Fraction yGapTiny = new Scale.Fraction(
+        private final Scale.Fraction yGapTiny = new Scale.Fraction(
                 0.1,
                 "Maximum vertical tiny gap between stem & head");
     }

@@ -524,19 +524,19 @@ public class Template
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio smallRatio = new Constant.Ratio(
+        private final Constant.Ratio smallRatio = new Constant.Ratio(
                 0.67,
                 "Global ratio applied to small (cue/grace) templates");
 
-        final Constant.Ratio foreWeight = new Constant.Ratio(
+        private final Constant.Ratio foreWeight = new Constant.Ratio(
                 2.0,
                 "Weight assigned to template foreground pixels");
 
-        final Constant.Ratio backWeight = new Constant.Ratio(
+        private final Constant.Ratio backWeight = new Constant.Ratio(
                 1.0,
                 "Weight assigned to template background pixels");
 
-        final Scale.Fraction dilation = new Scale.Fraction(
+        private final Scale.Fraction dilation = new Scale.Fraction(
                 0.15,
                 "Dilation applied on a note head to be erased");
     }

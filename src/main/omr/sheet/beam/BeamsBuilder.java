@@ -1579,140 +1579,138 @@ public class BeamsBuilder
 
         // Item parameters
         //----------------
-        final Scale.Fraction minBeamWidthLow = new Scale.Fraction(
+        private final Scale.Fraction minBeamWidthLow = new Scale.Fraction(
                 1.5,
                 "Low minimum width for a beam");
 
-        final Scale.Fraction minBeamWidthHigh = new Scale.Fraction(
+        private final Scale.Fraction minBeamWidthHigh = new Scale.Fraction(
                 4.0,
                 "High minimum width for a beam");
 
-        final Scale.Fraction minHookWidthLow = new Scale.Fraction(
+        private final Scale.Fraction minHookWidthLow = new Scale.Fraction(
                 0.7,
                 "Low minimum width for a hook");
 
-        final Scale.Fraction minHookWidthHigh = new Scale.Fraction(
+        private final Scale.Fraction minHookWidthHigh = new Scale.Fraction(
                 1.0,
                 "High minimum width for a hook");
 
-        final Scale.Fraction maxHookWidth = new Scale.Fraction(2.0, "Maximum width for a hook");
+        private final Scale.Fraction maxHookWidth = new Scale.Fraction(
+                2.0,
+                "Maximum width for a hook");
 
-        final Constant.Ratio minHeightRatioLow = new Constant.Ratio(
+        private final Constant.Ratio minHeightRatioLow = new Constant.Ratio(
                 0.7,
                 "Low minimum height for a beam or hook, specified as ratio of typical beam");
 
-        final Constant.Ratio maxHeightRatioHigh = new Constant.Ratio(
+        private final Constant.Ratio maxHeightRatioHigh = new Constant.Ratio(
                 1.3,
                 "High maximum height for a beam or hook, specified as ratio of typical beam");
 
-        final Scale.Fraction maxItemXGap = new Scale.Fraction(
+        private final Scale.Fraction maxItemXGap = new Scale.Fraction(
                 0.5,
                 "Acceptable abscissa gap within a beam item");
 
-        final Scale.Fraction coreSectionWidth = new Scale.Fraction(
+        private final Scale.Fraction coreSectionWidth = new Scale.Fraction(
                 0.15,
                 "Minimum width for a core section to define borders");
 
         // Global parameters
         //------------------
-        final Scale.Fraction maxSideBeamDx = new Scale.Fraction(
+        private final Scale.Fraction maxSideBeamDx = new Scale.Fraction(
                 4.0,
                 "Maximum abscissa gap to detect side beams");
 
-        final Scale.Fraction maxBeamsGapX = new Scale.Fraction(
+        private final Scale.Fraction maxBeamsGapX = new Scale.Fraction(
                 1.0,
                 "Maximum abscissa gap to merge aligned beams");
 
-        final Scale.Fraction minBeamsGapX = new Scale.Fraction(
+        private final Scale.Fraction minBeamsGapX = new Scale.Fraction(
                 0.2,
                 "Minimum abscissa gap to check inner area");
 
-        final Scale.Fraction maxBeamsGapY = new Scale.Fraction(
+        private final Scale.Fraction maxBeamsGapY = new Scale.Fraction(
                 0.25,
                 "Maximum ordinate mismatch to merge aligned beams");
 
-        final Scale.Fraction beamsXMargin = new Scale.Fraction(
+        private final Scale.Fraction beamsXMargin = new Scale.Fraction(
                 0.25,
                 "Abscissa margin around beams to exclude beam stems");
 
-        final Scale.Fraction maxStemBeamGapX = new Scale.Fraction(
+        private final Scale.Fraction maxStemBeamGapX = new Scale.Fraction(
                 0.2,
                 "Maximum abscissa gap between stem and beam");
 
-        final Scale.Fraction maxStemBeamGapY = new Scale.Fraction(
+        private final Scale.Fraction maxStemBeamGapY = new Scale.Fraction(
                 0.8,
                 "Maximum ordinate gap between stem and beam");
 
-        final Scale.Fraction maxExtensionToStem = new Scale.Fraction(
+        private final Scale.Fraction maxExtensionToStem = new Scale.Fraction(
                 4.0,
                 "Maximum beam horizontal extension to stem seed");
 
-        final Scale.Fraction maxExtensionToSpot = new Scale.Fraction(
+        private final Scale.Fraction maxExtensionToSpot = new Scale.Fraction(
                 2.0,
                 "Maximum beam horizontal extension to spot");
 
-        final Scale.Fraction beltMarginDx = new Scale.Fraction(
+        private final Scale.Fraction beltMarginDx = new Scale.Fraction(
                 0.25,
                 "Horizontal belt margin checked around beam");
 
-        final Scale.Fraction beltMarginDy = new Scale.Fraction(
+        private final Scale.Fraction beltMarginDy = new Scale.Fraction(
                 0.15,
                 "Vertical belt margin checked around beam");
 
-        final Constant.Double maxBeamSlope = new Constant.Double(
+        private final Constant.Double maxBeamSlope = new Constant.Double(
                 "tangent",
                 1.0,
                 "Maximum absolute tangent value for a beam angle");
 
-        final Constant.Double maxBorderSlopeGap = new Constant.Double(
+        private final Constant.Double maxBorderSlopeGap = new Constant.Double(
                 "tangent",
                 0.15,
                 "Maximum delta slope between top and bottom borders of a beam");
 
-        final Constant.Double maxBeamSlopeGap = new Constant.Double(
+        private final Constant.Double maxBeamSlopeGap = new Constant.Double(
                 "tangent",
                 0.07,
                 "Maximum delta slope between beams of a group");
 
-        final Scale.Fraction maxDistanceToBorder = new Scale.Fraction(
+        private final Scale.Fraction maxDistanceToBorder = new Scale.Fraction(
                 0.15,
                 "Maximum mean distance to average beam border");
 
-        final Constant.Ratio maxBeltBlackRatio = new Constant.Ratio(
+        private final Constant.Ratio maxBeltBlackRatio = new Constant.Ratio(
                 0.4,
                 "Maximum ratio of black pixels around beam");
 
-        final Constant.Ratio minCoreBlackRatio = new Constant.Ratio(
+        private final Constant.Ratio minCoreBlackRatio = new Constant.Ratio(
                 0.7,
                 "Minimum ratio of black pixels inside beam");
 
-        final Constant.Ratio minExtBlackRatio = new Constant.Ratio(
+        private final Constant.Ratio minExtBlackRatio = new Constant.Ratio(
                 0.6,
                 "Minimum ratio of black pixels inside beam extension");
 
-        final Scale.Fraction cueXMargin = new Scale.Fraction(
+        private final Scale.Fraction cueXMargin = new Scale.Fraction(
                 2.0,
                 "Abscissa margin to aggregate cues");
 
-        final Scale.Fraction cueYMargin = new Scale.Fraction(
+        private final Scale.Fraction cueYMargin = new Scale.Fraction(
                 3.0,
                 "Ordinate margin to aggregate cues");
 
-        final Scale.Fraction cueBoxDx = new Scale.Fraction(
+        private final Scale.Fraction cueBoxDx = new Scale.Fraction(
                 0.25,
                 "Abscissa expansion of aggregate box");
 
-        final Scale.Fraction cueBoxDy = new Scale.Fraction(
+        private final Scale.Fraction cueBoxDy = new Scale.Fraction(
                 1.0,
                 "Ordinate shift of aggregate box");
 
-        final Constant.Ratio cueBeamRatio = new Constant.Ratio(
+        private final Constant.Ratio cueBeamRatio = new Constant.Ratio(
                 0.6,
                 "Ratio applied for cue beams height");
-
-        final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
     }
 
     //--------------//

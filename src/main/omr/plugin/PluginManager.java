@@ -281,7 +281,7 @@ public class PluginManager
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.String defaultPlugin = new Constant.String("", "Name of default plugin");
+        private final Constant.String defaultPlugin = new Constant.String("", "Name of default plugin");
     }
 
     //---------//

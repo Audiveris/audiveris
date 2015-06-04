@@ -405,21 +405,23 @@ public class TargetBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean showDewarpGrid = new Constant.Boolean(
+        private final Constant.Boolean showDewarpGrid = new Constant.Boolean(
                 false,
                 "Should we show the dewarp grid?");
 
-        Scale.LineFraction gridPointSize = new Scale.LineFraction(
+        private final Scale.LineFraction gridPointSize = new Scale.LineFraction(
                 0.2,
                 "Size of displayed grid points");
 
-        Scale.Fraction systemMarkWidth = new Scale.Fraction(2.0, "Width of system marks");
+        private final Scale.Fraction systemMarkWidth = new Scale.Fraction(
+                2.0,
+                "Width of system marks");
 
-        Scale.LineFraction systemMarkStroke = new Scale.LineFraction(
+        private final Scale.LineFraction systemMarkStroke = new Scale.LineFraction(
                 2.0,
                 "Thickness of system marks");
 
-        Constant.Boolean storeDewarp = new Constant.Boolean(
+        private final Constant.Boolean storeDewarp = new Constant.Boolean(
                 false,
                 "Should we store the dewarped image on disk?");
     }

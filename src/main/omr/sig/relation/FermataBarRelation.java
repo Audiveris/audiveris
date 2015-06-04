@@ -46,7 +46,7 @@ public class FermataBarRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(
                 5,
                 "Supporting coeff for (source) fermata");
     }

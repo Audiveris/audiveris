@@ -536,22 +536,26 @@ public class GlyphNetwork
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Ratio amplitude = new Constant.Ratio(0.5, "Initial weight amplitude");
+        private final Constant.Ratio amplitude = new Constant.Ratio(
+                0.5,
+                "Initial weight amplitude");
 
-        Constant.Ratio learningRate = new Constant.Ratio(0.2, "Learning Rate");
+        private final Constant.Ratio learningRate = new Constant.Ratio(0.2, "Learning Rate");
 
-        Constant.Integer listEpochs = new Constant.Integer(
+        private final Constant.Integer listEpochs = new Constant.Integer(
                 "Epochs",
                 500,
                 "Number of epochs for training on list of glyphs");
 
-        Constant.Integer quorum = new Constant.Integer(
+        private final Constant.Integer quorum = new Constant.Integer(
                 "Glyphs",
                 10,
                 "Minimum number of glyphs for each shape");
 
-        Evaluation.Grade maxError = new Evaluation.Grade(1E-3, "Threshold to stop training");
+        private final Evaluation.Grade maxError = new Evaluation.Grade(
+                1E-3,
+                "Threshold to stop training");
 
-        Constant.Ratio momentum = new Constant.Ratio(0.2, "Training momentum");
+        private final Constant.Ratio momentum = new Constant.Ratio(0.2, "Training momentum");
     }
 }

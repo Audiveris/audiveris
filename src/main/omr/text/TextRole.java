@@ -284,53 +284,28 @@ public enum TextRole
             extends ConstantSet
     {
 
-        Scale.Fraction maxRightDx = new Scale.Fraction(
+        private final Scale.Fraction maxRightDx = new Scale.Fraction(
                 2,
                 "Maximum horizontal distance on the right end of the staff");
 
-        Scale.Fraction maxCenterDx = new Scale.Fraction(
+        private final Scale.Fraction maxCenterDx = new Scale.Fraction(
                 30,
                 "Maximum horizontal distance around center of page");
 
-        Scale.Fraction maxShortLength = new Scale.Fraction(
+        private final Scale.Fraction maxShortLength = new Scale.Fraction(
                 35,
                 "Maximum length for a short sentence (no lyrics)");
 
-        Scale.Fraction maxTinyLength = new Scale.Fraction(
+        private final Scale.Fraction maxTinyLength = new Scale.Fraction(
                 2,
                 "Maximum length for a tiny sentence (no lyrics)");
 
-        Scale.Fraction maxStaffDy = new Scale.Fraction(
+        private final Scale.Fraction maxStaffDy = new Scale.Fraction(
                 7,
                 "Maximum distance above staff for a direction");
 
-        Scale.Fraction minTitleHeight = new Scale.Fraction(3, "Minimum height for a title text");
+        private final Scale.Fraction minTitleHeight = new Scale.Fraction(
+                3,
+                "Minimum height for a title text");
     }
 }
-//
-//    //-----------------//
-//    // getStringHolder //
-//    //-----------------//
-//    /**
-//     * Forge a string to be used in lieu of real text value.
-//     *
-//     * @param NbOfChars the number of characters desired
-//     *
-//     * @return a dummy string of NbOfChars chars
-//     */
-//    public String getStringHolder (int NbOfChars)
-//    {
-//        if (NbOfChars > 1000) {
-//            logger.warn("Abnormal text length:{}", NbOfChars);
-//
-//            return "<<" + Integer.toString(NbOfChars) + ">>";
-//        } else {
-//            StringBuilder sb = new StringBuilder("[");
-//
-//            while (sb.length() < (NbOfChars - 1)) {
-//                sb.append(toString()).append("-");
-//            }
-//
-//            return sb.substring(0, Math.max(NbOfChars - 1, 0)) + "]";
-//        }
-//    }

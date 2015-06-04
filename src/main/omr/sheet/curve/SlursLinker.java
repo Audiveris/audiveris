@@ -17,11 +17,8 @@ import omr.constant.ConstantSet;
 import omr.math.GeoPath;
 import omr.math.GeoUtil;
 import omr.math.LineUtil;
-
 import static omr.math.LineUtil.*;
-
 import omr.math.PointUtil;
-
 import static omr.math.PointUtil.*;
 
 import omr.sheet.Scale;
@@ -43,7 +40,6 @@ import omr.sig.relation.SlurHeadRelation;
 
 import omr.util.Dumping;
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
@@ -54,9 +50,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-
 import static java.lang.Math.abs;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -399,57 +393,57 @@ public class SlursLinker
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction coverageHExt = new Scale.Fraction(
+        private final Scale.Fraction coverageHExt = new Scale.Fraction(
                 1.25,
                 "Length of extension for horizontal slur coverage");
 
-        final Scale.Fraction coverageHIn = new Scale.Fraction(
+        private final Scale.Fraction coverageHIn = new Scale.Fraction(
                 0.5,
                 "Internal abscissa of horizontal slur coverage");
 
-        final Scale.Fraction coverageHDepth = new Scale.Fraction(
+        private final Scale.Fraction coverageHDepth = new Scale.Fraction(
                 3.0,
                 "Vertical extension of horizontal slur coverage");
 
-        final Scale.Fraction coverageVExt = new Scale.Fraction(
+        private final Scale.Fraction coverageVExt = new Scale.Fraction(
                 2.0,
                 "Length of extension for vertical slur coverage");
 
-        final Scale.Fraction coverageVIn = new Scale.Fraction(
+        private final Scale.Fraction coverageVIn = new Scale.Fraction(
                 1.5,
                 "Internal abscissa of vertical slur coverage");
 
-        final Scale.Fraction coverageVDepth = new Scale.Fraction(
+        private final Scale.Fraction coverageVDepth = new Scale.Fraction(
                 2.5,
                 "Vertical extension of vertical slur coverage");
 
-        final Scale.Fraction coverageVDepthSmall = new Scale.Fraction(
+        private final Scale.Fraction coverageVDepthSmall = new Scale.Fraction(
                 1.5,
                 "Vertical extension of small vertical slur coverage");
 
-        final Scale.Fraction targetExtension = new Scale.Fraction(
+        private final Scale.Fraction targetExtension = new Scale.Fraction(
                 0.5,
                 "Extension length from slur end to slur target point");
 
-        final Constant.Double slopeSeparator = new Constant.Double(
+        private final Constant.Double slopeSeparator = new Constant.Double(
                 "tangent",
                 0.5,
                 "Slope that separates vertical slurs from horizontal slurs");
 
-        final Constant.Double maxOrphanSlope = new Constant.Double(
+        private final Constant.Double maxOrphanSlope = new Constant.Double(
                 "tangent",
                 0.5,
                 "Maximum slope for an orphan slur");
 
-        final Scale.Fraction maxOrphanDx = new Scale.Fraction(
+        private final Scale.Fraction maxOrphanDx = new Scale.Fraction(
                 6.0,
                 "Maximum dx to staff end for an orphan slur");
 
-        final Scale.Fraction wideSlurWidth = new Scale.Fraction(
+        private final Scale.Fraction wideSlurWidth = new Scale.Fraction(
                 6.0,
                 "Minimum width to be a wide slur");
 
-        final Scale.Fraction maxSmallSlurWidth = new Scale.Fraction(
+        private final Scale.Fraction maxSmallSlurWidth = new Scale.Fraction(
                 1.5,
                 "Maximum width for a small slur");
     }

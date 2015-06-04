@@ -523,44 +523,12 @@ public class BookManager
     }
 
     //------------//
-    // getHistory //
-    //------------//
-    /**
-     * Get access to the list of previously handled images.
-     *
-     * @return the history set of image files
-     */
-    public NameSet getHistory ()
-    {
-        if (history == null) {
-            history = new NameSet(
-                    "Images History",
-                    constants.imagesHistory,
-                    constants.historySize.getValue());
-        }
-
-        return history;
-    }
-
-    //------------//
     // initialize //
     //------------//
     @Override
     public void initialize ()
     {
         // void
-    }
-
-    //-----------//
-    // loadInput //
-    //-----------//
-    @Override
-    public Book loadInput (Path path)
-    {
-        final Book book = new BasicBook(path);
-        addBook(book);
-
-        return book;
     }
 
     //-------------//
@@ -604,6 +572,38 @@ public class BookManager
     public static void setDefaultPrintDirectory (String value)
     {
         constants.defaultPrintDirectory.setValue(value);
+    }
+
+    //------------//
+    // getHistory //
+    //------------//
+    /**
+     * Get access to the list of previously handled images.
+     *
+     * @return the history set of image files
+     */
+    public NameSet getHistory ()
+    {
+        if (history == null) {
+            history = new NameSet(
+                    "Images History",
+                    constants.imagesHistory,
+                    constants.historySize.getValue());
+        }
+
+        return history;
+    }
+
+    //-----------//
+    // loadInput //
+    //-----------//
+    @Override
+    public Book loadInput (Path path)
+    {
+        final Book book = new BasicBook(path);
+        addBook(book);
+
+        return book;
     }
 
     //-----------//
@@ -665,48 +665,48 @@ public class BookManager
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean useOpus = new Constant.Boolean(
+        private final Constant.Boolean useOpus = new Constant.Boolean(
                 false,
                 "Should we use Opus notion for export (rather than separate files)?");
 
-        final Constant.Boolean useCompression = new Constant.Boolean(
+        private final Constant.Boolean useCompression = new Constant.Boolean(
                 true,
                 "Should we compress the MusicXML output?");
 
-        final Constant.String defaultExportDirectory = new Constant.String(
+        private final Constant.String defaultExportDirectory = new Constant.String(
                 WellKnowns.DEFAULT_SCORES_FOLDER.toString(),
                 "Default directory for saved scores");
 
-        final Constant.Boolean saveBenchToDisk = new Constant.Boolean(
+        private final Constant.Boolean saveBenchToDisk = new Constant.Boolean(
                 false,
                 "Should we save bench data to disk");
 
-        final Constant.String defaultBenchDirectory = new Constant.String(
+        private final Constant.String defaultBenchDirectory = new Constant.String(
                 WellKnowns.DEFAULT_BENCHES_FOLDER.toString(),
                 "Default directory for saved benches");
 
-        final Constant.String defaultPrintDirectory = new Constant.String(
+        private final Constant.String defaultPrintDirectory = new Constant.String(
                 WellKnowns.DEFAULT_PRINT_FOLDER.toString(),
                 "Default directory for printing sheet files");
 
-        final Constant.Boolean defaultSigned = new Constant.Boolean(
+        private final Constant.Boolean defaultSigned = new Constant.Boolean(
                 true,
                 "Should we inject ProxyMusic signature in the exported scores?");
 
-        final Constant.String imagesHistory = new Constant.String(
+        private final Constant.String imagesHistory = new Constant.String(
                 "",
                 "History of books most recently loaded");
 
-        final Constant.Integer historySize = new Constant.Integer(
+        private final Constant.Integer historySize = new Constant.Integer(
                 "count",
                 10,
                 "Maximum number of files names kept in history");
 
-        final Constant.String defaultInputDirectory = new Constant.String(
+        private final Constant.String defaultInputDirectory = new Constant.String(
                 WellKnowns.EXAMPLES_FOLDER.toString(),
                 "Default directory for selection of image files");
 
-        final Constant.String defaultDewarpDirectory = new Constant.String(
+        private final Constant.String defaultDewarpDirectory = new Constant.String(
                 WellKnowns.TEMP_FOLDER.toString(),
                 "Default directory for saved dewarped images");
     }

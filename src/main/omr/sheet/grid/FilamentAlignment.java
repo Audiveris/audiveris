@@ -580,19 +580,19 @@ public class FilamentAlignment
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction segmentLength = new Scale.Fraction(
+        private final Scale.Fraction segmentLength = new Scale.Fraction(
                 2,
                 "Typical length between filament curve intermediate points");
 
-        final Constant.Boolean showFilamentPoints = new Constant.Boolean(
+        private final Constant.Boolean showFilamentPoints = new Constant.Boolean(
                 false,
                 "Should we show filament points?");
 
-        final Scale.Fraction filamentPointSize = new Scale.Fraction(
+        private final Scale.Fraction filamentPointSize = new Scale.Fraction(
                 0.05,
                 "Size of displayed filament points");
 
-        final Scale.Fraction minRadius = new Scale.Fraction(
+        private final Scale.Fraction minRadius = new Scale.Fraction(
                 12,
                 "Minimum acceptable radius of curvature");
     }

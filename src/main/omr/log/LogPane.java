@@ -176,8 +176,13 @@ public class LogPane
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer fontSize = new Constant.Integer("Points", 10, "Font size for log pane");
+        private final Constant.Integer fontSize = new Constant.Integer(
+                "Points",
+                10,
+                "Font size for log pane");
 
-        Constant.String fontName = new Constant.String("Lucida Console", "Font name for log pane");
+        private final Constant.String fontName = new Constant.String(
+                "Lucida Console",
+                "Font name for log pane");
     }
 }

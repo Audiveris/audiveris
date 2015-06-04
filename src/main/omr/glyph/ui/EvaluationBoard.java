@@ -256,9 +256,11 @@ class EvaluationBoard
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Evaluation.Grade minGrade = new Evaluation.Grade(0.0, "Threshold on displayable grade");
+        private final Evaluation.Grade minGrade = new Evaluation.Grade(
+                0.0,
+                "Threshold on displayable grade");
 
-        Constant.Integer visibleButtons = new Constant.Integer(
+        private final Constant.Integer visibleButtons = new Constant.Integer(
                 "buttons",
                 5,
                 "Max number of buttons in the shape selector");

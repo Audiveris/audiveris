@@ -103,7 +103,7 @@ public class ScaleStep
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean displayDelta = new Constant.Boolean(
+        private final Constant.Boolean displayDelta = new Constant.Boolean(
                 false,
                 "Should we display the Delta view?");
     }

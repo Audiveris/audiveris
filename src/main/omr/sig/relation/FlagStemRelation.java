@@ -11,21 +11,19 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
-
 import static omr.glyph.ShapeSet.FlagsUp;
 
 import omr.sheet.Scale;
 
 import omr.sig.inter.Inter;
-
 import static omr.sig.relation.StemPortion.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Line2D;
-import omr.constant.Constant;
 
 /**
  * Class {@code FlagStemRelation} represents the relation support between a flag and a
@@ -138,23 +136,23 @@ public class FlagStemRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio flagSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio flagSupportCoeff = new Constant.Ratio(
                 3,
                 "Value for source (flag) coeff in support formula");
 
-        final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
                 3,
                 "Value for target (stem) coeff in support formula");
 
-        final Scale.Fraction yGapMax = new Scale.Fraction(
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.5,
                 "Maximum vertical gap between stem & flag");
 
-        final Scale.Fraction xInGapMax = new Scale.Fraction(
+        private final Scale.Fraction xInGapMax = new Scale.Fraction(
                 0.3,
                 "Maximum horizontal overlap between stem & flag");
 
-        final Scale.Fraction xOutGapMax = new Scale.Fraction(
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.3,
                 "Maximum horizontal gap between stem & flag");
     }

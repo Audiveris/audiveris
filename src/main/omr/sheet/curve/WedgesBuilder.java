@@ -228,23 +228,23 @@ public class WedgesBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction closedMaxDx = new Scale.Fraction(
+        private final Scale.Fraction closedMaxDx = new Scale.Fraction(
                 0.2,
                 "Maximum abscissa gap between segments ends on closed side");
 
-        final Scale.Fraction closedMaxDy = new Scale.Fraction(
+        private final Scale.Fraction closedMaxDy = new Scale.Fraction(
                 0.5,
                 "Maximum ordinate gap between segments ends on closed side");
 
-        final Scale.Fraction openMinDyLow = new Scale.Fraction(
+        private final Scale.Fraction openMinDyLow = new Scale.Fraction(
                 0.5,
                 "Low minimum ordinate gap between segments ends on open side");
 
-        final Scale.Fraction openMinDyHigh = new Scale.Fraction(
+        private final Scale.Fraction openMinDyHigh = new Scale.Fraction(
                 1.5,
                 "High minimum ordinate gap between segments ends on open side");
 
-        final Constant.Double openMaxBias = new Constant.Double(
+        private final Constant.Double openMaxBias = new Constant.Double(
                 "degrees",
                 20,
                 "Maximum vertical bias (in degrees) between segments ends on open side");

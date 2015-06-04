@@ -98,22 +98,24 @@ public class DoubleDotRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio secondDotSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio secondDotSupportCoeff = new Constant.Ratio(
                 5,
                 "Supporting coeff for (source) second dot");
 
-        final Scale.Fraction xOutGapMax = new Scale.Fraction(
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 1.25,
                 "Maximum horizontal gap between dots centers");
 
-        final Scale.Fraction yGapMax = new Scale.Fraction(
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.25,
                 "Maximum vertical gap between dots centers");
 
-        final Constant.Ratio xOutWeight = new Constant.Ratio(
+        private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 1,
                 "Relative impact weight for xOutGap");
 
-        final Constant.Ratio yWeight = new Constant.Ratio(3, "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                3,
+                "Relative impact weight for yGap");
     }
 }

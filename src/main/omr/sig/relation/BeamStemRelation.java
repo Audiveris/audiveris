@@ -165,23 +165,23 @@ public class BeamStemRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio beamSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio beamSupportCoeff = new Constant.Ratio(
                 4,
                 "Value for source (beam) coeff in support formula");
 
-        final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
                 2,
                 "Value for target (stem) coeff in support formula");
 
-        final Scale.Fraction yGapMax = new Scale.Fraction(
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.8,
                 "Maximum vertical gap between stem & beam");
 
-        final Scale.Fraction xInGapMax = new Scale.Fraction(
+        private final Scale.Fraction xInGapMax = new Scale.Fraction(
                 0.5,
                 "Maximum horizontal overlap between stem & beam");
 
-        final Scale.Fraction xOutGapMax = new Scale.Fraction(
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.1,
                 "Maximum horizontal gap between stem & beam");
     }

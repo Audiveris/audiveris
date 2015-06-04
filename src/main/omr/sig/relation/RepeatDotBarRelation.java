@@ -104,22 +104,22 @@ public class RepeatDotBarRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio repeatDotSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio repeatDotSupportCoeff = new Constant.Ratio(
                 5,
                 "Supporting coeff for (source) repeat dot");
 
-        final Scale.Fraction xOutGapMax = new Scale.Fraction(
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 1.5,
                 "Maximum horizontal gap between dot center & barline reference point");
 
-        final Scale.Fraction yGapMax = new Scale.Fraction(
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.5,
                 "Maximum vertical gap between dot center & barline reference point");
 
-        final Constant.Ratio xOutWeight = new Constant.Ratio(
+        private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 3,
                 "Relative impact weight for xOutGap");
 
-        final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
     }
 }

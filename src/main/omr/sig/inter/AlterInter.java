@@ -303,7 +303,7 @@ public class AlterInter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Double flatPitchOffset = new Constant.Double(
+        private final Constant.Double flatPitchOffset = new Constant.Double(
                 "pitch",
                 0.75,
                 "Pitch offset of flat WRT centroid-based pitch");

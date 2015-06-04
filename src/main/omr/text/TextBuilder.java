@@ -1608,84 +1608,75 @@ public class TextBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        Constant.String abnormalWordRegexp = new Constant.String(
+        private final Constant.String abnormalWordRegexp = new Constant.String(
                 "^[\\.°>']$",
                 "Regular expression to detect abnormal words");
 
-        Constant.Double minConfidence = new Constant.Double(
+        private final Constant.Double minConfidence = new Constant.Double(
                 "0..1",
                 0.68,
                 "Minimum confidence for OCR validity");
 
-        Constant.Double lowConfidence = new Constant.Double(
+        private final Constant.Double lowConfidence = new Constant.Double(
                 "0..1",
                 0.30,
                 "Really low confidence to exclude words");
 
-        Constant.Integer maxCharCountForAspectCheck = new Constant.Integer(
-                "CharCount",
-                3,
-                "Maximum character count to apply aspect check");
-
-        Scale.Fraction minWidthForCheck = new Scale.Fraction(
+        private final Scale.Fraction minWidthForCheck = new Scale.Fraction(
                 0.15,
                 "Minimum width to check word aspect");
 
-        Scale.Fraction minHeightForCheck = new Scale.Fraction(
+        private final Scale.Fraction minHeightForCheck = new Scale.Fraction(
                 0.15,
                 "Minimum height to check word aspect");
 
-        Constant.Ratio minAspectRatio = new Constant.Ratio(
+        private final Constant.Ratio minAspectRatio = new Constant.Ratio(
                 0.5,
                 "Minimum ratio between ocr and glyph aspects");
 
-        Constant.Ratio maxAspectRatio = new Constant.Ratio(
+        private final Constant.Ratio maxAspectRatio = new Constant.Ratio(
                 1.5,
                 "Maximum ratio between ocr and glyph aspects");
 
-        Constant.Ratio minDiagRatio = new Constant.Ratio(
+        private final Constant.Ratio minDiagRatio = new Constant.Ratio(
                 0.5,
                 "Minimum ratio between ocr and glyph diagonals");
 
-        Constant.Ratio maxDiagRatio = new Constant.Ratio(
+        private final Constant.Ratio maxDiagRatio = new Constant.Ratio(
                 1.5,
                 "Maximum ratio between ocr and glyph diagonals");
 
-        Scale.Fraction minFontSize = new Scale.Fraction(
+        private final Scale.Fraction minFontSize = new Scale.Fraction(
                 1.5,
                 "Minimum font size with respect to interline");
 
-        Scale.Fraction maxFontSize = new Scale.Fraction(
+        private final Scale.Fraction maxFontSize = new Scale.Fraction(
                 7.0,
                 "Maximum font size with respect to interline");
 
-        Scale.Fraction maxLyricsDy = new Scale.Fraction(
+        private final Scale.Fraction maxLyricsDy = new Scale.Fraction(
                 1.0,
                 "Max vertical gap between two lyrics chunks");
 
-        Scale.Fraction maxCharDx = new Scale.Fraction(
+        private final Scale.Fraction maxCharDx = new Scale.Fraction(
                 1.0,
                 "Max horizontal gap between two chars in a word");
 
-        Scale.Fraction maxWordDx = new Scale.Fraction(
+        private final Scale.Fraction maxWordDx = new Scale.Fraction(
                 3.0,
                 "Max horizontal gap between two non-lyrics words");
 
-        Scale.Fraction minWordDx = new Scale.Fraction(
+        private final Scale.Fraction minWordDx = new Scale.Fraction(
                 0.25,
                 "Min horizontal gap between two non-lyrics words");
 
-        Scale.Fraction maxChordDx = new Scale.Fraction(
+        private final Scale.Fraction maxChordDx = new Scale.Fraction(
                 1.0,
                 "Max horizontal gap between two chord words");
-
-        Constant.Ratio maxInvalidRatio = new Constant.Ratio(
-                0.33,
-                "Maximum ratio of invalid words in a line");
     }
 
     //------------//

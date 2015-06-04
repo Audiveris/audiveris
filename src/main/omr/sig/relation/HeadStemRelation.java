@@ -168,27 +168,27 @@ public class HeadStemRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio headSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
                 2,
                 "Value for (source) head coeff in support formula");
 
-        final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
                 2,
                 "Value for (target) stem coeff in support formula");
 
-        final Scale.Fraction yGapMax = new Scale.Fraction(
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.8,
                 "Maximum vertical gap between stem & head");
 
-        final Scale.Fraction xInGapMax = new Scale.Fraction(
+        private final Scale.Fraction xInGapMax = new Scale.Fraction(
                 0.3,
                 "Maximum horizontal overlap between stem & head");
 
-        final Scale.Fraction xOutGapMax = new Scale.Fraction(
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.2,
                 "Maximum horizontal gap between stem & head");
 
-        final Constant.Ratio anchorHeightRatio = new Constant.Ratio(
+        private final Constant.Ratio anchorHeightRatio = new Constant.Ratio(
                 0.25,
                 "Vertical margin for stem anchor portion (as ratio of head height)");
     }

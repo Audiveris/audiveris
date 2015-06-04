@@ -55,7 +55,7 @@ public class TimeNumberRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio numberSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio numberSupportCoeff = new Constant.Ratio(
                 5,
                 "Value for (source/target) number coeff in support formula");
     }

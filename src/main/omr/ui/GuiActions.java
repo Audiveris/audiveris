@@ -636,23 +636,23 @@ public class GuiActions
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.String webSiteUrl = new Constant.String(
+        private final Constant.String webSiteUrl = new Constant.String(
                 "http://www.audiveris.org",
                 "URL of Audiveris home page");
 
-        Constant.String manualUrl = new Constant.String(
+        private final Constant.String manualUrl = new Constant.String(
                 "docs/manual/handbook.html",
                 "URL of local Audiveris manual");
 
-        final Constant.Boolean boardsDisplayed = new Constant.Boolean(
+        private final Constant.Boolean boardsDisplayed = new Constant.Boolean(
                 true,
                 "Should the boards window be displayed");
 
-        final Constant.Boolean logDisplayed = new Constant.Boolean(
+        private final Constant.Boolean logDisplayed = new Constant.Boolean(
                 true,
                 "Should the log window be displayed");
 
-        final Constant.Boolean errorsDisplayed = new Constant.Boolean(
+        private final Constant.Boolean errorsDisplayed = new Constant.Boolean(
                 false,
                 "Should the errors window be displayed");
     }

@@ -50,7 +50,7 @@ public abstract class Tempo
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer defaultTempo = new Constant.Integer(
+        private final Constant.Integer defaultTempo = new Constant.Integer(
                 "QuartersPerMn",
                 120,
                 "Default tempo, stated in number of quarters per minute");

@@ -13,9 +13,8 @@ package omr.moments;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import static omr.moments.ARTMoments.*;
 
-import omr.sheet.note.NoteHeadsBuilder;
+import static omr.moments.ARTMoments.*;
 
 import omr.util.StopWatch;
 
@@ -178,7 +177,7 @@ public class BasicARTExtractor
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
     }

@@ -403,11 +403,11 @@ public class SheetDiff
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        Constant.Integer binaryThreshold = new Constant.Integer(
+        private final Constant.Integer binaryThreshold = new Constant.Integer(
                 "gray level",
                 127,
                 "Global threshold to binarize delta results");

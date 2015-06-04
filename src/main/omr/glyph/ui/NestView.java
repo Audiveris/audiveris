@@ -404,7 +404,7 @@ public class NestView
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean showSentenceBaseline = new Constant.Boolean(
+        private final Constant.Boolean showSentenceBaseline = new Constant.Boolean(
                 true,
                 "Should we show sentence baseline (vs inter-word gaps)?");
     }

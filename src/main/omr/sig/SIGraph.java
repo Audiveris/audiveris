@@ -399,31 +399,6 @@ public class SIGraph
         return null;
     }
 
-    //--------//
-    // inters //
-    //--------//
-    /**
-     * Lookup for interpretations for which the provided predicate applies within the
-     * provided collection.
-     *
-     * @param collection the collection of inters to browse
-     * @param predicate  the predicate to apply, or null
-     * @return the list of compliant interpretations
-     */
-    public static List<Inter> inters (Collection<? extends Inter> collection,
-                                      Predicate<Inter> predicate)
-    {
-        List<Inter> found = new ArrayList<Inter>();
-
-        for (Inter inter : collection) {
-            if ((predicate == null) || predicate.check(inter)) {
-                found.add(inter);
-            }
-        }
-
-        return found;
-    }
-
     //------------------//
     // getOppositeInter //
     //------------------//
@@ -791,6 +766,31 @@ public class SIGraph
         }
 
         return exclusions;
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations for which the provided predicate applies within the
+     * provided collection.
+     *
+     * @param collection the collection of inters to browse
+     * @param predicate  the predicate to apply, or null
+     * @return the list of compliant interpretations
+     */
+    public static List<Inter> inters (Collection<? extends Inter> collection,
+                                      Predicate<Inter> predicate)
+    {
+        List<Inter> found = new ArrayList<Inter>();
+
+        for (Inter inter : collection) {
+            if ((predicate == null) || predicate.check(inter)) {
+                found.add(inter);
+            }
+        }
+
+        return found;
     }
 
     //--------//
@@ -1542,16 +1542,16 @@ public class SIGraph
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer maxSupportCount = new Constant.Integer(
+        private final Constant.Integer maxSupportCount = new Constant.Integer(
                 "count",
                 6,
                 "Upper limit on number of supports used for contextual grade");
 
-        Constant.Ratio deltaGradeStrict = new Constant.Ratio(
+        private final Constant.Ratio deltaGradeStrict = new Constant.Ratio(
                 0.00001,
                 "Minimum grade delta to reduce an exclusion in STRICT mode");
 
-        Constant.Ratio deltaGradeRelaxed = new Constant.Ratio(
+        private final Constant.Ratio deltaGradeRelaxed = new Constant.Ratio(
                 0.01,
                 "Minimum grade delta to reduce an exclusion in RELAXED mode");
     }

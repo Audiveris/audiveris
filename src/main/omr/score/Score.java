@@ -14,7 +14,6 @@ package omr.score;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-
 import omr.script.ParametersTask.PartData;
 
 import omr.sheet.Book;
@@ -391,12 +390,12 @@ public class Score
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer defaultTempo = new Constant.Integer(
+        private final Constant.Integer defaultTempo = new Constant.Integer(
                 "QuartersPerMn",
                 120,
                 "Default tempo, stated in number of quarters per minute");
 
-        Constant.Integer defaultVolume = new Constant.Integer(
+        private final Constant.Integer defaultVolume = new Constant.Integer(
                 "Volume",
                 78,
                 "Default Volume in 0..127 range");

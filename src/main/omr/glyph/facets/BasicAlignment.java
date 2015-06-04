@@ -569,7 +569,7 @@ public class BasicAlignment
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction probeWidth = new Scale.Fraction(
+        private final Scale.Fraction probeWidth = new Scale.Fraction(
                 0.5,
                 "Width of probing window to retrieve Glyph ordinate");
     }

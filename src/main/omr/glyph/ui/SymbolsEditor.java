@@ -237,7 +237,7 @@ public class SymbolsEditor
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        PixelCount measureMargin = new PixelCount(
+        private final PixelCount measureMargin = new PixelCount(
                 10,
                 "Number of pixels as margin when highlighting a measure");
     }

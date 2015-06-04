@@ -2517,125 +2517,125 @@ public class BarsRetriever
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean showVerticalLines = new Constant.Boolean(
+        private final Constant.Boolean showVerticalLines = new Constant.Boolean(
                 false,
                 "Should we show the vertical grid lines?");
 
-        final Constant.String verticalVipSections = new Constant.String(
+        private final Constant.String verticalVipSections = new Constant.String(
                 "",
                 "(Debug) Comma-separated values of VIP vertical sections IDs");
 
-        final Scale.Fraction minThinThickDelta = new Scale.Fraction(
+        private final Scale.Fraction minThinThickDelta = new Scale.Fraction(
                 0.2,
                 "Minimum difference between THIN/THICK width values");
 
-        final Scale.Fraction maxBraceThickness = new Scale.Fraction(
+        private final Scale.Fraction maxBraceThickness = new Scale.Fraction(
                 1.0,
                 "Maximum thickness of a brace");
 
-        final Scale.Fraction maxBraceWidth = new Scale.Fraction(
+        private final Scale.Fraction maxBraceWidth = new Scale.Fraction(
                 3.0,
                 "Maximum width of a brace");
 
-        final Scale.Fraction maxBraceExtension = new Scale.Fraction(
+        private final Scale.Fraction maxBraceExtension = new Scale.Fraction(
                 1.0,
                 "Maximum extension for a brace above or below staff line");
 
-        final Scale.Fraction maxAlignmentDx = new Scale.Fraction(
+        private final Scale.Fraction maxAlignmentDx = new Scale.Fraction(
                 0.5,
                 "Max abscissa shift for bar alignment");
 
-        final Scale.Fraction maxConnectionGap = new Scale.Fraction(
+        private final Scale.Fraction maxConnectionGap = new Scale.Fraction(
                 2.0,
                 "Max vertical gap when connecting bar lines");
 
-        final Constant.Ratio maxConnectionWhiteRatio = new Constant.Ratio(
+        private final Constant.Ratio maxConnectionWhiteRatio = new Constant.Ratio(
                 0.25,
                 "Max white ratio when connecting bar lines");
 
-        final Scale.Fraction maxRunShift = new Scale.Fraction(
+        private final Scale.Fraction maxRunShift = new Scale.Fraction(
                 0.05,
                 "Max shift between two runs of vertical sections");
 
-        final Scale.Fraction maxBarExtension = new Scale.Fraction(
+        private final Scale.Fraction maxBarExtension = new Scale.Fraction(
                 0.3,
                 "Maximum extension for a bar line above or below staff line");
 
-        final Scale.Fraction minBarCurvature = new Scale.Fraction(
+        private final Scale.Fraction minBarCurvature = new Scale.Fraction(
                 20,
                 "Minimum mean curvature for a bar line (rather than a brace)");
 
-        final Scale.Fraction maxDoubleBarGap = new Scale.Fraction(
+        private final Scale.Fraction maxDoubleBarGap = new Scale.Fraction(
                 0.75,
                 "Max horizontal gap between two members of a double bar");
 
-        final Scale.Fraction minMeasureWidth = new Scale.Fraction(
+        private final Scale.Fraction minMeasureWidth = new Scale.Fraction(
                 2.0,
                 "Minimum width for a measure");
 
-        final Constant.Ratio alignedIncreaseRatio = new Constant.Ratio(
+        private final Constant.Ratio alignedIncreaseRatio = new Constant.Ratio(
                 0.30,
                 "Boost ratio for aligned bar lines");
 
-        final Constant.Ratio unalignedDecreaseRatio = new Constant.Ratio(
+        private final Constant.Ratio unalignedDecreaseRatio = new Constant.Ratio(
                 0.30,
                 "Penalty ratio for unaligned bar lines (in multi-staff systems)");
 
-        final Constant.Boolean deleteUnalignedBars = new Constant.Boolean(
+        private final Constant.Boolean deleteUnalignedBars = new Constant.Boolean(
                 true,
                 "Should unaligned bar lines be deleted? (in multi-staff systems)");
 
         // For C-clefs -----------------------------------------------------------------------------
         //
-        final Scale.Fraction minPeak1WidthForCClef = new Scale.Fraction(
+        private final Scale.Fraction minPeak1WidthForCClef = new Scale.Fraction(
                 0.3,
                 "Minimum width for first peak of C-Clef");
 
-        final Scale.Fraction maxPeak2WidthForCClef = new Scale.Fraction(
+        private final Scale.Fraction maxPeak2WidthForCClef = new Scale.Fraction(
                 0.3,
                 "Maximum width for second peak of C-Clef");
 
-        final Scale.Fraction cClefTail = new Scale.Fraction(
+        private final Scale.Fraction cClefTail = new Scale.Fraction(
                 2.0,
                 "Typical width for tail of C-Clef, from second peak to right end");
 
         // For braces ------------------------------------------------------------------------------
         //
-        final Scale.Fraction braceLeftMargin = new Scale.Fraction(
+        private final Scale.Fraction braceLeftMargin = new Scale.Fraction(
                 0.5,
                 "Margin on left side of brace peak to retrieve full glyph");
 
         // For brackets ----------------------------------------------------------------------------
         //
-        final Scale.Fraction minBracketWidth = new Scale.Fraction(
+        private final Scale.Fraction minBracketWidth = new Scale.Fraction(
                 0.4,
                 "Minimum width for a bracket peak");
 
-        final Scale.Fraction maxBracketExtension = new Scale.Fraction(
+        private final Scale.Fraction maxBracketExtension = new Scale.Fraction(
                 1.25,
                 "Maximum extension for bracket end above or below staff line");
 
-        final Scale.Fraction bracketLookupExtension = new Scale.Fraction(
+        private final Scale.Fraction bracketLookupExtension = new Scale.Fraction(
                 2.0,
                 "Lookup height for bracket end above or below staff line");
 
-        final Scale.Fraction serifRoiWidth = new Scale.Fraction(
+        private final Scale.Fraction serifRoiWidth = new Scale.Fraction(
                 2.0,
                 "Width of lookup ROI for bracket serif");
 
-        final Scale.Fraction serifRoiHeight = new Scale.Fraction(
+        private final Scale.Fraction serifRoiHeight = new Scale.Fraction(
                 2.0,
                 "Height of lookup ROI for bracket serif");
 
-        final Scale.Fraction serifThickness = new Scale.Fraction(
+        private final Scale.Fraction serifThickness = new Scale.Fraction(
                 0.3,
                 "Typical thickness of bracket serif");
 
-        final Scale.AreaFraction serifMinWeight = new Scale.AreaFraction(
+        private final Scale.AreaFraction serifMinWeight = new Scale.AreaFraction(
                 0.15,
                 "Minimum weight for bracket serif");
 
-        final Constant.Double serifMinSlope = new Constant.Double(
+        private final Constant.Double serifMinSlope = new Constant.Double(
                 "tangent",
                 0.25,
                 "Minimum absolute slope for bracket serif");

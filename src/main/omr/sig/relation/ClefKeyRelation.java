@@ -55,11 +55,11 @@ public class ClefKeyRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio clefSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio clefSupportCoeff = new Constant.Ratio(
                 5,
                 "Value for (source) clef coeff in support formula");
 
-        final Constant.Ratio keySupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio keySupportCoeff = new Constant.Ratio(
                 5,
                 "Value for (target) key coeff in support formula");
     }

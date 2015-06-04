@@ -767,12 +767,12 @@ public class BeamStructure
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Double maxSectionSlopeGap = new Constant.Double(
+        private final Constant.Double maxSectionSlopeGap = new Constant.Double(
                 "tangent",
                 0.2,
                 "Maximum delta slope between sections of same border");
 
-        final Constant.Ratio maxBorderJitter = new Constant.Ratio(
+        private final Constant.Ratio maxBorderJitter = new Constant.Ratio(
                 0.8,
                 "Maximum border vertical jitter, specified as ratio of typical beam height");
     }

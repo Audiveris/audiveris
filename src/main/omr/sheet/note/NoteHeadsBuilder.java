@@ -832,49 +832,41 @@ public class NoteHeadsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        final Constant.Boolean printParameters = new Constant.Boolean(
+        private final Constant.Boolean printParameters = new Constant.Boolean(
                 false,
                 "Should we print out the class parameters?");
 
-        final Constant.Boolean allowAttachments = new Constant.Boolean(
+        private final Constant.Boolean allowAttachments = new Constant.Boolean(
                 false,
                 "Should we allow staff attachments for created areas?");
 
-        final Constant.Double maxMatchingDistance = new Constant.Double(
+        private final Constant.Double maxMatchingDistance = new Constant.Double(
                 "distance",
                 1.5,
                 "Maximum matching distance");
 
-        final Constant.Double reallyBadDistance = new Constant.Double(
+        private final Constant.Double reallyBadDistance = new Constant.Double(
                 "distance",
                 3.0,
                 "Really bad matching distance");
 
-        final Scale.Fraction maxTemplateDx = new Scale.Fraction(
+        private final Scale.Fraction maxTemplateDx = new Scale.Fraction(
                 0.375,
                 "Maximum dx between similar template instances");
 
-        final Scale.Fraction maxClosedDy = new Scale.Fraction(
+        private final Scale.Fraction maxClosedDy = new Scale.Fraction(
                 0.2,
                 "Extension allowed in y for closed lines");
 
-        final Scale.Fraction maxOpenDy = new Scale.Fraction(
+        private final Scale.Fraction maxOpenDy = new Scale.Fraction(
                 0.25,
                 "Extension allowed in y for open lines");
 
-        final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
-                0.7,
-                "Shrink horizontal ratio to apply when checking for overlap");
-
-        final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
-                0.5,
-                "Shrink vertical ratio to apply when checking for overlap");
-
-        final Constant.Ratio gradeMargin = new Constant.Ratio(
+        private final Constant.Ratio gradeMargin = new Constant.Ratio(
                 0.1,
                 "Grade margin to boost seed-based competitors");
     }

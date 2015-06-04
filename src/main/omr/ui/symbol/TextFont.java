@@ -131,11 +131,11 @@ public class TextFont
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.String defaultTextFontName = new Constant.String(
+        private final Constant.String defaultTextFontName = new Constant.String(
                 "Serif",
                 "Default font name for texts");
 
-        Constant.Integer defaultTextFontSize = new Constant.Integer(
+        private final Constant.Integer defaultTextFontSize = new Constant.Integer(
                 "points",
                 10,
                 "Default font point size for texts");

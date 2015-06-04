@@ -213,7 +213,7 @@ public class DistancesBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean displayTemplates = new Constant.Boolean(
+        private final Constant.Boolean displayTemplates = new Constant.Boolean(
                 false,
                 "Should we display the templates tab?");
     }

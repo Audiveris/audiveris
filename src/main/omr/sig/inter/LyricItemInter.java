@@ -275,7 +275,7 @@ public class LyricItemInter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.Fraction maxItemDx = new Scale.Fraction(
+        private final Scale.Fraction maxItemDx = new Scale.Fraction(
                 4,
                 "Maximum horizontal distance between a note and its lyrics item");
     }

@@ -1165,66 +1165,62 @@ public class LinesRetriever
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio topRatioForSlope = new Constant.Ratio(
+        private final Constant.Ratio topRatioForSlope = new Constant.Ratio(
                 0.1,
                 "Percentage of top filaments used to retrieve global slope");
 
-        final Constant.Double maxFilamentRotation = new Constant.Double(
+        private final Constant.Double maxFilamentRotation = new Constant.Double(
                 "radians",
                 0.1,
                 "Maximum central rotation for filaments");
 
         // Constants for building horizontal sections
         // ------------------------------------------
-        final Constant.Ratio maxLengthRatio = new Constant.Ratio(
-                1.5,
-                "Maximum ratio in length for a run to be combined with an existing section");
-
-        final Constant.Ratio maxLengthRatioShort = new Constant.Ratio(
-                2.5, //3.0,
+        private final Constant.Ratio maxLengthRatioShort = new Constant.Ratio(
+                2.5,
                 "Maximum ratio in length for a short run to be combined with an existing section");
 
         // Constants specified WRT *maximum* line thickness (scale.getmaxFore())
         // ----------------------------------------------
         // Should be 1.0, unless ledgers are thicker than staff lines
-        final Constant.Ratio ledgerThickness = new Constant.Ratio(
-                1.2, // 2.0,
+        private final Constant.Ratio ledgerThickness = new Constant.Ratio(
+                1.2,
                 "Ratio of ledger thickness vs staff line MAXIMUM thickness");
 
-        final Constant.Ratio stickerThickness = new Constant.Ratio(
-                1.0, //1.2,
+        private final Constant.Ratio stickerThickness = new Constant.Ratio(
+                1.0,
                 "Ratio of sticker thickness vs staff line MAXIMUM thickness");
 
         // Constants specified WRT mean line thickness
         // -------------------------------------------
         //
-        final Scale.LineFraction maxStickerGap = new Scale.LineFraction(
+        private final Scale.LineFraction maxStickerGap = new Scale.LineFraction(
                 0.5,
                 "Maximum vertical gap between sticker and closest line side");
 
-        final Scale.LineFraction maxStickerExtension = new Scale.LineFraction(
+        private final Scale.LineFraction maxStickerExtension = new Scale.LineFraction(
                 1.2,
                 "Maximum vertical sticker extension from line");
 
-        final Scale.AreaFraction maxThinStickerWeight = new Scale.AreaFraction(
+        private final Scale.AreaFraction maxThinStickerWeight = new Scale.AreaFraction(
                 0.06,
                 "Maximum weight for a thin sticker (w/o impact on line geometry)");
 
         // Constants specified WRT mean interline
         // --------------------------------------
-        final Scale.Fraction minRunLength = new Scale.Fraction(
+        private final Scale.Fraction minRunLength = new Scale.Fraction(
                 1.0,
                 "Minimum length for a horizontal run to be considered");
 
-        final Scale.Fraction maxEndingDx = new Scale.Fraction(
+        private final Scale.Fraction maxEndingDx = new Scale.Fraction(
                 1.0,
                 "Maximum abscissa delta between line end and staff end");
 
-        final Scale.Fraction patternWidth = new Scale.Fraction(
+        private final Scale.Fraction patternWidth = new Scale.Fraction(
                 1.0,
                 "Width of probe for staff pattern");
 
-        final Scale.Fraction patternJitter = new Scale.Fraction(
+        private final Scale.Fraction patternJitter = new Scale.Fraction(
                 0.25,
                 "Maximum ordinate jitter for staff pattern");
 
@@ -1234,29 +1230,29 @@ public class LinesRetriever
                 false,
                 "Should we display all images on runs?");
 
-        final Constant.Boolean showHorizontalLines = new Constant.Boolean(
+        private final Constant.Boolean showHorizontalLines = new Constant.Boolean(
                 true,
                 "Should we show the horizontal grid lines?");
 
-        final Scale.Fraction tangentLg = new Scale.Fraction(
+        private final Scale.Fraction tangentLg = new Scale.Fraction(
                 1,
                 "Typical length to show tangents at ending points");
 
-        final Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        final Constant.Boolean showTangents = new Constant.Boolean(
+        private final Constant.Boolean showTangents = new Constant.Boolean(
                 false,
                 "Should we show filament ending tangents?");
 
-        final Constant.Boolean showCombs = new Constant.Boolean(
+        private final Constant.Boolean showCombs = new Constant.Boolean(
                 false,
                 "Should we show staff lines combs?");
 
         // Constants for debugging
         // -----------------------
-        final Constant.String horizontalVipSections = new Constant.String(
+        private final Constant.String horizontalVipSections = new Constant.String(
                 "",
                 "(Debug) Comma-separated values of VIP horizontal sections IDs");
     }

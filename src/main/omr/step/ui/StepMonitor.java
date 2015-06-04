@@ -196,16 +196,16 @@ public class StepMonitor
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer divisions = new Constant.Integer(
+        private final Constant.Integer divisions = new Constant.Integer(
                 "divisions",
                 1000,
                 "Number of divisions (amount of precision) of step monitor, minimum 10");
 
-        Ratio ratio = new Ratio(
+        private final Ratio ratio = new Ratio(
                 0.1,
                 "Amount by which to increase step monitor percentage per animation, between 0 and 1");
 
-        Constant.Boolean useIndeterminate = new Constant.Boolean(
+        private final Constant.Boolean useIndeterminate = new Constant.Boolean(
                 true,
                 "Should we use an indeterminate step progress bar?");
     }

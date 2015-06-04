@@ -240,13 +240,13 @@ public class MemoryMeter
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Display period */
-        Constant.Integer samplingPeriod = new Constant.Integer(
+        private final Constant.Integer samplingPeriod = new Constant.Integer(
                 "MilliSeconds",
                 2000,
                 "Memory display period");
 
         /** Alarm threshold ratio */
-        Constant.Ratio alarmThreshold = new Constant.Ratio(
+        private final Constant.Ratio alarmThreshold = new Constant.Ratio(
                 0.75,
                 "Memory alarm threshold, expressed in ratio of total memory");
     }

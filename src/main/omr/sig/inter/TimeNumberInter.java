@@ -125,12 +125,12 @@ public class TimeNumberInter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Double minAbsolutePitch = new Constant.Double(
+        private final Constant.Double minAbsolutePitch = new Constant.Double(
                 "pitch",
                 1.0,
                 "Minimum absolute pitch value for a time signature number");
 
-        Constant.Double maxAbsolutePitch = new Constant.Double(
+        private final Constant.Double maxAbsolutePitch = new Constant.Double(
                 "pitch",
                 3.0,
                 "Maximum absolute pitch value for a time signature number");

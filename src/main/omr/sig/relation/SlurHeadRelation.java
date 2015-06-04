@@ -178,29 +178,29 @@ public class SlurHeadRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio slurSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio slurSupportCoeff = new Constant.Ratio(
                 5,
                 "Value for (source) slur coeff in support formula");
 
         //
-        //            final Scale.Fraction xInGapMax = new Scale.Fraction(
+        //            private final Scale.Fraction xInGapMax = new Scale.Fraction(
         //                    0.5,
         //                    "Maximum horizontal overlap between slur end & note reference point");
         //
-        //            final Scale.Fraction xOutGapMax = new Scale.Fraction(
+        //            private final Scale.Fraction xOutGapMax = new Scale.Fraction(
         //                    0.75,
         //                    "Maximum horizontal gap between slur end & note reference point");
         //
-        //            final Scale.Fraction yGapMax = new Scale.Fraction(
+        //            private final Scale.Fraction yGapMax = new Scale.Fraction(
         //                    6.0,
         //                    "Maximum vertical gap between slur end & note reference point");
         //
-        //            final Constant.Ratio xInWeight = new Constant.Ratio(3, "Relative impact weight for xInGap");
+        //            private final Constant.Ratio xInWeight = new Constant.Ratio(3, "Relative impact weight for xInGap");
         //
-        //            final Constant.Ratio xOutWeight = new Constant.Ratio(
+        //            private final Constant.Ratio xOutWeight = new Constant.Ratio(
         //                    3,
         //                    "Relative impact weight for xOutGap");
         //
-        //            final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
+        //            private final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
     }
 }

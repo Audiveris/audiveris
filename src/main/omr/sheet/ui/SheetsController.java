@@ -627,11 +627,11 @@ public class SheetsController
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.String earlyStep = new Constant.String(
+        private final Constant.String earlyStep = new Constant.String(
                 "BINARY",
                 "Early step triggered when an empty sheet tab is selected ");
 
-        final Constant.Ratio initialZoomRatio = new Constant.Ratio(
+        private final Constant.Ratio initialZoomRatio = new Constant.Ratio(
                 0.5,
                 "Initial zoom ratio for displayed sheet pictures");
     }

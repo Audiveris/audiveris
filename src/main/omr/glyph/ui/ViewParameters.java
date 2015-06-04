@@ -275,23 +275,23 @@ public class ViewParameters
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean letterBoxPainting = new Constant.Boolean(
+        private final Constant.Boolean letterBoxPainting = new Constant.Boolean(
                 true,
                 "Should the letter boxes be painted");
 
-        final Constant.Boolean linePainting = new Constant.Boolean(
+        private final Constant.Boolean linePainting = new Constant.Boolean(
                 false,
                 "Should the stick lines be painted");
 
-        final Constant.Boolean attachmentPainting = new Constant.Boolean(
+        private final Constant.Boolean attachmentPainting = new Constant.Boolean(
                 false,
                 "Should the staff & glyph attachments be painted");
 
-        final Constant.Boolean translationPainting = new Constant.Boolean(
+        private final Constant.Boolean translationPainting = new Constant.Boolean(
                 true,
                 "Should the glyph translations links be painted");
 
-        final Constant.Boolean sentencePainting = new Constant.Boolean(
+        private final Constant.Boolean sentencePainting = new Constant.Boolean(
                 true,
                 "Should the sentence words links be painted");
     }

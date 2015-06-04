@@ -429,7 +429,7 @@ public class Zoom
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean continuousSliderReading = new Constant.Boolean(
+        private final Constant.Boolean continuousSliderReading = new Constant.Boolean(
                 true,
                 "Should we allow continuous reading of the zoom slider");
     }

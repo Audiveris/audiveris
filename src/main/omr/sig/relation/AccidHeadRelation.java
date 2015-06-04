@@ -128,28 +128,32 @@ public class AccidHeadRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio AccidentalCoeff = new Constant.Ratio(
+        private final Constant.Ratio AccidentalCoeff = new Constant.Ratio(
                 3,
                 "Supporting coeff for (source) accidental");
 
-        final Scale.Fraction yGapMax = new Scale.Fraction(
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.4,
                 "Maximum vertical gap between accid & note head");
 
-        final Scale.Fraction xInGapMax = new Scale.Fraction(
+        private final Scale.Fraction xInGapMax = new Scale.Fraction(
                 0.2,
                 "Maximum horizontal overlap between accid & note head");
 
-        final Scale.Fraction xOutGapMax = new Scale.Fraction(
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 2.0,
                 "Maximum horizontal gap between accid & note head");
 
-        final Constant.Ratio xInWeight = new Constant.Ratio(1, "Relative impact weight for xInGap");
+        private final Constant.Ratio xInWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for xInGap");
 
-        final Constant.Ratio xOutWeight = new Constant.Ratio(
+        private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 1,
                 "Relative impact weight for xOutGap");
 
-        final Constant.Ratio yWeight = new Constant.Ratio(4, "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                4,
+                "Relative impact weight for yGap");
     }
 }

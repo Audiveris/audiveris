@@ -121,22 +121,24 @@ public class StaccatoChordRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio staccatoDotSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio staccatoDotSupportCoeff = new Constant.Ratio(
                 5,
                 "Supporting coeff for (source) staccato dot");
 
-        final Scale.Fraction xGapMax = new Scale.Fraction(
+        private final Scale.Fraction xGapMax = new Scale.Fraction(
                 0.75,
                 "Maximum horizontal gap between staccato center & chord");
 
-        final Scale.Fraction yGapMax = new Scale.Fraction(
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
                 1.5,
                 "Maximum vertical gap between staccato center & chord");
 
-        final Constant.Ratio xWeight = new Constant.Ratio(
+        private final Constant.Ratio xWeight = new Constant.Ratio(
                 3,
                 "Relative impact weight for xGap (in or out)");
 
-        final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for yGap");
     }
 }

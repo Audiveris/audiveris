@@ -953,53 +953,53 @@ public class StaffProjector
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction staffAbscissaMargin = new Scale.Fraction(
+        private final Scale.Fraction staffAbscissaMargin = new Scale.Fraction(
                 10,
                 "Abscissa margin for checks around staff");
 
-        final Scale.Fraction barChunkDx = new Scale.Fraction(
+        private final Scale.Fraction barChunkDx = new Scale.Fraction(
                 0.4,
                 "Abscissa margin for chunks check around bar");
 
-        final Scale.Fraction barRefineDx = new Scale.Fraction(
+        private final Scale.Fraction barRefineDx = new Scale.Fraction(
                 0.25,
                 "Abscissa margin for refining peak sides");
 
-        final Scale.Fraction minDerivative = new Scale.Fraction(
+        private final Scale.Fraction minDerivative = new Scale.Fraction(
                 0.75,
                 "Minimum absolute derivative for peak side");
 
-        final Scale.Fraction barThreshold = new Scale.Fraction(
+        private final Scale.Fraction barThreshold = new Scale.Fraction(
                 3.5,
                 "Minimum cumul value to detect bar peak");
 
-        final Scale.Fraction braceThreshold = new Scale.Fraction(
+        private final Scale.Fraction braceThreshold = new Scale.Fraction(
                 2,
                 "Minimum cumul value to detect brace peak");
 
-        final Scale.Fraction gapThreshold = new Scale.Fraction(
+        private final Scale.Fraction gapThreshold = new Scale.Fraction(
                 0.5,
                 "Maximum vertical gap length in a bar");
 
-        final Scale.Fraction chunkThreshold = new Scale.Fraction(
+        private final Scale.Fraction chunkThreshold = new Scale.Fraction(
                 0.4,
                 "Maximum cumul value to detect chunk (on top of lines)");
 
-        final Scale.LineFraction blankThreshold = new Scale.LineFraction(
+        private final Scale.LineFraction blankThreshold = new Scale.LineFraction(
                 2.5,
                 "Maximum cumul value (in LineFraction) to detect no-line regions");
 
-        final Scale.Fraction minWideBlankWidth = new Scale.Fraction(
+        private final Scale.Fraction minWideBlankWidth = new Scale.Fraction(
                 1.0,
                 "Minimum width for a wide blank region (to limit peaks search)");
 
-        final Scale.Fraction minSmallBlankWidth = new Scale.Fraction(
+        private final Scale.Fraction minSmallBlankWidth = new Scale.Fraction(
                 0.1,
                 "Minimum width for a small blank region (to end a staff side)");
 
-        final Scale.Fraction maxBarWidth = new Scale.Fraction(1.0, "Maximum bar width");
+        private final Scale.Fraction maxBarWidth = new Scale.Fraction(1.0, "Maximum bar width");
 
-        final Scale.Fraction maxBarToEnd = new Scale.Fraction(
+        private final Scale.Fraction maxBarToEnd = new Scale.Fraction(
                 0.15,
                 "Maximum dx between bar and end of staff");
     }

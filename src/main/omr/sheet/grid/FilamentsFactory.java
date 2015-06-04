@@ -1014,74 +1014,70 @@ public class FilamentsFactory
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean registerEachAndEveryGlyph = new Constant.Boolean(
+        private final Constant.Boolean registerEachAndEveryGlyph = new Constant.Boolean(
                 false,
                 "(Debug) should we register each and every glyph?");
 
-        Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        final Constant.Boolean printParameters = new Constant.Boolean(
+        private final Constant.Boolean printParameters = new Constant.Boolean(
                 false,
                 "Should we print out the factory parameters?");
 
-        Constant.Double maxGapSlope = new Constant.Double(
+        private final Constant.Double maxGapSlope = new Constant.Double(
                 "tangent",
                 0.5,
                 "Maximum absolute slope for a gap");
 
-        Constant.Ratio minSectionAspect = new Constant.Ratio(
+        private final Constant.Ratio minSectionAspect = new Constant.Ratio(
                 3,
                 "Minimum section aspect (length / thickness)");
 
-        Constant.Ratio maxConsistentRatio = new Constant.Ratio(
+        private final Constant.Ratio maxConsistentRatio = new Constant.Ratio(
                 1.7,
                 "Maximum thickness ratio for consistent merge");
 
         // Constants specified WRT mean line thickness
         // -------------------------------------------
         //
-        Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
+        private final Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
                 1.5,
                 "Maximum filament thickness WRT mean line height");
 
-        Scale.LineFraction maxSectionThickness = new Scale.LineFraction(
-                1.5,
-                "Maximum section thickness WRT mean line height");
-
-        Scale.LineFraction maxPosGap = new Scale.LineFraction(
+        private final Scale.LineFraction maxPosGap = new Scale.LineFraction(
                 0.75,
                 "Maximum delta position for a gap between filaments");
 
         // Constants specified WRT mean interline
         // --------------------------------------
         //
-        Scale.Fraction minCoreSectionLength = new Scale.Fraction(
+        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
                 1,
                 "Minimum length for a section to be considered as core");
 
-        Scale.Fraction maxOverlapDeltaPos = new Scale.Fraction(
+        private final Scale.Fraction maxOverlapDeltaPos = new Scale.Fraction(
                 0.5,
                 "Maximum delta position between two overlapping filaments");
 
-        Scale.Fraction maxCoordGap = new Scale.Fraction(
+        private final Scale.Fraction maxCoordGap = new Scale.Fraction(
                 1,
                 "Maximum delta coordinate for a gap between filaments");
 
-        Scale.Fraction maxOverlapSpace = new Scale.Fraction(
+        private final Scale.Fraction maxOverlapSpace = new Scale.Fraction(
                 0.16,
                 "Maximum space between overlapping filaments");
 
-        Scale.Fraction maxExpansionSpace = new Scale.Fraction(
+        private final Scale.Fraction maxExpansionSpace = new Scale.Fraction(
                 0.02,
                 "Maximum space when expanding filaments");
 
-        Scale.Fraction maxPosGapForSlope = new Scale.Fraction(
+        private final Scale.Fraction maxPosGapForSlope = new Scale.Fraction(
                 0.1,
                 "Maximum delta Y to check slope for a gap between filaments");
 
-        Scale.Fraction maxInvolvingLength = new Scale.Fraction(
+        private final Scale.Fraction maxInvolvingLength = new Scale.Fraction(
                 2,
                 "Maximum filament length to apply thickness test");
     }

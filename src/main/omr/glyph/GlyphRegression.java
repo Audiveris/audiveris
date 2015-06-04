@@ -838,12 +838,12 @@ public class GlyphRegression
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Double factorForMinima = new Constant.Double(
+        private final Constant.Double factorForMinima = new Constant.Double(
                 "factor",
                 0.7,
                 "Factor applied to all minimum constraints");
 
-        Constant.Double factorForMaxima = new Constant.Double(
+        private final Constant.Double factorForMaxima = new Constant.Double(
                 "factor",
                 1.3,
                 "Factor applied to all maximum constraints");

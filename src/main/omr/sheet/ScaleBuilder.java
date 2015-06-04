@@ -475,54 +475,50 @@ public class ScaleBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Boolean printWatch = new Constant.Boolean(
+        private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print the StopWatch on scale computation?");
 
-        final Constant.Integer minResolution = new Constant.Integer(
+        private final Constant.Integer minResolution = new Constant.Integer(
                 "Pixels",
                 11,
                 "Minimum resolution, expressed as number of pixels per interline");
 
-        final Constant.Ratio quorumRatio = new Constant.Ratio(
+        private final Constant.Ratio quorumRatio = new Constant.Ratio(
                 0.1,
                 "Absolute ratio of total pixels for peak acceptance");
 
-        final Constant.Ratio foreSpreadRatio = new Constant.Ratio(
+        private final Constant.Ratio foreSpreadRatio = new Constant.Ratio(
                 0.15,
                 "Relative ratio of best count for foreground spread reading");
 
-        final Constant.Ratio backSpreadRatio = new Constant.Ratio(
+        private final Constant.Ratio backSpreadRatio = new Constant.Ratio(
                 0.3,
                 "Relative ratio of best count for background spread reading");
 
-        final Constant.Ratio bothSpreadRatio = new Constant.Ratio(
+        private final Constant.Ratio bothSpreadRatio = new Constant.Ratio(
                 0.15,
                 "Relative ratio of best count for both spread reading");
 
-        final Constant.Ratio spreadFactor = new Constant.Ratio(
+        private final Constant.Ratio spreadFactor = new Constant.Ratio(
                 1.0,
                 "Factor applied on line thickness spread");
 
-        final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
+        private final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
                 2.5,
                 "Minimum ratio between beam thickness and line thickness");
 
-        final Constant.Ratio maxSecondRatio = new Constant.Ratio(
+        private final Constant.Ratio maxSecondRatio = new Constant.Ratio(
                 2.0,
                 "Maximum ratio between second and first background peak");
 
-        final Constant.Boolean disposeImage = new Constant.Boolean(
+        private final Constant.Boolean disposeImage = new Constant.Boolean(
                 true,
                 "Should we dispose of original image once binarized?");
 
-        final Constant.Ratio beamAsBackRatio = new Constant.Ratio(
+        private final Constant.Ratio beamAsBackRatio = new Constant.Ratio(
                 0.8,
                 "Default beam height defined as ratio of background peak");
-
-        final Constant.Ratio stemAsForeRatio = new Constant.Ratio(
-                1.0,
-                "Default stem thickness defined as ratio of foreground peak");
     }
 
     //-----------------//

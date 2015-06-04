@@ -209,12 +209,12 @@ public class Ghostscript
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Double minVersion = new Constant.Double(
+        private final Constant.Double minVersion = new Constant.Double(
                 "version",
                 9.06,
                 "Minimum Ghostscript acceptable version");
 
-        Constant.Double maxVersion = new Constant.Double(
+        private final Constant.Double maxVersion = new Constant.Double(
                 "version",
                 9999,
                 "Maximum Ghostscript acceptable version");

@@ -15,7 +15,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
-
 import static omr.glyph.ShapeSet.Alterations;
 import static omr.glyph.ShapeSet.CoreBarlines;
 import static omr.glyph.ShapeSet.Flags;
@@ -67,15 +66,11 @@ import omr.sig.relation.Relation;
 import omr.sig.relation.RepeatDotDotRelation;
 import omr.sig.relation.StaccatoChordRelation;
 import omr.sig.relation.StemPortion;
-
 import static omr.sig.relation.StemPortion.*;
-
 import omr.sig.relation.TimeNumberRelation;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.Predicate;
 
@@ -173,23 +168,6 @@ public class SigReducer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------------//
-    // contextualize //
-    //---------------//
-    /**
-     * Compute contextual grades of all SIG inters based on their supporting partners.
-     */
-    public void contextualize ()
-    {
-        try {
-            for (Inter inter : sig.vertexSet()) {
-                sig.computeContextualGrade(inter, false);
-            }
-        } catch (Throwable ex) {
-            ex.printStackTrace();
-        }
-    }
-
     //----------------//
     // detectOverlaps //
     //----------------//
@@ -275,6 +253,23 @@ public class SigReducer
                     break; // Since inters list is sorted by abscissa
                 }
             }
+        }
+    }
+
+    //---------------//
+    // contextualize //
+    //---------------//
+    /**
+     * Compute contextual grades of all SIG inters based on their supporting partners.
+     */
+    public void contextualize ()
+    {
+        try {
+            for (Inter inter : sig.vertexSet()) {
+                sig.computeContextualGrade(inter, false);
+            }
+        } catch (Throwable ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -372,6 +367,100 @@ public class SigReducer
                 logger.info("S#{} reductions: {}", system.getId(), reductions);
             }
         } while ((reductions > 0) || (deletions > 0));
+    }
+
+    //---------------------//
+    // analyzeFrozenInters //
+    //---------------------//
+    /**
+     * Browse all the frozen inters and simply delete any inter that conflicts with them.
+     */
+    private void analyzeFrozenInters ()
+    {
+        List<Inter> toDelete = new ArrayList<Inter>();
+
+        for (Inter inter : sig.vertexSet()) {
+            if (inter.isFrozen()) {
+                for (Relation rel : sig.getRelations(inter, Exclusion.class)) {
+                    Inter other = sig.getOppositeInter(inter, rel);
+
+                    if (other.isFrozen()) {
+                        logger.error("Conflicting frozen inters {} & {}", inter, other);
+                    } else {
+                        toDelete.add(other);
+
+                        if (other.isVip()) {
+                            logger.info("VIP deleting {} conflicting with frozen {}", other, inter);
+                        }
+                    }
+                }
+            }
+        }
+
+        sig.deleteInters(toDelete);
+    }
+
+    //------------//
+    // compatible //
+    //------------//
+    /**
+     * Check whether the two provided Inter instance can overlap.
+     *
+     * @param inters array of exactly 2 instances
+     * @return true if overlap is accepted, false otherwise
+     */
+    private static boolean compatible (Inter[] inters)
+    {
+        for (int i = 0; i <= 1; i++) {
+            Inter inter = inters[i];
+            Inter other = inters[1 - i];
+
+            if (inter instanceof AbstractBeamInter) {
+                if (other instanceof AbstractBeamInter) {
+                    return true;
+                }
+
+                if (beamCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            } else if (inter instanceof SlurInter) {
+                if (slurCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            } else if (inter instanceof StemInter) {
+                if (stemCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    //-------------------//
+    // wordMatchesSymbol //
+    //-------------------//
+    /**
+     * Check whether the word and the symbol might represent the same thing, after all.
+     *
+     * @param wordInter text word
+     * @param symbol    symbol
+     */
+    private static boolean wordMatchesSymbol (WordInter wordInter,
+                                              StringSymbolInter symbol)
+    {
+        logger.debug("Comparing {} and {}", wordInter, symbol);
+
+        final String symbolString = symbol.getSymbolString();
+
+        if (wordInter.getValue().equalsIgnoreCase(symbolString)) {
+            logger.debug("Math found");
+
+            //TODO: Perhaps more checks on word/sentence?
+            return true;
+        }
+
+        return false;
     }
 
     //---------------//
@@ -1124,43 +1213,6 @@ public class SigReducer
         return 0;
     }
 
-    //------------//
-    // compatible //
-    //------------//
-    /**
-     * Check whether the two provided Inter instance can overlap.
-     *
-     * @param inters array of exactly 2 instances
-     * @return true if overlap is accepted, false otherwise
-     */
-    private static boolean compatible (Inter[] inters)
-    {
-        for (int i = 0; i <= 1; i++) {
-            Inter inter = inters[i];
-            Inter other = inters[1 - i];
-
-            if (inter instanceof AbstractBeamInter) {
-                if (other instanceof AbstractBeamInter) {
-                    return true;
-                }
-
-                if (beamCompShapes.contains(other.getShape())) {
-                    return true;
-                }
-            } else if (inter instanceof SlurInter) {
-                if (slurCompShapes.contains(other.getShape())) {
-                    return true;
-                }
-            } else if (inter instanceof StemInter) {
-                if (stemCompShapes.contains(other.getShape())) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     //---------//
     // exclude //
     //---------//
@@ -1178,6 +1230,90 @@ public class SigReducer
                 sig.insertExclusion(i1, i2, Exclusion.Cause.INCOMPATIBLE);
             }
         }
+    }
+
+    //
+    //    //-------------//
+    //    // hookHasStem //
+    //    //-------------//
+    //    /**
+    //     * Check if a beam hook has a stem.
+    //     */
+    //    private boolean hookHasStem (BeamHookInter hook)
+    //    {
+    //        boolean hasLeft = false;
+    //        boolean hasRight = false;
+    //
+    //        if (hook.isVip()) {
+    //            logger.info("VIP hookHasStem for {}", hook);
+    //        }
+    //
+    //        for (Relation rel : sig.edgesOf(hook)) {
+    //            if (rel instanceof BeamStemRelation) {
+    //                BeamStemRelation bsRel = (BeamStemRelation) rel;
+    //                BeamPortion portion = bsRel.getBeamPortion();
+    //
+    //                if (portion == BeamPortion.LEFT) {
+    //                    hasLeft = true;
+    //                } else if (portion == BeamPortion.RIGHT) {
+    //                    hasRight = true;
+    //                }
+    //            }
+    //        }
+    //
+    //        return hasLeft || hasRight;
+    //    }
+    //
+    //-----------------------//
+    // ledgerHasHeadOrLedger //
+    //-----------------------//
+    /**
+     * Check if the provided ledger has either a note head centered on it
+     * (or one step further) or another ledger just further.
+     *
+     * @param staff    the containing staff
+     * @param index    the ledger line index
+     * @param ledger   the ledger to check
+     * @param allHeads the abscissa-ordered list of heads in the system
+     * @return true if OK
+     */
+    private boolean ledgerHasHeadOrLedger (Staff staff,
+                                           int index,
+                                           LedgerInter ledger,
+                                           List<Inter> allHeads)
+    {
+        Rectangle ledgerBox = new Rectangle(ledger.getBounds());
+        ledgerBox.grow(0, scale.getInterline()); // Very high box, but that's OK
+
+        // Check for another ledger on next line
+        int nextIndex = index + Integer.signum(index);
+        SortedSet<LedgerInter> nextLedgers = staff.getLedgers(nextIndex);
+
+        if (nextLedgers != null) {
+            for (LedgerInter nextLedger : nextLedgers) {
+                // Check abscissa compatibility
+                if (GeoUtil.xOverlap(ledgerBox, nextLedger.getBounds()) > 0) {
+                    return true;
+                }
+            }
+        }
+
+        // Else, check for a note centered on ledger, or just on next pitch
+        final int ledgerPitch = Staff.getLedgerPitchPosition(index);
+        final int nextPitch = ledgerPitch + Integer.signum(index);
+
+        final List<Inter> heads = sig.intersectedInters(allHeads, GeoOrder.BY_ABSCISSA, ledgerBox);
+
+        for (Inter inter : heads) {
+            final AbstractHeadInter head = (AbstractHeadInter) inter;
+            final int notePitch = head.getIntegerPitch();
+
+            if ((notePitch == ledgerPitch) || (notePitch == nextPitch)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //-----------------//
@@ -1313,147 +1449,6 @@ public class SigReducer
         return toRemove.isEmpty();
     }
 
-    //-------------------//
-    // wordMatchesSymbol //
-    //-------------------//
-    /**
-     * Check whether the word and the symbol might represent the same thing, after all.
-     *
-     * @param wordInter text word
-     * @param symbol    symbol
-     */
-    private static boolean wordMatchesSymbol (WordInter wordInter,
-                                              StringSymbolInter symbol)
-    {
-        logger.debug("Comparing {} and {}", wordInter, symbol);
-
-        final String symbolString = symbol.getSymbolString();
-
-        if (wordInter.getValue().equalsIgnoreCase(symbolString)) {
-            logger.debug("Math found");
-
-            //TODO: Perhaps more checks on word/sentence?
-            return true;
-        }
-
-        return false;
-    }
-
-    //---------------------//
-    // analyzeFrozenInters //
-    //---------------------//
-    /**
-     * Browse all the frozen inters and simply delete any inter that conflicts with them.
-     */
-    private void analyzeFrozenInters ()
-    {
-        List<Inter> toDelete = new ArrayList<Inter>();
-
-        for (Inter inter : sig.vertexSet()) {
-            if (inter.isFrozen()) {
-                for (Relation rel : sig.getRelations(inter, Exclusion.class)) {
-                    Inter other = sig.getOppositeInter(inter, rel);
-
-                    if (other.isFrozen()) {
-                        logger.error("Conflicting frozen inters {} & {}", inter, other);
-                    } else {
-                        toDelete.add(other);
-
-                        if (other.isVip()) {
-                            logger.info("VIP deleting {} conflicting with frozen {}", other, inter);
-                        }
-                    }
-                }
-            }
-        }
-
-        sig.deleteInters(toDelete);
-    }
-
-    //
-    //    //-------------//
-    //    // hookHasStem //
-    //    //-------------//
-    //    /**
-    //     * Check if a beam hook has a stem.
-    //     */
-    //    private boolean hookHasStem (BeamHookInter hook)
-    //    {
-    //        boolean hasLeft = false;
-    //        boolean hasRight = false;
-    //
-    //        if (hook.isVip()) {
-    //            logger.info("VIP hookHasStem for {}", hook);
-    //        }
-    //
-    //        for (Relation rel : sig.edgesOf(hook)) {
-    //            if (rel instanceof BeamStemRelation) {
-    //                BeamStemRelation bsRel = (BeamStemRelation) rel;
-    //                BeamPortion portion = bsRel.getBeamPortion();
-    //
-    //                if (portion == BeamPortion.LEFT) {
-    //                    hasLeft = true;
-    //                } else if (portion == BeamPortion.RIGHT) {
-    //                    hasRight = true;
-    //                }
-    //            }
-    //        }
-    //
-    //        return hasLeft || hasRight;
-    //    }
-    //
-    //-----------------------//
-    // ledgerHasHeadOrLedger //
-    //-----------------------//
-    /**
-     * Check if the provided ledger has either a note head centered on it
-     * (or one step further) or another ledger just further.
-     *
-     * @param staff    the containing staff
-     * @param index    the ledger line index
-     * @param ledger   the ledger to check
-     * @param allHeads the abscissa-ordered list of heads in the system
-     * @return true if OK
-     */
-    private boolean ledgerHasHeadOrLedger (Staff staff,
-                                           int index,
-                                           LedgerInter ledger,
-                                           List<Inter> allHeads)
-    {
-        Rectangle ledgerBox = new Rectangle(ledger.getBounds());
-        ledgerBox.grow(0, scale.getInterline()); // Very high box, but that's OK
-
-        // Check for another ledger on next line
-        int nextIndex = index + Integer.signum(index);
-        SortedSet<LedgerInter> nextLedgers = staff.getLedgers(nextIndex);
-
-        if (nextLedgers != null) {
-            for (LedgerInter nextLedger : nextLedgers) {
-                // Check abscissa compatibility
-                if (GeoUtil.xOverlap(ledgerBox, nextLedger.getBounds()) > 0) {
-                    return true;
-                }
-            }
-        }
-
-        // Else, check for a note centered on ledger, or just on next pitch
-        final int ledgerPitch = Staff.getLedgerPitchPosition(index);
-        final int nextPitch = ledgerPitch + Integer.signum(index);
-
-        final List<Inter> heads = sig.intersectedInters(allHeads, GeoOrder.BY_ABSCISSA, ledgerBox);
-
-        for (Inter inter : heads) {
-            final AbstractHeadInter head = (AbstractHeadInter) inter;
-            final int notePitch = head.getIntegerPitch();
-
-            if ((notePitch == ledgerPitch) || (notePitch == nextPitch)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -1463,7 +1458,7 @@ public class SigReducer
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
+        private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
                 3,
                 "Maximum width for slur around tuplet");
     }

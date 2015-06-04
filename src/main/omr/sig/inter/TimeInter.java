@@ -306,7 +306,7 @@ public abstract class TimeInter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.String optionalTimes = new Constant.String(
+        private final Constant.String optionalTimes = new Constant.String(
                 "6/4, 7/8",
                 "Time sigs besides " + defaultTimes);
     }

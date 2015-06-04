@@ -401,7 +401,7 @@ public class HeaderBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction maxHeaderWidth = new Scale.Fraction(
+        private final Scale.Fraction maxHeaderWidth = new Scale.Fraction(
                 15.0,
                 "Maximum header width (from measure start to end of key-sig or time-sig)");
     }

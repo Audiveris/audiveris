@@ -408,7 +408,7 @@ public class SlurInter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.Fraction maxDeltaY = new Scale.Fraction(
+        private final Scale.Fraction maxDeltaY = new Scale.Fraction(
                 4,
                 "Maximum vertical difference in interlines between connecting slurs");
     }

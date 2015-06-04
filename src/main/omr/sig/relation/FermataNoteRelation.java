@@ -46,7 +46,7 @@ public class FermataNoteRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio noteSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio noteSupportCoeff = new Constant.Ratio(
                 2,
                 "Supporting coeff for (target) note");
     }

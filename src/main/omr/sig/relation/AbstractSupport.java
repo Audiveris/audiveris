@@ -162,6 +162,8 @@ public class AbstractSupport
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio minGrade = new Constant.Ratio(0.1, "Minimum support relation grade");
+        private final Constant.Ratio minGrade = new Constant.Ratio(
+                0.1,
+                "Minimum support relation grade");
     }
 }

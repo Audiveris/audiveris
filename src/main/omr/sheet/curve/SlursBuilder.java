@@ -908,100 +908,100 @@ public class SlursBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio similarRadiusRatio = new Constant.Ratio(
+        private final Constant.Ratio similarRadiusRatio = new Constant.Ratio(
                 0.25,
                 "Maximum difference ratio between radius of similar circles");
 
-        final Constant.Double maxIncidence = new Constant.Double(
+        private final Constant.Double maxIncidence = new Constant.Double(
                 "degree",
                 5,
                 "Maximum incidence angle (in degrees) for staff tangency");
 
-        final Scale.Fraction minStraightEndRadius = new Scale.Fraction(
+        private final Scale.Fraction minStraightEndRadius = new Scale.Fraction(
                 50,
                 "Minimum circle radius for a straight slur end");
 
-        final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
+        private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
                 0.5, //0.8,
                 "Minimum arc length for starting a slur build");
 
-        final Scale.Fraction maxStaffLineDy = new Scale.Fraction(
+        private final Scale.Fraction maxStaffLineDy = new Scale.Fraction(
                 0.2,
                 "Vertical distance to closest staff line to detect tangency");
 
-        final Scale.Fraction maxSlurDistance = new Scale.Fraction(
+        private final Scale.Fraction maxSlurDistance = new Scale.Fraction(
                 0.15,
-                "Maximum circle distance for final slur");
+                "Maximum circle distance for private final slur");
 
-        final Scale.Fraction maxExtDistance = new Scale.Fraction(
+        private final Scale.Fraction maxExtDistance = new Scale.Fraction(
                 0.45,
                 "Maximum circle distance for extension arc");
 
-        final Scale.Fraction maxArcsDistance = new Scale.Fraction(
+        private final Scale.Fraction maxArcsDistance = new Scale.Fraction(
                 0.15,
                 "Maximum circle distance for intermediate arcs");
 
-        final Scale.Fraction arcCheckLength = new Scale.Fraction(
+        private final Scale.Fraction arcCheckLength = new Scale.Fraction(
                 2,
                 "Length checked for extension arc");
 
-        final Scale.Fraction sideModelLength = new Scale.Fraction(
+        private final Scale.Fraction sideModelLength = new Scale.Fraction(
                 6,
                 "Length for side osculatory model");
 
-        final Scale.Fraction minCircleRadius = new Scale.Fraction(
+        private final Scale.Fraction minCircleRadius = new Scale.Fraction(
                 0.4,
                 "Minimum circle radius for a slur");
 
-        final Scale.Fraction minSeedCircleRadius = new Scale.Fraction(
+        private final Scale.Fraction minSeedCircleRadius = new Scale.Fraction(
                 0.3,
                 "Minimum circle radius for a slur seed");
 
-        final Scale.Fraction minSlurWidthLow = new Scale.Fraction(
+        private final Scale.Fraction minSlurWidthLow = new Scale.Fraction(
                 0.7,
                 "Low minimum width for a slur");
 
-        final Scale.Fraction minSlurWidthHigh = new Scale.Fraction(
+        private final Scale.Fraction minSlurWidthHigh = new Scale.Fraction(
                 1.5,
                 "High minimum width for a slur");
 
-        final Scale.Fraction minSlurHeightLow = new Scale.Fraction(
+        private final Scale.Fraction minSlurHeightLow = new Scale.Fraction(
                 0.07,
                 "Low minimum height for a slur");
 
-        final Scale.Fraction minSlurHeightHigh = new Scale.Fraction(
+        private final Scale.Fraction minSlurHeightHigh = new Scale.Fraction(
                 1.0,
                 "High minimum height for a slur");
 
-        final Constant.Double maxArcAngleHigh = new Constant.Double(
+        private final Constant.Double maxArcAngleHigh = new Constant.Double(
                 "degree",
                 190.0,
                 "High maximum angle (in degrees) of slur arc");
 
-        final Constant.Double maxArcAngleLow = new Constant.Double(
+        private final Constant.Double maxArcAngleLow = new Constant.Double(
                 "degree",
                 170.0,
                 "Low maximum angle (in degrees) of slur arc");
 
-        final Constant.Double minAngleFromVerticalLow = new Constant.Double(
+        private final Constant.Double minAngleFromVerticalLow = new Constant.Double(
                 "degree",
                 10.0,
                 "Low minimum angle (in degrees) between slur and vertical");
 
-        final Constant.Double minAngleFromVerticalHigh = new Constant.Double(
+        private final Constant.Double minAngleFromVerticalHigh = new Constant.Double(
                 "degree",
                 25.0,
                 "High minimum angle (in degrees) between slur and vertical");
 
-        final Constant.Ratio quorumRatio = new Constant.Ratio(
+        private final Constant.Ratio quorumRatio = new Constant.Ratio(
                 0.75,
                 "Minimum length expressed as ratio of longest in clump");
 
-        final Scale.Fraction minProjection = new Scale.Fraction(
+        private final Scale.Fraction minProjection = new Scale.Fraction(
                 -1.0,
                 "Minimum projection on curve for arc extension");
 
-        final Scale.Fraction maxRunDistance = new Scale.Fraction(
+        private final Scale.Fraction maxRunDistance = new Scale.Fraction(
                 0.25,
                 "Maximum distance from any run end to curve points");
     }

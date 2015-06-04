@@ -2551,17 +2551,17 @@ public class PartwiseBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer pageHorizontalMargin = new Constant.Integer(
+        private final Constant.Integer pageHorizontalMargin = new Constant.Integer(
                 "tenths",
                 80,
                 "Page horizontal margin");
 
-        Constant.Integer pageVerticalMargin = new Constant.Integer(
+        private final Constant.Integer pageVerticalMargin = new Constant.Integer(
                 "tenths",
                 80,
                 "Page vertical margin");
 
-        Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
+        private final Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
                 false,
                 "Should we avoid brackets for all tuplets");
     }
