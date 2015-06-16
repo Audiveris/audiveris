@@ -82,18 +82,6 @@ public class SIGraph
 
     private static final Logger logger = LoggerFactory.getLogger(SIGraph.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /** Reduction mode. */
-    public static enum ReductionMode
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /** (Almost) all exclusions are reduced. */
-        STRICT,
-        /** Strong exclusions are reduced, Weak ones are left for later processing. */
-        RELAXED;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated system. */
     @Navigable(false)
@@ -793,20 +781,6 @@ public class SIGraph
         return found;
     }
 
-    //--------//
-    // inters //
-    //--------//
-    /**
-     * Lookup for interpretations of the provided shape.
-     *
-     * @param shape the shape to check for
-     * @return the interpretations of desired shape
-     */
-    public List<Inter> inters (final Shape shape)
-    {
-        return inters(new ShapePredicate(shape));
-    }
-
     //-------------------//
     // intersectedGlyphs //
     //-------------------//
@@ -967,22 +941,6 @@ public class SIGraph
     // inters //
     //--------//
     /**
-     * Lookup for interpretations of the specified class within the provided collection.
-     *
-     * @param collection the provided collection to browse
-     * @param classe     the class to search for
-     * @return the interpretations of desired class
-     */
-    public List<Inter> inters (Collection<? extends Inter> collection,
-                               final Class classe)
-    {
-        return inters(collection, new ClassPredicate(classe));
-    }
-
-    //--------//
-    // inters //
-    //--------//
-    /**
      * Lookup for interpretations of the provided classes.
      *
      * @param classes array of desired classes
@@ -1065,6 +1023,36 @@ public class SIGraph
         return inters(new ClassPredicate(classe));
     }
 
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations of the specified class within the provided collection.
+     *
+     * @param collection the provided collection to browse
+     * @param classe     the class to search for
+     * @return the interpretations of desired class
+     */
+    public List<Inter> inters (Collection<? extends Inter> collection,
+                               final Class classe)
+    {
+        return inters(collection, new ClassPredicate(classe));
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations of the provided shape.
+     *
+     * @param shape the shape to check for
+     * @return the interpretations of desired shape
+     */
+    public List<Inter> inters (final Shape shape)
+    {
+        return inters(new ShapePredicate(shape));
+    }
+
     //-----------//
     // noSupport //
     //-----------//
@@ -1115,17 +1103,12 @@ public class SIGraph
      * <li>Iterate until no more exclusion is left.</li>
      * </ol>
      *
-     * @param minDelta   minimum delta value to decide on conflict
-     * @param warning    true to issue a warning on tight exclusion
      * @param exclusions the collection of exclusions to process
      * @return the set of vertices removed
      */
-    public Set<Inter> reduceExclusions (double minDelta,
-                                        boolean warning,
-                                        Collection<? extends Relation> exclusions)
+    public Set<Inter> reduceExclusions (Collection<? extends Relation> exclusions)
     {
         final Set<Inter> removed = new HashSet<Inter>();
-        final Set<Relation> tiedExclusions = new HashSet<Relation>();
         Relation bestRel;
 
         do {
@@ -1137,11 +1120,9 @@ public class SIGraph
                 Relation rel = it.next();
 
                 if (containsEdge(rel)) {
-                    final Inter source = getEdgeSource(rel);
-                    final double scp = source.getBestGrade();
-                    final Inter target = getEdgeTarget(rel);
-                    final double tcp = target.getBestGrade();
-                    final double cp = Math.max(scp, tcp);
+                    final double cp = Math.max(
+                            getEdgeSource(rel).getBestGrade(),
+                            getEdgeTarget(rel).getBestGrade());
 
                     if (bestCP < cp) {
                         bestCP = cp;
@@ -1158,45 +1139,36 @@ public class SIGraph
                 final double scp = source.getBestGrade();
                 final Inter target = getEdgeTarget(bestRel);
                 final double tcp = target.getBestGrade();
-                final double delta = Math.abs(tcp - scp);
+                final Inter weaker = (scp < tcp) ? source : target;
 
-                if (delta >= minDelta) {
-                    final Inter weaker = (scp < tcp) ? source : target;
-
-                    if (weaker.isVip()) {
-                        logger.info(
-                                "VIP conflict {} deleting weaker {}",
-                                bestRel.toLongString(this),
-                                weaker);
-                    }
-
-                    // Which inters were involved in some support relation with this weaker inter?
-                    final Set<Inter> involved = involvedInters(getSupports(weaker));
-                    involved.remove(weaker);
-
-                    removed.add(weaker);
-                    weaker.delete();
-
-                    // Update contextual values for involved inters
-                    for (Inter inter : involved) {
-                        computeContextualGrade(inter, false);
-                    }
-                } else {
-                    if (warning) {
-                        logger.warn("STRICT tight exclusion: {} {} vs {}", delta, source, target);
-                    } else if (source.isVip() || target.isVip() || logger.isDebugEnabled()) {
-                        logger.info("Tight exclusion: {} {} vs {}", delta, source, target);
-                    }
-
-                    tiedExclusions.add(bestRel);
-                    exclusions.remove(bestRel);
+                if (weaker.isVip()) {
+                    logger.info(
+                            "VIP conflict {} deleting weaker {}",
+                            bestRel.toLongString(this),
+                            weaker);
                 }
+
+                // Which inters were involved in some support relation with this weaker inter?
+                final Set<Inter> involved = involvedInters(getSupports(weaker));
+                involved.remove(weaker);
+
+                // Remove the weaker inter
+                removed.add(weaker);
+                weaker.delete();
+
+                // If removal of weaker has resulted in removal of its ensemble, count ensemble
+                if ((weaker.getEnsemble() != null) && weaker.getEnsemble().isDeleted()) {
+                    removed.add(weaker.getEnsemble());
+                }
+
+                // Update contextual values for all inters that were involved with 'weaker'
+                for (Inter inter : involved) {
+                    computeContextualGrade(inter, false);
+                }
+
+                exclusions.remove(bestRel);
             }
         } while (bestRel != null);
-
-        if (!tiedExclusions.isEmpty()) {
-            logger.debug("Exclusions left over: {}", tiedExclusions.size());
-        }
 
         return removed;
     }
@@ -1205,35 +1177,13 @@ public class SIGraph
     // reduceExclusions //
     //------------------//
     /**
-     * Reduce the provided exclusions.
-     *
-     * @param mode       selected reduction mode
-     * @param exclusions the collection of exclusions to reduce
-     * @return the set of vertices removed
-     */
-    public Set<Inter> reduceExclusions (ReductionMode mode,
-                                        Collection<? extends Relation> exclusions)
-    {
-        // Which threshold we should use for exclusions?
-        final double minDelta = (mode == ReductionMode.STRICT)
-                ? constants.deltaGradeStrict.getValue()
-                : constants.deltaGradeRelaxed.getValue();
-
-        return reduceExclusions(minDelta, mode == ReductionMode.STRICT, exclusions);
-    }
-
-    //------------------//
-    // reduceExclusions //
-    //------------------//
-    /**
      * Reduce each exclusion in the SIG.
      *
-     * @param mode selected reduction mode
-     * @return the set of vertices removed
+     * @return the set of reduced inters
      */
-    public Set<Inter> reduceExclusions (ReductionMode mode)
+    public Set<Inter> reduceExclusions ()
     {
-        return reduceExclusions(mode, exclusions());
+        return reduceExclusions(exclusions());
     }
 
     //--------------//
@@ -1546,14 +1496,6 @@ public class SIGraph
                 "count",
                 6,
                 "Upper limit on number of supports used for contextual grade");
-
-        private final Constant.Ratio deltaGradeStrict = new Constant.Ratio(
-                0.00001,
-                "Minimum grade delta to reduce an exclusion in STRICT mode");
-
-        private final Constant.Ratio deltaGradeRelaxed = new Constant.Ratio(
-                0.01,
-                "Minimum grade delta to reduce an exclusion in RELAXED mode");
     }
 
     //--------------//

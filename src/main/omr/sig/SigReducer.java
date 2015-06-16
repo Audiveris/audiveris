@@ -25,8 +25,8 @@ import omr.math.GeoUtil;
 import omr.sheet.Scale;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
+import omr.sheet.rhythm.SystemBackup;
 
-import omr.sig.SIGraph.ReductionMode;
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AbstractNoteInter;
@@ -44,7 +44,6 @@ import omr.sig.inter.RestInter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.SmallBeamInter;
 import omr.sig.inter.SmallBlackHeadInter;
-import omr.sig.inter.StaccatoInter;
 import omr.sig.inter.StemInter;
 import omr.sig.inter.StringSymbolInter;
 import omr.sig.inter.TimeInter;
@@ -60,11 +59,9 @@ import omr.sig.relation.BeamPortion;
 import omr.sig.relation.BeamStemRelation;
 import omr.sig.relation.DoubleDotRelation;
 import omr.sig.relation.Exclusion;
-import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.RepeatDotDotRelation;
-import omr.sig.relation.StaccatoChordRelation;
 import omr.sig.relation.StemPortion;
 import static omr.sig.relation.StemPortion.*;
 import omr.sig.relation.TimeNumberRelation;
@@ -114,6 +111,16 @@ public class SigReducer
     /** Shapes for which overlap detection is (currently) disabled. */
     private static final EnumSet disabledShapes = EnumSet.copyOf(
             Arrays.asList(Shape.LEDGER, Shape.CRESCENDO, Shape.DIMINUENDO));
+
+    /** Predicate for non-disabled overlap. */
+    private static final Predicate<Inter> overlapPredicate = new Predicate<Inter>()
+    {
+        @Override
+        public boolean check (Inter inter)
+        {
+            return !disabledShapes.contains(inter.getShape());
+        }
+    };
 
     /** Shapes that can overlap with a beam. */
     private static final EnumSet beamCompShapes = EnumSet.copyOf(CoreBarlines);
@@ -227,7 +234,7 @@ public class SigReducer
                 if (leftBox.intersects(rightBox)) {
                     // Have a more precise look
                     if (left.isVip() && right.isVip()) {
-                        logger.info("VIP check overlap {} vs {}", left, right);
+                        ////////logger.info("VIP check overlap {} vs {}", left, right);
                     }
 
                     if (left.overlaps(right) && right.overlaps(left)) {
@@ -279,11 +286,9 @@ public class SigReducer
     /**
      * Reduce all the interpretations and relations of the SIG.
      *
-     * @param mode  selected reduction mode
-     * @param purge true for purging weak inters
+     * @param purgeWeaks true for purging weak inters
      */
-    public void reduce (ReductionMode mode,
-                        boolean purge)
+    public void reduce (boolean purgeWeaks)
     {
         final boolean logging = false;
 
@@ -293,20 +298,10 @@ public class SigReducer
         }
 
         // General exclusions based on overlap
-        // Take all inters except ledgers (and perhaps others, TODO)
-        detectOverlaps(
-                sig.inters(
-                        new Predicate<Inter>()
-                        {
-                            @Override
-                            public boolean check (Inter inter)
-                            {
-                                return !disabledShapes.contains(inter.getShape());
-                            }
-                        }));
-
-        // Inters that conflict with frozen inters must be deleted
-        analyzeFrozenInters();
+        detectOverlaps(sig.inters(overlapPredicate));
+        //
+        //        // Inters that conflict with frozen inters must be deleted
+        //        analyzeFrozenInters();
 
         // Make sure all inters have their contextual grade up-to-date
         contextualize();
@@ -320,40 +315,25 @@ public class SigReducer
 
         do {
             // First, remove all inters with too low contextual grade
-            deletions = purgeWeakInters(purge);
-
-            deletions += checkSlurOnTuplet();
+            deletions = purgeWeakInters(purgeWeaks);
 
             do {
                 modifs = 0;
                 // Detect lack of mandatory support relation for certain inters
                 modifs += checkHeads();
-                deletions += purgeWeakInters(purge);
+                deletions += purgeWeakInters(purgeWeaks);
 
-                modifs += checkFlagsAndHooks();
-                deletions += purgeWeakInters(purge);
+                modifs += checkHooks();
+                deletions += purgeWeakInters(purgeWeaks);
 
                 modifs += checkBeams();
-                deletions += purgeWeakInters(purge);
+                deletions += purgeWeakInters(purgeWeaks);
 
                 modifs += checkLedgers();
-                deletions += purgeWeakInters(purge);
+                deletions += purgeWeakInters(purgeWeaks);
 
                 modifs += checkStems();
-                deletions += purgeWeakInters(purge);
-
-                modifs += checkDoubleAlters();
-                deletions += purgeWeakInters(purge);
-
-                modifs += checkTimeNumbers();
-                deletions += checkTimeSignatures();
-                deletions += purgeWeakInters(purge);
-
-                modifs += checkStaccatoDots();
-                modifs += checkRepeatDots();
-                modifs += checkAugmentationDots();
-                modifs += checkAugmented();
-                deletions += purgeWeakInters(purge);
+                deletions += purgeWeakInters(purgeWeaks);
 
                 if (logging) {
                     logger.info("S#{} modifs: {}", system.getId(), modifs);
@@ -361,7 +341,7 @@ public class SigReducer
             } while (modifs > 0);
 
             // Remaining exclusions
-            reductions = sig.reduceExclusions(mode).size();
+            reductions = sig.reduceExclusions().size();
 
             if (logging) {
                 logger.info("S#{} reductions: {}", system.getId(), reductions);
@@ -369,35 +349,87 @@ public class SigReducer
         } while ((reductions > 0) || (deletions > 0));
     }
 
-    //---------------------//
-    // analyzeFrozenInters //
-    //---------------------//
+    //---------------//
+    // reduceSymbols //
+    //---------------//
     /**
-     * Browse all the frozen inters and simply delete any inter that conflicts with them.
+     * Reduce interpretations while saving discarded rhythm data.
+     *
+     * @param optionals (output) where selected inters must be backed up
+     * @param classes   selected classes
      */
-    private void analyzeFrozenInters ()
+    public void reduceSymbols (SystemBackup optionals,
+                               Class<?>... classes)
     {
-        List<Inter> toDelete = new ArrayList<Inter>();
+        final boolean logging = false;
+        final boolean purgeWeaks = false; // TODO: check this
+        final Set<Inter> allReductions = new HashSet<Inter>();
 
-        for (Inter inter : sig.vertexSet()) {
-            if (inter.isFrozen()) {
-                for (Relation rel : sig.getRelations(inter, Exclusion.class)) {
-                    Inter other = sig.getOppositeInter(inter, rel);
-
-                    if (other.isFrozen()) {
-                        logger.error("Conflicting frozen inters {} & {}", inter, other);
-                    } else {
-                        toDelete.add(other);
-
-                        if (other.isVip()) {
-                            logger.info("VIP deleting {} conflicting with frozen {}", other, inter);
-                        }
-                    }
-                }
-            }
+        // Just for debug
+        if (logging) {
+            logger.info("S#{} reduceSymbols sig ...", system.getId());
         }
 
-        sig.deleteInters(toDelete);
+        // General exclusions based on overlap
+        detectOverlaps(sig.inters(overlapPredicate));
+        //
+        //        // Inters that conflict with frozen inters must be deleted
+        //        analyzeFrozenInters();
+        //
+        // Make sure all inters have their contextual grade up-to-date
+        contextualize();
+
+        // Heads & beams compatibility (needed for cue beams!)
+        analyzeChords();
+
+        // All inters of selected classes
+        List<Inter> selected = sig.inters(classes);
+        optionals.save(selected);
+
+        int modifs; // modifications done in current iteration
+        int reductions; // Count of reductions performed
+        int deletions; // Count of deletions performed
+
+        do {
+            // First, remove all inters with too low contextual grade
+            deletions = purgeWeakInters(purgeWeaks);
+
+            deletions += checkSlurOnTuplet();
+
+            do {
+                modifs = 0;
+                // Detect lack of mandatory support relation for certain inters
+                modifs += checkDoubleAlters();
+                deletions += purgeWeakInters(purgeWeaks);
+
+                modifs += checkTimeNumbers();
+                deletions += checkTimeSignatures();
+                deletions += purgeWeakInters(purgeWeaks);
+
+                modifs += checkRepeatDots();
+                modifs += checkAugmentationDots();
+                modifs += checkAugmented();
+                deletions += purgeWeakInters(purgeWeaks);
+
+                if (logging) {
+                    logger.info("S#{} modifs: {}", system.getId(), modifs);
+                }
+            } while (modifs > 0);
+
+            // Remaining exclusions
+            Set<Inter> red = sig.reduceExclusions();
+            reductions = red.size();
+            allReductions.addAll(red);
+
+            if (logging) {
+                logger.info("S#{} reductions: {}", system.getId(), reductions);
+            }
+        } while ((reductions > 0) || (deletions > 0));
+
+        // Retain only the relevant inters
+        allReductions.retainAll(selected);
+
+        optionals.setSeeds(allReductions);
     }
 
     //------------//
@@ -618,6 +650,37 @@ public class SigReducer
         }
     }
 
+    //---------------------//
+    // analyzeFrozenInters //
+    //---------------------//
+    /**
+     * Browse all the frozen inters and simply delete any inter that conflicts with them.
+     */
+    private void analyzeFrozenInters ()
+    {
+        List<Inter> toDelete = new ArrayList<Inter>();
+
+        for (Inter inter : sig.vertexSet()) {
+            if (inter.isFrozen()) {
+                for (Relation rel : sig.getRelations(inter, Exclusion.class)) {
+                    Inter other = sig.getOppositeInter(inter, rel);
+
+                    if (other.isFrozen()) {
+                        logger.error("Conflicting frozen inters {} & {}", inter, other);
+                    } else {
+                        toDelete.add(other);
+
+                        if (other.isVip()) {
+                            logger.info("VIP deleting {} conflicting with frozen {}", other, inter);
+                        }
+                    }
+                }
+            }
+        }
+
+        sig.deleteInters(toDelete);
+    }
+
     //------------------//
     // beamHasBothStems //
     //------------------//
@@ -770,34 +833,6 @@ public class SigReducer
         return modifs;
     }
 
-    //--------------------//
-    // checkFlagsAndHooks //
-    //--------------------//
-    /**
-     * Perform checks on flags and hooks.
-     *
-     * @return the count of modifications done
-     */
-    private int checkFlagsAndHooks ()
-    {
-        int modifs = 0;
-        final List<Inter> inters = sig.inters(ShapeSet.Flags.getShapes());
-        inters.addAll(sig.inters(BeamHookInter.class));
-
-        for (Inter inter : inters) {
-            // Check if the flag/hook has a stem relation
-            if (!sig.hasRelation(inter, FlagStemRelation.class, BeamStemRelation.class)) {
-                if (inter.isVip() || logger.isDebugEnabled()) {
-                    logger.info("No stem for {}", inter);
-                }
-
-                inter.delete();
-            }
-        }
-
-        return modifs;
-    }
-
     //---------------//
     // checkHeadSide //
     //---------------//
@@ -901,6 +936,33 @@ public class SigReducer
             }
 
             modifs += checkHeadSide(head);
+        }
+
+        return modifs;
+    }
+
+    //------------//
+    // checkHooks //
+    //------------//
+    /**
+     * Perform checks on hooks.
+     *
+     * @return the count of modifications done
+     */
+    private int checkHooks ()
+    {
+        int modifs = 0;
+        final List<Inter> inters = sig.inters(BeamHookInter.class);
+
+        for (Inter inter : inters) {
+            // Check if the hook has a stem relation
+            if (!sig.hasRelation(inter, BeamStemRelation.class)) {
+                if (inter.isVip() || logger.isDebugEnabled()) {
+                    logger.info("No stem for {}", inter);
+                }
+
+                inter.delete();
+            }
         }
 
         return modifs;
@@ -1046,36 +1108,6 @@ public class SigReducer
 
                     break;
                 }
-            }
-        }
-
-        return modifs;
-    }
-
-    //-------------------//
-    // checkStaccatoDots //
-    //-------------------//
-    /**
-     * Perform checks on staccato dots
-     *
-     * @return the count of modifications done
-     */
-    private int checkStaccatoDots ()
-    {
-        int modifs = 0;
-        final List<Inter> dots = sig.inters(StaccatoInter.class);
-
-        for (Inter inter : dots) {
-            final StaccatoInter dot = (StaccatoInter) inter;
-
-            // Check whether the staccato dot is connected to a note
-            if (!sig.hasRelation(dot, StaccatoChordRelation.class)) {
-                if (dot.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Deleting staccato dot lacking note {}", dot);
-                }
-
-                dot.delete();
-                modifs++;
             }
         }
 
@@ -1323,14 +1355,14 @@ public class SigReducer
      * Update the contextual grade of each Inter in SIG, and remove the weak ones if so
      * desired.
      *
-     * @param purge true for removing the inters with weak contextual grade
+     * @param purgeWeaks true for removing the inters with weak contextual grade
      * @return the number of inters removed
      */
-    private int purgeWeakInters (boolean purge)
+    private int purgeWeakInters (boolean purgeWeaks)
     {
         contextualize();
 
-        if (purge) {
+        if (purgeWeaks) {
             return sig.deleteWeakInters().size();
         }
 

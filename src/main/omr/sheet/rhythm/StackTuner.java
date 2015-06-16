@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sheet.rhythm;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.math.Combinations;
 import omr.math.Rational;
 
@@ -21,7 +24,6 @@ import omr.sheet.StaffBarline;
 import omr.sheet.beam.BeamGroup;
 
 import omr.sig.SIGraph;
-import omr.sig.SigReducer;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.BarlineInter;
@@ -37,18 +39,14 @@ import omr.sig.relation.DoubleDotRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.RepeatDotBarRelation;
 
-import omr.step.Step;
-
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -57,14 +55,25 @@ import java.util.Set;
 
 /**
  * Class {@code StackTuner} adjusts the rhythm content of a given MeasureStack.
+ * <p>
+ * These are two separate kinds of rhythm data:
  * <ol>
- * <li>Rhythm data brought by head-based chords and beam groups are considered as solid.</li>
- * <li>Rhythm data brought by symbol-based items (rest-based chords, flags, augmentation dots,
- * tuplets) are used as adjustment variables.</li>
- * <li>Time signatures have to be considered differently, since their value may be called into
- * question, based on intrinsic measure rhythm. Moreover, a two-pass approach is needed when the
- * current page does not start with a time signature.</li>
+ * <li>The core of rhythm data is made of the head-based chords (and beam groups). It has already
+ * been validated by previous steps and is thus never called into question again.</li>
+ * <li>Rhythm data brought by symbol-based items (precisely: rest-based chords, flags, augmentation
+ * dots and tuplets) are used as adjustment variables.</li>
  * </ol>
+ * <p>
+ * To limit the number of configurations to check for adjustment, we use equivalence classes.
+ * For example, all heads in a chord have an augmentation dot or none of them, so it would be
+ * useless to consider each of these dots as a separate variable.
+ * A similar example relates to conflicting flag inters (perhaps a mix of FLAG_1, FLAG_2, FLAG_3...)
+ * on the same head chord, here what really matters is the resulting count of flags on the chord.
+ * <p>
+ * Time signatures have to be considered differently, since their value may be called into
+ * question, based on intrinsic measure rhythm. Moreover, a two-pass approach is needed when the
+ * current page does not start with a time signature.
+ * <p>
  * Once a good configuration has been chosen, we should care about conflicts between rhythm data and
  * other symbol-based items (for example a tuplet sign may conflict with a dynamic sign).
  * Perhaps give priority (frozen inter) to rhythm data over non-rhythm data?
@@ -74,6 +83,8 @@ import java.util.Set;
 public class StackTuner
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StackTuner.class);
 
@@ -93,19 +104,19 @@ public class StackTuner
     private final boolean fullMode;
 
     /** To temporarily save inters and their relations, outside of the standard sig. */
-    private final RhythmBackup backup;
+    private final StackBackup backup;
 
     /** All configurations that were tested so far and failed. */
-    private final Set<RhythmConfig> failures = new LinkedHashSet<RhythmConfig>();
+    private final Set<StackConfig> failures = new LinkedHashSet<StackConfig>();
 
     /** Configurations still to be tested for this stack. */
-    private final List<RhythmConfig> candidates = new ArrayList<RhythmConfig>();
+    private final List<StackConfig> candidates = new ArrayList<StackConfig>();
 
     /** Current index in candidates. */
     private int candidateIndex;
 
     /** Current configuration in stack. */
-    private RhythmConfig config;
+    private StackConfig config;
 
     /** Too close RestChordInter's to remove from current config. */
     private final Set<RestChordInter> toRemove = new HashSet<RestChordInter>();
@@ -124,7 +135,7 @@ public class StackTuner
         this.stack = stack;
         this.fullMode = fullMode;
 
-        backup = new RhythmBackup(stack);
+        backup = new StackBackup(stack);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -135,9 +146,11 @@ public class StackTuner
      * Process the stack to find out a suitable configuration of rhythm data.
      *
      * @param systemInters    The collection of relevant rhythm inters in containing system
+     * @param systemOptionals The optional rhythm data at system level, or null
      * @param initialDuration The expected duration for this stack, or null
      */
     public void process (List<Inter> systemInters,
+                         SystemBackup systemOptionals,
                          Rational initialDuration)
     {
         stack.setExpectedDuration(initialDuration);
@@ -148,49 +161,74 @@ public class StackTuner
 
         final SIGraph sig = stack.getSystem().getSig();
 
-        // Adjustment variables (no head-based chords)
+        // Adjustment rhythm variables (no head-based chords)
+        final List<Inter> rhythms = new ArrayList<Inter>();
         final List<ChordInter> allRestChords = new ArrayList<ChordInter>(stack.getRestChords());
-        List<Inter> vars = new ArrayList<Inter>();
-        vars.addAll(allRestChords);
-        vars.addAll(stack.getRhythms());
+        rhythms.addAll(allRestChords); // Rest-chords only (no Head-chords)
+        rhythms.addAll(stack.getRhythms()); // Add all non-chord data
+        logger.debug("{} rhythms: {}", stack, rhythms.size());
 
-        // Backup all stack rhythm data (except the head-based chords)
-        backup.save(vars);
+        // Initial config
+        StackConfig orgConfig = new StackConfig(rhythms);
+        candidates.add(orgConfig);
 
-        // Do we have potential exclusions between adjustment variables?
-        if (Step.RHYTHMS.compareTo(Step.SYMBOL_REDUCTION) < 0) {
-            // Use this branch if RHYTHMS is run before SYMBOL_REDUCTION
-            // Determine possible partitions of rhythm data
-            SigReducer.detectOverlaps(vars);
+        // Determine possible partitions of rhythm data (augmented by discarded rhythm inters)
+        if (fullMode && (systemOptionals != null) && !systemOptionals.getSeeds().isEmpty()) {
+            List<Inter> optionals = stack.filter(systemOptionals.getSeeds());
 
-            List<List<Inter>> partitions = sig.getPartitions(null, vars);
+            if (!optionals.isEmpty()) {
+                logger.debug("{} optionals: {}", stack, optionals.size());
 
-            for (List<Inter> partition : partitions) {
-                // Make sure that all inters are relevant in this partition
-                filterPartition(partition);
+                // Limit the count of optionals
+                optionals = filterOptionals(optionals);
 
-                RhythmConfig cfg = new RhythmConfig(partition);
+                systemOptionals.restore(optionals);
 
-                if (!candidates.contains(cfg)) {
-                    candidates.add(cfg);
+                final List<Inter> allRhythms = new ArrayList<Inter>(rhythms);
+                allRhythms.addAll(optionals);
+                backup.save(allRhythms);
+
+                List<List<Inter>> partitions = sig.getPartitions(null, allRhythms);
+
+                for (List<Inter> partition : partitions) {
+                    // Make sure that all inters are relevant in this partition
+                    filterPartition(partition);
+
+                    StackConfig cfg = new StackConfig(partition);
+
+                    if (!candidates.contains(cfg)) {
+                        candidates.add(cfg);
+                    }
                 }
+
+                if (candidates.size() > 1) {
+                    logger.debug("{} configs: {}", stack, candidates.size());
+                }
+            } else {
+                backup.save(rhythms);
             }
         } else {
-            // Use this branch if symbols have already been reduced
-            candidates.add(new RhythmConfig(vars));
+            backup.save(rhythms);
         }
 
-        RhythmConfig goodConfig = null; // The very first good config found, if any
+        logger.debug("{} candidates: {}", stack, candidates.size());
 
-        // Process all identified configuration, until a good one is found
+        StackConfig goodConfig = null; // The very first good config found, if any
+
+        // Process each identified configuration, until a good one is found
         for (candidateIndex = 0; candidateIndex < candidates.size(); candidateIndex++) {
-            final RhythmConfig candidate = candidates.get(candidateIndex);
+            final StackConfig candidate = candidates.get(candidateIndex);
+            logger.debug("{} config {}/{}", stack, candidateIndex + 1, candidates.size());
 
             if (!failures.contains(candidate)) {
-                goodConfig = checkConfig(candidate, false);
+                try {
+                    goodConfig = checkConfig(candidate, false);
 
-                if (goodConfig != null) {
-                    break;
+                    if (goodConfig != null) {
+                        break;
+                    }
+                } catch (Exception ex) {
+                    logger.warn("Error " + ex + " checkConfig " + candidate, ex);
                 }
             }
         }
@@ -199,42 +237,43 @@ public class StackTuner
             // Re-install the goodConfig if different from current config, then freeze it
             if (!goodConfig.equals(config)) {
                 logger.debug("Re-installing good config {}", goodConfig);
-                backup.install(goodConfig, toRemove);
+                backup.install(goodConfig, toRemove, false);
             }
 
-            // Try to re-insert removed rests chords?
-            List<Inter> keptRestChords = sig.inters(goodConfig.inters, RestChordInter.class);
-            List<Inter> removedRestChords = new ArrayList<Inter>(allRestChords);
-            removedRestChords.removeAll(keptRestChords);
-
-            if (!removedRestChords.isEmpty()) {
-                RhythmConfig improved = improveConfig(goodConfig, removedRestChords);
-
-                if (improved != null) {
-                    logger.debug("Installing better config {}", improved);
-                    backup.install(improved, toRemove);
-                    goodConfig = improved;
-                }
-            }
-
-            backup.freeze(goodConfig.inters);
+            //
+            //            // Try to re-insert removed rests chords? (TODO: rethink this!)
+            //            List<Inter> keptRestChords = sig.inters(goodConfig.getInters(), RestChordInter.class);
+            //            List<Inter> removedRestChords = new ArrayList<Inter>(allRestChords);
+            //            removedRestChords.removeAll(keptRestChords);
+            //
+            //            if (!removedRestChords.isEmpty()) {
+            //                StackConfig improved = improveConfig(goodConfig, removedRestChords);
+            //
+            //                if (improved != null) {
+            //                    logger.debug("Installing better config {}", improved);
+            //                    backup.install(improved, toRemove, false);
+            //                    goodConfig = improved;
+            //                }
+            //            }
+            //
+            // Protect rhythm data against other symbols???
+            backup.freeze(goodConfig.getInters());
         } else {
-            // TODO: in which config should we leave this stack???
+            // We failed
             if (fullMode) {
-                logger.warn("No good config found for {}", stack);
+                logger.info("{}{} no good rhythm config", stack.getSystem().getLogPrefix(), stack);
+                // We re-install the original config
+                backup.install(orgConfig, toRemove, false);
             }
         }
-//
-//        // Populate each measure within stack
-//        populateMeasures();
     }
 
-    //---------------//
-    // resetInitials //
-    //---------------//
-    public void resetInitials ()
+    //----------------//
+    // resetFromSeeds //
+    //----------------//
+    public void resetFromSeeds ()
     {
-        backup.resetInitials();
+        backup.resetFromSeeds();
     }
 
     //-------------//
@@ -251,8 +290,8 @@ public class StackTuner
      *                    removing rhythms items)
      * @return the config if successful, null otherwise
      */
-    private RhythmConfig checkConfig (RhythmConfig newConfig,
-                                      boolean improveMode)
+    private StackConfig checkConfig (StackConfig newConfig,
+                                     boolean improveMode)
     {
         if (logger.isDebugEnabled()) {
             logger.info("Chk{} {}", newConfig.ids(), newConfig);
@@ -262,17 +301,18 @@ public class StackTuner
             config = newConfig;
 
             // Installation computes the time slots, and may fail
-            if (!backup.install(config, toRemove)) {
+            if (!backup.install(config, toRemove, true)) {
                 for (ChordInter chord : toRemove) {
                     removeChord(chord);
                 }
 
                 failures.add(config);
 
-                if (fullMode && !improveMode) {
-                    postAlternatives();
-                }
-
+                //
+                //                if (fullMode && !improveMode) {
+                //                    postAlternatives();
+                //                }
+                //
                 return null;
             }
         }
@@ -350,7 +390,7 @@ public class StackTuner
                         List<ChordInter> rests = voice.getRests();
                         Collections.sort(rests, Inter.byReverseGrade);
 
-                        logger.info("{} Excess {} in {} from:{}", stack, delta, voice, rests);
+                        logger.debug("{} Excess {} in {} from:{}", stack, delta, voice, rests);
 
                         if (!rests.isEmpty()) {
                             postRests(rests, delta);
@@ -366,8 +406,8 @@ public class StackTuner
                             List<ChordInter> rests = voice.getRests();
                             logger.debug("{} Abnormal rest-only {} rests:{}", stack, voice, rests);
 
-                            RhythmConfig newConfig = config.copy();
-                            newConfig.inters.removeAll(rests);
+                            StackConfig newConfig = config.copy();
+                            newConfig.getInters().removeAll(rests);
 
                             if (!failures.contains(newConfig) && !candidates.contains(newConfig)) {
                                 candidates.add(candidateIndex + 1, newConfig);
@@ -390,6 +430,25 @@ public class StackTuner
     }
 
     //-----------------//
+    // filterOptionals //
+    //-----------------//
+    /**
+     * Limit the number of optional rhythms data by all means.
+     */
+    private List<Inter> filterOptionals (List<Inter> optionals)
+    {
+        final int maxCount = constants.maxOptionals.getValue();
+        Collections.sort(optionals, Inter.byReverseBestGrade);
+
+        if (optionals.size() > maxCount) {
+            // Drop the data with lower grade
+            return optionals.subList(0, maxCount);
+        } else {
+            return optionals;
+        }
+    }
+
+    //-----------------//
     // filterPartition //
     //-----------------//
     /**
@@ -403,7 +462,10 @@ public class StackTuner
         final SIGraph sig = stack.getSystem().getSig();
         final List<Inter> allDots = sig.inters(partition, AugmentationDotInter.class);
         final List<Inter> secondDots = new ArrayList<Inter>();
-        logger.debug("filterPartition on {}", allDots);
+
+        if (!allDots.isEmpty()) {
+            logger.debug("filterPartition on {}", allDots);
+        }
 
         // Pass #1 for simple augmentation of a rest
         // Make sure the rest augmented by a dot is contained by the partition
@@ -467,11 +529,11 @@ public class StackTuner
     //---------------//
     // improveConfig //
     //---------------//
-    private RhythmConfig improveConfig (RhythmConfig goodConfig,
-                                        List<Inter> vars)
+    private StackConfig improveConfig (StackConfig goodConfig,
+                                       List<Inter> vars)
     {
         if (logger.isDebugEnabled()) {
-            logger.info("Removed rest chords: {}", Inters.ids(vars));
+            logger.debug("Removed rest chords: {}", Inters.ids(vars));
         }
 
         Collections.sort(vars, Inter.byCenterAbscissa);
@@ -485,7 +547,7 @@ public class StackTuner
         int targetIdx = candidateIndex + 1;
 
         for (boolean[] vector : bools) {
-            RhythmConfig newConfig = config.copy();
+            StackConfig newConfig = config.copy();
 
             for (int i = 0; i < n; i++) {
                 if (vector[i]) {
@@ -502,13 +564,13 @@ public class StackTuner
         }
 
         // Try all combinations
-        List<RhythmConfig> betterConfigs = new ArrayList<RhythmConfig>();
+        List<StackConfig> betterConfigs = new ArrayList<StackConfig>();
 
         for (candidateIndex = 0; candidateIndex < candidates.size(); candidateIndex++) {
-            final RhythmConfig candidate = candidates.get(candidateIndex);
+            final StackConfig candidate = candidates.get(candidateIndex);
 
             if (!failures.contains(candidate)) {
-                RhythmConfig betterConfig = checkConfig(candidate, true);
+                StackConfig betterConfig = checkConfig(candidate, true);
 
                 if (betterConfig != null) {
                     betterConfigs.add(betterConfig);
@@ -521,7 +583,7 @@ public class StackTuner
         if (!betterConfigs.isEmpty()) {
             // Pick up the longest one?
             if (betterConfigs.size() > 1) {
-                Collections.sort(betterConfigs, RhythmConfig.byReverseSize);
+                Collections.sort(betterConfigs, StackConfig.byReverseSize);
             }
 
             return betterConfigs.get(0);
@@ -554,90 +616,98 @@ public class StackTuner
         verifyRepeatDots();
     }
 
-    //------------------//
-    // postAlternatives //
-    //------------------//
-    /**
-     * Try to post relevant alternatives to the current config with incorrect slots.
-     * <p>
-     * Slots were not correctly built, building stopped at wrong slot.
-     * Determine the possible culprits among rhythm inters, typically all rhythm inters until
-     * abscissa of wrong slot, plus any tuplet sign even located after wrong slot abscissa!
-     */
-    private void postAlternatives ()
-    {
-        // Determine the variables we can play with
-        Set<Inter> varSet = new HashSet<Inter>();
-        Slot lastSlot = stack.getLastSlot();
-
-        for (Slot slot : stack.getSlots()) {
-            for (ChordInter chord : slot.getChords()) {
-                if (chord instanceof RestChordInter) {
-                    varSet.add(chord);
-                }
-            }
-        }
-
-        for (Inter inter : config.inters) {
-            if (inter instanceof TupletInter) {
-                varSet.add(inter);
-            }
-        }
-
-        for (Inter inter : config.inters) {
-            Staff staff = inter.getStaff();
-            Point center = inter.getCenter();
-            final double xOffset;
-
-            if (staff != null) {
-                xOffset = stack.getXOffset(center, Arrays.asList(staff));
-            } else {
-                xOffset = stack.getXOffset(center);
-            }
-
-            if (xOffset <= lastSlot.getXOffset()) {
-                varSet.add(inter);
-            } else {
-                break;
-            }
-        }
-
-        final List<Inter> vars = new ArrayList<Inter>(varSet);
-        Collections.sort(vars, Inter.byCenterAbscissa);
-
-        final int n = vars.size();
-
-        // This should be used only for rather small sizes ...
-        final boolean[][] bools = Combinations.getVectors(n);
-        int targetIdx = candidateIndex + 1;
-
-        for (boolean[] vector : bools) {
-            RhythmConfig newConfig = config.copy();
-
-            for (int i = 0; i < n; i++) {
-                if (!vector[i]) {
-                    Inter inter = vars.get(i);
-                    // Delete inter (and its augmentation dots) from config
-                    newConfig.remove(inter);
-                }
-            }
-
-            if (!failures.contains(newConfig)) {
-                if (!candidates.contains(newConfig)) {
-                    logger.debug("Ins{}", newConfig.ids());
-                    candidates.add(targetIdx++, newConfig);
-                } else {
-                    int idx = candidates.indexOf(newConfig);
-
-                    if (idx > targetIdx) {
-                        Collections.swap(candidates, idx, targetIdx++);
-                        logger.debug("Pro{}", newConfig.ids());
-                    }
-                }
-            }
-        }
-    }
-
+    //
+    //    //------------------//
+    //    // postAlternatives //
+    //    //------------------//
+    //    /**
+    //     * Try to post relevant alternatives to the current config with incorrect slots.
+    //     * <p>
+    //     * Slots were not correctly built, building stopped at wrong slot.
+    //     * Determine the possible culprits among rhythm inters, typically all rhythm inters until
+    //     * abscissa of wrong slot, plus any tuplet sign even located after wrong slot abscissa!
+    //     */
+    //    private void postAlternatives ()
+    //    {
+    //        // Determine the variables we can play with
+    //        Set<Inter> varSet = new HashSet<Inter>();
+    //        Slot lastSlot = stack.getLastSlot();
+    //
+    //        for (Slot slot : stack.getSlots()) {
+    //            for (ChordInter chord : slot.getChords()) {
+    //                if (chord instanceof RestChordInter) {
+    //                    varSet.add(chord);
+    //                }
+    //            }
+    //        }
+    //
+    //        for (Inter inter : config.getInters()) {
+    //            if (inter instanceof TupletInter) {
+    //                varSet.add(inter);
+    //            }
+    //        }
+    //
+    //        for (Inter inter : config.getInters()) {
+    //            Staff staff = inter.getStaff();
+    //            Point center = inter.getCenter();
+    //            final double xOffset;
+    //
+    //            if (staff != null) {
+    //                xOffset = stack.getXOffset(center, Arrays.asList(staff));
+    //            } else {
+    //                xOffset = stack.getXOffset(center);
+    //            }
+    //
+    //            if (xOffset <= lastSlot.getXOffset()) {
+    //                varSet.add(inter);
+    //            } else {
+    //                break;
+    //            }
+    //        }
+    //
+    //        List<Inter> vars = new ArrayList<Inter>(varSet);
+    //        final int maxCount = constants.maxTotalRhythm.getValue();
+    //        int n = vars.size();
+    //
+    //        if (n > maxCount) {
+    //            Collections.sort(vars, Inter.byBestGrade);
+    //            vars = vars.subList(0, maxCount);
+    //            n = maxCount;
+    //        }
+    //
+    //        Collections.sort(vars, Inter.byCenterAbscissa);
+    //
+    //        // This should be used only for rather small sizes ...
+    //        final boolean[][] bools = Combinations.getVectors(n);
+    //        int targetIdx = candidateIndex + 1;
+    //
+    //        for (boolean[] vector : bools) {
+    //            StackConfig newConfig = config.copy();
+    //
+    //            for (int i = 0; i < n; i++) {
+    //                if (!vector[i]) {
+    //                    Inter inter = vars.get(i);
+    //                    // Delete inter (and its augmentation dots) from config
+    //                    newConfig.remove(inter);
+    //                }
+    //            }
+    //
+    //            if (!failures.contains(newConfig)) {
+    //                if (!candidates.contains(newConfig)) {
+    //                    logger.debug("Ins{}", newConfig.ids());
+    //                    candidates.add(targetIdx++, newConfig);
+    //                } else {
+    //                    int idx = candidates.indexOf(newConfig);
+    //
+    //                    if (idx > targetIdx) {
+    //                        Collections.swap(candidates, idx, targetIdx++);
+    //                        logger.debug("Pro{}", newConfig.ids());
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
+    //
     //-----------//
     // postRests //
     //-----------//
@@ -660,7 +730,7 @@ public class StackTuner
         int targetIdx = candidateIndex + 1;
 
         for (boolean[] vector : bools) {
-            RhythmConfig newConfig = config.copy();
+            StackConfig newConfig = config.copy();
 
             for (int i = 0; i < n; i++) {
                 if (!vector[i]) {
@@ -671,14 +741,14 @@ public class StackTuner
 
             if (!failures.contains(newConfig)) {
                 if (!candidates.contains(newConfig)) {
-                    logger.info("Ins{}", newConfig.ids());
+                    logger.debug("Ins{}", newConfig.ids());
                     candidates.add(targetIdx++, newConfig);
                 } else {
                     int idx = candidates.indexOf(newConfig);
 
                     if (idx > targetIdx) {
                         Collections.swap(candidates, idx, targetIdx++);
-                        logger.info("Pro{}", newConfig.ids());
+                        logger.debug("Pro{}", newConfig.ids());
                     }
                 }
             }
@@ -699,8 +769,8 @@ public class StackTuner
             logger.info("VIP removing {} causing close slots", chord);
         }
 
-        RhythmConfig newConfig = config.copy();
-        newConfig.inters.remove(chord);
+        StackConfig newConfig = config.copy();
+        newConfig.getInters().remove(chord);
 
         if (!failures.contains(newConfig) && !candidates.contains(newConfig)) {
             candidates.add(candidateIndex + 1, newConfig);
@@ -787,5 +857,26 @@ public class StackTuner
                 }
             }
         }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Integer maxOptionals = new Constant.Integer(
+                "Inter count",
+                5,
+                "Maximum optional rhythm data considered for a measure stack");
+
+        //
+        //        private final Constant.Integer maxTotalRhythm = new Constant.Integer(
+        //                "Inter count",
+        //                5,
+        //                "Maximum total rhythm data considered for a measure stack");
     }
 }

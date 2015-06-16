@@ -112,7 +112,7 @@ class SymbolsLinker
 
                         if (voice != null) {
                             smallChord.setVoice(voice);
-                            logger.info("{} assigned {}", smallChord, voice);
+                            logger.debug("{} assigned {}", smallChord, voice);
 
                             continue SmallLoop;
                         }

@@ -192,6 +192,19 @@ public interface Inter
     };
 
     /**
+     * For comparing interpretations by best grade.
+     */
+    public static final Comparator<Inter> byBestGrade = new Comparator<Inter>()
+    {
+        @Override
+        public int compare (Inter i1,
+                            Inter i2)
+        {
+            return Double.compare(i1.getBestGrade(), i2.getBestGrade());
+        }
+    };
+
+    /**
      * For comparing interpretations by decreasing best grade.
      */
     public static final Comparator<Inter> byReverseBestGrade = new Comparator<Inter>()

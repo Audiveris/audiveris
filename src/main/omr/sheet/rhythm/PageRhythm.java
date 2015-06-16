@@ -18,8 +18,13 @@ import omr.score.Page;
 
 import omr.sheet.SystemInfo;
 
+import omr.sig.SigReducer;
+import omr.sig.inter.AugmentationDotInter;
+import omr.sig.inter.FlagInter;
 import omr.sig.inter.Inter;
+import omr.sig.inter.RestChordInter;
 import omr.sig.inter.TimeInter;
+import omr.sig.inter.TupletInter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +64,14 @@ public class PageRhythm
 
     private static final Logger logger = LoggerFactory.getLogger(PageRhythm.class);
 
+    /** Adjustable rhythm classes. (FRAT: Flag, RestChord, AugmentationDot, Tuplet) */
+    public static final Class<?>[] rhythmClasses = new Class<?>[]{
+        FlagInter.class, // (standard) Flags
+        RestChordInter.class, // Chords (rests only)
+        AugmentationDotInter.class, // Augmentation dots
+        TupletInter.class // Tuplet signs
+    };
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated page. */
     private final Page page;
@@ -83,6 +96,15 @@ public class PageRhythm
     //---------//
     public void process ()
     {
+        // Reduce symbols while saving optional rhythm data for each system
+        Map<SystemInfo, SystemBackup> optionalsMap = new LinkedHashMap<SystemInfo, SystemBackup>();
+
+        for (SystemInfo system : page.getSystems()) {
+            SystemBackup optionals = new SystemBackup(system);
+            new SigReducer(system).reduceSymbols(optionals, rhythmClasses);
+            optionalsMap.put(system, optionals);
+        }
+
         // Populate all stacks in page with potential time signatures, and derive ranges.
         populateTimeSignatures();
 
@@ -98,25 +120,23 @@ public class PageRhythm
         for (SystemInfo system : page.getSystems()) {
             // Select relevant rhythm inters at system level
             List<Inter> systemInters = system.getSig().inters(StackTuner.rhythmClasses);
+            SystemBackup optionals = optionalsMap.get(system);
 
             // Process stack after stack
             for (MeasureStack stack : system.getMeasureStacks()) {
                 if (stack.getIdValue() == range.startId) {
-                    logger.info("{}", range);
+                    logger.debug("Starting {}", range);
 
                     // Adjust time signature?
                     if ((range.ts == null)
                         || !range.ts.getTimeRational().getValue().equals(range.duration)) {
-                        logger.info("Should update TS");
+                        logger.info("Should update to {}-based time sig", range.duration);
                     }
                 }
 
                 try {
-                    logger.debug(
-                            "\n--- Processing {} expectedDuration: {} ---",
-                            stack,
-                            range.duration);
-                    new StackTuner(stack, true).process(systemInters, range.duration);
+                    logger.debug("\n--- Processing {} expDur: {} ---", stack, range.duration);
+                    new StackTuner(stack, true).process(systemInters, optionals, range.duration);
                 } catch (Exception ex) {
                     logger.warn("Error on stack " + stack + " " + ex, ex);
                 }
@@ -132,84 +152,6 @@ public class PageRhythm
             // Refine voices ids (and thus colors) across all measures of the system
             new SystemVoiceFixer(system).refine();
         }
-
-        //
-        //        // Does the page start with a time signature?
-        //        final Rational initialDuration;
-        //
-        //        if ((firstStack == null) || (firstStack.getIdValue() > 1)) {
-        //            logger.info("{}No time signature to start {}", page.getSheet().getLogPrefix(), page);
-        //
-        //            if (firstStack != null) {
-        //                logger.info("First time signature found in {}", firstStack);
-        //            }
-        //
-        //            // Launch a raw processing to determine expected measure duration
-        //            // on the range of first system & stacks before first time signature
-        //            Map<MeasureStack, StackTuner> tuners = new LinkedHashMap<MeasureStack, StackTuner>();
-        //            SystemLoop:
-        //            for (SystemInfo system : page.getSystems()) {
-        //                // Select relevant rhythm inters at system level
-        //                List<Inter> systemInters = system.getSig().inters(StackTuner.rhythmClasses);
-        //
-        //                // Process stack after stack
-        //                for (MeasureStack stack : system.getMeasureStacks()) {
-        //                    if (stack == firstStack) {
-        //                        break SystemLoop;
-        //                    }
-        //
-        //                    try {
-        //                        logger.debug("\n--- Raw processing {} ---", stack);
-        //
-        //                        StackTuner tuner = new StackTuner(stack, false);
-        //                        tuners.put(stack, tuner);
-        //                        tuner.process(systemInters, null);
-        //                    } catch (Exception ex) {
-        //                        logger.warn("Error on stack " + stack + " " + ex, ex);
-        //                    }
-        //                }
-        //            }
-        //
-        //            // Use the CURRENT MATERIAL of voices to determine expected duration on this range
-        //            initialDuration = retrieveExpectedDuration(firstStack);
-        //
-        //            // Reset sig content for each stack processed (and thus perhaps modified)
-        //            for (StackTuner tuner : tuners.values()) {
-        //                tuner.resetInitials();
-        //            }
-        //        } else {
-        //            initialDuration = firstStack.getTimeSignature().getTimeRational().getValue();
-        //        }
-        //        // Precise processing
-        //        Rational duration = initialDuration; // Expected duration for current stack
-        //
-        //        for (SystemInfo system : page.getSystems()) {
-        //            // Select relevant rhythm inters at system level
-        //            List<Inter> systemInters = system.getSig().inters(StackTuner.rhythmClasses);
-        //
-        //            // Process stack after stack
-        //            for (MeasureStack stack : system.getMeasureStacks()) {
-        //                try {
-        //                    if ((firstStack == null) || (stack.getIdValue() < firstStack.getIdValue())) {
-        //                        duration = initialDuration;
-        //                    } else {
-        //                        TimeInter ts = stack.getTimeSignature();
-        //
-        //                        if (ts != null) {
-        //                            duration = ts.getTimeRational().getValue();
-        //                        }
-        //                    }
-        //
-        //                    logger.debug("\n--- Processing {} expectedDuration:{} ---", stack, duration);
-        //                    new StackTuner(stack, true).process(systemInters, duration);
-        //                } catch (Exception ex) {
-        //                    logger.warn("Error on stack " + stack + " " + ex, ex);
-        //                }
-        //            }
-        //
-        //            // Refine voices ids (and thus colors) across all measures of the system
-        //            new SystemVoiceFixer(system).refine();
-        //}
     }
 
     //------------------------//
@@ -268,7 +210,6 @@ public class PageRhythm
     {
         // Launch a raw processing to determine expected measure duration
         // on the range of first system & stacks before first time signature
-        final Map<MeasureStack, StackTuner> tuners = new LinkedHashMap<MeasureStack, StackTuner>();
         final Iterator<Range> it = ranges.iterator();
 
         // Current range
@@ -282,10 +223,7 @@ public class PageRhythm
             for (MeasureStack stack : system.getMeasureStacks()) {
                 try {
                     logger.debug("\n--- Raw processing {} ---", stack);
-
-                    StackTuner tuner = new StackTuner(stack, false);
-                    tuners.put(stack, tuner);
-                    tuner.process(systemInters, null);
+                    new StackTuner(stack, false).process(systemInters, null, null);
                 } catch (Exception ex) {
                     logger.warn("Error on stack " + stack + " " + ex, ex);
                 }
@@ -347,7 +285,8 @@ public class PageRhythm
         // We aim at a duration value in the set: [1/2, 3/4, 1, 5/4]
         Rational avgGuess = null;
         final Rational minDur = new Rational(1, 2);
-        final Rational maxDur = new Rational(5, 4);
+        ///final Rational maxDur = new Rational(5, 4);
+        final Rational maxDur = new Rational(3, 2);
         double val = 0.0;
         int count = 0;
 
@@ -368,8 +307,9 @@ public class PageRhythm
 
         Rational topGuess = histo.getMaxBucket();
         logger.info(
-                "{}Durations avgGuess:{} topGuess:{} avgValue:{} stacks:{} voices:{} {}",
+                "{}{} Durations avgGuess:{} topGuess:{} avgValue:{} stacks:{} voices:{} {}",
                 page.getSheet().getLogPrefix(),
+                range,
                 avgGuess,
                 topGuess,
                 val,

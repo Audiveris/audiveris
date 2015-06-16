@@ -226,7 +226,7 @@ public class Voice
                 } else if (delta.compareTo(Rational.ZERO) > 0) {
                     // Flag the measure as too long
                     ///measure.addError("Voice #" + getId() + " too long for " + delta);
-                    logger.warn("{} Voice #{} too long {}", stack, getId(), delta);
+                    logger.debug("{} Voice #{} too long {}", stack, getId(), delta);
                     stack.setExcess(delta);
                 }
             }

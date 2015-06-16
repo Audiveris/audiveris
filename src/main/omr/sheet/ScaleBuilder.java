@@ -517,7 +517,7 @@ public class ScaleBuilder
                 "Should we dispose of original image once binarized?");
 
         private final Constant.Ratio beamAsBackRatio = new Constant.Ratio(
-                0.8,
+                0.75,
                 "Default beam height defined as ratio of background peak");
     }
 

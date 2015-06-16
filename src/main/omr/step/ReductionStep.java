@@ -13,7 +13,6 @@ package omr.step;
 
 import omr.sheet.SystemInfo;
 
-import omr.sig.SIGraph.ReductionMode;
 import omr.sig.SigReducer;
 
 /**
@@ -43,6 +42,6 @@ public class ReductionStep
                           Void context)
             throws StepException
     {
-        new SigReducer(system).reduce(ReductionMode.STRICT, true);
+        new SigReducer(system).reduce(true);
     }
 }

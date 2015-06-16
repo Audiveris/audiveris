@@ -582,7 +582,6 @@ public class SlursBuilder
 
         // In the provided clump, all candidates start from the same point.
         // If several candidates stop at the same point, keep the one with best grade.
-        // TODO: can this still occur???
         purgeIdenticalEndings(inters);
 
         // Discard candidates that end as a portion of staff line
@@ -844,20 +843,31 @@ public class SlursBuilder
                 continue;
             }
 
-            // Check straightness
-            Model model = slur.getSideModel(reverse);
+            // Check straightness & incidence angle
+            final Model model = slur.getSideModel(reverse);
+            double incidence = 0;
 
             if (model instanceof CircleModel) {
                 CircleModel circleModel = (CircleModel) model;
+                double radius = circleModel.getCircle().getRadius();
 
-                if (circleModel.getCircle().getRadius() <= params.minStraightEndRadius) {
+                if (radius <= params.minStraightEndRadius) {
                     continue;
                 }
+
+                if (Double.isInfinite(radius)) {
+                    List<Point> pts = slur.getSidePoints(reverse);
+                    Point p1 = reverse ? pts.get(pts.size() - 1) : pts.get(0);
+                    Point p2 = reverse ? pts.get(0) : pts.get(pts.size() - 1);
+                    incidence = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                } else {
+                    incidence = model.getAngle(reverse) - ((model.ccw() * PI) / 2);
+                }
+            } else if (model instanceof LineModel) {
+                incidence = model.getAngle(reverse);
             }
 
-            // Check incidence angle
-            double incidence = model.getAngle(reverse) - ((model.ccw() * PI) / 2);
-
+            // Check incidence
             if (abs(incidence) > params.maxIncidence) {
                 continue;
             }
@@ -918,11 +928,11 @@ public class SlursBuilder
                 "Maximum incidence angle (in degrees) for staff tangency");
 
         private final Scale.Fraction minStraightEndRadius = new Scale.Fraction(
-                50,
+                15,
                 "Minimum circle radius for a straight slur end");
 
         private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
-                0.5, //0.8,
+                0.5,
                 "Minimum arc length for starting a slur build");
 
         private final Scale.Fraction maxStaffLineDy = new Scale.Fraction(

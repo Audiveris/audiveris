@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                     R h y t h m C o n f i g                                    //
+//                                      S t a c k C o n f i g                                     //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -22,20 +22,20 @@ import java.util.Comparator;
 import java.util.TreeSet;
 
 /**
- * Meant to store one configuration of rhythm adjustable data.
+ * Meant to store one configuration of rhythm adjustable data for a stack.
  *
  * @author Hervé Bitteur
  */
-public class RhythmConfig
+public class StackConfig
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Compare configs by their decreasing size. */
-    public static final Comparator<RhythmConfig> byReverseSize = new Comparator<RhythmConfig>()
+    public static final Comparator<StackConfig> byReverseSize = new Comparator<StackConfig>()
     {
         @Override
-        public int compare (RhythmConfig c1,
-                            RhythmConfig c2)
+        public int compare (StackConfig c1,
+                            StackConfig c2)
         {
             return Integer.compare(c2.inters.size(), c1.inters.size());
         }
@@ -43,7 +43,7 @@ public class RhythmConfig
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Rhythm data for this config, always ordered byFullAbscissa. */
-    final TreeSet<Inter> inters = new TreeSet<Inter>(Inter.byFullAbscissa);
+    private final TreeSet<Inter> inters = new TreeSet<Inter>(Inter.byFullAbscissa);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -51,7 +51,7 @@ public class RhythmConfig
      *
      * @param inters DOCUMENT ME!
      */
-    public RhythmConfig (Collection<? extends Inter> inters)
+    public StackConfig (Collection<? extends Inter> inters)
     {
         this.inters.addAll(inters);
     }
@@ -86,9 +86,9 @@ public class RhythmConfig
     //------//
     // copy //
     //------//
-    public RhythmConfig copy ()
+    public StackConfig copy ()
     {
-        return new RhythmConfig(inters);
+        return new StackConfig(inters);
     }
 
     //--------//
@@ -97,13 +97,21 @@ public class RhythmConfig
     @Override
     public boolean equals (Object obj)
     {
-        if (!(obj instanceof RhythmConfig)) {
+        if (!(obj instanceof StackConfig)) {
             return false;
         }
 
-        RhythmConfig that = (RhythmConfig) obj;
+        StackConfig that = (StackConfig) obj;
 
         return inters.equals(that.inters);
+    }
+
+    //-----------//
+    // getInters //
+    //-----------//
+    public TreeSet<Inter> getInters ()
+    {
+        return inters;
     }
 
     //----------//

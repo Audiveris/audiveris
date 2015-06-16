@@ -48,7 +48,6 @@ import omr.sheet.ui.SheetTab;
 
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;
-import omr.sig.SIGraph.ReductionMode;
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.LedgerInter;
@@ -627,26 +626,29 @@ public class LedgersBuilder
             CheckSuite suite = selectSuite(stick);
 
             GradeImpacts impacts = suite.getImpacts(new GlyphContext(stick, yTarget));
-            double grade = impacts.getGrade();
 
-            if (stick.isVip()) {
-                logger.info("VIP staff#{} at {} {}", staff.getId(), index, impacts.getDump());
-            }
+            if (impacts != null) {
+                double grade = impacts.getGrade();
 
-            if (grade >= suite.getMinThreshold()) {
-                stick = system.registerGlyph(stick); // Useful???
-
-                // Sanity check
-                Inter inter = sig.getInter(stick, LedgerInter.class);
-
-                if (inter != null) {
-                    logger.error("Double ledger definition {}", inter);
+                if (stick.isVip()) {
+                    logger.info("VIP staff#{} at {} {}", staff.getId(), index, impacts.getDump());
                 }
 
-                LedgerInter ledger = new LedgerInter(stick, impacts);
-                ledger.setIndex(index);
-                sig.addVertex(ledger);
-                ledgers.add(ledger);
+                if (grade >= suite.getMinThreshold()) {
+                    stick = system.registerGlyph(stick); // Useful???
+
+                    // Sanity check
+                    Inter inter = sig.getInter(stick, LedgerInter.class);
+
+                    if (inter != null) {
+                        logger.error("Double ledger definition {}", inter);
+                    }
+
+                    LedgerInter ledger = new LedgerInter(stick, impacts);
+                    ledger.setIndex(index);
+                    sig.addVertex(ledger);
+                    ledgers.add(ledger);
+                }
             }
         }
 
@@ -710,7 +712,7 @@ public class LedgersBuilder
         }
 
         if (!exclusions.isEmpty()) {
-            Set<Inter> deletions = sig.reduceExclusions(ReductionMode.STRICT, exclusions);
+            Set<Inter> deletions = sig.reduceExclusions(exclusions);
             logger.debug(
                     "Staff: {} index: {} deletions: {} {}",
                     staff.getId(),

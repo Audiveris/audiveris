@@ -337,7 +337,7 @@ public class MeasureStack
     //--------//
     // filter //
     //--------//
-    public List<Inter> filter (List<Inter> systemInters)
+    public List<Inter> filter (Collection<Inter> systemInters)
     {
         List<Inter> kept = new ArrayList<Inter>();
 
@@ -1201,11 +1201,18 @@ public class MeasureStack
         right = rightStack.right;
         actualDuration = this.getActualDuration().plus(rightStack.getActualDuration());
         chords.addAll(rightStack.chords);
-        slots.addAll(rightStack.slots);
         wholeRestChords.addAll(rightStack.wholeRestChords);
         voices.addAll(rightStack.voices);
 
+        // Beware, merged slots must have their stack & xOffset updated accordingly
+        slots.addAll(rightStack.slots);
+
+        for (Slot slot : slots) {
+            slot.setStack(this);
+        }
+
         ///beamGroups.addAll(rightStack.beamGroups); ???
+        //TODO: what about the now "inside" barline (which may have a repeat sign) ???
     }
 
     //------------//

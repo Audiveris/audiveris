@@ -213,10 +213,7 @@ public class CheckSuite<C extends Checkable>
      */
     public SuiteImpacts getImpacts (C checkable)
     {
-        final SuiteImpacts impacts = SuiteImpacts.newInstance(this, checkable);
-        pass(checkable, impacts);
-
-        return impacts;
+        return SuiteImpacts.newInstance(this, checkable);
     }
 
     //-----------------//

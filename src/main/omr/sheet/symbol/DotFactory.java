@@ -303,7 +303,7 @@ public class DotFactory
         luBox.grow(maxDx, maxDy);
 
         final List<Inter> chords = sig.intersectedInters(
-                symbolFactory.getSystemChords(),
+                symbolFactory.getSystemHeadChords(),
                 GeoOrder.BY_ABSCISSA,
                 luBox);
 
@@ -625,7 +625,7 @@ public class DotFactory
             }
 
             sig.addEdge(second, bestFirst, bestRel);
-            logger.info("DoubleDot relation {} over {}", second, bestFirst);
+            logger.debug("DoubleDot relation {} over {}", second, bestFirst);
         }
     }
 

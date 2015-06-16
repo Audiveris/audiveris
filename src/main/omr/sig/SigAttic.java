@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sig;
 
+import omr.sig.inter.ChordInter;
 import omr.sig.inter.Inter;
 import omr.sig.relation.Relation;
 
@@ -20,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class {@code SigAttic} is a graph used as a temporary storage for some inters of a
@@ -51,19 +54,28 @@ public class SigAttic
      * Restore from this attic to sig the provided collection of Inter instances, as
      * well as the relations they are involved in.
      *
-     * @param sig    the sig to partially restore
-     * @param inters the collection of primary Inter instances to restore
+     * @param sig   the sig to partially restore
+     * @param seeds the collection of primary Inter instances to restore
      */
     public void restore (SIGraph sig,
-                         Collection<Inter> inters)
+                         Collection<Inter> seeds)
     {
+        // Include chord notes as well
+        Set<Inter> vertices = new HashSet<Inter>(seeds);
+
+        for (Inter inter : seeds) {
+            if (inter instanceof ChordInter) {
+                vertices.addAll(((ChordInter) inter).getNotes());
+            }
+        }
+
         // Restore primary inter instances
-        for (Inter inter : inters) {
+        for (Inter inter : vertices) {
             sig.addVertex(inter);
         }
 
-        // Restore relations
-        for (Inter inter : inters) {
+        // Restore relations from seeds
+        for (Inter inter : seeds) {
             for (Relation rel : edgesOf(inter)) {
                 Inter source = getEdgeSource(rel);
                 Inter target = getEdgeTarget(rel);
@@ -87,34 +99,52 @@ public class SigAttic
     /**
      * Save from sig to this attic a collection of Inter instances, as well as the
      * relations these inters are involved in, which may sometimes also require to
-     * save secondary inters that are located at the other side of a relation.
+     * save secondary inters that are located on the opposite side of a relation.
      *
-     * @param sig    the sig to partially backup
-     * @param inters the collection of primary Inter instances to save
+     * @param sig   the sig to partially backup
+     * @param seeds the collection of primary Inter instances to save
      */
     public void save (SIGraph sig,
-                      Collection<Inter> inters)
+                      Collection<Inter> seeds)
     {
-        // Save inters as vertices
-        for (Inter inter : inters) {
-            addVertex(inter);
+        // Save needed vertices
+        if (true) {
+            Set<Inter> vertices = new HashSet<Inter>(seeds);
+
+            for (Inter seed : seeds) {
+                if (seed instanceof ChordInter) {
+                    // Include chord notes as well
+                    vertices.addAll(((ChordInter) seed).getNotes());
+                }
+            }
+
+            for (Inter vertex : vertices) {
+                addVertex(vertex);
+            }
+        } else {
+            for (Inter seed : seeds) {
+                addVertex(seed);
+
+                if (seed instanceof ChordInter) {
+                    // Include chord notes as well
+                    for (Inter note : ((ChordInter) seed).getNotes()) {
+                        addVertex(note);
+                    }
+                }
+            }
         }
 
         // Save involved relations as edges (including linked vertices)
-        for (Inter inter : inters) {
-            for (Relation rel : sig.edgesOf(inter)) {
+        for (Inter seed : seeds) {
+            for (Relation rel : sig.edgesOf(seed)) {
                 Inter source = sig.getEdgeSource(rel);
                 Inter target = sig.getEdgeTarget(rel);
 
                 // Save secondary Inter if so needed (just to allow the relation)
-                if (inter == source) {
-                    if (!containsVertex(target)) {
-                        addVertex(target);
-                    }
+                if (seed == source) {
+                    addVertex(target);
                 } else {
-                    if (!containsVertex(source)) {
-                        addVertex(source);
-                    }
+                    addVertex(source);
                 }
 
                 // Save relation

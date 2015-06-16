@@ -24,7 +24,6 @@ import static omr.sheet.rhythm.SlotsBuilder.Rel.*;
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.ChordInter;
-import omr.sig.inter.HeadChordInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.Inters;
 import omr.sig.inter.RestChordInter;
@@ -134,8 +133,11 @@ public class SlotsBuilder
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
-    /** The ChordInter to remove from stack current content. */
+    /** The set of RestChordInter to remove from stack current content. */
     private final Set<RestChordInter> toRemove;
+
+    /** To stop on first error encountered. */
+    private final boolean failFast;
 
     /** Scale-dependent parameters. */
     private final Parameters params;
@@ -189,12 +191,15 @@ public class SlotsBuilder
      *
      * @param stack    the provided measure stack
      * @param toRemove (output) the set of rest chords to remove
+     * @param failFast true to stop on first error encountered
      */
     public SlotsBuilder (MeasureStack stack,
-                         Set<RestChordInter> toRemove)
+                         Set<RestChordInter> toRemove,
+                         boolean failFast)
     {
         this.stack = stack;
         this.toRemove = toRemove;
+        this.failFast = failFast;
 
         params = new Parameters(stack.getSystem().getSheet().getScale());
     }
@@ -213,7 +218,7 @@ public class SlotsBuilder
         // We work on the population of chords, using inter-chords constraints
         buildRelationships();
 
-        if (!buildSlots()) {
+        if (!buildSlots() && failFast) {
             return false;
         }
 
@@ -367,13 +372,15 @@ public class SlotsBuilder
             if (!incomings.isEmpty()) {
                 // Allocate the slot with the incoming chords
                 int slotId = stack.getSlots().size() + 1;
-                Slot slot = new Slot(slotId, stack);
+                Slot slot = new Slot(slotId, stack, incomings);
                 stack.getSlots().add(slot);
-                slot.setChords(incomings);
 
-                // Check slots time so far are consistent & that dx with previous slot is wide enough
-                if (!slot.setStartTime(term) || !checkInterSlot(slot)) {
-                    return false;
+                // Check slots time so far are consistent
+                if (!slot.setStartTime(term)) { // || !checkInterSlot(slot)) {
+
+                    if (failFast) {
+                        return false;
+                    }
                 }
 
                 // Determine the voice of each chord in the slot
@@ -391,59 +398,60 @@ public class SlotsBuilder
         return true;
     }
 
-    //----------------//
-    // checkInterSlot //
-    //----------------//
-    /**
-     * Check whether the provided slot is sufficiently distinct from previous one.
-     * if not, a modified config candidate is posted
-     *
-     * @param slot the slot to check
-     * @return true if OK
-     */
-    private boolean checkInterSlot (Slot slot)
-    {
-        // Do we have a previous slot?
-        if (slot.getId() == 1) {
-            return true;
-        }
-
-        Slot prevSlot = stack.getSlots().get(slot.getId() - 2);
-        int dx = slot.getXOffset() - prevSlot.getXOffset();
-
-        if (dx >= params.minInterSlotDx) {
-            return true;
-        }
-
-        // We are too close, find out the guilty chord?
-        logger.debug("Too close slot {}", slot);
-
-        for (ChordInter prevChord : prevSlot.getChords()) {
-            Rectangle prevRect = prevChord.getBounds();
-
-            for (ChordInter nextChord : slot.getChords()) {
-                Rectangle nextRect = nextChord.getBounds();
-
-                if (GeoUtil.yOverlap(prevRect, nextRect) > 0) {
-                    if (prevChord.isVip() || nextChord.isVip() || logger.isDebugEnabled()) {
-                        logger.info("VIP slots overlap between {} & {}", prevChord, nextChord);
-                    }
-
-                    // Exclude the pair members in pending candidates!
-                    if (prevChord instanceof HeadChordInter) {
-                        if (nextChord instanceof RestChordInter) {
-                            toRemove.add((RestChordInter) nextChord);
-                        }
-                    } else if (nextChord instanceof HeadChordInter) {
-                        toRemove.add((RestChordInter) prevChord);
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
+    //
+    //    //----------------//
+    //    // checkInterSlot //
+    //    //----------------//
+    //    /**
+    //     * Check whether the provided slot is sufficiently distinct from previous one.
+    //     * if not, a modified config candidate is posted
+    //     *
+    //     * @param slot the slot to check
+    //     * @return true if OK
+    //     */
+    //    private boolean checkInterSlot (Slot slot)
+    //    {
+    //        // Do we have a previous slot?
+    //        if (slot.getId() == 1) {
+    //            return true;
+    //        }
+    //
+    //        Slot prevSlot = stack.getSlots().get(slot.getId() - 2);
+    //        int dx = slot.getXOffset() - prevSlot.getXOffset();
+    //
+    //        if (dx >= params.minInterSlotDx) {
+    //            return true;
+    //        }
+    //
+    //        // We are too close, find out the guilty chord
+    //        logger.debug("Too close slot {}", slot);
+    //
+    //        for (ChordInter prevChord : prevSlot.getChords()) {
+    //            Rectangle prevRect = prevChord.getBounds();
+    //
+    //            for (ChordInter nextChord : slot.getChords()) {
+    //                Rectangle nextRect = nextChord.getBounds();
+    //
+    //                if (GeoUtil.yOverlap(prevRect, nextRect) > 0) {
+    //                    if (prevChord.isVip() || nextChord.isVip() || logger.isDebugEnabled()) {
+    //                        logger.info("VIP slots overlap between {} & {}", prevChord, nextChord);
+    //                    }
+    //
+    //                    // Exclude the pair members in pending candidates!
+    //                    if (prevChord instanceof HeadChordInter) {
+    //                        if (nextChord instanceof RestChordInter) {
+    //                            toRemove.add((RestChordInter) nextChord);
+    //                        }
+    //                    } else if (nextChord instanceof HeadChordInter) {
+    //                        toRemove.add((RestChordInter) prevChord);
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        return false;
+    //    }
+    //
     //-----------------//
     // computeNextTerm //
     //-----------------//
@@ -811,7 +819,7 @@ public class SlotsBuilder
 
         // Process detected adjacencies
         if (!adjacencies.isEmpty()) {
-            logger.info("Adjacencies: {}", adjacencies);
+            logger.debug("Slot adjacencies: {}", adjacencies);
 
             for (ChordPair pair : adjacencies) {
                 // Since ch1 ~ ch2, all neighbors of ch1 ~ neighbors of ch2
@@ -1044,10 +1052,11 @@ public class SlotsBuilder
                 1,
                 "Maximum horizontal delta between a slot and a chord");
 
-        private final Scale.Fraction minInterSlotDx = new Scale.Fraction(
-                0.5,
-                "Minimum horizontal delta between two slots");
-
+        //
+        //        private final Scale.Fraction minInterSlotDx = new Scale.Fraction(
+        //                0.5,
+        //                "Minimum horizontal delta between two slots");
+        //
         private final Scale.Fraction maxAdjacencyXGap = new Scale.Fraction(
                 0.5,
                 "Maximum horizontal gap between adjacent chords bounds");
@@ -1098,15 +1107,16 @@ public class SlotsBuilder
 
         private final int maxSlotDx;
 
-        private final int minInterSlotDx;
-
+        //
+        //        private final int minInterSlotDx;
+        //
         private final int maxAdjacencyXGap;
 
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
             maxSlotDx = scale.toPixels(constants.maxSlotDx);
-            minInterSlotDx = scale.toPixels(constants.minInterSlotDx);
+            //            minInterSlotDx = scale.toPixels(constants.minInterSlotDx);
             maxAdjacencyXGap = scale.toPixels(constants.maxAdjacencyXGap);
         }
     }

@@ -26,7 +26,6 @@ import omr.sheet.rhythm.RhythmsStep;
 import omr.sheet.stem.StemSeedsStep;
 import omr.sheet.stem.StemsStep;
 import omr.sheet.symbol.LinksStep;
-import omr.sheet.symbol.SymbolReductionStep;
 import omr.sheet.symbol.SymbolsStep;
 import omr.sheet.ui.SheetTab;
 
@@ -61,7 +60,6 @@ public enum Step
     MEASURES("Retrieve raw measures from groups of bar lines", new MeasuresStep()),
     CURVES("Retrieve slurs, wedges & endings", new CurvesStep()),
     SYMBOLS("Retrieve fixed-shape symbols", new SymbolsStep()),
-    SYMBOL_REDUCTION("Reduce symbols", new SymbolReductionStep()),
     RHYTHMS("Handle rhythms within measures", new RhythmsStep()),
     LINKS("Link symbols", new LinksStep()),
     PAGE("Connect systems within page", new PageStep());

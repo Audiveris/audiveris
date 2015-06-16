@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
@@ -59,7 +58,7 @@ public class Slot
     //~ Instance fields ----------------------------------------------------------------------------
     /** The containing measure stack. */
     @Navigable(false)
-    private final MeasureStack stack;
+    private MeasureStack stack;
 
     /** Sequential Id unique within the containing stack. Starts at 1. */
     private final int id;
@@ -68,7 +67,7 @@ public class Slot
     private int xOffset;
 
     /** Chords incoming into this slot, sorted by ordinate. */
-    private final List<ChordInter> incomings = new ArrayList<ChordInter>();
+    private final List<ChordInter> incomings;
 
     /** Time offset since measure start. */
     private Rational startTime;
@@ -77,14 +76,23 @@ public class Slot
     /**
      * Creates a new Slot object.
      *
-     * @param id    the slot id within the containing measure stack
-     * @param stack the containing measure stack
+     * @param id        the slot id within the containing measure stack
+     * @param stack     the containing measure stack
+     * @param incomings the chords that start in this slot
      */
     public Slot (int id,
-                 MeasureStack stack)
+                 MeasureStack stack,
+                 List<ChordInter> incomings)
     {
         this.id = id;
         this.stack = stack;
+        this.incomings = new ArrayList<ChordInter>(incomings);
+
+        for (ChordInter chord : incomings) {
+            chord.setSlot(this);
+        }
+
+        computeXOffset();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -167,6 +175,24 @@ public class Slot
     public int compareTo (Slot other)
     {
         return Double.compare(xOffset, other.xOffset);
+    }
+
+    public void computeXOffset ()
+    {
+        // Compute slot refPoint as average of chords centers
+        Population xPop = new Population();
+        Population yPop = new Population();
+
+        for (ChordInter chord : incomings) {
+            Point center = chord.getCenter();
+            xPop.includeValue(center.x);
+            yPop.includeValue(center.y);
+        }
+
+        Point2D ref = new Point2D.Double(xPop.getMeanValue(), yPop.getMeanValue());
+
+        // Store abscissa offset WRT measure stack left border
+        xOffset = (int) Math.rint(stack.getXOffset(ref));
     }
 
     //-------------------//
@@ -382,31 +408,13 @@ public class Slot
         return xOffset;
     }
 
-    //-----------//
-    // setChords //
-    //-----------//
-    public void setChords (Collection<ChordInter> chords)
+    //----------//
+    // setStack //
+    //----------//
+    public void setStack (MeasureStack stack)
     {
-        this.incomings.addAll(chords);
-
-        for (ChordInter chord : chords) {
-            chord.setSlot(this);
-        }
-
-        // Compute slot refPoint as average of chords centers
-        Population xPop = new Population();
-        Population yPop = new Population();
-
-        for (ChordInter chord : chords) {
-            Point center = chord.getCenter();
-            xPop.includeValue(center.x);
-            yPop.includeValue(center.y);
-        }
-
-        Point2D ref = new Point2D.Double(xPop.getMeanValue(), yPop.getMeanValue());
-
-        // Store abscissa offset WRT measure stack left border
-        xOffset = (int) Math.rint(stack.getXOffset(ref));
+        this.stack = stack;
+        computeXOffset();
     }
 
     //--------------//
@@ -421,6 +429,8 @@ public class Slot
      */
     public boolean setStartTime (Rational startTime)
     {
+        boolean failed = false;
+
         if (this.startTime == null) {
             logger.debug("setStartTime {} for Slot #{}", startTime, getId());
             this.startTime = startTime;
@@ -428,7 +438,7 @@ public class Slot
             // Assign to all chords of this slot first
             for (ChordInter chord : incomings) {
                 if (!chord.setStartTime(startTime)) {
-                    return false;
+                    failed = true;
                 }
             }
 
@@ -451,11 +461,11 @@ public class Slot
                         "Reassigning startTime from " + this.startTime + " to " + startTime + " in "
                         + this);
 
-                return false;
+                failed = true;
             }
         }
 
-        return true;
+        return !failed;
     }
 
     //---------------//
@@ -589,12 +599,21 @@ public class Slot
                 if (voice.isFree(this)) {
                     // If we have more than one incoming,
                     // avoid migrating a voice from one staff to another
-                    if (incomings.size() > 1) {
-                        ChordInter latestVoiceChord = voice.getChordBefore(this);
+                    ChordInter latestVoiceChord = voice.getChordBefore(this);
 
-                        if ((latestVoiceChord != null)
+                    if (latestVoiceChord != null) {
+                        if ((incomings.size() > 1)
                             && (latestVoiceChord.getStaff() != chord.getStaff())) {
                             continue;
+                        }
+
+                        // Check there is no time hole with latest voice chord
+                        // Otherwise there is a rhythm error
+                        // (missing rest/dot on this voice / missing tuplet on other voice)
+                        Rational delta = startTime.minus(latestVoiceChord.getEndTime());
+
+                        if (delta.compareTo(Rational.ZERO) > 0) {
+                            logger.debug("{} {} {} time hole: {}", stack, this, voice, delta);
                         }
                     }
 

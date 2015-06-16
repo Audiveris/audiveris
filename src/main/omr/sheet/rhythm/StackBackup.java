@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                     R h y t h m B a c k u p                                    //
+//                                      S t a c k B a c k u p                                     //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -11,8 +11,7 @@
 // </editor-fold>
 package omr.sheet.rhythm;
 
-import omr.sig.SIGraph;
-import omr.sig.SigAttic;
+import omr.sig.SigBackup;
 import omr.sig.inter.ChordInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.InterEnsemble;
@@ -25,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code RhythmBackup} manages the rhythm adjustable configuration of a
+ * Class {@code StackBackup} manages the rhythm adjustable configuration of a
  * MeasureStack.
  * <ol>
  * <li>It saves the comprehensive initial set of rhythm data, perhaps with conflicting items.</li>
@@ -33,32 +32,24 @@ import java.util.Set;
  * <li>It can freeze the stack when a final good configuration has been chosen.</li>
  * </ol>
  */
-public class RhythmBackup
+public class StackBackup
+        extends SigBackup
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** The underlying stack. */
     private final MeasureStack stack;
 
-    /** Initial rhythm data. */
-    private List<Inter> initials;
-
-    /** The SIG where work is done. */
-    private final SIGraph sig;
-
-    /** The attic where data can be saved to and restored from. */
-    private final SigAttic attic = new SigAttic();
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code RhythmBackup} object.
+     * Creates a new {@code StackBackup} object.
      *
      * @param stack the underlying measure stack
      */
-    public RhythmBackup (MeasureStack stack)
+    public StackBackup (MeasureStack stack)
     {
+        super(stack.getSystem().getSig());
         this.stack = stack;
-        sig = stack.getSystem().getSig();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -68,7 +59,7 @@ public class RhythmBackup
     public void freeze (Collection<? extends Inter> keptInters)
     {
         // For those chords that have not been kept, delete the member notes
-        List<Inter> discardedInters = new ArrayList<Inter>(initials);
+        List<Inter> discardedInters = new ArrayList<Inter>(seeds);
         discardedInters.removeAll(keptInters);
 
         for (Inter discarded : discardedInters) {
@@ -98,66 +89,58 @@ public class RhythmBackup
     /**
      * Try to install the provided configuration.
      *
-     * @param config   the configuration to install
-     * @param toRemove (output)chord inters to remove, if any
+     * @param config   (input/output) the configuration to install
+     * @param toRemove (output) rest chord inters to remove, if any
+     * @param failFast true to stop processing on first error
      * @return true if successful, false if an error was detected
      */
-    public boolean install (RhythmConfig config,
-                            Set<RestChordInter> toRemove)
+    public boolean install (StackConfig config,
+                            Set<RestChordInter> toRemove,
+                            boolean failFast)
     {
         // Clear the stack
-        for (Inter inter : initials) {
+        for (Inter inter : seeds) {
             stack.removeInter(inter);
             inter.delete();
         }
 
         // Restore just the partition
-        attic.restore(sig, config.inters);
+        attic.restore(sig, config.getInters());
 
-        for (Inter inter : config.inters) {
+        for (Inter inter : config.getInters()) {
             stack.addInter(inter);
         }
 
         // Reset all rhythm data within the stack
         stack.resetRhythm();
-        
+
         // Count augmentation dots on chords
+        // (this implies that chord notes are present with their potential relation to dot)
         countChordDots();
 
         // Link tuplets
         List<TupletInter> toDelete = new TupletsBuilder(stack).linkTuplets();
 
         if (!toDelete.isEmpty()) {
-            config.inters.removeAll(toDelete);
+            config.getInters().removeAll(toDelete);
         }
 
         // Build slots & voices
-        return new SlotsBuilder(stack, toRemove).process();
+        return new SlotsBuilder(stack, toRemove, failFast).process();
     }
 
-    //---------------//
-    // resetInitials //
-    //---------------//
-    public void resetInitials ()
+    //----------------//
+    // resetFromSeeds //
+    //----------------//
+    public void resetFromSeeds ()
     {
-        // Clear any inter from initials
-        for (Inter inter : initials) {
+        // Clear any inter from seeds
+        for (Inter inter : seeds) {
             stack.removeInter(inter);
         }
 
         // Restore the initial config
-        attic.restore(sig, initials);
-    }
-
-    //------//
-    // save //
-    //------//
-    public void save (Collection<Inter> inters)
-    {
-        // Copy the initial rhythm data
-        initials = new ArrayList<Inter>(inters);
-        // Save relevant sig inters & relations
-        attic.save(sig, inters);
+        attic.restore(sig, seeds);
     }
 
     //----------------//

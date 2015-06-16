@@ -13,6 +13,9 @@ package omr.check;
 
 import omr.sig.BasicImpacts;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
 /**
@@ -24,8 +27,11 @@ import java.util.List;
 public class SuiteImpacts
         extends BasicImpacts
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(SuiteImpacts.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     private final String suiteName;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -74,10 +80,16 @@ public class SuiteImpacts
 
         SuiteImpacts impacts = new SuiteImpacts(names, weights, suite.getName());
 
-        // Populate impacts with check results on checkable entity
-        suite.pass(checkable, impacts);
+        try {
+            // Populate impacts with check results on checkable entity
+            suite.pass(checkable, impacts);
 
-        return impacts;
+            return impacts;
+        } catch (Exception ex) {
+            logger.warn("Error computing SuiteImpacts on " + checkable, ex);
+
+            return null;
+        }
     }
 
     //---------//

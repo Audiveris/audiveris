@@ -92,7 +92,7 @@ public class SymbolFactory
     private final List<Inter> systemHeads;
 
     /** All system head-based chords, ordered by abscissa. */
-    private final List<Inter> systemChords;
+    private final List<Inter> systemHeadChords;
 
     /** All system rests, ordered by abscissa. */
     private List<Inter> systemRests;
@@ -123,8 +123,8 @@ public class SymbolFactory
         systemHeads = sig.inters(AbstractHeadInter.class);
         Collections.sort(systemHeads, Inter.byAbscissa);
 
-        systemChords = sig.inters(ChordInter.class);
-        Collections.sort(systemChords, Inter.byAbscissa);
+        systemHeadChords = sig.inters(ChordInter.class);
+        Collections.sort(systemHeadChords, Inter.byAbscissa);
 
         dotFactory = new DotFactory(this);
     }
@@ -156,7 +156,7 @@ public class SymbolFactory
         if (Clefs.contains(shape)) {
             sig.addVertex(ClefInter.create(glyph, shape, grade, closestStaff)); // Staff is OK
         } else if (Rests.contains(shape)) {
-            RestInter rest = RestInter.create(glyph, shape, grade, system, systemChords);
+            RestInter rest = RestInter.create(glyph, shape, grade, system, systemHeadChords);
 
             if (rest != null) {
                 sig.addVertex(rest);
@@ -184,7 +184,7 @@ public class SymbolFactory
         } else if (Dynamics.contains(shape)) {
             sig.addVertex(new DynamicsInter(glyph, shape, grade));
         } else if (Tuplets.contains(shape)) {
-            TupletInter tuplet = TupletInter.create(glyph, shape, grade, system, systemChords);
+            TupletInter tuplet = TupletInter.create(glyph, shape, grade, system, systemHeadChords);
 
             if (tuplet != null) {
                 sig.addVertex(tuplet);
@@ -251,12 +251,12 @@ public class SymbolFactory
         dotFactory.lateDotChecks();
     }
 
-    //-----------------//
-    // getSystemChords //
-    //-----------------//
-    List<Inter> getSystemChords ()
+    //---------------------//
+    // getSystemHeadChords //
+    //---------------------//
+    List<Inter> getSystemHeadChords ()
     {
-        return systemChords;
+        return systemHeadChords;
     }
 
     //----------------//

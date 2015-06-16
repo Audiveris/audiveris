@@ -193,7 +193,7 @@ public abstract class AbstractInter
                 logger.info("VIP delete {}", this);
             }
 
-            if ((ensemble != null) && ensemble instanceof InterMutableEnsemble) {
+            if (ensemble instanceof InterMutableEnsemble) {
                 InterMutableEnsemble ime = (InterMutableEnsemble) ensemble;
 
                 if (ime.getMembers().size() == 1) {
