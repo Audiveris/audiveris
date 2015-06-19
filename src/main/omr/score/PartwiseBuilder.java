@@ -1793,7 +1793,9 @@ public class PartwiseBuilder
 
             // Delegate to measures
             for (Measure measure : part.getMeasures()) {
-                processMeasure(measure);
+                if (!measure.getStack().isCautionary()) {
+                    processMeasure(measure);
+                }
             }
         } catch (Exception ex) {
             logger.warn("Error visiting " + part, ex);

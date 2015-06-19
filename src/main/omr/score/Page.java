@@ -109,6 +109,10 @@ public class Page
 
         for (SystemInfo system : systems) {
             count += system.getFirstPart().getMeasures().size();
+
+            if (system.getLastMeasureStack().isCautionary()) {
+                count--;
+            }
         }
 
         measureCount = count;

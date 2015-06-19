@@ -28,12 +28,13 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code MeasureFixer} visits the score hierarchy to fix measures:
+ * Class {@code MeasureFixer} visits the score hierarchy to fix measures:.
  * <ul>
  * <li>Detect implicit measures (as pickup measures)</li>
  * <li>Detect first half repeat measures</li>
  * <li>Detect implicit measures (as second half repeats)</li>
  * <li>Detect inside bar-lines (empty measures) </li>
+ * <li>Detect cautionary measures (CKT changes at end of staff)</li>
  * <li>Assign final page-based measure IDs</li>
  * </ul>
  *
@@ -131,7 +132,7 @@ public class MeasureFixer
     // isEmpty //
     //---------//
     /**
-     * Check for an empty stack: perhaps clef and key sig, but no note or rest
+     * Check for an empty stack: perhaps clef and key or time, but no note or rest.
      *
      * @return true if so
      */
@@ -244,6 +245,15 @@ public class MeasureFixer
                             (lastId != null) ? (lastId + 1)
                                     : ((prevSystemLastId != null)
                                             ? (prevSystemLastId + 1) : 1));
+                } else {
+                    // This is jyst a cautionary stack at right end of system
+                    logger.debug("cautionary");
+                    stack.setCautionary();
+
+                    // We use the same id value that preceding stack, with "C" annotation
+                    if (lastId != null) {
+                        setId(lastId);
+                    }
                 }
             } else if (isPickup(idx, system)) {
                 logger.debug("pickup");

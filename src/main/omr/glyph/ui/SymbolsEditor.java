@@ -155,6 +155,33 @@ public class SymbolsEditor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------//
+    // getMeasureAt //
+    //--------------//
+    /**
+     * Retrieve the measure closest to the provided point.
+     * <p>
+     * This search is meant for user interface, so we can pick up the part which is vertically
+     * closest to point ordinate (then choose measure).
+     *
+     * @param point the provided point
+     * @return the related measure, or null
+     */
+    public Measure getMeasureAt (Point point)
+    {
+        final Staff staff = sheet.getStaffManager().getClosestStaff(point);
+
+        if (staff != null) {
+            final Part part = staff.getPart();
+
+            if (part != null) {
+                return part.getMeasureAt(point);
+            }
+        }
+
+        return null;
+    }
+
     //-----------//
     // getSlotAt //
     //-----------//
@@ -169,18 +196,10 @@ public class SymbolsEditor
      */
     public Slot getSlotAt (Point point)
     {
-        final Staff staff = sheet.getStaffManager().getClosestStaff(point);
+        final Measure measure = getMeasureAt(point);
 
-        if (staff != null) {
-            final Part part = staff.getPart();
-
-            if (part != null) {
-                final Measure measure = part.getMeasureAt(point);
-
-                if (measure != null) {
-                    return measure.getStack().getClosestSlot(point);
-                }
-            }
+        if (measure != null) {
+            return measure.getStack().getClosestSlot(point);
         }
 
         return null;

@@ -92,7 +92,8 @@ public class MeasureStack
 
         PICKUP,
         FIRST_HALF,
-        SECOND_HALF;
+        SECOND_HALF,
+        CAUTIONARY;
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -1123,6 +1124,19 @@ public class MeasureStack
         }
     }
 
+    //--------------//
+    // isCautionary //
+    //--------------//
+    /**
+     * Report whether this measure stack is a cautionary stack (just changes in CKT).
+     *
+     * @return true if measure is cautionary
+     */
+    public boolean isCautionary ()
+    {
+        return special == Special.CAUTIONARY;
+    }
+
     //-------------//
     // isFirstHalf //
     //-------------//
@@ -1323,6 +1337,14 @@ public class MeasureStack
     }
 
     //-----------//
+    // setPickup //
+    //-----------//
+    public void setCautionary ()
+    {
+        special = Special.CAUTIONARY;
+    }
+
+    //-----------//
     // setExcess //
     //-----------//
     /**
@@ -1480,7 +1502,16 @@ public class MeasureStack
     @Override
     public String toString ()
     {
-        return "{MeasureStack#" + getPageId() + "}";
+        StringBuilder sb = new StringBuilder("{MeasureStack#");
+        sb.append(getPageId());
+
+        if (isCautionary()) {
+            sb.append("C");
+        }
+
+        sb.append("}");
+
+        return sb.toString();
     }
 
     //--------------------------//

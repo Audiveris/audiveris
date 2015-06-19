@@ -12,6 +12,7 @@
 package omr.sheet.symbol;
 
 import omr.sheet.SystemInfo;
+import omr.sig.SigReducer;
 
 import omr.step.AbstractSystemStep;
 import omr.step.StepException;
@@ -44,5 +45,6 @@ public class LinksStep
             throws StepException
     {
         new SymbolsLinker(system).process();
+        new SigReducer(system).reduce(false);
     }
 }

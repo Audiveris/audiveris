@@ -514,6 +514,13 @@ public interface Inter
     void setSig (SIGraph sig);
 
     /**
+     * Assign the related staff, if any.
+     *
+     * @param staff the staff to set
+     */
+    void setStaff (Staff staff);
+
+    /**
      * Report a shape-based string.
      *
      * @return shape.toString() by default. To be overridden if shape is null.

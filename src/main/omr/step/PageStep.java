@@ -73,7 +73,6 @@ public class PageStep
                 connectSystemInitialSlurs(system);
 
                 //                system.connectTiedVoices();
-                //                system.refineLyricSyllables();
                 for (Inter inter : sig.inters(LyricLineInter.class)) {
                     LyricLineInter line = (LyricLineInter) inter;
                     line.refineLyricSyllables();

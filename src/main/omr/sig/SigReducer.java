@@ -303,9 +303,9 @@ public class SigReducer
 
         // General exclusions based on overlap
         detectOverlaps(sig.inters(overlapPredicate));
-        //
-        //        // Inters that conflict with frozen inters must be deleted
-        //        analyzeFrozenInters();
+
+        // Inters that conflict with frozen inters must be deleted
+        analyzeFrozenInters();
 
         // Make sure all inters have their contextual grade up-to-date
         contextualize();

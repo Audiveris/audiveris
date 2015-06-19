@@ -1023,10 +1023,10 @@ public abstract class TimeBuilder
 
                     Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
                     inter.setBounds(timeBox);
-
-                    int gid = inter.getGlyph().getId();
+                    inter.setStaff(staff);
                     sig.addVertex(inter);
                     inters.add(inter);
+                    int gid = inter.getGlyph().getId();
                     logger.debug(
                             "Staff#{} {} {} g#{} {}",
                             staff.getId(),
@@ -1072,6 +1072,7 @@ public abstract class TimeBuilder
                     Inter inter = entry.getValue();
                     Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
                     inter.setBounds(timeBox);
+                    inter.setStaff(staff);
                     sig.addVertex(inter);
                     wholes.add(inter);
 
