@@ -64,7 +64,7 @@ public class ShapeSet
             TIME_SIXTEEN);
 
     /** Measure counts.
-     * They time-looking shapes may appear right above a staff containing just a long measure rest,
+     * These time-looking shapes may appear right above a staff containing just a long measure rest,
      * to indicate the number of measures the rest represents.
      */
     public static final List<Shape> MeasureCounts = Arrays.asList(
@@ -81,18 +81,21 @@ public class ShapeSet
             TIME_TWELVE,
             TIME_SIXTEEN);
 
-    /** Specific single-symbol for whole time signature */
-    public static final EnumSet<Shape> WholeTimes = EnumSet.of(COMMON_TIME, CUT_TIME);
+    /** Single-symbols for whole time signature */
+    public static final EnumSet<Shape> SingleWholeTimes = EnumSet.of(
+            COMMON_TIME,
+            CUT_TIME);
 
-    /** Specific multi-symbol for whole time signature (such as 4/4) */
-    public static final EnumSet<Shape> ComboTimes = EnumSet.of(
+    /** Single-symbols and predefined combos for whole time signature */
+    public static final EnumSet<Shape> WholeTimes = EnumSet.of(
+            COMMON_TIME,
+            CUT_TIME,
             TIME_FOUR_FOUR,
             TIME_TWO_TWO,
             TIME_TWO_FOUR,
             TIME_THREE_FOUR,
             TIME_FIVE_FOUR,
-            TIME_SIX_EIGHT,
-            CUSTOM_TIME);
+            TIME_SIX_EIGHT);
 
     /** All sorts of F clefs */
     public static final EnumSet<Shape> BassClefs = EnumSet.of(
@@ -345,7 +348,7 @@ public class ShapeSet
     public static final ShapeSet Times = new ShapeSet(
             TIME_FOUR_FOUR,
             new Color(0xcc3300),
-            shapesOf(PartialTimes, WholeTimes, ComboTimes));
+            shapesOf(PartialTimes, WholeTimes, shapesOf(CUSTOM_TIME)));
 
     public static final ShapeSet Digits = new ShapeSet(
             DIGIT_1,
@@ -700,6 +703,34 @@ public class ShapeSet
         shapes.addAll(col1);
         shapes.addAll(col2);
         shapes.addAll(col3);
+
+        return shapes;
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    /**
+     * Convenient way to build a collection of shapes.
+     *
+     * @param col1 a first collection of shapes
+     * @param col2 a second collection of shapes
+     * @param col3 a third collection of shapes
+     * @param col4 a fourth collection of shapes
+     * @return a single collection
+     */
+    public static Collection<Shape> shapesOf (Collection<Shape> col1,
+                                              Collection<Shape> col2,
+                                              Collection<Shape> col3,
+                                              Collection<Shape> col4)
+    {
+        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<Shape>()
+                : EnumSet.noneOf(Shape.class);
+
+        shapes.addAll(col1);
+        shapes.addAll(col2);
+        shapes.addAll(col3);
+        shapes.addAll(col4);
 
         return shapes;
     }

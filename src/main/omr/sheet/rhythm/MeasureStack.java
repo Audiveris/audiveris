@@ -106,10 +106,10 @@ public class MeasureStack
     /** (Page-based) measure Id. */
     private Integer id;
 
-    /** Minimum left abscissa. */
+    /** Minimum left abscissa, across all staves. */
     private int left;
 
-    /** Maximum right abscissa. */
+    /** Maximum right abscissa, across all staves. */
     private int right;
 
     /** Flag for special measure. */
@@ -353,7 +353,8 @@ public class MeasureStack
             final Measure measure;
 
             if (staff != null) {
-                measure = staff.getPart().getMeasureAt(center);
+                Part part = staff.getPart();
+                measure = part.getMeasureAt(center);
             } else {
                 List<Staff> stavesAround = system.getStavesAround(center); // 1 or 2 staves
                 staff = stavesAround.get(0);
@@ -1071,6 +1072,27 @@ public class MeasureStack
     /**
      * Report the precise abscissa offset since stack left border of the provided point.
      *
+     * @param point the provided point
+     * @param staff the staff of reference
+     * @return xOffset of the point WRT stack left side
+     */
+    public double getXOffset (Point2D point,
+                              Staff staff)
+    {
+        // Extrapolate, using skew, from single staff
+        final Skew skew = system.getSkew();
+        final Measure measure = getMeasureAt(staff);
+        final Point left = measure.getSidePoint(HorizontalSide.LEFT, staff);
+
+        return skew.deskewed(point).getX() - skew.deskewed(left).getX();
+    }
+
+    //------------//
+    // getXOffset //
+    //------------//
+    /**
+     * Report the precise abscissa offset since stack left border of the provided point.
+     *
      * @param point        the provided point
      * @param stavesAround one or two staves that surround the provided point
      * @return xOffset of the point WRT stack left side
@@ -1097,10 +1119,7 @@ public class MeasureStack
 
             return offset1 + (((offset2 - offset1) * (point.getY() - y1)) / (y2 - y1));
         } else {
-            // Extrapolate, using skew, from single staff
-            Skew skew = system.getSkew();
-
-            return skew.deskewed(point).getX() - skew.deskewed(left1).getX();
+            return getXOffset(point, staff1);
         }
     }
 

@@ -92,18 +92,6 @@ public class ShapeChecker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    public static ShapeChecker getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new ShapeChecker();
-        }
-
-        return INSTANCE;
-    }
-
     //----------//
     // annotate //
     //----------//
@@ -149,6 +137,18 @@ public class ShapeChecker
                 return;
             }
         }
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    public static ShapeChecker getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new ShapeChecker();
+        }
+
+        return INSTANCE;
     }
 
     //------------//
@@ -410,7 +410,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker("FullTimeSig", WholeTimes)
+        new Checker("WholeTimeSig", WholeTimes)
         {
             @Override
             public boolean check (SystemInfo system,
@@ -421,7 +421,7 @@ public class ShapeChecker
                 double absPos = Math.abs(glyph.getPitchPosition());
                 double maxDy = constants.maxTimePitchPositionMargin.getValue();
 
-                // A full time shape must be on 0 position
+                // A whole time shape must be on 0 position
                 if (absPos > maxDy) {
                     eval.failure = new Evaluation.Failure("pitch");
 
@@ -537,7 +537,14 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Pedal marks must be below the staff
-                return glyph.getPitchPosition() > 4;
+                if (glyph.getPitchPosition() <= 4) {
+                    return false;
+                }
+
+                // Pedal marks cannot intersect the staff
+                Staff staff = system.getClosestStaff(glyph.getAreaCenter());
+
+                return staff.gapTo(glyph.getBounds()) > 0;
             }
         };
 
@@ -673,58 +680,6 @@ public class ShapeChecker
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean applySpecificCheck = new Constant.Boolean(
-                true,
-                "Should we apply specific checks on shape candidates?");
-
-        private final Scale.Fraction maxTitleHeight = new Scale.Fraction(
-                4.0,
-                "Maximum normalized height for a title text");
-
-        private final Scale.Fraction maxLyricsHeight = new Scale.Fraction(
-                2.5,
-                "Maximum normalized height for a lyrics text");
-
-        private final Constant.Double minTitlePitchPosition = new Constant.Double(
-                "PitchPosition",
-                15.0,
-                "Minimum absolute pitch position for a title");
-
-        private final Constant.Double maxTupletPitchPosition = new Constant.Double(
-                "PitchPosition",
-                15.0,
-                "Maximum absolute pitch position for a tuplet");
-
-        private final Constant.Double maxTimePitchPositionMargin = new Constant.Double(
-                "PitchPosition",
-                1.0,
-                "Maximum absolute pitch position margin for a time signature");
-
-        private final Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(
-                1.5,
-                "Maximum height for small dynamics (no p, no f)");
-
-        private final Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(
-                2.0,
-                "Maximum height for small dynamics (with p, no f)");
-
-        private final Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(
-                2.5,
-                "Maximum height for tall dynamics (with f)");
-
-        private final Scale.Fraction maxGapToStaff = new Scale.Fraction(
-                8.0,
-                "Maximum vertical gap between a note-like glyph and closest staff");
-    }
-
     //---------//
     // Checker //
     //---------//
@@ -821,5 +776,57 @@ public class ShapeChecker
         {
             return name;
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean applySpecificCheck = new Constant.Boolean(
+                true,
+                "Should we apply specific checks on shape candidates?");
+
+        private final Scale.Fraction maxTitleHeight = new Scale.Fraction(
+                4.0,
+                "Maximum normalized height for a title text");
+
+        private final Scale.Fraction maxLyricsHeight = new Scale.Fraction(
+                2.5,
+                "Maximum normalized height for a lyrics text");
+
+        private final Constant.Double minTitlePitchPosition = new Constant.Double(
+                "PitchPosition",
+                15.0,
+                "Minimum absolute pitch position for a title");
+
+        private final Constant.Double maxTupletPitchPosition = new Constant.Double(
+                "PitchPosition",
+                15.0,
+                "Maximum absolute pitch position for a tuplet");
+
+        private final Constant.Double maxTimePitchPositionMargin = new Constant.Double(
+                "PitchPosition",
+                1.0,
+                "Maximum absolute pitch position margin for a time signature");
+
+        private final Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(
+                1.5,
+                "Maximum height for small dynamics (no p, no f)");
+
+        private final Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(
+                2.0,
+                "Maximum height for small dynamics (with p, no f)");
+
+        private final Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(
+                2.5,
+                "Maximum height for tall dynamics (with f)");
+
+        private final Scale.Fraction maxGapToStaff = new Scale.Fraction(
+                8.0,
+                "Maximum vertical gap between a note-like glyph and closest staff");
     }
 }

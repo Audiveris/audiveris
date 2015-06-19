@@ -443,6 +443,7 @@ public class EditorMenu
             {
                 for (SystemInfo system : sheet.getSystems()) {
                     if (system.getStaves().contains(staff)) {
+                        // Allocate a HeaderBuilder instance on demand, and ask for plot
                         new HeaderBuilder(system).plot(staff);
 
                         return;

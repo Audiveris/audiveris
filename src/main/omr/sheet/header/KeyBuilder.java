@@ -135,7 +135,7 @@ import java.util.TreeMap;
  * <li>Determine precise horizontal slicing of the projection into items.
  * <li>Extract each item glyph and submit it to shape classifier for verification and vertical
  * positioning.
- * <li>Create one KeySigInter instance?
+ * <li>Create one KeyInter instance.
  * <li>Create one KeyAlterInter instance per item.
  * <li>Verify each item pitch in the staff (to be later matched against staff clef).
  * </ol>
@@ -177,8 +177,8 @@ public class KeyBuilder
     /** Scale-dependent parameters. */
     private final Parameters params;
 
-    /** Initial key-sig or key-sig change?. TODO: not yet used, but will be needed */
-    private final boolean initial;
+    /** Header key-sig or key-sig change?. TODO: not yet used, but will be needed */
+    private final boolean inHeader;
 
     /** Shape classifier to use. */
     private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
@@ -224,16 +224,16 @@ public class KeyBuilder
      * @param globalWidth  global plotting width
      * @param measureStart precise beginning abscissa of measure (generally right after bar line).
      * @param browseStart  estimated beginning abscissa for browsing.
-     * @param initial      true for the initial key-sig in StaffHeader, false for a key-sig change
+     * @param inHeader     true for the key-sig in StaffHeader, false for a key-sig change
      */
     public KeyBuilder (Staff staff,
                        int globalWidth,
                        int measureStart,
                        int browseStart,
-                       boolean initial)
+                       boolean inHeader)
     {
         this.staff = staff;
-        this.initial = initial;
+        this.inHeader = inHeader;
 
         system = staff.getSystem();
         sig = system.getSig();

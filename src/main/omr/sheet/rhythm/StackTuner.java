@@ -261,7 +261,10 @@ public class StackTuner
         } else {
             // We failed
             if (fullMode) {
-                logger.info("{}{} no good rhythm config", stack.getSystem().getLogPrefix(), stack);
+                logger.info(
+                        "{}*** {} no good rhythm config",
+                        stack.getSystem().getLogPrefix(),
+                        stack);
                 // We re-install the original config
                 backup.install(orgConfig, toRemove, false);
             }

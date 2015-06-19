@@ -11,11 +11,10 @@
 // </editor-fold>
 package omr.sheet.rhythm;
 
-import omr.sheet.StaffBarline;
-
 import omr.sheet.Part;
 import omr.sheet.PartBarline;
 import omr.sheet.Staff;
+import omr.sheet.StaffBarline;
 import omr.sheet.SystemInfo;
 
 import omr.sig.SIGraph;
@@ -155,21 +154,25 @@ public class MeasuresBuilder
      * Bars grouped in a staff but not grouped in another staff: We force the grouping.</li>
      *
      * @param part     the containing part
-     * @param staffMap the StaffBarline sequences per staff
+     * @param staffMap the StaffBarline sequences per staff within part
      * @return the PartBarline sequence
      */
     private void buildPartMeasures (Part part,
                                     Map<Staff, List<List<BarlineInter>>> staffMap)
     {
-        // TODO: Simplistic implementation: use only the first staff
-        Staff firstStaff = part.getFirstStaff();
-        List<List<BarlineInter>> firstGroups = staffMap.get(firstStaff);
+        // TODO: Simplistic implementation: use only the top staff
+        final Staff topStaff = part.getFirstStaff();
+        final List<List<BarlineInter>> topGroups = staffMap.get(topStaff);
+        final boolean noRightBar = topStaff.getSideBar(HorizontalSide.RIGHT) == null;
+        final int igMax = noRightBar ? topGroups.size() : (topGroups.size()
+                                                           - 1);
         PartBarline leftBarPending = null;
 
-        for (int ig = 0; ig < firstGroups.size(); ig++) {
-            List<BarlineInter> firstGroup = firstGroups.get(ig);
-            Measure measure = (firstGroup.get(0).isStaffEnd(HorizontalSide.LEFT)) ? null
-                    : new Measure(part);
+        for (int ig = 0; ig <= igMax; ig++) {
+            List<BarlineInter> topGroup = (ig < topGroups.size()) ? topGroups.get(ig) : null;
+            Measure measure = ((topGroup != null)
+                               && topGroup.get(0).isStaffEnd(HorizontalSide.LEFT)) ? null
+                            : new Measure(part);
 
             if (measure != null) {
                 part.addMeasure(measure);
@@ -186,37 +189,9 @@ public class MeasuresBuilder
                 leftBarPending = null;
             }
 
-            // Logical barline with at most first 2 bars of the group
-            PartBarline partBar = new PartBarline();
-
-            for (Staff s : part.getStaves()) {
-                StaffBarline staffBar = new StaffBarline();
-                partBar.addStaffBarline(staffBar);
-
-                List<BarlineInter> group = staffMap.get(s).get(ig);
-
-                for (int i = 0; i < Math.min(2, firstGroup.size()); i++) {
-                    staffBar.addInter(group.get(i));
-                }
-
-                addDotsTo(staffBar);
-            }
-
-            if (measure == null) {
-                part.setStartingBarline(partBar);
-            } else {
-                measure.setBarline(partBar);
-
-                final int im = part.getMeasures().size() - 1;
-                MeasureStack stack = system.getMeasureStacks().get(im);
-                measure.setStack(stack);
-                stack.addMeasure(measure);
-            }
-
-            if (firstGroup.size() > 2) {
-                // We have a second logical barline with last 2 bars of group
-                // And it starts a new measure
-                partBar = new PartBarline();
+            if (topGroup != null) {
+                // Logical barline with at most first 2 bars of the group
+                PartBarline partBar = new PartBarline();
 
                 for (Staff s : part.getStaves()) {
                     StaffBarline staffBar = new StaffBarline();
@@ -224,14 +199,46 @@ public class MeasuresBuilder
 
                     List<BarlineInter> group = staffMap.get(s).get(ig);
 
-                    for (int i = firstGroup.size() - 2; i < firstGroup.size(); i++) {
+                    for (int i = 0; i < Math.min(2, topGroup.size()); i++) {
                         staffBar.addInter(group.get(i));
                     }
 
                     addDotsTo(staffBar);
                 }
 
-                leftBarPending = partBar;
+                if (measure == null) {
+                    part.setStartingBarline(partBar);
+                } else {
+                    measure.setBarline(partBar);
+                }
+
+                if (topGroup.size() > 2) {
+                    // We have a second logical barline with last 2 bars of group
+                    // And it starts a new measure
+                    partBar = new PartBarline();
+
+                    for (Staff s : part.getStaves()) {
+                        StaffBarline staffBar = new StaffBarline();
+                        partBar.addStaffBarline(staffBar);
+
+                        List<BarlineInter> group = staffMap.get(s).get(ig);
+
+                        for (int i = topGroup.size() - 2; i < topGroup.size(); i++) {
+                            staffBar.addInter(group.get(i));
+                        }
+
+                        addDotsTo(staffBar);
+                    }
+
+                    leftBarPending = partBar;
+                }
+            }
+
+            if (measure != null) {
+                final int im = part.getMeasures().size() - 1;
+                MeasureStack stack = system.getMeasureStacks().get(im);
+                measure.setStack(stack);
+                stack.addMeasure(measure);
             }
         }
     }

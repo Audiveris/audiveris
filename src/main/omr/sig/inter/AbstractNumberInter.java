@@ -18,6 +18,9 @@ import java.awt.Rectangle;
 
 /**
  * Class {@code AbstractNumberInter} is an abstract inter with a integer value.
+ * <p>
+ * Concrete subclasses must be defined for Time upper or lower parts, for an ending number, for
+ * the number of measures in a multi-measure rest.
  *
  * @author Hervé Bitteur
  */

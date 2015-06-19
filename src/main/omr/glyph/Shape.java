@@ -128,8 +128,17 @@ public enum Shape
     TIME_NINE("Time digit 9"),
     TIME_TWELVE("Time number 12"),
     TIME_SIXTEEN("Time number 16"),
+    // Whole time sigs
     COMMON_TIME("Alpha = 4/4", new Color(0xcc6600)),
     CUT_TIME("Semi-Alpha = 2/2"),
+    // Predefined time combos
+    TIME_FOUR_FOUR("Rational 4/4"),
+    TIME_TWO_TWO("Rational 2/2"),
+    TIME_TWO_FOUR("Rational 2/4"),
+    TIME_THREE_FOUR("Rational 3/4"),
+    TIME_FIVE_FOUR("Rational 5/4"),
+    TIME_SIX_EIGHT("Rational 6/8"),
+    // Octave shifts
     OTTAVA_ALTA("8 va", new Color(0xcc66ff)),
     OTTAVA_BASSA("8 vb", new Color(0xcc66ff)),
 
@@ -377,12 +386,6 @@ public enum Shape
     FORWARD("To indicate a forward"),
     NON_DRAGGABLE("Non draggable shape"),
     GLYPH_PART("Part of a larger glyph"),
-    TIME_FOUR_FOUR("Rational 4/4"),
-    TIME_TWO_TWO("Rational 2/2"),
-    TIME_TWO_FOUR("Rational 2/4"),
-    TIME_THREE_FOUR("Rational 3/4"),
-    TIME_FIVE_FOUR("Rational 5/4"),
-    TIME_SIX_EIGHT("Rational 6/8"),
     CUSTOM_TIME("Time signature defined by user"),
     NO_LEGAL_TIME("No Legal Time Shape"),
     BEAM_SPOT("Beam-oriented spot", new Color(0xaaaaaa)),

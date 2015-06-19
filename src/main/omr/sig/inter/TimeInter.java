@@ -16,8 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 
-import static omr.glyph.Shape.CUSTOM_TIME;
-
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
@@ -39,7 +37,7 @@ import java.util.Set;
 
 /**
  * Class {@code TimeInter} represents a time signature, with either one (full) symbol
- * (COMMON or CUT) or a pair of top and bottom numbers.
+ * (COMMON, CUT or predefined combo) or a pair of top and bottom numbers.
  *
  * @author Hervé Bitteur
  */
@@ -78,14 +76,12 @@ public abstract class TimeInter
 
     static {
         for (Shape s : ShapeSet.WholeTimes) {
-            if (s != CUSTOM_TIME) {
-                TimeRational nd = rationalOf(s);
+            TimeRational nd = rationalOf(s);
 
-                if (nd == null) {
-                    logger.error("Rational for {} is not defined", s);
-                } else {
-                    rationals.put(s, nd);
-                }
+            if (nd == null) {
+                logger.error("Rational for {} is not defined", s);
+            } else {
+                rationals.put(s, nd);
             }
         }
     }
@@ -99,7 +95,7 @@ public abstract class TimeInter
      * Creates a new TimeInter object.
      *
      * @param glyph underlying glyph
-     * @param shape precise shape (COMMON_TIME or CUT_TIME only)
+     * @param shape precise shape (COMMON_TIME, CUT_TIME or predefined combo like TIME_FOUR_FOUR)
      * @param grade evaluation grade
      */
     public TimeInter (Glyph glyph,
@@ -228,7 +224,10 @@ public abstract class TimeInter
      *
      * @return the time value
      */
-    public abstract TimeValue getValue ();
+    public TimeValue getValue ()
+    {
+        return new TimeValue(timeRational);
+    }
 
     //--------//
     // modify //
@@ -272,11 +271,8 @@ public abstract class TimeInter
     // predefinedShape //
     //-----------------//
     /**
-     * Look for a predefined shape, if any, that would correspond to the
-     * current
-     * <code>num</code> and
-     * <code>den</code> values of this time
-     * sig.
+     * Look for a predefined shape, if any, that would correspond to the current
+     * {@code num} and {@code den} values of this time sig.
      *
      * @return the shape found or null
      */

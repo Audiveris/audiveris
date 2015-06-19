@@ -16,17 +16,18 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
 import omr.glyph.Shape;
-
 import static omr.glyph.ShapeSet.*;
-
 import omr.glyph.facets.Glyph;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
+import omr.sheet.header.TimeBuilder;
+import omr.sheet.rhythm.MeasureStack;
 
 import omr.sig.SIGraph;
+import omr.sig.inter.AbstractFlagInter;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AlterInter;
 import omr.sig.inter.BarlineInter;
@@ -49,9 +50,15 @@ import omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import omr.sig.inter.AbstractFlagInter;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Class {@code SymbolFactory} generates the inter instances corresponding to
@@ -248,7 +255,11 @@ public class SymbolFactory
     //-------------//
     public void linkSymbols ()
     {
+        // Conflicting dot interpretations
         dotFactory.lateDotChecks();
+
+        // Column consistency of Time Signatures in a system
+        handleTimes();
     }
 
     //---------------------//
@@ -265,6 +276,65 @@ public class SymbolFactory
     List<Inter> getSystemHeads ()
     {
         return systemHeads;
+    }
+
+    //-------------//
+    // handleTimes //
+    //-------------//
+    /**
+     * Handle time symbols outside of system header.
+     * Isolated time symbols found outside of system header lead to the retrieval of a column of
+     * time signatures.
+     */
+    private void handleTimes ()
+    {
+        // Retrieve all time symbols (outside staff headers)
+        List<Inter> systemTimes = sig.inters(
+                new Class[]{TimeWholeInter.class, // Whole symbol like C or 6/8
+                            TimeNumberInter.class}); // Partial symbol like 6 or 8
+        List<Inter> toDelete = new ArrayList<Inter>();
+
+        for (Inter inter : systemTimes) {
+            Staff staff = inter.getStaff();
+
+            if (inter.getCenter().x < staff.getHeaderStop()) {
+                toDelete.add(inter);
+            }
+        }
+
+        systemTimes.removeAll(toDelete);
+
+        if (systemTimes.isEmpty()) {
+            return;
+        }
+
+        // Dispatch these time symbols into their containing stack
+        Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<MeasureStack, Set<Inter>>(
+                new Comparator<MeasureStack>()
+                {
+                    @Override
+                    public int compare (MeasureStack s1,
+                                        MeasureStack s2)
+                    {
+                        return Integer.compare(s1.getIdValue(), s2.getIdValue());
+                    }
+                });
+
+        for (Inter inter : systemTimes) {
+            MeasureStack stack = system.getMeasureStackAt(inter.getCenter());
+            Set<Inter> stackSet = timeMap.get(stack);
+
+            if (stackSet == null) {
+                timeMap.put(stack, stackSet = new HashSet<Inter>());
+            }
+
+            stackSet.add(inter);
+        }
+
+        // Finally, scan each relevant stack
+        for (Entry<MeasureStack, Set<Inter>> entry : timeMap.entrySet()) {
+            new TimeBuilder.BasicColumn(entry.getKey(), entry.getValue()).retrieveTime();
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

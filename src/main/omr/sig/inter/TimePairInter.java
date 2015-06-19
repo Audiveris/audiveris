@@ -12,7 +12,6 @@
 package omr.sig.inter;
 
 import omr.score.TimeRational;
-import omr.score.TimeValue;
 
 import omr.sheet.Staff;
 
@@ -22,6 +21,8 @@ import java.util.List;
 
 /**
  * Class {@code TimePairInter} is a time signature composed of two halves.
+ *
+ * @see TimeComboInter
  *
  * @author Hervé Bitteur
  */
@@ -137,15 +138,6 @@ public class TimePairInter
         rect.add(den.getSymbolBounds(interline));
 
         return rect;
-    }
-
-    //----------//
-    // getValue //
-    //----------//
-    @Override
-    public TimeValue getValue ()
-    {
-        return new TimeValue(timeRational);
     }
 
     //-----------//

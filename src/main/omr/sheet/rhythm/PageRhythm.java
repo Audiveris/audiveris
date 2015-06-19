@@ -128,9 +128,14 @@ public class PageRhythm
                     logger.debug("Starting {}", range);
 
                     // Adjust time signature?
-                    if ((range.ts == null)
-                        || !range.ts.getTimeRational().getValue().equals(range.duration)) {
-                        logger.info("Should update to {}-based time sig", range.duration);
+                    if ((range.duration != null)
+                        && ((range.ts == null)
+                            || !range.ts.getTimeRational().getValue().equals(range.duration))) {
+                        logger.info(
+                                "{}{} should update to {}-based time sig?",
+                                stack.getSystem().getLogPrefix(),
+                                range,
+                                range.duration);
                     }
                 }
 
@@ -285,6 +290,7 @@ public class PageRhythm
         // We aim at a duration value in the set: [1/2, 3/4, 1, 5/4]
         Rational avgGuess = null;
         final Rational minDur = new Rational(1, 2);
+
         ///final Rational maxDur = new Rational(5, 4);
         final Rational maxDur = new Rational(3, 2);
         double val = 0.0;

@@ -123,6 +123,7 @@ public class StackBackup
 
         if (!toDelete.isEmpty()) {
             config.getInters().removeAll(toDelete);
+            sig.deleteInters(toDelete);
         }
 
         // Build slots & voices

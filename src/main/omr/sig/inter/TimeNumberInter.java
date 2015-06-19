@@ -116,6 +116,14 @@ public class TimeNumberInter
         return new TimeNumberInter(glyph, shape, grade, value, side);
     }
 
+    //---------//
+    // getSide //
+    //---------//
+    public VerticalSide getSide ()
+    {
+        return side;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //

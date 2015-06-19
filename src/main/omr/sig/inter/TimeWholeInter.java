@@ -12,15 +12,24 @@
 package omr.sig.inter;
 
 import omr.glyph.Shape;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
+import omr.score.TimeRational;
 import omr.score.TimeValue;
 
 import omr.sheet.Staff;
 
+import omr.ui.symbol.MusicFont;
+import omr.ui.symbol.NumDenSymbol;
+
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+
 /**
  * Class {@code TimeWholeInter} is a time signature defined by a single symbol (either
- * COMMON or CUT).
+ * COMMON or CUT or predefined combos).
  *
  * @author Hervé Bitteur
  */
@@ -33,7 +42,7 @@ public class TimeWholeInter
      * Creates a new {@code TimeWholeInter} object.
      *
      * @param glyph underlying glyph
-     * @param shape precise shape (COMMON_TIME or CUT_TIME only)
+     * @param shape precise shape (COMMON_TIME, CUT_TIME or predefined combos like TIME_FOUR_FOUR)
      * @param grade evaluation grade
      */
     public TimeWholeInter (Glyph glyph,
@@ -51,6 +60,39 @@ public class TimeWholeInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-----------------//
+    // getSymbolBounds //
+    //-----------------//
+    /**
+     * {@inheritDoc}.
+     * <p>
+     * This implementation uses two rectangles, one for numerator and one for denominator.
+     *
+     * @param interline scaling factor
+     * @return the symbol bounds
+     */
+    @Override
+    public Rectangle getSymbolBounds (int interline)
+    {
+        // Single symbol
+        if (ShapeSet.SingleWholeTimes.contains(shape)) {
+            return super.getSymbolBounds(interline);
+        }
+
+        // Multi symbol (num / den), such as for shape TIME_FOUR_FOUR
+        Point center = getCenter(); // Use area center
+        TimeRational nd = getTimeRational();
+        NumDenSymbol symbol = new NumDenSymbol(shape, nd.num, nd.den);
+        MusicFont musicFont = MusicFont.getFont(interline);
+        Dimension dim = symbol.getDimension(musicFont);
+
+        return new Rectangle(
+                center.x - (dim.width / 2),
+                center.y - (dim.height / 2),
+                dim.width,
+                dim.height);
     }
 
     //----------//

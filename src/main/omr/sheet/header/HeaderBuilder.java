@@ -98,7 +98,7 @@ public class HeaderBuilder
     private final KeyBuilder.Column keyColumn;
 
     /** Manager for column of time signatures. */
-    private final TimeBuilder.Column timeColumn;
+    private final TimeBuilder.HeaderColumn timeColumn;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -114,7 +114,7 @@ public class HeaderBuilder
         maxHeaderWidth = system.getSheet().getScale().toPixels(constants.maxHeaderWidth);
         clefColumn = new ClefBuilder.Column(system);
         keyColumn = new KeyBuilder.Column(system);
-        timeColumn = new TimeBuilder.Column(system);
+        timeColumn = new TimeBuilder.HeaderColumn(system);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -154,7 +154,7 @@ public class HeaderBuilder
         setSystemKeyStop(keyOffset);
 
         // Retrieve header time-sigs
-        int timeOffset = timeColumn.retrieveTime(maxHeaderWidth);
+        int timeOffset = timeColumn.retrieveTime();
         setSystemTimeStop(timeOffset);
 
         // We should be able here to select the best clef for each staff

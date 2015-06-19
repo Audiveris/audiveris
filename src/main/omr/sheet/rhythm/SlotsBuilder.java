@@ -982,7 +982,7 @@ public class SlotsBuilder
                 Staff staff = chord.getStaff();
                 Rational staffTerm = stackTerms.get(staff);
 
-                if ((staffTerm == null) || (staffTerm.compareTo(term) >= 0)) {
+                if ((staffTerm == null) || (staffTerm.compareTo(term) <= 0)) {
                     incomings.add(chord);
                 }
 

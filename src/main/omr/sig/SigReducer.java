@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
+
 import static omr.glyph.ShapeSet.Alterations;
 import static omr.glyph.ShapeSet.CoreBarlines;
 import static omr.glyph.ShapeSet.Flags;
@@ -40,7 +41,6 @@ import omr.sig.inter.FullBeamInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.LedgerInter;
 import omr.sig.inter.RepeatDotInter;
-import omr.sig.inter.RestInter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.SmallBeamInter;
 import omr.sig.inter.SmallBlackHeadInter;
@@ -63,11 +63,15 @@ import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.RepeatDotDotRelation;
 import omr.sig.relation.StemPortion;
+
 import static omr.sig.relation.StemPortion.*;
+
 import omr.sig.relation.TimeNumberRelation;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 import omr.util.Predicate;
 
@@ -748,6 +752,11 @@ public class SigReducer
      * Perform checks on augmented entities.
      * <p>
      * An entity (note, rest or augmentation dot) can have at most one augmentation dot.
+     * <p>
+     * NOTA: This is OK for rests but not always for heads.
+     * TODO: We could address head-chords rather than individual heads and handle the chord
+     * augmentation dots as a whole (in parallel with chord heads) and link each chord head with its
+     * 'facing' dot.
      *
      * @return the count of modifications done
      */
@@ -755,7 +764,6 @@ public class SigReducer
     {
         int modifs = 0;
         List<Inter> entities = sig.inters(AbstractNoteInter.class);
-        entities.addAll(sig.inters(RestInter.class));
 
         for (Inter entity : entities) {
             Set<Relation> rels = sig.getRelations(entity, AugmentationRelation.class);

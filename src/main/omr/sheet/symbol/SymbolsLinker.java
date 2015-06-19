@@ -48,7 +48,7 @@ import java.awt.geom.Point2D;
 /**
  * Class {@code SymbolsLinker} defines final relations between certain symbols.
  * <p>
- * This process can take place only when chords candidates have survived to all reductions.
+ * This process can take place only when chords candidates have survived all reductions.
  *
  * @author Hervé Bitteur
  */
@@ -216,7 +216,7 @@ class SymbolsLinker
     // linkWedges //
     //------------//
     /**
-     * Link Wedges (left and right sides) to proper chords if any.
+     * Link wedges (left and right sides) to proper chords if any.
      */
     private void linkWedges ()
     {

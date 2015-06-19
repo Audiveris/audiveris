@@ -443,10 +443,6 @@ public class DotFactory
      */
     private void lateFirstAugmentationCheck (Dot dot)
     {
-        if (dot.glyph.getLocation().equals(new Point(1341, 596))) {
-            logger.info("VIP lateFirstAugmentationCheck for dot {}", dot);
-        }
-
         // Look for entities (notes and rests) reachable from this glyph
         final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum());
         final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum());
@@ -456,6 +452,7 @@ public class DotFactory
         luBox.x -= maxDx;
         luBox.width += maxDx;
 
+        // Relevant heads?
         final List<Inter> entities = SIGraph.intersectedInters(
                 symbolFactory.getSystemHeads(),
                 GeoOrder.BY_ABSCISSA,
@@ -464,6 +461,7 @@ public class DotFactory
         // Beware of mirrored heads: link only to the head with longer duration
         filterMirrorHeads(entities);
 
+        // Relevant rests?
         entities.addAll(
                 SIGraph.intersectedInters(symbolFactory.getSystemRests(), GeoOrder.BY_ABSCISSA, luBox));
 

@@ -146,6 +146,32 @@ public abstract class AbstractInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------//
+    // getGoodGrade //
+    //--------------//
+    /**
+     * Report the minimum grade to consider an interpretation as good.
+     *
+     * @return the minimum grade value for a good interpretation
+     */
+    public static double getGoodGrade ()
+    {
+        return goodGrade;
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    /**
+     * Report the minimum grade for an acceptable interpretation
+     *
+     * @return the minimum grade for keeping an Inter instance
+     */
+    public static double getMinGrade ()
+    {
+        return minGrade;
+    }
+
     //--------//
     // accept //
     //--------//
@@ -415,19 +441,6 @@ public abstract class AbstractInter
         return glyph;
     }
 
-    //--------------//
-    // getGoodGrade //
-    //--------------//
-    /**
-     * Report the minimum grade to consider an interpretation as good.
-     *
-     * @return the minimum grade value for a good interpretation
-     */
-    public static double getGoodGrade ()
-    {
-        return goodGrade;
-    }
-
     //----------//
     // getGrade //
     //----------//
@@ -453,19 +466,6 @@ public abstract class AbstractInter
     public GradeImpacts getImpacts ()
     {
         return impacts;
-    }
-
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    /**
-     * Report the minimum grade for an acceptable interpretation
-     *
-     * @return the minimum grade for keeping an Inter instance
-     */
-    public static double getMinGrade ()
-    {
-        return minGrade;
     }
 
     //-----------//
@@ -511,10 +511,10 @@ public abstract class AbstractInter
     // getSymbolBounds //
     //-----------------//
     /**
-     * {@inheritDoc}.
+     * {@inheritDoc}
      * <p>
      * This implementation uses the area center of inter and of symbol.
-     * TODO: A better implementation would use centroids instead, but would require the handling of
+     * TODO: A better implementation could use centroids instead, but would require the handling of
      * symbol centroid.
      *
      * @param interline scaling factor

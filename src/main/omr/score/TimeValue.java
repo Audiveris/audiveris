@@ -12,6 +12,7 @@
 package omr.score;
 
 import omr.glyph.Shape;
+import omr.glyph.ShapeSet;
 
 import omr.sig.inter.TimeInter;
 
@@ -26,7 +27,7 @@ public class TimeValue
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Assigned shape if any: COMMON_TIME or CUT_TIME or null. */
+    /** Assigned shape if any: COMMON_TIME, CUT_TIME, predefined combo or null. */
     public final Shape shape;
 
     /** Time rational value. (6/8, 3/4, etc) */
@@ -34,9 +35,9 @@ public class TimeValue
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TimeValue} object.
+     * Creates a new {@code TimeValue} object from a whole time shape
      *
-     * @param shape the specific shape (COMMON_TIME or CUT_TIME)
+     * @param shape the specific whole shape (COMMON_TIME or CUT_TIME or predefined combo)
      */
     public TimeValue (Shape shape)
     {
@@ -44,7 +45,7 @@ public class TimeValue
     }
 
     /**
-     * Creates a new {@code TimeValue} object.
+     * Creates a new {@code TimeValue} object from a time rational value
      *
      * @param timeRational the exact time rational value (6/8 != 3/4)
      */
@@ -56,7 +57,7 @@ public class TimeValue
     /**
      * Creates a new {@code TimeValue} object.
      *
-     * @param shape        the specific shape if any (COMMON_TIME or CUT_TIME or null)
+     * @param shape        the specific whole shape if any
      * @param timeRational the exact time rational value (6/8 != 3/4)
      */
     private TimeValue (Shape shape,
@@ -82,13 +83,30 @@ public class TimeValue
             return true;
         }
 
-        if (obj instanceof TimeValue) {
-            TimeValue that = (TimeValue) obj;
-
-            return (this.shape == that.shape) && this.timeRational.equals(that.timeRational);
+        if (!(obj instanceof TimeValue)) {
+            return false;
         }
 
-        return false;
+        TimeValue that = (TimeValue) obj;
+
+        // Check time rational value
+        if (!this.timeRational.equals(that.timeRational)) {
+            return false;
+        }
+
+        // Check shape identity
+        if (this.shape == that.shape) {
+            return true;
+        }
+
+        // Example of 4/4 time rational value. We can have 3 shape values:
+        // - null (provided by pair num & den)
+        // - COMMON_TIME
+        // - TIME_FOUR_FOUR
+        // COMMON_TIME and TIME_FOUR_FOUR are different
+        // but null shape and TIME_FOUR_FOUR are OK
+        return !ShapeSet.SingleWholeTimes.contains(this.shape)
+               && !ShapeSet.SingleWholeTimes.contains(that.shape);
     }
 
     //----------//
