@@ -116,7 +116,7 @@ public class RestInter
 
         // First, check ordinate
         StaffLoop:
-        for (Staff staff : system.getStavesAround(centroid)) {
+        for (final Staff staff : system.getStavesAround(centroid)) {
             final Measure measure = staff.getPart().getMeasureAt(centroid);
 
             if (measure == null) {

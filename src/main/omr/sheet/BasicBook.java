@@ -326,7 +326,7 @@ public class BasicBook
     // doStep //
     //--------//
     @Override
-    public boolean doStep (Step target,
+    public boolean doStep (final Step target,
                            SortedSet<Integer> sheetIds)
     {
         logger.debug("doStep {} on {}", target, this);

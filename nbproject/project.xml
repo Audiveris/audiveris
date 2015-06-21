@@ -10,6 +10,7 @@
         </buildExtensions>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
             <name>audiveris</name>
+            <explicit-platform explicit-source-supported="true"/>
             <source-roots>
                 <root id="src.java.dir"/>
                 <root id="src.dir"/>

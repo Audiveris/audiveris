@@ -329,7 +329,7 @@ public class CLI
         List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
         // Launch desired scripts in parallel
-        for (File scriptFile : params.scriptFiles) {
+        for (final File scriptFile : params.scriptFiles) {
             tasks.add(
                     new Callable<Void>()
                     {
