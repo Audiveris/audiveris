@@ -42,6 +42,7 @@
     </root>
     
     <!-- Define DEBUG loggers here below: -->
+<!--    <logger name="omr.sheet.rhythm.StackTuner" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.rhythm.TupletsBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.text.tesseract.TesseractOrder" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.SlotsBuilder" level="DEBUG"/>-->
