@@ -14,17 +14,9 @@ package omr.run;
 import omr.image.PixelSource;
 import static omr.image.PixelSource.BACKGROUND;
 
-import omr.selection.LocationEvent;
-import omr.selection.MouseMovement;
-import omr.selection.RunEvent;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionService;
-
 import omr.util.Predicate;
 
 import ij.process.ByteProcessor;
-
-import org.bushe.swing.event.EventSubscriber;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,18 +70,12 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "run-table")
 public class RunTable
-        implements Cloneable, PixelSource, Oriented, EventSubscriber<LocationEvent>
+        implements Cloneable, PixelSource, Oriented
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(
             RunTable.class);
-
-    /** Events that can be published on the table run service */
-    public static final Class<?>[] eventsWritten = new Class<?>[]{RunEvent.class};
-
-    /** Events observed on location service */
-    public static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class};
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** (Debugging) name of this runs table. */
@@ -114,7 +100,7 @@ public class RunTable
 
     /** Hosted event service for UI events related to this table (Runs), if any. */
     @XmlTransient
-    private SelectionService runService;
+    private RunService runService;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -153,6 +139,79 @@ public class RunTable
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----//
+    // get //
+    //-----//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <b>Beware</b>, this implementation is not efficient enough for bulk operations.
+     * For such needs, a much more efficient way is to first retrieve a full buffer, via {@link
+     * #getBuffer()} method, then use this temporary buffer as the {@link PixelSource} instead of
+     * this table.
+     *
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return the pixel value (FOREGROUND or BACKGROUND)
+     */
+    @Override
+    public final int get (int x,
+                          int y)
+    {
+        Run run = getRunAt(x, y);
+
+        return (run != null) ? 0 : BACKGROUND;
+    }
+
+    //----------//
+    // getRunAt //
+    //----------//
+    /**
+     * Report the run found at given coordinates, if any.
+     *
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return the run found, or null otherwise
+     */
+    public final Run getRunAt (int x,
+                               int y)
+    {
+        Point oPt = orientation.oriented(new Point(x, y));
+
+        // Protection
+        if ((oPt.y < 0) || (oPt.y >= sequences.length)) {
+            return null;
+        }
+
+        for (Itr it = new Itr(oPt.y); it.hasNext();) {
+            Run run = it.next();
+
+            if (run.getStart() > oPt.x) {
+                return null;
+            }
+
+            if (run.getStop() >= oPt.x) {
+                return run;
+            }
+        }
+
+        return null;
+    }
+
+    //---------//
+    // getSize //
+    //---------//
+    /**
+     * Report the number of sequences of runs in the table.
+     * This is the width for a table of vertical runs and the height for a table of horizontal runs.
+     *
+     * @return the table size (in terms of sequences, including the null ones)
+     */
+    public final int getSize ()
+    {
+        return sequences.length;
+    }
+
     //--------//
     // addRun //
     //--------//
@@ -324,16 +383,6 @@ public class RunTable
         return clone;
     }
 
-    //--------------------//
-    // cutLocationService //
-    //--------------------//
-    public void cutLocationService (SelectionService locationService)
-    {
-        for (Class<?> eventClass : eventsRead) {
-            locationService.unsubscribe(eventClass, this);
-        }
-    }
-
     //--------//
     // dumpOf //
     //--------//
@@ -395,30 +444,6 @@ public class RunTable
             short[] rle = sequences[i];
             System.out.printf("%4d:%s%n", i, Arrays.toString(rle));
         }
-    }
-
-    //-----//
-    // get //
-    //-----//
-    /**
-     * {@inheritDoc}
-     * <p>
-     * <b>Beware</b>, this implementation is not efficient enough for bulk operations.
-     * For such needs, a much more efficient way is to first retrieve a full buffer, via {@link
-     * #getBuffer()} method, then use this temporary buffer as the {@link PixelSource} instead of
-     * this table.
-     *
-     * @param x absolute abscissa
-     * @param y absolute ordinate
-     * @return the pixel value (FOREGROUND or BACKGROUND)
-     */
-    @Override
-    public final int get (int x,
-                          int y)
-    {
-        Run run = getRunAt(x, y);
-
-        return (run != null) ? 0 : BACKGROUND;
     }
 
     //-----------//
@@ -544,70 +569,17 @@ public class RunTable
         return orientation;
     }
 
-    //----------//
-    // getRunAt //
-    //----------//
-    /**
-     * Report the run found at given coordinates, if any.
-     *
-     * @param x absolute abscissa
-     * @param y absolute ordinate
-     * @return the run found, or null otherwise
-     */
-    public final Run getRunAt (int x,
-                               int y)
-    {
-        Point oPt = orientation.oriented(new Point(x, y));
-
-        // Protection
-        if ((oPt.y < 0) || (oPt.y >= sequences.length)) {
-            return null;
-        }
-
-        for (Itr it = new Itr(oPt.y); it.hasNext();) {
-            Run run = it.next();
-
-            if (run.getStart() > oPt.x) {
-                return null;
-            }
-
-            if (run.getStop() >= oPt.x) {
-                return run;
-            }
-        }
-
-        return null;
-    }
-
     //---------------//
     // getRunService //
     //---------------//
     /**
-     * Report the table run selection service
+     * Report the run service, if any, defined on this table
      *
-     * @return the run selection service
+     * @return the run service or null
      */
-    public SelectionService getRunService ()
+    public RunService getRunService ()
     {
-        if (runService == null) {
-            runService = new SelectionService(name, eventsWritten);
-        }
-
         return runService;
-    }
-
-    //---------//
-    // getSize //
-    //---------//
-    /**
-     * Report the number of sequences of runs in the table.
-     * This is the width for a table of vertical runs and the height for a table of horizontal runs.
-     *
-     * @return the table size (in terms of sequences, including the null ones)
-     */
-    public final int getSize ()
-    {
-        return sequences.length;
     }
 
     //------------------//
@@ -738,34 +710,6 @@ public class RunTable
         }
 
         return null;
-    }
-
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Interest on Location =&gt; Run
-     *
-     * @param locationEvent the interesting event
-     */
-    @Override
-    public void onEvent (LocationEvent locationEvent)
-    {
-        try {
-            // Ignore RELEASING
-            if (locationEvent.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            logger.debug("RunsTable {}: {}", name, locationEvent);
-
-            if (locationEvent instanceof LocationEvent) {
-                // Location => Run
-                handleEvent(locationEvent);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
     }
 
     //-------//
@@ -901,14 +845,17 @@ public class RunTable
         }
     }
 
-    //--------------------//
-    // setLocationService //
-    //--------------------//
-    public void setLocationService (SelectionService locationService)
+    //---------------//
+    // setRunService //
+    //---------------//
+    /**
+     * Assign a run service for this table
+     *
+     * @param runService the run service, perhaps null
+     */
+    public void setRunService (RunService runService)
     {
-        for (Class<?> eventClass : eventsRead) {
-            locationService.subscribeStrongly(eventClass, this);
-        }
+        this.runService = runService;
     }
 
     //----------//
@@ -932,6 +879,20 @@ public class RunTable
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-------------//
+    // getSequence //
+    //-------------//
+    /**
+     * (package private) Report the sequence of runs at a given index
+     *
+     * @param index the desired index
+     * @return the MODIFIABLE sequence of rows
+     */
+    final short[] getSequence (int index)
+    {
+        return sequences[index];
     }
 
     //--------//
@@ -982,20 +943,6 @@ public class RunTable
         }
 
         return seq;
-    }
-
-    //-------------//
-    // getSequence //
-    //-------------//
-    /**
-     * (package private) Report the sequence of runs at a given index
-     *
-     * @param index the desired index
-     * @return the MODIFIABLE sequence of rows
-     */
-    final short[] getSequence (int index)
-    {
-        return sequences[index];
     }
 
     //-------------//
@@ -1068,40 +1015,74 @@ public class RunTable
         }
     }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------------//
+    // SequencesAdapter //
+    //------------------//
     /**
-     * Interest in location => Run
-     *
-     * @param location
+     * Meant for customized JAXB support of sequences.
      */
-    private void handleEvent (LocationEvent locationEvent)
+    private static class SequencesAdapter
+            extends XmlAdapter<ShortVector[], short[][]>
     {
-        ///logger.info("RunTable location: {}", locationEvent);
-        Rectangle rect = locationEvent.getData();
+        //~ Methods --------------------------------------------------------------------------------
 
-        if (rect == null) {
-            return;
+        @Override
+        public ShortVector[] marshal (short[][] data)
+                throws Exception
+        {
+            final ShortVector[] seqArray = new ShortVector[data.length];
+
+            for (int i = 0; i < data.length; i++) {
+                seqArray[i] = new ShortVector(data[i]);
+            }
+
+            return seqArray;
         }
 
-        SelectionHint hint = locationEvent.hint;
-        MouseMovement movement = locationEvent.movement;
+        @Override
+        public short[][] unmarshal (ShortVector[] seqArray)
+        {
+            final short[][] matrix = new short[seqArray.length][];
 
-        if (!hint.isLocation() && !hint.isContext()) {
-            return;
-        }
+            for (int i = 0; i < seqArray.length; i++) {
+                ShortVector seq = seqArray[i];
 
-        if ((rect.width == 0) && (rect.height == 0)) {
-            Point pt = rect.getLocation();
+                if ((seq != null) && (seq.vector.length != 0)) {
+                    matrix[i] = seq.vector;
+                }
+            }
 
-            // Publish Run information
-            Run run = getRunAt(pt.x, pt.y);
-            getRunService().publish(new RunEvent(this, hint, movement, run));
+            return matrix;
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // ShortVector //
+    //-------------//
+    /**
+     * Temporary structure for (un)marshaling purpose.
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    private static class ShortVector
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlValue // Annotation to avoid any wrapper
+
+        private short[] vector;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ShortVector ()
+        {
+        }
+
+        public ShortVector (short[] vector)
+        {
+            this.vector = vector;
+        }
+    }
+
     //-----//
     // Itr //
     //-----//
@@ -1241,73 +1222,6 @@ public class RunTable
 
                 cursor = c;
             }
-        }
-    }
-
-    //------------------//
-    // SequencesAdapter //
-    //------------------//
-    /**
-     * Meant for customized JAXB support of sequences.
-     */
-    private static class SequencesAdapter
-            extends XmlAdapter<ShortVector[], short[][]>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public ShortVector[] marshal (short[][] data)
-                throws Exception
-        {
-            final ShortVector[] seqArray = new ShortVector[data.length];
-
-            for (int i = 0; i < data.length; i++) {
-                seqArray[i] = new ShortVector(data[i]);
-            }
-
-            return seqArray;
-        }
-
-        @Override
-        public short[][] unmarshal (ShortVector[] seqArray)
-        {
-            final short[][] matrix = new short[seqArray.length][];
-
-            for (int i = 0; i < seqArray.length; i++) {
-                ShortVector seq = seqArray[i];
-
-                if ((seq != null) && (seq.vector.length != 0)) {
-                    matrix[i] = seq.vector;
-                }
-            }
-
-            return matrix;
-        }
-    }
-
-    //-------------//
-    // ShortVector //
-    //-------------//
-    /**
-     * Temporary structure for (un)marshaling purpose.
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    private static class ShortVector
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        @XmlValue // Annotation to avoid any wrapper
-
-        private short[] vector;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public ShortVector ()
-        {
-        }
-
-        public ShortVector (short[] vector)
-        {
-            this.vector = vector;
         }
     }
 }

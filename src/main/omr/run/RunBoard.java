@@ -72,17 +72,17 @@ public class RunBoard
     /**
      * Create a Run Board on the provided RunTable
      *
-     * @param runsTable the table of runs
-     * @param expanded  true for expanded, false for collapsed
+     * @param runTable the table of runs
+     * @param expanded true for expanded, false for collapsed
      */
-    public RunBoard (RunTable runsTable,
+    public RunBoard (RunTable runTable,
                      boolean expanded)
     {
         super(
                 Board.RUN.name
-                + ((runsTable.getOrientation() == Orientation.VERTICAL) ? " Vert" : " Hori"),
-                Board.RUN.position + ((runsTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
-                runsTable.getRunService(),
+                + ((runTable.getOrientation() == Orientation.VERTICAL) ? " Vert" : " Hori"),
+                Board.RUN.position + ((runTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
+                runTable.getRunService(),
                 eventClasses,
                 false,
                 expanded);

@@ -17,6 +17,7 @@ import omr.graph.BasicDigraph;
 
 import omr.run.Orientation;
 import omr.run.Run;
+import omr.run.RunService;
 import omr.run.RunTable;
 
 import omr.selection.LagEvent;
@@ -149,7 +150,11 @@ public class BasicLag
     public void cutServices ()
     {
         if (runTable != null) {
-            runTable.cutLocationService(locationService);
+            RunService runService = runTable.getRunService();
+
+            if (runService != null) {
+                runService.cutLocationService(locationService);
+            }
         }
 
         for (Class<?> eventClass : locEventsRead) {
@@ -385,7 +390,13 @@ public class BasicLag
         this.locationService = locationService;
 
         if (runTable != null) {
-            runTable.setLocationService(locationService);
+            RunService runService = runTable.getRunService();
+
+            if (runService == null) {
+                runTable.setRunService(runService = new RunService(runTable));
+            }
+
+            runService.setLocationService(locationService);
         }
 
         for (Class<?> eventClass : locEventsRead) {
