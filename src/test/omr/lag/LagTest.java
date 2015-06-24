@@ -21,7 +21,6 @@ import omr.util.BaseTestCase;
 
 import static junit.framework.Assert.*;
 
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
@@ -611,7 +610,7 @@ public class LagTest
     {
         Run run = new Run(start, length);
 
-        table.getSequence(alignment).add(run);
+        table.addRun(alignment, run);
 
         return run;
     }

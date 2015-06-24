@@ -18,12 +18,12 @@ import omr.math.Histogram;
 
 import omr.run.Orientation;
 import omr.run.Run;
-import omr.run.RunSequence;
 import omr.run.RunTable;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -90,9 +90,8 @@ public class BasicRoi
         final int maxCoord = (oriInter.x + oriInter.width) - 1;
 
         for (int pos = minPos; pos <= maxPos; pos++) {
-            RunSequence seq = table.getSequence(pos);
-
-            for (Run run : seq) {
+            for (Iterator<Run> it = table.iterator(pos); it.hasNext();) {
+                Run run = it.next();
                 final int cMin = Math.max(minCoord, run.getStart());
                 final int cMax = Math.min(maxCoord, run.getStop());
 

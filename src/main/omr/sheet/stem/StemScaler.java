@@ -23,7 +23,6 @@ import omr.math.IntegerHistogram;
 
 import omr.run.Orientation;
 import omr.run.Run;
-import omr.run.RunSequence;
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -50,6 +49,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -313,9 +313,9 @@ public class StemScaler
                                       int height)
         {
             for (int y = 0; y < height; y++) {
-                RunSequence runSeq = horiTable.getSequence(y);
+                for (Iterator<Run> it = horiTable.iterator(y); it.hasNext();) {
+                    Run run = it.next();
 
-                for (Run run : runSeq) {
                     // Process this foreground run
                     int foreLength = run.getLength();
 

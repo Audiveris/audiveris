@@ -32,6 +32,7 @@ import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import omr.CLI;
 
 /**
  * Class {@code ConstantManager} manages the persistency of the whole population of
@@ -193,13 +194,17 @@ public class ConstantManager
         }
 
         // Value set at CLI level?
-        Properties cliConstants = Main.getCli().getOptions();
+        CLI cli = Main.getCli();
 
-        if (cliConstants != null) {
-            String cliValue = cliConstants.getProperty(qName);
+        if (cli != null) {
+            Properties cliConstants = cli.getOptions();
 
-            if (cliValue != null) {
-                return cliValue;
+            if (cliConstants != null) {
+                String cliValue = cliConstants.getProperty(qName);
+
+                if (cliValue != null) {
+                    return cliValue;
+                }
             }
         }
 

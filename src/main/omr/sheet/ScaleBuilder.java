@@ -12,6 +12,7 @@
 package omr.sheet;
 
 import omr.OMR;
+
 import static omr.WellKnowns.LINE_SEPARATOR;
 
 import omr.constant.Constant;
@@ -23,7 +24,6 @@ import omr.math.Histogram.PeakEntry;
 import omr.math.IntegerHistogram;
 
 import omr.run.Run;
-import omr.run.RunSequence;
 import omr.run.RunTable;
 
 import omr.sheet.ui.SheetsController;
@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -603,12 +604,12 @@ public class ScaleBuilder
             final int maxFore = height / 16;
 
             for (int x = 0; x < width; x++) {
-                RunSequence runSeq = wholeVertTable.getSequence(x); // All vertical foreground runs
                 int yLast = 0; // Ordinate of first pixel not yet processed
                 int lastBackLength = 0; // Length of last valid background run
                 int lastForeLength = 0; // Length of last valid foreground run
 
-                for (Run run : runSeq) {
+                for (Iterator<Run> it = wholeVertTable.iterator(x); it.hasNext();) {
+                    Run run = it.next();
                     int y = run.getStart();
 
                     if (y > yLast) {

@@ -14,16 +14,19 @@ package omr.sheet.curve;
 import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphNest;
 import omr.glyph.facets.Glyph;
+
 import static omr.glyph.facets.GlyphComposition.Linking.NO_LINK;
+
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
 
 import omr.lag.JunctionAllPolicy;
 import omr.lag.Section;
 import omr.lag.SectionFactory;
+
 import static omr.run.Orientation.VERTICAL;
+
 import omr.run.Run;
-import omr.run.RunSequence;
 import omr.run.RunTable;
 
 import omr.sheet.Picture;
@@ -484,8 +487,7 @@ public abstract class Curve
             if (isCloseToCurve(point.x, run.getStart(), maxRunDistance, index)
                 && ((run.getLength() <= 1)
                     || isCloseToCurve(point.x, run.getStop(), maxRunDistance, index))) {
-                RunSequence seq = curveTable.getSequence(point.x - box.x);
-                seq.addRun(run.getStart() - box.y, run.getLength());
+                curveTable.addRun(point.x - box.x, run.getStart() - box.y, run.getLength());
             }
         }
 

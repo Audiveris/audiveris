@@ -799,9 +799,6 @@ public class LinearEvaluator
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        //-----------//
-        // unmarshal //
-        //-----------//
         @Override
         public Category[] marshal (Map<String, Category> map)
                 throws Exception
@@ -809,9 +806,6 @@ public class LinearEvaluator
             return map.values().toArray(new Category[map.size()]);
         }
 
-        //-----------//
-        // unmarshal //
-        //-----------//
         @Override
         public Map<String, Category> unmarshal (Category[] categories)
         {

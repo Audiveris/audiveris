@@ -184,7 +184,7 @@ public class SectionBindingTest
     {
         Run run = new Run(start, length);
 
-        table.getSequence(alignment).add(run);
+        table.addRun(alignment, run);
 
         return run;
     }

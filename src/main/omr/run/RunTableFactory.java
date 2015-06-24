@@ -278,7 +278,7 @@ public class RunTableFactory
         public void endPosition (int pos,
                                  List<Run> runs)
         {
-            table.setSequence(pos - tableOffset.y, new BasicRunSequence(runs));
+            table.setSequence(pos - tableOffset.y, RunTable.encode(runs));
         }
 
         @Override
@@ -320,7 +320,7 @@ public class RunTableFactory
         public void endPosition (int pos,
                                  List<Run> runs)
         {
-            table.setSequence(pos - tableOffset.x, new BasicRunSequence(runs));
+            table.setSequence(pos - tableOffset.x, RunTable.encode(runs));
         }
 
         @Override
