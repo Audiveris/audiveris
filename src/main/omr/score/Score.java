@@ -98,7 +98,7 @@ public class Score
         source.setOffset(book.getOffset());
 
         for (Page page : pages) {
-            Source.SheetSystems sheetSystems = new Source.SheetSystems(page.getSheet().getIndex());
+            Source.SheetSystems sheetSystems = new Source.SheetSystems(page.getSheet().getNumber());
             source.getSheets().add(sheetSystems);
 
             for (SystemInfo system : page.getSystems()) {

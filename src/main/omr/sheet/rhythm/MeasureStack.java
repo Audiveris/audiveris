@@ -1502,15 +1502,15 @@ public class MeasureStack
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{MeasureStack#");
-        sb.append(getPageId());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        ///sb.append("{");
+        sb.append('#').append(getPageId());
 
         if (isCautionary()) {
             sb.append("C");
         }
 
-        sb.append("}");
-
+        ///sb.append("}");
         return sb.toString();
     }
 

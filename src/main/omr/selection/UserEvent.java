@@ -94,8 +94,8 @@ public abstract class UserEvent
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
         sb.append(" src:").append(source);
 
         if (hint != null) {

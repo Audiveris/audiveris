@@ -316,7 +316,7 @@ public class ParametersTask
      */
     private SheetParameters getParams (Sheet sheet)
     {
-        int index = sheet.getIndex();
+        int index = sheet.getNumber();
 
         for (SheetParameters params : sheets) {
             if (params.index == index) {

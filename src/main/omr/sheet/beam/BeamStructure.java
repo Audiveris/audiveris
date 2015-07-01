@@ -829,8 +829,8 @@ public class BeamStructure
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
-            sb.append(getClass().getSimpleName());
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
             sb.append(" dy:").append(dy);
             sb.append(" lg:").append(line.getNumberOfPoints());
             sb.append(" line:").append(line);

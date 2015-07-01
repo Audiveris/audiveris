@@ -36,9 +36,11 @@ import omr.ui.util.UIUtil;
 
 import omr.util.BasicTask;
 import omr.util.NameSet;
+import omr.util.Param;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.Task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +48,10 @@ import org.slf4j.LoggerFactory;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -68,8 +74,11 @@ public class SheetActions
 
     private static final Logger logger = LoggerFactory.getLogger(SheetActions.class);
 
-    /** Singleton */
+    /** Singleton. */
     private static SheetActions INSTANCE;
+
+    /** Default parameter. */
+    public static final Param<Boolean> defaultPrompt = new Default();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -80,6 +89,62 @@ public class SheetActions
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // checkStored //
+    //-------------//
+    /**
+     * Check whether the provided book has been safely saved if needed
+     * (and therefore, if it can be closed)
+     *
+     * @param book the book to check
+     * @return true if close is allowed, false if not
+     */
+    public static boolean checkStored (Book book)
+    {
+        if (book.isModified() && defaultPrompt.getSpecific()) {
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.getGui().getFrame(),
+                    "Save modified book " + book.getRadix() + "?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                // Find a suitable target file
+                Path projectPath = BookManager.getDefaultProjectPath(book);
+
+                // Check the target is fine
+                if (!canWrite(projectPath)) {
+                    // Let the user select an alternate output file
+                    projectPath = selectProjectPath(true, BookManager.getDefaultProjectPath(book));
+
+                    if (!canWrite(projectPath)) {
+                        return false; // No suitable target found
+                    }
+                }
+
+                // Save the project to target file
+                try {
+                    book.setProjectPath(projectPath);
+                    book.store();
+
+                    return true; // Project successfully saved
+                } catch (Exception ex) {
+                    logger.warn("Error saving book", ex);
+
+                    return false; // Saving failed
+                }
+            }
+
+            if (answer == JOptionPane.NO_OPTION) {
+                // Here user specifically chose NOT to save the book
+                return true;
+            }
+
+            // Here user said Oops!, cancelling the current close request
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     //-----------//
     // closeBook //
     //-----------//
@@ -94,7 +159,9 @@ public class SheetActions
         Book book = SheetsController.getCurrentBook();
 
         if (book != null) {
-            book.close();
+            if (checkStored(book)) {
+                book.close();
+            }
         }
     }
 
@@ -113,6 +180,32 @@ public class SheetActions
         }
 
         return INSTANCE;
+    }
+
+    //----------//
+    // openBook //
+    //----------//
+    /**
+     * Action that let the user select a book project.
+     *
+     * @param e the event that triggered this action
+     * @return the asynchronous task, or null
+     */
+    @Action
+    public OpenProjectTask openBook (ActionEvent e)
+    {
+        final String dir = BookManager.getDefaultProjectDirectory();
+        final Path path = selectProjectPath(false, Paths.get(dir));
+
+        if (path != null) {
+            if (Files.exists(path)) {
+                return new OpenProjectTask(path.toFile());
+            } else {
+                logger.warn("File not found {}", path);
+            }
+        }
+
+        return null;
     }
 
     //---------------//
@@ -257,7 +350,7 @@ public class SheetActions
     public RecordGlyphsTask recordGlyphs ()
     {
         int answer = JOptionPane.showConfirmDialog(
-                null,
+                OMR.getGui().getFrame(),
                 "Are you sure of all the symbols of this sheet ?");
 
         if (answer == JOptionPane.YES_OPTION) {
@@ -282,13 +375,63 @@ public class SheetActions
 
         if (sheet != null) {
             int answer = JOptionPane.showConfirmDialog(
-                    null,
-                    "Do you confirm the removal of this sheet" + " from its containing score ?");
+                    OMR.getGui().getFrame(),
+                    "Do you confirm the removal of this sheet from its containing score ?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 new RemoveTask(sheet).launch(sheet);
             }
         }
+    }
+
+    //-----------//
+    // storeBook //
+    //-----------//
+    /**
+     * Action to store the current of the currently selected book.
+     *
+     * @param e the event that triggered this action
+     * @return the UI task to perform
+     */
+    @Action(enabledProperty = SHEET_AVAILABLE)
+    public Task<Void, Void> storeBook (ActionEvent e)
+    {
+        final Book book = SheetsController.getCurrentBook();
+
+        if (book == null) {
+            return null;
+        }
+
+        final Path projectPath = BookManager.getDefaultProjectPath(book);
+
+        // Ask user confirmation for overwriting if file already exists
+        if (canWrite(projectPath)) {
+            return new StoreBookTask(book, projectPath);
+        } else {
+            return storeBookAs(e);
+        }
+    }
+
+    //-------------//
+    // storeBookAs //
+    //-------------//
+    @Action(enabledProperty = SHEET_AVAILABLE)
+    public Task<Void, Void> storeBookAs (ActionEvent e)
+    {
+        final Book book = SheetsController.getCurrentBook();
+
+        if (book == null) {
+            return null;
+        }
+
+        // Let the user select a project output file
+        final Path projectPath = selectProjectPath(true, BookManager.getDefaultProjectPath(book));
+
+        if (canWrite(projectPath)) {
+            return new StoreBookTask(book, projectPath);
+        }
+
+        return null;
     }
 
     //------------//
@@ -343,6 +486,44 @@ public class SheetActions
         }
 
         assembly.getSelectedView().fitWidth();
+    }
+
+    //----------//
+    // canWrite //
+    //----------//
+    /**
+     * Report whether we are allowed to (over)write the provided file
+     *
+     * @param path the provided file path
+     * @return true if allowed
+     */
+    private static boolean canWrite (Path path)
+    {
+        return (path != null)
+               && (!Files.exists(path)
+                   || OMR.getGui().displayConfirmation(path + " already exists. \nOverwrite?"));
+    }
+
+    //-------------------//
+    // selectProjectPath //
+    //-------------------//
+    /**
+     * Let the user interactively select a project file
+     *
+     * @param path default path
+     * @param save true for write, false for read
+     * @return
+     */
+    private static Path selectProjectPath (boolean save,
+                                           Path path)
+    {
+        File file = UIUtil.fileChooser(
+                save,
+                OMR.getGui().getFrame(),
+                path.toFile(),
+                new OmrFileFilter("Audiveris project files", new String[]{OMR.PROJECT_EXTENSION}));
+
+        return (file == null) ? null : file.toPath();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -422,6 +603,53 @@ public class SheetActions
         }
     }
 
+    //-----------------//
+    // OpenProjectTask //
+    //-----------------//
+    /**
+     * Task that opens a book project file.
+     */
+    public static class OpenProjectTask
+            extends BasicTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final File file;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public OpenProjectTask (File file)
+        {
+            this.file = file;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            if (file.exists()) {
+                // Actually open the project
+                Book book = OMR.getEngine().loadProject(file.toPath());
+
+                if (book != null) {
+                    // Show first sheet
+                    List<Sheet> sheets = book.getSheets();
+
+                    if (!sheets.isEmpty()) {
+                        Sheet firstSheet = book.getSheets().get(0);
+                        SheetsController.getInstance().showAssembly(firstSheet);
+                    } else {
+                        logger.info("No sheet in {}", book);
+                    }
+                }
+            } else {
+                logger.warn("File {} does not exist", file);
+            }
+
+            return null;
+        }
+    }
+
     //----------//
     // OpenTask //
     //----------//
@@ -469,6 +697,40 @@ public class SheetActions
         private final Constant.String validImageExtensions = new Constant.String(
                 ".bmp .gif .jpg .png .tiff .tif .pdf",
                 "Valid image file extensions, whitespace-separated");
+
+        private final Constant.Boolean closeConfirmation = new Constant.Boolean(
+                true,
+                "Should we ask confirmation for closing an unsaved project?");
+    }
+
+    //---------//
+    // Default //
+    //---------//
+    private static class Default
+            extends Param<Boolean>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public Boolean getSpecific ()
+        {
+            return constants.closeConfirmation.getValue();
+        }
+
+        @Override
+        public boolean setSpecific (Boolean specific)
+        {
+            if (!getSpecific().equals(specific)) {
+                constants.closeConfirmation.setValue(specific);
+                logger.info(
+                        "You will {} be prompted to save project when" + " closing",
+                        specific ? "now" : "no longer");
+
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     //------------------//
@@ -485,6 +747,41 @@ public class SheetActions
         {
             Sheet sheet = SheetsController.getCurrentSheet();
             GlyphRepository.getInstance().recordSheetGlyphs(sheet, false);
+
+            return null;
+        }
+    }
+
+    //---------------//
+    // StoreBookTask //
+    //---------------//
+    private static class StoreBookTask
+            extends BasicTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Book book;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create an asynchronous task to store the book.
+         *
+         * @param book        the book to export
+         * @param projectPath (non-null) the target to store book path
+         */
+        public StoreBookTask (Book book,
+                              Path projectPath)
+        {
+            this.book = book;
+            book.setProjectPath(projectPath);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            book.store();
 
             return null;
         }

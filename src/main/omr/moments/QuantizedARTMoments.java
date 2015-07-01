@@ -182,7 +182,8 @@ public class QuantizedARTMoments
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
 
         for (int p = 0; p < ANGULAR; p++) {
             for (int r = 0; r < RADIAL; r++) {

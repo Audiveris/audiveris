@@ -159,7 +159,7 @@ public class MainGui
                 frame,
                 message,
                 "Confirm - " + appName,
-                JOptionPane.WARNING_MESSAGE);
+                JOptionPane.YES_NO_OPTION);
 
         return answer == JOptionPane.YES_OPTION;
     }
@@ -452,8 +452,13 @@ public class MainGui
         // Just in case we already have messages pending
         notifyLog();
 
-        // Launch scores
-        for (Callable<Void> task : Main.getCli().getFilesTasks()) {
+        // Launch projects
+        for (Callable<Void> task : Main.getCli().getProjectsTasks()) {
+            OmrExecutors.getCachedLowExecutor().submit(task);
+        }
+
+        // Launch inputs
+        for (Callable<Void> task : Main.getCli().getInputsTasks()) {
             OmrExecutors.getCachedLowExecutor().submit(task);
         }
 
@@ -705,9 +710,14 @@ public class MainGui
         @Override
         public boolean canExit (EventObject eo)
         {
-            // Are all scripts stored (or explicitly ignored)?
             for (Book book : OMR.getEngine().getAllBooks()) {
+                // Is script stored (or explicitly ignored)?
                 if (!ScriptActions.checkStored(book.getScript())) {
+                    return false;
+                }
+
+                // Check whether the book has been saved (or user has declined)
+                if (!SheetActions.checkStored(book)) {
                     return false;
                 }
             }

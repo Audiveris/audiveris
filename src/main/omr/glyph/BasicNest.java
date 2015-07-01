@@ -522,9 +522,10 @@ public class BasicNest
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{Nest");
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
 
-        sb.append(" ").append(name);
+        sb.append(name);
 
         if (!allGlyphsEver.isEmpty()) {
             sb.append(" ").append(allGlyphsEver.size());

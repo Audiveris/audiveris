@@ -42,6 +42,9 @@ public class OMR
     /** The extension used for compressed score print files: {@value}. */
     public static final String PDF_EXTENSION = ".pdf";
 
+    /** The extension used for Audiveris project files: {@value}. */
+    public static final String PROJECT_EXTENSION = ".omr";
+
     /** The extension used for score output files: {@value}. */
     public static final String SCORE_EXTENSION = ".xml";
 

@@ -68,7 +68,6 @@ public class DeltaStep
         if (count > 0) {
             globalRatio /= count;
             logger.info("Global score delta: {}%", String.format("%4.1f", 100 * globalRatio));
-            book.getBench().recordDelta(globalRatio);
         }
     }
 }

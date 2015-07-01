@@ -98,8 +98,8 @@ public class Param<E>
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
         sb.append(internalsString());
         sb.append("}");
 
@@ -120,7 +120,7 @@ public class Param<E>
         StringBuilder sb = new StringBuilder();
 
         if (parent != null) {
-            sb.append(" parent:").append(parent);
+            sb.append("parent:").append(parent);
         }
 
         if (getSpecific() != null) {

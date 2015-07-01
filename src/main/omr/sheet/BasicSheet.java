@@ -30,9 +30,9 @@ import omr.lag.Lags;
 
 import omr.math.Population;
 
+import omr.score.Page;
 import omr.score.Score;
 import omr.score.ScoreExporter;
-import omr.score.Page;
 import omr.score.ui.BookPdfOutput;
 
 import omr.script.ExportTask;
@@ -71,9 +71,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -81,15 +81,26 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlList;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * Class {@code BasicSheet} is a basic implementation of {@link Sheet} interface.
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "sheet")
 public class BasicSheet
         implements Sheet
 {
@@ -97,7 +108,8 @@ public class BasicSheet
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(Sheet.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Sheet.class);
 
     /** Events that can be published on sheet location service. */
     private static final Class<?>[] allowedEvents = new Class<?>[]{
@@ -105,56 +117,80 @@ public class BasicSheet
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Containing book. */
-    @Navigable(false)
-    private final Book book;
-
+    //
+    // Persistent data
+    //----------------
+    //
     /** Index of sheet, counted from 1, in the image file. */
-    private final int index;
+    @XmlAttribute(name = "number")
+    private final int number;
 
-    /** Sheet ID. */
-    private final String id;
+    /** All steps already done on this sheet. */
+    @XmlList
+    @XmlElement(name = "steps")
+    private final EnumSet<Step> doneSteps = EnumSet.noneOf(Step.class);
+
+    /** The related picture. */
+    @XmlElement(name = "picture")
+    private Picture picture;
 
     /** Corresponding page(s). A single sheet may relate to several pages. */
     private final List<Page> pages = new ArrayList<Page>();
 
-    /** The recording of key processing data. */
-    private final SheetBench bench;
+    /** Global scale for this sheet. */
+    @XmlElement(name = "scale")
+    private Scale scale;
+
+    /** Global stem scale for this sheet. */
+    private StemScale stemScale;
+
+    /** Global skew. */
+    private Skew skew;
+
+    // Transient data
+    //---------------
+    //
+    /** Containing book. */
+    @Navigable(false)
+    private Book book;
+
+    /** Sheet ID. (format is radix[#n]) */
+    private String id;
 
     /** Dictionary of sheet lags. */
-    private final LagManager lagManager;
-
-    /** All steps already done on this sheet. */
-    private final EnumSet<Step> doneSteps = EnumSet.noneOf(Step.class);
+    private LagManager lagManager;
 
     /** Systems management. */
-    private final SystemManager systemManager;
+    private SystemManager systemManager;
 
     /** Staves. */
-    private final StaffManager staffManager;
+    private StaffManager staffManager;
 
     /** Inter manager for all systems in this sheet. */
-    private final InterManager interManager;
+    private InterManager interManager;
 
     /** Param for pixel filter. */
-    private final LiveParam<FilterDescriptor> filterContext;
+    private LiveParam<FilterDescriptor> filterContext;
 
     /** Param for text language. */
-    private final LiveParam<String> textContext;
+    private LiveParam<String> textContext;
+
+    /** Has sheet been modified, WRT its project data. */
+    private boolean modified = false;
 
     //-- UI ----------------------------------------------------------------------------------------
     //
     /** Selections for this sheet. (SheetLocation, PixelLevel) */
-    private final SelectionService locationService;
+    private SelectionService locationService;
 
     /** Registered item renderers, if any. */
-    private final Set<ItemRenderer> itemRenderers;
+    private Set<ItemRenderer> itemRenderers;
 
     /** Related assembly instance, if any. */
-    private final SheetAssembly assembly;
+    private SheetAssembly assembly;
 
     /** Related errors editor, if any. */
-    private final ErrorsEditor errorsEditor;
+    private ErrorsEditor errorsEditor;
 
     /** Specific builder dealing with glyphs. */
     private volatile SymbolsController symbolsController;
@@ -164,20 +200,8 @@ public class BasicSheet
 
     //-- resettable members ------------------------------------------------------------------------
     //
-    /** The related picture. */
-    private Picture picture;
-
     /** The step being performed on this sheet. */
     private Step currentStep;
-
-    /** Global scale for this sheet. */
-    private Scale scale;
-
-    /** Global stem scale for this sheet. */
-    private StemScale stemScale;
-
-    /** Initial skew value. */
-    private Skew skew;
 
     /** Global glyph nest. */
     private GlyphNest nest;
@@ -192,76 +216,48 @@ public class BasicSheet
     /**
      * Create a new {@code Sheet} instance within a book.
      *
-     * @param book  the containing book instance
-     * @param index index (counted from 1) of sheet in book
-     * @param image the already loaded image, if any
+     * @param book   the containing book instance
+     * @param number number (counted from 1) of sheet in book
+     * @param image  the already loaded image, if any
      * @throws omr.step.StepException
      */
     public BasicSheet (Book book,
-                       int index,
+                       int number,
                        BufferedImage image)
             throws StepException
     {
-        this.book = book;
-        this.index = index;
+        Objects.requireNonNull(book, "Cannot create a sheet in a null book");
 
-        if (book.isMultiSheet()) {
-            id = book.getRadix() + "#" + index;
-        } else {
-            id = book.getRadix();
-        }
+        this.number = number;
 
-        staffManager = new StaffManager(this);
-        systemManager = new SystemManager(this);
-        lagManager = new LagManager(this);
-        bench = new SheetBench(this);
+        initTransients(book);
 
         if (image != null) {
             setImage(image);
         }
+    }
 
-        filterContext = new LiveParam<FilterDescriptor>(book.getFilterParam());
-        textContext = new LiveParam<String>(book.getLanguageParam());
-
-        // Update UI information if so needed
-        if (OMR.getGui() != null) {
-            locationService = new SelectionService("sheet", allowedEvents);
-            errorsEditor = new ErrorsEditor(this);
-            itemRenderers = new HashSet<ItemRenderer>();
-            SheetsController.getInstance().addAssembly(assembly = new SheetAssembly(this));
-            addItemRenderer(staffManager);
-        } else {
-            locationService = null;
-            errorsEditor = null;
-            itemRenderers = null;
-            assembly = null;
-        }
-
-        createNest();
-        interManager = new InterManager(this);
-        logger.debug("Created {}", this);
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private BasicSheet ()
+    {
+        number = 0;
+        book = null;
+        id = null;
+        lagManager = null;
+        systemManager = null;
+        staffManager = null;
+        interManager = null;
+        filterContext = null;
+        textContext = null;
+        locationService = null;
+        itemRenderers = null;
+        assembly = null;
+        errorsEditor = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-//    //----------//
-//    // addError //
-//    //----------//
-//    /**
-//     * Register an error in the sheet ErrorsWindow
-//     *
-//     * @param container the immediate container for the error location
-//     * @param glyph     the related glyph if any
-//     * @param text      the error message
-//     */
-//    public void addError (OldSystemNode container,
-//                          Glyph glyph,
-//                          String text)
-//    {
-//        if (OMR.getGui() != null) {
-//            getErrorsEditor().addError(container, glyph, text);
-//        }
-//    }
-//
     //-----------------//
     // addItemRenderer //
     //-----------------//
@@ -312,13 +308,38 @@ public class BasicSheet
         }
     }
 
-    //------------//
-    // transcribe //
-    //------------//
+    //--------------//
+    // deleteExport //
+    //--------------//
     @Override
-    public boolean transcribe ()
+    public void deleteExport ()
     {
-        return doStep(Step.last(), null);
+        if (!book.isMultiSheet()) {
+            book.deleteExport(); // Simply delete the single-sheet book!
+        } else {
+            // path/to/scores/Book
+            Path bookPath = BookManager.getActualPath(
+                    book.getExportPath(),
+                    BookManager.getDefaultExportPath(book));
+
+            // Determine the output path (sans extension) for the provided sheet
+            final Path sheetPathSansExt = getSheetPath(bookPath);
+
+            // Multi-sheet book: <bookname>/sheet#<N>.mvt<M>.mxl
+            // Multi-sheet book: <bookname>/sheet#<N>.mxl
+            // Multi-sheet book: <bookname>/sheet#<N>/... (perhaps some day: 1 directory per sheet)
+            final Path folder = sheetPathSansExt.getParent();
+            final Path bookName = folder.getFileName(); // bookname
+            final Path sheetName = sheetPathSansExt.getFileName(); // sheet#N
+
+            final String dirGlob = "glob:**/" + bookName + "/" + sheetName + "{/**,}";
+            final String filGlob = "glob:**/" + bookName + "/" + sheetName + "{/**,.*}";
+            final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
+
+            if (!paths.isEmpty()) {
+                BookManager.deletePaths(bookName + "/" + sheetName + " deletion", paths);
+            }
+        }
     }
 
     //--------//
@@ -332,6 +353,8 @@ public class BasicSheet
             return true;
         }
 
+        modified = true;
+
         SortedSet<Step> mySteps = new TreeSet();
 
         // Add all needed steps
@@ -341,7 +364,7 @@ public class BasicSheet
             }
         }
 
-        logger.debug("Sheet#{} scheduling {}", index, mySteps);
+        logger.debug("Sheet#{} scheduling {}", number, mySteps);
 
         StopWatch watch = new StopWatch("doStep " + target);
 
@@ -474,79 +497,6 @@ public class BasicSheet
         }
     }
 
-    //--------------//
-    // deleteExport //
-    //--------------//
-    @Override
-    public void deleteExport ()
-    {
-        if (!book.isMultiSheet()) {
-            book.deleteExport(); // Simply delete the single-sheet book!
-        } else {
-            // path/to/scores/Book
-            Path bookPath = BookManager.getActualPath(
-                    book.getExportPath(),
-                    BookManager.getDefaultExportPath(book));
-
-            // Determine the output path (sans extension) for the provided sheet
-            final Path sheetPathSansExt = getSheetPath(bookPath);
-
-            // Multi-sheet book: <bookname>/sheet#<N>.mvt<M>.mxl
-            // Multi-sheet book: <bookname>/sheet#<N>.mxl
-            // Multi-sheet book: <bookname>/sheet#<N>/... (perhaps some day: 1 directory per sheet)
-            final Path folder = sheetPathSansExt.getParent();
-            final Path bookName = folder.getFileName(); // bookname
-            final Path sheetName = sheetPathSansExt.getFileName(); // sheet#N
-
-            final String dirGlob = "glob:**/" + bookName + "/" + sheetName + "{/**,}";
-            final String filGlob = "glob:**/" + bookName + "/" + sheetName + "{/**,.*}";
-            final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
-
-            if (!paths.isEmpty()) {
-                BookManager.deletePaths(bookName + "/" + sheetName + " deletion", paths);
-            }
-        }
-    }
-
-    //-------//
-    // print //
-    //-------//
-    @Override
-    public void print ()
-    {
-        // path/to/prints/Book
-        Path bookPath = BookManager.getActualPath(book.getPrintPath(), BookManager.getDefaultPrintPath(book));
-
-        // Determine the output path (sans extension) for the provided sheet
-        final Path sheetPathSansExt = getSheetPath(bookPath);
-        final String rootName = sheetPathSansExt.getFileName().toString();
-        final Path pdfPath = sheetPathSansExt.resolveSibling(rootName + ".pdf");
-
-        // Actually write the PDF
-        try {
-            // Prompt for overwrite?
-            if (!BookManager.confirmed(pdfPath)) {
-                return;
-            }
-
-            if (book.isMultiSheet() && !Files.exists(bookPath)) {
-                Files.createDirectories(bookPath);
-            }
-
-            new BookPdfOutput(book, pdfPath.toFile()).write(this);
-            logger.info("Sheet printed to {}", pdfPath);
-
-            book.setPrintPath(bookPath);
-            BookManager.setDefaultPrintDirectory(bookPath.getParent().toString());
-
-            if (!book.isMultiSheet()) {
-                book.getScript().addTask(new PrintTask(bookPath.getParent().toFile()));
-            }
-        } catch (Exception ex) {
-            logger.warn("Cannot write PDF to " + pdfPath, ex);
-        }
-    }
-
     //-------------//
     // getAssembly //
     //-------------//
@@ -565,15 +515,6 @@ public class BasicSheet
         return beamGaps;
     }
 
-    //----------//
-    // getBench //
-    //----------//
-    @Override
-    public SheetBench getBench ()
-    {
-        return bench;
-    }
-
     //---------//
     // getBook //
     //---------//
@@ -590,19 +531,6 @@ public class BasicSheet
     public Step getCurrentStep ()
     {
         return currentStep;
-    }
-
-    //--------------//
-    // getDimension //
-    //--------------//
-    /**
-     * Report the dimension of the sheet/page
-     *
-     * @return the page/sheet dimension in pixels
-     */
-    public Dimension getDimension ()
-    {
-        return picture.getDimension();
     }
 
     //-----------------//
@@ -652,15 +580,6 @@ public class BasicSheet
     public String getId ()
     {
         return id;
-    }
-
-    //----------//
-    // getIndex //
-    //----------//
-    @Override
-    public int getIndex ()
-    {
-        return index;
     }
 
     //-----------------//
@@ -752,7 +671,7 @@ public class BasicSheet
             return "[" + getId() + "] ";
         } else {
             if (book.isMultiSheet()) {
-                return "[#" + getIndex() + "] ";
+                return "[#" + getNumber() + "] ";
             } else {
                 return "";
             }
@@ -777,6 +696,15 @@ public class BasicSheet
         return stemScale.getMaxThickness();
     }
 
+    //-----------//
+    // getNumber //
+    //-----------//
+    @Override
+    public int getNumber ()
+    {
+        return number;
+    }
+
     //----------//
     // getPages //
     //----------//
@@ -786,6 +714,15 @@ public class BasicSheet
         return pages;
     }
 
+    //---------//
+    // getPath //
+    //---------//
+    @Override
+    public Path getPath ()
+    {
+        return book.getRootPath().resolve(INTERNALS_RADIX + number);
+    }
+
     //------------//
     // getPicture //
     //------------//
@@ -793,16 +730,25 @@ public class BasicSheet
     public Picture getPicture ()
     {
         if (picture == null) {
-            BufferedImage img = book.loadSheetImage(index);
+            BufferedImage img = book.loadSheetImage(number);
 
             try {
                 setImage(img);
             } catch (StepException ex) {
-                logger.warn("Error setting image id " + index, ex);
+                logger.warn("Error setting image id " + number, ex);
             }
         }
 
         return picture;
+    }
+
+    //------------//
+    // hasPicture //
+    //------------//
+    @Override
+    public boolean hasPicture ()
+    {
+        return picture != null;
     }
 
     //----------//
@@ -899,6 +845,65 @@ public class BasicSheet
         return doneSteps.contains(step);
     }
 
+    //------------//
+    // isModified //
+    //------------//
+    @Override
+    public boolean isModified ()
+    {
+        return modified;
+    }
+
+    //-------------//
+    // setModified //
+    //-------------//
+    @Override
+    public void setModified (boolean modified)
+    {
+        this.modified = modified;
+    }
+
+    //-------//
+    // print //
+    //-------//
+    @Override
+    public void print ()
+    {
+        // path/to/prints/Book
+        Path bookPath = BookManager.getActualPath(
+                book.getPrintPath(),
+                BookManager.getDefaultPrintPath(book));
+
+        // Determine the output path (sans extension) for the provided sheet
+        final Path sheetPathSansExt = getSheetPath(bookPath);
+        final String rootName = sheetPathSansExt.getFileName().toString();
+        final Path pdfPath = sheetPathSansExt.resolveSibling(rootName + ".pdf");
+
+        // Actually write the PDF
+        try {
+            // Prompt for overwrite?
+            if (!BookManager.confirmed(pdfPath)) {
+                return;
+            }
+
+            if (book.isMultiSheet() && !Files.exists(bookPath)) {
+                Files.createDirectories(bookPath);
+            }
+
+            new BookPdfOutput(book, pdfPath.toFile()).write(this);
+            logger.info("Sheet printed to {}", pdfPath);
+
+            book.setPrintPath(bookPath);
+            BookManager.setDefaultPrintDirectory(bookPath.getParent().toString());
+
+            if (!book.isMultiSheet()) {
+                book.getScript().addTask(new PrintTask(bookPath.getParent().toFile()));
+            }
+        } catch (Exception ex) {
+            logger.warn("Cannot write PDF to " + pdfPath, ex);
+        }
+    }
+
     //-------------//
     // renderItems //
     //-------------//
@@ -933,8 +938,10 @@ public class BasicSheet
 
         try {
             picture = new Picture(this, image, locationService);
-            setPicture(picture);
-            getBench().recordImageDimension(picture.getWidth(), picture.getHeight());
+
+            if (OMR.getGui() != null) {
+                createPictureView(SheetTab.PICTURE_TAB);
+            }
 
             done(Step.LOAD);
         } catch (ImageFormatException ex) {
@@ -988,13 +995,119 @@ public class BasicSheet
         this.stemScale = stemScale;
     }
 
+    //-------//
+    // store //
+    //-------//
+    @Override
+    public void store ()
+    {
+        // Picture internals, if any
+        if (picture != null) {
+            try {
+                // Make sure the folder exists for sheet internals
+                Files.createDirectories(getPath());
+                picture.store();
+            } catch (IOException ex) {
+                logger.warn("IOException on storing " + this, ex);
+            }
+        }
+    }
+
     //----------//
     // toString //
     //----------//
     @Override
     public String toString ()
     {
-        return "{Sheet " + id + "}";
+        return "Sheet{" + id + "}";
+    }
+
+    //------------//
+    // transcribe //
+    //------------//
+    @Override
+    public boolean transcribe ()
+    {
+        return doStep(Step.last(), null);
+    }
+
+    //    //----------//
+    //    // addError //
+    //    //----------//
+    //    /**
+    //     * Register an error in the sheet ErrorsWindow
+    //     *
+    //     * @param container the immediate container for the error location
+    //     * @param glyph     the related glyph if any
+    //     * @param text      the error message
+    //     */
+    //    public void addError (OldSystemNode container,
+    //                          Glyph glyph,
+    //                          String text)
+    //    {
+    //        if (OMR.getGui() != null) {
+    //            getErrorsEditor().addError(container, glyph, text);
+    //        }
+    //    }
+    //
+    //----------------//
+    // initTransients //
+    //----------------//
+    /**
+     * (package private) method to initialize needed transient members.
+     * (which by definition have not been set by the un-marshaling).
+     *
+     * @param book the containing book
+     */
+    final void initTransients (Book book)
+    {
+        this.book = book;
+
+        // Compute id
+        if (book.isMultiSheet()) {
+            id = book.getRadix() + "#" + number;
+        } else {
+            id = book.getRadix();
+        }
+
+        staffManager = new StaffManager(this);
+        systemManager = new SystemManager(this);
+        lagManager = new LagManager(this);
+
+        filterContext = new LiveParam<FilterDescriptor>(book.getFilterParam());
+        textContext = new LiveParam<String>(book.getLanguageParam());
+
+        // Update UI information if so needed
+        if (OMR.getGui() != null) {
+            locationService = new SelectionService("sheet", allowedEvents);
+            errorsEditor = new ErrorsEditor(this);
+            itemRenderers = new HashSet<ItemRenderer>();
+            SheetsController.getInstance().addAssembly(assembly = new SheetAssembly(this));
+            addItemRenderer(staffManager);
+        }
+
+        createNest();
+        interManager = new InterManager(this);
+    }
+
+    //-------------------//
+    // createPictureView //
+    //-------------------//
+    /**
+     * (package private) Create and display the picture view.
+     *
+     * @param sheetTab the name to be used for picture tab (Picture or Binary)
+     */
+    void createPictureView (SheetTab sheetTab)
+    {
+        locationService.subscribeStrongly(LocationEvent.class, picture);
+
+        // Display sheet picture if not batch mode
+        PictureView pictureView = new PictureView(this);
+        assembly.addViewTab(
+                sheetTab,
+                pictureView,
+                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
     }
 
     //------//
@@ -1074,9 +1187,6 @@ public class BasicSheet
             final long stopTime = System.currentTimeMillis();
             final long duration = stopTime - startTime;
             logger.debug("{}{} completed in {} ms", getLogPrefix(), step, duration);
-
-            // Record this in sheet->score bench
-            bench.recordStep(step, duration);
         } catch (Throwable ex) {
             logger.warn("doOneStep error in " + step, ex);
             throw ex;
@@ -1110,7 +1220,7 @@ public class BasicSheet
         if (!book.isMultiSheet()) {
             return bookPath;
         } else {
-            return bookPath.resolve(OMR.SHEET_PREFIX + (book.getOffset() + index));
+            return bookPath.resolve(OMR.SHEET_PREFIX + (book.getOffset() + number));
         }
     }
 
@@ -1180,31 +1290,31 @@ public class BasicSheet
         currentStep = step;
     }
 
-    //------------//
-    // setPicture //
-    //------------//
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Adapter //
+    //---------//
     /**
-     * Set the picture of this sheet, that is the image to be processed.
-     *
-     * @param picture the related picture
+     * Meant for JAXB handling of Sheet interface.
      */
-    private void setPicture (Picture picture)
+    public static class Adapter
+            extends XmlAdapter<BasicSheet, Sheet>
     {
-        this.picture = picture;
+        //~ Methods --------------------------------------------------------------------------------
 
-        if (OMR.getGui() != null) {
-            locationService.subscribeStrongly(LocationEvent.class, picture);
+        @Override
+        public BasicSheet marshal (Sheet s)
+        {
+            return (BasicSheet) s;
+        }
 
-            // Display sheet picture if not batch mode
-            PictureView pictureView = new PictureView(this);
-            assembly.addViewTab(
-                    SheetTab.PICTURE_TAB,
-                    pictureView,
-                    new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+        @Override
+        public Sheet unmarshal (BasicSheet s)
+        {
+            return s;
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

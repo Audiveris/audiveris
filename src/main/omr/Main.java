@@ -267,7 +267,8 @@ public class Main
     {
         boolean failure = false;
         final List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
-        tasks.addAll(cli.getFilesTasks());
+        tasks.addAll(cli.getProjectsTasks());
+        tasks.addAll(cli.getInputsTasks());
         tasks.addAll(cli.getScriptsTasks());
 
         if (!tasks.isEmpty()) {

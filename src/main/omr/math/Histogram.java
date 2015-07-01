@@ -539,11 +539,11 @@ public class Histogram<K extends Number>
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
         sb.append(
                 String.format(
-                        " %s-%s",
+                        "%s-%s",
                         (firstBucket() != null) ? firstBucket().toString() : "",
                         (lastBucket() != null) ? lastBucket().toString() : ""));
         sb.append(" size:").append(size());

@@ -82,7 +82,6 @@ public class StemSeedsStep
 
         logger.info("{}{}", sheet.getLogPrefix(), stemScale);
         sheet.setStemScale(stemScale);
-        sheet.getBench().recordStemScale(stemScale);
 
         return null;
     }

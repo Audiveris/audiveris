@@ -87,7 +87,7 @@ public class ScriptActions
     {
         if (script.isModified() && defaultPrompt.getSpecific()) {
             int answer = JOptionPane.showConfirmDialog(
-                    null,
+                    OMR.getGui().getFrame(),
                     "Save script for book " + script.getBook().getRadix() + "?");
 
             if (answer == JOptionPane.YES_OPTION) {

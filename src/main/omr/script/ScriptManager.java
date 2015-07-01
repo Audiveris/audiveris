@@ -121,10 +121,6 @@ public class ScriptManager
             if (script != null) {
                 Book book = script.getBook();
                 logger.warn("Cancelled " + book, pce);
-
-                if (book != null) {
-                    book.getBench().recordCancellation();
-                }
             }
         } catch (FileNotFoundException ex) {
             logger.warn("Cannot find script file {}", file);

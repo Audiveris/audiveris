@@ -358,8 +358,9 @@ public class PageRhythm
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{Range");
-            sb.append(' ').append(startId).append('-').append(stopId);
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
+            sb.append(startId).append('-').append(stopId);
 
             if (ts != null) {
                 sb.append(" ts:").append(ts.getTimeRational());

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.SortedSet;
 
 import javax.swing.JFrame;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Interface {@code Book} is the root class for handling a physical set of image input
@@ -42,14 +43,78 @@ import javax.swing.JFrame;
  * <p>
  * A (super-) book may also contain (sub-) books to recursively gather a sequence of input files.
  * <p>
+ * Methods are organized as follows:
+ * <dl>
+ * <dt>Admin</dt>
+ * <dd><ul>
+ * <li>{@link #includeBook}</li>
+ * <li>{@link #getOffset}</li>
+ * <li>{@link #setOffset}</li>
+ * <li>{@link #getInputPath}</li>
+ * <li>{@link #getRadix}</li>
+ * <li>{@link #getLogPrefix}</li>
+ * <li>{@link #close}</li>
+ * <li>{@link #isClosing}</li>
+ * <li>{@link #setClosing}</li>
+ * </ul></dd>
+ *
+ * <dt>Sheets</dt>
+ * <dd><ul>
+ * <li>{@link #createSheets}</li>
+ * <li>{@link #loadSheetImage}</li>
+ * <li>{@link #isMultiSheet}</li>
+ * <li>{@link #getSheet}</li>
+ * <li>{@link #getSheets}</li>
+ * <li>{@link #removeSheet}</li>
+ * </ul></dd>
+ *
+ * <dt>Transcription</dt>
+ * <dd><ul>
+ * <li>{@link #transcribe}</li>
+ * <li>{@link #doStep}</li>
+ * <li>{@link #buildScores}</li>
+ * <li>{@link #getScores}</li>
+ * </ul></dd>
+ *
+ * <dt>Parameters</dt>
+ * <dd><ul>
+ * <li>{@link #getFilterParam}</li>
+ * <li>{@link #getLanguageParam}</li>
+ * </ul></dd>
+ *
+ * <dt>Artifacts</dt>
+ * <dd><ul>
+ * <li>{@link #getBrowserFrame}</li>
+ * <li>{@link #getExportPath}</li>
+ * <li>{@link #setExportPath}</li>
+ * <li>{@link #export}</li>
+ * <li>{@link #deleteExport}</li>
+ * <li>{@link #getPrintPath}</li>
+ * <li>{@link #setPrintPath}</li>
+ * <li>{@link #print}</li>
+ * <li>{@link #getScript}</li>
+ * <li>{@link #getScriptFile}</li>
+ * <li>{@link #setScriptFile}</li>
+ * <li>{@link #getProjectPath}</li>
+ * <li>{@link #setProjectPath}</li>
+ * <li>{@link #store}</li>
+ * <li>{@link #getRootPath}</li>
+ * </ul></dd>
+ * </dl>
+ * <p>
  * <img src="doc-files/Book.png" />
  *
  * @author Hervé Bitteur
  */
+@XmlJavaTypeAdapter(BasicBook.Adapter.class)
 public interface Book
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** File name for book internals in project file system: {@value}. */
+    static final String BOOK_INTERNALS = "book.xml";
+
+    //~ Methods ------------------------------------------------------------------------------------
     // -------------
     // --- Admin ---
     // -------------
@@ -110,10 +175,25 @@ public interface Book
     boolean isClosing ();
 
     /**
+     * Flag this book as being closing.
      *
      * @param closing the closing to set
      */
     void setClosing (boolean closing);
+
+    /**
+     * Report whether the book has been modified with respect to its project data.
+     *
+     * @return true if modified
+     */
+    boolean isModified ();
+
+    /**
+     * Set the modified flag.
+     *
+     * @param val the new flag value
+     */
+    void setModified (boolean val);
 
     // --------------
     // --- Sheets ---
@@ -227,13 +307,6 @@ public interface Book
     // -----------------
     //
     /**
-     * Report the related book bench.
-     *
-     * @return the related bench
-     */
-    BookBench getBench ();
-
-    /**
      * Create a dedicated frame, where book hierarchy can be browsed interactively.
      *
      * @return the created frame
@@ -303,4 +376,31 @@ public interface Book
      * @param scriptFile the related script file
      */
     void setScriptFile (File scriptFile);
+
+    /**
+     * Report where the book project is kept.
+     *
+     * @return the book project path (with .omr extension)
+     */
+    Path getProjectPath ();
+
+    /**
+     * Remember where the book project is kept.
+     *
+     * @param projectPath the book project path (with .omr extension)
+     */
+    void setProjectPath (Path projectPath);
+
+    /**
+     * Store book project to disk.
+     */
+    void store ();
+
+    /**
+     * Report the root path of the (zipped) file system dedicated to this book.
+     *
+     * @return the book root path
+     */
+    Path getRootPath ();
+
 }

@@ -103,8 +103,8 @@ public class StaffPattern
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
         sb.append(" count:").append(count);
         sb.append(" width:").append(width);
         sb.append(" line:").append(line);

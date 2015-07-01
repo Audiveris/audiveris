@@ -11,8 +11,9 @@
 // </editor-fold>
 package omr.sheet;
 
-import java.awt.Graphics2D;
 import omr.glyph.GlyphNest;
+import omr.glyph.ui.SymbolsController;
+import omr.glyph.ui.SymbolsEditor;
 
 import omr.image.FilterDescriptor;
 
@@ -32,28 +33,115 @@ import omr.sig.InterManager;
 import omr.step.Step;
 import omr.step.StepException;
 
-import omr.util.LiveParam;
-
-import java.awt.image.BufferedImage;
-import java.util.Collection;
-import java.util.List;
-import omr.glyph.ui.SymbolsController;
-import omr.glyph.ui.SymbolsEditor;
 import omr.ui.ErrorsEditor;
 import omr.ui.util.ItemRenderer;
+
+import omr.util.LiveParam;
+
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
+
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Interface {@code Sheet} corresponds to an image in a book image file.
  * <p>
  * If a movement break occurs in the middle of a sheet, this sheet will contain several pages, but
  * in most cases there is exactly one {@link Page} instance per Sheet instance.
+ * <p>
+ * Methods are organized as follows:
+ * <dl>
+ * <dt>Admin</dt>
+ * <dd><ul>
+ * <li>{@link #getId}</li>
+ * <li>{@link #getLogPrefix}</li>
+ * <li>{@link #getBook}</li>
+ * <li>{@link #getNumber}</li>
+ * <li>{@link #setImage}</li>
+ * <li>{@link #close}</li>
+ * </ul></dd>
+ *
+ * <dt>Pages</dt>
+ * <dd><ul>
+ * <li>{@link #addPage}</li>
+ * <li>{@link #getPages}</li>
+ * </ul></dd>
+ *
+ * <dt>Transcription</dt>
+ * <dd><ul>
+ * <li>{@link #transcribe}</li>
+ * <li>{@link #doStep}</li>
+ * <li>{@link #isDone}</li>
+ * <li>{@link #ensureStep}</li>
+ * <li>{@link #getCurrentStep}</li>
+ * <li>{@link #getLatestStep}</li>
+ * </ul></dd>
+ *
+ * <dt>Parameters</dt>
+ * <dd><ul>
+ * <li>{@link #getFilterParam}</li>
+ * <li>{@link #getLanguageParam}</li>
+ * </ul></dd>
+ *
+ * <dt>Companions</dt>
+ * <dd><ul>
+ * <li>{@link #getSystemManager}</li>
+ * <li>{@link #getStaffManager}</li>
+ * <li>{@link #getLagManager}</li>
+ * <li>{@link #getInterManager}</li>
+ * <li>{@link #getGlyphNest}</li>
+ * </ul></dd>
+ *
+ * <dt>Artifacts</dt>
+ * <dd><ul>
+ * <li>{@link #getPicture}</li>
+ * <li>{@link #getWidth}</li>
+ * <li>{@link #getHeight}</li>
+ * <li>{@link #getScale}</li>
+ * <li>{@link #setScale}</li>
+ * <li>{@link #getInterline}</li>
+ * <li>{@link #setStemScale}</li>
+ * <li>{@link #getMainStem}</li>
+ * <li>{@link #getMaxStem}</li>
+ * <li>{@link #getSkew}</li>
+ * <li>{@link #setSkew}</li>
+ * <li>{@link #getBeamGaps}</li>
+ * <li>{@link #setBeamGaps}</li>
+ * <li>{@link #getSystems}</li>
+ * <li>{@link #getSheetDelta}</li>
+ * <li>{@link #export}</li>
+ * <li>{@link #deleteExport}</li>
+ * <li>{@link #print}</li>
+ * <li>{@link #getPath}</li>
+ * <li>{@link #store}</li>
+ * </ul></dd>
+ *
+ * <dt>UI</dt>
+ * <dd><ul>
+ * <li>{@link #getLocationService}</li>
+ * <li>{@link #getAssembly}</li>
+ * <li>{@link #getSymbolsEditor}</li>
+ * <li>{@link #getErrorsEditor}</li>
+ * <li>{@link #getSymbolsController}</li>
+ * <li>{@link #addItemRenderer}</li>
+ * <li>{@link #renderItems}</li>
+ * </ul></dd>
+ * </dl>
  *
  * @author Hervé Bitteur
  */
+@XmlJavaTypeAdapter(BasicSheet.Adapter.class)
 public interface Sheet
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** The radix used for folder of this sheet internals. */
+    static final String INTERNALS_RADIX = "sheet#";
+
+    //~ Methods ------------------------------------------------------------------------------------
     // -------------
     // --- Admin ---
     // -------------
@@ -80,9 +168,11 @@ public interface Sheet
     Book getBook ();
 
     /**
-     * @return the sheet index (1-based) in containing book
+     * Report the number for this sheet in containing book
+     *
+     * @return the sheet index number (1-based) in containing book
      */
-    int getIndex ();
+    int getNumber ();
 
     /**
      * Assign the related image to this sheet
@@ -90,7 +180,8 @@ public interface Sheet
      * @param image the loaded image
      * @throws StepException
      */
-    void setImage (BufferedImage image) throws StepException;
+    void setImage (BufferedImage image)
+            throws StepException;
 
     /**
      * Close this sheet, and remove it from the containing book.
@@ -98,6 +189,20 @@ public interface Sheet
      * @param bookIsClosing true if book is being closed
      */
     void close (boolean bookIsClosing);
+
+    /**
+     * Has this sheet been modified with respect to its project data.
+     *
+     * @return true if modified
+     */
+    boolean isModified ();
+
+    /**
+     * Set the modified flag.
+     *
+     * @param val the new flag value
+     */
+    void setModified (boolean val);
 
     // -------------
     // --- Pages ---
@@ -231,18 +336,13 @@ public interface Sheet
     // -----------------
     //
     /**
-     * Report the related sheet bench
-     *
-     * @return the related bench
-     */
-    SheetBench getBench ();
-
-    /**
-     * Report the picture of this sheet, that is the image to be processed.
+     * Report the picture of this sheet, that provides sources and tables.
      *
      * @return the related picture
      */
     Picture getPicture ();
+
+    boolean hasPicture ();
 
     /**
      * Report the picture width in pixels
@@ -337,6 +437,8 @@ public interface Sheet
     List<SystemInfo> getSystems ();
 
     /**
+     * Report the measured difference between entities and pixels.
+     *
      * @return the sheetDelta
      */
     SheetDiff getSheetDelta ();
@@ -363,6 +465,18 @@ public interface Sheet
      */
     void print ();
 
+    /**
+     * Report the path for this sheet internals.
+     *
+     * @return the sheet path within book file system
+     */
+    Path getPath ();
+
+    /**
+     * Store sheet internals into book project file system.
+     */
+    void store ();
+
     // ----------
     // --- UI ---
     // ----------
@@ -382,18 +496,18 @@ public interface Sheet
     SheetAssembly getAssembly ();
 
     /**
-     * In non batch mode, report the editor dealing with detected errors in this sheet
-     *
-     * @return the errors editor, or null
-     */
-    ErrorsEditor getErrorsEditor ();
-
-    /**
      * In non batch mode, report the editor dealing with symbols recognition in this sheet
      *
      * @return the symbols editor, or null
      */
     SymbolsEditor getSymbolsEditor ();
+
+    /**
+     * In non batch mode, report the editor dealing with detected errors in this sheet
+     *
+     * @return the errors editor, or null
+     */
+    ErrorsEditor getErrorsEditor ();
 
     /**
      * In non batch mode, report the UI module for symbol assignment in this sheet
@@ -416,5 +530,4 @@ public interface Sheet
      * @param g the graphics context
      */
     void renderItems (Graphics2D g);
-
 }

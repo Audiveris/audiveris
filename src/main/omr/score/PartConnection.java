@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.score;
 
-
 import omr.sheet.Part;
 import omr.sheet.SystemInfo;
 
@@ -364,7 +363,7 @@ public class PartConnection
      * <ul>
      * <li>as Audiveris {@link omr.sheet.Part} instances
      * (produced by the scanning of just one page)</li>
-     * <li>as Audiveris {@link omr.score.entity.LogicalPart}
+     * <li>as Audiveris {@link omr.score.LogicalPart}
      * (when merging Audiveris pages)</li>
      * <li>as ProxyMusic {@link com.audiveris.proxymusic.ScorePart} instances
      * (used when merging MusicXML files).</li>
@@ -467,8 +466,8 @@ public class PartConnection
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
-            sb.append(getClass().getSimpleName());
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
 
             sb.append(" id:").append(getId());
 
@@ -534,7 +533,7 @@ public class PartConnection
         @Override
         public int getInputIndex ()
         {
-            return page.getSheet().getIndex();
+            return page.getSheet().getNumber();
         }
 
         @Override
@@ -558,9 +557,9 @@ public class PartConnection
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
 
-            sb.append(getClass().getSimpleName());
+            sb.append("{");
 
             sb.append(" page#").append(getInputIndex());
 
@@ -777,9 +776,9 @@ public class PartConnection
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
 
-            sb.append(getClass().getSimpleName());
+            sb.append("{");
 
             sb.append(" page#").append(inputIndex);
 

@@ -16,43 +16,55 @@ import omr.OMR;
 import omr.image.FilterDescriptor;
 import omr.image.ImageLoading;
 
+import omr.run.RunTable;
+
 import omr.score.OpusExporter;
+import omr.score.Page;
 import omr.score.Score;
 import omr.score.ScoreExporter;
 import omr.score.ScoreReduction;
-import omr.score.Page;
 import omr.score.ui.BookPdfOutput;
 
 import omr.script.BookStepTask;
 import omr.script.ExportTask;
 import omr.script.PrintTask;
 import omr.script.Script;
-import omr.script.ScriptActions;
 
 import omr.sheet.ui.BookBrowser;
 import omr.sheet.ui.SheetActions;
+import omr.sheet.ui.SheetTab;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.ProcessingCancellationException;
 import omr.step.Step;
 import omr.step.StepException;
-
 import static omr.step.ui.StepMonitoring.notifyStart;
 import static omr.step.ui.StepMonitoring.notifyStop;
 
 import omr.text.Language;
 
 import omr.util.FileUtil;
+import omr.util.Jaxb;
 import omr.util.OmrExecutors;
 import omr.util.Param;
+import omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -61,30 +73,82 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.zip.ZipOutputStream;
 
 import javax.swing.JFrame;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code BasicBook} is a basic implementation of Book interface.
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "book")
 public class BasicBook
         implements Book
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(Book.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Book.class);
+
+    /** Un/marshaling context for use with JAXB. */
+    private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The recording of key processing data. */
-    private final BookBench bench;
+    //
+    // Persistent data
+    //----------------
+    //
+    /** Sub books, if any. */
+    @XmlElement(name = "sub-books")
+    private final List<Book> subBooks;
+
+    /** Input path of the related image(s) file, if any. */
+    @XmlAttribute(name = "image-path")
+    @XmlJavaTypeAdapter(Jaxb.PathAdapter.class)
+    private final Path imagePath;
+
+    /** Sheet offset of image file with respect to full work. */
+    @XmlAttribute(name = "offset")
+    private int offset;
+
+    /** Sequence of sheets from image file. */
+    @XmlElement(name = "sheet")
+    private final List<Sheet> sheets = new ArrayList<Sheet>();
+
+    /** Logical scores for this book. */
+    ///@XmlElement(name = "scores")
+    private final List<Score> scores = new ArrayList<Score>();
+
+    // Transient data
+    //---------------
+    //
+    /** Book (zipped) file system. */
+    private FileSystem fileSystem;
+
+    /** Where all book internals are stored on disk. */
+    private volatile Path rootPath;
 
     /** Browser on this book. */
     private BookBrowser bookBrowser;
 
     /** Flag to indicate this book is being closed. */
     private volatile boolean closing;
+
+    /** Path (with .omr extension) where the project is kept. */
+    private Path projectPath;
 
     /** Abstract path (sans extension) where the MusicXML output is to be stored. */
     private Path exportPath;
@@ -93,26 +157,17 @@ public class BasicBook
     private final Param<FilterDescriptor> filterParam = new Param<FilterDescriptor>(
             FilterDescriptor.defaultFilter);
 
-    /** Input path of the related image(s) file, if any. */
-    private final Path imagePath;
-
     /** Dedicated image loader. */
     private ImageLoading.Loader loader;
 
     /** True if the book contains several sheets. */
-    private boolean multiSheet;
-
-    /** Sheet offset of image file with respect to full work. */
-    private int offset;
+    private Boolean multiSheet;
 
     /** Where the book PDF data is to be stored. */
     private Path printPath;
 
     /** The related file radix (name w/o extension). */
-    private final String radix;
-
-    /** Logical scores for this book. */
-    private final List<Score> scores = new ArrayList<Score>();
+    private String radix;
 
     /** The script of user actions on this book. */
     private Script script;
@@ -120,14 +175,11 @@ public class BasicBook
     /** Where the script is to be stored. */
     private File scriptFile;
 
-    /** Sequence of sheets from image file. */
-    private final List<Sheet> sheets = new ArrayList<Sheet>();
-
-    /** Sub books, if any. */
-    private final List<Book> subBooks;
-
     /** Handling of dominant language(s) parameter. */
     private final Param<String> languageParam = new Param<String>(Language.defaultSpecification);
+
+    /** Set if the book itself has been modified. */
+    private boolean modified = false;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -140,15 +192,9 @@ public class BasicBook
         Objects.requireNonNull(imagePath, "Trying to create a Book with null imagePath");
 
         this.imagePath = imagePath;
-
-        radix = FileUtil.getNameSansExtension(imagePath);
         subBooks = null;
 
-        bench = new BookBench(this);
-
-        //
-        //        // Register this book instance
-        //        BookManager.getInstance().addBook(this);
+        initTransients(FileUtil.getNameSansExtension(imagePath), null);
     }
 
     /**
@@ -162,17 +208,19 @@ public class BasicBook
     {
         Objects.requireNonNull(radix, "Trying to create a meta Book with null radix");
 
-        this.radix = radix;
-
         imagePath = null;
         subBooks = new ArrayList<Book>();
 
-        // Related bench
-        bench = new BookBench(this);
+        initTransients(radix, null);
+    }
 
-        //
-        //        // Register this book instance
-        //        BookManager.getInstance().addBook(this);
+    /**
+     * No-arg constructor needed by JAXB.
+     */
+    public BasicBook ()
+    {
+        imagePath = null;
+        subBooks = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -207,13 +255,15 @@ public class BasicBook
     @Override
     public void close ()
     {
-        logger.info("Closing {}", this);
-
         setClosing(true);
 
-        // Check whether the book script has been saved (or user has declined)
-        if ((OMR.getGui() != null) && !ScriptActions.checkStored(getScript())) {
-            return;
+        // Close the book file system
+        if (rootPath != null) {
+            try {
+                fileSystem.close();
+            } catch (IOException ex) {
+                logger.warn("Error closing file system of " + this, ex);
+            }
         }
 
         // Close contained sheets (and pages)
@@ -226,11 +276,9 @@ public class BasicBook
             bookBrowser.close();
         }
 
-        // Complete and store all bench data
-        BookManager.storeBench(bench, true);
-
         // Remove from OMR instances
         OMR.getEngine().removeBook(this);
+        logger.info("{} closed.", this);
     }
 
     //--------------//
@@ -239,6 +287,8 @@ public class BasicBook
     @Override
     public void createSheets (SortedSet<Integer> sheetIds)
     {
+        StopWatch watch = new StopWatch("createSheets");
+        watch.start("getLoader");
         loader = ImageLoading.getLoader(imagePath);
 
         if (loader != null) {
@@ -259,6 +309,7 @@ public class BasicBook
                 Sheet sheet = null;
 
                 try {
+                    watch.start("sheet#" + id);
                     sheet = new BasicSheet(this, id, null);
                     sheets.add(sheet);
 
@@ -288,6 +339,8 @@ public class BasicBook
                 SheetActions.HistoryMenu.getInstance().setEnabled(true);
             }
         }
+
+        watch.print();
     }
 
     //--------------//
@@ -534,15 +587,6 @@ public class BasicBook
         getScript().addTask(new ExportTask(bookPath.getParent().toFile()));
     }
 
-    //----------//
-    // getBench //
-    //----------//
-    @Override
-    public BookBench getBench ()
-    {
-        return bench;
-    }
-
     //-----------------//
     // getBrowserFrame //
     //-----------------//
@@ -592,6 +636,13 @@ public class BasicBook
     public Path getExportPath ()
     {
         return exportPath;
+    }
+
+    public FileSystem getFileSystem ()
+    {
+        getRootPath();
+
+        return fileSystem;
     }
 
     //----------------//
@@ -652,6 +703,15 @@ public class BasicBook
         return printPath;
     }
 
+    //----------------//
+    // getProjectPath //
+    //----------------//
+    @Override
+    public Path getProjectPath ()
+    {
+        return projectPath;
+    }
+
     //----------//
     // getRadix //
     //----------//
@@ -659,6 +719,52 @@ public class BasicBook
     public String getRadix ()
     {
         return radix;
+    }
+
+    //-------------//
+    // getRootPath //
+    //-------------//
+    @Override
+    public Path getRootPath ()
+    {
+        if (rootPath == null) {
+            if (projectPath == null) {
+                throw new IllegalStateException("projectPath is null");
+            }
+
+            if (!Files.exists(projectPath)) {
+                try {
+                    logger.debug("Project file not found, creating {}", projectPath);
+                    // Make sure the containing folder exists
+                    Files.createDirectories(projectPath.getParent());
+
+                    ZipOutputStream zos = new ZipOutputStream(
+                            new FileOutputStream(projectPath.toFile()));
+                    zos.close();
+                    fileSystem = FileSystems.newFileSystem(projectPath, null);
+                } catch (FileNotFoundException ex) {
+                    logger.warn("File not found: " + projectPath, ex);
+                } catch (IOException ex) {
+                    logger.warn("Error creating project:" + projectPath, ex);
+                }
+            } else {
+                try {
+                    logger.debug("Project {} found ", projectPath);
+                    fileSystem = FileSystems.newFileSystem(projectPath, null);
+                } catch (FileNotFoundException ex) {
+                    logger.warn("File not found: " + projectPath, ex);
+                } catch (IOException ex) {
+                    logger.warn("Error opening project: " + projectPath, ex);
+                }
+            }
+
+            if (fileSystem != null) {
+                logger.debug("fileSystem: {}", fileSystem);
+                rootPath = fileSystem.getPath("/");
+            }
+        }
+
+        return rootPath;
     }
 
     //-----------//
@@ -690,6 +796,58 @@ public class BasicBook
     public File getScriptFile ()
     {
         return scriptFile;
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Un-marshal the provided XML stream to allocate the corresponding book.
+     *
+     * @param in          the input stream that contains the book in XML format.
+     *                    The stream is not closed by this method
+     * @param projectPath path to book project
+     *
+     * @return the allocated book.
+     * @exception JAXBException raised when un-marshaling goes wrong
+     */
+    public static Book unmarshal (InputStream in,
+                                  Path projectPath)
+            throws JAXBException
+    {
+        StopWatch watch = new StopWatch("Book unmarshal");
+
+        Unmarshaller um = getJaxbContext().createUnmarshaller();
+
+        BasicBook book = (BasicBook) um.unmarshal(in);
+
+        book.initTransients(FileUtil.getNameSansExtension(book.getInputPath()), projectPath);
+
+        for (Sheet sheet : book.sheets) {
+            watch.start("sheet#" + sheet.getNumber());
+
+            BasicSheet basicSheet = (BasicSheet) sheet;
+            basicSheet.initTransients(book);
+
+            if (sheet.hasPicture()) {
+                Picture picture = sheet.getPicture();
+                picture.initTransients(sheet);
+
+                if (OMR.getGui() != null) {
+                    if (picture.hasTable(Picture.TableKey.BINARY)) {
+                        basicSheet.createPictureView(SheetTab.BINARY_TAB);
+                        SheetsController.getInstance().markTab(sheet, Color.BLACK);
+                    } else {
+                        basicSheet.createPictureView(SheetTab.PICTURE_TAB);
+                    }
+                }
+            }
+        }
+
+        ///watch.print();
+        logger.debug("Book unmarshalled");
+
+        return book;
     }
 
     //----------//
@@ -728,12 +886,35 @@ public class BasicBook
         return closing;
     }
 
+    //------------//
+    // isModified //
+    //------------//
+    @Override
+    public boolean isModified ()
+    {
+        if (modified) {
+            return true;
+        }
+
+        for (Sheet sheet : sheets) {
+            if (sheet.isModified()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //--------------//
     // isMultiSheet //
     //--------------//
     @Override
     public boolean isMultiSheet ()
     {
+        if (multiSheet == null) {
+            multiSheet = sheets.size() > 1;
+        }
+
         return multiSheet;
     }
 
@@ -744,8 +925,18 @@ public class BasicBook
     public BufferedImage loadSheetImage (int id)
     {
         try {
+            if (loader == null) {
+                loader = ImageLoading.getLoader(imagePath);
+
+                if (loader == null) {
+                    logger.warn("Cannot find a loader for {}", imagePath);
+
+                    return null;
+                }
+            }
+
             BufferedImage img = loader.getImage(id);
-            logger.info("{} loaded sheet#{} {}x{}", this, id, img.getWidth(), img.getHeight());
+            logger.debug("{} loaded sheet#{} {}x{}", this, id, img.getWidth(), img.getHeight());
 
             if (loader.allImagesLoaded()) {
                 loader.dispose();
@@ -758,6 +949,24 @@ public class BasicBook
 
             return null;
         }
+    }
+
+    //---------//
+    // marshal //
+    //---------//
+    /**
+     * Marshal the NeuralNetwork to its XML file
+     *
+     * @param os the XML output stream, which is not closed by this method
+     * @exception JAXBException raised when marshalling goes wrong
+     */
+    public void marshal (OutputStream os)
+            throws JAXBException
+    {
+        Marshaller m = getJaxbContext().createMarshaller();
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        m.marshal(this, os);
+        logger.debug("Network marshalled");
     }
 
     //-------//
@@ -824,6 +1033,15 @@ public class BasicBook
         this.exportPath = exportPath;
     }
 
+    //-------------//
+    // setModified //
+    //-------------//
+    @Override
+    public void setModified (boolean val)
+    {
+        this.modified = val;
+    }
+
     //-----------//
     // setOffset //
     //-----------//
@@ -847,6 +1065,15 @@ public class BasicBook
         this.printPath = printPath;
     }
 
+    //----------------//
+    // setProjectPath //
+    //----------------//
+    @Override
+    public void setProjectPath (Path projectPath)
+    {
+        this.projectPath = projectPath;
+    }
+
     //---------------//
     // setScriptFile //
     //---------------//
@@ -856,14 +1083,62 @@ public class BasicBook
         this.scriptFile = scriptFile;
     }
 
+    //-------//
+    // store //
+    //-------//
+    @Override
+    public void store ()
+    {
+        try {
+            StopWatch watch = new StopWatch("store");
+            Path root = getRootPath();
+
+            {
+                // Book itself
+                watch.start("book");
+
+                Path bookPath = root.resolve(Book.BOOK_INTERNALS);
+                Files.deleteIfExists(bookPath);
+
+                OutputStream os = Files.newOutputStream(bookPath, StandardOpenOption.CREATE);
+
+                Marshaller m = getJaxbContext().createMarshaller();
+                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+                m.marshal(this, os);
+                os.close();
+                logger.info("Stored {}", bookPath);
+            }
+
+            // Contained sheets internals
+            for (Sheet sheet : sheets) {
+                if (sheet.isModified()) {
+                    watch.start(sheet.toString());
+                    sheet.store();
+                }
+            }
+
+            // Flag book & sheets as no longer modified
+            for (Sheet sheet : sheets) {
+                sheet.setModified(false);
+            }
+
+            setModified(false);
+
+            watch.print();
+            logger.info("{} stored into {}", this, projectPath);
+        } catch (Exception ex) {
+            logger.warn("Error storing " + this + " ex:" + ex, ex);
+        }
+    }
+
     //----------//
     // toString //
     //----------//
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{Book");
-        sb.append(" ").append(radix);
+        StringBuilder sb = new StringBuilder("Book{");
+        sb.append(radix);
 
         if (offset > 0) {
             sb.append(" offset:").append(offset);
@@ -881,5 +1156,54 @@ public class BasicBook
     public boolean transcribe (SortedSet<Integer> sheetIds)
     {
         return doStep(Step.last(), sheetIds);
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(BasicBook.class, RunTable.class);
+        }
+
+        return jaxbContext;
+    }
+
+    //----------------//
+    // initTransients //
+    //----------------//
+    private void initTransients (String radix,
+                                 Path projectPath)
+    {
+        this.radix = radix;
+        this.projectPath = projectPath;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Adapter //
+    //---------//
+    /**
+     * Meant for JAXB handling of Book interface.
+     */
+    public static class Adapter
+            extends XmlAdapter<BasicBook, Book>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public BasicBook marshal (Book s)
+        {
+            return (BasicBook) s;
+        }
+
+        @Override
+        public Book unmarshal (BasicBook s)
+        {
+            return s;
+        }
     }
 }

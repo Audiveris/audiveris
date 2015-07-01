@@ -671,8 +671,6 @@ public class SystemManager
                 sb.append("no part found");
             }
 
-            sheet.getBench().recordPartCount(partNb);
-
             int sysNb = page.getSystems().size();
 
             if (sysNb > 0) {
@@ -684,8 +682,6 @@ public class SystemManager
             } else {
                 sb.append(", no system found");
             }
-
-            sheet.getBench().recordSystemCount(sysNb);
 
             logger.info("{}{}", sheet.getLogPrefix(), sb);
         }

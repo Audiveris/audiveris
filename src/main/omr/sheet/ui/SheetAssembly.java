@@ -75,7 +75,7 @@ public class SheetAssembly
     /** Link with sheet. */
     private final Sheet sheet;
 
-    /** Service of sheetlocation. */
+    /** Service of location. */
     private final EventService locationService;
 
     /** The concrete UI component. */
@@ -609,8 +609,8 @@ public class SheetAssembly
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
-            sb.append(getClass().getSimpleName());
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
             sb.append(" ").append(title);
             sb.append("}");
 

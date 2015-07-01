@@ -293,7 +293,7 @@ public class SlursBuilder
     /**
      * Compute impacts for slur candidate.
      *
-     * @param slur      slur information
+     * @param curve     curve information
      * @param bothSides true for both sides, false for current side
      * @return grade impacts
      */

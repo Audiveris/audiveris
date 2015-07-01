@@ -16,6 +16,8 @@
 <!-- the Compile on Save feature is turned off for the project. -->
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
+
+<!-- for JDK8 javadoc, add -Xdoclint:none in Build/Documenting/Additional Javadoc Options -->
 <project basedir="." default="run" name="audiveris">
     <description>
         Build, test, and run the Audiveris project

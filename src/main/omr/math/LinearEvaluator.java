@@ -541,8 +541,8 @@ public class LinearEvaluator
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
-            sb.append(getClass().getSimpleName());
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
             sb.append(" ").append(category);
             sb.append(" ").append(Arrays.toString(pattern));
             sb.append("}");

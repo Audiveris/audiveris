@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="13.2">
+<diagram program="umlet" version="13.3">
   <help_text>//Uncomment the following line to change the fontsize:
         //fontsize=14
 
@@ -72,7 +72,7 @@ file</panel_attributes>
     <panel_attributes>*Sheet*
 bg=#55ffff
 --
-fileIndex</panel_attributes>
+number</panel_attributes>
     <additional_attributes/>
   </element>
   <element>

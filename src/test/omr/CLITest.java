@@ -62,6 +62,20 @@ public class CLITest
     }
 
     @Test
+    public void testProject ()
+            throws Exception
+    {
+        System.out.println("\n+++ testProject");
+
+        String[] args = new String[]{"-project", "myProject#1.omr", "-project", "myProject#2.omr"};
+        CLI.Parameters params = instance.getParameters(args);
+        new Dumping().dump(params);
+        assertEquals(
+                Arrays.asList("myProject#1.omr", "myProject#2.omr").toString(),
+                params.projectFiles.toString());
+    }
+
+    @Test
     public void testInputMissing ()
             throws Exception
     {
@@ -82,6 +96,26 @@ public class CLITest
     }
 
     @Test
+    public void testProjectMissing ()
+            throws Exception
+    {
+        System.out.println("\n+++ testProjectMissing");
+        Locale.setDefault(Locale.GERMAN);
+
+        String[] args = new String[]{"-project"};
+
+        try {
+            CLI.Parameters params = instance.getParameters(args);
+
+            fail();
+        } catch (CmdLineException ex) {
+            System.out.println(ex.getMessage());
+            System.out.println(ex.getLocalizedMessage());
+            assertTrue(ex.getMessage().contains("-project"));
+        }
+    }
+
+    @Test
     public void testOption ()
             throws Exception
     {
@@ -97,12 +131,12 @@ public class CLITest
     }
 
     @Test
-    public void testPages ()
+    public void testSheets ()
             throws Exception
     {
-        System.out.println("\n+++ testPages");
+        System.out.println("\n+++ testSheets");
 
-        String[] args = new String[]{"-pages", "3", "4", "6"};
+        String[] args = new String[]{"-sheets", "3", "4", "6"};
         CLI.Parameters params = instance.getParameters(args);
         new Dumping().dump(params);
         assertEquals(Arrays.asList(3, 4, 6).toString(), params.getSheetIds().toString());
@@ -130,7 +164,7 @@ public class CLITest
 
         String[] args = new String[]{
             "-help", "-batch", "-script", "myScript.xml", "-input",
-            "my Input.pdf", "-pages", "5 2", " 3", "-step", "PAGE"
+            "my Input.pdf", "-sheets", "5 2", " 3", "-step", "PAGE"
         };
         CLI.Parameters params = instance.getParameters(args);
         new Dumping().dump(params);

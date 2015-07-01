@@ -903,8 +903,8 @@ public class NoteHeadsBuilder
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
-            sb.append(getClass().getSimpleName());
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
 
             if (point != null) {
                 sb.append(" point:(").append(point.x).append(",").append(point.y).append(")");

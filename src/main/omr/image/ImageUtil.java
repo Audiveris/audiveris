@@ -70,7 +70,7 @@ public abstract class ImageUtil
      */
     public static BufferedImage maxRgbToGray (BufferedImage image)
     {
-        logger.info("Converting max RGB image to gray ...");
+        logger.info("Converting max RGB to gray ...");
 
         // We use the max value among the RGB channels
         int width = image.getWidth();
@@ -148,7 +148,7 @@ public abstract class ImageUtil
      */
     public static BufferedImage rgbToGray (BufferedImage rgb)
     {
-        logger.info("Converting RGB image to gray ...");
+        logger.info("Converting RGB to gray ...");
 
         // We use luminance value based on standard RGB combination
         double[][] matrix = {

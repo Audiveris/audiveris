@@ -864,15 +864,14 @@ public class RunTable
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
-
-        sb.append(" ").append(name);
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
+        sb.append(name);
         sb.append(" ").append(orientation);
         sb.append(" ").append(width).append("x").append(height);
 
         // Debug
-        if (true) {
+        if (false) {
             sb.append(" runs:").append(getTotalRunCount());
         }
 

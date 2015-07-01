@@ -82,7 +82,7 @@ public class ScoreReduction
         this.score = score;
 
         for (Page page : score.getPages()) {
-            pages.put(page.getSheet().getIndex(), page);
+            pages.put(page.getSheet().getNumber(), page);
         }
     }
 

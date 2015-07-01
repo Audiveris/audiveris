@@ -25,6 +25,9 @@
     <action domain="FILE" section="40" class="omr.sheet.ui.SheetActions" method="plotStem"/>
     <action domain="FILE" section="40" class="omr.sheet.ui.SheetActions" method="plotStaves"/>
     <action domain="FILE" section="60" class="omr.sheet.ui.SheetActions" method="removeSheet"/>
+    <action domain="FILE" section="65" class="omr.sheet.ui.SheetActions" method="openBook"/>
+    <action domain="FILE" section="65" class="omr.sheet.ui.SheetActions" method="storeBook"/>
+    <action domain="FILE" section="65" class="omr.sheet.ui.SheetActions" method="storeBookAs"/>
     <action domain="FILE" section="65" class="omr.sheet.ui.SheetActions" method="closeBook"/>
     <action domain="FILE" section="70" class="omr.ui.GuiActions"         method="exit"/>
 

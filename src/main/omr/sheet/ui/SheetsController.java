@@ -530,10 +530,10 @@ public class SheetsController
     private String defineTitleFor (Sheet sheet)
     {
         Book book = sheet.getBook();
-        int index = sheet.getIndex();
+        int index = sheet.getNumber();
 
         if (book.isMultiSheet()) {
-            if (sheet.getIndex() == 1) {
+            if (sheet.getNumber() == 1) {
                 return book.getRadix() + "#" + index;
             } else {
                 return "#" + index;

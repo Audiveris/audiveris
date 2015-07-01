@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -80,19 +82,24 @@ public class Scale
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(Scale.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Scale.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Line thickness range. */
+    @XmlElement(name = "line")
     private final Range lineRange;
 
     /** Main interline range. */
+    @XmlElement(name = "interline")
     private final Range interlineRange;
 
     /** Beam thickness (detected or computed). */
+    @XmlElement(name = "beam")
     private final int beamValue;
 
     /** Second interline range, if any. */
+    @XmlElement(name = "second-interline")
     private final Range secondInterlineRange;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -433,18 +440,18 @@ public class Scale
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Scale");
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
 
-        sb.append(" line: ").append(lineRange);
-
+        sb.append("line: ").append(lineRange);
         sb.append(" interline: ").append(interlineRange);
-
         sb.append(" beam: ").append(beamValue);
 
         if (secondInterlineRange != null) {
             sb.append(" secondInterline: ").append(secondInterlineRange);
         }
+
+        sb.append("}");
 
         return sb.toString();
     }
@@ -595,17 +602,22 @@ public class Scale
     /**
      * Handles a range of values using a (min, best, max) triplet.
      */
+    @XmlAccessorType(XmlAccessType.NONE)
+    @XmlRootElement(name = "range")
     public static class Range
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Value at beginning of range */
+        /** Value at beginning of range. */
+        @XmlAttribute
         public final int min;
 
-        /** Value at highest point in range */
+        /** Value at highest point in range. */
+        @XmlAttribute
         public final int best;
 
-        /** Value at end of range */
+        /** Value at end of range. */
+        @XmlAttribute
         public final int max;
 
         //~ Constructors ---------------------------------------------------------------------------
@@ -616,6 +628,13 @@ public class Scale
             this.min = min;
             this.best = best;
             this.max = max;
+        }
+
+        public Range ()
+        {
+            this.min = 0;
+            this.best = 0;
+            this.max = 0;
         }
 
         //~ Methods --------------------------------------------------------------------------------

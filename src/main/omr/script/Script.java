@@ -110,7 +110,7 @@ public class Script
         sheetIds = new TreeSet<Integer>();
 
         for (Sheet sheet : book.getSheets()) {
-            sheetIds.add(sheet.getIndex());
+            sheetIds.add(sheet.getNumber());
         }
     }
 

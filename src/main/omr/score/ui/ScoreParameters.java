@@ -216,7 +216,7 @@ public class ScoreParameters
                             "Page settings",
                             createTextPane(null, sh, scoreTextPane, sh.getLanguageParam()),
                             new FilterPane(null, sh, scoreFilterPane, sh.getFilterParam()));
-                    component.addTab("P#" + sh.getIndex(), null, panel, panel.getName());
+                    component.addTab("P#" + sh.getNumber(), null, panel, panel.getName());
 
                     if (sh == sheet) {
                         pagePanel = panel;

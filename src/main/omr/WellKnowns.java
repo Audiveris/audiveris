@@ -180,6 +180,9 @@ public abstract class WellKnowns
     /** The default folder where scripts data is stored. */
     public static final File DEFAULT_SCRIPTS_FOLDER = new File(DATA_FOLDER, "scripts");
 
+    /** The default folder where projects data is stored. */
+    public static final File DEFAULT_PROJECTS_FOLDER = new File(DATA_FOLDER, "projects");
+
     /** The default folder where scores data is stored. */
     public static final File DEFAULT_SCORES_FOLDER = new File(DATA_FOLDER, "scores");
 

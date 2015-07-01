@@ -31,11 +31,16 @@ import omr.sheet.ui.SheetTab;
 import omr.util.StopWatch;
 
 import ij.process.ByteProcessor;
+import java.io.File;
+import java.io.FileOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import omr.WellKnowns;
 
 /**
  * Class {@code BinaryStep} implements <b>BINARY</b> step, which binarizes the initial
@@ -101,6 +106,9 @@ public class BinaryStep
         RunTable wholeVertTable = vertFactory.createTable("vertBinary", binary);
         picture.setTable(Picture.TableKey.BINARY, wholeVertTable);
 
+        // Just to try
+        saveTable(wholeVertTable);
+
         // To discard image
         picture.disposeSource(SourceKey.INITIAL);
 
@@ -116,6 +124,20 @@ public class BinaryStep
     public SheetTab getSheetTab ()
     {
         return SheetTab.BINARY_TAB;
+    }
+
+    private void saveTable (RunTable table)
+    {
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(RunTable.class);
+            File fileTable = new File(WellKnowns.TEMP_FOLDER, table.getName() + ".run.xml");
+            Marshaller m = jaxbContext.createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            m.marshal(table, new FileOutputStream(fileTable));
+            System.out.println("Marshalled to " + fileTable);
+        } catch (Exception ex) {
+            logger.warn("Exception in saveTable " + ex, ex);
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

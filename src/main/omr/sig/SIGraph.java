@@ -1233,8 +1233,8 @@ public class SIGraph
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
         sb.append(" inters:").append(vertexSet().size());
         sb.append(" relations:").append(edgeSet().size());
         sb.append("}");

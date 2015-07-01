@@ -44,7 +44,8 @@ public class AnchoredTemplate
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
 
         sb.append(template.getShape());
         sb.append(" ").append(template.getInterline());

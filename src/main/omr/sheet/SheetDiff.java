@@ -170,8 +170,6 @@ public class SheetDiff
                     new BoardsPane(new PixelBoard(sheet)));
         }
 
-        sheet.getBench().recordDelta(ratio);
-
         return ratio;
     }
 

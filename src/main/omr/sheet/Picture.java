@@ -44,16 +44,28 @@ import org.bushe.swing.event.EventSubscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.media.jai.JAI;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code Picture} starts from the original BufferedImage to provide all {@link
@@ -82,6 +94,8 @@ import javax.media.jai.JAI;
  * @author Hervé Bitteur
  * @author Brenton Partridge
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "picture")
 public class Picture
         implements EventSubscriber<LocationEvent>
 {
@@ -124,12 +138,30 @@ public class Picture
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
+    // Persistent data
+    //----------------
+    //
+    /** Image width. */
+    @XmlAttribute(name = "width")
+    private final int width;
+
+    /** Image height. */
+    @XmlAttribute(name = "height")
+    private final int height;
+
+    /** Map of all handled run tables. */
+    @XmlElement(name = "tables")
+    private final ConcurrentHashMap<TableKey, RunTableHolder> tables = new ConcurrentHashMap<TableKey, RunTableHolder>();
+
+    // Transient data
+    //---------------
+    //
+    /** Map of all handled sources. (TODO: should this be persistent?) */
+    private final ConcurrentHashMap<SourceKey, WeakReference<ByteProcessor>> sources = new ConcurrentHashMap<SourceKey, WeakReference<ByteProcessor>>();
+
     /** Related sheet. */
     @Navigable(false)
-    private final Sheet sheet;
-
-    /** Image dimension. */
-    private final Dimension dimension;
+    private Sheet sheet;
 
     /**
      * Service object where gray level of pixel is to be written to when so asked for
@@ -137,16 +169,21 @@ public class Picture
      */
     private final SelectionService levelService;
 
-    /** Map of all handled sources. */
-    private final ConcurrentHashMap<SourceKey, WeakReference<ByteProcessor>> sources = new ConcurrentHashMap<SourceKey, WeakReference<ByteProcessor>>();
-
-    /** Map of all handled tables. */
-    private final ConcurrentHashMap<TableKey, RunTable> tables = new ConcurrentHashMap<TableKey, RunTable>();
-
-    /** The initial (gray-level) image. */
+    /** The initial (gray-level) image, if any. */
     private BufferedImage initialImage;
 
     //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    public Picture ()
+    {
+        this.sheet = null;
+        this.width = 0;
+        this.height = 0;
+        this.levelService = null;
+    }
+
     /**
      * Build a picture instance from a given original image.
      *
@@ -160,13 +197,14 @@ public class Picture
                     SelectionService levelService)
             throws ImageFormatException
     {
-        this.sheet = sheet;
+        initTransients(sheet);
         this.levelService = levelService;
 
         // Make sure format, colors, etc are OK for us
         ///ImageUtil.printInfo(image, "Original image");
         image = checkImage(image);
-        dimension = new Dimension(image.getWidth(), image.getHeight());
+        width = image.getWidth();
+        height = image.getHeight();
 
         // Remember the initial image
         initialImage = image;
@@ -200,10 +238,11 @@ public class Picture
     //--------------//
     public void disposeTable (TableKey key)
     {
-        RunTable table = tables.get(key);
+        RunTableHolder tableHolder = tables.get(key);
 
-        if (table != null) {
-            tables.put(key, null);
+        if (tableHolder != null) {
+            tableHolder.store();
+            tableHolder.setData(null);
             logger.debug("{} table disposed.", key);
         }
     }
@@ -310,19 +349,6 @@ public class Picture
         return constants.defaultExtractionDirectory.getValue();
     }
 
-    //--------------//
-    // getDimension //
-    //--------------//
-    /**
-     * Report (a copy of) the dimension in pixels of the current image.
-     *
-     * @return the image dimension
-     */
-    public Dimension getDimension ()
-    {
-        return new Dimension(dimension.width, dimension.height);
-    }
-
     //-----------//
     // getHeight //
     //-----------//
@@ -333,7 +359,7 @@ public class Picture
      */
     public int getHeight ()
     {
-        return dimension.height;
+        return height;
     }
 
     //----------//
@@ -448,14 +474,6 @@ public class Picture
 
                 if (table != null) {
                     src = table.getBuffer();
-
-                    //                        try {
-                    //                            JAXBContext jaxbContext = JAXBContext.newInstance(RunTable.class);
-                    //                            Marshaller m = jaxbContext.createMarshaller();
-                    //                            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-                    //                            m.marshal(table, new FileOutputStream(new File("data/temp/binary.xml")));
-                    //                        } catch (Exception ex) {
-                    //                        }
                 } else if (initialImage != null) {
                     // Built via binarization of initial source
                     src = binarized(getSource(SourceKey.INITIAL));
@@ -482,7 +500,8 @@ public class Picture
             case NO_STAFF:
                 // Built from complementary horizontal & vertical lags
                 src = Lags.buildBuffer(
-                        dimension,
+                        width,
+                        height,
                         sheet.getLagManager().getLag(Lags.HLAG),
                         sheet.getLagManager().getLag(Lags.VLAG));
 
@@ -510,23 +529,40 @@ public class Picture
      */
     public RunTable getTable (TableKey key)
     {
-        RunTable table = tables.get(key);
+        RunTableHolder tableHolder = tables.get(key);
 
-        return table;
+        if (tableHolder == null) {
+            return null;
+        }
+
+        return tableHolder.getData();
     }
 
     //----------//
     // getWidth //
     //----------//
     /**
-     * Report the current width of the picture image.
-     * Note that it may have been modified by a rotation.
+     * Report the width of the picture image.
      *
      * @return the current width value, in pixels.
      */
     public int getWidth ()
     {
-        return dimension.width;
+        return width;
+    }
+
+    //----------//
+    // hasTable //
+    //----------//
+    /**
+     * Report whether the desired table is known
+     *
+     * @param key key of desired table
+     * @return true if we have a tableHolder, false otherwise
+     */
+    public boolean hasTable (TableKey key)
+    {
+        return tables.get(key) != null;
     }
 
     //----------------//
@@ -635,11 +671,47 @@ public class Picture
     public void setTable (TableKey key,
                           RunTable table)
     {
-        tables.put(key, table);
+        RunTableHolder tableHolder = new RunTableHolder(sheet, RunTable.class, key + ".xml");
+        tableHolder.setData(table);
+        tables.put(key, tableHolder);
 
         switch (key) {
         case BINARY:
             disposeSource(SourceKey.BINARY);
+        }
+    }
+
+    //-------//
+    // store //
+    //-------//
+    public void store ()
+    {
+        // Each handled table
+        for (Entry<TableKey, RunTableHolder> entry : tables.entrySet()) {
+            RunTableHolder holder = entry.getValue();
+
+            if (!holder.hasData()) {
+                continue; // Since data has not been loaded (and thus not modified)
+            }
+
+            TableKey key = entry.getKey();
+            Path tablepath = sheet.getPath().resolve(key + ".xml");
+
+            try {
+                // Too conservative. TODO: Has data been modified WRT file ???
+                Files.deleteIfExists(tablepath);
+
+                OutputStream os = Files.newOutputStream(tablepath, StandardOpenOption.CREATE);
+                Marshaller m = JAXBContext.newInstance(RunTable.class).createMarshaller();
+                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+                RunTable table = holder.getData();
+                m.marshal(table, os);
+                os.close();
+                logger.info("Stored {}", tablepath);
+            } catch (Exception ex) {
+                logger.warn("Error in picture.store", ex);
+            }
         }
     }
 
@@ -650,6 +722,24 @@ public class Picture
     public String toString ()
     {
         return getName();
+    }
+
+    //----------------//
+    // initTransients //
+    //----------------//
+    /**
+     * (package private) method to initialize needed transient members.
+     * (which by definition have not been set by the un-marshaling).
+     *
+     * @param sheet the containing sheet
+     */
+    final void initTransients (Sheet sheet)
+    {
+        this.sheet = sheet;
+
+        for (RunTableHolder holder : tables.values()) {
+            holder.setSheet(sheet);
+        }
     }
 
     //-------------------//
@@ -782,5 +872,45 @@ public class Picture
         private final Constant.String defaultExtractionDirectory = new Constant.String(
                 WellKnowns.DEFAULT_SCRIPTS_FOLDER.toString(),
                 "Default directory for image extractions");
+    }
+
+    //----------------//
+    // RunTableHolder //
+    //----------------//
+    private static class RunTableHolder
+            extends DataHolder<RunTable>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public RunTableHolder ()
+        {
+        }
+
+        public RunTableHolder (Sheet sheet,
+                               Class classe,
+                               String pathString)
+        {
+            super(sheet, classe, pathString);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        //----------------//
+        // afterUnmarshal //
+        //----------------//
+        /**
+         * Called after all the properties (except IDREF) are un-marshaled for this object,
+         * but before this object is set to the parent object.
+         */
+        @SuppressWarnings("unused")
+        private void afterUnmarshal (Unmarshaller um,
+                                     Object parent)
+        {
+            classe = RunTable.class;
+        }
+
+        private void setSheet (Sheet sheet)
+        {
+            this.sheet = sheet;
+        }
     }
 }

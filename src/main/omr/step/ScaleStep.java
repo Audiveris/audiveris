@@ -82,7 +82,6 @@ public class ScaleStep
 
         logger.info("{}{}", sheet.getLogPrefix(), scale);
         sheet.setScale(scale);
-        sheet.getBench().recordScale(scale);
     }
 
     //-------------//

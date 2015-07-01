@@ -22,8 +22,6 @@ import java.util.List;
 /**
  * Class {@code TimePairInter} is a time signature composed of two halves.
  *
- * @see TimeComboInter
- *
  * @author Hervé Bitteur
  */
 public class TimePairInter

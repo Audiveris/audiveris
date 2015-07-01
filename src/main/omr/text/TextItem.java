@@ -125,8 +125,8 @@ public abstract class TextItem
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
         ///sb.append('@').append(Integer.toHexString(hashCode()));
         sb.append(internals());
 

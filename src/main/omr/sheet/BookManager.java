@@ -23,18 +23,21 @@ import omr.score.Score;
 
 import omr.script.ScriptManager;
 
-import omr.ui.OmrGui;
-
+import omr.util.Dumping;
 import omr.util.NameSet;
+import omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +49,7 @@ import java.util.List;
  * It handles the collection of all book instances currently loaded, as well as the recent history
  * of books previously loaded.
  * <p>
- * It handles where and how to export, print, bench books and sheets.
+ * It handles where and how to handle projects and export or print books and sheets.
  * <p>
  * The way books and sheets are exported depends on whether we allow the use of MusicXML
  * <b>Opus</b>:
@@ -153,9 +156,6 @@ public class BookManager
     private static volatile BookManager INSTANCE;
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** OMR master gui, if any. */
-    private OmrGui gui;
-
     /** All book instances. */
     final List<Book> books = new ArrayList<Book>();
 
@@ -274,36 +274,10 @@ public class BookManager
     //-------------//
     // getAllBooks //
     //-------------//
-    /**
-     * Report the current collection of books.
-     *
-     * @return an unmodifiable view of the books list
-     */
     @Override
     public List<Book> getAllBooks ()
     {
         return Collections.unmodifiableList(books);
-    }
-
-    //---------------------//
-    // getDefaultBenchPath //
-    //---------------------//
-    /**
-     * Report the path to which the bench data would be written by default.
-     *
-     * @param book the book to export
-     * @return the default file
-     */
-    public static Path getDefaultBenchPath (Book book)
-    {
-        final String child = book.getRadix() + OMR.BENCH_EXTENSION;
-        final Path mainPath = Main.getCli().getBenchFolder();
-
-        if (mainPath != null) {
-            return mainPath.resolve(child);
-        }
-
-        return Paths.get(constants.defaultBenchDirectory.getValue(), child);
     }
 
     //---------------------------//
@@ -317,6 +291,19 @@ public class BookManager
     public static String getDefaultDewarpDirectory ()
     {
         return constants.defaultDewarpDirectory.getValue();
+    }
+
+    //---------------------------//
+    // getDefaultExportDirectory //
+    //---------------------------//
+    /**
+     * Report the directory where books are exported by default.
+     *
+     * @return the default file
+     */
+    public static String getDefaultExportDirectory ()
+    {
+        return constants.defaultExportDirectory.getValue();
     }
 
     //----------------------//
@@ -344,7 +331,7 @@ public class BookManager
             }
         }
 
-        return Paths.get(constants.defaultExportDirectory.getValue(), book.getRadix());
+        return Paths.get(getDefaultExportDirectory(), book.getRadix());
     }
 
     //--------------------------//
@@ -386,6 +373,50 @@ public class BookManager
         }
 
         return Paths.get(constants.defaultPrintDirectory.getValue(), book.getRadix());
+    }
+
+    //----------------------------//
+    // getDefaultProjectDirectory //
+    //----------------------------//
+    /**
+     * Report the directory where books projects are kept by default.
+     *
+     * @return the default file
+     */
+    public static String getDefaultProjectDirectory ()
+    {
+        return constants.defaultProjectDirectory.getValue();
+    }
+
+    //-----------------------//
+    // getDefaultProjectPath //
+    //-----------------------//
+    /**
+     * Report the path to which the book project should be stored by default.
+     *
+     * @param book the book to store
+     * @return the default book path for export
+     */
+    public static Path getDefaultProjectPath (Book book)
+    {
+        // If book already has a target, use it
+        if (book.getProjectPath() != null) {
+            return book.getProjectPath();
+        }
+
+        //
+        //        Path mainPath = Main.getCli().getProjectFolder();
+        //
+        //        if (mainPath != null) {
+        //            if (Files.isDirectory(mainPath)) {
+        //                return mainPath.resolve(book.getRadix());
+        //            } else {
+        //                return mainPath;
+        //            }
+        //        }
+        //
+        // Define target based on global directory and book name
+        return Paths.get(getDefaultProjectDirectory(), book.getRadix() + OMR.PROJECT_EXTENSION);
     }
 
     //--------------------//
@@ -457,48 +488,12 @@ public class BookManager
         constants.defaultInputDirectory.setValue(value);
     }
 
-    //------------//
-    // storeBench //
-    //------------//
-    /**
-     * Store the book bench.
-     *
-     * @param bench    the bench to write to disk
-     * @param complete true if we need to complete the bench data
-     */
-    public static void storeBench (BookBench bench,
-                                   boolean complete)
+    //--------------------------//
+    // setDefaultPrintDirectory //
+    //--------------------------//
+    public static void setDefaultPrintDirectory (String value)
     {
-        // Check if we do save bench data
-        if ((Main.getCli().getBenchFolder() == null) && !constants.saveBenchToDisk.isSet()) {
-            return;
-        }
-
-        Path target = getActualPath(null, getDefaultBenchPath(bench.getBook()));
-
-        // Actually store the book bench
-        FileOutputStream fos = null;
-
-        try {
-            fos = new FileOutputStream(target.toString());
-            bench.store(fos, complete);
-
-            if (complete) {
-                logger.info("Complete book bench stored to {}", target);
-            }
-
-            // Remember (even across runs) the selected directory
-            constants.defaultBenchDirectory.setValue(target.getParent().toString());
-        } catch (Exception ex) {
-            logger.warn("Error storing book bench to " + target, ex);
-        } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException ignored) {
-                }
-            }
-        }
+        constants.defaultPrintDirectory.setValue(value);
     }
 
     //----------------//
@@ -514,12 +509,40 @@ public class BookManager
         return constants.useCompression.getValue();
     }
 
+    //---------//
+    // useOpus //
+    //---------//
+    public static boolean useOpus ()
+    {
+        return constants.useOpus.isSet();
+    }
+
     //--------------//
     // useSignature //
     //--------------//
     public static boolean useSignature ()
     {
         return constants.defaultSigned.isSet();
+    }
+
+    //------------//
+    // getHistory //
+    //------------//
+    /**
+     * Get access to the list of previously handled images.
+     *
+     * @return the history set of image files
+     */
+    public NameSet getHistory ()
+    {
+        if (history == null) {
+            history = new NameSet(
+                    "Images History",
+                    constants.imagesHistory,
+                    constants.historySize.getValue());
+        }
+
+        return history;
     }
 
     //------------//
@@ -531,13 +554,62 @@ public class BookManager
         // void
     }
 
+    //-----------//
+    // loadInput //
+    //-----------//
+    @Override
+    public Book loadInput (Path path)
+    {
+        final Book book = new BasicBook(path);
+        addBook(book);
+
+        return book;
+    }
+
     //-------------//
     // loadProject //
     //-------------//
     @Override
-    public Book loadProject (Path path)
+    public Book loadProject (Path projectPath)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+            logger.info("Loading project {} ...", projectPath);
+
+            StopWatch watch = new StopWatch("loadProject " + projectPath);
+            watch.start("book");
+
+            FileSystem zipfs = FileSystems.newFileSystem(projectPath, null);
+            Path bookPath = zipfs.getPath(Book.BOOK_INTERNALS);
+            InputStream is = Files.newInputStream(bookPath, StandardOpenOption.READ);
+            Book book = BasicBook.unmarshal(is, projectPath);
+
+            is.close();
+            zipfs.close();
+
+            ///watch.print();
+            // Debug: dump what we've got
+            if (false) {
+                Dumping dumper = new Dumping();
+                dumper.dump(book);
+
+                for (Sheet sheet : book.getSheets()) {
+                    dumper.dump(sheet, "Dump of sheet #" + sheet.getNumber(), 1);
+
+                    if (sheet.hasPicture()) {
+                        Picture picture = sheet.getPicture();
+                        dumper.dump(picture, 2);
+                    }
+                }
+            }
+
+            logger.info("{} loaded.", book);
+
+            return book;
+        } catch (Exception ex) {
+            logger.warn("Error loading project " + projectPath + " " + ex, ex);
+
+            return null;
+        }
     }
 
     //------------//
@@ -566,46 +638,6 @@ public class BookManager
         return books.remove(book);
     }
 
-    //--------------------------//
-    // setDefaultPrintDirectory //
-    //--------------------------//
-    public static void setDefaultPrintDirectory (String value)
-    {
-        constants.defaultPrintDirectory.setValue(value);
-    }
-
-    //------------//
-    // getHistory //
-    //------------//
-    /**
-     * Get access to the list of previously handled images.
-     *
-     * @return the history set of image files
-     */
-    public NameSet getHistory ()
-    {
-        if (history == null) {
-            history = new NameSet(
-                    "Images History",
-                    constants.imagesHistory,
-                    constants.historySize.getValue());
-        }
-
-        return history;
-    }
-
-    //-----------//
-    // loadInput //
-    //-----------//
-    @Override
-    public Book loadInput (Path path)
-    {
-        final Book book = new BasicBook(path);
-        addBook(book);
-
-        return book;
-    }
-
     //-----------//
     // terminate //
     //-----------//
@@ -613,14 +645,6 @@ public class BookManager
     public void terminate ()
     {
         // void
-    }
-
-    //---------//
-    // useOpus //
-    //---------//
-    public static boolean useOpus ()
-    {
-        return constants.useOpus.isSet();
     }
 
     //---------//
@@ -677,17 +701,21 @@ public class BookManager
                 WellKnowns.DEFAULT_SCORES_FOLDER.toString(),
                 "Default directory for saved scores");
 
-        private final Constant.Boolean saveBenchToDisk = new Constant.Boolean(
-                false,
-                "Should we save bench data to disk");
-
-        private final Constant.String defaultBenchDirectory = new Constant.String(
-                WellKnowns.DEFAULT_BENCHES_FOLDER.toString(),
-                "Default directory for saved benches");
+        private final Constant.String defaultProjectDirectory = new Constant.String(
+                WellKnowns.DEFAULT_PROJECTS_FOLDER.toString(),
+                "Default directory for Audiveris projects");
 
         private final Constant.String defaultPrintDirectory = new Constant.String(
                 WellKnowns.DEFAULT_PRINT_FOLDER.toString(),
                 "Default directory for printing sheet files");
+
+        private final Constant.String defaultInputDirectory = new Constant.String(
+                WellKnowns.EXAMPLES_FOLDER.toString(),
+                "Default directory for selection of image files");
+
+        private final Constant.String defaultDewarpDirectory = new Constant.String(
+                WellKnowns.TEMP_FOLDER.toString(),
+                "Default directory for saved dewarped images");
 
         private final Constant.Boolean defaultSigned = new Constant.Boolean(
                 true,
@@ -701,13 +729,5 @@ public class BookManager
                 "count",
                 10,
                 "Maximum number of files names kept in history");
-
-        private final Constant.String defaultInputDirectory = new Constant.String(
-                WellKnowns.EXAMPLES_FOLDER.toString(),
-                "Default directory for selection of image files");
-
-        private final Constant.String defaultDewarpDirectory = new Constant.String(
-                WellKnowns.TEMP_FOLDER.toString(),
-                "Default directory for saved dewarped images");
     }
 }

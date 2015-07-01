@@ -223,8 +223,8 @@ public class BoardsPane
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
 
         sb.append(" ").append(name).append(" [");
 

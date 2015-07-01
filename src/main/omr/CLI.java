@@ -86,6 +86,9 @@ import java.util.concurrent.Callable;
  * <dt><b>-printDir DIR</b></dt>
  * <dd>Prints out score to provided directory</dd>
  *
+ * <dt><b>-project FILE</b></dt>
+ * <dd>Reads the provided project file</dd>
+ *
  * <dt><b>-script FILE</b></dt>
  * <dd>Runs the provided script file</dd>
  *
@@ -164,16 +167,16 @@ public class CLI
         return params.exportFolder.toPath();
     }
 
-    //---------------//
-    // getFilesTasks //
-    //---------------//
+    //----------------//
+    // getInputsTasks //
+    //----------------//
     /**
-     * Prepare the processing of image files listed on command line.
+     * Prepare the processing of input image files listed on command line.
      * On each input file, we apply the actions specified if any via -step, -print, -export.
      *
      * @return the collection of proper callable instances
      */
-    public List<Callable<Void>> getFilesTasks ()
+    public List<Callable<Void>> getInputsTasks ()
     {
         List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
@@ -221,7 +224,6 @@ public class CLI
                                     }
                                 } catch (ProcessingCancellationException pce) {
                                     logger.warn("Cancelled " + book, pce);
-                                    book.getBench().recordCancellation();
                                     throw pce;
                                 } catch (Throwable ex) {
                                     logger.warn("Exception occurred", ex);
@@ -246,6 +248,94 @@ public class CLI
                         public String toString ()
                         {
                             return "Input " + path;
+                        }
+                    });
+        }
+
+        return tasks;
+    }
+
+    //------------------//
+    // getProjectsTasks //
+    //------------------//
+    /**
+     * Prepare the processing of project files listed on command line.
+     * ??? On each project file, we apply the actions specified if any via -step, -print, -export.
+     *
+     * @return the collection of proper callable instances
+     */
+    public List<Callable<Void>> getProjectsTasks ()
+    {
+        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+
+        // Launch desired step on each book
+        for (final File project : params.projectFiles) {
+            final Path path = project.toPath();
+
+            tasks.add(
+                    new Callable<Void>()
+                    {
+                        @Override
+                        public Void call ()
+                        throws Exception
+                        {
+//                            final Step target = params.step;
+//                            final SortedSet<Integer> sheetIds = params.getSheetIds();
+//
+//                            if (target != null) {
+//                                logger.info(
+//                                        "Launching {} on {} {}",
+//                                        target,
+//                                        project,
+//                                        (!sheetIds.isEmpty()) ? ("sheets " + sheetIds) : "");
+//                            }
+//
+                            if (Files.exists(path)) {
+                                final Book book = OMR.getEngine().loadProject(path);
+//
+//                                try {
+//                                    // Create book sheets and perform desired steps if any
+//                                    book.doStep(target, sheetIds);
+//
+//                                    // Book print output?
+//                                    if (params.print || (params.printFolder != null)) {
+//                                        logger.debug("Print output");
+//                                        new PrintTask(params.printFolder).core(
+//                                                book.getSheets().get(0));
+//                                    }
+//
+//                                    // Book export output?
+//                                    if (params.export || (params.exportFolder != null)) {
+//                                        logger.debug("Export output");
+//                                        new ExportTask(params.exportFolder).core(
+//                                                book.getSheets().get(0));
+//                                    }
+//                                } catch (ProcessingCancellationException pce) {
+//                                    logger.warn("Cancelled " + book, pce);
+//                                    throw pce;
+//                                } catch (Throwable ex) {
+//                                    logger.warn("Exception occurred", ex);
+//                                    throw ex;
+//                                } finally {
+//                                    // Close (when in batch mode only)
+//                                    if ((OMR.getGui() == null) /* &&
+//                                     * constants.closeBookOnEnd.isSet() */) {
+//                                        book.close();
+//                                    }
+//                                }
+
+                                return null;
+                            } else {
+                                String msg = "Could not find file " + path;
+                                logger.warn(msg);
+                                throw new RuntimeException(msg);
+                            }
+                        }
+
+                        @Override
+                        public String toString ()
+                        {
+                            return "Project " + path;
                         }
                     });
         }
@@ -490,6 +580,10 @@ public class CLI
         /** The list of input image file names to load. */
         @Option(name = "-input", usage = "Reads the provided input image file", metaVar = "<input-file>")
         final List<File> inputFiles = new ArrayList<File>();
+
+        /** The list of project file names to load. */
+        @Option(name = "-project", usage = "Reads the provided project file", metaVar = "<project-file>")
+        final List<File> projectFiles = new ArrayList<File>();
 
         /** The set of sheet IDs to load. */
         @Option(name = "-sheets", usage = "Defines specific sheets (counted from 1) to process", handler = IntArrayOptionHandler.class)
