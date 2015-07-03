@@ -517,6 +517,87 @@ public class StemsBuilder
     }
 
     //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final double slopeMargin;
+
+        final int maxHeadOutDx;
+
+        final int maxBeamInDx;
+
+        final int maxHeadInDx;
+
+        final int vicinityMargin;
+
+        final int maxStemHeadGapY;
+
+        final int maxYGap;
+
+        final int maxStemThickness;
+
+        final int minHeadSectionContribution;
+
+        final int minStemExtension;
+
+        final int minHeadBeamDistance;
+
+        final int minBeamStemsGap;
+
+        final double maxSeedJitter;
+
+        final double maxSectionJitter;
+
+        final int maxInterBeamGap;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (SystemInfo system,
+                           Scale scale)
+        {
+            slopeMargin = constants.slopeMargin.getValue();
+            maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum());
+            maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum());
+            maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum());
+            vicinityMargin = scale.toPixels(constants.vicinityMargin);
+            maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum());
+            maxYGap = scale.toPixels(VerticalsBuilder.getMaxYGap());
+            minHeadSectionContribution = scale.toPixels(constants.minHeadSectionContribution);
+            minStemExtension = scale.toPixels(constants.minStemExtension);
+            minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
+            minBeamStemsGap = scale.toPixels(constants.minBeamStemsGap);
+
+            final int stemThickness = scale.getMaxStem();
+            maxStemThickness = stemThickness;
+            maxSeedJitter = constants.maxSeedJitter.getValue() * stemThickness;
+            maxSectionJitter = constants.maxSectionJitter.getValue() * stemThickness;
+
+            Population beamGaps = system.getSheet().getBeamGaps();
+
+            if (beamGaps.getCardinality() > 1) {
+                maxInterBeamGap = (int) Math.ceil(
+                        beamGaps.getMeanValue() + (2 * beamGaps.getStandardDeviation()));
+            } else {
+                maxInterBeamGap = scale.toPixels(constants.maxInterBeamGap);
+            }
+
+            if (logger.isDebugEnabled()) {
+                new Dumping().dump(this);
+            }
+        }
+    }
+
+    //------------//
     // HeadLinker //
     //------------//
     /**
@@ -1658,7 +1739,7 @@ public class StemsBuilder
 
                 // Widen head box with max stem width
                 final Rectangle wideHeadBox = head.getBounds();
-                wideHeadBox.grow(system.getSheet().getMaxStem(), 0);
+                wideHeadBox.grow(system.getSheet().getScale().getMaxStem(), 0);
 
                 // Browse both vertical and horizontal sections in the system
                 for (Collection<Section> collection : Arrays.asList(
@@ -1835,86 +1916,6 @@ public class StemsBuilder
             private void sortByDistance (List<Glyph> glyphs)
             {
                 Collections.sort(glyphs, (yDir > 0) ? Glyph.byOrdinate : Glyph.byReverseOrdinate);
-            }
-        }
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final double slopeMargin;
-
-        final int maxHeadOutDx;
-
-        final int maxBeamInDx;
-
-        final int maxHeadInDx;
-
-        final int vicinityMargin;
-
-        final int maxStemHeadGapY;
-
-        final int maxYGap;
-
-        final int maxStemThickness;
-
-        final int minHeadSectionContribution;
-
-        final int minStemExtension;
-
-        final int minHeadBeamDistance;
-
-        final int minBeamStemsGap;
-
-        final double maxSeedJitter;
-
-        final double maxSectionJitter;
-
-        final int maxInterBeamGap;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (SystemInfo system,
-                           Scale scale)
-        {
-            final int stemThickness = system.getSheet().getMaxStem();
-            slopeMargin = constants.slopeMargin.getValue();
-            maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum());
-            maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum());
-            maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum());
-            vicinityMargin = scale.toPixels(constants.vicinityMargin);
-            maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum());
-            maxYGap = scale.toPixels(VerticalsBuilder.getMaxYGap());
-            maxStemThickness = system.getSheet().getMaxStem();
-            minHeadSectionContribution = scale.toPixels(constants.minHeadSectionContribution);
-            minStemExtension = scale.toPixels(constants.minStemExtension);
-            minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
-            minBeamStemsGap = scale.toPixels(constants.minBeamStemsGap);
-            maxSeedJitter = constants.maxSeedJitter.getValue() * stemThickness;
-            maxSectionJitter = constants.maxSectionJitter.getValue() * stemThickness;
-
-            Population beamGaps = system.getSheet().getBeamGaps();
-
-            if (beamGaps.getCardinality() > 1) {
-                maxInterBeamGap = (int) Math.ceil(
-                        beamGaps.getMeanValue() + (2 * beamGaps.getStandardDeviation()));
-            } else {
-                maxInterBeamGap = scale.toPixels(constants.maxInterBeamGap);
-            }
-
-            if (logger.isDebugEnabled()) {
-                new Dumping().dump(this);
             }
         }
     }

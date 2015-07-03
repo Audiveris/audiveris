@@ -22,7 +22,9 @@ import omr.glyph.ui.ShapeColorChooser;
 import omr.glyph.ui.panel.GlyphTrainer;
 
 import omr.sheet.ui.SheetDependent;
+
 import static omr.sheet.ui.SheetDependent.SHEET_AVAILABLE;
+
 import omr.sheet.ui.SheetsController;
 
 import omr.ui.symbol.SymbolRipper;
@@ -49,11 +51,12 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
@@ -315,12 +318,12 @@ public class GuiActions
     @Action(enabledProperty = "browserSupported")
     public void showManual (ActionEvent e)
     {
-        File file = new File(WellKnowns.DOC_FOLDER, constants.manualUrl.getValue());
+        Path path = WellKnowns.DOC_FOLDER.resolve(constants.manualUrl.getValue());
 
-        if (!file.exists()) {
-            logger.warn("Cannot find file {}", file);
+        if (!Files.exists(path)) {
+            logger.warn("Cannot find file {}", path);
         } else {
-            URI uri = file.toURI();
+            URI uri = path.toUri();
             WebBrowser.getBrowser().launch(uri);
         }
     }

@@ -30,6 +30,7 @@ import omr.sheet.HistogramPlotter;
 import omr.sheet.PageCleaner;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
+import omr.sheet.Scale.StemScale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 

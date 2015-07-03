@@ -12,7 +12,6 @@
 package omr.sheet;
 
 import omr.OMR;
-
 import static omr.WellKnowns.LINE_SEPARATOR;
 
 import omr.constant.Constant;
@@ -26,6 +25,7 @@ import omr.math.IntegerHistogram;
 import omr.run.Run;
 import omr.run.RunTable;
 
+import omr.sheet.Scale.BeamScale;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.StepException;
@@ -129,9 +129,6 @@ public class ScaleBuilder
     /** Second frequent length of vertical background runs found, if any. */
     private PeakEntry<Double> secondBackPeak;
 
-    /** Resulting scale, if everything goes well. */
-    private Scale scale;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Constructor to enable scale computation on a given sheet.
@@ -207,8 +204,8 @@ public class ScaleBuilder
             return new Scale(
                     computeLine(),
                     computeInterline(),
-                    computeBeam(),
-                    computeSecondInterline());
+                    computeSecondInterline(),
+                    computeBeam());
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -277,19 +274,28 @@ public class ScaleBuilder
     //-------------//
     // computeBeam //
     //-------------//
-    private int computeBeam ()
+    /**
+     * Report the beam scale information for the sheet.
+     *
+     * @return the beam scale
+     */
+    private BeamScale computeBeam ()
     {
         if (beamEntry != null) {
-            return beamEntry.getKey();
+            return new BeamScale(beamEntry.getKey(), false);
         }
 
         if (backPeak != null) {
-            logger.info("{}No beam peak found, computing a default value", sheet.getLogPrefix());
+            final int guess = (int) Math.rint(
+                    constants.beamAsBackRatio.getValue() * backPeak.getKey().best);
+            logger.info("{}No beam peak found, guessed value {}", sheet.getLogPrefix(), guess);
 
-            return (int) Math.rint(constants.beamAsBackRatio.getValue() * backPeak.getKey().best);
+            return new BeamScale(guess, true);
         }
 
-        return -1;
+        logger.warn("No global scale information available");
+
+        return null;
     }
 
     //------------------//
@@ -569,8 +575,8 @@ public class ScaleBuilder
             int upper = (int) Math.min(
                     fore.length,
                     ((backPeak != null) ? ((backPeak.getKey().best * 3) / 2) : 20));
-            Scale theScale = (scale != null) ? scale : sheet.getScale();
-            String xLabel = "Lengths - " + ((theScale != null) ? theScale : "*no scale*");
+            Scale scale = sheet.getScale();
+            String xLabel = "Lengths - " + ((scale != null) ? scale : "*no scale*");
 
             new HistogramPlotter(sheet, "vertical both", both, bothHisto, bothPeak, null, upper).plot(
                     new Point(0, 0),

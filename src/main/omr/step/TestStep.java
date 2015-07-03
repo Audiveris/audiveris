@@ -22,10 +22,10 @@ import omr.sig.inter.BracketInter;
 import omr.sig.inter.Inter;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -95,45 +95,6 @@ public class TestStep
         }
     }
 
-    //----------------//
-    // getPrintWriter //
-    //----------------//
-    private static PrintWriter getPrintWriter (File file)
-    {
-        try {
-            final BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(file), WellKnowns.FILE_ENCODING));
-
-            return new PrintWriter(bw);
-        } catch (Exception ex) {
-            System.err.println("Error creating " + file + ex);
-
-            return null;
-        }
-    }
-
-    //-------------//
-    // getTestFile //
-    //-------------//
-    private static File getTestFile ()
-    {
-        String stamp = getTimeStamp();
-        File file = new File(WellKnowns.TEMP_FOLDER, "TestFile " + stamp + ".txt");
-
-        return file;
-    }
-
-    //--------------//
-    // getTimeStamp //
-    //--------------//
-    private static String getTimeStamp ()
-    {
-        Date now = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
-
-        return formatter.format(now);
-    }
-
     //---------//
     // getInfo //
     //---------//
@@ -149,6 +110,45 @@ public class TestStep
         }
 
         return sb.toString();
+    }
+
+    //----------------//
+    // getPrintWriter //
+    //----------------//
+    private static PrintWriter getPrintWriter (Path path)
+    {
+        try {
+            final BufferedWriter bw = new BufferedWriter(
+                    new OutputStreamWriter(
+                            new FileOutputStream(path.toFile()),
+                            WellKnowns.FILE_ENCODING));
+
+            return new PrintWriter(bw);
+        } catch (Exception ex) {
+            System.err.println("Error creating " + path + ex);
+
+            return null;
+        }
+    }
+
+    //-------------//
+    // getTestFile //
+    //-------------//
+    private static Path getTestFile ()
+    {
+        String stamp = getTimeStamp();
+        return WellKnowns.TEMP_FOLDER.resolve("TestFile " + stamp + ".txt");
+    }
+
+    //--------------//
+    // getTimeStamp //
+    //--------------//
+    private static String getTimeStamp ()
+    {
+        Date now = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
+
+        return formatter.format(now);
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------

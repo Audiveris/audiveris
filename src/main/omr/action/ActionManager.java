@@ -27,7 +27,6 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -198,7 +197,7 @@ public class ActionManager
         // Load classes first for system actions, then for user actions
         URI[] uris = new URI[]{
             UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
-            new File(WellKnowns.CONFIG_FOLDER, "user-actions.xml").toURI().normalize()
+            WellKnowns.CONFIG_FOLDER.resolve("user-actions.xml").toUri().normalize()
         };
 
         for (int i = 0; i < uris.length; i++) {

@@ -110,7 +110,7 @@ public class AbstractFlagInter
         // Look for stems nearby, using the lowest (for up) or highest (for down) third of height
         final boolean isFlagUp = FlagsUp.contains(shape);
         final boolean isSmall = SmallFlags.contains(shape);
-        final int stemWidth = system.getSheet().getMaxStem();
+        final int stemWidth = system.getSheet().getScale().getMaxStem();
         final Rectangle flagBox = glyph.getBounds();
         final int footHeight = (int) Math.rint(flagBox.height / 3.0);
 

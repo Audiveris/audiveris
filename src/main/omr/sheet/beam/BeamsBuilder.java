@@ -447,7 +447,10 @@ public class BeamsBuilder
             rawSystemBeams.add(hook);
             assignedSpots.add(glyph);
 
-            return null; // Mean: no failure
+            // Measure vertical distance between hook and base beam
+            measureVerticalGap(beam, hook);
+
+            return null; // Meaning: no failure
         } else {
             return "no good item";
         }
@@ -740,7 +743,7 @@ public class BeamsBuilder
         sortedSystemSeeds = system.lookupShapedGlyphs(Shape.VERTICAL_SEED);
 
         // The beam & hook inters for this system, NOT sorted by abscissa.
-        // We may add to this list, but not remove elements (they are deleted).
+        // We may add to this list, but not remove elements (they are simply logically 'deleted').
         // Later, buildHooks() will add hooks to this list.
         rawSystemBeams = sig.inters(AbstractBeamInter.class);
 
@@ -817,7 +820,7 @@ public class BeamsBuilder
                 3 * height);
         beam.addAttachment("=", luArea);
 
-        List<Inter> others = sig.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
+        List<Inter> others = SIGraph.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
 
         others.remove(beam); // Safer
 
@@ -832,7 +835,7 @@ public class BeamsBuilder
                     logger.info("VIP {} found parallel {}", beam, other);
                 }
 
-                // Check concrete intersection
+                // Check concrete intersection (using areas rather than rectangles)
                 if (!AreaUtil.intersection(other.getArea(), luArea)) {
                     if (logging) {
                         logger.info("VIP too distant beams {} and {}", beam, other);
@@ -854,9 +857,12 @@ public class BeamsBuilder
                 }
 
                 // Side-effect: measure the actual vertical gap between such parallel beams
-                measureVerticalGap(beam, other);
+                // (avoiding a given pair to be counted 4 times...)
+                if ((side == LEFT) && (beam.getId() < other.getId())) {
+                    measureVerticalGap(beam, other);
+                }
 
-                // Check the other beam can really extend current beam
+                // Check the other beam can really extend the current beam
                 final Point2D otherEndPt = (side == LEFT) ? otherMedian.getP1() : otherMedian.getP2();
                 double extDx = (side == LEFT) ? (endPt.getX() - otherEndPt.getX())
                         : (otherEndPt.getX() - endPt.getX());
@@ -869,7 +875,7 @@ public class BeamsBuilder
                     continue;
                 }
 
-                // Make sure the end side is fully in the same system as current one
+                // Make sure the end side is fully in the same system as the current one
                 Point2D extPt = LineUtil.intersectionAtX(median, otherEndPt.getX());
 
                 if (!isSideInSystem(extPt, height)) {
@@ -1825,8 +1831,6 @@ public class BeamsBuilder
          */
         private List<Glyph> getCueGlyphs ()
         {
-            Scale scale = sheet.getScale();
-
             // Expand aggregate bounds using global direction
             Rectangle box = new Rectangle(bounds);
             box.grow(params.cueBoxDx, 0);
@@ -1849,7 +1853,7 @@ public class BeamsBuilder
                 }
             }
 
-            double beam = params.cueBeamRatio * scale.getMainBeam();
+            double beam = params.cueBeamRatio * sheet.getScale().getMainBeam();
 
             return new SpotsBuilder(sheet).buildSpots(buf, box.getLocation(), beam, id);
         }

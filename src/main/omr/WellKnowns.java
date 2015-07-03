@@ -12,16 +12,19 @@
 package omr;
 
 import omr.log.LogUtil;
+
 import static omr.util.UriUtil.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.Enumeration;
@@ -127,64 +130,64 @@ public abstract class WellKnowns
             : Paths.get("res").toUri();
 
     /** The folder where Tesseract OCR material is stored. */
-    public static final File OCR_FOLDER = getOcrFolder();
+    public static final Path OCR_FOLDER = getOcrFolder();
 
     //-------------// read-write area
     // USER CONFIG // Configuration files the user can edit on his own
     //-------------//
     //
     /** The config folder where global configuration data is stored. */
-    public static final File CONFIG_FOLDER = RUNNING_FROM_JAR ? getConfigFolder() : new File(
-            "config");
+    public static final Path CONFIG_FOLDER = RUNNING_FROM_JAR ? getConfigFolder()
+            : Paths.get("config");
 
     /** The folder where plugin scripts are found. */
-    public static final File PLUGINS_FOLDER = new File(CONFIG_FOLDER, "plugins");
+    public static final Path PLUGINS_FOLDER = CONFIG_FOLDER.resolve("plugins");
 
     //-----------// read-write area
     // USER DATA // User-specific data, except configuration stuff
     //-----------//
     //
     /** Base folder for data. */
-    public static final File DATA_FOLDER = RUNNING_FROM_JAR ? getDataFolder() : new File("data");
+    public static final Path DATA_FOLDER = RUNNING_FROM_JAR ? getDataFolder() : Paths.get("data");
 
     /**
      * The folder where documentations files are installed.
      * Installation takes place when .jar is run for the first time
      */
-    public static final File DOC_FOLDER = new File(DATA_FOLDER, "www");
+    public static final Path DOC_FOLDER = DATA_FOLDER.resolve("www");
 
     /**
      * The folder where examples files are installed.
      * Installation takes place when .jar is run for the first time
      */
-    public static final File EXAMPLES_FOLDER = new File(DATA_FOLDER, "examples");
+    public static final Path EXAMPLES_FOLDER = DATA_FOLDER.resolve("examples");
 
     /** The folder where temporary data can be stored. */
-    public static final File TEMP_FOLDER = new File(DATA_FOLDER, "temp");
+    public static final Path TEMP_FOLDER = DATA_FOLDER.resolve("temp");
 
     /** The folder where evaluation data is stored. */
-    public static final File EVAL_FOLDER = new File(DATA_FOLDER, "eval");
+    public static final Path EVAL_FOLDER = DATA_FOLDER.resolve("eval");
 
     /** The folder where training material is stored. */
-    public static final File TRAIN_FOLDER = new File(DATA_FOLDER, "train");
+    public static final Path TRAIN_FOLDER = DATA_FOLDER.resolve("train");
 
     /** The folder where symbols information is stored. */
-    public static final File SYMBOLS_FOLDER = new File(TRAIN_FOLDER, "symbols");
+    public static final Path SYMBOLS_FOLDER = TRAIN_FOLDER.resolve("symbols");
 
     /** The default folder where benches data is stored. */
-    public static final File DEFAULT_BENCHES_FOLDER = new File(DATA_FOLDER, "benches");
+    public static final Path DEFAULT_BENCHES_FOLDER = DATA_FOLDER.resolve("benches");
 
     /** The default folder where PDF data is stored. */
-    public static final File DEFAULT_PRINT_FOLDER = new File(DATA_FOLDER, "print");
+    public static final Path DEFAULT_PRINT_FOLDER = DATA_FOLDER.resolve("print");
 
     /** The default folder where scripts data is stored. */
-    public static final File DEFAULT_SCRIPTS_FOLDER = new File(DATA_FOLDER, "scripts");
+    public static final Path DEFAULT_SCRIPTS_FOLDER = DATA_FOLDER.resolve("scripts");
 
     /** The default folder where projects data is stored. */
-    public static final File DEFAULT_PROJECTS_FOLDER = new File(DATA_FOLDER, "projects");
+    public static final Path DEFAULT_PROJECTS_FOLDER = DATA_FOLDER.resolve("projects");
 
     /** The default folder where scores data is stored. */
-    public static final File DEFAULT_SCORES_FOLDER = new File(DATA_FOLDER, "scores");
+    public static final Path DEFAULT_SCORES_FOLDER = DATA_FOLDER.resolve("scores");
 
     static {
         /** Logging configuration. */
@@ -231,9 +234,11 @@ public abstract class WellKnowns
     {
         final Logger logger = LoggerFactory.getLogger(WellKnowns.class);
 
-        if (!TEMP_FOLDER.exists()) {
-            if (TEMP_FOLDER.mkdirs()) {
-                logger.info("Created folder {}", TEMP_FOLDER);
+        if (!Files.exists(TEMP_FOLDER)) {
+            try {
+                Files.createDirectories(TEMP_FOLDER);
+            } catch (IOException ex) {
+                logger.warn("Error creating " + TEMP_FOLDER, ex);
             }
         }
     }
@@ -267,13 +272,13 @@ public abstract class WellKnowns
     //-----------------//
     // getConfigFolder //
     //-----------------//
-    private static File getConfigFolder ()
+    private static Path getConfigFolder ()
     {
         if (WINDOWS) {
             String appdata = System.getenv("APPDATA");
 
             if (appdata != null) {
-                return new File(appdata + TOOL_PREFIX + "/config");
+                return Paths.get(appdata + TOOL_PREFIX + "/config");
             }
 
             throw new RuntimeException("APPDATA environment variable is not set");
@@ -281,13 +286,13 @@ public abstract class WellKnowns
             String config = System.getenv("XDG_CONFIG_HOME");
 
             if (config != null) {
-                return new File(config + System.getProperty("user.dir"));
+                return Paths.get(config + System.getProperty("user.dir"));
             }
 
             String home = System.getenv("HOME");
 
             if (home != null) {
-                return new File(System.getProperty("user.dir"));
+                return Paths.get(System.getProperty("user.dir"));
             }
 
             throw new RuntimeException("HOME environment variable is not set");
@@ -295,13 +300,13 @@ public abstract class WellKnowns
             String config = System.getenv("XDG_CONFIG_HOME");
 
             if (config != null) {
-                return new File(config + TOOL_PREFIX);
+                return Paths.get(config + TOOL_PREFIX);
             }
 
             String home = System.getenv("HOME");
 
             if (home != null) {
-                return new File(home + "/.config" + TOOL_PREFIX);
+                return Paths.get(home + "/.config" + TOOL_PREFIX);
             }
 
             throw new RuntimeException("HOME environment variable is not set");
@@ -313,13 +318,13 @@ public abstract class WellKnowns
     //---------------//
     // getDataFolder //
     //---------------//
-    private static File getDataFolder ()
+    private static Path getDataFolder ()
     {
         if (WINDOWS) {
             String appdata = System.getenv("APPDATA");
 
             if (appdata != null) {
-                return new File(appdata + TOOL_PREFIX + "/data");
+                return Paths.get(appdata + TOOL_PREFIX + "/data");
             }
 
             throw new RuntimeException("APPDATA environment variable is not set");
@@ -327,13 +332,13 @@ public abstract class WellKnowns
             String data = System.getenv("XDG_DATA_HOME");
 
             if (data != null) {
-                return new File(System.getProperty("user.dir"));
+                return Paths.get(System.getProperty("user.dir"));
             }
 
             String home = System.getenv("HOME");
 
             if (home != null) {
-                return new File(System.getProperty("user.dir"));
+                return Paths.get(System.getProperty("user.dir"));
             }
 
             throw new RuntimeException("HOME environment variable is not set");
@@ -341,13 +346,13 @@ public abstract class WellKnowns
             String data = System.getenv("XDG_DATA_HOME");
 
             if (data != null) {
-                return new File(data + TOOL_PREFIX);
+                return Paths.get(data + TOOL_PREFIX);
             }
 
             String home = System.getenv("HOME");
 
             if (home != null) {
-                return new File(home + "/.local/share" + TOOL_PREFIX);
+                return Paths.get(home + "/.local/share" + TOOL_PREFIX);
             }
 
             throw new RuntimeException("HOME environment variable is not set");
@@ -407,7 +412,7 @@ public abstract class WellKnowns
     //--------------//
     // getOcrFolder //
     //--------------//
-    private static File getOcrFolder ()
+    private static Path getOcrFolder ()
     {
         // First, try to use TESSDATA_PREFIX environment variable
         // which might denote a Tesseract installation
@@ -415,20 +420,20 @@ public abstract class WellKnowns
         final String tessPrefix = System.getenv(TESSDATA_PREFIX);
 
         if (tessPrefix != null) {
-            File dir = new File(tessPrefix);
+            Path dir = Paths.get(tessPrefix);
 
-            if (dir.isDirectory()) {
+            if (Files.isDirectory(dir)) {
                 return dir;
             }
         }
 
         // Fallback to default directory
         if (LINUX) {
-            return new File("/usr/share/tesseract-ocr");
+            return Paths.get("/usr/share/tesseract-ocr");
         } else if (WINDOWS) {
             final String pf32 = OS_ARCH.equals("x86") ? "ProgramFiles" : "ProgramFiles(x86)";
 
-            return new File(new File(System.getenv(pf32)), "tesseract-ocr");
+            return Paths.get(System.getenv(pf32)).resolve("tesseract-ocr");
         } else {
             throw new InstallationException("Tesseract-OCR is not installed");
         }

@@ -56,6 +56,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #close}</li>
  * <li>{@link #isClosing}</li>
  * <li>{@link #setClosing}</li>
+ * <li>{@link #getFileSystem}</li>
  * </ul></dd>
  *
  * <dt>Sheets</dt>
@@ -195,6 +196,13 @@ public interface Book
      */
     void setModified (boolean val);
 
+    /**
+     * Report whether the book project is connected to a file system
+     *
+     * @return true if a file system is open for this project
+     */
+    boolean hasFileSystem ();
+
     // --------------
     // --- Sheets ---
     // --------------
@@ -203,9 +211,9 @@ public interface Book
      * Create as many sheets as there are images in the input image file.
      * A created sheet is nearly empty, the related image will have to be loaded later.
      *
-     * @param sheetIds set of sheet IDs (1-based) explicitly included, null for all
+     * @param sheetNumbers set of sheet numbers (1-based) explicitly included, null for all
      */
-    void createSheets (SortedSet<Integer> sheetIds);
+    void createSheets (SortedSet<Integer> sheetNumbers);
 
     /**
      * Actually load the image that corresponds to the specified sheet id.
@@ -385,16 +393,11 @@ public interface Book
     Path getProjectPath ();
 
     /**
-     * Remember where the book project is kept.
-     *
-     * @param projectPath the book project path (with .omr extension)
-     */
-    void setProjectPath (Path projectPath);
-
-    /**
      * Store book project to disk.
+     *
+     * @param projectPath target path for storing the project
      */
-    void store ();
+    void store (Path projectPath);
 
     /**
      * Report the root path of the (zipped) file system dedicated to this book.

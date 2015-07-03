@@ -25,7 +25,6 @@ import omr.score.Page;
 
 import omr.selection.SelectionService;
 
-import omr.sheet.stem.StemScale;
 import omr.sheet.ui.SheetAssembly;
 
 import omr.sig.InterManager;
@@ -342,6 +341,11 @@ public interface Sheet
      */
     Picture getPicture ();
 
+    /**
+     * Report whether the Picture instance exists in sheet.
+     *
+     * @return true if so
+     */
     boolean hasPicture ();
 
     /**
@@ -367,7 +371,7 @@ public interface Sheet
     Scale getScale ();
 
     /**
-     * Link scale information to this sheet
+     * Remember scale information to this sheet
      *
      * @param scale the computed sheet global scale
      */
@@ -379,27 +383,6 @@ public interface Sheet
      * @return the scale interline value
      */
     int getInterline ();
-
-    /**
-     * Remember the stem scale observed
-     *
-     * @param stemScale the stem scaling data
-     */
-    void setStemScale (StemScale stemScale);
-
-    /**
-     * Report the most frequent stem thickness within the sheet
-     *
-     * @return the main Stem thickness
-     */
-    int getMainStem ();
-
-    /**
-     * Report the maximum stem thickness within the sheet
-     *
-     * @return the maximum Stem thickness
-     */
-    int getMaxStem ();
 
     /**
      * Report the skew information for this sheet.

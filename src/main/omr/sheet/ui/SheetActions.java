@@ -111,19 +111,22 @@ public class SheetActions
                 Path projectPath = BookManager.getDefaultProjectPath(book);
 
                 // Check the target is fine
-                if (!canWrite(projectPath)) {
-                    // Let the user select an alternate output file
-                    projectPath = selectProjectPath(true, BookManager.getDefaultProjectPath(book));
-
+                if (!book.hasFileSystem()) {
                     if (!canWrite(projectPath)) {
-                        return false; // No suitable target found
+                        // Let the user select an alternate output file
+                        projectPath = selectProjectPath(
+                                true,
+                                BookManager.getDefaultProjectPath(book));
+
+                        if (!canWrite(projectPath)) {
+                            return false; // No suitable target found
+                        }
                     }
                 }
 
                 // Save the project to target file
                 try {
-                    book.setProjectPath(projectPath);
-                    book.store();
+                    book.store(projectPath);
 
                     return true; // Project successfully saved
                 } catch (Exception ex) {
@@ -143,6 +146,23 @@ public class SheetActions
         } else {
             return true;
         }
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized SheetActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new SheetActions();
+        }
+
+        return INSTANCE;
     }
 
     //-----------//
@@ -165,23 +185,6 @@ public class SheetActions
         }
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized SheetActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new SheetActions();
-        }
-
-        return INSTANCE;
-    }
-
     //----------//
     // openBook //
     //----------//
@@ -194,7 +197,7 @@ public class SheetActions
     @Action
     public OpenProjectTask openBook (ActionEvent e)
     {
-        final String dir = BookManager.getDefaultProjectDirectory();
+        final String dir = BookManager.getDefaultProjectFolder();
         final Path path = selectProjectPath(false, Paths.get(dir));
 
         if (path != null) {
@@ -225,7 +228,7 @@ public class SheetActions
         File file = UIUtil.fileChooser(
                 false,
                 OMR.getGui().getFrame(),
-                new File(BookManager.getDefaultInputDirectory()),
+                new File(BookManager.getDefaultInputFolder()),
                 new OmrFileFilter(
                         "Major image files" + " (" + suffixes + ")",
                         allSuffixes.split("\\s")));
@@ -402,10 +405,10 @@ public class SheetActions
             return null;
         }
 
+        // Ask user confirmation for overwriting if file already exists
         final Path projectPath = BookManager.getDefaultProjectPath(book);
 
-        // Ask user confirmation for overwriting if file already exists
-        if (canWrite(projectPath)) {
+        if (book.hasFileSystem() || canWrite(projectPath)) {
             return new StoreBookTask(book, projectPath);
         } else {
             return storeBookAs(e);
@@ -762,6 +765,8 @@ public class SheetActions
 
         final Book book;
 
+        final Path projectPath;
+
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create an asynchronous task to store the book.
@@ -773,7 +778,7 @@ public class SheetActions
                               Path projectPath)
         {
             this.book = book;
-            book.setProjectPath(projectPath);
+            this.projectPath = projectPath;
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -781,7 +786,7 @@ public class SheetActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
-            book.store();
+            book.store(projectPath);
 
             return null;
         }

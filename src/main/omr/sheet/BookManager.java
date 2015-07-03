@@ -280,30 +280,30 @@ public class BookManager
         return Collections.unmodifiableList(books);
     }
 
-    //---------------------------//
-    // getDefaultDewarpDirectory //
-    //---------------------------//
+    //------------------------//
+    // getDefaultDewarpFolder //
+    //------------------------//
     /**
-     * Report the directory to which dewarped images would be saved by default.
+     * Report the folder to which de-warped images would be saved by default.
      *
      * @return the default file
      */
-    public static String getDefaultDewarpDirectory ()
+    public static String getDefaultDewarpFolder ()
     {
-        return constants.defaultDewarpDirectory.getValue();
+        return constants.defaultDewarpFolder.getValue();
     }
 
-    //---------------------------//
-    // getDefaultExportDirectory //
-    //---------------------------//
+    //------------------------//
+    // getDefaultExportFolder //
+    //------------------------//
     /**
-     * Report the directory where books are exported by default.
+     * Report the folder where books are exported by default.
      *
      * @return the default file
      */
-    public static String getDefaultExportDirectory ()
+    public static String getDefaultExportFolder ()
     {
-        return constants.defaultExportDirectory.getValue();
+        return constants.defaultExportFolder.getValue();
     }
 
     //----------------------//
@@ -331,20 +331,20 @@ public class BookManager
             }
         }
 
-        return Paths.get(getDefaultExportDirectory(), book.getRadix());
+        return Paths.get(getDefaultExportFolder(), book.getRadix());
     }
 
-    //--------------------------//
-    // getDefaultInputDirectory //
-    //--------------------------//
+    //-----------------------//
+    // getDefaultInputFolder //
+    //-----------------------//
     /**
-     * Report the directory where images should be found.
+     * Report the folder where images should be found.
      *
-     * @return the latest image directory
+     * @return the latest image folder
      */
-    public static String getDefaultInputDirectory ()
+    public static String getDefaultInputFolder ()
     {
-        return constants.defaultInputDirectory.getValue();
+        return constants.defaultInputFolder.getValue();
     }
 
     //---------------------//
@@ -372,20 +372,20 @@ public class BookManager
             }
         }
 
-        return Paths.get(constants.defaultPrintDirectory.getValue(), book.getRadix());
+        return Paths.get(constants.defaultPrintFolder.getValue(), book.getRadix());
     }
 
-    //----------------------------//
-    // getDefaultProjectDirectory //
-    //----------------------------//
+    //-------------------------//
+    // getDefaultProjectFolder //
+    //-------------------------//
     /**
-     * Report the directory where books projects are kept by default.
+     * Report the folder where books projects are kept by default.
      *
-     * @return the default file
+     * @return the default folder
      */
-    public static String getDefaultProjectDirectory ()
+    public static String getDefaultProjectFolder ()
     {
-        return constants.defaultProjectDirectory.getValue();
+        return constants.defaultProjectFolder.getValue();
     }
 
     //-----------------------//
@@ -415,8 +415,8 @@ public class BookManager
         //            }
         //        }
         //
-        // Define target based on global directory and book name
-        return Paths.get(getDefaultProjectDirectory(), book.getRadix() + OMR.PROJECT_EXTENSION);
+        // Define target based on global folder and book name
+        return Paths.get(getDefaultProjectFolder(), book.getRadix() + OMR.PROJECT_EXTENSION);
     }
 
     //--------------------//
@@ -467,33 +467,33 @@ public class BookManager
         return getInstance().books.size() > 1;
     }
 
-    //---------------------------//
-    // setDefaultExportDirectory //
-    //---------------------------//
-    public static void setDefaultExportDirectory (String value)
+    //------------------------//
+    // setDefaultExportFolder //
+    //------------------------//
+    public static void setDefaultExportFolder (String value)
     {
-        constants.defaultExportDirectory.setValue(value);
+        constants.defaultExportFolder.setValue(value);
     }
 
-    //--------------------------//
-    // setDefaultInputDirectory //
-    //--------------------------//
+    //-----------------------//
+    // setDefaultInputFolder //
+    //-----------------------//
     /**
-     * Remember the directory where images should be found.
+     * Remember the folder where images should be found.
      *
-     * @param value the latest image directory
+     * @param value the latest image folder
      */
-    public static void setDefaultInputDirectory (String value)
+    public static void setDefaultInputFolder (String value)
     {
-        constants.defaultInputDirectory.setValue(value);
+        constants.defaultInputFolder.setValue(value);
     }
 
-    //--------------------------//
-    // setDefaultPrintDirectory //
-    //--------------------------//
-    public static void setDefaultPrintDirectory (String value)
+    //-----------------------//
+    // setDefaultPrintFolder //
+    //-----------------------//
+    public static void setDefaultPrintFolder (String value)
     {
-        constants.defaultPrintDirectory.setValue(value);
+        constants.defaultPrintFolder.setValue(value);
     }
 
     //----------------//
@@ -578,13 +578,14 @@ public class BookManager
             StopWatch watch = new StopWatch("loadProject " + projectPath);
             watch.start("book");
 
-            FileSystem zipfs = FileSystems.newFileSystem(projectPath, null);
-            Path bookPath = zipfs.getPath(Book.BOOK_INTERNALS);
-            InputStream is = Files.newInputStream(bookPath, StandardOpenOption.READ);
-            Book book = BasicBook.unmarshal(is, projectPath);
+            // Open project file system
+            FileSystem fileSystem = FileSystems.newFileSystem(projectPath, null);
 
+            // Load book internals
+            Path bookPath = fileSystem.getPath(Book.BOOK_INTERNALS);
+            InputStream is = Files.newInputStream(bookPath, StandardOpenOption.READ);
+            Book book = BasicBook.unmarshal(is, projectPath, fileSystem);
             is.close();
-            zipfs.close();
 
             ///watch.print();
             // Debug: dump what we've got
@@ -602,6 +603,7 @@ public class BookManager
                 }
             }
 
+            addBook(book);
             logger.info("{} loaded.", book);
 
             return book;
@@ -697,25 +699,25 @@ public class BookManager
                 true,
                 "Should we compress the MusicXML output?");
 
-        private final Constant.String defaultExportDirectory = new Constant.String(
+        private final Constant.String defaultExportFolder = new Constant.String(
                 WellKnowns.DEFAULT_SCORES_FOLDER.toString(),
-                "Default directory for saved scores");
+                "Default folder for saved scores");
 
-        private final Constant.String defaultProjectDirectory = new Constant.String(
+        private final Constant.String defaultProjectFolder = new Constant.String(
                 WellKnowns.DEFAULT_PROJECTS_FOLDER.toString(),
-                "Default directory for Audiveris projects");
+                "Default folder for Audiveris projects");
 
-        private final Constant.String defaultPrintDirectory = new Constant.String(
+        private final Constant.String defaultPrintFolder = new Constant.String(
                 WellKnowns.DEFAULT_PRINT_FOLDER.toString(),
-                "Default directory for printing sheet files");
+                "Default folder for printing sheet files");
 
-        private final Constant.String defaultInputDirectory = new Constant.String(
+        private final Constant.String defaultInputFolder = new Constant.String(
                 WellKnowns.EXAMPLES_FOLDER.toString(),
-                "Default directory for selection of image files");
+                "Default folder for selection of image files");
 
-        private final Constant.String defaultDewarpDirectory = new Constant.String(
+        private final Constant.String defaultDewarpFolder = new Constant.String(
                 WellKnowns.TEMP_FOLDER.toString(),
-                "Default directory for saved dewarped images");
+                "Default folder for saved dewarped images");
 
         private final Constant.Boolean defaultSigned = new Constant.Boolean(
                 true,

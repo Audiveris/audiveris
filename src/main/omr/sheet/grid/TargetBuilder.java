@@ -46,8 +46,9 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -385,14 +386,14 @@ public class TargetBuilder
     private void storeImage (RenderedImage dewarpedImage)
     {
         String sheetId = sheet.getId();
-        File file = new File(BookManager.getDefaultDewarpDirectory(), sheetId + ".dewarped.png");
+        Path path = Paths.get(BookManager.getDefaultDewarpFolder())
+                .resolve(sheetId + ".dewarped.png");
 
         try {
-            String path = file.getCanonicalPath();
-            ImageIO.write(dewarpedImage, "png", file);
+            ImageIO.write(dewarpedImage, "png", path.toFile());
             logger.info("Wrote {}", path);
         } catch (IOException ex) {
-            logger.warn("Could not write {}", file);
+            logger.warn("Could not write {}", path);
         }
     }
 

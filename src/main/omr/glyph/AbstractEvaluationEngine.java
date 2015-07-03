@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                          A b s t r a c t G l y p h E v a l u a t o r                           //
+//                          A b s t r a c t E v a l u a t i o n E n g i n e                       //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -16,7 +16,9 @@ import omr.WellKnowns;
 import omr.constant.ConstantSet;
 
 import omr.glyph.ShapeEvaluator.Condition;
+
 import static omr.glyph.ShapeEvaluator.Condition.*;
+
 import omr.glyph.facets.Glyph;
 
 import omr.sheet.Scale;
@@ -28,7 +30,6 @@ import omr.util.UriUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -36,6 +37,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -190,25 +193,24 @@ public abstract class AbstractEvaluationEngine
     @Override
     public void marshal ()
     {
-        if (!WellKnowns.EVAL_FOLDER.exists()) {
-            if (WellKnowns.EVAL_FOLDER.mkdirs()) {
-                logger.info("Created directory {}", WellKnowns.EVAL_FOLDER);
-            }
-        }
-
-        final File file = new File(WellKnowns.EVAL_FOLDER, getFileName());
+        final Path path = WellKnowns.EVAL_FOLDER.resolve(getFileName());
         OutputStream os = null;
 
         try {
-            os = new FileOutputStream(file);
+            if (!Files.exists(WellKnowns.EVAL_FOLDER)) {
+                Files.createDirectories(WellKnowns.EVAL_FOLDER);
+                logger.info("Created directory {}", WellKnowns.EVAL_FOLDER);
+            }
+
+            os = new FileOutputStream(path.toFile());
             marshal(os);
-            logger.info("Engine marshalled to {}", file);
+            logger.info("Engine marshalled to {}", path);
         } catch (FileNotFoundException ex) {
-            logger.warn("Could not find file " + file, ex);
+            logger.warn("Could not find file " + path, ex);
         } catch (IOException ex) {
-            logger.warn("IO error on file " + file, ex);
+            logger.warn("IO error on file " + path, ex);
         } catch (JAXBException ex) {
-            logger.warn("Error marshalling engine to " + file, ex);
+            logger.warn("Error marshalling engine to " + path, ex);
         } finally {
             if (os != null) {
                 try {
@@ -394,22 +396,22 @@ public abstract class AbstractEvaluationEngine
     {
         // First try user file, if any (in user EVAL folder)
         {
-            File file = new File(WellKnowns.EVAL_FOLDER, getFileName());
+            Path path = WellKnowns.EVAL_FOLDER.resolve(getFileName());
 
-            if (file.exists()) {
-                Object obj = unmarshal(file);
+            if (Files.exists(path)) {
+                Object obj = unmarshal(path);
 
                 if (obj == null) {
-                    logger.warn("Could not load {}", file);
+                    logger.warn("Could not load {}", path);
                 } else {
                     if (!isCompatible(obj)) {
-                        final String msg = "Obsolete user data for " + getName() + " in " + file
+                        final String msg = "Obsolete user data for " + getName() + " in " + path
                                            + ", trying default data";
                         logger.warn(msg);
                         JOptionPane.showMessageDialog(null, msg);
                     } else {
                         // Tell the user we are not using the default
-                        logger.debug("{} unmarshalled from {}", getName(), file);
+                        logger.debug("{} unmarshalled from {}", getName(), path);
 
                         return obj;
                     }
@@ -457,18 +459,18 @@ public abstract class AbstractEvaluationEngine
      *
      * @return the unmarshalled engine, or null if failed
      */
-    private Object unmarshal (File file)
+    private Object unmarshal (Path path)
     {
         try {
-            InputStream input = new FileInputStream(file);
+            InputStream input = new FileInputStream(path.toFile());
 
             return unmarshal(input, getFileName());
         } catch (FileNotFoundException ex) {
-            logger.warn("File not found " + file, ex);
+            logger.warn("File not found " + path, ex);
 
             return null;
         } catch (Exception ex) {
-            logger.warn("Error unmarshalling from " + file, ex);
+            logger.warn("Error unmarshalling from " + path, ex);
 
             return null;
         }

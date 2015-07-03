@@ -133,7 +133,7 @@ public class Picture
         //~ Enumeration constant initializers ------------------------------------------------------
 
         BINARY,
-        NOTE_SPOTS;
+        HEAD_SPOTS;
     }
 
     //~ Instance fields ----------------------------------------------------------------------------

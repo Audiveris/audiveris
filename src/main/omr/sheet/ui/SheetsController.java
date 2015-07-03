@@ -128,6 +128,55 @@ public class SheetsController
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // getCurrentBook //
+    //----------------//
+    /**
+     * Convenient method to get the current book instance.
+     *
+     * @return the current book instance, or null
+     */
+    public static Book getCurrentBook ()
+    {
+        Sheet sheet = getCurrentSheet();
+
+        if (sheet != null) {
+            return sheet.getBook();
+        }
+
+        return null;
+    }
+
+    //-----------------//
+    // getCurrentSheet //
+    //-----------------//
+    /**
+     * Convenient static method to directly report the currently selected sheet, if any.
+     *
+     * @return the selected sheet, or null
+     */
+    public static Sheet getCurrentSheet ()
+    {
+        return getInstance().getSelectedSheet();
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class.
+     *
+     * @return the single instance
+     */
+    public static SheetsController getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new SheetsController();
+        }
+
+        return INSTANCE;
+    }
+
     //-------------//
     // addAssembly //
     //-------------//
@@ -226,55 +275,6 @@ public class SheetsController
         return sheetsPane;
     }
 
-    //----------------//
-    // getCurrentBook //
-    //----------------//
-    /**
-     * Convenient method to get the current book instance.
-     *
-     * @return the current book instance, or null
-     */
-    public static Book getCurrentBook ()
-    {
-        Sheet sheet = getCurrentSheet();
-
-        if (sheet != null) {
-            return sheet.getBook();
-        }
-
-        return null;
-    }
-
-    //-----------------//
-    // getCurrentSheet //
-    //-----------------//
-    /**
-     * Convenient static method to directly report the currently selected sheet, if any.
-     *
-     * @return the selected sheet, or null
-     */
-    public static Sheet getCurrentSheet ()
-    {
-        return getInstance().getSelectedSheet();
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this class.
-     *
-     * @return the single instance
-     */
-    public static SheetsController getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new SheetsController();
-        }
-
-        return INSTANCE;
-    }
-
     //------------------//
     // getSelectedSheet //
     //------------------//
@@ -342,15 +342,7 @@ public class SheetsController
 
             // Make sure the first sheet of a multipage score is OK
             // We need to modify the tab label for the book (new) first tab
-            if (!book.getSheets().isEmpty()) {
-                Sheet firstSheet = book.getSheets().get(0);
-                int firstIndex = sheetsPane.indexOfComponent(
-                        firstSheet.getAssembly().getComponent());
-
-                if (firstIndex != -1) {
-                    sheetsPane.setTitleAt(firstIndex, defineTitleFor(firstSheet));
-                }
-            }
+            updateFirstSheetTitle(book);
         }
     }
 
@@ -435,6 +427,27 @@ public class SheetsController
     public void unsubscribe (EventSubscriber<SheetEvent> subscriber)
     {
         sheetService.unsubscribe(SheetEvent.class, subscriber);
+    }
+
+    //-----------------------//
+    // updateFirstSheetTitle //
+    //-----------------------//
+    /**
+     * Update the title of first sheet tab, according to book radix
+     *
+     * @param book the book at hand
+     */
+    public synchronized void updateFirstSheetTitle (Book book)
+    {
+        if (!book.getSheets().isEmpty()) {
+            Sheet firstSheet = book.getSheets().get(0);
+            int firstIndex = sheetsPane.indexOfComponent(firstSheet.getAssembly().getComponent());
+
+            if (firstIndex != -1) {
+                sheetsPane.setTitleAt(firstIndex, defineTitleFor(firstSheet));
+                sheetsPane.invalidate();
+            }
+        }
     }
 
     //----------//

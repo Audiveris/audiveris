@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileFilter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
@@ -108,10 +110,10 @@ public class PluginManager
     private PluginManager ()
     {
         // Browse the plugin folder for relevant scripts
-        File pluginDir = WellKnowns.PLUGINS_FOLDER;
+        Path pluginDir = WellKnowns.PLUGINS_FOLDER;
 
-        if (pluginDir.exists() && pluginDir.isDirectory()) {
-            for (File file : pluginDir.listFiles(pluginFilter)) {
+        if (Files.exists(pluginDir) && Files.isDirectory(pluginDir)) {
+            for (File file : pluginDir.toFile().listFiles(pluginFilter)) {
                 try {
                     Plugin plugin = new Plugin(file);
                     map.put(plugin.getId(), plugin);

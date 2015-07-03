@@ -31,10 +31,10 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -154,10 +154,9 @@ public class Debug
     @Action
     public void saveTrainingData (ActionEvent e)
     {
-        File file = new File(
-                WellKnowns.EVAL_FOLDER,
+        Path path = WellKnowns.EVAL_FOLDER.resolve(
                 "samples-" + ShapeDescription.getName() + ".arff");
-        final PrintWriter out = getPrintWriter(file);
+        final PrintWriter out = getPrintWriter(path);
 
         out.println("@relation " + "glyphs-" + ShapeDescription.getName());
         out.println();
@@ -203,21 +202,23 @@ public class Debug
 
         out.flush();
         out.close();
-        logger.info("Classifier data saved in " + file.getAbsolutePath());
+        logger.info("Classifier data saved in " + path.toAbsolutePath());
     }
 
     //----------------//
     // getPrintWriter //
     //----------------//
-    private static PrintWriter getPrintWriter (File file)
+    private static PrintWriter getPrintWriter (Path path)
     {
         try {
             final BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(file), WellKnowns.FILE_ENCODING));
+                    new OutputStreamWriter(
+                            new FileOutputStream(path.toFile()),
+                            WellKnowns.FILE_ENCODING));
 
             return new PrintWriter(bw);
         } catch (Exception ex) {
-            System.err.println("Error creating " + file + ex);
+            System.err.println("Error creating " + path + ex);
 
             return null;
         }

@@ -329,7 +329,7 @@ public class NoteHeadsBuilder
     private int[] computeXOffsets ()
     {
         // Use a window as wide as maxStem value, ensure odd value
-        int length = sheet.getMaxStem();
+        int length = sheet.getScale().getMaxStem();
 
         if ((length % 2) == 0) {
             length++;

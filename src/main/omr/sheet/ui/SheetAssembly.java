@@ -611,7 +611,7 @@ public class SheetAssembly
         {
             StringBuilder sb = new StringBuilder(getClass().getSimpleName());
             sb.append("{");
-            sb.append(" ").append(title);
+            sb.append(title);
             sb.append("}");
 
             return sb.toString();

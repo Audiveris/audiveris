@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.constant;
 
+import omr.CLI;
 import omr.Main;
 import omr.WellKnowns;
 
@@ -19,12 +20,13 @@ import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map.Entry;
@@ -32,7 +34,6 @@ import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import omr.CLI;
 
 /**
  * Class {@code ConstantManager} manages the persistency of the whole population of
@@ -131,8 +132,7 @@ public class ConstantManager
     protected final ConcurrentHashMap<String, Constant> constants = new ConcurrentHashMap<String, Constant>();
 
     /** User properties */
-    private final UserHolder userHolder = new UserHolder(
-            new File(WellKnowns.CONFIG_FOLDER, USER_FILE_NAME));
+    private final UserHolder userHolder = new UserHolder(WellKnowns.CONFIG_FOLDER.resolve(USER_FILE_NAME));
 
     //~ Constructors -------------------------------------------------------------------------------
     private ConstantManager ()
@@ -274,16 +274,16 @@ public class ConstantManager
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Related file */
-        protected final File file;
+        /** Related file. */
+        protected final Path path;
 
-        /** The handled properties */
+        /** The handled properties. */
         protected Properties properties;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public AbstractHolder (File file)
+        public AbstractHolder (Path path)
         {
-            this.file = file;
+            this.path = path;
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -334,23 +334,23 @@ public class ConstantManager
         public void load ()
         {
             // Load from local file
-            if (file != null) {
+            if (path != null) {
                 loadFromFile();
             }
         }
 
         private void loadFromFile ()
         {
-            try (InputStream in = new FileInputStream(file)) {
+            try (InputStream in = new FileInputStream(path.toFile())) {
                 properties.load(in);
             } catch (FileNotFoundException ignored) {
                 // This is not at all an error
                 logger.debug("[{}" + "]" + " No property file {}",
                              ConstantManager.class.getName(),
-                             file.getAbsolutePath());
+                             path.toAbsolutePath());
             } catch (IOException ex) {
                 logger.error("Error loading constants file {}",
-                             file.getAbsolutePath());
+                             path.toAbsolutePath());
             }
         }
     }
@@ -367,9 +367,9 @@ public class ConstantManager
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public UserHolder (File file)
+        public UserHolder (Path path)
         {
-            super(file);
+            super(path);
             properties = new Properties();
             load();
         }
@@ -409,23 +409,25 @@ public class ConstantManager
             cleanup();
 
             // Then, save the remaining values
-            logger.debug("Store constants into {}", file);
+            logger.debug("Store constants into {}", path);
 
-            // First make sure the directory exists (Brenton patch)
-            if (file.getParentFile().mkdirs()) {
-                logger.info("Creating {}", file);
-            }
+            try {
+                // First make sure the directory exists (Brenton patch)
+                Files.createDirectories(path.getParent());
 
-            // Then write down the properties
-            try (FileOutputStream out = new FileOutputStream(file)) {
-                properties.store(out,
-                                 " Audiveris user properties file. Do not edit");
-            } catch (FileNotFoundException ex) {
-                logger.warn("Property file {} not found or not writable",
-                            file.getAbsolutePath());
+                // Then write down the properties
+                try (FileOutputStream out = new FileOutputStream(path.toFile())) {
+                    properties.store(out,
+                                     " Audiveris user properties file. Do not edit");
+                } catch (FileNotFoundException ex) {
+                    logger.warn("Property file {} not found or not writable",
+                                path.toAbsolutePath());
+                } catch (IOException ex) {
+                    logger.warn("Error while storing the property file {}",
+                                path.toAbsolutePath());
+                }
             } catch (IOException ex) {
-                logger.warn("Error while storing the property file {}",
-                            file.getAbsolutePath());
+                logger.warn("Could not create folder " + path.getParent(), ex);
             }
         }
     }

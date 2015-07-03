@@ -42,7 +42,6 @@ import omr.selection.LocationEvent;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionService;
 
-import omr.sheet.stem.StemScale;
 import omr.sheet.ui.BinarizationBoard;
 import omr.sheet.ui.PictureView;
 import omr.sheet.ui.PixelBoard;
@@ -141,10 +140,8 @@ public class BasicSheet
     @XmlElement(name = "scale")
     private Scale scale;
 
-    /** Global stem scale for this sheet. */
-    private StemScale stemScale;
-
     /** Global skew. */
+    @XmlElement(name = "skew")
     private Skew skew;
 
     // Transient data
@@ -153,9 +150,6 @@ public class BasicSheet
     /** Containing book. */
     @Navigable(false)
     private Book book;
-
-    /** Sheet ID. (format is radix[#n]) */
-    private String id;
 
     /** Dictionary of sheet lags. */
     private LagManager lagManager;
@@ -244,7 +238,6 @@ public class BasicSheet
     {
         number = 0;
         book = null;
-        id = null;
         lagManager = null;
         systemManager = null;
         staffManager = null;
@@ -487,7 +480,7 @@ public class BasicSheet
 
             // Remember the book path in the book itself
             book.setExportPath(bookPath);
-            BookManager.setDefaultExportDirectory(bookPath.getParent().toString());
+            BookManager.setDefaultExportFolder(bookPath.getParent().toString());
 
             if (!book.isMultiSheet()) {
                 book.getScript().addTask(new ExportTask(bookPath.getParent().toFile()));
@@ -579,7 +572,11 @@ public class BasicSheet
     @Override
     public String getId ()
     {
-        return id;
+        if (book.isMultiSheet()) {
+            return book.getRadix() + "#" + number;
+        } else {
+            return book.getRadix();
+        }
     }
 
     //-----------------//
@@ -678,24 +675,6 @@ public class BasicSheet
         }
     }
 
-    //-------------//
-    // getMainStem //
-    //-------------//
-    @Override
-    public int getMainStem ()
-    {
-        return stemScale.getMainThickness();
-    }
-
-    //------------//
-    // getMaxStem //
-    //------------//
-    @Override
-    public int getMaxStem ()
-    {
-        return stemScale.getMaxThickness();
-    }
-
     //-----------//
     // getNumber //
     //-----------//
@@ -740,15 +719,6 @@ public class BasicSheet
         }
 
         return picture;
-    }
-
-    //------------//
-    // hasPicture //
-    //------------//
-    @Override
-    public boolean hasPicture ()
-    {
-        return picture != null;
     }
 
     //----------//
@@ -836,6 +806,15 @@ public class BasicSheet
         return picture.getWidth();
     }
 
+    //------------//
+    // hasPicture //
+    //------------//
+    @Override
+    public boolean hasPicture ()
+    {
+        return picture != null;
+    }
+
     //--------//
     // isDone //
     //--------//
@@ -852,15 +831,6 @@ public class BasicSheet
     public boolean isModified ()
     {
         return modified;
-    }
-
-    //-------------//
-    // setModified //
-    //-------------//
-    @Override
-    public void setModified (boolean modified)
-    {
-        this.modified = modified;
     }
 
     //-------//
@@ -894,7 +864,7 @@ public class BasicSheet
             logger.info("Sheet printed to {}", pdfPath);
 
             book.setPrintPath(bookPath);
-            BookManager.setDefaultPrintDirectory(bookPath.getParent().toString());
+            BookManager.setDefaultPrintFolder(bookPath.getParent().toString());
 
             if (!book.isMultiSheet()) {
                 book.getScript().addTask(new PrintTask(bookPath.getParent().toFile()));
@@ -960,6 +930,15 @@ public class BasicSheet
         }
     }
 
+    //-------------//
+    // setModified //
+    //-------------//
+    @Override
+    public void setModified (boolean modified)
+    {
+        this.modified = modified;
+    }
+
     //----------//
     // setScale //
     //----------//
@@ -986,15 +965,6 @@ public class BasicSheet
         this.skew = skew;
     }
 
-    //--------------//
-    // setStemScale //
-    //--------------//
-    @Override
-    public void setStemScale (StemScale stemScale)
-    {
-        this.stemScale = stemScale;
-    }
-
     //-------//
     // store //
     //-------//
@@ -1019,7 +989,7 @@ public class BasicSheet
     @Override
     public String toString ()
     {
-        return "Sheet{" + id + "}";
+        return "Sheet{" + getId() + "}";
     }
 
     //------------//
@@ -1062,13 +1032,6 @@ public class BasicSheet
     final void initTransients (Book book)
     {
         this.book = book;
-
-        // Compute id
-        if (book.isMultiSheet()) {
-            id = book.getRadix() + "#" + number;
-        } else {
-            id = book.getRadix();
-        }
 
         staffManager = new StaffManager(this);
         systemManager = new SystemManager(this);

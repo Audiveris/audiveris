@@ -187,7 +187,7 @@ public class EndingsBuilder
 
         // Adjust factory parameters
         factory.setMaxThickness(
-                (int) Math.ceil(sheet.getMaxStem() * constants.stemRatio.getValue()));
+                (int) Math.ceil(sheet.getScale().getMaxStem() * constants.stemRatio.getValue()));
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
         factory.setMaxOverlapSpace(constants.maxOverlapSpace);
         factory.setMaxCoordGap(constants.maxCoordGap);

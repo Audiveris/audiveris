@@ -32,7 +32,8 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,6 +58,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import omr.util.FileUtil;
 
 /**
  * Class {@code SampleVerifier} provides a user interface to browse through all glyphs
@@ -103,11 +105,11 @@ public class SampleVerifier
     /** The panel in charge of the sheets (or icons folder) selection */
     private final FolderSelector folderSelector = new FolderSelector(shapeSelector);
 
-    /** Sheets folder */
-    private final File sheetsFolder = repository.getSheetsFolder();
+    /** Sheets folder. */
+    private final Path sheetsFolder = repository.getSheetsFolder();
 
-    /** Samples folder */
-    private final File samplesFolder = repository.getSamplesFolder();
+    /** Samples folder. */
+    private final Path samplesFolder = repository.getSamplesFolder();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -184,19 +186,19 @@ public class SampleVerifier
         EnumSet<Shape> shapeSet = EnumSet.noneOf(Shape.class);
 
         for (String gName : glyphNames) {
-            File file = new File(gName);
-            shapeSet.add(Shape.valueOf(radixOf(file.getName())));
+            Path path = Paths.get(gName);
+            shapeSet.add(Shape.valueOf(FileUtil.getNameSansExtension(path)));
         }
 
         shapeSelector.populateWith(shapeSet);
         shapeSelector.selectAll();
 
         // Sheets / Icons folder
-        SortedSet<String> folderSet = new TreeSet<String>();
+        SortedSet<Path> folderSet = new TreeSet<Path>();
 
         for (String gName : glyphNames) {
-            File file = new File(gName);
-            folderSet.add(file.getParent());
+            Path path = Paths.get(gName);
+            folderSet.add(path.getParent());
         }
 
         folderSelector.populateWith(folderSet);
@@ -257,19 +259,18 @@ public class SampleVerifier
      *               'samples/batuque'
      * @return the concrete directory
      */
-    private File getActualDir (String folder)
+    private Path getActualDir (Path folder)
     {
         if (repository.isIconsFolder(folder)) {
             return WellKnowns.SYMBOLS_FOLDER;
         } else {
-            int slashPos = folder.indexOf(File.separatorChar);
-            String root = folder.substring(0, slashPos);
-            String name = folder.substring(slashPos + 1);
+            Path root = folder.getParent();
+            Path name = folder.getFileName();
 
-            if (root.equals(sheetsFolder.getName())) {
-                return new File(sheetsFolder, name);
-            } else if (root.equals(samplesFolder.getName())) {
-                return new File(samplesFolder, name);
+            if (root.equals(sheetsFolder.getFileName())) {
+                return sheetsFolder.resolve(name);
+            } else if (root.equals(samplesFolder.getFileName())) {
+                return samplesFolder.resolve(name);
             } else {
                 throw new IllegalArgumentException("Unexpected root: " + root);
             }
@@ -296,20 +297,6 @@ public class SampleVerifier
         builder.add(glyphSelector, cst.xy(3, r));
 
         return builder.getPanel();
-    }
-
-    //---------//
-    // radixOf //
-    //---------//
-    private static String radixOf (String path)
-    {
-        int i = path.indexOf('.');
-
-        if (i >= 0) {
-            return path.substring(0, i);
-        } else {
-            return "";
-        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -519,7 +506,7 @@ public class SampleVerifier
     // FolderSelector //
     //----------------//
     private class FolderSelector
-            extends Selector<String>
+            extends Selector<Path>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -537,26 +524,26 @@ public class SampleVerifier
             model.removeAllElements();
 
             // First insert the dedicated icons folder
-            model.addElement(WellKnowns.SYMBOLS_FOLDER.getName());
+            model.addElement(WellKnowns.SYMBOLS_FOLDER.getFileName());
 
             // Then the sheets folders
-            String root = repository.getSheetsFolder().getName();
-            ArrayList<String> folders = new ArrayList<String>();
+            Path root = repository.getSheetsFolder().getFileName();
+            ArrayList<Path> folders = new ArrayList<Path>();
 
-            for (File file : repository.getSheetDirectories()) {
-                folders.add(root + File.separator + file.getName());
+            for (Path path : repository.getSheetDirectories()) {
+                folders.add(root.resolve(path.getFileName()));
             }
 
             // Finally, the samples folders
-            root = repository.getSamplesFolder().getName();
+            root = repository.getSamplesFolder().getFileName();
 
-            for (File file : repository.getSampleDirectories()) {
-                folders.add(root + File.separator + file.getName());
+            for (Path path : repository.getSampleDirectories()) {
+                folders.add(root.resolve(path.getFileName()));
             }
 
             Collections.sort(folders);
 
-            for (String folder : folders) {
+            for (Path folder : folders) {
                 model.addElement(folder);
             }
 
@@ -582,15 +569,15 @@ public class SampleVerifier
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            final List<String> folders = folderSelector.list.getSelectedValuesList();
+            final List<Path> folders = folderSelector.list.getSelectedValuesList();
             final List<Shape> shapes = shapeSelector.list.getSelectedValuesList();
 
             // Debug
             if (logger.isDebugEnabled()) {
                 logger.debug("Glyph Selector. Got Folders:");
 
-                for (String fName : folders) {
-                    logger.debug(fName);
+                for (Path fName : folders) {
+                    logger.debug(fName.toString());
                 }
 
                 logger.debug("Glyph Selector. Got Shapes:");
@@ -606,17 +593,17 @@ public class SampleVerifier
                 model.removeAllElements();
 
                 // Populate with all possible glyphs, sorted by gName
-                for (String folder : folders) {
+                for (Path folder : folders) {
                     // Add proper glyphs files from this directory
                     ArrayList<String> gNames = new ArrayList<String>();
-                    File dir = getActualDir(folder);
+                    Path dir = getActualDir(folder);
 
-                    for (File file : repository.getGlyphsIn(dir)) {
-                        String shapeName = radixOf(file.getName());
+                    for (Path file : repository.getGlyphsIn(dir)) {
+                        String shapeName = FileUtil.getNameSansExtension(file);
                         Shape shape = Shape.valueOf(shapeName);
 
                         if (shapes.contains(shape)) {
-                            gNames.add(folder + File.separator + file.getName());
+                            gNames.add(folder.resolve(file.getFileName()).toString());
                         }
                     }
 
@@ -698,19 +685,19 @@ public class SampleVerifier
         public void actionPerformed (ActionEvent e)
         {
             // Populate with shape names found in selected folders
-            List<String> folders = folderSelector.list.getSelectedValuesList();
+            List<Path> folders = folderSelector.list.getSelectedValuesList();
 
             if (folders.isEmpty()) {
                 logger.warn("No folders selected in Folder Selector");
             } else {
                 EnumSet<Shape> shapeSet = EnumSet.noneOf(Shape.class);
 
-                for (String folder : folders) {
-                    File dir = getActualDir(folder);
+                for (Path folder : folders) {
+                    Path dir = getActualDir(folder);
 
                     // Add all glyphs files from this directory
-                    for (File file : repository.getGlyphsIn(dir)) {
-                        shapeSet.add(Shape.valueOf(radixOf(file.getName())));
+                    for (Path path : repository.getGlyphsIn(dir)) {
+                        shapeSet.add(Shape.valueOf(FileUtil.getNameSansExtension(path)));
                     }
                 }
 

@@ -392,7 +392,7 @@ public class VerticalsBuilder
                 BasicGlyph.class);
 
         // Adjust factory parameters
-        factory.setMaxThickness(sheet.getMaxStem());
+        factory.setMaxThickness(sheet.getScale().getMaxStem());
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
         factory.setMaxOverlapSpace(constants.maxOverlapSpace);
         factory.setMaxCoordGap(constants.maxCoordGap);
@@ -469,7 +469,7 @@ public class VerticalsBuilder
             final int dx = scale.toPixels(constants.beltMarginDx);
             final Point2D start = stick.getStartPoint(VERTICAL);
             final Point2D stop = stick.getStopPoint(VERTICAL);
-            final double halfWidth = (sheet.getMaxStem() - 1) / 2.0;
+            final double halfWidth = (sheet.getScale().getMaxStem() - 1) / 2.0;
 
             {
                 // Sanity check

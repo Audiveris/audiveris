@@ -30,13 +30,14 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 
 import javax.xml.bind.JAXBException;
@@ -195,10 +196,10 @@ public class WekaClassifier
     {
         // First try user file, if any (in user EVAL folder)
         try {
-            File file = new File(WellKnowns.EVAL_FOLDER, FILE_NAME);
+            Path path = WellKnowns.EVAL_FOLDER.resolve(FILE_NAME);
 
-            if (file.exists()) {
-                return new FileInputStream(file);
+            if (Files.exists(path)) {
+                return new FileInputStream(path.toFile());
             }
         } catch (FileNotFoundException ex) {
             logger.warn("Error getting classifier data: " + ex, ex);

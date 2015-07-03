@@ -18,6 +18,8 @@ import omr.util.DoubleValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -41,7 +43,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * detected value or derived from other information.<ul>
  * <li><b>Beam thickness</b>: main. A second peak in the histogram of vertical
  * foreground runs signals the presence of beams.
- * Otherwise it is computed as a ratio of interline.</li>
+ * Otherwise it is computed as a ratio of main background length between staff lines.</li>
  * <li><b>Stem thickness</b>: main. A suitable peak in the histogram of
  * horizontal foreground runs signals the presence of stems.
  * Otherwise it is computed as a ratio of line thickness.</li>
@@ -94,13 +96,17 @@ public class Scale
     @XmlElement(name = "interline")
     private final Range interlineRange;
 
-    /** Beam thickness (detected or computed). */
-    @XmlElement(name = "beam")
-    private final int beamValue;
-
     /** Second interline range, if any. */
     @XmlElement(name = "second-interline")
     private final Range secondInterlineRange;
+
+    /** Beam information. */
+    @XmlElement(name = "beam")
+    private final BeamScale beamScale;
+
+    /** Stem information. */
+    @XmlElement(name = "stem")
+    private StemScale stemScale;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -126,7 +132,7 @@ public class Scale
     public Scale (int interline,
                   int mainFore)
     {
-        this(new Range(-1, mainFore, -1), new Range(-1, interline, -1), -1, null);
+        this(new Range(-1, mainFore, -1), new Range(-1, interline, -1), null, null);
     }
 
     //-------//
@@ -137,18 +143,17 @@ public class Scale
      *
      * @param lineRange            range of line thickness
      * @param interlineRange       range of interline
-     * @param beamValue            beam thickness
      * @param secondInterlineRange range of secondInterline
      */
     public Scale (Range lineRange,
                   Range interlineRange,
-                  int beamValue,
-                  Range secondInterlineRange)
+                  Range secondInterlineRange,
+                  BeamScale beamScale)
     {
         this.lineRange = lineRange;
         this.interlineRange = interlineRange;
-        this.beamValue = beamValue;
         this.secondInterlineRange = secondInterlineRange;
+        this.beamScale = beamScale;
     }
 
     //-------//
@@ -157,7 +162,7 @@ public class Scale
     /** No-arg constructor, needed by JAXB. */
     private Scale ()
     {
-        this(null, null, -1, null);
+        this(null, null, null, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -172,7 +177,7 @@ public class Scale
      */
     public double fracToPixels (double val)
     {
-        return interlineRange.best * val;
+        return interlineRange.main * val;
     }
 
     //--------------//
@@ -185,22 +190,17 @@ public class Scale
      */
     public int getInterline ()
     {
-        return interlineRange.best;
+        return interlineRange.main;
     }
 
     //-------------//
     // getMainBeam //
     //-------------//
-    /**
-     * Report the main beam thickness.
-     *
-     * @return the main beam thickness, either the detected value if any or a
-     *         default value computed from interline value if no beam value was
-     *         detected.
-     */
     public int getMainBeam ()
     {
-        return beamValue;
+        Objects.requireNonNull(beamScale, "This scale instance has no beam information");
+
+        return beamScale.getMain();
     }
 
     //-------------//
@@ -213,7 +213,18 @@ public class Scale
      */
     public int getMainFore ()
     {
-        return lineRange.best;
+        return lineRange.main;
+    }
+
+    //-------------//
+    // getMainStem //
+    //-------------//
+    /**
+     * @return the most frequent stem thickness
+     */
+    public int getMainStem ()
+    {
+        return stemScale.getMain();
     }
 
     //------------//
@@ -259,6 +270,17 @@ public class Scale
         }
     }
 
+    //------------//
+    // getMaxStem //
+    //------------//
+    /**
+     * @return the reasonable maximum stem thickness
+     */
+    public int getMaxStem ()
+    {
+        return stemScale.getMax();
+    }
+
     //-----------------//
     // getMinInterline //
     //-----------------//
@@ -301,10 +323,20 @@ public class Scale
     public Integer getSecondInterline ()
     {
         if (secondInterlineRange != null) {
-            return secondInterlineRange.best;
+            return secondInterlineRange.main;
         } else {
             return null;
         }
+    }
+
+    //--------------------//
+    // isBeamExtrapolated //
+    //--------------------//
+    public boolean isBeamExtrapolated ()
+    {
+        Objects.requireNonNull(beamScale, "This scale instance has no beam information");
+
+        return beamScale.isExtrapolated();
     }
 
     //------------------//
@@ -320,7 +352,7 @@ public class Scale
      */
     public double pixelsToAreaFrac (double pixels)
     {
-        return pixels / (interlineRange.best * interlineRange.best);
+        return pixels / (interlineRange.main * interlineRange.main);
     }
 
     //--------------//
@@ -336,7 +368,7 @@ public class Scale
      */
     public double pixelsToFrac (double pixels)
     {
-        return pixels / interlineRange.best;
+        return pixels / interlineRange.main;
     }
 
     //------------------//
@@ -352,7 +384,20 @@ public class Scale
      */
     public double pixelsToLineFrac (double pixels)
     {
-        return pixels / lineRange.best;
+        return pixels / lineRange.main;
+    }
+
+    //--------------//
+    // setStemScale //
+    //--------------//
+    /**
+     * Remember stem scaling information.
+     *
+     * @param stemScale stem scaling
+     */
+    public void setStemScale (StemScale stemScale)
+    {
+        this.stemScale = stemScale;
     }
 
     //----------//
@@ -397,7 +442,7 @@ public class Scale
      */
     public int toPixels (AreaFraction areaFrac)
     {
-        return (int) Math.rint(interlineRange.best * interlineRange.best * areaFrac.getValue());
+        return (int) Math.rint(interlineRange.main * interlineRange.main * areaFrac.getValue());
     }
 
     //----------------//
@@ -431,7 +476,7 @@ public class Scale
      */
     public double toPixelsDouble (LineFraction lineFrac)
     {
-        return (double) lineRange.best * lineFrac.getWrappedValue().doubleValue();
+        return (double) lineRange.main * lineFrac.getWrappedValue().doubleValue();
     }
 
     //----------//
@@ -445,10 +490,17 @@ public class Scale
 
         sb.append("line: ").append(lineRange);
         sb.append(" interline: ").append(interlineRange);
-        sb.append(" beam: ").append(beamValue);
 
         if (secondInterlineRange != null) {
             sb.append(" secondInterline: ").append(secondInterlineRange);
+        }
+
+        if (beamScale != null) {
+            sb.append(" ").append(beamScale);
+        }
+
+        if (stemScale != null) {
+            sb.append(" ").append(stemScale);
         }
 
         sb.append("}");
@@ -480,6 +532,83 @@ public class Scale
                              java.lang.String description)
         {
             super("Interline**2", defaultValue, description);
+        }
+    }
+
+    //-----------//
+    // BeamScale //
+    //-----------//
+    /**
+     * Class {@code BeamScale} keeps scaling information about beams in a sheet.
+     * <p>
+     * Generally, there are are enough beam-based vertical runs in a sheet to produce a visible peak
+     * in the sheet histogram of vertical run lengths.
+     * In some cases, however, there is no beam or only few beam-based vertical runs, and so the
+     * sheet
+     * histogram reveals no beam peak. The main value for beam thickness is then extrapolated as a
+     * pre-defined fraction of sheet interline, and flagged as such in this BeamScale instance.
+     */
+    public static class BeamScale
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Most frequent beam thickness. */
+        @XmlAttribute(name = "main")
+        private final int main;
+
+        /** Measured or extrapolated. */
+        @XmlAttribute(name = "extra")
+        private final Boolean extra;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new {@code BeamScale} object.
+         *
+         * @param main         most frequent beam thickness
+         * @param extrapolated true if not enough measurements are available
+         */
+        public BeamScale (int main,
+                          boolean extrapolated)
+        {
+            this.main = main;
+
+            this.extra = extrapolated ? true : null;
+        }
+
+        /**
+         * No-arg constructor needed for JAXB.
+         */
+        private BeamScale ()
+        {
+            this.main = 0;
+            this.extra = null;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public int getMain ()
+        {
+            return main;
+        }
+
+        public boolean isExtrapolated ()
+        {
+            return extra != null;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("beam");
+            sb.append('{');
+            sb.append("main:").append(main);
+
+            if (extra != null) {
+                sb.append(" extra");
+            }
+
+            sb.append('}');
+
+            return sb.toString();
         }
     }
 
@@ -600,7 +729,7 @@ public class Scale
     // Range //
     //-------//
     /**
-     * Handles a range of values using a (min, best, max) triplet.
+     * Handles a range of values using a (min, main, max) triplet.
      */
     @XmlAccessorType(XmlAccessType.NONE)
     @XmlRootElement(name = "range")
@@ -614,7 +743,7 @@ public class Scale
 
         /** Value at highest point in range. */
         @XmlAttribute
-        public final int best;
+        public final int main;
 
         /** Value at end of range. */
         @XmlAttribute
@@ -622,18 +751,18 @@ public class Scale
 
         //~ Constructors ---------------------------------------------------------------------------
         public Range (int min,
-                      int best,
+                      int main,
                       int max)
         {
             this.min = min;
-            this.best = best;
+            this.main = main;
             this.max = max;
         }
 
         public Range ()
         {
             this.min = 0;
-            this.best = 0;
+            this.main = 0;
             this.max = 0;
         }
 
@@ -641,7 +770,92 @@ public class Scale
         @Override
         public String toString ()
         {
-            return "(" + min + "," + best + "," + max + ")";
+            return "(" + min + "," + main + "," + max + ")";
+        }
+    }
+
+    //-----------//
+    // StemScale //
+    //-----------//
+    /**
+     * Class {@code StemScale} keeps scaling information about stems in a sheet.
+     * <p>
+     * It handles main and max values for stem thickness.
+     * <p>
+     * TODO: It could also handle stem length, which can be interesting for stem candidates (at
+     * least their tail for those free of beam and flag).
+     */
+    public static class StemScale
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Most frequent stem thickness. */
+        @XmlAttribute(name = "main")
+        private final int main;
+
+        /** Maximum stem thickness. */
+        @XmlAttribute(name = "max")
+        private final int max;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new {@code StemScale} object.
+         *
+         * @param main most frequent thickness
+         * @param max  max thickness
+         */
+        public StemScale (int main,
+                          int max)
+        {
+            this.main = main;
+            this.max = max;
+        }
+
+        /**
+         * No-arg constructor needed for JAXB.
+         */
+        private StemScale ()
+        {
+            this.main = 0;
+            this.max = 0;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        //---------//
+        // getMain //
+        //---------//
+        /**
+         * @return the main
+         */
+        public int getMain ()
+        {
+            return main;
+        }
+
+        //--------//
+        // getMax //
+        //--------//
+        /**
+         * @return the max
+         */
+        public int getMax ()
+        {
+            return max;
+        }
+
+        //----------//
+        // toString //
+        //----------//
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("stem");
+            sb.append('{');
+            sb.append("main:").append(main);
+            sb.append(" max:").append(max);
+            sb.append('}');
+
+            return sb.toString();
         }
     }
 }

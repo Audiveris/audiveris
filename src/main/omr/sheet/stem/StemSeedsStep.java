@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet.stem;
 
+import omr.sheet.Scale.StemScale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -81,7 +82,7 @@ public class StemSeedsStep
         StemScale stemScale = new StemScaler(sheet).retrieveStem();
 
         logger.info("{}{}", sheet.getLogPrefix(), stemScale);
-        sheet.setStemScale(stemScale);
+        sheet.getScale().setStemScale(stemScale);
 
         return null;
     }

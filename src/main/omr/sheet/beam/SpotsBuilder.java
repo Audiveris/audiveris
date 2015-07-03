@@ -120,8 +120,7 @@ public class SpotsBuilder
             // Retrieve major spots
             watch.start("buildSpots");
 
-            Scale scale = sheet.getScale();
-            int beam = scale.getMainBeam();
+            int beam = sheet.getScale().getMainBeam();
             List<Glyph> spots = buildSpots(buffer, null, beam, null);
 
             // Dispatch spots per system(s)
@@ -201,15 +200,15 @@ public class SpotsBuilder
                         new ScrollImageView(sheet, new ImageView(img)),
                         new BoardsPane(new PixelBoard(sheet)));
             }
+
+            // Save a specific binarized version for HEADS step
+            saveHeadRuns((ByteProcessor) buffer.duplicate());
         } else {
             if (constants.keepCueSpots.isSet()) {
                 BufferedImage img = buffer.getBufferedImage();
                 ImageUtil.saveOnDisk(img, sheet.getId() + "." + cueId + ".spot");
             }
         }
-
-        // Save a specific binarized version for NOTES step
-        saveNoteRuns((ByteProcessor) buffer.duplicate());
 
         // Binarize the spots via a global filter (no illumination problem)
         buffer.threshold(constants.beamBinarizationThreshold.getValue());
@@ -313,7 +312,7 @@ public class SpotsBuilder
     private ByteProcessor getBuffer ()
     {
         final Picture picture = sheet.getPicture();
-        final int stemWidth = sheet.getMaxStem();
+        final int stemWidth = sheet.getScale().getMaxStem();
 
         ///return  picture.getSource(Picture.SourceKey.GAUSSIAN);
         ByteProcessor buffer = picture.getSource(Picture.SourceKey.NO_STAFF);
@@ -333,31 +332,31 @@ public class SpotsBuilder
     }
 
     //--------------//
-    // saveNoteRuns //
+    // saveHeadRuns //
     //--------------//
     /**
-     * To ease (future) NOTES step, save the runs of the properly binarized buffer.
+     * To ease (future) HEADS step, save the runs of the properly binarized buffer.
      * The result is stored into sheet instance.
      *
      * @param buffer the buffer copy to binarize
      */
-    private void saveNoteRuns (ByteProcessor buffer)
+    private void saveHeadRuns (ByteProcessor buffer)
     {
-        // Binarize the spots with threshold for notes
+        // Binarize the spots with threshold for heads
         buffer.threshold(constants.noteBinarizationThreshold.getValue());
 
         // Runs
         RunTableFactory runFactory = new RunTableFactory(SPOT_ORIENTATION);
-        RunTable runs = runFactory.createTable("noteSpots", buffer);
+        RunTable runs = runFactory.createTable("headSpots", buffer);
 
         // For visual check
-        if (constants.keepNoteSpots.isSet()) {
+        if (constants.keepHeadSpots.isSet()) {
             BufferedImage img = runs.getBufferedImage();
-            ImageUtil.saveOnDisk(img, sheet.getId() + ".notespot");
+            ImageUtil.saveOnDisk(img, sheet.getId() + ".headspot");
         }
 
-        // Save it for future NOTES step
-        sheet.getPicture().setTable(Picture.TableKey.NOTE_SPOTS, runs);
+        // Save it for future HEADS step
+        sheet.getPicture().setTable(Picture.TableKey.HEAD_SPOTS, runs);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -385,9 +384,9 @@ public class SpotsBuilder
                 false,
                 "Should we store sheet beam spot images on disk?");
 
-        private final Constant.Boolean keepNoteSpots = new Constant.Boolean(
+        private final Constant.Boolean keepHeadSpots = new Constant.Boolean(
                 false,
-                "Should we store sheet note spot images on disk?");
+                "Should we store sheet head spot images on disk?");
 
         private final Constant.Boolean keepCueSpots = new Constant.Boolean(
                 false,

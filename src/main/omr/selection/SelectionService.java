@@ -191,7 +191,7 @@ public class SelectionService
     {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append("{");
-        sb.append(" ").append(name);
+        sb.append(name);
         sb.append("}");
 
         return sb.toString();

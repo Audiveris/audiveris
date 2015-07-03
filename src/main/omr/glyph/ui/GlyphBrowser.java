@@ -34,7 +34,9 @@ import omr.selection.GlyphEvent;
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
+
 import static omr.selection.SelectionHint.*;
+
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
@@ -64,7 +66,8 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -281,10 +284,10 @@ class GlyphBrowser
 
             // Perform file deletion
             if (repository.isIcon(gName)) {
-                new SymbolsBlackList().add(new File(gName));
+                new SymbolsBlackList().add(Paths.get(gName));
             } else {
-                File file = new File(WellKnowns.TRAIN_FOLDER, gName);
-                new BlackList(file.getParentFile()).add(new File(gName));
+                Path path = WellKnowns.TRAIN_FOLDER.resolve(gName);
+                new BlackList(path.getParent()).add(Paths.get(gName));
             }
 
             logger.info("Removed {}", gName);

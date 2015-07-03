@@ -74,7 +74,7 @@ public class NoteSpotsBuilder
      */
     public Map<SystemInfo, List<Glyph>> getSpots ()
     {
-        RunTable noteRuns = sheet.getPicture().getTable(Picture.TableKey.NOTE_SPOTS);
+        RunTable noteRuns = sheet.getPicture().getTable(Picture.TableKey.HEAD_SPOTS);
 
         final Lag noteLag = new BasicLag("noteLag", Orientation.VERTICAL);
 
@@ -87,7 +87,7 @@ public class NoteSpotsBuilder
         List<Glyph> spots = nest.retrieveGlyphs(sections, GlyphLayer.SPOT, true);
 
         // Dispose the runTable
-        sheet.getPicture().removeTable(Picture.TableKey.NOTE_SPOTS);
+        sheet.getPicture().removeTable(Picture.TableKey.HEAD_SPOTS);
 
         // Dispatch spots per system(s)
         return dispatchSheetSpots(spots);
