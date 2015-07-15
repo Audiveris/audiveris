@@ -23,7 +23,6 @@ import omr.score.Score;
 
 import omr.script.ScriptManager;
 
-import omr.util.Dumping;
 import omr.util.NameSet;
 import omr.util.StopWatch;
 
@@ -584,30 +583,41 @@ public class BookManager
             // Load book internals
             Path bookPath = fileSystem.getPath(Book.BOOK_INTERNALS);
             InputStream is = Files.newInputStream(bookPath, StandardOpenOption.READ);
+
             Book book = BasicBook.unmarshal(is, projectPath, fileSystem);
             is.close();
 
             ///watch.print();
-            // Debug: dump what we've got
-            if (false) {
-                Dumping dumper = new Dumping();
-                dumper.dump(book);
-
-                for (Sheet sheet : book.getSheets()) {
-                    dumper.dump(sheet, "Dump of sheet #" + sheet.getNumber(), 1);
-
-                    if (sheet.hasPicture()) {
-                        Picture picture = sheet.getPicture();
-                        dumper.dump(picture, 2);
-                    }
-                }
+//            // Debug: dump what we've got
+//            if (false) {
+//                Dumping dumper = new Dumping();
+//                dumper.dump(book);
+//
+//                for (Sheet sheet : book.getSheets()) {
+//                    dumper.dump(sheet, "Dump of sheet #" + sheet.getNumber(), 1);
+//
+//                    if (sheet.hasPicture()) {
+//                        Picture picture = sheet.getPicture();
+//                        dumper.dump(picture, 2);
+//                    }
+//
+//                    List<SystemInfo> systems = sheet.getSystems();
+//                    if (systems != null) {
+//                        for (SystemInfo system : systems) {
+//                            dumper.dump(system, 3);
+//                        }
+//                    }
+//                    break;
+//                }
+//            }
+//
+            if (book != null) {
+                addBook(book);
+                logger.info("{} loaded.", book);
             }
 
-            addBook(book);
-            logger.info("{} loaded.", book);
-
             return book;
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             logger.warn("Error loading project " + projectPath + " " + ex, ex);
 
             return null;

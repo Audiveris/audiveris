@@ -392,7 +392,7 @@ public class GlyphBoard
 
         // Dump button and deassign button
         dump.setEnabled(glyph != null);
-        getDeassignAction().setEnabled((glyph != null) && glyph.isKnown());
+        ///getDeassignAction().setEnabled((glyph != null) && glyph.isKnown());
 
         // Shape text and icon
         Shape shape = (glyph != null) ? glyph.getShape() : null;

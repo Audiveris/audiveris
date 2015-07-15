@@ -13,8 +13,6 @@ package omr.text;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.facets.Glyph;
-
 import omr.score.StaffPosition;
 
 import omr.sheet.Part;
@@ -113,23 +111,24 @@ public enum TextRole
 
         int chordCount = 0;
 
-        for (TextWord word : line.getWords()) {
-            // At least one word/glyph with a role manually assigned
-            Glyph glyph = word.getGlyph();
-
-            if (glyph != null) {
-                if (glyph.getManualRole() != null) {
-                    return glyph.getManualRole();
-                }
-            }
-
-            //
-            //            // Word that could be a chord symbol?
-            //            if (word.guessChordInfo() != null) {
-            //                chordCount++;
-            //            }
-        }
-
+        //
+        //        for (TextWord word : line.getWords()) {
+        //            //            // At least one word/glyph with a role manually assigned
+        //            //            Glyph glyph = word.getGlyph();
+        //            //
+        //            //            if (glyph != null) {
+        //            //                if (glyph.getManualRole() != null) {
+        //            //                    return glyph.getManualRole();
+        //            //                }
+        //            //            }
+        //            //
+        //            //
+        //            //            // Word that could be a chord symbol?
+        //            //            if (word.guessChordInfo() != null) {
+        //            //                chordCount++;
+        //            //            }
+        //        }
+        //
         // Is line made entirely of potential chord symbols?
         boolean isAllChord = chordCount == line.getWords().size();
 

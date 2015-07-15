@@ -513,9 +513,8 @@ public class VerticalsBuilder
             }
 
             for (int y = yMin; y <= yMax; y++) {
-                final int leftLimit = (int) Math.ceil(LineUtil.intersectionAtY(leftLine, y).getX());
-                final int rightLimit = (int) Math.floor(
-                        LineUtil.intersectionAtY(rightLine, y).getX());
+                final int leftLimit = (int) Math.ceil(LineUtil.xAtY(leftLine, y));
+                final int rightLimit = (int) Math.floor(LineUtil.xAtY(rightLine, y));
 
                 // Make sure the stem row is not empty
                 // (top & bottom rows cannot be considered as empty)

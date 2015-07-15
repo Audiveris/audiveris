@@ -950,24 +950,6 @@ public class BasicBook
         }
     }
 
-    //---------//
-    // marshal //
-    //---------//
-    /**
-     * Marshal the NeuralNetwork to its XML file
-     *
-     * @param os the XML output stream, which is not closed by this method
-     * @exception JAXBException raised when marshalling goes wrong
-     */
-    public void marshal (OutputStream os)
-            throws JAXBException
-    {
-        Marshaller m = getJaxbContext().createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(this, os);
-        logger.debug("Network marshalled");
-    }
-
     //-------//
     // print //
     //-------//
@@ -1149,7 +1131,7 @@ public class BasicBook
 
             watch.print();
             logger.info("{} stored into {}", this, this.projectPath);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             logger.warn("Error storing " + this + " ex:" + ex, ex);
         }
     }

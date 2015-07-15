@@ -67,7 +67,7 @@ public class ShapeDescriptorMix
             ins[i++] = values[k];
         }
 
-        // We append aspect
+        // We append (vertical) aspect
         ins[i++] = glyph.getAspect(Orientation.VERTICAL);
 
         return ins;

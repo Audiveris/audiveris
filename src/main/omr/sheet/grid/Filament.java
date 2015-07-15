@@ -29,8 +29,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Comparator;
 
 /**
- * Class {@code Filament} represents a long glyph that can be far from being a straight.
- * It is used to handle candidate staff lines and bar lines.
+ * Class {@code Filament} represents a long glyph that can be far from being straight.
+ * It is used to handle candidate staff lines, ledgers and bar lines.
  */
 public class Filament
         extends BasicGlyph
@@ -54,7 +54,7 @@ public class Filament
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Related scale */
+    /** Related scale. */
     private final Scale scale;
 
     //~ Constructors -------------------------------------------------------------------------------

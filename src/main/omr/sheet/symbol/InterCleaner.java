@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        L i n k s S t e p                                       //
+//                                     I n t e r C l e a n e r                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -11,41 +11,42 @@
 // </editor-fold>
 package omr.sheet.symbol;
 
+import omr.sheet.Part;
 import omr.sheet.SystemInfo;
-import omr.sig.SigReducer;
-
-import omr.step.AbstractSystemStep;
-import omr.step.StepException;
 
 /**
- * Class {@code LinksStep} implements <b>LINKS</b> step, which assign relations between
- * certain symbols.
+ * Class {@code InterCleaner} is a workaround to purge containers of Inter instances
+ * deleted from SIG but still referenced from some containers.
+ * <p>
+ * This accounts for:<ul>
+ * <li>Part -> slurs</li>
+ * </ul>
  *
  * @author Hervé Bitteur
  */
-public class LinksStep
-        extends AbstractSystemStep<Void>
+class InterCleaner
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
+    private final SystemInfo system;
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code LinksStep} object.
+     * Creates a new {@code InterCleaner} object.
+     *
+     * @param system the system to be processed
      */
-    public LinksStep ()
+    public InterCleaner (SystemInfo system)
     {
+        this.system = system;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // doSystem //
-    //----------//
-    @Override
-    public void doSystem (SystemInfo system,
-                          Void context)
-            throws StepException
+    public void purgeContainers ()
     {
-        new SymbolsLinker(system).process();
-        new SigReducer(system).reduce(false);
-        new InterCleaner(system).purgeContainers();
+        // Parts
+        for (Part part : system.getParts()) {
+            part.purgeContainers();
+        }
     }
 }

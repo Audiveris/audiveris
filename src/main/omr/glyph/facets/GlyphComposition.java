@@ -62,8 +62,7 @@ public interface GlyphComposition
     //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the top ancestor of this glyph.
-     * This is this glyph itself, when it has no parent (i.e. not been included
-     * into another one)
+     * This is this glyph itself, when it has no parent (i.e. not been included into another one)
      *
      * @return the glyph ancestor
      */

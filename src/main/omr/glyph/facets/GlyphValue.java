@@ -44,14 +44,6 @@ public class GlyphValue
     @XmlAttribute(name = "shape")
     final Shape shape;
 
-    /** Stem Number */
-    @XmlElement(name = "stem-number")
-    final int stemNumber;
-
-    /** With Ledger */
-    @XmlElement(name = "with-ledger")
-    final boolean withLedger;
-
     /** Pitch Position */
     @XmlElement(name = "pitch-position")
     final double pitchPosition;
@@ -67,24 +59,18 @@ public class GlyphValue
      * @param shape
      * @param interline
      * @param id
-     * @param stemNumber
-     * @param withLedger
      * @param pitchPosition
      * @param members
      */
     public GlyphValue (Shape shape,
                        int interline,
                        int id,
-                       int stemNumber,
-                       boolean withLedger,
                        double pitchPosition,
                        SortedSet<Section> members)
     {
         this.shape = shape;
         this.interline = interline;
         this.id = id;
-        this.stemNumber = stemNumber;
-        this.withLedger = withLedger;
         this.pitchPosition = pitchPosition;
         this.members = members;
     }
@@ -100,8 +86,6 @@ public class GlyphValue
                 (glyph.getShape() != null) ? glyph.getShape().getPhysicalShape() : null,
                 glyph.getInterline(),
                 glyph.getId(),
-                glyph.getStemNumber(),
-                glyph.isWithLedger(),
                 glyph.getPitchPosition(),
                 glyph.getMembers());
     }
@@ -117,8 +101,6 @@ public class GlyphValue
         this.shape = null;
         this.interline = 0;
         this.id = 0;
-        this.stemNumber = 0;
-        this.withLedger = false;
         this.pitchPosition = 0;
         this.members = null;
     }

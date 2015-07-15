@@ -581,7 +581,7 @@ public class FilamentAlignment
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction segmentLength = new Scale.Fraction(
-                2,
+                4.0,
                 "Typical length between filament curve intermediate points");
 
         private final Constant.Boolean showFilamentPoints = new Constant.Boolean(

@@ -28,22 +28,6 @@ interface GlyphAdministration
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Report whether this entity has been "processed".
-     *
-     * @return the processed flag value
-     */
-    @Deprecated
-    public boolean isProcessed ();
-
-    /**
-     * Set a flag to be used at caller's will.
-     *
-     * @param processed the processed to set
-     */
-    @Deprecated
-    public void setProcessed (boolean processed);
-
-    /**
      * Report the unique glyph id within its containing nest
      *
      * @return the glyph id

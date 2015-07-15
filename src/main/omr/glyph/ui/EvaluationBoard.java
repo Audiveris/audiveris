@@ -146,7 +146,7 @@ class EvaluationBoard
      */
     public void evaluate (Glyph glyph)
     {
-        if ((glyph == null) || (glyph.getShape() == Shape.STEM) || glyph.isBar()) {
+        if (glyph == null) {
             // Blank the output
             selector.setEvals(null, null);
         } else {
@@ -447,9 +447,9 @@ class EvaluationBoard
                 if (eval.grade < minGrade) {
                     break;
                 }
-
-                // Barred on non-barred button
-                buttons.get(i).setEval(eval, glyph.isShapeForbidden(eval.shape), enabled);
+//
+//                // Barred on non-barred button
+//                buttons.get(i).setEval(eval, glyph.isShapeForbidden(eval.shape), enabled);
             }
 
             // Zero the remaining buttons

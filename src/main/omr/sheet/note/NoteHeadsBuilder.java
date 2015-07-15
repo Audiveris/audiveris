@@ -59,6 +59,7 @@ import omr.sig.inter.WholeInter;
 import omr.sig.relation.Exclusion;
 
 import omr.util.Dumping;
+import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.StopWatch;
@@ -1022,7 +1023,7 @@ public class NoteHeadsBuilder
         @Override
         public double yAt (double x)
         {
-            return LineUtil.intersectionAtX(left, right, x).getY();
+            return LineUtil.yAtX(left, right, x);
         }
     }
 
@@ -1387,8 +1388,7 @@ public class NoteHeadsBuilder
                 int yLine = line.yAt(x0); // Rather good line y value
                 final Point2D top = seed.getStartPoint(Orientation.VERTICAL);
                 final Point2D bot = seed.getStopPoint(Orientation.VERTICAL);
-                final Point2D pt = LineUtil.intersectionAtY(top, bot, yLine);
-                x0 = (int) Math.rint(pt.getX()); // Precise x value
+                x0 = (int) Math.rint(LineUtil.xAtY(top, bot, yLine)); // Precise x value
 
                 final int y0 = getTheoreticalOrdinate(x0); // Precise y value
 
@@ -1493,13 +1493,13 @@ public class NoteHeadsBuilder
         @Override
         public int getLeftAbscissa ()
         {
-            return (int) Math.floor(line.getLeftPoint().getX());
+            return (int) Math.floor(line.getEndPoint(LEFT).getX());
         }
 
         @Override
         public int getRightAbscissa ()
         {
-            return (int) Math.floor(line.getRightPoint().getX());
+            return (int) Math.floor(line.getEndPoint(RIGHT).getX());
         }
 
         @Override

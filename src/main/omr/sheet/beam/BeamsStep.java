@@ -76,7 +76,7 @@ public class BeamsStep
         }
 
         if (vGaps.getCardinality() > 0) {
-            logger.info("{}InterBeam gaps {}", sheet.getLogPrefix(), vGaps);
+            logger.info("{}InterBeam{{}}", sheet.getLogPrefix(), vGaps);
         }
 
         sheet.setBeamGaps(vGaps);

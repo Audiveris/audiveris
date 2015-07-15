@@ -360,33 +360,6 @@ public class SIGraph
         return getRelations(inter, Exclusion.class);
     }
 
-    //----------//
-    // getInter //
-    //----------//
-    /**
-     * Report the (first) interpretation if any of desired class for
-     * the glyph at hand.
-     * TODO: Could we have several inters of desired class for the same glyph?
-     * Interpretations are no longer automatically linked back from
-     * glyph!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     *
-     * @param glyph  the underlying glyph
-     * @param classe the interpretation class desired
-     * @return the existing interpretation if any, or null
-     */
-    @Deprecated
-    public static Inter getInter (Glyph glyph,
-                                  Class classe)
-    {
-        for (Inter inter : glyph.getInterpretations()) {
-            if (classe.isInstance(inter)) {
-                return inter;
-            }
-        }
-
-        return null;
-    }
-
     //------------------//
     // getOppositeInter //
     //------------------//

@@ -12,7 +12,6 @@
 package omr.sig.inter;
 
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.sig.GradeImpacts;
 
@@ -31,16 +30,14 @@ public class SmallBeamInter
     /**
      * Creates a new SmallBeamInter object.
      *
-     * @param glyph   the underlying glyph
      * @param impacts the grade details
      * @param median  median beam line
      * @param height  beam height
      */
-    public SmallBeamInter (Glyph glyph,
-                           GradeImpacts impacts,
+    public SmallBeamInter (GradeImpacts impacts,
                            Line2D median,
                            double height)
     {
-        super(glyph, Shape.BEAM_SMALL, impacts, median, height);
+        super(Shape.BEAM_SMALL, impacts, median, height);
     }
 }

@@ -18,7 +18,6 @@ import omr.run.Run;
 import omr.run.RunTable;
 
 import omr.util.BaseTestCase;
-
 import static junit.framework.Assert.*;
 
 import java.awt.Point;
@@ -552,11 +551,11 @@ public class LagTest
     protected void setUp ()
     {
         vLag = new BasicLag("My Vertical Lag", Orientation.VERTICAL);
-        vTable = new RunTable("Vert Runs", Orientation.VERTICAL, 100, 200); // Absolute
+        vTable = new RunTable(Orientation.VERTICAL, 100, 200); // Absolute
         vLag.setRuns(vTable);
 
         hLag = new BasicLag("My Horizontal Lag", Orientation.HORIZONTAL);
-        hTable = new RunTable("Hori Runs", Orientation.HORIZONTAL, 100, 200); // Absolute
+        hTable = new RunTable(Orientation.HORIZONTAL, 100, 200); // Absolute
         hLag.setRuns(hTable);
     }
 

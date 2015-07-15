@@ -25,9 +25,12 @@ import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 import omr.util.VerticalSide;
+
 import static omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
@@ -96,6 +99,10 @@ public class StaffManager
     public StaffManager (Sheet sheet)
     {
         this.sheet = sheet;
+
+        for (SystemInfo system : sheet.getSystems()) {
+            staves.addAll(system.getStaves());
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -437,8 +444,7 @@ public class StaffManager
     // getStaves //
     //-----------//
     /**
-     * Report an unmodifiable view (perhaps empty) of list of current
-     * staves.
+     * Report an unmodifiable view (perhaps empty) of list of current staves.
      *
      * @return a view on staves
      */

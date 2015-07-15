@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.glyph.CompoundBuilder;
-import omr.glyph.CompoundBuilder.CompoundAdapter;
 import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
@@ -37,7 +35,9 @@ import omr.text.TextBuilder;
 import omr.text.TextLine;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -58,23 +58,30 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+
 /**
  * Class {@code SystemInfo} gathers information from the original picture about a
  * retrieved system.
  * <p>
  * Most of the OMR processing is done in parallel at system level.
  * <p>
- * This class is named {@code SystemInfo} to avoid name clash with ubiquitous
+ * This class is named {@code SystemInfo} to avoid continuous name clash with ubiquitous
  * {@code java.lang.System} class.
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class SystemInfo
         implements Comparable<SystemInfo>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(SystemInfo.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SystemInfo.class);
 
     /** To sort by system id. */
     public static final Comparator<SystemInfo> byId = new Comparator<SystemInfo>()
@@ -88,6 +95,26 @@ public class SystemInfo
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
+    /** Unique Id (sequential vertical number starting from 1 in containing sheet). */
+    @XmlAttribute(name = "id")
+    private final int id;
+
+    /** Real parts in this system (no dummy parts included). */
+    @XmlElement(name = "part")
+    private final List<Part> parts = new ArrayList<Part>();
+
+    /** Real staves of this system (no dummy staves included). */
+//    ///@XmlElementWrapper(name = "staves")
+//    @XmlElement(name = "staff")
+    private List<Staff> staves = new ArrayList<Staff>();
+
+    // Transient data
+    //---------------
+    //
     /** Containing sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -100,15 +127,6 @@ public class SystemInfo
 
     /** Dedicated text builder */
     private final TextBuilder textBuilder;
-
-    /** Dedicated compound builder */
-    private final CompoundBuilder compoundBuilder;
-
-    /** Real staves of this system (no dummy staves included). */
-    private List<Staff> staves = new ArrayList<Staff>();
-
-    /** Real parts in this system (no dummy parts included). */
-    private final List<Part> parts = new ArrayList<Part>();
 
     /** Measure stacks in this system. */
     private final List<MeasureStack> stacks = new ArrayList<MeasureStack>();
@@ -132,9 +150,6 @@ public class SystemInfo
 
     /** Set of text lines. */
     private final Set<TextLine> textLines = new LinkedHashSet<TextLine>();
-
-    /** Unique Id (sequential vertical number starting from 1 in containing sheet). */
-    private final int id;
 
     /** Area that encloses all items related to this system. */
     private Area area;
@@ -182,7 +197,17 @@ public class SystemInfo
 
         sig = new SIGraph(this);
         textBuilder = new TextBuilder(this);
-        compoundBuilder = new CompoundBuilder(this);
+    }
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private SystemInfo ()
+    {
+        this.id = 0;
+        this.sheet = null;
+        this.sig = null;
+        this.textBuilder = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -211,17 +236,6 @@ public class SystemInfo
     public void addToGlyphsCollection (Glyph glyph)
     {
         glyphs.add(glyph);
-    }
-
-    //---------------//
-    // buildCompound //
-    //---------------//
-    public Glyph buildCompound (Glyph seed,
-                                boolean includeSeed,
-                                Collection<Glyph> suitables,
-                                CompoundAdapter adapter)
-    {
-        return compoundBuilder.buildCompound(seed, includeSeed, suitables, adapter);
     }
 
     //-------------//
@@ -358,17 +372,6 @@ public class SystemInfo
     public Staff getClosestStaff (Point2D point)
     {
         return StaffManager.getClosestStaff(point, staves);
-    }
-
-    //--------------------//
-    // getCompoundBuilder //
-    //--------------------//
-    /**
-     * @return the compoundBuilder
-     */
-    public CompoundBuilder getCompoundBuilder ()
-    {
-        return compoundBuilder;
     }
 
     //-----------//
@@ -1172,19 +1175,6 @@ public class SystemInfo
         return width;
     }
 
-    //----------//
-    // idString //
-    //----------//
-    /**
-     * Convenient way to report a small system reference.
-     *
-     * @return system reference
-     */
-    public String idString ()
-    {
-        return "system#" + id;
-    }
-
     //------------//
     // isIndented //
     //------------//
@@ -1382,6 +1372,33 @@ public class SystemInfo
         this.page = page;
     }
 
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the IDs of the system collection.
+     *
+     * @param systems the collection of systems
+     * @return the string built
+     */
+    public static String toString (Collection<SystemInfo> systems)
+    {
+        if (systems == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(" systems[");
+
+        for (SystemInfo system : systems) {
+            sb.append("#").append(system.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
     //-----------//
     // setStaves //
     //-----------//
@@ -1397,6 +1414,35 @@ public class SystemInfo
         }
 
         updateCoordinates();
+    }
+
+    //-------------------//
+    // updateCoordinates //
+    //-------------------//
+    public final void updateCoordinates ()
+    {
+        Staff firstStaff = getFirstStaff();
+        LineInfo firstLine = firstStaff.getFirstLine();
+        Point2D topLeft = firstLine.getEndPoint(LEFT);
+
+        Staff lastStaff = getLastStaff();
+        LineInfo lastLine = lastStaff.getLastLine();
+        Point2D botLeft = lastLine.getEndPoint(LEFT);
+
+        left = Integer.MAX_VALUE;
+
+        int right = 0;
+
+        for (Staff staff : staves) {
+            left = Math.min(left, staff.getAbscissa(LEFT));
+            right = Math.max(right, staff.getAbscissa(RIGHT));
+        }
+
+        top = (int) Math.rint(topLeft.getY());
+        width = right - left + 1;
+        deltaY = (int) Math.rint(
+                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+        bottom = (int) Math.rint(botLeft.getY());
     }
 
     //
@@ -1431,69 +1477,13 @@ public class SystemInfo
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{System#").append(id);
-        sb.append(" T").append(getFirstStaff().getId());
-
-        if (staves.size() > 1) {
-            sb.append("..T").append(getLastStaff().getId());
-        }
-
+        //        sb.append(" T").append(getFirstStaff().getId());
+        //
+        //        if (staves.size() > 1) {
+        //            sb.append("..T").append(getLastStaff().getId());
+        //        }
+        //
         sb.append("}");
-
-        return sb.toString();
-    }
-
-    //-------------------//
-    // updateCoordinates //
-    //-------------------//
-    public final void updateCoordinates ()
-    {
-        Staff firstStaff = getFirstStaff();
-        LineInfo firstLine = firstStaff.getFirstLine();
-        Point2D topLeft = firstLine.getEndPoint(LEFT);
-
-        Staff lastStaff = getLastStaff();
-        LineInfo lastLine = lastStaff.getLastLine();
-        Point2D botLeft = lastLine.getEndPoint(LEFT);
-
-        left = Integer.MAX_VALUE;
-
-        int right = 0;
-
-        for (Staff staff : staves) {
-            left = Math.min(left, staff.getAbscissa(LEFT));
-            right = Math.max(right, staff.getAbscissa(RIGHT));
-        }
-
-        top = (int) Math.rint(topLeft.getY());
-        width = right - left + 1;
-        deltaY = (int) Math.rint(
-                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
-        bottom = (int) Math.rint(botLeft.getY());
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Convenient method, to build a string with just the IDs of the system collection.
-     *
-     * @param systems the collection of systems
-     * @return the string built
-     */
-    public static String toString (Collection<SystemInfo> systems)
-    {
-        if (systems == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(" systems[");
-
-        for (SystemInfo system : systems) {
-            sb.append("#").append(system.getId());
-        }
-
-        sb.append("]");
 
         return sb.toString();
     }

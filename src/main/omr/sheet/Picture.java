@@ -492,7 +492,7 @@ public class Picture
                 break;
 
             case MEDIAN:
-                // Built from no_staff, with short horizontal runs (stems) removed
+                // Built from no_staff
                 src = medianFiltered(getSource(SourceKey.NO_STAFF));
 
                 break;

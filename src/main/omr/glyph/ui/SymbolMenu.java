@@ -108,14 +108,14 @@ public class SymbolMenu
 
         if (glyphs != null) {
             for (Glyph glyph : glyphs) {
-                if (glyph.isKnown()) {
-                    knownNb++;
-
-                    if (glyph.getShape() == Shape.STEM) {
-                        stemNb++;
-                    }
-                }
-
+//                if (glyph.isKnown()) {
+//                    knownNb++;
+//
+//                    if (glyph.getShape() == Shape.STEM) {
+//                        stemNb++;
+//                    }
+//                }
+//
                 if (glyph.isVirtual()) {
                     virtualNb++;
                 }

@@ -16,6 +16,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.math.GeoOrder;
+import omr.math.LineUtil;
 import omr.math.Rational;
 
 import omr.sheet.Scale;
@@ -249,7 +250,7 @@ public class DotFactory
             // Select proper bar reference point (left or right side and proper vertical side)
             double barY = center.y
                           + ((box.height / 8d) * Integer.signum(dotPt.y - center.y));
-            double barX = bar.getMedian().xAtY(barY)
+            double barX = LineUtil.xAtY(bar.getMedian(), barY)
                           + ((bar.getWidth() / 2) * Integer.signum(dotPt.x - center.x));
 
             double xGap = Math.abs(barX - dotPt.x);

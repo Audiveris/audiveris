@@ -113,7 +113,7 @@ public class SectionFactory
                                          Point offset)
     {
         // Runs
-        RunTable runTable = new RunTableFactory(orientation).createTable("temp", buffer);
+        RunTable runTable = new RunTableFactory(orientation).createTable(buffer);
 
         return createSections(runTable, offset, false);
     }
@@ -135,7 +135,7 @@ public class SectionFactory
                                          Rectangle roi)
     {
         // Runs
-        RunTable runTable = new RunTableFactory(orientation).createTable("temp", buffer, roi);
+        RunTable runTable = new RunTableFactory(orientation).createTable(buffer, roi);
 
         // Create sections within roi/runtable
         List<Section> sections = createSections(runTable, offset, false);

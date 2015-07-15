@@ -14,12 +14,10 @@ package omr.sheet.grid;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphClassifier;
 import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphNest;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
-import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphComposition;
 
@@ -32,12 +30,13 @@ import omr.lag.SectionFactory;
 
 import omr.math.AreaUtil;
 import omr.math.AreaUtil.CoreData;
-import omr.math.BasicLine;
 import omr.math.GeoPath;
 import omr.math.GeoUtil;
 import omr.math.Histogram;
 import omr.math.PointUtil;
+
 import static omr.run.Orientation.*;
+
 import omr.run.RunTable;
 
 import omr.sheet.Part;
@@ -50,6 +49,7 @@ import omr.sheet.StaffManager;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 import omr.sheet.grid.PartGroup.Symbol;
+
 import static omr.sheet.grid.StaffPeak.Attribute.*;
 
 import omr.sig.GradeImpacts;
@@ -74,10 +74,13 @@ import omr.ui.util.UIUtil;
 
 import omr.util.Dumping;
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.IntUtil;
 import omr.util.Navigable;
 import omr.util.VerticalSide;
+
 import static omr.util.VerticalSide.*;
 
 import ij.process.ByteProcessor;
@@ -147,9 +150,6 @@ public class BarsRetriever
 
     /** Related staff manager. */
     private final StaffManager staffManager;
-
-    /** Shape classifier to use. */
-    private final ShapeEvaluator classifier = GlyphClassifier.getInstance();
 
     /** Staff projectors. */
     private final List<StaffProjector> projectors = new ArrayList<StaffProjector>();
@@ -762,12 +762,12 @@ public class BarsRetriever
                     }
 
                     StaffPeak.Bar peak = (StaffPeak.Bar) p;
-                    BasicLine median = new BasicLine(
-                            new double[]{
-                                (peak.getStart() + peak.getStop()) / 2d,
-                                (peak.getStart() + peak.getStop()) / 2d
-                            },
-                            new double[]{peak.getTop(), peak.getBottom()});
+                    double x = (peak.getStart() + peak.getStop()) / 2d;
+                    Line2D median = new Line2D.Double(
+                            x,
+                            peak.getTop(),
+                            x,
+                            peak.getBottom());
 
                     AbstractVerticalInter inter;
 

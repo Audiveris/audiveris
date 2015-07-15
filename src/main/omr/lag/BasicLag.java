@@ -393,7 +393,7 @@ public class BasicLag
             RunService runService = runTable.getRunService();
 
             if (runService == null) {
-                runTable.setRunService(runService = new RunService(runTable));
+                runTable.setRunService(runService = new RunService(getName() + "-runs", runTable));
             }
 
             runService.setLocationService(locationService);

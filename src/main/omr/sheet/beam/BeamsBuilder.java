@@ -437,7 +437,7 @@ public class BeamsBuilder
         Impacts impacts = computeHookImpacts(item, distImpact);
 
         if ((impacts != null) && (impacts.getGrade() >= BeamHookInter.getMinGrade())) {
-            BeamHookInter hook = new BeamHookInter(glyph, impacts, median, height);
+            BeamHookInter hook = new BeamHookInter(impacts, median, height);
 
             if (glyph.isVip()) {
                 hook.setVip();
@@ -613,7 +613,7 @@ public class BeamsBuilder
 
                     if ((impacts != null) && (impacts.getGrade() >= BeamHookInter.getMinGrade())) {
                         success = true;
-                        hook = new BeamHookInter(null, impacts, item.median, item.height);
+                        hook = new BeamHookInter(impacts, item.median, item.height);
 
                         if (line.isVip()) {
                             hook.setVip();
@@ -634,11 +634,7 @@ public class BeamsBuilder
                     if ((impacts != null) && (impacts.getGrade() >= FullBeamInter.getMinGrade())) {
                         success = true;
 
-                        FullBeamInter beam = new FullBeamInter(
-                                null,
-                                impacts,
-                                item.median,
-                                item.height);
+                        FullBeamInter beam = new FullBeamInter(impacts, item.median, item.height);
 
                         if (line.isVip()) {
                             beam.setVip();
@@ -709,11 +705,7 @@ public class BeamsBuilder
                         meanDist);
 
                 if ((impacts != null) && (impacts.getGrade() >= SmallBeamInter.getMinGrade())) {
-                    SmallBeamInter beam = new SmallBeamInter(
-                            null,
-                            impacts,
-                            item.median,
-                            item.height);
+                    SmallBeamInter beam = new SmallBeamInter(impacts, item.median, item.height);
 
                     if (item.isVip()) {
                         beam.setVip();
@@ -1027,7 +1019,7 @@ public class BeamsBuilder
         Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact);
 
         if ((impacts != null) && (impacts.getGrade() >= FullBeamInter.getMinGrade())) {
-            FullBeamInter newBeam = new FullBeamInter(null, impacts, newMedian, height);
+            FullBeamInter newBeam = new FullBeamInter(impacts, newMedian, height);
 
             if (beam.isVip()) {
                 newBeam.setVip();
@@ -1341,12 +1333,9 @@ public class BeamsBuilder
             double x = (maxLeft + minRight) / 2;
 
             // Measure actual vertical gap at this abscissa
-            Point2D p1 = LineUtil.intersectionAtX(m1, x);
-            Point2D p2 = LineUtil.intersectionAtX(m2, x);
-
-            double gap = Math.max(
-                    0,
-                    Math.abs(p2.getY() - p1.getY()) - ((one.getHeight() + two.getHeight()) / 2));
+            double y1 = LineUtil.yAtX(m1, x);
+            double y2 = LineUtil.yAtX(m2, x);
+            double gap = Math.max(0, Math.abs(y2 - y1) - ((one.getHeight() + two.getHeight()) / 2));
             vGaps.includeValue(gap);
         }
     }
@@ -1396,7 +1385,7 @@ public class BeamsBuilder
         Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact);
 
         if ((impacts != null) && (impacts.getGrade() >= FullBeamInter.getMinGrade())) {
-            return new FullBeamInter(null, impacts, median, height);
+            return new FullBeamInter(impacts, median, height);
         } else {
             return null;
         }

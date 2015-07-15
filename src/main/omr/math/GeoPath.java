@@ -283,9 +283,8 @@ public class GeoPath
     // xAtYExt //
     //---------//
     /**
-     * Similar functionality as xAtY, but also accepts ordinates
-     * outside the line ordinate range but extrapolating the line
-     * based on start and stop points.
+     * Similar functionality as xAtY, but also accepts ordinates outside the line
+     * ordinate range by extrapolating the line based on start and stop points.
      *
      * @param y the provided ordinate
      * @return the abscissa value at this ordinate
@@ -351,9 +350,8 @@ public class GeoPath
     // yAtXExt //
     //---------//
     /**
-     * Similar functionality as yAtX, but also accepts abscissae
-     * outside the spline abscissa range but extrapolating the line
-     * based on start and stop points.
+     * Similar functionality as yAtX, but also accepts abscissae outside the spline
+     * abscissa range by extrapolating the line based on start and stop points.
      *
      * @param x the provided abscissa
      * @return the ordinate value at this abscissa
@@ -407,8 +405,7 @@ public class GeoPath
     // getXSegment //
     //-------------//
     /**
-     * Retrieve the first segment of the curve that contains the
-     * provided abscissa.
+     * Retrieve the first segment of the curve that contains the provided abscissa.
      *
      * @param x      the provided abscissa
      * @param coords output: coordinates
@@ -454,8 +451,7 @@ public class GeoPath
     // getYSegment //
     //-------------//
     /**
-     * Retrieve the first segment of the curve that contains the
-     * provided ordinate.
+     * Retrieve the first segment of the curve that contains the provided ordinate.
      *
      * @param y      the provided ordinate
      * @param coords output: coordinates

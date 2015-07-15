@@ -282,7 +282,8 @@ public class EndingsBuilder
                 continue;
             }
 
-            double leftDist = Math.abs(leftBar.getMedian().xAtY(leftEnd.y) - leftEnd.x);
+            double leftDist = Math.abs(
+                    LineUtil.xAtY(leftBar.getMedian(), leftEnd.y) - leftEnd.x);
 
             // Right leg (optional)
             Glyph rightLeg = lookupLeg(seg, false, staff);
@@ -294,7 +295,8 @@ public class EndingsBuilder
                 continue;
             }
 
-            double rightDist = Math.abs(rightBar.getMedian().xAtY(rightEnd.y) - rightEnd.x);
+            double rightDist = Math.abs(
+                    LineUtil.xAtY(rightBar.getMedian(), rightEnd.y) - rightEnd.x);
 
             // Create ending inter
             GradeImpacts segImp = segment.getImpacts();

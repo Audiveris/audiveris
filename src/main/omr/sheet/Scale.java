@@ -849,7 +849,7 @@ public class Scale
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("stem");
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
             sb.append('{');
             sb.append("main:").append(main);
             sb.append(" max:").append(max);

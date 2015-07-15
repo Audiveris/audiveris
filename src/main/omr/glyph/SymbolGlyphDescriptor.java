@@ -67,14 +67,6 @@ public class SymbolGlyphDescriptor
     @XmlAttribute
     private String name;
 
-    /** How many stems is it connected to ? */
-    @XmlElement(name = "stem-number")
-    private Integer stemNumber;
-
-    /** Connected to Ledger ? */
-    @XmlElement(name = "with-ledger")
-    private Boolean withLedger;
-
     /** Pitch position within staff lines */
     @XmlElement(name = "pitch-position")
     private Double pitchPosition;
@@ -133,32 +125,6 @@ public class SymbolGlyphDescriptor
         return refPoint;
     }
 
-    //---------------//
-    // getStemNumber //
-    //---------------//
-    /**
-     * Report the number of stems this entity is connected to
-     *
-     * @return the number of stems
-     */
-    public Integer getStemNumber ()
-    {
-        return stemNumber;
-    }
-
-    //--------------//
-    // isWithLedger //
-    //--------------//
-    /**
-     * Is this entity connected to a ledger
-     *
-     * @return true if there is at least one ledger
-     */
-    public Boolean isWithLedger ()
-    {
-        return withLedger;
-    }
-
     //-------------------//
     // loadFromXmlStream //
     //-------------------//
@@ -195,14 +161,6 @@ public class SymbolGlyphDescriptor
 
         if (interline != null) {
             sb.append(" interline:").append(interline);
-        }
-
-        if (stemNumber != null) {
-            sb.append(" stem-number:").append(stemNumber);
-        }
-
-        if (withLedger != null) {
-            sb.append(" with-ledger:").append(withLedger);
         }
 
         if (pitchPosition != null) {

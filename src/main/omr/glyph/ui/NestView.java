@@ -26,11 +26,6 @@ import omr.score.ui.PaintingParameters;
 
 import omr.sheet.Sheet;
 
-import omr.text.FontInfo;
-import omr.text.TextChar;
-import omr.text.TextLine;
-import omr.text.TextWord;
-
 import omr.ui.Colors;
 import omr.ui.util.UIUtil;
 import omr.ui.view.RubberPanel;
@@ -44,8 +39,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
-import java.awt.geom.Path2D;
-import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -205,21 +198,21 @@ public class NestView
                     for (Section section : glyph.getMembers()) {
                         section.render(g, drawBorders, Colors.GLYPH_CURRENT);
                     }
-
-                    // Draw character boxes for textual glyphs?
-                    if (glyph.isText()) {
-                        if (ViewParameters.getInstance().isLetterBoxPainting()) {
-                            TextWord word = glyph.getTextWord();
-
-                            if (word != null) {
-                                for (TextChar ch : word.getChars()) {
-                                    Rectangle b = ch.getBounds();
-                                    g.drawRect(b.x, b.y, b.width, b.height);
-                                }
-                            }
-                        }
-                    }
-
+//
+//                    // Draw character boxes for textual glyphs?
+//                    if (glyph.isText()) {
+//                        if (ViewParameters.getInstance().isLetterBoxPainting()) {
+//                            TextWord word = glyph.getTextWord();
+//
+//                            if (word != null) {
+//                                for (TextChar ch : word.getChars()) {
+//                                    Rectangle b = ch.getBounds();
+//                                    g.drawRect(b.x, b.y, b.width, b.height);
+//                                }
+//                            }
+//                        }
+//                    }
+//
                     // Draw attachments, if any
                     glyph.renderAttachments(g);
 
@@ -245,13 +238,13 @@ public class NestView
                 }
 
                 g2.dispose();
-
-                // Display words of a sentence, if any
-                if (ViewParameters.getInstance().isSentencePainting()) {
-                    for (Glyph glyph : glyphs) {
-                        renderGlyphSentence(glyph, g);
-                    }
-                }
+//
+//                // Display words of a sentence, if any
+//                if (ViewParameters.getInstance().isSentencePainting()) {
+//                    for (Glyph glyph : glyphs) {
+//                        renderGlyphSentence(glyph, g);
+//                    }
+//                }
 //
 //                // Display translation links, if any
 //                if (ViewParameters.getInstance().isTranslationPainting()) {
@@ -273,83 +266,83 @@ public class NestView
             }
         }
     }
-
-    //---------------------//
-    // renderGlyphSentence //
-    //---------------------//
-    /**
-     * Display the relation between the glyph/word at hand and the other words of the
-     * same containing sentence
-     *
-     * @param glyph the provided selected glyph
-     * @param g     graphic context
-     */
-    private void renderGlyphSentence (Glyph glyph,
-                                      Graphics2D g)
-    {
-        if (glyph.getTextWord() == null) {
-            return;
-        }
-
-        TextLine sentence = glyph.getTextWord().getTextLine();
-        Color oldColor = g.getColor();
-
-        if (constants.showSentenceBaseline.isSet()) {
-            // Display the whole sentence baseline
-            g.setColor(Colors.SENTENCE_BASELINE);
-
-            Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-
-            Path2D path = new Path2D.Double();
-            TextWord prevWord = null;
-
-            for (TextWord word : sentence.getWords()) {
-                Point2D left = word.getBaseline().getP1();
-
-                if (prevWord == null) {
-                    path.moveTo(left.getX(), left.getY());
-                } else {
-                    path.lineTo(left.getX(), left.getY());
-                }
-
-                Point2D right = word.getBaseline().getP2();
-                path.lineTo(right.getX(), right.getY());
-                prevWord = word;
-            }
-
-            g.draw(path);
-
-            g.setStroke(oldStroke);
-        } else {
-            // Display a x-height rectangle between words
-            g.setColor(Colors.SENTENCE_GAPS);
-
-            FontInfo font = sentence.getMeanFont();
-            double height = font.pointsize * 0.4f; // TODO: Explain this 0.4
-
-            TextWord prevWord = null;
-
-            for (TextWord word : sentence.getWords()) {
-                if (prevWord != null) {
-                    Path2D path = new Path2D.Double();
-                    Point2D from = prevWord.getBaseline().getP2();
-                    path.moveTo(from.getX(), from.getY());
-                    path.lineTo(from.getX(), from.getY() - height);
-
-                    Point2D to = word.getBaseline().getP1();
-                    path.lineTo(to.getX(), to.getY() - height);
-                    path.lineTo(to.getX(), to.getY());
-                    path.closePath();
-
-                    g.fill(path);
-                }
-
-                prevWord = word;
-            }
-        }
-
-        g.setColor(oldColor);
-    }
+//
+//    //---------------------//
+//    // renderGlyphSentence //
+//    //---------------------//
+//    /**
+//     * Display the relation between the glyph/word at hand and the other words of the
+//     * same containing sentence
+//     *
+//     * @param glyph the provided selected glyph
+//     * @param g     graphic context
+//     */
+//    private void renderGlyphSentence (Glyph glyph,
+//                                      Graphics2D g)
+//    {
+//        if (glyph.getTextWord() == null) {
+//            return;
+//        }
+//
+//        TextLine sentence = glyph.getTextWord().getTextLine();
+//        Color oldColor = g.getColor();
+//
+//        if (constants.showSentenceBaseline.isSet()) {
+//            // Display the whole sentence baseline
+//            g.setColor(Colors.SENTENCE_BASELINE);
+//
+//            Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+//
+//            Path2D path = new Path2D.Double();
+//            TextWord prevWord = null;
+//
+//            for (TextWord word : sentence.getWords()) {
+//                Point2D left = word.getBaseline().getP1();
+//
+//                if (prevWord == null) {
+//                    path.moveTo(left.getX(), left.getY());
+//                } else {
+//                    path.lineTo(left.getX(), left.getY());
+//                }
+//
+//                Point2D right = word.getBaseline().getP2();
+//                path.lineTo(right.getX(), right.getY());
+//                prevWord = word;
+//            }
+//
+//            g.draw(path);
+//
+//            g.setStroke(oldStroke);
+//        } else {
+//            // Display a x-height rectangle between words
+//            g.setColor(Colors.SENTENCE_GAPS);
+//
+//            FontInfo font = sentence.getMeanFont();
+//            double height = font.pointsize * 0.4f; // TODO: Explain this 0.4
+//
+//            TextWord prevWord = null;
+//
+//            for (TextWord word : sentence.getWords()) {
+//                if (prevWord != null) {
+//                    Path2D path = new Path2D.Double();
+//                    Point2D from = prevWord.getBaseline().getP2();
+//                    path.moveTo(from.getX(), from.getY());
+//                    path.lineTo(from.getX(), from.getY() - height);
+//
+//                    Point2D to = word.getBaseline().getP1();
+//                    path.lineTo(to.getX(), to.getY() - height);
+//                    path.lineTo(to.getX(), to.getY());
+//                    path.closePath();
+//
+//                    g.fill(path);
+//                }
+//
+//                prevWord = word;
+//            }
+//        }
+//
+//        g.setColor(oldColor);
+//    }
 //
 //    //-------------------------//
 //    // renderGlyphTranslations //

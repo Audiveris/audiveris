@@ -14,6 +14,8 @@ package omr.step;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.GlyphFactory;
+
 import omr.image.FilterDescriptor;
 import omr.image.PixelFilter;
 
@@ -98,11 +100,14 @@ public class BinaryStep
         watch.start("Create binary RunTable");
 
         RunTableFactory vertFactory = new RunTableFactory(Orientation.VERTICAL);
-        RunTable wholeVertTable = vertFactory.createTable("vertBinary", binary);
+        RunTable wholeVertTable = vertFactory.createTable(binary);
         picture.setTable(Picture.TableKey.BINARY, wholeVertTable);
 
         // To discard image
         picture.disposeSource(SourceKey.INITIAL);
+
+        watch.start("marked");
+        GlyphFactory.createGlyphs(wholeVertTable, null);
 
         if (constants.printWatch.isSet()) {
             watch.print();

@@ -1035,8 +1035,7 @@ public class StemsBuilder
                         // Use stem line to compute both xGap and yGap
                         Point2D start = stemGlyph.getStartPoint(VERTICAL);
                         Point2D stop = stemGlyph.getStopPoint(VERTICAL);
-                        Point2D crossPt = LineUtil.intersectionAtY(start, stop, refPt.getY());
-                        xAnchor = crossPt.getX();
+                        xAnchor = LineUtil.xAtY(start, stop, refPt.getY());
                         xGap = xDir * (xAnchor - refPt.getX());
 
                         if (refPt.getY() < start.getY()) {
@@ -1103,21 +1102,18 @@ public class StemsBuilder
                     logger.info("VIP createStemInter for {}", stem);
                 }
 
-                // Stem interpretation (if not yet present)
-                StemInter stemInter = (StemInter) sig.getInter(stem, StemInter.class);
+                // Stem interpretation
+                GradeImpacts impacts = verticalsBuilder.checkStem(stem);
+                double grade = impacts.getGrade();
 
-                if (stemInter == null) {
-                    GradeImpacts impacts = verticalsBuilder.checkStem(stem);
-                    double grade = impacts.getGrade();
+                if (grade >= StemInter.getMinGrade()) {
+                    StemInter stemInter = new StemInter(stem, impacts);
+                    sig.addVertex(stemInter);
 
-                    if (grade >= StemInter.getMinGrade()) {
-                        stemInter = new StemInter(stem, impacts);
-                        stem.addInterpretation(stemInter); // Manually !!!!!!!!!!!! TODO
-                        sig.addVertex(stemInter);
-                    }
+                    return stemInter;
+                } else {
+                    return null;
                 }
-
-                return stemInter;
             }
 
             //----------//

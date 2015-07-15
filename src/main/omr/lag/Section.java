@@ -195,8 +195,7 @@ public interface Section
                            Rectangle box);
 
     /**
-     * Return the <b>absolute</b> line which best approximates the
-     * section.
+     * Return the <b>absolute</b> line which best approximates the section.
      *
      * @return the absolute fitted line
      * @see #getOrientedLine()
@@ -211,8 +210,7 @@ public interface Section
     public Point getAreaCenter ();
 
     /**
-     * Report the ratio of length over thickness, along provided
-     * orientation.
+     * Report the ratio of length over thickness, along provided orientation.
      *
      * @param orientation the desired orientation
      * @return the "slimness" of the section
@@ -228,8 +226,8 @@ public interface Section
     public Rectangle getBounds ();
 
     /**
-     * Return the absolute point which is at the mass center of the
-     * section, with all pixels considered of equal weight.
+     * Return the absolute point which is at the mass center of the section, with all
+     * pixels considered of equal weight.
      *
      * @return the mass center of the section, as a absolute point
      */

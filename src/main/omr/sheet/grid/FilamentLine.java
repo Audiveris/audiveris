@@ -58,6 +58,13 @@ public class FilamentLine
         add(fil);
     }
 
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private FilamentLine ()
+    {
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
@@ -118,24 +125,6 @@ public class FilamentLine
     public int getId ()
     {
         return fil.getId();
-    }
-
-    //--------------//
-    // getLeftPoint //
-    //--------------//
-    @Override
-    public Point2D getLeftPoint ()
-    {
-        return getStartPoint();
-    }
-
-    //---------------//
-    // getRightPoint //
-    //---------------//
-    @Override
-    public Point2D getRightPoint ()
-    {
-        return getStopPoint();
     }
 
     //-------------//
@@ -245,14 +234,14 @@ public class FilamentLine
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("Line#");
-        sb.append(fil.getClusterPos());
-        sb.append("[");
-
-        sb.append("F").append(fil.getId());
-
-        sb.append("]");
-
-        sb.append(fil.trueLength());
+//        sb.append(fil.getClusterPos());
+//        sb.append("[");
+//
+//        sb.append("F").append(fil.getId());
+//
+//        sb.append("]");
+//
+//        sb.append(fil.trueLength());
 
         return sb.toString();
     }

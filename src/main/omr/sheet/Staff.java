@@ -28,9 +28,12 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.LedgerInter;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 import omr.util.VerticalSide;
+
 import static omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
@@ -59,6 +62,11 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+
 /**
  * Class {@code Staff} handles physical information of a staff with its lines.
  * <p>
@@ -67,6 +75,7 @@ import java.util.TreeSet;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class Staff
         implements AttachmentHolder
 {
@@ -98,6 +107,29 @@ public class Staff
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
+    /** Staff id. (counted globally from 1 within the sheet) */
+    @XmlAttribute
+    private final int id;
+
+    /** Left extrema. (abscissa at beginning of lines) */
+    @XmlAttribute
+    private int left;
+
+    /** Right extrema. (abscissa at end of lines) */
+    @XmlAttribute
+    private int right;
+
+    /** Sequence of staff lines. (from top to bottom) */
+    @XmlElement(name = "line")
+    private final List<FilamentLine> lines;
+
+    // Transient data
+    //---------------
+    //
     /** To flag a dummy staff. */
     private boolean dummy;
 
@@ -110,16 +142,10 @@ public class Staff
      * There is no need to be very precise, but a staff line cannot belong to several staff areas.
      * Horizontally, the area is extended half way to the next staff if any, otherwise to the limit
      * of the page.
-     * Vertically, the area is extended to the first line (exclusive) of next staff if any,
-     * otherwise to the limit of the page.
+     * Vertically, the area is extended to the first encountered line (exclusive) of the next staff
+     * if any, otherwise to the limit of the page.
      */
     private Area area;
-
-    /** Staff id. (counted from 1 within the sheet) */
-    private final int id;
-
-    /** Sequence of staff lines. (from top to bottom) */
-    private final List<FilamentLine> lines;
 
     /**
      * Scale specific to this staff. [not used for the time being]
@@ -127,14 +153,8 @@ public class Staff
      */
     private final Scale specificScale;
 
-    /** Left extrema. (beginning of lines) */
-    private int left;
-
     /** Staff Header information. */
     private StaffHeader header;
-
-    /** Right extrema. (end of lines) */
-    private int right;
 
     /** Flag for short staff. (With a neighbor staff on left or right side) */
     private boolean isShort;
@@ -182,52 +202,17 @@ public class Staff
         this.lines = lines;
     }
 
+    /**
+     * No-arg constructore needed for JAXB.
+     */
+    public Staff ()
+    {
+        this.id = 0;
+        this.lines = null;
+        this.specificScale = null;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------------//
-    // getLedgerLineIndex //
-    //--------------------//
-    /**
-     * Compute staff-based line index, based on provided pitch position
-     *
-     * @param pitchPosition the provided pitch position
-     * @return the computed line index
-     */
-    public static int getLedgerLineIndex (double pitchPosition)
-    {
-        if (pitchPosition > 0) {
-            return (int) Math.rint(pitchPosition / 2) - 2;
-        } else {
-            return (int) Math.rint(pitchPosition / 2) + 2;
-        }
-    }
-
-    //------------------------//
-    // getLedgerPitchPosition //
-    //------------------------//
-    /**
-     * Report the pitch position of a ledger WRT the related staff.
-     * <p>
-     * TODO: This implementation assumes a 5-line staff.
-     * But can we have ledgers on a staff with more (of less) than 5 lines?
-     *
-     * @param lineIndex the ledger line index
-     * @return the ledger pitch position
-     */
-    public static int getLedgerPitchPosition (int lineIndex)
-    {
-        //        // Safer, for the time being...
-        //        if (getStaff()
-        //                .getLines()
-        //                .size() != 5) {
-        //            throw new RuntimeException("Only 5-line staves are supported");
-        //        }
-        if (lineIndex > 0) {
-            return 4 + (2 * lineIndex);
-        } else {
-            return -4 + (2 * lineIndex);
-        }
-    }
-
     //
     //---------------//
     // addAttachment //
@@ -561,6 +546,51 @@ public class Staff
     public FilamentLine getFirstLine ()
     {
         return lines.get(0);
+    }
+
+    //--------------------//
+    // getLedgerLineIndex //
+    //--------------------//
+    /**
+     * Compute staff-based line index, based on provided pitch position
+     *
+     * @param pitchPosition the provided pitch position
+     * @return the computed line index
+     */
+    public static int getLedgerLineIndex (double pitchPosition)
+    {
+        if (pitchPosition > 0) {
+            return (int) Math.rint(pitchPosition / 2) - 2;
+        } else {
+            return (int) Math.rint(pitchPosition / 2) + 2;
+        }
+    }
+
+    //------------------------//
+    // getLedgerPitchPosition //
+    //------------------------//
+    /**
+     * Report the pitch position of a ledger WRT the related staff.
+     * <p>
+     * TODO: This implementation assumes a 5-line staff.
+     * But can we have ledgers on a staff with more (of less) than 5 lines?
+     *
+     * @param lineIndex the ledger line index
+     * @return the ledger pitch position
+     */
+    public static int getLedgerPitchPosition (int lineIndex)
+    {
+        //        // Safer, for the time being...
+        //        if (getStaff()
+        //                .getLines()
+        //                .size() != 5) {
+        //            throw new RuntimeException("Only 5-line staves are supported");
+        //        }
+        if (lineIndex > 0) {
+            return 4 + (2 * lineIndex);
+        } else {
+            return -4 + (2 * lineIndex);
+        }
     }
 
     //-----------//
@@ -1281,12 +1311,12 @@ public class Staff
      */
     public boolean yOverlaps (Staff that)
     {
-        final double thisTop = this.getFirstLine().getLeftPoint().getY();
-        final double thatTop = that.getFirstLine().getLeftPoint().getY();
+        final double thisTop = this.getFirstLine().getEndPoint(LEFT).getY();
+        final double thatTop = that.getFirstLine().getEndPoint(LEFT).getY();
         final double commonTop = Math.max(thisTop, thatTop);
 
-        final double thisBottom = this.getLastLine().getLeftPoint().getY();
-        final double thatBottom = that.getLastLine().getLeftPoint().getY();
+        final double thisBottom = this.getLastLine().getEndPoint(LEFT).getY();
+        final double thatBottom = that.getLastLine().getEndPoint(LEFT).getY();
         final double commonBottom = Math.min(thisBottom, thatBottom);
 
         return commonBottom > commonTop;

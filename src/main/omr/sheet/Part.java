@@ -37,9 +37,15 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 
 /**
  * Class {@code Part} is the <b>physical</b> gathering of {@link Staff} instances in an
@@ -71,11 +77,13 @@ import java.util.TreeSet;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class Part
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(Part.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Part.class);
 
     /** For comparing Part instances according to their id. */
     public static final Comparator<Part> byId = new Comparator<Part>()
@@ -89,24 +97,34 @@ public class Part
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
+    /** Staves in this part. */
+    @XmlElement(name = "staff")
+    private final List<Staff> staves = new ArrayList<Staff>();
+
+    /** Id of this part within the system, starting at -1 or +1. */
+    @XmlAttribute
+    private int id;
+
+    /** Name, if any, that faces this system part. */
+    @XmlAttribute
+    private String name;
+
+    // Transient data
+    //---------------
+    //
     /** Flag to indicate this system part is just a placeholder. */
     private boolean dummy;
 
     /** The containing system. */
     @Navigable(false)
-    private final SystemInfo system;
-
-    /** Id of this part within the system, starting at -1 or +1. */
-    private int id;
-
-    /** Name, if any, that faces this system part. */
-    private String name;
+    private SystemInfo system;
 
     /** The corresponding LogicalPart. */
     private LogicalPart logicalPart;
-
-    /** Staves in this part. */
-    private final List<Staff> staves = new ArrayList<Staff>();
 
     /** Starting bar-line, if any. (the others are linked to measures) */
     private PartBarline startingBarline;
@@ -129,6 +147,13 @@ public class Part
     public Part (SystemInfo system)
     {
         this.system = system;
+    }
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private Part ()
+    {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -633,6 +658,30 @@ public class Part
     public boolean isDummy ()
     {
         return dummy;
+    }
+
+    //-----------------//
+    // purgeContainers //
+    //-----------------//
+    public void purgeContainers ()
+    {
+        // Slurs
+        for (Iterator<SlurInter> it = slurs.iterator(); it.hasNext();) {
+            SlurInter slur = it.next();
+
+            if (slur.isDeleted()) {
+                it.remove();
+            }
+        }
+
+        // Lyrics
+        for (Iterator<LyricLineInter> it = lyrics.iterator(); it.hasNext();) {
+            LyricLineInter lyric = it.next();
+
+            if (lyric.isDeleted()) {
+                it.remove();
+            }
+        }
     }
 
     //----------//

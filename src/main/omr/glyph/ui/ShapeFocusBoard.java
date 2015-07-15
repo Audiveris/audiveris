@@ -194,17 +194,17 @@ public class ShapeFocusBoard
      */
     public boolean isDisplayed (Glyph glyph)
     {
-        switch ((Filter) filterButton.getSelectedItem()) {
-        case KNOWN:
-            return (glyph != null) && glyph.isKnown();
-
-        case UNKNOWN:
-            return (glyph == null) || !glyph.isKnown();
-
-        default:
-        case ALL:
-            return true;
-        }
+//        switch ((Filter) filterButton.getSelectedItem()) {
+//        case KNOWN:
+//            return (glyph != null) && glyph.isKnown();
+//
+//        case UNKNOWN:
+//            return (glyph == null) || !glyph.isKnown();
+//
+//        default:
+//        case ALL:
+        return true;
+//        }
     }
 
     //---------//

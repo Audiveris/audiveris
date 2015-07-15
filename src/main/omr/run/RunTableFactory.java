@@ -78,17 +78,15 @@ public class RunTableFactory
     /**
      * Report the RunTable created with the runs retrieved from the provided source.
      *
-     * @param name   the name to be assigned to the table
      * @param source the source to read runs from.
      * @return a populated RunTable
      */
-    public RunTable createTable (String name,
-                                 ByteProcessor source)
+    public RunTable createTable (ByteProcessor source)
     {
         // ROI is defined as the whole source
         final Rectangle roi = new Rectangle(0, 0, source.getWidth(), source.getHeight());
 
-        return createTable(name, source, roi);
+        return createTable(source, roi);
     }
 
     //
@@ -98,16 +96,14 @@ public class RunTableFactory
     /**
      * Report the RunTable created with the runs retrieved from the provided source.
      *
-     * @param name   the name to be assigned to the table
      * @param source the source to read runs from.
      * @param roi    region of interest (its coordinates are relative to the source)
      * @return a populated RunTable
      */
-    public RunTable createTable (String name,
-                                 ByteProcessor source,
+    public RunTable createTable (ByteProcessor source,
                                  Rectangle roi)
     {
-        RunTable table = new RunTable(name, orientation, roi.width, roi.height);
+        RunTable table = new RunTable(orientation, roi.width, roi.height);
         RunsRetriever retriever = new RunsRetriever(
                 orientation,
                 orientation.isVertical() ? new VerticalAdapter(source, table, roi.getLocation())

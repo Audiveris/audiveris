@@ -662,7 +662,7 @@ public class SigReducer
      */
     private void analyzeFrozenInters ()
     {
-        List<Inter> toDelete = new ArrayList<Inter>();
+        Set<Inter> toDelete = new HashSet<Inter>();
 
         for (Inter inter : sig.vertexSet()) {
             if (inter.isFrozen()) {

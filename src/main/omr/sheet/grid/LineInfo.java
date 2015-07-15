@@ -55,20 +55,6 @@ public interface LineInfo
     int getId ();
 
     /**
-     * Selector for the left point of the line
-     *
-     * @return left point
-     */
-    Point2D getLeftPoint ();
-
-    /**
-     * Selector for the right point of the line
-     *
-     * @return right point
-     */
-    Point2D getRightPoint ();
-
-    /**
      * Report the lag sections that compose the staff line
      *
      * @return a collection of the line sections

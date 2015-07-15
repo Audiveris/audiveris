@@ -12,7 +12,6 @@
 package omr.sig.inter;
 
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.math.AreaUtil;
 
@@ -65,20 +64,19 @@ public abstract class AbstractBeamInter
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractBeamInter object.
+     * Note there is no underlying glyph, cleaning will be based on beam area.
      *
-     * @param glyph   the underlying glyph
      * @param shape   BEAM or BEAM_HOOK
      * @param impacts the grade details
      * @param median  median beam line
      * @param height  beam height
      */
-    protected AbstractBeamInter (Glyph glyph,
-                                 Shape shape,
+    protected AbstractBeamInter (Shape shape,
                                  GradeImpacts impacts,
                                  Line2D median,
                                  double height)
     {
-        super(glyph, null, shape, impacts);
+        super(null, null, shape, impacts);
         this.median = median;
         this.height = height;
 

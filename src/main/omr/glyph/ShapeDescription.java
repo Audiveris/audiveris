@@ -22,7 +22,7 @@ public abstract class ShapeDescription
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** This instances defines which descriptor is used by application. */
+    /** This instance defines which descriptor is used by application. */
     private static final Descriptor INSTANCE
             // = new ShapeDescriptorGeo() //
             // = new ShapeDescriptorART() //

@@ -12,7 +12,6 @@
 package omr.sig.inter;
 
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.sig.GradeImpacts;
 
@@ -33,17 +32,15 @@ public class BeamHookInter
     /**
      * Creates a new HookInter object.
      *
-     * @param glyph   the underlying glyph
      * @param impacts the grade details
      * @param median  median beam line
      * @param height  beam height
      */
-    public BeamHookInter (Glyph glyph,
-                          GradeImpacts impacts,
+    public BeamHookInter (GradeImpacts impacts,
                           Line2D median,
                           double height)
     {
-        super(glyph, Shape.BEAM_HOOK, impacts, median, height);
+        super(Shape.BEAM_HOOK, impacts, median, height);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

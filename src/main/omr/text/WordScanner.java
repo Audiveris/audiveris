@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.util.List;
+import omr.sig.inter.LyricItemInter;
 
 /**
  * Class {@code WordScanner} is a scanner to retrieve words out of a string content,
@@ -167,7 +168,7 @@ public abstract class WordScanner
                 if (WordSb.length() > 0) {
                     return WordSb.toString();
                 }
-            } else if (bySyllable && BasicContent.isSeparator(charValue)) {
+            } else if (bySyllable && LyricItemInter.isSeparator(charValue)) {
                 // Special characters (returned as stand-alone words)
                 if (WordSb.length() > 0) {
                     strIndex--; // To get back to this index, next time

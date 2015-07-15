@@ -213,11 +213,11 @@ public abstract class AbstractInter
     public void delete ()
     {
         if (!deleted) {
-            deleted = true;
-
             if (isVip()) {
                 logger.info("VIP delete {}", this);
             }
+
+            deleted = true;
 
             if (ensemble instanceof InterMutableEnsemble) {
                 InterMutableEnsemble ime = (InterMutableEnsemble) ensemble;
@@ -231,10 +231,6 @@ public abstract class AbstractInter
 
             if (sig != null) {
                 sig.removeVertex(this);
-            }
-
-            if (glyph != null) {
-                glyph.getInterpretations().remove(this);
             }
         }
     }
@@ -846,10 +842,6 @@ public abstract class AbstractInter
         }
 
         deleted = false;
-
-        if (glyph != null) {
-            glyph.getInterpretations().add(this);
-        }
     }
 
     //-----------//

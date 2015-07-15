@@ -48,14 +48,16 @@ public class RunTableView
     /**
      * Creates a new {@code RunTableView} object.
      *
+     * @param name            name for the view
      * @param table           the underlying table of runs
      * @param locationService the service where locations are retrieved from
      */
-    public RunTableView (RunTable table,
+    public RunTableView (String name,
+                         RunTable table,
                          SelectionService locationService)
     {
         this.table = table;
-        setName(table.getName());
+        setName(name);
 
         // Location service
         setLocationService(locationService);

@@ -35,9 +35,6 @@ class BasicAdministration
     /** Glyph instance identifier. (Unique in the containing nest) */
     protected int id;
 
-    /** Flag to remember processing has been done. */
-    private boolean processed = false;
-
     /** VIP flag. */
     protected boolean vip;
 
@@ -120,15 +117,6 @@ class BasicAdministration
     }
 
     //-------------//
-    // isProcessed //
-    //-------------//
-    @Override
-    public boolean isProcessed ()
-    {
-        return processed;
-    }
-
-    //-------------//
     // isTransient //
     //-------------//
     @Override
@@ -172,15 +160,6 @@ class BasicAdministration
     public void setNest (GlyphNest nest)
     {
         this.nest = nest;
-    }
-
-    //--------------//
-    // setProcessed //
-    //--------------//
-    @Override
-    public void setProcessed (boolean processed)
-    {
-        this.processed = processed;
     }
 
     //--------//

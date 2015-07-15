@@ -14,9 +14,7 @@ package omr.glyph;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.BasicLag;
 import omr.lag.JunctionAllPolicy;
-import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionFactory;
 
@@ -48,13 +46,6 @@ public class SymbolGlyph
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolGlyph.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** The underlying symbol, with generic size */
-    private final ShapeSymbol symbol;
-
-    /** The underlying image, properly sized */
-    private final BufferedImage image;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Build an (artificial) glyph out of a symbol icon.
@@ -74,8 +65,8 @@ public class SymbolGlyph
                         SymbolGlyphDescriptor descriptor)
     {
         super(interline, layer);
-        this.symbol = symbol;
-        image = symbol.buildImage(MusicFont.getFont(interline));
+
+        BufferedImage image = symbol.buildImage(MusicFont.getFont(interline));
 
         /** Build a dedicated SymbolPicture */
         ByteProcessor buffer = createBuffer(image);
@@ -90,20 +81,10 @@ public class SymbolGlyph
         }
 
         // Glyph features
-        setShape(shape, Evaluation.MANUAL);
+        setShape(shape);
 
         // Use descriptor if any is provided
         if (descriptor != null) {
-            // Number of connected stems
-            if (descriptor.getStemNumber() != null) {
-                setStemNumber(descriptor.getStemNumber());
-            }
-
-            // Has a related ledger ?
-            if (descriptor.isWithLedger() != null) {
-                setWithLedger(descriptor.isWithLedger());
-            }
-
             // Vertical position wrt staff
             if (descriptor.getPitchPosition() != null) {
                 setPitchPosition(descriptor.getPitchPosition());

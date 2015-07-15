@@ -44,6 +44,7 @@ import omr.sheet.ui.TemplateView;
 import omr.sig.inter.LedgerInter;
 
 import omr.ui.BoardsPane;
+import static omr.util.HorizontalSide.*;
 
 import ij.process.ByteProcessor;
 
@@ -169,8 +170,8 @@ public class DistancesBuilder
 
                     // Also paint this line even at crossings with vertical objects
                     double halfLine = 0.5 * filament.getMeanThickness(Orientation.HORIZONTAL);
-                    Point2D leftPt = line.getLeftPoint();
-                    Point2D rightPt = line.getRightPoint();
+                    Point2D leftPt = line.getEndPoint(LEFT);
+                    Point2D rightPt = line.getEndPoint(RIGHT);
                     int xMin = (int) Math.floor(leftPt.getX());
                     int xMax = (int) Math.ceil(rightPt.getX());
 

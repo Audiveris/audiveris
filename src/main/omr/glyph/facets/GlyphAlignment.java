@@ -23,7 +23,8 @@ import java.awt.geom.Point2D;
  * Interface {@code GlyphAlignment} describes glyph alignment.
  * <p>
  * The key feature is the approximating Line on all points of the glyph.
- * The line can be the least-square fitted line, or a natural spline for more complex cases.
+ * The line can be the least-square fitted straight line, or a natural spline for more complex
+ * cases.
  * <ul>
  * <li>Staff lines, ledgers, alternate ends are examples of rather horizontal glyphs.</li>
  * <li>Bar lines, stems are examples of rather vertical glyphs.</li>
@@ -60,25 +61,11 @@ public interface GlyphAlignment
     double getAspect (Orientation orientation);
 
     /**
-     * Compute the number of pixels stuck on first side of the glyph.
-     *
-     * @return the number of pixels
-     */
-    int getFirstStuck ();
-
-    /**
      * Report the co-tangent of glyph line angle with abscissa axis
      *
      * @return co-tangent of heading angle (dx/dy).
      */
     double getInvertedSlope ();
-
-    /**
-     * Compute the nb of pixels stuck on last side of the glyph.
-     *
-     * @return the number of pixels
-     */
-    int getLastStuck ();
 
     /**
      * Report the length of the glyph, along the provided orientation.

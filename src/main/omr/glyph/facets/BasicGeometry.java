@@ -244,15 +244,6 @@ class BasicGeometry
             return getAreaCenter();
         }
 
-        // Text shape: use specific reference
-        if (shape.isText()) {
-            Point loc = glyph.getTextLocation();
-
-            if (loc != null) {
-                return loc;
-            }
-        }
-
         // Other shape: check with the related symbol if any
         ShapeSymbol symbol = shape.getSymbol();
 

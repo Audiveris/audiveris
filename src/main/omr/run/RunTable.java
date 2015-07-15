@@ -78,10 +78,6 @@ public class RunTable
             RunTable.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** (Debugging) name of this runs table. */
-    @XmlAttribute
-    private final String name;
-
     /** Orientation, the same for this table and all contained runs. */
     @XmlAttribute
     private final Orientation orientation;
@@ -106,17 +102,14 @@ public class RunTable
     /**
      * Creates a new RunTable object.
      *
-     * @param name        table name (meant for debugging)
      * @param orientation orientation of each run
      * @param width       table width
      * @param height      table height
      */
-    public RunTable (String name,
-                     Orientation orientation,
+    public RunTable (Orientation orientation,
                      int width,
                      int height)
     {
-        this.name = name;
         this.orientation = orientation;
         this.width = width;
         this.height = height;
@@ -131,7 +124,6 @@ public class RunTable
      */
     private RunTable ()
     {
-        this.name = null;
         this.orientation = null;
         this.width = 0;
         this.height = 0;
@@ -139,79 +131,6 @@ public class RunTable
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----//
-    // get //
-    //-----//
-    /**
-     * {@inheritDoc}
-     * <p>
-     * <b>Beware</b>, this implementation is not efficient enough for bulk operations.
-     * For such needs, a much more efficient way is to first retrieve a full buffer, via {@link
-     * #getBuffer()} method, then use this temporary buffer as the {@link PixelSource} instead of
-     * this table.
-     *
-     * @param x absolute abscissa
-     * @param y absolute ordinate
-     * @return the pixel value (FOREGROUND or BACKGROUND)
-     */
-    @Override
-    public final int get (int x,
-                          int y)
-    {
-        Run run = getRunAt(x, y);
-
-        return (run != null) ? 0 : BACKGROUND;
-    }
-
-    //----------//
-    // getRunAt //
-    //----------//
-    /**
-     * Report the run found at given coordinates, if any.
-     *
-     * @param x absolute abscissa
-     * @param y absolute ordinate
-     * @return the run found, or null otherwise
-     */
-    public final Run getRunAt (int x,
-                               int y)
-    {
-        Point oPt = orientation.oriented(new Point(x, y));
-
-        // Protection
-        if ((oPt.y < 0) || (oPt.y >= sequences.length)) {
-            return null;
-        }
-
-        for (Itr it = new Itr(oPt.y); it.hasNext();) {
-            Run run = it.next();
-
-            if (run.getStart() > oPt.x) {
-                return null;
-            }
-
-            if (run.getStop() >= oPt.x) {
-                return run;
-            }
-        }
-
-        return null;
-    }
-
-    //---------//
-    // getSize //
-    //---------//
-    /**
-     * Report the number of sequences of runs in the table.
-     * This is the width for a table of vertical runs and the height for a table of horizontal runs.
-     *
-     * @return the table size (in terms of sequences, including the null ones)
-     */
-    public final int getSize ()
-    {
-        return sequences.length;
-    }
-
     //--------//
     // addRun //
     //--------//
@@ -354,21 +273,7 @@ public class RunTable
      */
     public RunTable copy ()
     {
-        return copy(name + "(copy)");
-    }
-
-    //------//
-    // copy //
-    //------//
-    /**
-     * Make a copy of the table.
-     *
-     * @param name a new name for the copy
-     * @return another table with runs content identical to this one
-     */
-    public RunTable copy (String name)
-    {
-        RunTable clone = new RunTable(name, orientation, width, height);
+        RunTable clone = new RunTable(orientation, width, height);
 
         for (int i = 0; i < sequences.length; i++) {
             short[] seq = getSequence(i);
@@ -444,6 +349,30 @@ public class RunTable
             short[] rle = sequences[i];
             System.out.printf("%4d:%s%n", i, Arrays.toString(rle));
         }
+    }
+
+    //-----//
+    // get //
+    //-----//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <b>Beware</b>, this implementation is not efficient enough for bulk operations.
+     * For such needs, a much more efficient way is to first retrieve a full buffer, via {@link
+     * #getBuffer()} method, then use this temporary buffer as the {@link PixelSource} instead of
+     * this table.
+     *
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return the pixel value (FOREGROUND or BACKGROUND)
+     */
+    @Override
+    public final int get (int x,
+                          int y)
+    {
+        Run run = getRunAt(x, y);
+
+        return (run != null) ? 0 : BACKGROUND;
     }
 
     //-----------//
@@ -542,19 +471,6 @@ public class RunTable
         return height;
     }
 
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name assigned to this table
-     *
-     * @return the name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
     //----------------//
     // getOrientation //
     //----------------//
@@ -569,6 +485,41 @@ public class RunTable
         return orientation;
     }
 
+    //----------//
+    // getRunAt //
+    //----------//
+    /**
+     * Report the run found at given coordinates, if any.
+     *
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return the run found, or null otherwise
+     */
+    public final Run getRunAt (int x,
+                               int y)
+    {
+        Point oPt = orientation.oriented(new Point(x, y));
+
+        // Protection
+        if ((oPt.y < 0) || (oPt.y >= sequences.length)) {
+            return null;
+        }
+
+        for (Itr it = new Itr(oPt.y); it.hasNext();) {
+            Run run = it.next();
+
+            if (run.getStart() > oPt.x) {
+                return null;
+            }
+
+            if (run.getStop() >= oPt.x) {
+                return run;
+            }
+        }
+
+        return null;
+    }
+
     //---------------//
     // getRunService //
     //---------------//
@@ -580,6 +531,20 @@ public class RunTable
     public RunService getRunService ()
     {
         return runService;
+    }
+
+    //---------//
+    // getSize //
+    //---------//
+    /**
+     * Report the number of sequences of runs in the table.
+     * This is the width for a table of vertical runs and the height for a table of horizontal runs.
+     *
+     * @return the table size (in terms of sequences, including the null ones)
+     */
+    public final int getSize ()
+    {
+        return sequences.length;
     }
 
     //------------------//
@@ -814,14 +779,14 @@ public class RunTable
 
         switch (getOrientation()) {
         case HORIZONTAL: {
-            int minRow = (clip != null) ? Math.max(clip.y, 0) : 0;
-            int maxRow = (clip != null) ? (Math.min((clip.y + clip.height), getHeight()) - 1)
-                    : (getHeight() - 1);
+            int minSeq = (clip != null) ? Math.max(clip.y, 0) : 0;
+            int maxSeq = (clip != null) ? (Math.min((clip.y + clip.height), height) - 1) : (height
+                                                                                            - 1);
 
-            for (int row = minRow; row <= maxRow; row++) {
-                for (Itr it = new Itr(row); it.hasNext();) {
+            for (int iSeq = minSeq; iSeq <= maxSeq; iSeq++) {
+                for (Itr it = new Itr(iSeq); it.hasNext();) {
                     Run run = it.next();
-                    g.fillRect(run.getStart(), row, run.getLength(), 1);
+                    g.fillRect(run.getStart(), iSeq, run.getLength(), 1);
                 }
             }
         }
@@ -829,14 +794,14 @@ public class RunTable
         break;
 
         case VERTICAL: {
-            int minRow = (clip != null) ? Math.max(clip.x, 0) : 0;
-            int maxRow = (clip != null) ? (Math.min((clip.x + clip.width), getWidth()) - 1)
-                    : (getWidth() - 1);
+            int minSeq = (clip != null) ? Math.max(clip.x, 0) : 0;
+            int maxSeq = (clip != null) ? (Math.min((clip.x + clip.width), width) - 1) : (width
+                                                                                          - 1);
 
-            for (int row = minRow; row <= maxRow; row++) {
-                for (Itr it = new Itr(row); it.hasNext();) {
+            for (int iSeq = minSeq; iSeq <= maxSeq; iSeq++) {
+                for (Itr it = new Itr(iSeq); it.hasNext();) {
                     Run run = it.next();
-                    g.fillRect(row, run.getStart(), 1, run.getLength());
+                    g.fillRect(iSeq, run.getStart(), 1, run.getLength());
                 }
             }
         }
@@ -858,6 +823,21 @@ public class RunTable
         this.runService = runService;
     }
 
+    //-------------//
+    // setSequence //
+    //-------------//
+    /**
+     * set a whole run sequence.
+     *
+     * @param index position in sequences list
+     * @param list  a list of runs
+     */
+    public void setSequence (int index,
+                             List<? extends Run> list)
+    {
+        sequences[index] = encode(list);
+    }
+
     //----------//
     // toString //
     //----------//
@@ -866,8 +846,7 @@ public class RunTable
     {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append("{");
-        sb.append(name);
-        sb.append(" ").append(orientation);
+        sb.append(orientation);
         sb.append(" ").append(width).append("x").append(height);
 
         // Debug
@@ -880,20 +859,6 @@ public class RunTable
         return sb.toString();
     }
 
-    //-------------//
-    // getSequence //
-    //-------------//
-    /**
-     * (package private) Report the sequence of runs at a given index
-     *
-     * @param index the desired index
-     * @return the MODIFIABLE sequence of rows
-     */
-    final short[] getSequence (int index)
-    {
-        return sequences[index];
-    }
-
     //--------//
     // encode //
     //--------//
@@ -903,7 +868,7 @@ public class RunTable
      * @param list the list of runs to compose the sequence
      * @return the sequence ready to be inserted into table
      */
-    static short[] encode (List<Run> list)
+    static short[] encode (List<? extends Run> list)
     {
         if ((list == null) || list.isEmpty()) {
             return null;
@@ -942,6 +907,20 @@ public class RunTable
         }
 
         return seq;
+    }
+
+    //-------------//
+    // getSequence //
+    //-------------//
+    /**
+     * (package private) Report the sequence of runs at a given index
+     *
+     * @param index the desired index
+     * @return the MODIFIABLE sequence of rows
+     */
+    final short[] getSequence (int index)
+    {
+        return sequences[index];
     }
 
     //-------------//
@@ -1015,73 +994,6 @@ public class RunTable
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //------------------//
-    // SequencesAdapter //
-    //------------------//
-    /**
-     * Meant for customized JAXB support of sequences.
-     */
-    private static class SequencesAdapter
-            extends XmlAdapter<ShortVector[], short[][]>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public ShortVector[] marshal (short[][] data)
-                throws Exception
-        {
-            final ShortVector[] seqArray = new ShortVector[data.length];
-
-            for (int i = 0; i < data.length; i++) {
-                seqArray[i] = new ShortVector(data[i]);
-            }
-
-            return seqArray;
-        }
-
-        @Override
-        public short[][] unmarshal (ShortVector[] seqArray)
-        {
-            final short[][] matrix = new short[seqArray.length][];
-
-            for (int i = 0; i < seqArray.length; i++) {
-                ShortVector seq = seqArray[i];
-
-                if ((seq != null) && (seq.vector.length != 0)) {
-                    matrix[i] = seq.vector;
-                }
-            }
-
-            return matrix;
-        }
-    }
-
-    //-------------//
-    // ShortVector //
-    //-------------//
-    /**
-     * Temporary structure for (un)marshaling purpose.
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    private static class ShortVector
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        @XmlValue // Annotation to avoid any wrapper
-
-        private short[] vector;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public ShortVector ()
-        {
-        }
-
-        public ShortVector (short[] vector)
-        {
-            this.vector = vector;
-        }
-    }
-
     //-----//
     // Itr //
     //-----//
@@ -1221,6 +1133,73 @@ public class RunTable
 
                 cursor = c;
             }
+        }
+    }
+
+    //------------------//
+    // SequencesAdapter //
+    //------------------//
+    /**
+     * Meant for customized JAXB support of sequences.
+     */
+    private static class SequencesAdapter
+            extends XmlAdapter<ShortVector[], short[][]>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public ShortVector[] marshal (short[][] data)
+                throws Exception
+        {
+            final ShortVector[] seqArray = new ShortVector[data.length];
+
+            for (int i = 0; i < data.length; i++) {
+                seqArray[i] = new ShortVector(data[i]);
+            }
+
+            return seqArray;
+        }
+
+        @Override
+        public short[][] unmarshal (ShortVector[] seqArray)
+        {
+            final short[][] matrix = new short[seqArray.length][];
+
+            for (int i = 0; i < seqArray.length; i++) {
+                ShortVector seq = seqArray[i];
+
+                if ((seq != null) && (seq.vector.length != 0)) {
+                    matrix[i] = seq.vector;
+                }
+            }
+
+            return matrix;
+        }
+    }
+
+    //-------------//
+    // ShortVector //
+    //-------------//
+    /**
+     * Temporary structure for (un)marshaling purpose.
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    private static class ShortVector
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlValue // Annotation to avoid any wrapper
+
+        private short[] vector;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ShortVector ()
+        {
+        }
+
+        public ShortVector (short[] vector)
+        {
+            this.vector = vector;
         }
     }
 }

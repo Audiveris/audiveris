@@ -14,8 +14,6 @@ package omr.glyph.facets;
 import omr.text.TextRole;
 import omr.text.TextWord;
 
-import java.awt.Point;
-
 /**
  * Interface {@code GlyphContent} defines a facet that deals with the textual content,
  * if any, of a glyph.
@@ -37,42 +35,6 @@ public interface GlyphContent
     String HYPHEN_STRING = "-";
 
     //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Report the manually assigned role, if any.
-     *
-     * @return the manual role for this glyph, or null
-     */
-    TextRole getManualRole ();
-
-    /**
-     * Report the manually assigned text, if any.
-     *
-     * @return the manual string value for this glyph, or null
-     */
-    String getManualValue ();
-
-    /**
-     * Report the current language, if any, defined for this glyph.
-     *
-     * @return the current glyph language code, or null
-     */
-    String getOcrLanguage ();
-
-    /**
-     * Report the starting point of this text glyph, which is the left
-     * side abscissa and the baseline ordinate.
-     *
-     * @return the starting point of the text glyph, specified in pixels
-     */
-    Point getTextLocation ();
-
-    /**
-     * Report the text role of the textual glyph within the score.
-     *
-     * @return the role of this textual glyph
-     */
-    TextRole getTextRole ();
-
     /**
      * Report the string value of this text glyph if any.
      *

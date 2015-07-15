@@ -13,8 +13,6 @@ package omr.sig.inter;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.facets.GlyphContent;
-
 import omr.sheet.Part;
 import omr.sheet.Scale;
 import omr.sheet.rhythm.Measure;
@@ -42,6 +40,15 @@ public class LyricItemInter
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LyricItemInter.class);
+
+    /** String equivalent of Character used for elision. (undertie) */
+    public static final String ELISION_STRING = new String(Character.toChars(8255));
+
+    /** String equivalent of Character used for extension. (underscore) */
+    public static final String EXTENSION_STRING = "_";
+
+    /** String equivalent of Character used for hyphen. */
+    public static final String HYPHEN_STRING = "-";
 
     //~ Enumerations -------------------------------------------------------------------------------
     /**
@@ -117,11 +124,11 @@ public class LyricItemInter
     {
         super(textWord);
 
-        if (value.equals(GlyphContent.ELISION_STRING)) {
+        if (value.equals(ELISION_STRING)) {
             itemKind = ItemKind.Elision;
-        } else if (value.equals(GlyphContent.EXTENSION_STRING)) {
+        } else if (value.equals(EXTENSION_STRING)) {
             itemKind = ItemKind.Extension;
-        } else if (value.equals(GlyphContent.HYPHEN_STRING)) {
+        } else if (value.equals(HYPHEN_STRING)) {
             itemKind = ItemKind.Hyphen;
         } else {
             itemKind = ItemKind.Syllable;
@@ -129,6 +136,22 @@ public class LyricItemInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // isSeparator //
+    //-------------//
+    /**
+     * Predicate to detect a separator.
+     *
+     * @param str the character to check
+     *
+     * @return true if this is a separator
+     */
+    public static boolean isSeparator (String str)
+    {
+        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING)
+               || str.equals(HYPHEN_STRING);
+    }
+
     //--------------------//
     // defineSyllabicType //
     //--------------------//

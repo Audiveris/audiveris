@@ -261,16 +261,16 @@ public abstract class TimeBuilder
                     }
                 }
             }
+        }
 
-            // Make sure each half has a compatible partnering half
-            for (List<Inter> list : Arrays.asList(nums, dens)) {
-                for (Iterator<Inter> it = list.iterator(); it.hasNext();) {
-                    Inter inter = it.next();
+        // Make sure each half has a compatible partnering half
+        for (List<Inter> list : Arrays.asList(nums, dens)) {
+            for (Iterator<Inter> it = list.iterator(); it.hasNext();) {
+                Inter inter = it.next();
 
-                    if (!sig.hasRelation(inter, TimeNumberRelation.class)) {
-                        inter.delete();
-                        it.remove();
-                    }
+                if (!sig.hasRelation(inter, TimeNumberRelation.class)) {
+                    inter.delete();
+                    it.remove();
                 }
             }
         }

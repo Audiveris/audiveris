@@ -19,9 +19,8 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code Orientation} defines orientation as horizontal or vertical, and
- * provides convenient methods to convert entities between
- * absolute and oriented definitions.
+ * Class {@code Orientation} defines orientation as horizontal or vertical, and provides
+ * convenient methods to convert entities between absolute and oriented definitions.
  *
  * @author Hervé Bitteur
  */
@@ -55,8 +54,8 @@ public enum Orientation
     // isVertical //
     //------------//
     /**
-     * Return true if the entity is vertical, false if horizontal. Not a very
-     * object-oriented approach but who cares?
+     * Return true if the entity is vertical, false if horizontal.
+     * Not a very object-oriented approach but who cares?
      *
      * @return true if vertical, false otherwise
      */
@@ -70,7 +69,7 @@ public enum Orientation
     //----------//
     /**
      * Given a point (x, y) in the absolute space, return the corresponding
-     * (coord, pos) oriented point taking the lag orientation into account.
+     * (coord, pos) oriented point taking the entity orientation into account.
      *
      * @param xy the absolute (x, y) point
      * @return the corresponding oriented (coord, pos) point
@@ -85,7 +84,7 @@ public enum Orientation
     //----------//
     /**
      * Given a point (x, y) in the absolute space, return the corresponding
-     * (coord, pos) oriented point taking the lag orientation into account.
+     * (coord, pos) oriented point taking the entity orientation into account.
      *
      * @param xy the absolute (x, y) point
      * @return the corresponding oriented (coord, pos) point
@@ -99,8 +98,8 @@ public enum Orientation
     // absolute //
     //----------//
     /**
-     * Given a (coord, pos) oriented point, return the point (x, y) in the
-     * absolute space taking the lag orientation into account.
+     * Given a (coord, pos) oriented point, return the point (x, y) in the absolute
+     * space taking the entity orientation into account.
      *
      * @param cp the oriented (coord, pos) point
      * @return the corresponding absolute (x, y) point
@@ -129,8 +128,8 @@ public enum Orientation
     // absolute //
     //----------//
     /**
-     * Given a (coord, pos) oriented point, return the point (x, y) in the
-     * absolute space taking the lag orientation into account.
+     * Given a (coord, pos) oriented point, return the point (x, y) in the absolute
+     * space taking the entity orientation into account.
      *
      * @param cp the oriented (coord, pos) point
      * @return the corresponding absolute (x, y) point
@@ -189,8 +188,7 @@ public enum Orientation
     // switchRef //
     //-----------//
     /**
-     * Given an oriented line, return the corresponding absolute line, or vice
-     * versa.
+     * Given an oriented line, return the corresponding absolute line, or vice versa.
      *
      * @param relLine the oriented line
      * @return the corresponding absolute line.
@@ -223,8 +221,7 @@ public enum Orientation
      * corresponding oriented rectangle (coord, pos, length, thickness).
      *
      * @param xywh absolute rectangle (x, y, width, height).
-     * @return the corresponding oriented rectangle (coord, pos, length,
-     *         thickness)
+     * @return the corresponding oriented rectangle (coord, pos, length, thickness)
      */
     public Rectangle oriented (Rectangle xywh)
     {

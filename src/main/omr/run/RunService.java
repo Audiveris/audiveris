@@ -52,11 +52,13 @@ public class RunService
     /**
      * Creates a new {@code RunService} object.
      *
+     * @param name  name for the service
      * @param table the underlying run table
      */
-    public RunService (RunTable table)
+    public RunService (String name,
+                       RunTable table)
     {
-        super(table.getName(), eventsWritten);
+        super(name, eventsWritten);
         this.table = table;
     }
 
@@ -93,7 +95,7 @@ public class RunService
                 return;
             }
 
-            logger.debug("RunsTable {}: {}", table.getName(), locationEvent);
+            logger.debug("RunsTable {}: {}", getName(), locationEvent);
 
             if (locationEvent instanceof LocationEvent) {
                 // Location => Run

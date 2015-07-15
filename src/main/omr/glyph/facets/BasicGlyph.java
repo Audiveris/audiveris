@@ -13,13 +13,11 @@ package omr.glyph.facets;
 
 import omr.check.Failure;
 
-import omr.glyph.Evaluation;
 import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphNest;
 import omr.glyph.GlyphSignature;
 import omr.glyph.Shape;
 
-import omr.lag.Lag;
 import omr.lag.Section;
 
 import omr.math.Circle;
@@ -31,18 +29,7 @@ import omr.moments.GeometricMoments;
 
 import omr.run.Orientation;
 
-import omr.score.TimeRational;
-
 import omr.sheet.Scale;
-
-import omr.sig.inter.Inter;
-
-import omr.text.BasicContent;
-import omr.text.TextRole;
-import omr.text.TextWord;
-
-import omr.util.HorizontalSide;
-import omr.util.Predicate;
 
 import ij.process.ByteProcessor;
 
@@ -112,9 +99,6 @@ public class BasicGlyph
         this(scale.getInterline(), layer);
     }
 
-    //------------//
-    // BasicGlyph //
-    //------------//
     /**
      * Create a new BasicGlyph object.
      *
@@ -134,9 +118,6 @@ public class BasicGlyph
         addFacet(alignment = new BasicAlignment(this));
     }
 
-    //------------//
-    // BasicGlyph //
-    //------------//
     /**
      * Create a new BasicGlyph object from a GlyphValue instance
      * (typically un-marshalled from XML).
@@ -149,8 +130,6 @@ public class BasicGlyph
 
         setId(value.id);
         setShape(value.shape);
-        setStemNumber(value.stemNumber);
-        setWithLedger(value.withLedger);
         setPitchPosition(value.pitchPosition);
 
         for (Section section : value.members) {
@@ -158,9 +137,6 @@ public class BasicGlyph
         }
     }
 
-    //------------//
-    // BasicGlyph //
-    //------------//
     /**
      * Create a glyph with a specific alignment class.
      *
@@ -208,22 +184,10 @@ public class BasicGlyph
     }
 
     @Override
-    public void addInterpretation (Inter inter)
-    {
-        interpretation.addInterpretation(inter);
-    }
-
-    @Override
     public void addSection (Section section,
                             Linking link)
     {
         composition.addSection(section, link);
-    }
-
-    @Override
-    public void allowShape (Shape shape)
-    {
-        recognition.allowShape(shape);
     }
 
     @Override
@@ -236,12 +200,6 @@ public class BasicGlyph
     public boolean containsSection (int id)
     {
         return composition.containsSection(id);
-    }
-
-    @Override
-    public void copyStemInformation (Glyph glyph)
-    {
-        environment.copyStemInformation(glyph);
     }
 
     @Override
@@ -266,23 +224,9 @@ public class BasicGlyph
     }
 
     @Override
-    public void forbidShape (Shape shape)
-    {
-        recognition.forbidShape(shape);
-    }
-
-    @Override
     public ARTMoments getARTMoments ()
     {
         return geometry.getARTMoments();
-    }
-
-    @Override
-    public int getAlienPixelsFrom (Lag lag,
-                                   Rectangle absRoi,
-                                   Predicate<Section> predicate)
-    {
-        return environment.getAlienPixelsFrom(lag, absRoi, predicate);
     }
 
     @Override
@@ -334,21 +278,9 @@ public class BasicGlyph
     }
 
     @Override
-    public Set<Glyph> getConnectedNeighbors ()
-    {
-        return environment.getConnectedNeighbors();
-    }
-
-    @Override
     public double getDensity ()
     {
         return geometry.getDensity();
-    }
-
-    @Override
-    public Evaluation getEvaluation ()
-    {
-        return recognition.getEvaluation();
     }
 
     @Override
@@ -364,27 +296,9 @@ public class BasicGlyph
     }
 
     @Override
-    public Glyph getFirstStem ()
-    {
-        return environment.getFirstStem();
-    }
-
-    @Override
-    public int getFirstStuck ()
-    {
-        return alignment.getFirstStuck();
-    }
-
-    @Override
     public GeometricMoments getGeometricMoments ()
     {
         return geometry.getGeometricMoments();
-    }
-
-    @Override
-    public double getGrade ()
-    {
-        return recognition.getGrade();
     }
 
     @Override
@@ -406,21 +320,9 @@ public class BasicGlyph
     }
 
     @Override
-    public Set<Inter> getInterpretations ()
-    {
-        return interpretation.getInterpretations();
-    }
-
-    @Override
     public double getInvertedSlope ()
     {
         return alignment.getInvertedSlope();
-    }
-
-    @Override
-    public int getLastStuck ()
-    {
-        return alignment.getLastStuck();
     }
 
     @Override
@@ -451,18 +353,6 @@ public class BasicGlyph
     public Point getLocation (Shape shape)
     {
         return geometry.getLocation(shape);
-    }
-
-    @Override
-    public TextRole getManualRole ()
-    {
-        return getContent().getManualRole();
-    }
-
-    @Override
-    public String getManualValue ()
-    {
-        return getContent().getManualValue();
     }
 
     @Override
@@ -511,12 +401,6 @@ public class BasicGlyph
     public double getNormalizedWidth ()
     {
         return geometry.getNormalizedWidth();
-    }
-
-    @Override
-    public String getOcrLanguage ()
-    {
-        return getContent().getOcrLanguage();
     }
 
     @Override
@@ -581,61 +465,9 @@ public class BasicGlyph
     }
 
     @Override
-    public Glyph getStem (HorizontalSide side)
-    {
-        return environment.getStem(side);
-    }
-
-    @Override
-    public int getStemNumber ()
-    {
-        return environment.getStemNumber();
-    }
-
-    @Override
     public Point2D getStopPoint (Orientation orientation)
     {
         return alignment.getStopPoint(orientation);
-    }
-
-    @Override
-    public void getSymbolsAfter (Predicate<Glyph> predicate,
-                                 Set<Glyph> goods,
-                                 Set<Glyph> bads)
-    {
-        environment.getSymbolsAfter(predicate, goods, bads);
-    }
-
-    @Override
-    public void getSymbolsBefore (Predicate<Glyph> predicate,
-                                  Set<Glyph> goods,
-                                  Set<Glyph> bads)
-    {
-        environment.getSymbolsBefore(predicate, goods, bads);
-    }
-
-    @Override
-    public Point getTextLocation ()
-    {
-        return getContent().getTextLocation();
-    }
-
-    @Override
-    public TextRole getTextRole ()
-    {
-        return getContent().getTextRole();
-    }
-
-    @Override
-    public String getTextValue ()
-    {
-        return getContent().getTextValue();
-    }
-
-    @Override
-    public TextWord getTextWord ()
-    {
-        return getContent().getTextWord();
     }
 
     @Override
@@ -649,12 +481,6 @@ public class BasicGlyph
                                   Orientation orientation)
     {
         return alignment.getThicknessAt(coord, orientation);
-    }
-
-    @Override
-    public TimeRational getTimeRational ()
-    {
-        return recognition.getTimeRational();
     }
 
     @Override
@@ -700,57 +526,9 @@ public class BasicGlyph
     }
 
     @Override
-    public boolean isBar ()
-    {
-        return recognition.isBar();
-    }
-
-    @Override
-    public boolean isClef ()
-    {
-        return recognition.isClef();
-    }
-
-    @Override
-    public boolean isKnown ()
-    {
-        return recognition.isKnown();
-    }
-
-    @Override
     public boolean isLineDefined ()
     {
         return alignment.isLineDefined();
-    }
-
-    @Override
-    public boolean isManualShape ()
-    {
-        return recognition.isManualShape();
-    }
-
-    @Override
-    public boolean isProcessed ()
-    {
-        return administration.isProcessed();
-    }
-
-    @Override
-    public boolean isShapeForbidden (Shape shape)
-    {
-        return recognition.isShapeForbidden(shape);
-    }
-
-    @Override
-    public boolean isStem ()
-    {
-        return recognition.isStem();
-    }
-
-    @Override
-    public boolean isText ()
-    {
-        return recognition.isText();
     }
 
     @Override
@@ -769,18 +547,6 @@ public class BasicGlyph
     public boolean isVirtual ()
     {
         return administration.isVirtual();
-    }
-
-    @Override
-    public boolean isWellKnown ()
-    {
-        return recognition.isWellKnown();
-    }
-
-    @Override
-    public boolean isWithLedger ()
-    {
-        return environment.isWithLedger();
     }
 
     @Override
@@ -815,12 +581,6 @@ public class BasicGlyph
     }
 
     @Override
-    public void resetEvaluation ()
-    {
-        recognition.resetEvaluation();
-    }
-
-    @Override
     public void setCircle (Circle circle)
     {
         geometry.setCircle(circle);
@@ -840,27 +600,9 @@ public class BasicGlyph
     }
 
     @Override
-    public void setEvaluation (Evaluation evaluation)
-    {
-        recognition.setEvaluation(evaluation);
-    }
-
-    @Override
     public void setId (int id)
     {
         administration.setId(id);
-    }
-
-    @Override
-    public void setManualRole (TextRole manualRole)
-    {
-        getContent().setManualRole(manualRole);
-    }
-
-    @Override
-    public void setManualValue (String manualValue)
-    {
-        getContent().setManualValue(manualValue);
     }
 
     @Override
@@ -882,22 +624,9 @@ public class BasicGlyph
     }
 
     @Override
-    public void setProcessed (boolean processed)
-    {
-        administration.setProcessed(processed);
-    }
-
-    @Override
     public void setRegisteredSignature (GlyphSignature sig)
     {
         geometry.setRegisteredSignature(sig);
-    }
-
-    @Override
-    public void setShape (Shape shape,
-                          double grade)
-    {
-        recognition.setShape(shape, grade);
     }
 
     @Override
@@ -907,41 +636,9 @@ public class BasicGlyph
     }
 
     @Override
-    public void setStem (Glyph stem,
-                         HorizontalSide side)
-    {
-        environment.setStem(stem, side);
-    }
-
-    @Override
-    public void setStemNumber (int stemNumber)
-    {
-        environment.setStemNumber(stemNumber);
-    }
-
-    @Override
-    public void setTextWord (String ocrLanguage,
-                             TextWord textWord)
-    {
-        getContent().setTextWord(ocrLanguage, textWord);
-    }
-
-    @Override
-    public void setTimeRational (TimeRational timeRational)
-    {
-        recognition.setTimeRational(timeRational);
-    }
-
-    @Override
     public void setVip ()
     {
         administration.setVip();
-    }
-
-    @Override
-    public void setWithLedger (boolean withLedger)
-    {
-        environment.setWithLedger(withLedger);
     }
 
     @Override
@@ -1001,20 +698,6 @@ public class BasicGlyph
         return composition;
     }
 
-    //------------//
-    // getContent //
-    //------------//
-    protected GlyphContent getContent ()
-    {
-        // Lazy allocation, to avoid too many allocations
-        // (less than 3% of all glyphs need a content facet)
-        if (content == null) {
-            addFacet(content = new BasicContent(this));
-        }
-
-        return content;
-    }
-
     //-----------------//
     // internalsString //
     //-----------------//
@@ -1031,7 +714,7 @@ public class BasicGlyph
         StringBuilder sb = new StringBuilder();
 
         if (getShape() != null) {
-            sb.append(" ").append(recognition.getEvaluation());
+            sb.append(" ").append(getShape());
 
             if (getShape().getPhysicalShape() != getShape()) {
                 sb.append(" physical=").append(getShape().getPhysicalShape());

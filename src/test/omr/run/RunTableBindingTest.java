@@ -92,7 +92,7 @@ public class RunTableBindingTest
     //--------------------------//
     private RunTable createHorizontalInstance ()
     {
-        RunTable instance = new RunTable("hori", HORIZONTAL, dim.width, dim.height);
+        RunTable instance = new RunTable(HORIZONTAL, dim.width, dim.height);
 
         instance.addRun(0, new Run(1, 2));
         instance.addRun(0, new Run(5, 3));

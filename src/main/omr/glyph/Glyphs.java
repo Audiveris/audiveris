@@ -61,26 +61,6 @@ public abstract class Glyphs
 
     private static final Logger logger = LoggerFactory.getLogger(Glyphs.class);
 
-    /** Predicate to check for a manual shape. */
-    public static final Predicate<Glyph> manualPredicate = new Predicate<Glyph>()
-    {
-        @Override
-        public boolean check (Glyph glyph)
-        {
-            return glyph.isManualShape();
-        }
-    };
-
-    /** Predicate to check for a bar-line shape. */
-    public static final Predicate<Glyph> barPredicate = new Predicate<Glyph>()
-    {
-        @Override
-        public boolean check (Glyph glyph)
-        {
-            return glyph.isBar();
-        }
-    };
-
     //~ Constructors -------------------------------------------------------------------------------
     private Glyphs ()
     {
@@ -295,21 +275,6 @@ public abstract class Glyphs
         return firstOf(glyphs, predicate) != null;
     }
 
-    //-----------------//
-    // containsBarline //
-    //-----------------//
-    /**
-     * Check whether the collection of glyph instances contains at
-     * least one bar-line.
-     *
-     * @param glyphs the collection to check
-     * @return true if one or several glyph instances are bar-lines components
-     */
-    public static boolean containsBarline (Collection<Glyph> glyphs)
-    {
-        return firstOf(glyphs, barPredicate) != null;
-    }
-
     //------------//
     // containsId //
     //------------//
@@ -323,21 +288,6 @@ public abstract class Glyphs
         }
 
         return false;
-    }
-
-    //----------------//
-    // containsManual //
-    //----------------//
-    /**
-     * Check whether a collection of glyph instances contains at least
-     * one glyph with a manually assigned shape.
-     *
-     * @param glyphs the glyph collection to check
-     * @return true if there is at least one manually assigned shape
-     */
-    public static boolean containsManual (Collection<Glyph> glyphs)
-    {
-        return contains(glyphs, manualPredicate);
     }
 
     //---------//
@@ -443,8 +393,7 @@ public abstract class Glyphs
      * @param coord       the desired coordinate
      * @param orientation the desired orientation reference
      * @param section     section contributing to the resulting thickness
-     * @param glyphs      glyph instances contributing to the resulting
-     *                    thickness
+     * @param glyphs      glyph instances contributing to the resulting thickness
      * @return the thickness measured, expressed in number of pixels.
      */
     public static double getThicknessAt (double coord,
@@ -644,26 +593,6 @@ public abstract class Glyphs
             Glyph glyph = it.next();
 
             if (predicate.check(glyph)) {
-                it.remove();
-            }
-        }
-    }
-
-    //--------------//
-    // purgeManuals //
-    //--------------//
-    /**
-     * Purge a collection of glyph instances of those which exhibit a
-     * manually assigned shape.
-     *
-     * @param glyphs the glyph collection to purge
-     */
-    public static void purgeManuals (Collection<Glyph> glyphs)
-    {
-        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
-            Glyph glyph = it.next();
-
-            if (glyph.isManualShape()) {
                 it.remove();
             }
         }

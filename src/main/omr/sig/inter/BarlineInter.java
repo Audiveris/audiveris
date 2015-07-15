@@ -14,13 +14,12 @@ package omr.sig.inter;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.math.Line;
-
 import omr.sig.GradeImpacts;
 
 import omr.util.HorizontalSide;
 
 import java.awt.Point;
+import java.awt.geom.Line2D;
 import java.util.Collection;
 import java.util.EnumSet;
 
@@ -51,7 +50,7 @@ public class BarlineInter
     public BarlineInter (Glyph glyph,
                          Shape shape,
                          GradeImpacts impacts,
-                         Line median,
+                         Line2D median,
                          double width)
     {
         super(glyph, shape, impacts, median, width);
@@ -65,6 +64,23 @@ public class BarlineInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //--------//
+    // delete //
+    //--------//
+    /**
+     * Since a BarlineInter instance is held by its containing staff, make sure staff
+     * bar collection is updated.
+     */
+    @Override
+    public void delete ()
+    {
+        super.delete();
+
+        if (staff != null) {
+            staff.removeBar(this);
+        }
     }
 
     //-------------------//
@@ -135,22 +151,4 @@ public class BarlineInter
     {
         staffEnd.add(side);
     }
-
-    //--------//
-    // delete //
-    //--------//
-    /**
-     * Since a BarlineInter instance is held by its containing staff, make sure staff
-     * bar collection is updated.
-     */
-    @Override
-    public void delete ()
-    {
-        super.delete();
-
-        if (staff != null) {
-            staff.removeBar(this);
-        }
-    }
-
 }

@@ -318,7 +318,7 @@ public abstract class AbstractHeadInter
         }
 
         // Runs
-        RunTable runTable = new RunTableFactory(VERTICAL).createTable("note", buf);
+        RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
 
         // Sections
         SectionFactory sectionFactory = new SectionFactory(VERTICAL, new JunctionRatioPolicy());

@@ -122,7 +122,7 @@ public class LedgersFilter
 
         final RunTableFactory runFactory = new RunTableFactory(HORIZONTAL, filter);
         final ByteProcessor buffer = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
-        final RunTable ledgerTable = runFactory.createTable("ledger", buffer);
+        final RunTable ledgerTable = runFactory.createTable(buffer);
         final Lag lag = new BasicLag(Lags.LEDGER_LAG, Orientation.HORIZONTAL);
         final int maxShift = scale.toPixels(constants.maxRunShift);
         final SectionFactory sectionsBuilder = new SectionFactory(

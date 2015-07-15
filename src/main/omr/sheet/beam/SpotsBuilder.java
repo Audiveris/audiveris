@@ -215,7 +215,7 @@ public class SpotsBuilder
 
         // Runs
         RunTableFactory runFactory = new RunTableFactory(SPOT_ORIENTATION);
-        RunTable spotTable = runFactory.createTable("spot", buffer);
+        RunTable spotTable = runFactory.createTable(buffer);
 
         // Sections
         SectionFactory sectionsBuilder = new SectionFactory(spotLag, new JunctionRatioPolicy());
@@ -321,7 +321,7 @@ public class SpotsBuilder
         RunTableFactory factory = new RunTableFactory(
                 Orientation.HORIZONTAL,
                 new RunTableFactory.LengthFilter(stemWidth));
-        RunTable table = factory.createTable("noStem", buffer);
+        RunTable table = factory.createTable(buffer);
         buffer = table.getBuffer();
 
         // Apply median filter
@@ -347,7 +347,7 @@ public class SpotsBuilder
 
         // Runs
         RunTableFactory runFactory = new RunTableFactory(SPOT_ORIENTATION);
-        RunTable runs = runFactory.createTable("headSpots", buffer);
+        RunTable runs = runFactory.createTable(buffer);
 
         // For visual check
         if (constants.keepHeadSpots.isSet()) {

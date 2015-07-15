@@ -554,7 +554,7 @@ public class BeamGroup
                 // Check vertical gap
                 Line2D line = beam.getMedian();
                 Point tail = chord.getTailLocation();
-                int lineY = (int) Math.rint(LineUtil.intersectionAtX(line, tail.x).getY());
+                int lineY = (int) Math.rint(LineUtil.yAtX(line, tail.x));
                 int yOverlap = Math.min(lineY, chordBox.y + chordBox.height)
                                - Math.max(lineY, chordBox.y);
 

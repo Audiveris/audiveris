@@ -144,7 +144,7 @@ public class StemScaler
             watch.start("stem retrieval");
 
             RunTableFactory runFactory = new RunTableFactory(Orientation.HORIZONTAL);
-            RunTable horiTable = runFactory.createTable("horiRuns", buffer);
+            RunTable horiTable = runFactory.createTable(buffer);
             histoKeeper = new HistoKeeper(picture.getWidth() - 1);
             histoKeeper.buildHistograms(horiTable, picture.getHeight());
 

@@ -200,18 +200,6 @@ public class NaturalSpline
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public boolean isHorizontal ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean isVertical ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     //    //------------//
     //    // renderLine //
     //    //------------//
@@ -252,6 +240,7 @@ public class NaturalSpline
     //
     //        g.setColor(oldColor);
     //    }
+    //
     @Override
     public Line swappedCoordinates ()
     {
@@ -280,8 +269,8 @@ public class NaturalSpline
     // xDerivativeAtY //
     //----------------//
     /**
-     * Report the abscissa derivative value of the spline at provided
-     * ordinate (assuming true function).
+     * Report the abscissa derivative value of the spline at provided ordinate
+     * (assuming true function).
      *
      * @param y the provided ordinate
      * @return the x derivative value at this ordinate
@@ -334,8 +323,8 @@ public class NaturalSpline
     // yDerivativeAtX //
     //----------------//
     /**
-     * Report the ordinate derivative value of the spline at provided
-     * abscissa (assuming true function).
+     * Report the ordinate derivative value of the spline at provided abscissa
+     * (assuming true function).
      *
      * @param x the provided abscissa
      * @return the y derivative value at this abscissa
@@ -379,8 +368,8 @@ public class NaturalSpline
     // getCubicDerivatives //
     //---------------------//
     /**
-     * Computes the derivatives of natural cubic spline that
-     * interpolates the provided knots
+     * Computes the derivatives of natural cubic spline that interpolates the provided
+     * knots.
      *
      * @param z the provided n knots
      * @return the corresponding array of derivative values

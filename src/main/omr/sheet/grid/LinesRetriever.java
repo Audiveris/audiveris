@@ -185,14 +185,10 @@ public class LinesRetriever
         factory.dump("LinesRetriever factory");
 
         // To record the purged vertical runs
-        RunTable longVertTable = new RunTable(
-                "long-vert",
-                VERTICAL,
-                sheet.getWidth(),
-                sheet.getHeight());
+        RunTable longVertTable = new RunTable(VERTICAL, sheet.getWidth(), sheet.getHeight());
 
         // Remove runs whose height is larger than line thickness
-        RunTable shortVertTable = wholeVertTable.copy("short-vert").purge(
+        RunTable shortVertTable = wholeVertTable.copy().purge(
                 new Predicate<Run>()
                 {
                     @Override
@@ -204,24 +200,18 @@ public class LinesRetriever
                 longVertTable);
 
         if (runsViewer != null) {
-            runsViewer.display(longVertTable);
-            runsViewer.display(shortVertTable);
+            runsViewer.display("long-vert", longVertTable);
+            runsViewer.display("short-vert", shortVertTable);
         }
 
         // Build table of long horizontal runs
         RunTableFactory runFactory = new RunTableFactory(HORIZONTAL);
-        RunTable wholeHoriTable = runFactory.createTable(
-                "whole-hori",
-                shortVertTable.getBuffer());
+        RunTable wholeHoriTable = runFactory.createTable(shortVertTable.getBuffer());
 
         // To record the purged horizontal runs
-        shortHoriTable = new RunTable(
-                "short-hori",
-                HORIZONTAL,
-                sheet.getWidth(),
-                sheet.getHeight());
+        shortHoriTable = new RunTable(HORIZONTAL, sheet.getWidth(), sheet.getHeight());
 
-        RunTable longHoriTable = wholeHoriTable.copy("long-hori").purge(
+        RunTable longHoriTable = wholeHoriTable.copy().purge(
                 new Predicate<Run>()
                 {
                     @Override
@@ -233,8 +223,8 @@ public class LinesRetriever
                 shortHoriTable);
 
         if (runsViewer != null) {
-            runsViewer.display(shortHoriTable);
-            runsViewer.display(longHoriTable.copy("long-hori-snapshot"));
+            runsViewer.display("short-hori", shortHoriTable);
+            runsViewer.display("long-hori-snapshot", longHoriTable.copy());
         }
 
         // Populate the horizontal hLag with the long horizontal runs
@@ -780,34 +770,6 @@ public class LinesRetriever
         }
     }
 
-    //---------------//
-    // getLineEnding //
-    //---------------//
-    /**
-     * Report the precise point where a given line should end.
-     * This is based on extrapolation only, and may provide wrong results if missing abscissa range
-     * is too large.
-     *
-     * @param system the system to process
-     * @param staff  containing staff
-     * @param line   the line at hand
-     * @param side   the desired ending
-     * @return the computed ending point
-     */
-    @Deprecated
-    private Point2D getLineEnding (SystemInfo system,
-                                   Staff staff,
-                                   LineInfo line,
-                                   HorizontalSide side)
-    {
-        double slope = staff.getEndingSlope(side);
-        Point2D linePt = line.getEndPoint(side);
-        int staffX = staff.getAbscissa(side);
-        double y = linePt.getY() + ((staffX - linePt.getX()) * slope);
-
-        return new Point2D.Double(staffX, y);
-    }
-
     //---------------------------//
     // includeDiscardedFilaments //
     //---------------------------//
@@ -1135,7 +1097,13 @@ public class LinesRetriever
             slopes += ((stop.getY() - start.getY()) / (stop.getX() - start.getX()));
         }
 
-        return slopes / topCount;
+        double mean = slopes / topCount;
+
+        if (Math.abs(mean) >= params.minSlope) {
+            return mean;
+        } else {
+            return 0;
+        }
     }
 
     //----------------//
@@ -1171,6 +1139,11 @@ public class LinesRetriever
                 "radians",
                 0.1,
                 "Maximum central rotation for filaments");
+
+        private final Constant.Double minSlope = new Constant.Double(
+                "tangent",
+                0.0002,
+                "Minimum absolute slope value to be worth noting");
 
         // Constants for building horizontal sections
         // ------------------------------------------
@@ -1302,6 +1275,9 @@ public class LinesRetriever
         /** Maximum ordinate jitter for staff pattern */
         final int patternJitter;
 
+        /** Minimum absolute slope to be worth noting */
+        final double minSlope;
+
         // Debug
         final List<Integer> vipSections;
 
@@ -1331,6 +1307,7 @@ public class LinesRetriever
             patternJitter = scale.toPixels(constants.patternJitter);
             maxStickerExtension = (int) Math.ceil(
                     scale.toPixelsDouble(constants.maxStickerExtension));
+            minSlope = constants.minSlope.getValue();
 
             // VIPs
             vipSections = IntUtil.parseInts(constants.horizontalVipSections.getValue());

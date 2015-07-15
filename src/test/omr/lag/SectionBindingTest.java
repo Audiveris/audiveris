@@ -89,7 +89,7 @@ public class SectionBindingTest
         sections.add(sv);
         sections.add(sh);
 
-        GlyphValue value = new GlyphValue(Shape.BREVE, 20, 1, 0, false, 0.5, sections);
+        GlyphValue value = new GlyphValue(Shape.BREVE, 20, 1, 0.5, sections);
 
         Marshaller m = jaxbContext.createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -166,11 +166,11 @@ public class SectionBindingTest
         jaxbContext = JAXBContext.newInstance(GlyphValue.class);
 
         vLag = new BasicLag("My Vertical Lag", Orientation.VERTICAL);
-        vTable = new RunTable("Vert Runs", Orientation.VERTICAL, 100, 200); // Absolute
+        vTable = new RunTable(Orientation.VERTICAL, 100, 200); // Absolute
         vLag.setRuns(vTable);
 
         hLag = new BasicLag("My Horizontal Lag", Orientation.HORIZONTAL);
-        hTable = new RunTable("Hori Runs", Orientation.HORIZONTAL, 100, 200); // Absolute
+        hTable = new RunTable(Orientation.HORIZONTAL, 100, 200); // Absolute
         hLag.setRuns(hTable);
     }
 

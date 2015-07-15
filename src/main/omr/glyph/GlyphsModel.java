@@ -265,7 +265,7 @@ public class GlyphsModel
         }
 
         // Do the assignment of the shape to the glyph
-        glyph.setShape(shape, grade);
+        glyph.setShape(shape);
 
         // Should we persist the assigned glyph?
         if ((shape != null)

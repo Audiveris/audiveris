@@ -323,7 +323,7 @@ public class LedgersBuilder
             glyphs.removeAll(toRemove);
         }
 
-        // This is only meant to show them in specific color
+        // This is only meant to show them in a specific color
         for (Glyph glyph : glyphs) {
             glyph.setShape(Shape.LEDGER_CANDIDATE);
         }
@@ -515,10 +515,10 @@ public class LedgersBuilder
                     if (GeoUtil.xEmbraces(ledgerBox, xMid)) {
                         return ledgerGlyph.getLine().yAtX(xMid);
                     } else {
-                        return LineUtil.intersectionAtX(
+                        return LineUtil.yAtX(
                                 ledgerGlyph.getStartPoint(HORIZONTAL),
                                 ledgerGlyph.getStopPoint(HORIZONTAL),
-                                xMid).getY();
+                                xMid);
                     }
                 }
             }
@@ -636,14 +636,6 @@ public class LedgersBuilder
 
                 if (grade >= suite.getMinThreshold()) {
                     stick = system.registerGlyph(stick); // Useful???
-
-                    // Sanity check
-                    Inter inter = sig.getInter(stick, LedgerInter.class);
-
-                    if (inter != null) {
-                        logger.error("Double ledger definition {}", inter);
-                    }
-
                     LedgerInter ledger = new LedgerInter(stick, impacts);
                     ledger.setIndex(index);
                     sig.addVertex(ledger);

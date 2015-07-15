@@ -12,7 +12,6 @@
 package omr.sig.inter;
 
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.sig.GradeImpacts;
 
@@ -34,16 +33,14 @@ public class FullBeamInter
     /**
      * Creates a new FullBeamInter object.
      *
-     * @param glyph   the underlying glyph
      * @param impacts the grade details
      * @param median  median beam line
      * @param height  beam height
      */
-    public FullBeamInter (Glyph glyph,
-                          GradeImpacts impacts,
+    public FullBeamInter (GradeImpacts impacts,
                           Line2D median,
                           double height)
     {
-        super(glyph, Shape.BEAM, impacts, median, height);
+        super(Shape.BEAM, impacts, median, height);
     }
 }

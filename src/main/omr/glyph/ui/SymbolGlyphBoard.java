@@ -12,42 +12,22 @@
 package omr.glyph.ui;
 
 import omr.glyph.Shape;
-import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.score.TimeRational;
-
 import omr.selection.GlyphEvent;
-import omr.selection.GlyphSetEvent;
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
-import omr.sheet.ui.SheetsController;
-
-import omr.sig.inter.TimeInter;
-
-import omr.text.TextRole;
-import omr.text.TextWord;
-
 import omr.ui.field.LCheckBox;
-import omr.ui.field.LComboBox;
 import omr.ui.field.LDoubleField;
-import omr.ui.field.LIntegerField;
-import omr.ui.field.LTextField;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Set;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 
 /**
  * Class {@code SymbolGlyphBoard} defines an extended glyph board, with characteristics
@@ -73,21 +53,21 @@ public class SymbolGlyphBoard
     private static final Logger logger = LoggerFactory.getLogger(SymbolGlyphBoard.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Numerator of time signature */
-    private final LIntegerField timeNum;
-
-    /** Denominator of time signature */
-    private final LIntegerField timeDen;
-
-    /** ComboBox for text role */
-    private final LComboBox<TextRole> roleCombo;
-
-    /** Output : textual confidence */
-    protected LDoubleField confField;
-
-    /** Input/Output : textual content */
-    protected LTextField textField;
-
+    //    /** Numerator of time signature */
+    //    private final LIntegerField timeNum;
+    //
+    //    /** Denominator of time signature */
+    //    private final LIntegerField timeDen;
+    //
+    //    /** ComboBox for text role */
+    //    private final LComboBox<TextRole> roleCombo;
+    //
+    //    /** Output : textual confidence */
+    //    protected LDoubleField confField;
+    //
+    //    /** Input/Output : textual content */
+    //    protected LTextField textField;
+    //
     /** Glyph characteristics : position wrt staff */
     private final LDoubleField pitchPosition = new LDoubleField(
             false,
@@ -115,13 +95,13 @@ public class SymbolGlyphBoard
             "Normalized height",
             "%.3f");
 
-    /** Handling of entered / selected values */
-    private final Action paramAction;
-
-    /** To avoid unwanted events */
-    private boolean selfUpdatingText;
-
     //~ Constructors -------------------------------------------------------------------------------
+    //
+    //    /** Handling of entered / selected values */
+    //    private final Action paramAction;
+    //
+    //    /** To avoid unwanted events */
+    //    private boolean selfUpdatingText;
     /**
      * Create the symbol glyph board.
      *
@@ -145,29 +125,30 @@ public class SymbolGlyphBoard
         height.setEnabled(false);
         pitchPosition.setEnabled(false);
         weight.setEnabled(false);
-
-        // Additional combo for text role
-        paramAction = new ParamAction();
-        roleCombo = new LComboBox<TextRole>("Role", "Role of the Text", TextRole.values());
-        roleCombo.getField().setMaximumRowCount(TextRole.values().length);
-        roleCombo.addActionListener(paramAction);
-
-        // Confidence and Text fields
-        confField = new LDoubleField(false, "Conf", "Confidence in text value", "%.2f");
-        textField = new LTextField(true, "Text", "Content of a textual glyph");
-        textField.getField().setHorizontalAlignment(JTextField.LEFT);
-
-        // Time signature
-        timeNum = new LIntegerField("Num", "");
-        timeDen = new LIntegerField("Den", "");
-
+        //
+        //        // Additional combo for text role
+        //        paramAction = new ParamAction();
+        //        roleCombo = new LComboBox<TextRole>("Role", "Role of the Text", TextRole.values());
+        //        roleCombo.getField().setMaximumRowCount(TextRole.values().length);
+        //        roleCombo.addActionListener(paramAction);
+        //
+        //        // Confidence and Text fields
+        //        confField = new LDoubleField(false, "Conf", "Confidence in text value", "%.2f");
+        //        textField = new LTextField(true, "Text", "Content of a textual glyph");
+        //        textField.getField().setHorizontalAlignment(JTextField.LEFT);
+        //
+        //        // Time signature
+        //        timeNum = new LIntegerField("Num", "");
+        //        timeDen = new LIntegerField("Den", "");
+        //
         defineSpecificLayout();
 
-        // Needed to process user input when RETURN/ENTER is pressed
-        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                KeyStroke.getKeyStroke("ENTER"),
-                "TextAction");
-        getComponent().getActionMap().put("TextAction", paramAction);
+        //
+        //        // Needed to process user input when RETURN/ENTER is pressed
+        //        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+        //                KeyStroke.getKeyStroke("ENTER"),
+        //                "TextAction");
+        //        getComponent().getActionMap().put("TextAction", paramAction);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -245,71 +226,70 @@ public class SymbolGlyphBoard
                 pitchPosition.setEnabled(glyph != null);
                 weight.setEnabled(glyph != null);
 
-                // Text info
-                if (roleCombo != null) {
-                    if ((shape != null) && shape.isText()) {
-                        selfUpdatingText = true;
-                        confField.setVisible(false);
-                        textField.setVisible(true);
-                        roleCombo.setVisible(true);
-
-                        roleCombo.setEnabled(true);
-                        textField.setEnabled(true);
-
-                        if (glyph.getTextValue() != null) {
-                            textField.setText(glyph.getTextValue());
-
-                            // Related word?
-                            TextWord word = glyph.getTextWord();
-
-                            if (word != null) {
-                                confField.setValue(word.getConfidence());
-                                confField.setVisible(true);
-                            }
-                        } else {
-                            textField.setText("");
-                        }
-
-                        if (glyph.getTextRole() != null) {
-                            roleCombo.setSelectedItem(glyph.getTextRole());
-                        } else {
-                            roleCombo.setSelectedItem(TextRole.UnknownRole);
-                        }
-
-                        selfUpdatingText = false;
-                    } else {
-                        confField.setVisible(false);
-                        textField.setVisible(false);
-                        roleCombo.setVisible(false);
-                    }
-                }
-
-                // Time Signature info
-                if (timeNum != null) {
-                    if (ShapeSet.Times.contains(shape)) {
-                        timeNum.setVisible(true);
-                        timeDen.setVisible(true);
-
-                        timeNum.setEnabled(shape == Shape.CUSTOM_TIME);
-                        timeDen.setEnabled(shape == Shape.CUSTOM_TIME);
-
-                        TimeRational timeRational = (shape == Shape.CUSTOM_TIME)
-                                ? glyph.getTimeRational()
-                                : TimeInter.rationalOf(shape);
-
-                        if (timeRational != null) {
-                            timeNum.setValue(timeRational.num);
-                            timeDen.setValue(timeRational.den);
-                        } else {
-                            timeNum.setText("");
-                            timeDen.setText("");
-                        }
-                    } else {
-                        timeNum.setVisible(false);
-                        timeDen.setVisible(false);
-                    }
-                }
-
+                //                // Text info
+                //                if (roleCombo != null) {
+                //                    if ((shape != null) && shape.isText()) {
+                //                        selfUpdatingText = true;
+                //                        confField.setVisible(false);
+                //                        textField.setVisible(true);
+                //                        roleCombo.setVisible(true);
+                //
+                //                        roleCombo.setEnabled(true);
+                //                        textField.setEnabled(true);
+                //
+                //                        if (glyph.getTextValue() != null) {
+                //                            textField.setText(glyph.getTextValue());
+                //
+                //                            // Related word?
+                //                            TextWord word = glyph.getTextWord();
+                //
+                //                            if (word != null) {
+                //                                confField.setValue(word.getConfidence());
+                //                                confField.setVisible(true);
+                //                            }
+                //                        } else {
+                //                            textField.setText("");
+                //                        }
+                //
+                //                        if (glyph.getTextRole() != null) {
+                //                            roleCombo.setSelectedItem(glyph.getTextRole());
+                //                        } else {
+                //                            roleCombo.setSelectedItem(TextRole.UnknownRole);
+                //                        }
+                //
+                //                        selfUpdatingText = false;
+                //                    } else {
+                //                        confField.setVisible(false);
+                //                        textField.setVisible(false);
+                //                        roleCombo.setVisible(false);
+                //                    }
+                //                }
+                //
+                //                // Time Signature info
+                //                if (timeNum != null) {
+                //                    if (ShapeSet.Times.contains(shape)) {
+                //                        timeNum.setVisible(true);
+                //                        timeDen.setVisible(true);
+                //
+                //                        timeNum.setEnabled(shape == Shape.CUSTOM_TIME);
+                //                        timeDen.setEnabled(shape == Shape.CUSTOM_TIME);
+                //
+                //                        TimeRational timeRational = (shape == Shape.CUSTOM_TIME)
+                //                                ? glyph.getTimeRational()
+                //                                : TimeInter.rationalOf(shape);
+                //
+                //                        if (timeRational != null) {
+                //                            timeNum.setValue(timeRational.num);
+                //                            timeDen.setValue(timeRational.den);
+                //                        } else {
+                //                            timeNum.setText("");
+                //                            timeDen.setText("");
+                //                        }
+                //                    } else {
+                //                        timeNum.setVisible(false);
+                //                        timeDen.setVisible(false);
+                //                    }
+                //                }
                 selfUpdating = false;
             }
         } catch (Exception ex) {
@@ -350,98 +330,99 @@ public class SymbolGlyphBoard
         builder.add(weight.getLabel(), cst.xy(9, r));
         builder.add(weight.getField(), cst.xy(11, r));
 
-        r += 2; // --------------------------------
-        // Text information, first line
-
-        if (textField != null) {
-            builder.add(confField.getLabel(), cst.xyw(1, r, 1));
-            builder.add(confField.getField(), cst.xyw(3, r, 1));
-            confField.setVisible(false);
-            builder.add(textField.getLabel(), cst.xyw(5, r, 1));
-            builder.add(textField.getField(), cst.xyw(7, r, 5));
-            textField.setVisible(false);
-        }
-
-        // or time signature parameters
-        if (timeNum != null) {
-            builder.add(timeNum.getLabel(), cst.xy(5, r));
-            builder.add(timeNum.getField(), cst.xy(7, r));
-            timeNum.setVisible(false);
-
-            builder.add(timeDen.getLabel(), cst.xy(9, r));
-            builder.add(timeDen.getField(), cst.xy(11, r));
-            timeDen.setVisible(false);
-        }
-
-        r += 2; // --------------------------------
-        // Text information, second line
-
-        if (roleCombo != null) {
-            builder.add(roleCombo.getLabel(), cst.xyw(1, r, 1));
-            builder.add(roleCombo.getField(), cst.xyw(3, r, 3));
-            roleCombo.setVisible(false);
-        }
+        //
+        //        r += 2; // --------------------------------
+        //        // Text information, first line
+        //
+        //        if (textField != null) {
+        //            builder.add(confField.getLabel(), cst.xyw(1, r, 1));
+        //            builder.add(confField.getField(), cst.xyw(3, r, 1));
+        //            confField.setVisible(false);
+        //            builder.add(textField.getLabel(), cst.xyw(5, r, 1));
+        //            builder.add(textField.getField(), cst.xyw(7, r, 5));
+        //            textField.setVisible(false);
+        //        }
+        //
+        //
+        //        // or time signature parameters
+        //        if (timeNum != null) {
+        //            builder.add(timeNum.getLabel(), cst.xy(5, r));
+        //            builder.add(timeNum.getField(), cst.xy(7, r));
+        //            timeNum.setVisible(false);
+        //
+        //            builder.add(timeDen.getLabel(), cst.xy(9, r));
+        //            builder.add(timeDen.getField(), cst.xy(11, r));
+        //            timeDen.setVisible(false);
+        //        }
+        //
+        //        r += 2; // --------------------------------
+        //        // Text information, second line
+        //
+        //        if (roleCombo != null) {
+        //            builder.add(roleCombo.getLabel(), cst.xyw(1, r, 1));
+        //            builder.add(roleCombo.getField(), cst.xyw(3, r, 3));
+        //            roleCombo.setVisible(false);
+        //        }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-------------//
-    // ParamAction //
-    //-------------//
-    private class ParamAction
-            extends AbstractAction
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        // Method run whenever user presses Return/Enter in one of the parameter
-        // fields
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            // Discard irrelevant action events
-            if (selfUpdatingText) {
-                return;
-            }
-
-            // Get current glyph set
-            GlyphSetEvent glyphsEvent = (GlyphSetEvent) getSelectionService()
-                    .getLastEvent(GlyphSetEvent.class);
-            Set<Glyph> glyphs = (glyphsEvent != null) ? glyphsEvent.getData() : null;
-
-            if ((glyphs != null) && !glyphs.isEmpty()) {
-                // Read shape information
-                String shapeName = shapeField.getText();
-
-                if (shapeName.isEmpty()) {
-                    return;
-                }
-
-                Shape shape = Shape.valueOf(shapeName);
-
-                // Text?
-                if (shape.isText()) {
-                    logger.debug(
-                            "Text=''{}'' Role={}",
-                            textField.getText().trim(),
-                            roleCombo.getSelectedItem());
-
-                    TextRole role = roleCombo.getSelectedItem();
-                    SheetsController.getCurrentSheet().getSymbolsController().asyncAssignTexts(
-                            glyphs,
-                            role,
-                            textField.getText());
-                } else if (shape == Shape.CUSTOM_TIME) {
-                    int num = timeNum.getValue();
-                    int den = timeDen.getValue();
-
-                    if ((num != 0) && (den != 0)) {
-                        SheetsController.getCurrentSheet().getSymbolsController().asyncAssignRationals(
-                                glyphs,
-                                new TimeRational(num, den));
-                    } else {
-                        logger.warn("Invalid time signature parameters");
-                    }
-                }
-            }
-        }
-    }
+    //    //-------------//
+    //    // ParamAction //
+    //    //-------------//
+    //    private class ParamAction
+    //            extends AbstractAction
+    //    {
+    //        //~ Methods --------------------------------------------------------------------------------
+    //
+    //        // Method run whenever user presses Return/Enter in one of the parameter
+    //        // fields
+    //        @Override
+    //        public void actionPerformed (ActionEvent e)
+    //        {
+    //            // Discard irrelevant action events
+    //            if (selfUpdatingText) {
+    //                return;
+    //            }
+    //
+    //            // Get current glyph set
+    //            GlyphSetEvent glyphsEvent = (GlyphSetEvent) getSelectionService()
+    //                    .getLastEvent(GlyphSetEvent.class);
+    //            Set<Glyph> glyphs = (glyphsEvent != null) ? glyphsEvent.getData() : null;
+    //
+    //            if ((glyphs != null) && !glyphs.isEmpty()) {
+    //                // Read shape information
+    //                String shapeName = shapeField.getText();
+    //
+    //                if (shapeName.isEmpty()) {
+    //                    return;
+    //                }
+    //
+    //                Shape shape = Shape.valueOf(shapeName);
+    ////
+    ////                // Text?
+    ////                if (shape.isText()) {
+    ////                    logger.debug(
+    ////                            "Text=''{}'' Role={}",
+    ////                            textField.getText().trim(),
+    ////                            roleCombo.getSelectedItem());
+    ////
+    ////                    TextRole role = roleCombo.getSelectedItem();
+    ////                    SheetsController.getCurrentSheet().getSymbolsController().asyncAssignTexts(
+    ////                            glyphs,
+    ////                            role,
+    ////                            textField.getText());
+    ////                } else if (shape == Shape.CUSTOM_TIME) {
+    ////                    int num = timeNum.getValue();
+    ////                    int den = timeDen.getValue();
+    ////
+    ////                    if ((num != 0) && (den != 0)) {
+    ////                        SheetsController.getCurrentSheet().getSymbolsController().asyncAssignRationals(
+    ////                                glyphs,
+    ////                                new TimeRational(num, den));
+    ////                    } else {
+    ////                        logger.warn("Invalid time signature parameters");
+    ////                    }
+    ////                }
+    //            }
+    //        }
+    //    }
 }

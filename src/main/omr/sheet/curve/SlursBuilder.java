@@ -14,8 +14,6 @@ package omr.sheet.curve;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Shape;
-
 import omr.math.Circle;
 
 import omr.sheet.Scale;
@@ -290,6 +288,9 @@ public class SlursBuilder
         }
     }
 
+    //----------------//
+    // computeImpacts //
+    //----------------//
     /**
      * Compute impacts for slur candidate.
      *
@@ -444,13 +445,15 @@ public class SlursBuilder
             return null;
         }
 
-        // Max arc angle value
-        double arcAngle = rough.getArcAngle();
+        if (!Double.isInfinite(radius)) {
+            // Max arc angle value
+            double arcAngle = rough.getArcAngle();
 
-        if (arcAngle > params.maxArcAngleHigh) {
-            logger.debug("Arc angle too large {} at {}", arcAngle, p0);
+            if (arcAngle > params.maxArcAngleHigh) {
+                logger.debug("Arc angle too large {} at {}", arcAngle, p0);
 
-            return null;
+                return null;
+            }
         }
 
         // Now compute "precise" circle
@@ -464,7 +467,8 @@ public class SlursBuilder
             final double r1 = rough.getRadius();
             final double r2 = fitted.getRadius();
 
-            if ((abs(r1 - r2) / (max(r1, r2))) <= params.similarRadiusRatio) {
+            if (Double.isInfinite(r1)
+                || ((abs(r1 - r2) / (max(r1, r2))) <= params.similarRadiusRatio)) {
                 circle = fitted;
                 dist = circle.getDistance();
             } else {
@@ -489,6 +493,9 @@ public class SlursBuilder
         }
     }
 
+    //----------------//
+    // createInstance //
+    //----------------//
     @Override
     protected Curve createInstance (Point firstJunction,
                                     Point lastJunction,
@@ -509,6 +516,9 @@ public class SlursBuilder
         return slur;
     }
 
+    //-------------//
+    // createInter //
+    //-------------//
     @Override
     protected void createInter (Curve seq,
                                 Set<Inter> inters)
@@ -522,12 +532,14 @@ public class SlursBuilder
             slur.retrieveGlyph(sheet, params.maxRunDistance);
 
             if (slur.getGlyph() != null) {
-                slur.getGlyph().setShape(Shape.SLUR);
                 inters.add(new SlurInter(slur, impacts));
             }
         }
     }
 
+    //--------------//
+    // filterInters //
+    //--------------//
     @Override
     protected void filterInters (Set<Inter> inters)
     {
@@ -540,12 +552,18 @@ public class SlursBuilder
         }
     }
 
+    //-------------------//
+    // getArcCheckLength //
+    //-------------------//
     @Override
     protected Integer getArcCheckLength ()
     {
         return params.arcCheckLength;
     }
 
+    //--------------//
+    // getEndVector //
+    //--------------//
     @Override
     protected Point2D getEndVector (Curve seq)
     {
@@ -570,6 +588,7 @@ public class SlursBuilder
 
         for (Curve seq : clump) {
             SlurInfo slur = (SlurInfo) seq;
+            Point end = slur.getEnd(reverse);
             GradeImpacts impacts = computeImpacts(slur, false);
 
             if (impacts != null) {
@@ -608,6 +627,9 @@ public class SlursBuilder
         }
     }
 
+    //-----------//
+    // getBounds //
+    //-----------//
     /**
      * Report the bounding box of a collection of slurs
      *
@@ -631,6 +653,9 @@ public class SlursBuilder
         return box;
     }
 
+    //-------------//
+    // getSeedArcs //
+    //-------------//
     /**
      * Build the arcs that can be used to start slur building.
      * They contain only arcs with relevant shape and of sufficient length.
@@ -729,6 +754,9 @@ public class SlursBuilder
         }
     }
 
+    //----------------//
+    // purgeShortests //
+    //----------------//
     /**
      * Discard the inters with shortest extension.
      *
@@ -766,50 +794,6 @@ public class SlursBuilder
         return longest;
     }
 
-    //
-    //    //----------------//
-    //    // getTangentLine //
-    //    //----------------//
-    //    private FilamentLine getTangentLine (Curve curve)
-    //    {
-    //        SlurInfo slur = (SlurInfo) curve;
-    //
-    //        // Distance from slur end to closest staff line
-    //        Point se = slur.getEnd(reverse);
-    //        Staff staff = sheet.getStaffManager().getClosestStaff(se);
-    //        FilamentLine line = staff.getClosestLine(se);
-    //        double dy = line.yAt(se.x) - se.y;
-    //
-    //        if (abs(dy) > params.maxStaffLineDy) {
-    //            logger.debug("End ({},{}] far from staff line", se.x, se.y);
-    //
-    //            return null;
-    //        }
-    //
-    //        // General direction of slur end WRT staff line
-    //        Point2D uv = getEndVector(slur);
-    //
-    //        if (uv == null) {
-    //            return null;
-    //        }
-    //
-    //        try {
-    //            // There may be not computable midPoint
-    //            Point2D midPoint = slur.getMidPoint();
-    //            double backDy = line.yAt(midPoint.getX()) - midPoint.getY();
-    //            boolean crossing = (uv.getY() * backDy) > 0;
-    //            Model gc = slur.getModel();
-    //            double incidence = gc.getAngle(reverse) - ((gc.ccw() * PI) / 2);
-    //
-    //            if (crossing && (abs(incidence) <= params.maxIncidence)) {
-    //                return line;
-    //            }
-    //        } catch (Exception ex) {
-    //        }
-    //
-    //        return null;
-    //    }
-    //
     //-----------------//
     // purgeStaffLines //
     //-----------------//
@@ -828,18 +812,19 @@ public class SlursBuilder
 
         for (SlurInter inter : inters) {
             SlurInfo slur = inter.getInfo();
+            Point end = slur.getEnd(reverse);
 
             if (debugArc) {
-                curves.selectPoint(slur.getEnd(reverse));
+                curves.selectPoint(end);
+                logger.info("purgeStaffLines {} {} at {}", inter, slur, end);
             }
 
             // Vertical distance from slur end to closest staff line
-            Point end = slur.getEnd(reverse);
             Staff staff = sheet.getStaffManager().getClosestStaff(end);
             FilamentLine line = staff.getClosestLine(end);
-            double dy = line.yAt(end.x) - end.y;
+            double toLine = line.yAt(end.x) - end.y;
 
-            if (abs(dy) > params.maxStaffLineDy) {
+            if (abs(toLine) > params.maxStaffLineDy) {
                 continue;
             }
 
@@ -859,7 +844,14 @@ public class SlursBuilder
                     List<Point> pts = slur.getSidePoints(reverse);
                     Point p1 = reverse ? pts.get(pts.size() - 1) : pts.get(0);
                     Point p2 = reverse ? pts.get(0) : pts.get(pts.size() - 1);
-                    incidence = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                    double dx = Math.abs(p2.x - p1.x);
+
+                    if (dx < 1) {
+                        continue; // dx < 1 pixel, so the segment is vertical (angle is 90 degrees)
+                    }
+
+                    double dy = Math.abs(p2.y - p1.y);
+                    incidence = Math.atan(dy / dx);
                 } else {
                     incidence = model.getAngle(reverse) - ((model.ccw() * PI) / 2);
                 }
@@ -928,7 +920,7 @@ public class SlursBuilder
                 "Maximum incidence angle (in degrees) for staff tangency");
 
         private final Scale.Fraction minStraightEndRadius = new Scale.Fraction(
-                15,
+                9,
                 "Minimum circle radius for a straight slur end");
 
         private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(

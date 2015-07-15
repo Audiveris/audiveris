@@ -31,6 +31,11 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+
 /**
  * Class {@code Page} represents a page in the score hierarchy, and corresponds to a
  * (part of) {@link Sheet}.
@@ -41,22 +46,37 @@ import java.util.TreeSet;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class Page
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(Page.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Page.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Containing (physical) sheet. */
-    @Navigable(false)
-    private final Sheet sheet;
-
+    //
+    // Persistent data
+    //----------------
+    //
     /** Page ID. */
-    private String id;
+    @XmlAttribute
+    private final int id;
 
     /** Does this page start a movement?. */
+    @XmlAttribute(name = "movement-start")
     private boolean movementStart;
+
+    /** (Sub)list of systems, within sheet systems. */
+    @XmlElement(name = "system")
+    private List<SystemInfo> systems;
+
+    // Transient data
+    //---------------
+    //
+    /** Containing (physical) sheet. */
+    @Navigable(false)
+    private Sheet sheet;
 
     /** LogicalPart list for the page. */
     private List<LogicalPart> logicalParts;
@@ -73,9 +93,6 @@ public class Page
     /** Id of last system in sheet, if any. */
     private Integer lastSystemId;
 
-    /** (Sub)list of systems, within sheet systems. */
-    private List<SystemInfo> systems;
-
     /** Greatest duration divisor (in this page). */
     private Integer durationDivisor;
 
@@ -83,17 +100,26 @@ public class Page
     /**
      * Creates a new Page object.
      *
-     * @param sheet         the containing sheet
+     * @param sheet         containing sheet
+     * @param id            id for the page (1-based number within sheet)
      * @param firstSystemId id of first system in sheet, if any
      */
     public Page (Sheet sheet,
+                 int id,
                  Integer firstSystemId)
     {
-        this.sheet = sheet;
+        this.id = id;
         this.firstSystemId = firstSystemId;
 
-        // Define id
-        computeId();
+        initTransients(sheet);
+    }
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private Page ()
+    {
+        id = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -136,7 +162,7 @@ public class Page
                 sb.append(", ");
             }
 
-            sb.append(part.getMeasures().size()).append(" in ").append(sys.idString());
+            sb.append(part.getMeasures().size()).append(" in system#").append(sys.getId());
             count += part.getMeasures().size();
         }
 
@@ -221,17 +247,6 @@ public class Page
     public Integer getFirstSystemId ()
     {
         return firstSystemId;
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * @return the id
-     */
-    public String getId ()
-    {
-        return id;
     }
 
     //---------------//
@@ -334,6 +349,19 @@ public class Page
         return systems;
     }
 
+    //----------------//
+    // initTransients //
+    //----------------//
+    /**
+     * Initialize transient data after construction or un-marshaling.
+     *
+     * @param sheet the containing sheet
+     */
+    public final void initTransients (Sheet sheet)
+    {
+        this.sheet = sheet;
+    }
+
     //-----------------//
     // isMovementStart //
     //-----------------//
@@ -402,7 +430,6 @@ public class Page
     public void setFirstSystemId (Integer firstSystemId)
     {
         this.firstSystemId = firstSystemId;
-        computeId();
     }
 
     //-----------------//
@@ -414,7 +441,6 @@ public class Page
     public void setLastSystemId (Integer lastSystemId)
     {
         this.lastSystemId = lastSystemId;
-        computeId();
     }
 
     //-----------------//
@@ -529,26 +555,5 @@ public class Page
 
             return 0;
         }
-    }
-
-    //-----------//
-    // computeId //
-    //-----------//
-    /**
-     * Build the ID string for this page.
-     */
-    private void computeId ()
-    {
-        StringBuilder sb = new StringBuilder(sheet.getId());
-
-        if (firstSystemId != null) {
-            sb.append("-F").append(firstSystemId);
-        }
-
-        if (lastSystemId != null) {
-            sb.append("-L").append(lastSystemId);
-        }
-
-        id = sb.toString();
     }
 }

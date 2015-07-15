@@ -11,11 +11,12 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.math.AreaUtil;
-import omr.math.Line;
 
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;
@@ -32,7 +33,7 @@ public class AbstractVerticalInter
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Median line, perhaps not fully straight. */
-    protected final Line median;
+    protected final Line2D median;
 
     /** Line width. */
     protected final double width;
@@ -50,7 +51,7 @@ public class AbstractVerticalInter
     public AbstractVerticalInter (Glyph glyph,
                                   Shape shape,
                                   GradeImpacts impacts,
-                                  Line median,
+                                  Line2D median,
                                   double width)
     {
         super(glyph, null, shape, impacts);
@@ -58,7 +59,7 @@ public class AbstractVerticalInter
         this.width = width;
 
         if (median != null) {
-            setArea(AreaUtil.verticalRibbon(median.toPath(), width));
+            setArea(AreaUtil.verticalRibbon(new Path2D.Double(median), width));
 
             // Define precise bounds based on this path
             setBounds(getArea().getBounds());
@@ -81,7 +82,7 @@ public class AbstractVerticalInter
     /**
      * @return the median
      */
-    public Line getMedian ()
+    public Line2D getMedian ()
     {
         return median;
     }

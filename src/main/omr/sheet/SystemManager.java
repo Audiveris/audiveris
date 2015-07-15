@@ -25,12 +25,9 @@ import omr.math.ReversePathIterator;
 import omr.score.Page;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.VerticalSide;
-
 import static omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
@@ -82,7 +79,7 @@ public class SystemManager
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
-    private final Sheet sheet;
+    private Sheet sheet;
 
     /** Sheet retrieved systems. */
     private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
@@ -96,6 +93,14 @@ public class SystemManager
     public SystemManager (Sheet sheet)
     {
         this.sheet = sheet;
+    }
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private SystemManager ()
+    {
+        this.sheet = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -372,6 +377,14 @@ public class SystemManager
         }
     }
 
+    //----------------//
+    // initTransients //
+    //----------------//
+    void initTransients (Sheet sheet)
+    {
+        this.sheet = sheet;
+    }
+
     //---------------//
     // allocatePages //
     //---------------//
@@ -400,11 +413,15 @@ public class SystemManager
                 }
 
                 // Start a new page
-                sheet.addPage(page = new Page(sheet, (systId == 1) ? null : systId));
+                sheet.addPage(
+                        page = new Page(
+                                sheet,
+                                1 + sheet.getPages().size(),
+                                (systId == 1) ? null : systId));
                 page.setMovementStart(true);
             } else if (page == null) {
                 // Start first page in sheet
-                sheet.addPage(page = new Page(sheet, null));
+                sheet.addPage(page = new Page(sheet, 1 + sheet.getPages().size(), null));
             }
 
             system.setPage(page);

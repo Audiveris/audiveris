@@ -17,15 +17,17 @@ import java.awt.Point;
 import java.util.Comparator;
 
 /**
- * Interface {@code Glyph} represents any glyph found, such as stem,
- * ledger, accidental, note head, word, text line, etc...
+ * Interface {@code Glyph} represents a set of pixels.
  * <p>
- * A Glyph is basically a collection of sections. It can be split into smaller glyphs, which may
- * later be re-assembled into another instance of glyph. There is a means, based on a simple
- * signature (weight and moments) to detect if the glyph at hand is identical to a previous one,
- * which is then reused.
+ * A glyph is implemented and persisted as a run table located at a given absolute origin.
+ * It is un-mutable, meaning one cannot add or remove pixels to/from an existing glyph, but rather
+ * create another glyph instance with proper collection of pixels.
  * <p>
- * A Glyph can be stored on disk and reloaded in order to train a glyph evaluator.
+ * (TODO: CHECK THIS FEATURE:)
+ * There is a means, based on a simple signature (weight and moments), to detect if the glyph at
+ * hand is identical to a previous one, which is then reused.
+ * <p>
+ * A Glyph can be stored on disk and reloaded in order to train a glyph classifier.
  *
  * @author Hervé Bitteur
  */
@@ -46,15 +48,11 @@ public interface Glyph
         /** For shape assignment */
         GlyphRecognition,
         /** For mean line */
-        GlyphAlignment,
-        /** For textual content */
-        GlyphContent,
-        /** For possible interpretations */
-        GlyphInterpret
+        GlyphAlignment
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** For comparing glyphs according to their reverse height. */
+    /** To compare glyphs according to their reverse height. */
     public static final Comparator<Glyph> byReverseHeight = new Comparator<Glyph>()
     {
         @Override
@@ -65,7 +63,7 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their decreasing weight. */
+    /** To compare glyphs according to their decreasing weight. */
     public static final Comparator<Glyph> byReverseWeight = new Comparator<Glyph>()
     {
         @Override
@@ -76,7 +74,7 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their id. */
+    /** To compare glyphs according to their id. */
     public static final Comparator<Glyph> byId = new Comparator<Glyph>()
     {
         @Override
@@ -87,7 +85,7 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their abscissa, then ordinate, then id. */
+    /** To compare glyphs according to their abscissa (then ordinate, then id). */
     public static final Comparator<Glyph> byAbscissa = new Comparator<Glyph>()
     {
         @Override
@@ -120,8 +118,7 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their ordinate,
-     * then abscissa, then id. */
+    /** To compare glyphs according to their ordinate (then abscissa, then id). */
     public static final Comparator<Glyph> byOrdinate = new Comparator<Glyph>()
     {
         @Override
@@ -154,8 +151,7 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their reverse ordinate,
-     * then abscissa, then id. */
+    /** To compare glyphs according to their reverse ordinate (then abscissa, then id). */
     public static final Comparator<Glyph> byReverseOrdinate = new Comparator<Glyph>()
     {
         @Override

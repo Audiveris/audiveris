@@ -14,9 +14,9 @@ package omr.sig.inter;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.math.Line;
-
 import omr.sig.GradeImpacts;
+
+import java.awt.geom.Line2D;
 
 /**
  * Class {@code BracketInter}
@@ -54,7 +54,7 @@ public class BracketInter
      */
     public BracketInter (Glyph glyph,
                          GradeImpacts impacts,
-                         Line median,
+                         Line2D median,
                          double width,
                          BracketKind kind)
     {

@@ -353,11 +353,7 @@ public class TextWord
     @Override
     public String getValue ()
     {
-        if ((glyph != null) && (glyph.getManualValue() != null)) {
-            return glyph.getManualValue();
-        } else {
-            return getInternalValue();
-        }
+        return getInternalValue();
     }
 
     //----------//

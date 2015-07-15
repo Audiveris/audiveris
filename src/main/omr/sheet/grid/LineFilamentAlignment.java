@@ -131,11 +131,11 @@ public class LineFilamentAlignment
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction virtualSegmentLength = new Scale.Fraction(
-                3,
+                5.0,
                 "Typical length used for virtual intermediate points");
 
         private final Scale.Fraction maxHoleLength = new Scale.Fraction(
-                4,
+                6.0,
                 "Maximum length for holes without intermediate points");
     }
 

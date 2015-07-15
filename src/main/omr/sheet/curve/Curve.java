@@ -14,24 +14,19 @@ package omr.sheet.curve;
 import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphNest;
 import omr.glyph.facets.Glyph;
-
 import static omr.glyph.facets.GlyphComposition.Linking.NO_LINK;
-
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
 
 import omr.lag.JunctionAllPolicy;
 import omr.lag.Section;
 import omr.lag.SectionFactory;
-
 import static omr.run.Orientation.VERTICAL;
-
 import omr.run.Run;
 import omr.run.RunTable;
 
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
-import omr.sheet.grid.FilamentLine;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,9 +95,6 @@ public abstract class Curve
 
     /** Potential attachments, lazily allocated. */
     private AttachmentHolder attachments;
-
-    /** Staff line most recently crossed, if any. */
-    private FilamentLine crossedLine;
 
     /** Underlying glyph made of relevant runs. (generally thicker than the curve line) */
     protected Glyph glyph;
@@ -322,17 +314,6 @@ public abstract class Curve
         return new Rectangle(bounds);
     }
 
-    //----------------//
-    // getCrossedLine //
-    //----------------//
-    /**
-     * @return the last crossed Line
-     */
-    public FilamentLine getCrossedLine ()
-    {
-        return crossedLine;
-    }
-
     //------------//
     // getExtArea //
     //------------//
@@ -477,7 +458,7 @@ public abstract class Curve
             box.y = 0;
         }
 
-        RunTable curveTable = new RunTable("C" + getId(), VERTICAL, box.width, box.height);
+        RunTable curveTable = new RunTable(VERTICAL, box.width, box.height);
 
         // Populate the curve run table
         for (int index = 0; index < points.size(); index++) {
@@ -508,17 +489,6 @@ public abstract class Curve
 
             return null;
         }
-    }
-
-    //----------------//
-    // setCrossedLine //
-    //----------------//
-    /**
-     * @param crossedLine the last crossed Line to set
-     */
-    public void setCrossedLine (FilamentLine crossedLine)
-    {
-        this.crossedLine = crossedLine;
     }
 
     //------------//

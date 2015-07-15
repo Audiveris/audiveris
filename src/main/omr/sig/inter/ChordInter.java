@@ -166,8 +166,8 @@ public abstract class ChordInter
                                             AbstractBeamInter b2)
                         {
                             int x = stem.getCenter().x;
-                            double y1 = LineUtil.intersectionAtX(b1.getMedian(), x).getY();
-                            double y2 = LineUtil.intersectionAtX(b2.getMedian(), x).getY();
+                            double y1 = LineUtil.yAtX(b1.getMedian(), x);
+                            double y2 = LineUtil.yAtX(b2.getMedian(), x);
                             int yHead = getHeadLocation().y;
 
                             return Double.compare(Math.abs(yHead - y2), Math.abs(yHead - y1));

@@ -144,8 +144,8 @@ public class AbstractFlagInter
             Glyph stemGlyph = stem.getGlyph();
             Point2D start = stemGlyph.getStartPoint(VERTICAL);
             Point2D stop = stemGlyph.getStopPoint(VERTICAL);
-            Point2D crossPt = LineUtil.intersectionAtY(start, stop, refPt.getY());
-            final double xGap = refPt.getX() - crossPt.getX();
+            double crossX = LineUtil.xAtY(start, stop, refPt.getY());
+            final double xGap = refPt.getX() - crossX;
             final double yGap;
 
             if (refPt.getY() < start.getY()) {

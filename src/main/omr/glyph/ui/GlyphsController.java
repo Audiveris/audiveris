@@ -13,14 +13,11 @@ package omr.glyph.ui;
 
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphNest;
-import omr.glyph.Glyphs;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
-import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.script.AssignTask;
-import omr.script.BarlineTask;
 import omr.script.DeleteTask;
 
 import omr.selection.GlyphEvent;
@@ -109,13 +106,15 @@ public class GlyphsController
             }
         }
 
-        if (ShapeSet.Barlines.contains(shape) || Glyphs.containsBarline(glyphs)) {
-            // Special case for barlines assignment or deassignment
-            return new BarlineTask(sheet, shape, compound, glyphs).launch(sheet);
-        } else {
-            // Normal symbol processing
-            return new AssignTask(sheet, shape, compound, glyphs).launch(sheet);
-        }
+        return null;
+//
+//        if (ShapeSet.Barlines.contains(shape) || Glyphs.containsBarline(glyphs)) {
+//            // Special case for barlines assignment or deassignment
+//            return new BarlineTask(sheet, shape, compound, glyphs).launch(sheet);
+//        } else {
+//            // Normal symbol processing
+//            return new AssignTask(sheet, shape, compound, glyphs).launch(sheet);
+//        }
     }
 
     //---------------------//

@@ -173,7 +173,7 @@ public class SymbolsFilter
     {
         // Runs
         RunTableFactory runFactory = new RunTableFactory(SYMBOL_ORIENTATION);
-        RunTable runTable = runFactory.createTable("symbols", buffer);
+        RunTable runTable = runFactory.createTable(buffer);
 
         // Sections
         SectionFactory sectionsBuilder = new SectionFactory(symLag, new JunctionRatioPolicy());
@@ -465,7 +465,7 @@ public class SymbolsFilter
 
             // Runs
             RunTableFactory factory = new RunTableFactory(SYMBOL_ORIENTATION);
-            RunTable runTable = factory.createTable("optionals", buf);
+            RunTable runTable = factory.createTable(buf);
 
             // Sections
             SectionFactory sectionsBuilder = new SectionFactory(symLag, new JunctionRatioPolicy());

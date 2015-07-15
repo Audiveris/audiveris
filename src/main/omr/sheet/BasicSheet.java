@@ -133,9 +133,6 @@ public class BasicSheet
     @XmlElement(name = "picture")
     private Picture picture;
 
-    /** Corresponding page(s). A single sheet may relate to several pages. */
-    private final List<Page> pages = new ArrayList<Page>();
-
     /** Global scale for this sheet. */
     @XmlElement(name = "scale")
     private Scale scale;
@@ -144,6 +141,10 @@ public class BasicSheet
     @XmlElement(name = "skew")
     private Skew skew;
 
+    /** Corresponding page(s). A single sheet may relate to several pages. */
+    @XmlElement(name = "page")
+    private final List<Page> pages = new ArrayList<Page>();
+
     // Transient data
     //---------------
     //
@@ -151,14 +152,14 @@ public class BasicSheet
     @Navigable(false)
     private Book book;
 
-    /** Dictionary of sheet lags. */
-    private LagManager lagManager;
+    /** Staves. */
+    private StaffManager staffManager;
 
     /** Systems management. */
     private SystemManager systemManager;
 
-    /** Staves. */
-    private StaffManager staffManager;
+    /** Dictionary of sheet lags. */
+    private LagManager lagManager;
 
     /** Inter manager for all systems in this sheet. */
     private InterManager interManager;
@@ -239,7 +240,6 @@ public class BasicSheet
         number = 0;
         book = null;
         lagManager = null;
-        systemManager = null;
         staffManager = null;
         interManager = null;
         filterContext = null;
@@ -1001,6 +1001,26 @@ public class BasicSheet
         return doStep(Step.last(), null);
     }
 
+    //-------------------//
+    // createPictureView //
+    //-------------------//
+    /**
+     * (package private) Create and display the picture view.
+     *
+     * @param sheetTab the name to be used for picture tab (Picture or Binary)
+     */
+    void createPictureView (SheetTab sheetTab)
+    {
+        locationService.subscribeStrongly(LocationEvent.class, picture);
+
+        // Display sheet picture if not batch mode
+        PictureView pictureView = new PictureView(this);
+        assembly.addViewTab(
+                sheetTab,
+                pictureView,
+                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+    }
+
     //    //----------//
     //    // addError //
     //    //----------//
@@ -1033,8 +1053,18 @@ public class BasicSheet
     {
         this.book = book;
 
+        for (Page page : pages) {
+            page.initTransients(this);
+        }
+
+        if (systemManager == null) {
+            systemManager = new SystemManager(this);
+        } else {
+            systemManager.initTransients(this);
+        }
+
         staffManager = new StaffManager(this);
-        systemManager = new SystemManager(this);
+
         lagManager = new LagManager(this);
 
         filterContext = new LiveParam<FilterDescriptor>(book.getFilterParam());
@@ -1051,39 +1081,6 @@ public class BasicSheet
 
         createNest();
         interManager = new InterManager(this);
-    }
-
-    //-------------------//
-    // createPictureView //
-    //-------------------//
-    /**
-     * (package private) Create and display the picture view.
-     *
-     * @param sheetTab the name to be used for picture tab (Picture or Binary)
-     */
-    void createPictureView (SheetTab sheetTab)
-    {
-        locationService.subscribeStrongly(LocationEvent.class, picture);
-
-        // Display sheet picture if not batch mode
-        PictureView pictureView = new PictureView(this);
-        assembly.addViewTab(
-                sheetTab,
-                pictureView,
-                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
-    }
-
-    //------//
-    // done //
-    //------//
-    /**
-     * Remember that the provided step has been completed on the sheet.
-     *
-     * @param step the provided step
-     */
-    private final void done (Step step)
-    {
-        doneSteps.add(step);
     }
 
     //------------//
@@ -1158,6 +1155,19 @@ public class BasicSheet
             setCurrentStep(null);
             StepMonitoring.notifyStep(this, step); // Stop
         }
+    }
+
+    //------//
+    // done //
+    //------//
+    /**
+     * Remember that the provided step has been completed on the sheet.
+     *
+     * @param step the provided step
+     */
+    private final void done (Step step)
+    {
+        doneSteps.add(step);
     }
 
     //--------------//

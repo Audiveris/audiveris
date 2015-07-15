@@ -99,9 +99,9 @@ public class RunTableTest
 
         RunTable instance = createHorizontalInstance();
         RunTable expResult = createHorizontalInstance();
-        RunTable result = instance.copy("hori");
+        RunTable result = instance.copy();
 
-        if (!expResult.isIdentical(result) || !expResult.getName().equals(result.getName())) {
+        if (!expResult.isIdentical(result)) {
             fail("Copy not identical to original");
         }
     }
@@ -234,20 +234,6 @@ public class RunTableTest
     }
 
     /**
-     * Test of getName method, of class RunTable.
-     */
-    @Test
-    public void testGetName ()
-    {
-        System.out.println("\n+++ getName");
-
-        RunTable instance = createHorizontalInstance();
-        String expResult = "hori";
-        String result = instance.getName();
-        assertEquals(expResult, result);
-    }
-
-    /**
      * Test of getOrientation method, of class RunTable.
      */
     @Test
@@ -375,7 +361,7 @@ public class RunTableTest
 
         GlobalFilter filter = new GlobalFilter(buffer, 127);
         RunTableFactory factory = new RunTableFactory(HORIZONTAL);
-        RunTable that = factory.createTable("inverted", filter.filteredImage());
+        RunTable that = factory.createTable(filter.filteredImage());
         System.out.println("inverted" + that.dumpOf());
         that.dumpSequences();
 
@@ -499,7 +485,7 @@ public class RunTableTest
         System.out.println("table before1:" + instance.dumpOf());
         instance.dumpSequences();
 
-        RunTable removed = new RunTable("purged", HORIZONTAL, dim.width, dim.height);
+        RunTable removed = new RunTable(HORIZONTAL, dim.width, dim.height);
         instance.purge(predicate1, removed);
         System.out.println("table after1:" + instance.dumpOf());
         instance.dumpSequences();
@@ -601,7 +587,7 @@ public class RunTableTest
         System.out.println("\n+++ toString");
 
         RunTable instance = createHorizontalInstance();
-        String expResult = "{RunTable hori HORIZONTAL 10x5 runs:9}";
+        String expResult = "RunTable{hori HORIZONTAL 10x5}";
         String result = instance.toString();
         assertEquals(expResult, result);
     }
@@ -611,7 +597,7 @@ public class RunTableTest
     //--------------------------//
     private RunTable createHorizontalInstance ()
     {
-        RunTable instance = new RunTable("hori", HORIZONTAL, dim.width, dim.height);
+        RunTable instance = new RunTable(HORIZONTAL, dim.width, dim.height);
 
         instance.addRun(0, new Run(1, 2));
         instance.addRun(0, new Run(5, 3));
@@ -643,7 +629,7 @@ public class RunTableTest
         GlobalFilter filter = new GlobalFilter(buffer, 127);
         RunTableFactory factory = new RunTableFactory(VERTICAL);
 
-        RunTable instance = factory.createTable("vert", filter.filteredImage());
+        RunTable instance = factory.createTable(filter.filteredImage());
 
         ///System.out.println("createVerticalInstance:\n" + instance.dumpOf());
         return instance;
