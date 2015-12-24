@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="13.3">
+  <help_text>//Uncomment the following line to change the fontsize:
+        //fontsize=14
+
+        //Welcome to UMLet!
+
+        // *Double-click on UML elements to add them to the diagram.
+        // *Edit element properties by modifying the text in this panel.
+        // *Edit the files in the 'palettes' directory to store your own element palettes.
+        // *Press Del or Backspace to remove elements from the diagram.
+        // *Hold down Ctrl key to select multiple elements.
+        // *Press c to copy the UML diagram to the system clipboard.
+        // * This text will be stored with each diagram. Feel free to use the area for notes.
+    </help_text>
+  <zoom_level>9</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>648</x>
+      <y>216</y>
+      <w>90</w>
+      <h>108</h>
+    </coordinates>
+    <panel_attributes>*EntityIndex*
+bg=#ffff55
+--
+map[id-&gt;entity]
+--
+getAllEntities()
+getEntity(id)
+register
+remove</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>477</x>
+      <y>216</y>
+      <w>135</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>*EntityService*
+bg=#ffbbbb
+--
+getSelectedEntity()
+getSelectedEntityList()
+#onEvent()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>783</x>
+      <y>216</y>
+      <w>90</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>/*Entity*/
+bg=#ffff55
+--
+contains(point)
+getBounds()
+getId()
+setId(id)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>801</x>
+      <y>126</y>
+      <w>54</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>/*Vip*/
+bg=#ffff55
+--
+isVip()
+setVip()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>819</x>
+      <y>180</y>
+      <w>27</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>729</x>
+      <y>216</y>
+      <w>72</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;60.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>603</x>
+      <y>216</y>
+      <w>63</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;50.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>252</x>
+      <y>216</y>
+      <w>108</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>*EntityView*
+bg=#ffbbbb
+--
+propertyChange()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>252</x>
+      <y>63</y>
+      <w>108</w>
+      <h>117</h>
+    </coordinates>
+    <panel_attributes>*RubberPanel*
+bg=#ffbbbb
+--
+zoom
+rubber
+locationService
+--
+onEvent()
+render()
+renderItems()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>297</x>
+      <y>171</y>
+      <w>27</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>351</x>
+      <y>216</y>
+      <w>144</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>140.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>270</x>
+      <y>9</y>
+      <w>72</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>JPanel</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>297</x>
+      <y>27</y>
+      <w>27</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>189</x>
+      <y>180</y>
+      <w>81</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>lt=)-
+r1=listen
+</panel_attributes>
+    <additional_attributes>20.0;20.0;70.0;60.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>189</x>
+      <y>225</y>
+      <w>81</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>lt=)-
+r1=listen
+</panel_attributes>
+    <additional_attributes>20.0;50.0;70.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>486</x>
+      <y>117</y>
+      <w>117</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>*SelectionService*
+bg=#ffbbbb
+--
+allowedEvents
+--
+getSelection(class)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>531</x>
+      <y>171</y>
+      <w>27</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>765</x>
+      <y>63</y>
+      <w>63</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>UI-only
+bg=#ffbbbb
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>765</x>
+      <y>27</y>
+      <w>63</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>batch &amp; UI
+bg=#ffff55
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>711</x>
+      <y>9</y>
+      <w>126</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>Legend
+bg=#dadada
+layer=1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>486</x>
+      <y>9</y>
+      <w>117</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>/EventService/
+--
+publish(event)
+subscribeStrongly()
+unsubscribe()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>531</x>
+      <y>72</y>
+      <w>27</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>378</x>
+      <y>252</y>
+      <w>81</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>*EntityBoard*
+bg=#ffbbbb
+--
+count
+vip
+dump
+idSpinner</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>450</x>
+      <y>252</y>
+      <w>45</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>30.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>9</x>
+      <y>189</y>
+      <w>117</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>ViewParameters
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>117</x>
+      <y>180</y>
+      <w>90</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>lt=-()
+r2=provide
+</panel_attributes>
+    <additional_attributes>10.0;20.0;80.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>9</x>
+      <y>261</y>
+      <w>117</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>PaintingParameters
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>117</x>
+      <y>252</y>
+      <w>90</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>lt=-()
+r2=provide
+</panel_attributes>
+    <additional_attributes>10.0;20.0;80.0;20.0</additional_attributes>
+  </element>
+</diagram>

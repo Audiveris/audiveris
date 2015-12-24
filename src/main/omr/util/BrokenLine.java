@@ -30,8 +30,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -81,11 +79,8 @@ public class BrokenLine
     //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The ordered sequence of points */
-    private final List<Point> points = new ArrayList<Point>();
-
-    /** Dummy collection of points, just for (un) marshalling */
     @XmlElement(name = "point")
-    private final List<PointFacade> xps = new ArrayList<PointFacade>();
+    private final List<Point> points = new ArrayList<Point>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -431,42 +426,6 @@ public class BrokenLine
     public String toString ()
     {
         return "{BrokenLine " + getSequenceString() + "}";
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are un-marshaled for this object,
-     * but before this object is set to the parent object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        // Convert xps -> points
-        points.clear();
-
-        for (PointFacade xp : xps) {
-            points.add(xp.getPoint());
-        }
-    }
-
-    //---------------//
-    // beforeMarshal //
-    //---------------//
-    /**
-     * Called immediately before the marshaling of this object begins.
-     */
-    @SuppressWarnings("unused")
-    private void beforeMarshal (Marshaller m)
-    {
-        // Convert points -> xps
-        xps.clear();
-
-        for (Point point : points) {
-            xps.add(new PointFacade(point));
-        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -14,7 +14,6 @@ package omr.sig.inter;
 import omr.glyph.Shape;
 
 import omr.image.Anchored;
-import omr.image.ShapeDescriptor;
 
 import omr.sheet.Staff;
 
@@ -23,11 +22,14 @@ import omr.sig.GradeImpacts;
 import java.awt.Point;
 import java.awt.Rectangle;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code BlackHeadInter} represents a black note head interpretation.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "black-head")
 public class BlackHeadInter
         extends AbstractHeadInter
 {
@@ -36,23 +38,26 @@ public class BlackHeadInter
     /**
      * Creates a new BlackHeadInter object.
      *
-     * @param descriptor the shape template descriptor
-     * @param pivot      the template pivot
-     * @param anchor     relative pivot configuration
-     * @param box        the object bounds
-     * @param impacts    the grade details
-     * @param staff      the related staff
-     * @param pitch      the note pitch
+     * @param pivot   the template pivot
+     * @param anchor  relative pivot configuration
+     * @param bounds  the object bounds
+     * @param impacts the grade details
+     * @param staff   the related staff
+     * @param pitch   the note pitch
      */
-    public BlackHeadInter (ShapeDescriptor descriptor,
-                           Point pivot,
+    public BlackHeadInter (Point pivot,
                            Anchored.Anchor anchor,
-                           Rectangle box,
+                           Rectangle bounds,
                            GradeImpacts impacts,
                            Staff staff,
                            double pitch)
     {
-        super(descriptor, pivot, anchor, box, Shape.NOTEHEAD_BLACK, impacts, staff, pitch);
+        super(pivot, anchor, bounds, Shape.NOTEHEAD_BLACK, impacts, staff, pitch);
+    }
+
+    private BlackHeadInter ()
+    {
+        super(null, null, null, null, null, null, 0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -61,15 +66,14 @@ public class BlackHeadInter
     //-----------//
     public BlackHeadInter duplicate ()
     {
-        BlackHeadInter clone = new BlackHeadInter(
-                descriptor,
-                pivot,
-                anchor,
-                box,
-                impacts,
-                staff,
-                pitch);
+        BlackHeadInter clone = new BlackHeadInter(pivot, anchor, bounds, impacts, staff, pitch);
+        clone.setGlyph(this.glyph);
         clone.setMirror(this);
+
+        if (impacts == null) {
+            clone.setGrade(this.grade);
+        }
+
         sig.addVertex(clone);
         setMirror(clone);
 

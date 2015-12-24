@@ -26,17 +26,17 @@ public interface InterVisitor
 
     void visit (AbstractHeadInter inter);
 
-    void visit (BarConnectionInter inter);
+    void visit (BarConnectorInter inter);
 
     void visit (BarlineInter inter);
 
     void visit (BraceInter inter);
 
-    void visit (BracketConnectionInter inter);
+    void visit (BracketConnectorInter inter);
 
     void visit (BracketInter inter);
 
-    void visit (ChordInter inter);
+    void visit (AbstractChordInter inter);
 
     void visit (ClefInter inter);
 

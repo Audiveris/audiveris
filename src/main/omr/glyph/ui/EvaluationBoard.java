@@ -11,17 +11,17 @@
 // </editor-fold>
 package omr.glyph.ui;
 
+import omr.classifier.Classifier;
+import omr.classifier.Evaluation;
+import omr.classifier.GlyphClassifier;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Evaluation;
-import omr.glyph.GlyphClassifier;
-import omr.glyph.Glyphs;
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.ShapeEvaluator;
-import omr.glyph.facets.Glyph;
 
-import omr.selection.GlyphEvent;
+import omr.selection.EntityListEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
@@ -33,6 +33,8 @@ import omr.sheet.SystemManager;
 import omr.ui.Board;
 import omr.ui.Colors;
 import omr.ui.util.Panel;
+
+import omr.util.Navigable;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -46,6 +48,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -63,7 +66,7 @@ import javax.swing.SwingConstants;
  * @author Hervé Bitteur
  * @author Brenton Partridge
  */
-class EvaluationBoard
+public class EvaluationBoard
         extends Board
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -73,7 +76,7 @@ class EvaluationBoard
     private static final Logger logger = LoggerFactory.getLogger(EvaluationBoard.class);
 
     /** Events this board is interested in */
-    private static final Class<?>[] eventsRead = new Class<?>[]{GlyphEvent.class};
+    private static final Class<?>[] eventsRead = new Class<?>[]{EntityListEvent.class};
 
     /** Color for well recognized glyphs */
     private static final Color EVAL_GOOD_COLOR = new Color(100, 200, 100);
@@ -83,12 +86,13 @@ class EvaluationBoard
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The evaluator this display is related to */
-    private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
+    private final Classifier evaluator = GlyphClassifier.getInstance();
 
     /** Related glyphs controller */
     private final GlyphsController glyphsController;
 
     /** Related sheet */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Pane for detailed info display about the glyph evaluation */
@@ -125,7 +129,14 @@ class EvaluationBoard
                             GlyphsController glyphController,
                             boolean expanded)
     {
-        super(Board.EVAL, glyphController.getNest().getGlyphService(), eventsRead, false, expanded);
+        super(
+                Board.EVAL,
+                glyphController.getNest().getEntityService(),
+                eventsRead,
+                false,
+                false,
+                false,
+                expanded);
 
         this.glyphsController = glyphController;
         this.sheet = sheet;
@@ -146,38 +157,25 @@ class EvaluationBoard
      */
     public void evaluate (Glyph glyph)
     {
-        if ((glyph == null) || (glyph.getShape() == Shape.STEM) || glyph.isBar()) {
+        if (glyph == null) {
             // Blank the output
             selector.setEvals(null, null);
-        } else {
-            if (evaluator != null) {
-                if (useAnnotations) {
-                    SystemManager systemManager = sheet.getSystemManager();
+        } else if (evaluator != null) {
+            SystemManager systemManager = sheet.getSystemManager();
 
-                    for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
-                        selector.setEvals(
-                                evaluator.evaluate(
-                                        glyph,
-                                        system,
-                                        selector.evalCount(),
-                                        constants.minGrade.getValue(),
-                                        EnumSet.of(ShapeEvaluator.Condition.CHECKED),
-                                        null),
-                                glyph);
+            for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                selector.setEvals(
+                        evaluator.evaluate(
+                                glyph,
+                                system,
+                                selector.evalCount(),
+                                constants.minGrade.getValue(),
+                                useAnnotations ? EnumSet.of(Classifier.Condition.CHECKED)
+                                        : Classifier.NO_CONDITIONS,
+                                null),
+                        glyph);
 
-                        return;
-                    }
-                } else {
-                    selector.setEvals(
-                            evaluator.evaluate(
-                                    glyph,
-                                    null,
-                                    selector.evalCount(),
-                                    constants.minGrade.getValue(),
-                                    ShapeEvaluator.NO_CONDITIONS,
-                                    null),
-                            glyph);
-                }
+                return;
             }
         }
     }
@@ -204,11 +202,13 @@ class EvaluationBoard
                 return;
             }
 
-            if (event instanceof GlyphEvent) {
-                GlyphEvent glyphEvent = (GlyphEvent) event;
-                Glyph glyph = glyphEvent.getData();
+            if (event instanceof EntityListEvent) {
+                EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
+                Glyph glyph = listEvent.getEntity();
 
-                evaluate(glyph);
+                if (glyph != null) {
+                    evaluate(glyph);
+                }
             }
         } catch (Exception ex) {
             logger.warn(sheet.getLogPrefix() + getClass().getName() + " output error", ex);
@@ -235,8 +235,8 @@ class EvaluationBoard
         // Uncomment following line to have fixed sized rows, whether they are filled or not
         ///layout.setRowGroups(new int[][]{{1, 3, 4, 5 }});
         PanelBuilder builder = new PanelBuilder(layout, getBody());
-        builder.setDefaultDialogBorder();
 
+        ///builder.setDefaultDialogBorder();
         CellConstraints cst = new CellConstraints();
 
         for (int i = 0; i < visibleButtons; i++) {
@@ -316,7 +316,7 @@ class EvaluationBoard
                     Shape shape = Shape.valueOf(str);
 
                     // Actually assign the shape
-                    glyphsController.asyncAssignGlyphs(Glyphs.sortedSet(glyph), shape, false);
+                    glyphsController.asyncAssignGlyphs(Arrays.asList(glyph), shape, false);
                 }
             }
         }
@@ -448,8 +448,8 @@ class EvaluationBoard
                     break;
                 }
 
-                // Barred on non-barred button
-                buttons.get(i).setEval(eval, glyph.isShapeForbidden(eval.shape), enabled);
+                // Active buttons
+                buttons.get(i).setEval(eval, false, enabled);
             }
 
             // Zero the remaining buttons

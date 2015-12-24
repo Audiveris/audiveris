@@ -16,31 +16,45 @@ import omr.glyph.Shape;
 import omr.text.FontInfo;
 import omr.text.TextWord;
 
+import omr.util.Jaxb;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code WordInter} represents a text word.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "word")
 public class WordInter
         extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(WordInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            WordInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Word text content. */
+    @XmlAttribute
     protected final String value;
 
     /** Detected font attributes. */
+    @XmlAttribute(name = "font")
+    @XmlJavaTypeAdapter(FontInfo.Adapter.class)
     protected final FontInfo fontInfo;
 
     /** Precise word starting point. */
+    @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.PointAdapter.class)
     protected final Point location;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -59,6 +73,17 @@ public class WordInter
         value = textWord.getValue();
         fontInfo = textWord.getFontInfo();
         location = textWord.getLocation();
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    protected WordInter ()
+    {
+        super(null, null, null, null);
+        this.value = null;
+        this.fontInfo = null;
+        this.location = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -135,5 +160,18 @@ public class WordInter
     public String shapeString ()
     {
         return "WORD_\"" + value + "\"";
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        sb.append(" \"").append(value).append("\"");
+
+        return sb.toString();
     }
 }

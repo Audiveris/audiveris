@@ -78,11 +78,12 @@ public class ScaleStep
                       Sheet sheet)
             throws StepException
     {
-        Scale scale = new ScaleBuilder(sheet).retrieveScale();
+        ScaleBuilder builder = new ScaleBuilder(sheet);
+        Scale scale = builder.retrieveScale();
 
         logger.info("{}{}", sheet.getLogPrefix(), scale);
+
         sheet.setScale(scale);
-        sheet.getBench().recordScale(scale);
     }
 
     //-------------//

@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Hervé Bitteur
  */
-public class CheckBoard<C extends Checkable>
+public class CheckBoard<C>
         extends Board
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -63,6 +63,8 @@ public class CheckBoard<C extends Checkable>
                 Board.CHECK.position,
                 selectionService,
                 eventList,
+                false, // Count
+                false, // Vip
                 false, // Dump
                 false); // Selected
         checkPanel = new CheckPanel<C>(suite);
@@ -149,8 +151,8 @@ public class CheckBoard<C extends Checkable>
     {
         FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout, getBody());
-        builder.setDefaultDialogBorder();
 
+        ///builder.setDefaultDialogBorder();
         CellConstraints cst = new CellConstraints();
 
         int r = 1; // --------------------------------

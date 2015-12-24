@@ -14,9 +14,11 @@ package omr.sheet.beam;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
+import omr.lag.JunctionRatioPolicy;
 import omr.lag.Section;
+import omr.lag.SectionFactory;
 
 import omr.math.Barycenter;
 import omr.math.BasicLine;
@@ -24,6 +26,7 @@ import omr.math.GeoUtil;
 import omr.math.LineUtil;
 
 import omr.run.Orientation;
+import static omr.run.Orientation.VERTICAL;
 import omr.run.Run;
 
 import omr.sheet.beam.BeamsBuilder.ItemParameters;
@@ -78,6 +81,9 @@ public class BeamStructure
     //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph. */
     private final Glyph glyph;
+
+    /** Sections built out of glyph. */
+    private List<Section> glyphSections;
 
     /** Glyph centroid. */
     private final Point center;
@@ -216,10 +222,10 @@ public class BeamStructure
             Line2D bot = botIt.next().getValue();
             double x1 = min(top.getX1(), bot.getX1());
             double x2 = max(top.getX2(), bot.getX2());
-            double yt1 = LineUtil.intersectionAtX(top, x1).y;
-            double yb1 = LineUtil.intersectionAtX(bot, x1).y;
-            double yt2 = LineUtil.intersectionAtX(top, x2).y;
-            double yb2 = LineUtil.intersectionAtX(bot, x2).y;
+            double yt1 = LineUtil.yAtX(top, x1);
+            double yb1 = LineUtil.yAtX(bot, x1);
+            double yt2 = LineUtil.yAtX(top, x2);
+            double yb2 = LineUtil.yAtX(bot, x2);
 
             double height = ((yb1 - yt1) + (yb2 - yt2)) / 2;
             Line2D median = new Line2D.Double(x1, (yt1 + yb1) / 2, x2, (yt2 + yb2) / 2);
@@ -227,7 +233,7 @@ public class BeamStructure
             retrieveItems(line);
 
             if (glyph.isVip()) {
-                line.setVip();
+                line.setVip(true);
             }
 
             lines.add(line);
@@ -273,7 +279,7 @@ public class BeamStructure
     }
 
     //----------//
-    // getGlyph //
+    // getCompound //
     //----------//
     /**
      * @return the glyph
@@ -328,9 +334,9 @@ public class BeamStructure
     // setVip //
     //--------//
     @Override
-    public void setVip ()
+    public void setVip (boolean vip)
     {
-        vip = true;
+        this.vip = vip;
     }
 
     //------------//
@@ -452,14 +458,14 @@ public class BeamStructure
                 Line2D other = otherEntry.getValue();
                 double xMid = (other.getX1() + other.getX2()) / 2;
                 double yMid = (other.getY1() + other.getY2()) / 2;
-                double height = yMid - LineUtil.intersectionAtX(base, xMid).y;
+                double height = yMid - LineUtil.yAtX(base, xMid);
                 Point2D p1 = (base.getX1() < other.getX1())
                         ? new Point2D.Double(base.getX1(), base.getY1() + height) : other.getP1();
                 Point2D p2 = (base.getX2() > other.getX2())
                         ? new Point2D.Double(base.getX2(), base.getY2() + height) : other.getP2();
                 double x = (p1.getX() + p2.getX()) / 2;
-                double y = LineUtil.intersectionAtX(p1, p2, x).y;
-                double offset = y - LineUtil.intersectionAtX(center, globalSlope, x).getY();
+                double y = LineUtil.yAtX(p1, p2, x);
+                double offset = y - LineUtil.yAtX(center, globalSlope, x);
 
                 otherMap.remove(otherEntry.getKey());
                 otherMap.put(offset, new Line2D.Double(p1, p2));
@@ -550,7 +556,7 @@ public class BeamStructure
         // All sections are vertical, retrieve their border (top or bottom)
         List<SectionBorder> sectionBorders = new ArrayList<SectionBorder>();
 
-        for (Section section : glyph.getMembers()) {
+        for (Section section : getGlyphSections()) {
             final Rectangle sectionBox = section.getBounds();
 
             // Discard too narrow sections
@@ -577,7 +583,7 @@ public class BeamStructure
         for (SectionBorder border : sectionBorders) {
             double x = GeoUtil.centerOf(border.section.getBounds()).x;
             double y = border.line.yAtX(x);
-            double dy = y - LineUtil.intersectionAtX(center, globalSlope, x).getY();
+            double dy = y - LineUtil.yAtX(center, globalSlope, x);
             border.setOffset(dy);
         }
 
@@ -615,6 +621,28 @@ public class BeamStructure
         return borderLines;
     }
 
+    //------------------//
+    // getGlyphSections //
+    //------------------//
+    private List<Section> getGlyphSections ()
+    {
+        if (glyphSections == null) {
+            // Sections
+            SectionFactory factory = new SectionFactory(VERTICAL, JunctionRatioPolicy.DEFAULT);
+            List<Section> sections = factory.createSections(glyph.getRunTable());
+
+            final Point offset = glyph.getTopLeft();
+
+            for (Section section : sections) {
+                section.translate(offset);
+            }
+
+            glyphSections = sections;
+        }
+
+        return glyphSections;
+    }
+
     //-------------//
     // getLinesMap //
     //-------------//
@@ -628,7 +656,7 @@ public class BeamStructure
             Line2D line = l.toDouble();
             double x = (line.getX1() + line.getX2()) / 2;
             double y = l.yAtX(x);
-            double dy = y - LineUtil.intersectionAtX(center, globalSlope, x).getY();
+            double dy = y - LineUtil.yAtX(center, globalSlope, x);
             map.put(dy, line);
         }
 
@@ -694,15 +722,14 @@ public class BeamStructure
     {
         List<BeamItem> items = beamLine.getItems();
         Line2D median = beamLine.median;
-        BasicLine line = new BasicLine(median);
         Integer start = null; // Starting abscissa of item being built
         Integer stop = null; // Current abscissa end of item being built
 
         // Sections are ordered by starting abscissa
-        for (Section section : glyph.getMembers()) {
+        for (Section section : getGlyphSections()) {
             Rectangle sctBox = section.getBounds();
             Point sctCenter = GeoUtil.centerOf(sctBox);
-            int y = line.yAtX(sctCenter.x);
+            int y = (int) Math.rint(LineUtil.yAtX(median, sctCenter.x));
 
             if (section.contains(sctCenter.x, y)) {
                 // Extend current item or start a new one?
@@ -829,8 +856,8 @@ public class BeamStructure
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
-            sb.append(getClass().getSimpleName());
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
             sb.append(" dy:").append(dy);
             sb.append(" lg:").append(line.getNumberOfPoints());
             sb.append(" line:").append(line);

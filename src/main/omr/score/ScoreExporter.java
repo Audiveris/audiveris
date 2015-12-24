@@ -26,6 +26,7 @@ import org.w3c.dom.Node;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Objects;
 
 /**
  * Class {@code ScoreExporter} exports the provided score to a MusicXML file, stream or
@@ -101,9 +102,7 @@ public class ScoreExporter
                         boolean compressed)
             throws Exception
     {
-        if (os == null) {
-            throw new IllegalArgumentException("Trying to export a score to a null output stream");
-        }
+        Objects.requireNonNull(os, "Trying to export a score to a null output stream");
 
         // Build the ScorePartwise proxy
         ScorePartwise scorePartwise = PartwiseBuilder.build(score);

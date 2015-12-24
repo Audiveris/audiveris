@@ -42,6 +42,14 @@ public class TupletChordRelation
         tupletCoeff = getTupletCoeff(shape);
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private TupletChordRelation ()
+    {
+        this.tupletCoeff = 0;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getSourceCoeff //

@@ -68,13 +68,6 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
      */
     protected D graph;
 
-    /**
-     * Sequence of views created on this vertex. Index in the sequence is
-     * important, since this sequence is kept parallel to the sequence of views
-     * on the containing graph.
-     */
-    protected List<VertexView> views;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Vertex.
@@ -123,24 +116,6 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
         target.getSources().add((V) this);
     }
 
-    //---------//
-    // addView //
-    //---------//
-    @Override
-    public void addView (VertexView view)
-    {
-        getViews().add(view);
-    }
-
-    //------------//
-    // clearViews //
-    //------------//
-    @Override
-    public void clearViews ()
-    {
-        getViews().clear();
-    }
-
     //--------//
     // delete //
     //--------//
@@ -176,7 +151,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
         StringBuilder sb = new StringBuilder();
 
         // The vertex
-        sb.append(String.format("%s%n", this));
+        sb.append(String.format("%s lag:%s%n", this, getGraph().getName()));
 
         // The in edges
         for (V vertex : sources) {
@@ -243,24 +218,6 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     public List<V> getTargets ()
     {
         return targets;
-    }
-
-    //---------//
-    // getView //
-    //---------//
-    @Override
-    public VertexView getView (int index)
-    {
-        return getViews().get(index);
-    }
-
-    //---------------//
-    // getViewsCount //
-    //---------------//
-    @Override
-    public int getViewsCount ()
-    {
-        return getViews().size();
     }
 
     //--------------//
@@ -343,22 +300,5 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
         sb.append("/").append(getOutDegree());
 
         return sb.toString();
-    }
-
-    //----------//
-    // getViews //
-    //----------//
-    /**
-     * Report the sequence of the related views, lazily created.
-     *
-     * @return the views collection (perhaps empty, but not null)
-     */
-    private List<VertexView> getViews ()
-    {
-        if (views == null) {
-            views = new ArrayList<VertexView>();
-        }
-
-        return views;
     }
 }

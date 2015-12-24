@@ -11,21 +11,28 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
-import omr.glyph.ui.AttachmentHolder;
-import omr.glyph.ui.BasicAttachmentHolder;
 
 import omr.math.AreaUtil;
 import omr.math.GeoUtil;
 
+import omr.sheet.Part;
 import omr.sheet.Staff;
 import omr.sheet.rhythm.Voice;
 
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;
+import omr.sig.SigValue.InterSet;
 
 import omr.ui.symbol.MusicFont;
+import omr.ui.util.AttachmentHolder;
+import omr.ui.util.BasicAttachmentHolder;
+
+import omr.util.AbstractEntity;
+import omr.util.Jaxb;
+import omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,139 +46,146 @@ import java.awt.geom.Rectangle2D;
 import java.util.Collections;
 import java.util.Map;
 
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 /**
  * Class {@code AbstractInter} is the abstract implementation basis for {@link Inter}
  * interface.
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public abstract class AbstractInter
+        extends AbstractEntity
         implements Inter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            AbstractInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /** The underlying glyph, if any. */
+    @XmlIDREF
+    @XmlAttribute(name = "glyph-ref")
     protected Glyph glyph;
 
     /** The assigned shape. */
+    @XmlAttribute
     protected Shape shape;
 
     /** The quality of this interpretation. */
+    @XmlAttribute
+    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
     protected double grade;
 
+    /** Mirror instance, if any. */
+    @XmlIDREF
+    @XmlAttribute(name = "mirror")
+    protected AbstractInter mirror;
+
+    /** Frozen flag, if any. */
+    @XmlElement(name = "frozen")
+    private Jaxb.True frozen;
+
+    // Transient data
+    //---------------
+    //
     /** The contextual grade of this interpretation, if any. */
-    protected Double contextualGrade;
+    protected Double ctxGrade;
+
+    /** Related staff, if any. */
+    @Navigable(false)
+    protected Staff staff;
+
+    /** Related part, if any. */
+    @Navigable(false)
+    protected Part part;
 
     /** The hosting SIG. */
+    @Navigable(false)
     protected SIGraph sig;
-
-    /** The interpretation id, if identified. */
-    private int id;
 
     /** Deleted flag, if any. */
     private boolean deleted;
-
-    /** Frozen flag, if any. */
-    private boolean frozen;
-
-    /** VIP flag. */
-    private boolean vip;
-
-    /** Mirror instance, if any. */
-    protected Inter mirror;
 
     /** Containing ensemble, if any. */
     protected InterEnsemble ensemble;
 
     /** Object bounds, perhaps different from glyph bounds. */
-    protected Rectangle box;
+    protected Rectangle bounds;
 
     /** Object precise area, if any. */
     protected Area area;
 
-    /** Details about grade (for debugging). */
+    /** Details about grade. */
     protected GradeImpacts impacts;
 
     /** Potential attachments, lazily allocated. */
     private AttachmentHolder attachments;
-
-    /** Related staff, if any. */
-    protected Staff staff;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractInter object, with detailed impacts information.
      *
      * @param glyph   the glyph to interpret
-     * @param box     the precise object bounds (if different from glyph bounds)
+     * @param bounds  the precise object bounds (if different from glyph bounds)
      * @param shape   the possible shape
      * @param impacts assignment details
      */
     public AbstractInter (Glyph glyph,
-                          Rectangle box,
+                          Rectangle bounds,
                           Shape shape,
                           GradeImpacts impacts)
     {
-        this(glyph, box, shape, impacts.getGrade());
+        this(glyph, bounds, shape, (impacts != null) ? impacts.getGrade() : 0);
         this.impacts = impacts;
     }
 
     /**
      * Creates a new AbstractInter object, with a simple grade value.
      *
-     * @param glyph the glyph to interpret
-     * @param box   the precise object bounds (if different from glyph bounds)
-     * @param shape the possible shape
-     * @param grade the interpretation quality
+     * @param glyph  the glyph to interpret
+     * @param bounds the precise object bounds (if different from glyph bounds)
+     * @param shape  the possible shape
+     * @param grade  the interpretation quality
      */
     public AbstractInter (Glyph glyph,
-                          Rectangle box,
+                          Rectangle bounds,
                           Shape shape,
                           double grade)
     {
         this.glyph = glyph;
-        this.box = box;
+        this.bounds = bounds;
         this.shape = shape;
         this.grade = grade;
 
         // Cross-linking
         if (glyph != null) {
             if (glyph.isVip()) {
-                setVip();
+                setVip(true);
             }
         }
     }
 
+    /**
+     * Creates a new {@code AbstractInter} object.
+     */
+    protected AbstractInter ()
+    {
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // getGoodGrade //
-    //--------------//
-    /**
-     * Report the minimum grade to consider an interpretation as good.
-     *
-     * @return the minimum grade value for a good interpretation
-     */
-    public static double getGoodGrade ()
-    {
-        return goodGrade;
-    }
-
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    /**
-     * Report the minimum grade for an acceptable interpretation
-     *
-     * @return the minimum grade for keeping an Inter instance
-     */
-    public static double getMinGrade ()
-    {
-        return minGrade;
-    }
-
     //--------//
     // accept //
     //--------//
@@ -198,6 +212,34 @@ public abstract class AbstractInter
     }
 
     //----------//
+    // contains //
+    //----------//
+    @Override
+    public boolean contains (Point point)
+    {
+        Rectangle bounds = getBounds();
+
+        //
+        //        if (bounds == null) {
+        //            logger.info("No bounds for {}", this);
+        //        }
+        //
+        if ((bounds != null) && !bounds.contains(point)) {
+            return false;
+        }
+
+        if ((glyph != null) && glyph.contains(point)) {
+            return true;
+        }
+
+        if ((area != null) && area.contains(point)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    //----------//
     // decrease //
     //----------//
     @Override
@@ -213,11 +255,12 @@ public abstract class AbstractInter
     public void delete ()
     {
         if (!deleted) {
-            deleted = true;
-
+            ///logger.info("delete {}", this);
             if (isVip()) {
                 logger.info("VIP delete {}", this);
             }
+
+            deleted = true;
 
             if (ensemble instanceof InterMutableEnsemble) {
                 InterMutableEnsemble ime = (InterMutableEnsemble) ensemble;
@@ -231,10 +274,6 @@ public abstract class AbstractInter
 
             if (sig != null) {
                 sig.removeVertex(this);
-            }
-
-            if (glyph != null) {
-                glyph.getInterpretations().remove(this);
             }
         }
     }
@@ -252,12 +291,12 @@ public abstract class AbstractInter
                         "%s@%s%s%s%n",
                         getClass().getSimpleName(),
                         Integer.toHexString(this.hashCode()),
-                        (sig != null) ? (" S#" + sig.getSystem().getId()) : "",
+                        (sig != null) ? (" System#" + sig.getSystem().getId()) : "",
                         deleted ? " deleted" : ""));
-        sb.append(String.format("   %s grade:%.6f%n", this, this.getGrade()));
+        sb.append(String.format("   %s%n", this));
 
         if (!getDetails().isEmpty()) {
-            sb.append(String.format("   %s", getDetails()));
+            sb.append(String.format("   %s%n", getDetails()));
         }
 
         if (this instanceof InterEnsemble) {
@@ -274,7 +313,7 @@ public abstract class AbstractInter
     @Override
     public void freeze ()
     {
-        frozen = true;
+        frozen = Jaxb.TRUE;
 
         // Freeze members if any
         if (this instanceof InterEnsemble) {
@@ -332,12 +371,12 @@ public abstract class AbstractInter
     @Override
     public Rectangle getBounds ()
     {
-        if (box != null) {
-            return new Rectangle(box);
+        if (bounds != null) {
+            return new Rectangle(bounds);
         }
 
         if (glyph != null) {
-            return glyph.getBounds();
+            return new Rectangle(bounds = glyph.getBounds());
         }
 
         return null;
@@ -349,12 +388,12 @@ public abstract class AbstractInter
     @Override
     public Point getCenter ()
     {
-        if (box != null) {
-            return GeoUtil.centerOf(box);
+        if (getBounds() != null) {
+            return GeoUtil.centerOf(bounds);
         }
 
         if (glyph != null) {
-            return new Point(glyph.getAreaCenter());
+            return new Point(glyph.getCenter());
         }
 
         return null;
@@ -388,7 +427,7 @@ public abstract class AbstractInter
     @Override
     public Double getContextualGrade ()
     {
-        return contextualGrade;
+        return ctxGrade;
     }
 
     //---------------//
@@ -441,6 +480,19 @@ public abstract class AbstractInter
         return glyph;
     }
 
+    //--------------//
+    // getGoodGrade //
+    //--------------//
+    /**
+     * Report the minimum grade to consider an interpretation as good.
+     *
+     * @return the minimum grade value for a good interpretation
+     */
+    public static double getGoodGrade ()
+    {
+        return goodGrade;
+    }
+
     //----------//
     // getGrade //
     //----------//
@@ -448,15 +500,6 @@ public abstract class AbstractInter
     public double getGrade ()
     {
         return grade;
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    @Override
-    public int getId ()
-    {
-        return id;
     }
 
     //------------//
@@ -468,6 +511,19 @@ public abstract class AbstractInter
         return impacts;
     }
 
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    /**
+     * Report the minimum grade for an acceptable interpretation
+     *
+     * @return the minimum grade for keeping an Inter instance
+     */
+    public static double getMinGrade ()
+    {
+        return minGrade;
+    }
+
     //-----------//
     // getMirror //
     //-----------//
@@ -475,6 +531,22 @@ public abstract class AbstractInter
     public Inter getMirror ()
     {
         return mirror;
+    }
+
+    //---------//
+    // getPart //
+    //---------//
+    @Override
+    public Part getPart ()
+    {
+        if (part == null) {
+            // Default implementation, for the case of Inter instances with staff defined.
+            if (staff != null) {
+                part = staff.getPart();
+            }
+        }
+
+        return part;
     }
 
     //----------//
@@ -499,7 +571,7 @@ public abstract class AbstractInter
     // getStaff //
     //----------//
     /**
-     * @return the staff
+     * @return the assigned staff, if any, otherwise null
      */
     @Override
     public Staff getStaff ()
@@ -562,8 +634,8 @@ public abstract class AbstractInter
     @Override
     public boolean isContextuallyGood ()
     {
-        if (contextualGrade != null) {
-            return contextualGrade >= getGoodGrade();
+        if (ctxGrade != null) {
+            return ctxGrade >= getGoodGrade();
         }
 
         return grade >= getGoodGrade();
@@ -584,7 +656,7 @@ public abstract class AbstractInter
     @Override
     public boolean isFrozen ()
     {
-        return frozen;
+        return frozen != null;
     }
 
     //--------//
@@ -607,19 +679,10 @@ public abstract class AbstractInter
         }
 
         if ((this.getGlyph() != null) && (that.getGlyph() != null)) {
-            return this.getGlyph().getSignature().equals(that.getGlyph().getSignature());
+            return this.getGlyph().isIdentical(that.getGlyph());
         }
 
         return true;
-    }
-
-    //-------//
-    // isVip //
-    //-------//
-    @Override
-    public boolean isVip ()
-    {
-        return vip;
     }
 
     //----------//
@@ -644,7 +707,6 @@ public abstract class AbstractInter
                 return false;
             }
 
-            ///if (!(this instanceof InterMutableEnsemble)) {
             for (Inter thisMember : thisEnsemble.getMembers()) {
                 if (thisMember.overlaps(that)
                     && that.overlaps(thisMember)
@@ -653,7 +715,6 @@ public abstract class AbstractInter
                 }
             }
 
-            ///}
             return false;
         }
 
@@ -662,7 +723,7 @@ public abstract class AbstractInter
             if (this instanceof SlurInter || that instanceof SlurInter) {
                 // TODO: to catch glyphs left over between two slur arcs, we use "touching" instead of
                 // true intersection, because the glyphs do not intersect per se. Could be improved.
-                return this.getGlyph().touches(that.getGlyph());
+                return Glyphs.intersect(this.getGlyph(), that.getGlyph(), true);
             }
 
             // Fermata involved
@@ -673,7 +734,7 @@ public abstract class AbstractInter
             }
 
             // Glyph <--> Glyph? (not to be used when a slur or a fermata is involved)
-            return this.getGlyph().intersects(that.getGlyph());
+            return Glyphs.intersect(this.getGlyph(), that.getGlyph(), false);
         }
 
         // Area <--> that?
@@ -718,9 +779,9 @@ public abstract class AbstractInter
     // setBounds //
     //-----------//
     @Override
-    public void setBounds (Rectangle box)
+    public void setBounds (Rectangle bounds)
     {
-        this.box = box;
+        this.bounds = bounds;
     }
 
     //--------------------//
@@ -729,7 +790,7 @@ public abstract class AbstractInter
     @Override
     public void setContextualGrade (double value)
     {
-        contextualGrade = value;
+        ctxGrade = value;
     }
 
     //-------------//
@@ -739,6 +800,15 @@ public abstract class AbstractInter
     public void setEnsemble (InterEnsemble ensemble)
     {
         this.ensemble = ensemble;
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        this.glyph = glyph;
     }
 
     //----------//
@@ -754,10 +824,10 @@ public abstract class AbstractInter
     // setId //
     //-------//
     @Override
-    public void setId (int id)
+    public void setId (String id)
     {
-        assert this.id == 0 : "Reassigning inter id";
-        assert id != 0 : "Assigning zero inter id";
+        assert this.id == null : "Reassigning inter id";
+        assert id != null : "Assigning null inter id";
 
         this.id = id;
     }
@@ -768,7 +838,19 @@ public abstract class AbstractInter
     @Override
     public void setMirror (Inter mirror)
     {
-        this.mirror = mirror;
+        this.mirror = (AbstractInter) mirror;
+    }
+
+    //---------//
+    // setPart //
+    //---------//
+    /**
+     * @param part the part to set
+     */
+    @Override
+    public void setPart (Part part)
+    {
+        this.part = part;
     }
 
     //--------//
@@ -786,18 +868,10 @@ public abstract class AbstractInter
     /**
      * @param staff the staff to set
      */
+    @Override
     public void setStaff (Staff staff)
     {
         this.staff = staff;
-    }
-
-    //--------//
-    // setVip //
-    //--------//
-    @Override
-    public void setVip ()
-    {
-        vip = true;
     }
 
     //-------------//
@@ -807,32 +881,6 @@ public abstract class AbstractInter
     public String shapeString ()
     {
         return shape.toString();
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(shapeString());
-
-        if (getId() != 0) {
-            sb.append("#").append(getId());
-        }
-
-        sb.append(String.format("(%.3f", grade));
-
-        if (contextualGrade != null) {
-            sb.append(String.format("/%.3f", contextualGrade));
-        }
-
-        sb.append(internals());
-        sb.append(")");
-
-        return sb.toString();
     }
 
     //----------//
@@ -846,9 +894,30 @@ public abstract class AbstractInter
         }
 
         deleted = false;
+    }
 
-        if (glyph != null) {
-            glyph.getInterpretations().add(this);
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    /**
+     * Called immediately before marshalling of this object begins.
+     */
+    @SuppressWarnings("unused")
+    protected void beforeMarshal (Marshaller m)
+    {
+        // Make sure this Inter instance either has no glyph or has a duly registered one
+        if ((glyph != null) && (glyph.getId() == null)) {
+            logger.error("Inter referencing a non-registered glyph: " + this + " glyph: " + glyph);
+        }
+
+        if (sig == null) {
+            logger.error("Marshalling an inter with no sig " + this);
+        } else {
+            InterSet interSet = sig.getSystem().getInterSet();
+
+            if (interSet != null) {
+                interSet.addInter(this);
+            }
         }
     }
 
@@ -857,7 +926,15 @@ public abstract class AbstractInter
     //-----------//
     protected String internals ()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        sb.append(String.format("(%.3f", grade));
+
+        if (ctxGrade != null) {
+            sb.append(String.format("/%.3f", ctxGrade));
+        }
+
+        sb.append(")");
 
         if (mirror != null) {
             sb.append(" mirror#").append(mirror.getId());

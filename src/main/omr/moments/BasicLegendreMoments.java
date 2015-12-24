@@ -82,7 +82,8 @@ public class BasicLegendreMoments
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
 
         for (int m = 0; m <= ORDER; m++) {
             for (int n = 0; n <= ORDER; n++) {

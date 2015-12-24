@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.text;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
 import omr.sheet.Skew;
 

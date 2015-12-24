@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.script;
 
-import omr.glyph.Evaluation;
-import omr.glyph.facets.Glyph;
+import omr.classifier.Evaluation;
+import omr.glyph.Glyph;
 
 import omr.sheet.Sheet;
 

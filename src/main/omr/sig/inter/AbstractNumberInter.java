@@ -11,10 +11,12 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import java.awt.Rectangle;
+
+import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class {@code AbstractNumberInter} is an abstract inter with a integer value.
@@ -30,6 +32,7 @@ public abstract class AbstractNumberInter
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Integer value for the number. */
+    @XmlAttribute
     protected final int value;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -53,17 +56,17 @@ public abstract class AbstractNumberInter
     /**
      * Creates a new AbstractNumberInter object.
      *
-     * @param box   bounding box of the number
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @param value number value
+     * @param bounds bounding box of the number
+     * @param shape  precise shape
+     * @param grade  evaluation value
+     * @param value  number value
      */
-    public AbstractNumberInter (Rectangle box,
+    public AbstractNumberInter (Rectangle bounds,
                                 Shape shape,
                                 double grade,
                                 int value)
     {
-        super(null, box, shape, grade);
+        super(null, bounds, shape, grade);
         this.value = value;
     }
 
@@ -130,5 +133,17 @@ public abstract class AbstractNumberInter
 
         // Not a predefined value
         return -1;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(' ').append(value);
+
+        return sb.toString();
     }
 }

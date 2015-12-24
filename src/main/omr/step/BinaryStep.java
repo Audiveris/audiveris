@@ -86,9 +86,9 @@ public class BinaryStep
 
         Picture picture = sheet.getPicture();
         ByteProcessor initial = picture.getSource(SourceKey.INITIAL);
-        FilterDescriptor desc = sheet.getFilterParam().getTarget();
+        FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
         logger.debug("{}{}", sheet.getLogPrefix(), "Binarization");
-        sheet.getFilterParam().setActual(desc);
+        sheet.getStub().getFilterParam().setActual(desc);
 
         PixelFilter filter = desc.getFilter(initial);
         watch.start("Binarize source");
@@ -98,7 +98,7 @@ public class BinaryStep
         watch.start("Create binary RunTable");
 
         RunTableFactory vertFactory = new RunTableFactory(Orientation.VERTICAL);
-        RunTable wholeVertTable = vertFactory.createTable("vertBinary", binary);
+        RunTable wholeVertTable = vertFactory.createTable(binary);
         picture.setTable(Picture.TableKey.BINARY, wholeVertTable);
 
         // To discard image

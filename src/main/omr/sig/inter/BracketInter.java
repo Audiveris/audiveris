@@ -11,18 +11,21 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
-
-import omr.math.Line;
 
 import omr.sig.GradeImpacts;
+
+import java.awt.geom.Line2D;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code BracketInter}
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "bracket")
 public class BracketInter
         extends AbstractVerticalInter
 {
@@ -54,7 +57,7 @@ public class BracketInter
      */
     public BracketInter (Glyph glyph,
                          GradeImpacts impacts,
-                         Line median,
+                         Line2D median,
                          double width,
                          BracketKind kind)
     {

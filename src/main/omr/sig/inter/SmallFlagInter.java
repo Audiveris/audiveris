@@ -11,14 +11,17 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code SmallFlagInter} is a flag for grace note (with or without slash).
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "small-flag")
 public class SmallFlagInter
         extends AbstractFlagInter
 {
@@ -31,10 +34,17 @@ public class SmallFlagInter
      * @param shape precise shape
      * @param grade evaluation value
      */
-    public SmallFlagInter (Glyph glyph,
-                           Shape shape,
-                           double grade)
+    protected SmallFlagInter (Glyph glyph,
+                              Shape shape,
+                              double grade)
     {
         super(glyph, shape, grade);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private SmallFlagInter ()
+    {
     }
 }

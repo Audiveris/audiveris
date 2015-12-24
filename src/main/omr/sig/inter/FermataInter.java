@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.math.GeoUtil;
 
@@ -24,23 +24,27 @@ import omr.sig.relation.FermataChordRelation;
 import omr.sig.relation.FermataNoteRelation;
 
 import java.awt.Point;
+import java.util.Collection;
 import java.util.List;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code FermataInter} represents a fermata interpretation, either upright or
  * inverted.
  * <p>
- * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Urlinie_in_G_with_fermata.png/220px-Urlinie_in_G_with_fermata.png" />
+ * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Urlinie_in_G_with_fermata.png/220px-Urlinie_in_G_with_fermata.png">
  * <p>
  * An upright fermata refers to the chord in the staff right below in the containing part.
  * An inverted fermata refers to the chord in the staff right above in the containing part.
- * A fermata may also refer to a single or double bar-line, to indicate the end of a phrase.
+ * A fermata may also refer to a single or double barline, to indicate the end of a phrase.
  * <p>
  * Such reference is implemented via a Relation instance.
  * <p>
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "fermata")
 public class FermataInter
         extends AbstractNotationInter
 {
@@ -58,6 +62,13 @@ public class FermataInter
                           double grade)
     {
         super(glyph, glyph.getBounds(), shape, grade);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private FermataInter ()
+    {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -79,7 +90,7 @@ public class FermataInter
                                        SystemInfo system)
     {
         // Look for proper staff
-        Point center = glyph.getAreaCenter();
+        Point center = glyph.getCenter();
         Staff staff = (shape == Shape.FERMATA) ? system.getStaffBelow(center)
                 : system.getStaffAbove(center);
 
@@ -103,7 +114,7 @@ public class FermataInter
      */
     public boolean linkWithBarline ()
     {
-        // Look for a bar-line related to this fermata
+        // Look for a barline related to this fermata
         Point center = getCenter();
         List<BarlineInter> bars = getStaff().getBars();
         BarlineInter bar = BarlineInter.getClosestBarline(bars, center);
@@ -127,12 +138,12 @@ public class FermataInter
      * @param chords the chords in fermata related staff
      * @return true if successful
      */
-    public boolean linkWithChords (List<ChordInter> chords)
+    public boolean linkWithChords (Collection<AbstractChordInter> chords)
     {
         // Look for a chord related to this fermata
         //TODO: what if the note is mirrored between 2 chords?
         Point center = getCenter();
-        ChordInter chord = ChordInter.getClosestChord(chords, center);
+        AbstractChordInter chord = AbstractChordInter.getClosestChord(chords, center);
 
         if ((chord != null) && (GeoUtil.xOverlap(getBounds(), chord.getBounds()) > 0)) {
             // For fermata & for chord

@@ -52,7 +52,7 @@ public class LoadStep
             throws StepException
     {
         final Book book = sheet.getBook();
-        final int index = sheet.getIndex();
+        final int index = sheet.getNumber();
 
         BufferedImage image = book.loadSheetImage(index);
 

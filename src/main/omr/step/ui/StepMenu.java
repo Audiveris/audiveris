@@ -14,9 +14,12 @@ package omr.step.ui;
 import omr.script.SheetStepTask;
 
 import omr.sheet.Sheet;
-import omr.sheet.ui.SheetsController;
+import omr.sheet.SheetStub;
+import omr.sheet.ui.StubsController;
 
 import omr.step.Step;
+
+import omr.ui.util.AbstractMenuListener;
 
 import omr.util.BasicTask;
 
@@ -30,7 +33,6 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
 
 /**
  * Class {@code StepMenu} encapsulates the user interface needed to deal with
@@ -112,25 +114,15 @@ public class StepMenu
      * The steps already done are flagged as such.
      */
     private class MyMenuListener
-            implements MenuListener
+            extends AbstractMenuListener
     {
         //~ Methods --------------------------------------------------------------------------------
 
         @Override
-        public void menuCanceled (MenuEvent e)
-        {
-        }
-
-        @Override
-        public void menuDeselected (MenuEvent e)
-        {
-        }
-
-        @Override
         public void menuSelected (MenuEvent e)
         {
-            Sheet sheet = SheetsController.getCurrentSheet();
-            boolean isIdle = (sheet != null) && (sheet.getCurrentStep() == null);
+            SheetStub stub = StubsController.getCurrentStub();
+            boolean isIdle = (stub != null) && (stub.getCurrentStep() == null);
 
             for (int i = 0; i < menu.getItemCount(); i++) {
                 JMenuItem menuItem = menu.getItem(i);
@@ -138,7 +130,7 @@ public class StepMenu
                 // Adjust the status for each step
                 if (menuItem instanceof StepItem) {
                     StepItem item = (StepItem) menuItem;
-                    item.displayState(sheet, isIdle);
+                    item.displayState(stub, isIdle);
                 }
             }
         }
@@ -170,17 +162,18 @@ public class StepMenu
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            final Sheet sheet = SheetsController.getCurrentSheet();
+            final SheetStub stub = StubsController.getCurrentStub();
             new BasicTask()
             {
                 @Override
                 protected Void doInBackground ()
                         throws Exception
                 {
-                    Step sofar = sheet.getLatestStep();
+                    Step sofar = stub.getLatestStep();
 
                     if ((sofar == null) || (sofar.compareTo(step) <= 0)) {
                         // Here work on the sheet
+                        final Sheet sheet = stub.getSheet();
                         new SheetStepTask(sheet, step).run(sheet);
                     } else {
                         // There we rebuild just the current sheet
@@ -195,8 +188,8 @@ public class StepMenu
                 protected void finished ()
                 {
                     // Select the assembly tab related to the target step
-                    if (sheet != null) {
-                        StepMonitoring.notifyStep(sheet, step);
+                    if (stub != null) {
+                        StepMonitoring.notifyStep(stub, step);
                     }
                 }
             }.execute();
@@ -220,18 +213,18 @@ public class StepMenu
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        public void displayState (Sheet sheet,
+        public void displayState (SheetStub stub,
                                   boolean isIdle)
         {
             StepAction action = (StepAction) getAction();
 
-            if (sheet == null) {
+            if ((stub == null) || !stub.isValid()) {
                 setState(false);
                 action.setEnabled(false);
             } else {
                 action.setEnabled(true);
 
-                final boolean done = sheet.isDone(action.step);
+                final boolean done = stub.isDone(action.step);
                 setState(done);
 
                 if (!isIdle) {

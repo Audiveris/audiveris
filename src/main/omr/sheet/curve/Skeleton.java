@@ -14,8 +14,8 @@ package omr.sheet.curve;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.image.ImageUtil;
 
@@ -25,7 +25,7 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
-import omr.sheet.grid.FilamentLine;
+import omr.sheet.grid.LineInfo;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.Inter;
@@ -352,11 +352,10 @@ public class Skeleton
 
         // Crossable inters
         crossables = cleaner.eraseShapes(
-                Arrays.asList(
-                        Shape.THICK_BARLINE,
+                Arrays.asList(Shape.THICK_BARLINE,
                         Shape.THIN_BARLINE,
-                        Shape.THIN_CONNECTION,
-                        Shape.THICK_CONNECTION,
+                        Shape.THIN_CONNECTOR,
+                        Shape.THICK_CONNECTOR,
                         Shape.LEDGER,
                         Shape.STEM));
 
@@ -547,7 +546,7 @@ public class Skeleton
                 Rectangle staffRect = null;
 
                 for (VerticalSide vSide : VerticalSide.values()) {
-                    FilamentLine line = staff.getLine(vSide);
+                    LineInfo line = staff.getLine(vSide);
 
                     for (HorizontalSide hSide : HorizontalSide.values()) {
                         int x = staff.getAbscissa(hSide);

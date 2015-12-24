@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.glyph.facets.Glyph;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +19,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import omr.glyph.Symbol.Group;
 
 /**
  * Class {@code GlyphCluster} handles a cluster of connected glyphs, to retrieve all
@@ -44,15 +43,21 @@ public class GlyphCluster
     /** Environment adapter. */
     private final Adapter adapter;
 
+    /** Group, if any, to be assigned to created glyphs. */
+    private final Group group;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Cluster object, with an adapter to the environment.
      *
      * @param adapter the environment adapter
+     * @param group   group to be assigned, if any
      */
-    public GlyphCluster (Adapter adapter)
+    public GlyphCluster (Adapter adapter,
+                         Group group)
     {
         this.adapter = adapter;
+        this.group = group;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -66,8 +71,8 @@ public class GlyphCluster
     {
         final Set<Glyph> considered = new HashSet<Glyph>(); // Parts considered so far
         final List<Glyph> seeds = adapter.getParts();
-        Collections.sort(seeds, Glyph.byId); // It's easier to debug
-        logger.debug("Decomposing {}", Glyphs.toString("cluster", seeds));
+        ///Collections.sort(seeds, Glyphs.byId); // It's easier to debug
+        logger.debug("Decomposing {}", Glyphs.ids("cluster", seeds));
 
         for (Glyph seed : seeds) {
             if (seed.isVip()) {
@@ -113,8 +118,9 @@ public class GlyphCluster
 
         if (adapter.isWeightAcceptable(weight)) {
             // Build compound and get acceptable evaluations for the compound
-            Glyph compound = (set.size() == 1) ? set.iterator().next()
-                    : adapter.getNest().buildGlyph(set, true);
+            Glyph oneGlyph = set.iterator().next();
+            Glyph compound = (set.size() == 1) ? oneGlyph : GlyphFactory.buildGlyph(set);
+            compound.addGroup(group);
 
             // Create all acceptable inters, if any, for the compound
             adapter.evaluateGlyph(compound);
@@ -175,7 +181,7 @@ public class GlyphCluster
          *
          * @return the hosting glyph nest
          */
-        GlyphNest getNest ();
+        GlyphIndex getNest ();
 
         /**
          * Report the parts to play with.
@@ -187,10 +193,10 @@ public class GlyphCluster
         /**
          * Check whether symbol size is acceptable.
          *
-         * @param box symbol bounding box
+         * @param bounds symbol bounding box
          * @return true if OK
          */
-        boolean isSizeAcceptable (Rectangle box);
+        boolean isSizeAcceptable (Rectangle bounds);
 
         /**
          * Check whether symbol weight is acceptable.

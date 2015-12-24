@@ -13,7 +13,7 @@ package omr.sig.relation;
 
 /**
  * Class {@code NoExclusion} is used to formalize that two Inters, generally originating
- * from mirrored entities do not exclude each other, although they overlap.
+ * from mirrored entities, do not exclude each other, although they overlap.
  * This occurs with beams of mirrored stems.
  *
  * @author Hervé Bitteur

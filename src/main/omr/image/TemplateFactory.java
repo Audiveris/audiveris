@@ -97,7 +97,7 @@ public class TemplateFactory
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** InterhasLine value for this catalog. */
+        /** Interline value for this catalog. */
         final int interline;
 
         /** Map of all descriptors for this catalog. */

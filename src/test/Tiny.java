@@ -1,4 +1,5 @@
 ///import java.awt.BorderLayout;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -10,9 +11,8 @@ import com.jgoodies.looks.LookUtils;
 import com.jgoodies.looks.Options;
 import java.awt.BorderLayout;
 
-
 /**
- * The main class of the JGoodies Tiny application. 
+ * The main class of the JGoodies Tiny application.
  * It configures the UI, builds the main frame and opens it.
  * <p>
  * The JGoodies Looks Professional comes with Skeleton, a much better sample
@@ -20,36 +20,39 @@ import java.awt.BorderLayout;
  *
  * @author Karsten Lentzsch
  */
-public class Tiny {
+public class Tiny
+{
 
     /**
      * Configures the UI, then builds and opens the UI.
      */
-    public static void main(String[] args) {
+    public static void main (String[] args)
+    {
         Tiny instance = new Tiny();
         instance.configureUI();
         instance.buildInterface();
     }
 
     /**
-     * Configures the UI; tries to set the system look on Mac, 
+     * Configures the UI; tries to set the system look on Mac,
      * <code>WindowsLookAndFeel</code> on general Windows, and
      * <code>Plastic3DLookAndFeel</code> on Windows XP and all other OS.<p>
-     * 
+     *
      * The JGoodies Swing Suite's <code>ApplicationStarter</code>,
      * <code>ExtUIManager</code>, and <code>LookChoiceStrategies</code>
      * classes provide a much more fine grained algorithm to choose and
      * restore a look and theme.
      */
-    private void configureUI() {
+    private void configureUI ()
+    {
         UIManager.put(Options.USE_SYSTEM_FONTS_APP_KEY, Boolean.TRUE);
         //Options.setGlobalFontSizeHints(FontSizeHints.MIXED);
         Options.setDefaultIconSize(new Dimension(18, 18));
 
-        String lafName =
-            LookUtils.IS_OS_WINDOWS_XP
-                ? Options.getCrossPlatformLookAndFeelClassName()
-                : Options.getSystemLookAndFeelClassName();
+        String lafName
+                = LookUtils.IS_OS_WINDOWS_XP
+                        ? Options.getCrossPlatformLookAndFeelClassName()
+                        : Options.getSystemLookAndFeelClassName();
 
         try {
             UIManager.setLookAndFeel(lafName);
@@ -62,7 +65,8 @@ public class Tiny {
      * Creates and configures a frame, builds the menu bar, builds the
      * content, locates the frame on the screen, and finally shows the frame.
      */
-    private void buildInterface() {
+    private void buildInterface ()
+    {
         JFrame frame = new JFrame();
         frame.setJMenuBar(buildMenuBar());
         frame.setContentPane(buildContentPane());
@@ -76,18 +80,20 @@ public class Tiny {
     /**
      * Locates the frame on the screen center.
      */
-    private void locateOnScreen(Frame frame) {
-        Dimension paneSize   = frame.getSize();
+    private void locateOnScreen (Frame frame)
+    {
+        Dimension paneSize = frame.getSize();
         Dimension screenSize = frame.getToolkit().getScreenSize();
         frame.setLocation(
-            (screenSize.width  - paneSize.width)  / 2,
-            (screenSize.height - paneSize.height) / 2);
+                (screenSize.width - paneSize.width) / 2,
+                (screenSize.height - paneSize.height) / 2);
     }
 
     /**
      * Builds and answers the menu bar.
      */
-    private JMenuBar buildMenuBar() {
+    private JMenuBar buildMenuBar ()
+    {
         JMenu menu;
         JMenuBar menuBar = new JMenuBar();
         menuBar.putClientProperty(Options.HEADER_STYLE_KEY, Boolean.TRUE);
@@ -112,7 +118,8 @@ public class Tiny {
     /**
      * Builds and answers the content pane.
      */
-    private JComponent buildContentPane() {
+    private JComponent buildContentPane ()
+    {
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(buildToolBar(), BorderLayout.NORTH);
         panel.add(buildSplitPane(), BorderLayout.CENTER);
@@ -123,10 +130,11 @@ public class Tiny {
     /**
      * Builds and answers the tool bar.
      */
-    private Component buildToolBar() {
+    private Component buildToolBar ()
+    {
         JToolBar toolBar = new JToolBar();
-        ///toolBar.putClientProperty(Options.HEADER_STYLE_KEY, Boolean.TRUE);
-        
+        toolBar.putClientProperty(Options.HEADER_STYLE_KEY, Boolean.TRUE);
+
         toolBar.add(createCenteredLabel("Tool Bar"));
         return toolBar;
     }
@@ -134,49 +142,53 @@ public class Tiny {
     /**
      * Builds and answers the split panel.
      */
-    private Component buildSplitPane() {
-        JSplitPane splitPane =
-            new JSplitPane(
-                JSplitPane.HORIZONTAL_SPLIT,
-                buildSideBar(),
-                buildMainPanel());
+    private Component buildSplitPane ()
+    {
+        JSplitPane splitPane
+                = new JSplitPane(
+                        JSplitPane.HORIZONTAL_SPLIT,
+                        buildSideBar(),
+                        buildMainPanel());
         return splitPane;
     }
 
     /**
      * Builds and answers the side bar.
      */
-    private Component buildSideBar() {
+    private Component buildSideBar ()
+    {
         return createStrippedScrollPane(new JTree());
     }
 
     /**
      * Builds and answers the main panel.
      */
-    private Component buildMainPanel() {
+    private Component buildMainPanel ()
+    {
         JEditorPane editor = new JEditorPane();
         editor.setText(
-            "This is a minimal Swing application, that demos,\n" +
-            "how to install and use a JGoodies look&feel\n" +
-            "in a Swing application.");
+                "This is a minimal Swing application, that demos,\n"
+                + "how to install and use a JGoodies look&feel\n"
+                + "in a Swing application.");
         return createStrippedScrollPane(editor);
     }
 
     /**
      * Builds and answers the tool bar.
      */
-    private Component buildStatusBar() {
+    private Component buildStatusBar ()
+    {
         JPanel statusBar = new JPanel(new BorderLayout());
         statusBar.add(createCenteredLabel("Status Bar"));
         return statusBar;
     }
 
     // Helper Code ********************************************************
-
     /**
      * Creates and answers a <code>JScrollpane</code> that has no border.
      */
-    private JScrollPane createStrippedScrollPane(Component c) {
+    private JScrollPane createStrippedScrollPane (Component c)
+    {
         JScrollPane scrollPane = new JScrollPane(c);
         scrollPane.setBorder(null);
         return scrollPane;
@@ -186,7 +198,8 @@ public class Tiny {
      * Creates and answers a <code>JLabel</code> that has the text
      * centered and that is wrapped with an empty border.
      */
-    private Component createCenteredLabel(String text) {
+    private Component createCenteredLabel (String text)
+    {
         JLabel label = new JLabel(text);
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setBorder(new EmptyBorder(3, 3, 3, 3));

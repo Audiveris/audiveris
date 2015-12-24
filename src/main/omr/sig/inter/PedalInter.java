@@ -11,14 +11,17 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code PedalInter} represents a pedal (start) or pedal up (stop) event
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "pedal")
 public class PedalInter
         extends AbstractDirectionInter
 {
@@ -36,5 +39,13 @@ public class PedalInter
                        double grade)
     {
         super(glyph, glyph.getBounds(), shape, grade);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    public PedalInter ()
+    {
+        super(null, null, null, 0);
     }
 }

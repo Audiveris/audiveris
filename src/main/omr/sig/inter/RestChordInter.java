@@ -11,13 +11,16 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
- * Class {@code RestChordInter} is a ChordInter composed of (one) rest.
+ * Class {@code RestChordInter} is a AbstractChordInter composed of (one) rest.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "rest-chord")
 public class RestChordInter
-        extends ChordInter
+        extends AbstractChordInter
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -29,6 +32,13 @@ public class RestChordInter
     public RestChordInter (double grade)
     {
         super(grade);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private RestChordInter ()
+    {
     }
 
     //~ Methods ------------------------------------------------------------------------------------

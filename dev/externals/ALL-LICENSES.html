@@ -14,9 +14,21 @@ h1 {
     padding-top: 50px;
 }
 
+h2 {
+    margin-left: -50px;
+}
+
 article {
+    margin-left: 50px;
     width: auto;
-    height: 250px;
+    height: auto;
+}
+
+p.full-name:before {
+    content: "[";
+}
+p.full-name:after {
+    content: "]";
 }
 
 p.desc {
@@ -41,12 +53,6 @@ ul:before {
 li {
     margin-left: 30px;
 }
-
-/* Specific ids */
-#jai,
-#jgoodies {
-    height: auto;
-}
             /*]]>*/
         </style>
         
@@ -62,7 +68,11 @@ li {
             those used only at build time are gathered in folder <code>dev/tools</code>.
         </p>
         
-        <h1>Runtime libraries</h1>
+        <p style="background: pink;">
+            TODO: Please update this page for Audiveris V5!
+        </p>
+        
+        <h1>Run-time libraries</h1>
         
         <section>
             
@@ -145,7 +155,6 @@ li {
 
             <article id="javacpp">
                 <h2>JavaCPP</h2>
-                <p class="full-name"></p>
                 <p class="desc">Access to native C++ from Java (used by TessBridge)</p>
                 <p class="license">GNU General Public License (GPL) V2</p>
                 <p class="site">
@@ -158,7 +167,7 @@ li {
 
             <article id="jcip">
                 <h2>JCIP</h2>
-                <p class="full-name">Java Concurrency In Practice annotations</p>
+                <p class="full-name">Java Concurrency In Practice</p>
                 <p class="desc">Source annotations for describing thread-safety policies</p>
                 <p class="license">Creative Commons Attribution License</p>
                 <p class="site">
@@ -191,9 +200,9 @@ li {
                     <a href="http://www.jgoodies.com/">http://www.jgoodies.com/</a>
                 </p>
                 <ul>
-                    <li>jgoodies-common-1.6.0.jar</li>
-                    <li>jgoodies-forms-1.7.1.jar</li>
-                    <li>jgoodies-looks-2.5.3.jar</li>
+                    <li>jgoodies-common-1.8.1.jar</li>
+                    <li>jgoodies-forms-1.9.0.jar</li>
+                    <li>jgoodies-looks-2.7.0.jar</li>
                 </ul>
             </article>
 
@@ -205,7 +214,7 @@ li {
                     <a href="http://proxymusic.kenai.com/">http://proxymusic.kenai.com/</a>
                 </p>
                 <ul>
-                    <li>proxymusic-2.0.jar</li>
+                    <li>proxymusic-3.0.jar</li>
                 </ul>
             </article>
 
@@ -223,7 +232,7 @@ li {
             </article>
         </section>
         
-        <h1 class="clear">Build time libraries</h1>
+        <h1 class="clear">Build-time libraries</h1>
         
         <section>
 

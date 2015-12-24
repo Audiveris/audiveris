@@ -65,7 +65,7 @@ public class OmrFileFilter
      * @param extensions  the array of allowed file extensions
      */
     public OmrFileFilter (String description,
-                          String[] extensions)
+                          String... extensions)
     {
         if (description == null) {
             // Use first extension and # of extensions as desc.

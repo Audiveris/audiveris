@@ -71,17 +71,16 @@ public class StaffPattern
     public double evaluate (Point2D location,
                             ByteProcessor buffer)
     {
+        final int xMin = (int) Math.rint(location.getX());
         int trials = 0;
         int matches = 0;
 
         for (int index = 0; index < count; index++) {
-            double yMid = location.getY() + (index * interline);
-            int yMin = (int) Math.ceil(yMid - (line / 2.0));
-            int yMax = (int) Math.floor(yMid + (line / 2.0));
+            final double yMid = location.getY() + (index * interline);
+            final int yMin = (int) Math.ceil(yMid - (line / 2.0));
+            final int yMax = (int) Math.floor(yMid + (line / 2.0));
 
             for (int y = yMin; y <= yMax; y++) {
-                int xMin = (int) Math.rint(location.getX());
-
                 for (int x = xMin; x < (xMin + width); x++) {
                     trials++;
 
@@ -103,8 +102,8 @@ public class StaffPattern
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
         sb.append(" count:").append(count);
         sb.append(" width:").append(width);
         sb.append(" line:").append(line);

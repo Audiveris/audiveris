@@ -1,50 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="SHARP" interline="19" id="640">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-4.0</pitch-position>
-    <section orientation="VERTICAL" first-pos="240" id="324">
-        <run start="2294" length="8"/>
-        <run start="2294" length="8"/>
-        <run start="2293" length="9"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="240" id="325">
-        <run start="2313" length="8"/>
-        <run start="2312" length="9"/>
-        <run start="2312" length="9"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="243" id="337">
-        <run start="2282" length="48"/>
-        <run start="2282" length="48"/>
-        <run start="2282" length="48"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="246" id="348">
-        <run start="2292" length="8"/>
-        <run start="2292" length="8"/>
-        <run start="2291" length="9"/>
-        <run start="2291" length="8"/>
-        <run start="2291" length="8"/>
-        <run start="2290" length="9"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="246" id="349">
-        <run start="2311" length="8"/>
-        <run start="2311" length="8"/>
-        <run start="2310" length="9"/>
-        <run start="2310" length="8"/>
-        <run start="2310" length="8"/>
-        <run start="2309" length="9"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="252" id="362">
-        <run start="2280" length="48"/>
-        <run start="2280" length="49"/>
-        <run start="2280" length="49"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="255" id="379">
-        <run start="2290" length="7"/>
-        <run start="2289" length="8"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="255" id="380">
-        <run start="2308" length="8"/>
-        <run start="2307" length="9"/>
-    </section>
-</glyph>
+<sample id="640" interline="19" left="240" top="2280" shape="SHARP">
+    <run-table orientation="VERTICAL" width="17" height="50">
+        <sequences>
+            <item>0 14 8 11 8</item>
+            <item>0 14 8 10 9</item>
+            <item>0 13 9 10 9</item>
+            <item>0 2 48</item>
+            <item>0 2 48</item>
+            <item>0 2 48</item>
+            <item>0 12 8 11 8</item>
+            <item>0 12 8 11 8</item>
+            <item>0 11 9 10 9</item>
+            <item>0 11 8 11 8</item>
+            <item>0 11 8 11 8</item>
+            <item>0 10 9 10 9</item>
+            <item>48</item>
+            <item>49</item>
+            <item>49</item>
+            <item>0 10 7 11 8</item>
+            <item>0 9 8 10 9</item>
+        </sequences>
+    </run-table>
+</sample>

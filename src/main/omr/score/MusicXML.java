@@ -12,13 +12,14 @@
 package omr.score;
 
 import omr.glyph.Shape;
-
 import static omr.glyph.Shape.*;
 
-import omr.sig.inter.LyricItemInter;
+import omr.math.Rational;
+
 import omr.sheet.PartBarline;
 
 import omr.sig.inter.AbstractNoteInter;
+import omr.sig.inter.LyricItemInter;
 
 import com.audiveris.proxymusic.AccidentalText;
 import com.audiveris.proxymusic.AccidentalValue;
@@ -255,9 +256,22 @@ public abstract class MusicXML
      */
     public static String getNoteTypeName (AbstractNoteInter note)
     {
+        return getNoteTypeName(note.getChord().getDurationSansDotOrTuplet());
+    }
+
+    //-----------------//
+    // getNoteTypeName //
+    //-----------------//
+    /**
+     * Report the name for the provided duration (no dot, no tuplet)
+     *
+     * @param duration note duration
+     * @return proper note type name
+     */
+    public static String getNoteTypeName (Rational duration)
+    {
         // Since quarter is at index 6 in noteTypeNames, use 2**6 = 64
-        double dur = 64 * note.getChord().getDurationSansDotOrTuplet().divides(
-                AbstractNoteInter.QUARTER_DURATION).doubleValue();
+        double dur = 64 * duration.divides(AbstractNoteInter.QUARTER_DURATION).doubleValue();
         int index = (int) Math.rint(Math.log(dur) / Math.log(2));
 
         return noteTypeNames[index];

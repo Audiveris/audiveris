@@ -16,28 +16,42 @@ import omr.glyph.Shape;
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;
 
+import omr.util.Jaxb;
+
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code EndingInter} represents an ending.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "ending")
 public class EndingInter
         extends AbstractInter
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    private final SegmentInter segment;
-
-    private final Line2D line;
-
-    // Mandatory left leg
+    /** Mandatory left leg. */
+    @XmlElement(name = "left-leg")
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private final Line2D leftLeg;
 
-    // Optional right leg
+    /** Horizontal line. */
+    @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
+    private final Line2D line;
+
+    /** Optional right leg, if any. */
+    @XmlElement(name = "right-leg")
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private final Line2D rightLeg;
+
+    private final SegmentInter segment;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -64,6 +78,17 @@ public class EndingInter
         this.rightLeg = rightLeg;
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private EndingInter ()
+    {
+        this.segment = null;
+        this.line = null;
+        this.leftLeg = null;
+        this.rightLeg = null;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
@@ -72,6 +97,27 @@ public class EndingInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        Rectangle box = super.getBounds();
+
+        if (box != null) {
+            return box;
+        }
+
+        box = line.getBounds().union(leftLeg.getBounds());
+
+        if (rightLeg != null) {
+            box = box.union(rightLeg.getBounds());
+        }
+
+        return new Rectangle(bounds = box);
     }
 
     /**

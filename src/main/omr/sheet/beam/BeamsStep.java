@@ -56,7 +56,7 @@ public class BeamsStep
                           Context context)
             throws StepException
     {
-        new BeamsBuilder(system, context.gapMap.get(system)).buildBeams(); // -> Beams
+        new BeamsBuilder(system, context.distancemap.get(system)).buildBeams(); // -> Beams
     }
 
     //----------//
@@ -69,17 +69,18 @@ public class BeamsStep
             throws StepException
     {
         // Cumulate system results
-        Population vGaps = new Population();
+        Population distances = new Population();
 
-        for (Population pop : context.gapMap.values()) {
-            vGaps.includePopulation(pop);
+        for (Population pop : context.distancemap.values()) {
+            distances.includePopulation(pop);
         }
 
-        if (vGaps.getCardinality() > 0) {
-            logger.info("{}InterBeam gaps {}", sheet.getLogPrefix(), vGaps);
+        if (distances.getCardinality() > 0) {
+            logger.info("{}BeamDistance{{}}", sheet.getLogPrefix(), distances);
+
+            sheet.getScale().setBeamDistance(distances.getMeanValue(), distances.getStandardDeviation());
         }
 
-        sheet.setBeamGaps(vGaps);
     }
 
     //----------//
@@ -89,7 +90,7 @@ public class BeamsStep
      * {@inheritDoc}
      * <p>
      * Perform a closing operation on the whole image with a disk shape as the structure
-     * element to point out concentrations of foreground pixels (for beams essentially).
+     * element to point out concentrations of foreground pixels (meant for beams).
      *
      * @return the populated context
      */
@@ -100,28 +101,31 @@ public class BeamsStep
         // Retrieve significant spots for the whole sheet
         new SpotsBuilder(sheet).buildSheetSpots();
 
-        // Allocate map to collect vertical gaps
-        Map<SystemInfo, Population> gapMap = new TreeMap<SystemInfo, Population>();
+        // Allocate map to collect vertical distances
+        Map<SystemInfo, Population> distanceMap = new TreeMap<SystemInfo, Population>();
 
         for (SystemInfo system : sheet.getSystems()) {
-            gapMap.put(system, new Population());
+            distanceMap.put(system, new Population());
         }
 
-        return new Context(gapMap);
+        return new Context(distanceMap);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    public static class Context
+    //---------//
+    // Context //
+    //---------//
+    protected static class Context
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Beam group vertical gaps, per system. */
-        public final Map<SystemInfo, Population> gapMap;
+        /** Beam group vertical distances, per system. */
+        public final Map<SystemInfo, Population> distancemap;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Context (Map<SystemInfo, Population> gapMap)
+        public Context (Map<SystemInfo, Population> distanceMap)
         {
-            this.gapMap = gapMap;
+            this.distancemap = distanceMap;
         }
     }
 }

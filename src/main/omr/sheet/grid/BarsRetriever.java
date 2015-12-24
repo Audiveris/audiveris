@@ -14,30 +14,27 @@ package omr.sheet.grid;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphClassifier;
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
-import omr.glyph.Glyphs;
+import omr.glyph.Glyph;
+import omr.glyph.GlyphIndex;
 import omr.glyph.Shape;
-import omr.glyph.ShapeEvaluator;
-import omr.glyph.facets.Glyph;
-import omr.glyph.facets.GlyphComposition;
+import omr.glyph.dynamic.CompoundFactory;
+import omr.glyph.dynamic.CurvedFilament;
+import omr.glyph.dynamic.Filament;
+import omr.glyph.dynamic.SectionCompound;
 
-import omr.lag.BasicLag;
-import omr.lag.JunctionShiftPolicy;
 import omr.lag.Lag;
 import omr.lag.Lags;
 import omr.lag.Section;
-import omr.lag.SectionFactory;
 
 import omr.math.AreaUtil;
 import omr.math.AreaUtil.CoreData;
-import omr.math.BasicLine;
 import omr.math.GeoPath;
 import omr.math.GeoUtil;
 import omr.math.Histogram;
 import omr.math.PointUtil;
+
 import static omr.run.Orientation.*;
+
 import omr.run.RunTable;
 
 import omr.sheet.Part;
@@ -50,15 +47,16 @@ import omr.sheet.StaffManager;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 import omr.sheet.grid.PartGroup.Symbol;
+
 import static omr.sheet.grid.StaffPeak.Attribute.*;
 
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractVerticalInter;
-import omr.sig.inter.BarConnectionInter;
+import omr.sig.inter.BarConnectorInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.BraceInter;
-import omr.sig.inter.BracketConnectionInter;
+import omr.sig.inter.BracketConnectorInter;
 import omr.sig.inter.BracketInter;
 import omr.sig.inter.BracketInter.BracketKind;
 import omr.sig.inter.Inter;
@@ -73,11 +71,14 @@ import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
 
 import omr.util.Dumping;
+import omr.util.Entities;
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
-import omr.util.IntUtil;
+
 import omr.util.Navigable;
 import omr.util.VerticalSide;
+
 import static omr.util.VerticalSide.*;
 
 import ij.process.ByteProcessor;
@@ -106,6 +107,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import omr.glyph.dynamic.StraightFilament;
 
 /**
  * Class {@code BarsRetriever} focuses on the retrieval of vertical bar lines and
@@ -148,9 +150,6 @@ public class BarsRetriever
     /** Related staff manager. */
     private final StaffManager staffManager;
 
-    /** Shape classifier to use. */
-    private final ShapeEvaluator classifier = GlyphClassifier.getInstance();
-
     /** Staff projectors. */
     private final List<StaffProjector> projectors = new ArrayList<StaffProjector>();
 
@@ -192,16 +191,7 @@ public class BarsRetriever
      */
     public void buildVerticalLag (RunTable longVertTable)
     {
-        vLag = new BasicLag(Lags.VLAG, VERTICAL);
-
-        SectionFactory sectionsBuilder = new SectionFactory(
-                vLag,
-                new JunctionShiftPolicy(params.maxRunShift));
-        sectionsBuilder.createSections(longVertTable, null, true);
-
-        sheet.getLagManager().setLag(Lags.VLAG, vLag);
-
-        setVipSections();
+        vLag = sheet.getLagManager().buildVerticalLag(longVertTable);
     }
 
     //---------//
@@ -413,36 +403,32 @@ public class BarsRetriever
         List<Section> allSections = getSectionsByWidth(maxWidth);
         logger.debug("sections:{}", allSections.size());
 
-        BarGlyphFactory factory = new BarGlyphFactory(
-                sheet.getScale(),
-                sheet.getGlyphNest(),
-                GlyphLayer.DEFAULT,
-                VERTICAL);
+        BarFilamentFactory factory = new BarFilamentFactory(sheet.getScale());
 
         for (Staff staff : staffManager.getStaves()) {
             for (StaffPeak peak : staff.getPeaks()) {
                 // Take proper slice of sections for this peak
                 List<Section> sections = getPeakSections(peak, allSections);
-                Glyph glyph = factory.retrieveBarGlyph(sections, peak.getBounds());
-                peak.setGlyph(glyph);
+                Filament filament = factory.buildBarFilament(sections, peak.getBounds());
+                peak.setFilament(filament);
                 logger.debug("Staff#{} {}", staff.getId(), peak);
             }
         }
     }
 
-    //-----------------//
-    // buildBraceGlyph //
-    //-----------------//
+    //--------------------//
+    // buildBraceFilament //
+    //--------------------//
     /**
-     * Build the brace glyph that goes from top peak to bottom peak.
+     * Build the brace filament that goes from top peak to bottom peak.
      *
      * @param topPeak    peak for top portion
      * @param bottomPeak peak for bottom portion
-     * @return the brace glyph
+     * @return the brace filament
      */
-    private Glyph buildBraceGlyph (StaffPeak topPeak,
-                                   StaffPeak bottomPeak,
-                                   List<Section> allSections)
+    private Filament buildBraceFilament (StaffPeak topPeak,
+                                         StaffPeak bottomPeak,
+                                         List<Section> allSections)
     {
         // Define (perhaps slanted) area, slightly increased to the left
         final Path2D path = new Path2D.Double();
@@ -453,15 +439,17 @@ public class BarsRetriever
         path.closePath();
 
         final Area area = new Area(path);
-        final Glyph topGlyph = topPeak.getGlyph();
-        final Glyph bottomGlyph = bottomPeak.getGlyph();
+        final Filament topFilament = topPeak.getFilament();
+        final Filament bottomFilament = bottomPeak.getFilament();
         final List<Section> sections = getAreaSections(area, allSections);
-        sections.removeAll(topGlyph.getMembers());
-        sections.removeAll(bottomGlyph.getMembers());
+        sections.removeAll(topFilament.getMembers());
+        sections.removeAll(bottomFilament.getMembers());
 
         // Now we have two end glyphs and a few sections in the middle
-        Glyph compound = sheet.getGlyphNest()
-                .buildGlyph(Arrays.asList(topGlyph, bottomGlyph), false);
+        Filament compound = (Filament) CompoundFactory.buildCompoundFromParts(
+                Arrays.asList(topFilament, bottomFilament),
+                CurvedFilament.class,
+                scale.getInterline());
 
         boolean expanding;
 
@@ -472,7 +460,7 @@ public class BarsRetriever
                 Section section = it.next();
 
                 if (compound.touches(section)) {
-                    compound.addSection(section, GlyphComposition.Linking.NO_LINK);
+                    compound.addSection(section, false);
                     it.remove();
                     expanding = true;
 
@@ -481,7 +469,7 @@ public class BarsRetriever
             }
         } while (expanding);
 
-        return sheet.getGlyphNest().registerGlyph(compound);
+        return compound;
     }
 
     //-------------//
@@ -496,6 +484,7 @@ public class BarsRetriever
     {
         List<Section> allSections = null;
         final List<Staff> staves = staffManager.getStaves();
+        final GlyphIndex nest = sheet.getGlyphIndex();
 
         StaffLoop:
         for (int iStaff = 0; iStaff < staves.size(); iStaff++) {
@@ -530,10 +519,9 @@ public class BarsRetriever
                             allSections = getSectionsByWidth(params.maxBraceThickness);
                         }
 
-                        Glyph braceGlyph = buildBraceGlyph(peak, otherPeak, allSections);
-                        BraceInter braceInter = new BraceInter(
-                                braceGlyph,
-                                Inter.intrinsicRatio * 1);
+                        Filament braceFilament = buildBraceFilament(peak, otherPeak, allSections);
+                        Glyph glyph = nest.registerOriginal(braceFilament.toGlyph(null));
+                        BraceInter braceInter = new BraceInter(glyph, Inter.intrinsicRatio * 1);
                         SIGraph sig = staff.getSystem().getSig();
                         sig.addVertex(braceInter);
 
@@ -547,68 +535,70 @@ public class BarsRetriever
         }
     }
 
-    //-----------------//
-    // buildSerifGlyph //
-    //-----------------//
+    //--------------------//
+    // buildSerifFilament //
+    //--------------------//
     /**
-     * Build the glyph that may represent a bracket end serif.
+     * Build the filament that may represent a bracket end serif.
      *
      * @param staff    containing staff
      * @param sections the population of candidate sections
      * @param side     top or bottom of staff
      * @param roi      the rectangular roi for the serif
-     * @return the glyph found
+     * @return the filament built
      */
-    private Glyph buildSerifGlyph (Staff staff,
-                                   Set<Section> sections,
-                                   VerticalSide side,
-                                   Rectangle roi)
+    private Filament buildSerifFilament (Staff staff,
+                                         Set<Section> sections,
+                                         VerticalSide side,
+                                         Rectangle roi)
     {
         // Retrieve all glyphs out of connected sections
-        GlyphNest nest = sheet.getGlyphNest();
-        List<Glyph> glyphs = nest.retrieveGlyphsFromIsolatedSections(
+        List<SectionCompound> compounds = CompoundFactory.buildCompounds(
                 sections,
-                GlyphLayer.DEFAULT,
-                true);
-        logger.debug("Staff#{} serif {}", staff.getId(), Glyphs.toString(glyphs));
+                scale.getInterline(),
+                StraightFilament.class);
+        logger.debug("Staff#{} serif {}", staff.getId(), Entities.ids(compounds));
 
-        if (glyphs.size() > 1) {
-            // Sort glyphs according to their distance from bar/roi vertex
+        if (compounds.size() > 1) {
+            // Sort filaments according to their distance from bar/roi vertex
             final Point vertex = new Point(roi.x, roi.y + ((side == TOP) ? (roi.height - 1) : 0));
             Collections.sort(
-                    glyphs,
-                    new Comparator<Glyph>()
-                    {
-                        @Override
-                        public int compare (Glyph g1,
-                                            Glyph g2)
-                        {
-                            double d1 = PointUtil.length(
-                                    GeoUtil.vectorOf(g1.getCentroid(), vertex));
-                            double d2 = PointUtil.length(
-                                    GeoUtil.vectorOf(g2.getCentroid(), vertex));
+                    compounds,
+                    new Comparator<SectionCompound>()
+            {
+                @Override
+                public int compare (SectionCompound g1,
+                                    SectionCompound g2)
+                {
+                    double d1 = PointUtil.length(
+                            GeoUtil.vectorOf(g1.getCentroid(), vertex));
+                    double d2 = PointUtil.length(
+                            GeoUtil.vectorOf(g2.getCentroid(), vertex));
 
-                            return Double.compare(d1, d2);
-                        }
-                    });
+                    return Double.compare(d1, d2);
+                }
+            });
 
             // Pickup the first ones and stop as soon as minimum weight is reached
             int totalWeight = 0;
 
-            for (int i = 0; i < glyphs.size(); i++) {
-                Glyph glyph = glyphs.get(i);
-                totalWeight += glyph.getWeight();
+            for (int i = 0; i < compounds.size(); i++) {
+                SectionCompound compound = compounds.get(i);
+                totalWeight += compound.getWeight();
 
                 if (totalWeight >= params.serifMinWeight) {
-                    glyphs = glyphs.subList(0, i + 1);
+                    compounds = compounds.subList(0, i + 1);
 
                     break;
                 }
             }
 
-            return nest.buildGlyph(glyphs, true);
+            return (Filament) CompoundFactory.buildCompoundFromParts(
+                    compounds,
+                    CurvedFilament.class,
+                    scale.getInterline());
         } else {
-            return glyphs.get(0);
+            return (Filament) compounds.get(0);
         }
     }
 
@@ -643,7 +633,7 @@ public class BarsRetriever
 
         final CoreData data = AreaUtil.verticalCore(pixelFilter, leftLine, rightLine);
 
-        if (p1.getGlyph().isVip() || p2.getGlyph().isVip()) {
+        if (p1.getFilament().isVip() || p2.getFilament().isVip()) {
             logger.info(
                     "VIP checkConnection S#{} {} and S#{} {} {}",
                     p1.getStaff().getId(),
@@ -724,12 +714,12 @@ public class BarsRetriever
             SIGraph sig = system.getSig();
 
             if (topPeak.isBracket()) {
-                sig.addVertex(new BracketConnectionInter(connection, connection.getImpacts()));
+                sig.addVertex(new BracketConnectorInter(connection, connection.getImpacts()));
             } else {
                 sig.addVertex(
-                        new BarConnectionInter(
+                        new BarConnectorInter(
                                 connection,
-                                topPeak.isSet(THICK) ? Shape.THICK_CONNECTION : Shape.THIN_CONNECTION,
+                                topPeak.isSet(THICK) ? Shape.THICK_CONNECTOR : Shape.THIN_CONNECTOR,
                                 connection.getImpacts()));
             }
 
@@ -762,31 +752,32 @@ public class BarsRetriever
                     }
 
                     StaffPeak.Bar peak = (StaffPeak.Bar) p;
-                    BasicLine median = new BasicLine(
-                            new double[]{
-                                (peak.getStart() + peak.getStop()) / 2d,
-                                (peak.getStart() + peak.getStop()) / 2d
-                            },
-                            new double[]{peak.getTop(), peak.getBottom()});
+                    double x = (peak.getStart() + peak.getStop()) / 2d;
+                    Line2D median = new Line2D.Double(
+                            x,
+                            peak.getTop(),
+                            x,
+                            peak.getBottom());
 
-                    AbstractVerticalInter inter;
+                    final Glyph glyph = sheet.getGlyphIndex().registerOriginal(
+                            peak.getFilament().toGlyph(null));
+                    final AbstractVerticalInter inter;
 
                     if (peak.isBracket()) {
                         BracketKind kind = getBracketKind(peak);
                         inter = new BracketInter(
-                                peak.getGlyph(),
+                                glyph,
                                 peak.getImpacts(),
                                 median,
                                 peak.getWidth(),
                                 kind);
                     } else {
                         inter = new BarlineInter(
-                                peak.getGlyph(),
+                                glyph,
                                 peak.isSet(THICK) ? Shape.THICK_BARLINE : Shape.THIN_BARLINE,
                                 peak.getImpacts(),
                                 median,
                                 peak.getWidth());
-                        inter.setStaff(staff);
 
                         for (HorizontalSide side : HorizontalSide.values()) {
                             if (peak.isStaffEnd(side)) {
@@ -804,6 +795,7 @@ public class BarsRetriever
                     }
 
                     sig.addVertex(inter);
+                    inter.setStaff(staff);
                     peak.setInter(inter);
                 }
             }
@@ -831,7 +823,7 @@ public class BarsRetriever
             }
         }
 
-        part.setId(-1 - system.getParts().size());
+        part.setId(1 + system.getParts().size());
         system.addPart(part);
 
         return part;
@@ -1065,11 +1057,7 @@ public class BarsRetriever
         // Preselect sections of proper max width
         List<Section> allSections = getSectionsByWidth(params.maxBraceThickness);
 
-        BarGlyphFactory factory = new BarGlyphFactory(
-                sheet.getScale(),
-                sheet.getGlyphNest(),
-                GlyphLayer.DEFAULT,
-                VERTICAL);
+        BarFilamentFactory factory = new BarFilamentFactory(sheet.getScale());
 
         for (StaffProjector projector : projectors) {
             Staff staff = projector.getStaff();
@@ -1097,15 +1085,22 @@ public class BarsRetriever
 
             // Take proper slice of sections for this peak
             List<Section> sections = getPeakSections(bracePeak, allSections);
-            Filament glyph = factory.retrieveBarGlyph(sections, bracePeak.getBounds());
-            bracePeak.setGlyph(glyph);
+            Filament filament = factory.buildBarFilament(sections, bracePeak.getBounds());
+            bracePeak.setFilament(filament);
 
             // A few tests on glyph
-            if (glyph.getLength(VERTICAL) < ((staff.getLineCount() - 1) * scale.getInterline())) {
+            if (filament.getLength(VERTICAL) < ((staff.getLineCount() - 1) * scale.getInterline())) {
                 continue;
             }
 
-            if (glyph.getMeanCurvature() >= params.minBarCurvature) {
+            double curvature = filament.getMeanCurvature();
+            logger.debug(
+                    "staff#{} brace curvature:{} vs {}",
+                    staff.getId(),
+                    curvature,
+                    params.maxBraceCurvature);
+
+            if (curvature >= params.maxBraceCurvature) {
                 continue;
             }
 
@@ -1216,11 +1211,9 @@ public class BarsRetriever
                         bottom.set(BRACKET_MIDDLE);
                         modified = true;
                     }
-                } else {
-                    if (bottom.isBracket()) {
-                        top.set(BRACKET_MIDDLE);
-                        modified = true;
-                    }
+                } else if (bottom.isBracket()) {
+                    top.set(BRACKET_MIDDLE);
+                    modified = true;
                 }
             }
         } while (modified == true);
@@ -1270,13 +1263,13 @@ public class BarsRetriever
     private double extensionOf (StaffPeak peak,
                                 VerticalSide side)
     {
-        final Rectangle glyphBox = peak.getGlyph().getBounds();
+        final Rectangle box = peak.getFilament().getBounds();
         final double halfLine = scale.getMaxFore() / 2.0;
 
         if (side == TOP) {
-            return (peak.getTop() - halfLine - glyphBox.y);
+            return (peak.getTop() - halfLine - box.y);
         } else {
-            return ((glyphBox.y + glyphBox.height) - 1 - halfLine - peak.getBottom());
+            return ((box.y + box.height) - 1 - halfLine - peak.getBottom());
         }
     }
 
@@ -1563,7 +1556,7 @@ public class BarsRetriever
         Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
 
         for (Lag lag : Arrays.asList(vLag, hLag)) {
-            for (Section section : lag.getSections()) {
+            for (Section section : lag.getEntities()) {
                 if (section.getLength(HORIZONTAL) <= maxWidth) {
                     sections.add(section);
                 }
@@ -1685,14 +1678,12 @@ public class BarsRetriever
                                 }
 
                                 group.add(peak);
-                            } else {
-                                // We are NOT grouped with previous peak
-                                if (group != null) {
+                            } else // We are NOT grouped with previous peak
+                             if (group != null) {
                                     group = null;
                                 } else {
                                     isolated.add(prevPeak);
                                 }
-                            }
                         }
 
                         prevPeak = peak;
@@ -1763,8 +1754,8 @@ public class BarsRetriever
         final int halfLine = (int) Math.ceil(scale.getMaxFore() / 2.0);
 
         // Define lookup region for serif
-        final Glyph barGlyph = peak.getGlyph();
-        final Rectangle glyphBox = barGlyph.getBounds();
+        final Filament barFilament = peak.getFilament();
+        final Rectangle glyphBox = barFilament.getBounds();
         final int yBox = (side == TOP)
                 ? (Math.min(
                         glyphBox.y + params.serifThickness,
@@ -1777,17 +1768,17 @@ public class BarsRetriever
                 yBox,
                 params.serifRoiWidth,
                 params.serifRoiHeight);
-        barGlyph.addAttachment(((side == TOP) ? "t" : "b") + "Serif", roi);
+        barFilament.addAttachment(((side == TOP) ? "t" : "b") + "Serif", roi);
 
         // Look for intersected sections
         // Remove sections from bar peak (and from next peak if any)
         Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
         Set<Section> sections = hLag.intersectedSections(roi);
         sections.addAll(vLag.intersectedSections(roi));
-        sections.removeAll(barGlyph.getMembers());
+        sections.removeAll(barFilament.getMembers());
 
         if (nextPeak != null) {
-            sections.removeAll(nextPeak.getGlyph().getMembers());
+            sections.removeAll(nextPeak.getFilament().getMembers());
         }
 
         if (sections.isEmpty()) {
@@ -1795,8 +1786,9 @@ public class BarsRetriever
         }
 
         // Retrieve serif glyph from sections
-        Glyph serif = buildSerifGlyph(staff, sections, side, roi);
-        double slope = serif.getLine().getSlope();
+        Filament serif = buildSerifFilament(staff, sections, side, roi);
+        serif.computeLine();
+        double slope = serif.getSlope();
         logger.debug(
                 "Staff#{} {} {} serif#{} weight:{} slope:{}",
                 staff.getId(),
@@ -1810,7 +1802,7 @@ public class BarsRetriever
             logger.info(
                     "Staff#{} serif normalized weight too small {} vs {}",
                     staff.getId(),
-                    serif.getNormalizedWeight(),
+                    serif.getNormalizedWeight(scale.getInterline()),
                     constants.serifMinWeight.getValue());
 
             return false;
@@ -2143,7 +2135,7 @@ public class BarsRetriever
             List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
 
             for (StaffPeak peak : staff.getPeaks()) {
-                Filament glyph = (Filament) peak.getGlyph();
+                Filament glyph = (Filament) peak.getFilament();
                 double curvature = glyph.getMeanCurvature();
 
                 if (curvature < params.minBarCurvature) {
@@ -2211,7 +2203,7 @@ public class BarsRetriever
                         && (gap < params.minMeasureWidth)
                         && !isConnected(peak, TOP)
                         && !isConnected(peak, BOTTOM)) {
-                        if (logger.isDebugEnabled() || peak.getGlyph().isVip()) {
+                        if (logger.isDebugEnabled() || peak.getFilament().isVip()) {
                             logger.info("VIP Got a C-Clef peak1 at {}", peak);
                         }
 
@@ -2229,8 +2221,8 @@ public class BarsRetriever
                                 && !isConnected(peak2, TOP)
                                 && !isConnected(peak2, BOTTOM)) {
                                 if (logger.isDebugEnabled()
-                                    || peak.getGlyph().isVip()
-                                    || peak2.getGlyph().isVip()) {
+                                    || peak.getFilament().isVip()
+                                    || peak2.getFilament().isVip()) {
                                     logger.info("VIP Got a C-Clef peak2 at {}", peak2);
                                 }
 
@@ -2364,7 +2356,7 @@ public class BarsRetriever
             for (StaffPeak p : staff.getPeaks()) {
                 StaffPeak.Bar peak = (StaffPeak.Bar) p;
 
-                if (peak.getGlyph().isVip()) {
+                if (peak.getFilament().isVip()) {
                     logger.info("VIP purgeLongPeaks on staff#{} {}", staff.getId(), peak);
                 }
 
@@ -2383,7 +2375,7 @@ public class BarsRetriever
                             }
                         }
 
-                        if (peak.getGlyph().isVip()) {
+                        if (peak.getFilament().isVip()) {
                             logger.info("VIP removed long on staff#{} {}", staff.getId(), peak);
                         }
 
@@ -2452,19 +2444,6 @@ public class BarsRetriever
                 }
 
                 staff.setBars(bars);
-
-                // Side bars
-                if (!bars.isEmpty()) {
-                    for (HorizontalSide side : HorizontalSide.values()) {
-                        BarlineInter bar = bars.get((side == LEFT) ? 0 : (bars.size() - 1));
-                        Rectangle box = bar.getBounds();
-                        int end = staff.getAbscissa(side);
-
-                        if ((end >= box.x) && (end <= ((box.x + box.width) - 1))) {
-                            staff.setSideBar(side, bar);
-                        }
-                    }
-                }
             }
         }
     }
@@ -2479,22 +2458,9 @@ public class BarsRetriever
         }
     }
 
-    //----------------//
-    // setVipSections //
-    //----------------//
-    private void setVipSections ()
-    {
-        // Debug sections VIPs
-        for (int id : params.vipSections) {
-            Section sect = vLag.getVertexById(id);
-
-            if (sect != null) {
-                sect.setVip();
-                logger.info("Vertical vip section: {}", sect);
-            }
-        }
-    }
-
+    //----------//
+    // stringOf //
+    //----------//
     private String stringOf (List<PartGroup> groups,
                              SystemInfo system)
     {
@@ -2520,10 +2486,6 @@ public class BarsRetriever
         private final Constant.Boolean showVerticalLines = new Constant.Boolean(
                 false,
                 "Should we show the vertical grid lines?");
-
-        private final Constant.String verticalVipSections = new Constant.String(
-                "",
-                "(Debug) Comma-separated values of VIP vertical sections IDs");
 
         private final Scale.Fraction minThinThickDelta = new Scale.Fraction(
                 0.2,
@@ -2553,10 +2515,6 @@ public class BarsRetriever
                 0.25,
                 "Max white ratio when connecting bar lines");
 
-        private final Scale.Fraction maxRunShift = new Scale.Fraction(
-                0.05,
-                "Max shift between two runs of vertical sections");
-
         private final Scale.Fraction maxBarExtension = new Scale.Fraction(
                 0.3,
                 "Maximum extension for a bar line above or below staff line");
@@ -2564,6 +2522,10 @@ public class BarsRetriever
         private final Scale.Fraction minBarCurvature = new Scale.Fraction(
                 20,
                 "Minimum mean curvature for a bar line (rather than a brace)");
+
+        private final Scale.Fraction maxBraceCurvature = new Scale.Fraction(
+                40,
+                "Maximum mean curvature for a brace");
 
         private final Scale.Fraction maxDoubleBarGap = new Scale.Fraction(
                 0.75,
@@ -2658,11 +2620,11 @@ public class BarsRetriever
 
         final int maxAlignmentDx;
 
-        final int maxRunShift;
-
         final double maxBarExtension;
 
         final int minBarCurvature;
+
+        final int maxBraceCurvature;
 
         final int maxConnectionGap;
 
@@ -2696,9 +2658,6 @@ public class BarsRetriever
 
         final double serifMinSlope;
 
-        // Debug
-        final List<Integer> vipSections;
-
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -2712,9 +2671,9 @@ public class BarsRetriever
             maxBraceWidth = scale.toPixels(constants.maxBraceWidth);
             maxBraceExtension = scale.toPixels(constants.maxBraceExtension);
             maxAlignmentDx = scale.toPixels(constants.maxAlignmentDx);
-            maxRunShift = scale.toPixels(constants.maxRunShift);
             maxBarExtension = scale.toPixels(constants.maxBarExtension);
             minBarCurvature = scale.toPixels(constants.minBarCurvature);
+            maxBraceCurvature = scale.toPixels(constants.maxBraceCurvature);
             maxConnectionGap = scale.toPixels(constants.maxConnectionGap);
             maxConnectionWhiteRatio = constants.maxConnectionWhiteRatio.getValue();
             maxDoubleBarGap = scale.toPixels(constants.maxDoubleBarGap);
@@ -2734,15 +2693,8 @@ public class BarsRetriever
             serifMinWeight = scale.toPixels(constants.serifMinWeight);
             serifMinSlope = constants.serifMinSlope.getValue();
 
-            // VIPs
-            vipSections = IntUtil.parseInts(constants.verticalVipSections.getValue());
-
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);
-            }
-
-            if (!vipSections.isEmpty()) {
-                logger.info("Vertical VIP sections: {}", vipSections);
             }
         }
     }

@@ -11,18 +11,19 @@
 // </editor-fold>
 package omr;
 
-import omr.glyph.GlyphRepository;
+import omr.classifier.Sample;
+import omr.classifier.SampleRepository;
+import omr.classifier.ShapeDescription;
+
 import omr.glyph.Shape;
-import omr.glyph.ShapeDescription;
 import omr.glyph.ShapeSet;
-import omr.glyph.facets.Glyph;
 
 import omr.image.TemplateFactory;
 
 import omr.sheet.Picture;
-import omr.sheet.Sheet;
-import omr.sheet.ui.SheetDependent;
-import omr.sheet.ui.SheetsController;
+import omr.sheet.SheetStub;
+import omr.sheet.ui.StubDependent;
+import omr.sheet.ui.StubsController;
 
 import org.jdesktop.application.Action;
 
@@ -31,10 +32,10 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -44,7 +45,7 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class Debug
-        extends SheetDependent
+        extends StubDependent
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -62,10 +63,10 @@ public class Debug
     @Action
     public void checkSources (ActionEvent e)
     {
-        Sheet sheet = SheetsController.getCurrentSheet();
+        SheetStub stub = StubsController.getCurrentStub();
 
-        if (sheet != null) {
-            Picture picture = sheet.getPicture();
+        if (stub != null && stub.hasSheet()) {
+            Picture picture = stub.getSheet().getPicture();
 
             if (picture != null) {
                 picture.checkSources();
@@ -154,10 +155,9 @@ public class Debug
     @Action
     public void saveTrainingData (ActionEvent e)
     {
-        File file = new File(
-                WellKnowns.EVAL_FOLDER,
+        Path path = WellKnowns.EVAL_FOLDER.resolve(
                 "samples-" + ShapeDescription.getName() + ".arff");
-        final PrintWriter out = getPrintWriter(file);
+        final PrintWriter out = getPrintWriter(path);
 
         out.println("@relation " + "glyphs-" + ShapeDescription.getName());
         out.println();
@@ -182,42 +182,44 @@ public class Debug
         out.println();
         out.println("@data");
 
-        GlyphRepository repository = GlyphRepository.getInstance();
+        SampleRepository repository = SampleRepository.getInstance();
         List<String> gNames = repository.getWholeBase(null);
         logger.info("Glyphs: {}", gNames.size());
 
         for (String gName : gNames) {
-            Glyph glyph = repository.getGlyph(gName, null);
+            Sample sample = repository.getSample(gName, null);
 
-            if (glyph != null) {
-                double[] ins = ShapeDescription.features(glyph);
+            if (sample != null) {
+                double[] ins = ShapeDescription.features(sample, sample.getInterline());
 
                 for (double in : ins) {
                     out.print((float) in);
                     out.print(",");
                 }
 
-                out.println(glyph.getShape().getPhysicalShape());
+                out.println(sample.getShape().getPhysicalShape());
             }
         }
 
         out.flush();
         out.close();
-        logger.info("Classifier data saved in " + file.getAbsolutePath());
+        logger.info("Classifier data saved in " + path.toAbsolutePath());
     }
 
     //----------------//
     // getPrintWriter //
     //----------------//
-    private static PrintWriter getPrintWriter (File file)
+    private static PrintWriter getPrintWriter (Path path)
     {
         try {
             final BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(file), WellKnowns.FILE_ENCODING));
+                    new OutputStreamWriter(
+                            new FileOutputStream(path.toFile()),
+                            WellKnowns.FILE_ENCODING));
 
             return new PrintWriter(bw);
         } catch (Exception ex) {
-            System.err.println("Error creating " + file + ex);
+            System.err.println("Error creating " + path + ex);
 
             return null;
         }

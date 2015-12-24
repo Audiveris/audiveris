@@ -17,7 +17,6 @@ import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import static java.awt.geom.PathIterator.*;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code GeoPath} is a Path2D.Double with some additions
@@ -75,11 +74,11 @@ public class GeoPath
         if (!it.isDone()) {
             final int segmentKind = it.currentSegment(buffer);
             final int count = countOf(segmentKind);
-            final double x2 = buffer[count - 2];
-            final double y2 = buffer[count - 1];
+            final double x = buffer[count - 2];
+            final double y = buffer[count - 1];
 
             if ((segmentKind == SEG_MOVETO) || (segmentKind == SEG_CLOSE)) {
-                return new Point2D.Double(x2, y2);
+                return new Point2D.Double(x, y);
             } else {
                 return new Point2D.Double(0, 0);
             }
@@ -105,67 +104,18 @@ public class GeoPath
             return null;
         }
 
-        double x2 = 0;
-        double y2 = 0;
+        double x = 0;
+        double y = 0;
 
         while (!it.isDone()) {
             final int segmentKind = it.currentSegment(buffer);
             final int count = countOf(segmentKind);
-            x2 = buffer[count - 2];
-            y2 = buffer[count - 1];
+            x = buffer[count - 2];
+            y = buffer[count - 1];
             it.next();
         }
 
-        return new Point2D.Double(x2, y2);
-    }
-
-    //------------//
-    // intersects //
-    //------------//
-    /**
-     * Check whether the flattened path intersects the provided rectangle.
-     *
-     * @param rect     the provided rectangle to check for intersection
-     * @param flatness maximum distance used for line segment approximation
-     * @return true if intersection found
-     */
-    public boolean intersects (Rectangle2D rect,
-                               double flatness)
-    {
-        final double[] buffer = new double[6];
-        double x1 = 0;
-        double y1 = 0;
-
-        for (PathIterator it = getPathIterator(null, flatness); !it.isDone(); it.next()) {
-            int segmentKind = it.currentSegment(buffer);
-            int count = countOf(segmentKind);
-            final double x2 = buffer[count - 2];
-            final double y2 = buffer[count - 1];
-
-            switch (segmentKind) {
-            case SEG_MOVETO:
-                x1 = x2;
-                y1 = y2;
-
-                break;
-
-            case SEG_LINETO:
-
-                if (rect.intersectsLine(x1, y1, x2, y2)) {
-                    return true;
-                }
-
-                break;
-
-            case SEG_CLOSE:
-                break;
-
-            default:
-                throw new RuntimeException("Illegal segmentKind " + segmentKind);
-            }
-        }
-
-        return false;
+        return new Point2D.Double(x, y);
     }
 
     //---------//
@@ -206,8 +156,8 @@ public class GeoPath
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
 
         double[] buffer = new double[6];
 
@@ -283,9 +233,8 @@ public class GeoPath
     // xAtYExt //
     //---------//
     /**
-     * Similar functionality as xAtY, but also accepts ordinates
-     * outside the line ordinate range but extrapolating the line
-     * based on start and stop points.
+     * Similar functionality as xAtY, but also accepts ordinates outside the line
+     * ordinate range by extrapolating the line based on start and stop points.
      *
      * @param y the provided ordinate
      * @return the abscissa value at this ordinate
@@ -351,9 +300,8 @@ public class GeoPath
     // yAtXExt //
     //---------//
     /**
-     * Similar functionality as yAtX, but also accepts abscissae
-     * outside the spline abscissa range but extrapolating the line
-     * based on start and stop points.
+     * Similar functionality as yAtX, but also accepts abscissae outside the spline
+     * abscissa range by extrapolating the line based on start and stop points.
      *
      * @param x the provided abscissa
      * @return the ordinate value at this abscissa
@@ -407,8 +355,7 @@ public class GeoPath
     // getXSegment //
     //-------------//
     /**
-     * Retrieve the first segment of the curve that contains the
-     * provided abscissa.
+     * Retrieve the first segment of the curve that contains the provided abscissa.
      *
      * @param x      the provided abscissa
      * @param coords output: coordinates
@@ -454,8 +401,7 @@ public class GeoPath
     // getYSegment //
     //-------------//
     /**
-     * Retrieve the first segment of the curve that contains the
-     * provided ordinate.
+     * Retrieve the first segment of the curve that contains the provided ordinate.
      *
      * @param y      the provided ordinate
      * @param coords output: coordinates

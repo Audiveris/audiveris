@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet.stem;
 
+import omr.sheet.Scale.StemScale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -78,11 +79,11 @@ public class StemSeedsStep
                              Sheet sheet)
             throws StepException
     {
-        StemScale stemScale = new StemScaler(sheet).retrieveStem();
+        // Retrieve typical stem width on global sheet
+        StemScale stemScale = new StemScaler(sheet).retrieveStemWidth();
 
         logger.info("{}{}", sheet.getLogPrefix(), stemScale);
-        sheet.setStemScale(stemScale);
-        sheet.getBench().recordStemScale(stemScale);
+        sheet.getScale().setStemScale(stemScale);
 
         return null;
     }

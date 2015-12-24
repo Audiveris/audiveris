@@ -40,7 +40,7 @@ public abstract class SheetTask
      */
     protected SheetTask (Sheet sheet)
     {
-        index = sheet.getIndex();
+        index = sheet.getNumber();
     }
 
     /** No-arg constructor for JAXB only. */

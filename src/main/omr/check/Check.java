@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Hervé Bitteur
  */
-public abstract class Check<C extends Checkable>
+public abstract class Check<C>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -194,12 +194,10 @@ public abstract class Check<C extends Checkable>
      *
      * @param checkable the checkable object to be checked
      * @param result    output for the result, or null
-     * @param update    true if the object is to be updated with failed result
      * @return the result
      */
     public CheckResult pass (C checkable,
-                             CheckResult result,
-                             boolean update)
+                             CheckResult result)
     {
         if (result == null) {
             result = new CheckResult();
@@ -210,10 +208,6 @@ public abstract class Check<C extends Checkable>
 
         if (covariant) {
             if (result.value < low.getValue()) {
-                if (update) {
-                    checkable.addFailure(failure);
-                }
-
                 result.grade = 0;
             } else if (result.value >= high.getValue()) {
                 result.grade = 1;
@@ -222,10 +216,6 @@ public abstract class Check<C extends Checkable>
             }
         } else {
             if (result.value > high.getValue()) {
-                if (update) {
-                    checkable.addFailure(failure);
-                }
-
                 result.grade = 0;
             } else if (result.value <= low.getValue()) {
                 result.grade = 1;

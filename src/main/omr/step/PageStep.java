@@ -31,8 +31,8 @@ import java.util.Collection;
 /**
  * Class {@code PageStep} handles connections between systems in a page.
  * <ul>
- * <li>Physical system Part instances are abstracted into logical ScorePart instances.
- * For systems where a given ScorePart has no representative Part, a corresponding dummy Part is
+ * <li>Physical system Part instances are abstracted into LogicalPart instances.
+ * For systems where a given LogicalPart has no representative Part, a corresponding dummy Part is
  * inserted (with its proper staves and minimal measures).</li>
  * <li>Slurs are connected across systems.</li>
  * <li>Tied voices.</li>
@@ -73,6 +73,8 @@ public class PageStep
                 connectSystemInitialSlurs(system);
 
                 //                system.connectTiedVoices();
+                //
+                // Refine syllables across systems
                 for (Inter inter : sig.inters(LyricLineInter.class)) {
                     LyricLineInter line = (LyricLineInter) inter;
                     line.refineLyricSyllables();
@@ -81,6 +83,7 @@ public class PageStep
 
             // Refine voices ids (and thus colors) across all systems of the page
             ///new PageVoiceFixer(page).refine();
+            //
             // Merge / renumber measure stacks within the page
             new MeasureFixer().process(page);
         }

@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.sheet.rhythm;
 
-import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
@@ -21,6 +20,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import omr.sheet.Part;
 
 /**
  * Class {@code SystemVoiceFixer} harmonizes the ids (and thus colors) for the voices
@@ -64,20 +64,21 @@ public class SystemVoiceFixer
     {
         int count = 0; // Count of voice ids in this system
 
-        // Assigned voice IDs for each staff within this system
-        final Map<Staff, List<Integer>> globalMap = new LinkedHashMap<Staff, List<Integer>>();
+        // Assigned voice IDs for each part within this system
+        final Map<Part, List<Integer>> globalMap = new LinkedHashMap<Part, List<Integer>>();
 
         for (MeasureStack stack : system.getMeasureStacks()) {
-            for (Staff staff : system.getStaves()) {
-                // Global IDs already assigned in this staff
-                List<Integer> globals = globalMap.get(staff);
+            for (Part part : system.getParts()) {
+                // Global IDs already assigned in this part
+                List<Integer> globals = globalMap.get(part);
 
                 if (globals == null) {
-                    globalMap.put(staff, globals = new ArrayList<Integer>());
+                    globalMap.put(part, globals = new ArrayList<Integer>());
                 }
 
-                // Voices that start within this staff
-                final List<Voice> incomings = stack.getStaffVoices(staff);
+                // Voices that start within this measure
+                final Measure measure = stack.getMeasureAt(part);
+                final List<Voice> incomings = measure.getVoices();
 
                 // Connect incoming voices to global ones
                 // This simplistic approach uses position in lists
@@ -89,13 +90,13 @@ public class SystemVoiceFixer
                         final int global = globals.get(i);
 
                         if (voice.getId() != global) {
-                            stack.swapVoiceId(voice, global);
+                            measure.swapVoiceId(voice, global);
                         }
                     } else {
                         // Extend globals list
                         final int newId = ++count;
                         globals.add(newId);
-                        stack.swapVoiceId(voice, newId);
+                        measure.swapVoiceId(voice, newId);
                     }
                 }
             }

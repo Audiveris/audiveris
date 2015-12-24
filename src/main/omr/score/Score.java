@@ -17,11 +17,10 @@ import omr.constant.ConstantSet;
 import omr.script.ParametersTask.PartData;
 
 import omr.sheet.Book;
-import omr.sheet.SystemInfo;
+import omr.sheet.Sheet;
+import omr.sheet.SheetStub;
 
 import omr.util.Param;
-
-import com.audiveris.proxymusic.util.Source;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,33 +28,62 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import omr.util.Navigable;
+
 /**
  * Class {@code Score} represents a single movement, and is composed of one or several
  * pages.
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "score")
 public class Score
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(Score.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Score.class);
 
     /** Number of lines in a staff */
     public static final int LINE_NB = 5;
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /** Score id, within containing book. */
+    @XmlAttribute
     private int id;
 
-    /** Contained pages. */
-    private final List<Page> pages = new ArrayList<Page>();
-
     /** LogicalPart list for the whole score. */
+    @XmlElement(name = "logical-part")
     private List<LogicalPart> logicalParts;
 
+    /** Pages references. */
+    @XmlElement(name = "page")
+    private final List<PageRef> pageRefs = new ArrayList<PageRef>();
+
+    // Transient data
+    //---------------
+    //
+    /** Containing book. */
+    @Navigable(false)
+    private Book book;
+
+    /** Referenced pages. */
+    private ArrayList<Page> pages;
+
+    //
     /** Handling of parts name and program. */
     private final Param<List<PartData>> partsParam = new PartsParam();
 
@@ -74,52 +102,6 @@ public class Score
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // addPage //
-    //---------//
-    public void addPage (Page page)
-    {
-        pages.add(page);
-    }
-
-    //-------------//
-    // buildSource //
-    //-------------//
-    /**
-     * Build the Source structure that describes the source items for this score.
-     *
-     * @return the populated Source object
-     */
-    public Source buildSource ()
-    {
-        Source source = new Source();
-        Book book = getFirstPage().getSheet().getBook();
-        source.setFile(book.getInputPath().toString());
-        source.setOffset(book.getOffset());
-
-        for (Page page : pages) {
-            Source.SheetSystems sheetSystems = new Source.SheetSystems(page.getSheet().getIndex());
-            source.getSheets().add(sheetSystems);
-
-            for (SystemInfo system : page.getSystems()) {
-                sheetSystems.getSystems().add(system.getId());
-            }
-        }
-
-        return source;
-    }
-
-    //-------//
-    // close //
-    //-------//
-    /**
-     * Close this score instance, as well as its view if any.
-     */
-    public void close ()
-    {
-        logger.info("Closing {}", this);
-    }
-
     //------------------//
     // getDefaultVolume //
     //------------------//
@@ -133,16 +115,46 @@ public class Score
         return constants.defaultVolume.getValue();
     }
 
+    //---------//
+    // addPage //
+    //---------//
+    public void addPage (Page page)
+    {
+        getPages().add(page);
+        pageRefs.add(
+                new PageRef(page.getSheet().getNumber(), page.getId(), page.getMeasureDeltaId()));
+        page.setScore(this);
+    }
+
+    //-------//
+    // close //
+    //-------//
+    /**
+     * Close this score instance, as well as its view if any.
+     */
+    public void close ()
+    {
+        logger.info("Closing {}", this);
+    }
+
+    /**
+     * @return the book
+     */
+    public Book getBook ()
+    {
+        return book;
+    }
+
     //--------------//
     // getFirstPage //
     //--------------//
     public Page getFirstPage ()
     {
-        if (pages.isEmpty()) {
+        if (pageRefs.isEmpty()) {
             return null;
-        } else {
-            return pages.get(0);
         }
+
+        return getPage(pageRefs.get(0));
     }
 
     //-------//
@@ -161,11 +173,11 @@ public class Score
     //-------------//
     public Page getLastPage ()
     {
-        if (pages.isEmpty()) {
+        if (pageRefs.isEmpty()) {
             return null;
-        } else {
-            return pages.get(pages.size() - 1);
         }
+
+        return getPage(pageRefs.get(pageRefs.size() - 1));
     }
 
     //-----------------//
@@ -193,49 +205,34 @@ public class Score
      */
     public Integer getMeasureIdOffset (Page page)
     {
+        final PageRef ref = getPageRef(page);
         int offset = 0;
 
-        for (Page p : pages) {
-            if (p == page) {
+        for (PageRef pageRef : pageRefs) {
+            if (pageRef == ref) {
                 return offset;
-            } else {
-                Integer delta = p.getDeltaMeasureId();
-
-                if (delta != null) {
-                    offset += delta;
-                } else {
-                    // This page has no measures yet, so ...
-                    return null;
-                }
             }
+
+            offset += pageRef.deltaMeasureId;
         }
 
-        throw new IllegalArgumentException(page + " not found in score");
+        return offset;
     }
 
-    //------------------//
-    // getMeasureOffset //
-    //------------------//
+    //--------------//
+    // getPageIndex //
+    //--------------//
     /**
-     * Report the offset to add to page-based measure index of the
-     * provided page to get absolute (score-based) indices.
+     * Report index of the provided page in the score sequence of pages.
      *
      * @param page the provided page
-     * @return the measure index offset for the page
+     * @return the page index in score, or -1 if not found
      */
-    public int getMeasureOffset (Page page)
+    public int getPageIndex (Page page)
     {
-        int offset = 0;
+        final PageRef ref = getPageRef(page);
 
-        for (Page p : pages) {
-            if (p == page) {
-                return offset;
-            } else {
-                offset += p.getMeasureCount();
-            }
-        }
-
-        throw new IllegalArgumentException(page + " not found in score");
+        return pageRefs.indexOf(ref);
     }
 
     //----------//
@@ -248,6 +245,15 @@ public class Score
      */
     public List<Page> getPages ()
     {
+        if (pages == null) {
+            pages = new ArrayList<Page>();
+
+            // De-reference pageRefs
+            for (PageRef ref : pageRefs) {
+                pages.add(getPage(ref));
+            }
+        }
+
         return pages;
     }
 
@@ -259,12 +265,98 @@ public class Score
         return partsParam;
     }
 
+    //------------------//
+    // getPrecedingPage //
+    //------------------//
+    /**
+     * Report the page, if any, that precedes the provided page within containing score.
+     *
+     * @param page the provided page
+     * @return the preceding page or null
+     */
+    public Page getPrecedingPage (Page page)
+    {
+        int index = getPageIndex(page);
+
+        if (index > 0) {
+            return getPage(pageRefs.get(index - 1));
+        }
+
+        return null;
+    }
+
+    //----------------//
+    // getSheetPageId //
+    //----------------//
+    /**
+     * Report the local page ID for this score in provided sheet
+     *
+     * @param sheetNumber provided sheet number
+     * @return ID of score page in provided sheet
+     */
+    public Integer getSheetPageId (int sheetNumber)
+    {
+        final PageRef pageRef = getPageRef(sheetNumber);
+
+        if (pageRef != null) {
+            return pageRef.localPageId;
+        }
+
+        return null;
+    }
+
+    //----------//
+    // getStubs //
+    //----------//
+    /**
+     * Report the sequence of stubs this score is made from.
+     *
+     * @return the list of relevant stubs
+     */
+    public List<SheetStub> getStubs ()
+    {
+        final List<SheetStub> pageStubs = new ArrayList<SheetStub>();
+        final List<SheetStub> bookStubs = book.getStubs();
+
+        for (PageRef ref : pageRefs) {
+            pageStubs.add(bookStubs.get(ref.sheetNumber - 1));
+        }
+
+        return pageStubs;
+    }
+
     //----------------//
     // getTempoParam //
     //---------------//
     public Param<Integer> getTempoParam ()
     {
         return tempoParam;
+    }
+
+    //-----------------//
+    // setDefaultTempo //
+    //-----------------//
+    /**
+     * Assign default value for Midi tempo.
+     *
+     * @param tempo the default tempo value
+     */
+    public static void setDefaultTempo (int tempo)
+    {
+        constants.defaultTempo.setValue(tempo);
+    }
+
+    //------------------//
+    // setDefaultVolume //
+    //------------------//
+    /**
+     * Assign default value for Midi volume.
+     *
+     * @param volume the default volume value
+     */
+    public static void setDefaultVolume (int volume)
+    {
+        constants.defaultVolume.setValue(volume);
     }
 
     //-----------//
@@ -298,6 +390,26 @@ public class Score
         return volume != null;
     }
 
+    //---------//
+    // isFirst //
+    //---------//
+    /**
+     * Report whether the provided page is the first page in score.
+     *
+     * @param page the provided page
+     * @return true if first
+     */
+    public boolean isFirst (Page page)
+    {
+        PageRef pageRef = getPageRef(page);
+
+        if (pageRef != null) {
+            return pageRefs.get(0) == pageRef;
+        }
+
+        return false;
+    }
+
     //-------------//
     // isMultiPage //
     //-------------//
@@ -306,33 +418,31 @@ public class Score
      */
     public boolean isMultiPage ()
     {
-        return pages.size() > 1;
+        return pageRefs.size() > 1;
     }
 
-    //-----------------//
-    // setDefaultTempo //
-    //-----------------//
+    //---------//
+    // setBook //
+    //---------//
     /**
-     * Assign default value for Midi tempo.
-     *
-     * @param tempo the default tempo value
+     * @param book the book to set
      */
-    public static void setDefaultTempo (int tempo)
+    public void setBook (Book book)
     {
-        constants.defaultTempo.setValue(tempo);
+        this.book = book;
     }
 
-    //------------------//
-    // setDefaultVolume //
-    //------------------//
-    /**
-     * Assign default value for Midi volume.
-     *
-     * @param volume the default volume value
-     */
-    public static void setDefaultVolume (int volume)
+    //-------------------//
+    // setDeltaMeasureId //
+    //-------------------//
+    public void setDeltaMeasureId (Page page,
+                                   Integer deltaMeasureId)
     {
-        constants.defaultVolume.setValue(volume);
+        PageRef pageRef = getPageRef(page);
+
+        if (pageRef != null) {
+            pageRef.deltaMeasureId = deltaMeasureId;
+        }
     }
 
     //-------//
@@ -381,6 +491,60 @@ public class Score
         return "{Score " + id + "}";
     }
 
+    //-----------------//
+    // beforeUnmarshal //
+    //-----------------//
+    @SuppressWarnings("unused")
+    private void beforeUnmarshal (Unmarshaller u,
+                                  Object parent)
+    {
+        book = (Book) parent;
+    }
+
+    //---------//
+    // getPage //
+    //---------//
+    private Page getPage (PageRef ref)
+    {
+        Sheet sheet = book.getStubs().get(ref.sheetNumber - 1).getSheet();
+
+        return sheet.getPages().get(ref.localPageId - 1);
+    }
+
+    //------------//
+    // getPageRef //
+    //------------//
+    private PageRef getPageRef (int sheetNumber)
+    {
+        for (PageRef pageRef : pageRefs) {
+            if (pageRef.sheetNumber == sheetNumber) {
+                return pageRef;
+            }
+        }
+
+        logger.error("No page ref for sheet number " + sheetNumber);
+
+        return null;
+    }
+
+    //------------//
+    // getPageRef //
+    //------------//
+    private PageRef getPageRef (Page page)
+    {
+        final int sheetNumber = page.getSheet().getNumber();
+
+        for (PageRef pageRef : pageRefs) {
+            if (pageRef.sheetNumber == sheetNumber) {
+                return pageRef;
+            }
+        }
+
+        logger.error("No page ref for " + page);
+
+        return null;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -399,6 +563,50 @@ public class Score
                 "Volume",
                 78,
                 "Default Volume in 0..127 range");
+    }
+
+    //---------//
+    // PageRef //
+    //---------//
+    private static class PageRef
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlAttribute(name = "sheet-number")
+        public int sheetNumber;
+
+        @XmlAttribute(name = "local-page-id")
+        public int localPageId;
+
+        @XmlAttribute(name = "delta-measure-id")
+        public int deltaMeasureId;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public PageRef (int sheetNumber,
+                        int localPageId,
+                        int deltaMeasureId)
+        {
+            this.sheetNumber = sheetNumber;
+            this.localPageId = localPageId;
+            this.deltaMeasureId = deltaMeasureId;
+        }
+
+        private PageRef ()
+        {
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("PageRef{");
+            sb.append("sheetNumber:").append(sheetNumber);
+            sb.append(" localPageId:").append(localPageId);
+            sb.append(" deltaMeasureId:").append(deltaMeasureId);
+            sb.append('}');
+
+            return sb.toString();
+        }
     }
 
     //------------//
@@ -457,3 +665,38 @@ public class Score
         }
     }
 }
+//
+//    //--------------//
+//    // containsPage //
+//    //--------------//
+//    public boolean containsPage (Page page)
+//    {
+//        return getPages().contains(page);
+//    }
+//
+//
+//    //-------------//
+//    // buildSource //
+//    //-------------//
+//    /**
+//     * Build the Source structure that describes the source items for this score.
+//     *
+//     * @return the populated Source object
+//     */
+//    public Source buildSource ()
+//    {
+//        Source source = new Source();
+//        source.setFile(book.getInputPath().toString());
+//        source.setOffset((book.getOffset() != null) ? book.getOffset() : 0);
+//
+//        for (Page page : getPages()) {
+//            Source.SheetSystems sheetSystems = new Source.SheetSystems(page.getSheet().getNumber());
+//            source.getSheets().add(sheetSystems);
+//
+//            for (SystemInfo system : page.getSystems()) {
+//                sheetSystems.getSystems().add(system.getId());
+//            }
+//        }
+//
+//        return source;
+//    }

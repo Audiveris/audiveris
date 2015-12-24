@@ -16,21 +16,17 @@ import omr.OMR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
+import omr.glyph.GlyphFactory;
+import omr.glyph.Symbol.Group;
 
 import omr.image.ImageUtil;
 import omr.image.MorphoProcessor;
 import omr.image.StructureElement;
 
 import omr.lag.BasicLag;
-import omr.lag.JunctionRatioPolicy;
 import omr.lag.Lag;
 import omr.lag.Lags;
-import omr.lag.Section;
-import omr.lag.SectionFactory;
 
 import omr.run.Orientation;
 import omr.run.RunTable;
@@ -49,6 +45,7 @@ import omr.sheet.ui.SheetTab;
 
 import omr.ui.BoardsPane;
 
+import omr.util.Navigable;
 import omr.util.StopWatch;
 
 import ij.process.ByteProcessor;
@@ -82,6 +79,7 @@ public class SpotsBuilder
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
+    @Navigable(false)
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -120,8 +118,7 @@ public class SpotsBuilder
             // Retrieve major spots
             watch.start("buildSpots");
 
-            Scale scale = sheet.getScale();
-            int beam = scale.getMainBeam();
+            int beam = sheet.getScale().getBeamThicknessMain();
             List<Glyph> spots = buildSpots(buffer, null, beam, null);
 
             // Dispatch spots per system(s)
@@ -201,6 +198,9 @@ public class SpotsBuilder
                         new ScrollImageView(sheet, new ImageView(img)),
                         new BoardsPane(new PixelBoard(sheet)));
             }
+
+            // Save a specific binarized version for HEADS step
+            saveHeadRuns((ByteProcessor) buffer.duplicate());
         } else {
             if (constants.keepCueSpots.isSet()) {
                 BufferedImage img = buffer.getBufferedImage();
@@ -208,29 +208,15 @@ public class SpotsBuilder
             }
         }
 
-        // Save a specific binarized version for NOTES step
-        saveNoteRuns((ByteProcessor) buffer.duplicate());
-
         // Binarize the spots via a global filter (no illumination problem)
         buffer.threshold(constants.beamBinarizationThreshold.getValue());
 
         // Runs
         RunTableFactory runFactory = new RunTableFactory(SPOT_ORIENTATION);
-        RunTable spotTable = runFactory.createTable("spot", buffer);
-
-        // Sections
-        SectionFactory sectionsBuilder = new SectionFactory(spotLag, new JunctionRatioPolicy());
-        List<Section> sections = sectionsBuilder.createSections(spotTable);
-
-        if (offset != null) {
-            for (Section section : sections) {
-                section.translate(offset);
-            }
-        }
+        RunTable spotTable = runFactory.createTable(buffer);
 
         // Glyphs
-        GlyphNest nest = sheet.getGlyphNest();
-        List<Glyph> glyphs = nest.retrieveGlyphs(sections, GlyphLayer.SPOT, true);
+        List<Glyph> glyphs = GlyphFactory.buildGlyphs(spotTable, offset);
 
         return glyphs;
     }
@@ -260,8 +246,8 @@ public class SpotsBuilder
             for (SystemInfo system : relevants) {
                 // Check glyph is within system abscissa boundaries
                 if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
-                    glyph.setShape(Shape.BEAM_SPOT);
-                    system.registerGlyph(glyph);
+                    glyph.addGroup(Group.BEAM_SPOT);
+                    system.registerStandaloneGlyph(glyph);
                     created = true;
                 }
             }
@@ -313,7 +299,7 @@ public class SpotsBuilder
     private ByteProcessor getBuffer ()
     {
         final Picture picture = sheet.getPicture();
-        final int stemWidth = sheet.getMaxStem();
+        final int stemWidth = sheet.getScale().getMaxStem();
 
         ///return  picture.getSource(Picture.SourceKey.GAUSSIAN);
         ByteProcessor buffer = picture.getSource(Picture.SourceKey.NO_STAFF);
@@ -322,7 +308,7 @@ public class SpotsBuilder
         RunTableFactory factory = new RunTableFactory(
                 Orientation.HORIZONTAL,
                 new RunTableFactory.LengthFilter(stemWidth));
-        RunTable table = factory.createTable("noStem", buffer);
+        RunTable table = factory.createTable(buffer);
         buffer = table.getBuffer();
 
         // Apply median filter
@@ -333,31 +319,30 @@ public class SpotsBuilder
     }
 
     //--------------//
-    // saveNoteRuns //
+    // saveHeadRuns //
     //--------------//
     /**
-     * To ease (future) NOTES step, save the runs of the properly binarized buffer.
-     * The result is stored into sheet instance.
+     * To ease (future) HEADS step, save the runs of the properly binarized buffer.
      *
      * @param buffer the buffer copy to binarize
      */
-    private void saveNoteRuns (ByteProcessor buffer)
+    private void saveHeadRuns (ByteProcessor buffer)
     {
-        // Binarize the spots with threshold for notes
+        // Binarize the spots with threshold for heads
         buffer.threshold(constants.noteBinarizationThreshold.getValue());
 
         // Runs
         RunTableFactory runFactory = new RunTableFactory(SPOT_ORIENTATION);
-        RunTable runs = runFactory.createTable("noteSpots", buffer);
+        RunTable runs = runFactory.createTable(buffer);
 
         // For visual check
-        if (constants.keepNoteSpots.isSet()) {
+        if (constants.keepHeadSpots.isSet()) {
             BufferedImage img = runs.getBufferedImage();
-            ImageUtil.saveOnDisk(img, sheet.getId() + ".notespot");
+            ImageUtil.saveOnDisk(img, sheet.getId() + ".headspot");
         }
 
-        // Save it for future NOTES step
-        sheet.getPicture().setTable(Picture.TableKey.NOTE_SPOTS, runs);
+        // Save it for future HEADS step
+        sheet.getPicture().setTable(Picture.TableKey.HEAD_SPOTS, runs);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -385,9 +370,9 @@ public class SpotsBuilder
                 false,
                 "Should we store sheet beam spot images on disk?");
 
-        private final Constant.Boolean keepNoteSpots = new Constant.Boolean(
+        private final Constant.Boolean keepHeadSpots = new Constant.Boolean(
                 false,
-                "Should we store sheet note spot images on disk?");
+                "Should we store sheet head spot images on disk?");
 
         private final Constant.Boolean keepCueSpots = new Constant.Boolean(
                 false,

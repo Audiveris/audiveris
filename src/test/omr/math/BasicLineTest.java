@@ -12,9 +12,8 @@
 package omr.math;
 
 import omr.util.BaseTestCase;
-import static junit.framework.Assert.*;
 
-import org.junit.Test;
+import static junit.framework.Assert.*;
 
 /**
  * Class <code>BasicLineTest</code> performs unit tests on BasicLine class.
@@ -36,8 +35,6 @@ public class BasicLineTest
     BasicLine l2 = new BasicLine();
 
     BasicLine lxy = new BasicLine(xx, yy);
-
-    BasicLine l3 = new BasicLine(-0.80343527d, -0.5953921d, 385.66354d);
 
     //~ Methods ------------------------------------------------------------------------------------
     //@Test (expected = IllegalArgumentException.class)
@@ -63,11 +60,6 @@ public class BasicLineTest
     public void testGetMeanDistance ()
     {
         BasicLineCheck.checkGetMeanDistance(lxy);
-    }
-
-    public void testGetNoMeanDistance ()
-    {
-        BasicLineCheck.checkGetNoMeanDistance(new BasicLine(1.2, 3.4, 1));
     }
 
     public void testHorizontalPoints ()
@@ -199,19 +191,6 @@ public class BasicLineTest
         } catch (Exception expected) {
             checkException(expected);
         }
-    }
-
-    public void testStandardLine ()
-    {
-        double a = -2;
-        double b = 1;
-        double c = -5;
-        BasicLineCheck.checkStandardLine(new BasicLine(a, b, c));
-    }
-
-    public void testTangent ()
-    {
-        BasicLineCheck.checkTangent(l3);
     }
 
     public void testTangent1 ()

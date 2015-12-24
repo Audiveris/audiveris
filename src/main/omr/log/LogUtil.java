@@ -19,10 +19,11 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.util.StatusPrinter;
+import java.nio.file.Files;
 
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -54,31 +55,31 @@ public abstract class LogUtil
      *
      * @param CONFIG_FOLDER Config folder which may contain a logback.xml file
      */
-    public static void initialize (File CONFIG_FOLDER)
+    public static void initialize (Path CONFIG_FOLDER)
     {
         // 1/ Check if system property is set and points to a real file
         final String loggingProp = System.getProperty(LOGBACK_LOGGING_KEY);
 
         if (loggingProp != null) {
-            File configFile = new File(loggingProp);
+            Path configFile = Paths.get(loggingProp);
 
-            if (configFile.exists()) {
+            if (Files.exists(configFile)) {
                 // Everything seems OK, let LogBack use the config file
-                System.out.println("Using " + configFile.getAbsolutePath());
+                System.out.println("Using " + configFile.toAbsolutePath());
 
                 return;
             } else {
-                System.out.println("File " + configFile.getAbsolutePath() + " does not exist.");
+                System.out.println("File " + configFile.toAbsolutePath() + " does not exist.");
             }
         } else {
             System.out.println("Property " + LOGBACK_LOGGING_KEY + " not defined.");
         }
 
         // 2/ Look for well-known location
-        File configFile = new File(CONFIG_FOLDER, LOGBACK_FILE_NAME);
+        Path configFile = CONFIG_FOLDER.resolve(LOGBACK_FILE_NAME);
 
-        if (configFile.exists()) {
-            System.out.println("Using " + configFile.getAbsolutePath());
+        if (Files.exists(configFile)) {
+            System.out.println("Using " + configFile.toAbsolutePath());
 
             // Set property for logback
             System.setProperty(LOGBACK_LOGGING_KEY, configFile.toString());
@@ -106,7 +107,7 @@ public abstract class LogUtil
         root.addAppender(consoleAppender);
 
         // FILE (located in default temp directory)
-        File logFile;
+        Path logFile;
         FileAppender fileAppender = new FileAppender();
         PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
         fileAppender.setName("FILE");
@@ -114,9 +115,8 @@ public abstract class LogUtil
         fileAppender.setAppend(false);
 
         String now = new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(new Date());
-        logFile = Paths.get(System.getProperty("java.io.tmpdir"), "audiveris-" + now + ".log")
-                .toFile();
-        fileAppender.setFile(logFile.getAbsolutePath());
+        logFile = Paths.get(System.getProperty("java.io.tmpdir"), "audiveris-" + now + ".log");
+        fileAppender.setFile(logFile.toAbsolutePath().toString());
         fileEncoder.setContext(loggerContext);
         fileEncoder.setPattern("%date %level \\(%file:%line\\) - %msg%ex%n");
         fileEncoder.start();
@@ -144,7 +144,7 @@ public abstract class LogUtil
         // OPTIONAL: print logback internal status messages
         StatusPrinter.print(loggerContext);
 
-        root.info("Logging to file {}", logFile.getAbsolutePath());
+        root.info("Logging to file {}", logFile.toAbsolutePath());
     }
 
     //---------//

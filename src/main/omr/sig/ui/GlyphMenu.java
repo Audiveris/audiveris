@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sig.ui;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
 import omr.sheet.Sheet;
 
@@ -53,7 +53,7 @@ public class GlyphMenu
      */
     public GlyphMenu (Sheet sheet)
     {
-        super("Pile ...");
+        super("Glyphs ...");
         this.sheet = sheet;
     }
 
@@ -64,9 +64,9 @@ public class GlyphMenu
         // We rebuild the menu items on each update, since the set of glyphs is brand new.
         removeAll();
 
-        Collection<Glyph> glyphs = sheet.getGlyphNest().getSelectedGlyphPile();
+        Collection<Glyph> glyphs = sheet.getGlyphIndex().getSelectedGlyphList();
 
-        if (!glyphs.isEmpty()) {
+        if ((glyphs != null) && !glyphs.isEmpty()) {
             UIUtil.insertTitle(this, "Glyphs:");
 
             for (Glyph glyph : glyphs) {
@@ -85,9 +85,11 @@ public class GlyphMenu
                 //                    add(interMenu);
                 //                }
             }
-        }
 
-        setVisible(!glyphs.isEmpty());
+            setVisible(true);
+        } else {
+            setVisible(false);
+        }
 
         super.updateUserLocation(rect);
     }

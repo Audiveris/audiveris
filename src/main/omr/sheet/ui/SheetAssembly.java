@@ -14,12 +14,15 @@ package omr.sheet.ui;
 import omr.OMR;
 
 import omr.selection.LocationEvent;
+import omr.selection.SelectionService;
 
 import omr.sheet.Sheet;
+import omr.sheet.SheetStub;
 
 import omr.ui.Board;
 import omr.ui.BoardsPane;
 import omr.ui.GuiActions;
+import omr.ui.util.ClosableTabbedPane;
 import omr.ui.util.Panel;
 import omr.ui.util.UIUtil;
 import omr.ui.view.LogSlider;
@@ -28,7 +31,7 @@ import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
 
-import org.bushe.swing.event.EventService;
+import omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +41,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,11 +76,9 @@ public class SheetAssembly
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
-    /** Link with sheet. */
-    private final Sheet sheet;
-
-    /** Service of sheetlocation. */
-    private final EventService locationService;
+    /** Link with sheet stub. */
+    @Navigable(false)
+    private final SheetStub stub;
 
     /** The concrete UI component. */
     private final Panel component = new Panel();
@@ -85,7 +87,15 @@ public class SheetAssembly
     private final LogSlider slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 5, 0);
 
     /** Tabbed container for all views of the sheet. */
-    private final JTabbedPane viewsPane = new JTabbedPane();
+    private final JTabbedPane viewsPane = new ClosableTabbedPane()
+    {
+        @Override
+        public boolean tabAboutToClose (int tabIndex)
+        {
+            return OMR.getGui()
+                    .displayConfirmation(getTitleAt(tabIndex) + " tab about to close.\nConfirm?");
+        }
+    };
 
     /** Zoom, with default ratio set to 1. */
     private final Zoom zoom = new Zoom(slider, 1);
@@ -101,18 +111,15 @@ public class SheetAssembly
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a new {@code SheetAssembly} instance dedicated to one sheet.
+     * Create a new {@code SheetAssembly} instance dedicated to one sheet stub.
      *
-     * @param sheet the related sheet
+     * @param stub the related sheet stub
      */
-    public SheetAssembly (Sheet sheet)
+    public SheetAssembly (SheetStub stub)
     {
-        logger.debug("creating SheetAssembly on {}", sheet);
+        logger.debug("creating SheetAssembly on {}", stub);
 
-        this.sheet = sheet;
-
-        // Service for sheet location events
-        locationService = sheet.getLocationService();
+        this.stub = stub;
 
         // GUI stuff
         slider.setToolTipText("Adjust Zoom Ratio");
@@ -204,7 +211,7 @@ public class SheetAssembly
         // Register the component
         tabs.put(scroll, new ViewTab(label, boardsPane, sv));
 
-        // Actually insert the related Swing tab
+        // Actually insert the related Swing tab (at proper index?)
         viewsPane.addTab(label, scroll);
 
         // Select this new tab
@@ -219,19 +226,19 @@ public class SheetAssembly
     /**
      * Method called when this sheet assembly is selected.
      * (we can have several sheets displayed, each with its sheet assembly).
-     * This is called from {@link omr.sheet.ui.SheetsController} when the tab
+     * This is called from {@link omr.sheet.ui.StubsController} when the tab
      * of another sheet is selected.
      */
     public void assemblySelected ()
     {
-        logger.debug("{} assemblySelected", sheet.getId());
+        logger.debug("{} assemblySelected", stub.getId());
 
         // Display the related boards
         displayBoards();
 
         // Display the errors pane of this assembly?
         if (GuiActions.getInstance().isErrorsDisplayed()) {
-            OMR.getGui().setErrorsPane(sheet.getErrorsEditor().getComponent());
+            OMR.getGui().setErrorsPane(stub.getSheet().getErrorsEditor().getComponent());
         }
     }
 
@@ -245,16 +252,15 @@ public class SheetAssembly
     {
         OMR.getGui().removeBoardsPane();
 
-        // Disconnect all keyboard bindings from PixelBoard's (as a workaround
-        // for a Swing memory leak)
+        // Disconnect all keyboard bindings from PixelBoard's (workaround for a Swing memory leak)
         for (ViewTab tab : tabs.values()) {
             tab.disconnectKeyboard();
         }
 
-        tabs.clear(); // Useful ???
-
         // Hide the error messages (for this sheet)
-        OMR.getGui().removeErrorsPane(sheet.getErrorsEditor().getComponent());
+        if (stub.hasSheet()) {
+            OMR.getGui().removeErrorsPane(stub.getSheet().getErrorsEditor().getComponent());
+        }
     }
 
     //--------------//
@@ -268,6 +274,26 @@ public class SheetAssembly
     public JComponent getComponent ()
     {
         return component;
+    }
+
+    //---------//
+    // getPane //
+    //---------//
+    /**
+     * Find the view that corresponds to the provided tab title.
+     *
+     * @param title the tab title.
+     * @return the view found, or null
+     */
+    public JScrollPane getPane (String title)
+    {
+        for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
+            if (viewsPane.getTitleAt(i).equals(title)) {
+                return (JScrollPane) viewsPane.getComponentAt(i);
+            }
+        }
+
+        return null;
     }
 
     //-----------------//
@@ -299,7 +325,15 @@ public class SheetAssembly
      */
     public Sheet getSheet ()
     {
-        return sheet;
+        return stub.getSheet();
+    }
+
+    //---------//
+    // getStub //
+    //---------//
+    public SheetStub getStub ()
+    {
+        return stub;
     }
 
     //-----------//
@@ -321,6 +355,25 @@ public class SheetAssembly
                 return;
             }
         }
+    }
+
+    //-------//
+    // reset //
+    //-------//
+    /**
+     * Reset the assembly to its initial empty state.
+     */
+    public void reset ()
+    {
+        close();
+
+        for (ViewTab tab : new ArrayList<ViewTab>(tabs.values())) {
+            tab.remove();
+        }
+
+        tabs.clear();
+
+        previousTab = null;
     }
 
     //---------------//
@@ -452,26 +505,6 @@ public class SheetAssembly
         }
     }
 
-    //---------//
-    // getPane //
-    //---------//
-    /**
-     * Find the view that corresponds to the provided tab title.
-     *
-     * @param title the tab title.
-     * @return the view found, or null
-     */
-    private JScrollPane getPane (String title)
-    {
-        for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
-            if (viewsPane.getTitleAt(i).equals(title)) {
-                return (JScrollPane) viewsPane.getComponentAt(i);
-            }
-        }
-
-        return null;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // ViewTab //
@@ -504,9 +537,13 @@ public class SheetAssembly
             rubberPanel.setZoom(zoom);
             rubberPanel.setRubber(rubber);
 
-            // Set the model size
-            if (sheet.getPicture() != null) {
-                rubberPanel.setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
+            // Set the model size?
+            if (stub.hasSheet()) {
+                Sheet sheet = stub.getSheet();
+
+                if (sheet.getPicture() != null) {
+                    rubberPanel.setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
+                }
             }
 
             // Force scroll bar computations
@@ -522,7 +559,7 @@ public class SheetAssembly
          */
         public void deselected ()
         {
-            logger.debug("SheetAssembly: {} viewTab.deselected for {}", sheet.getId(), this);
+            logger.debug("SheetAssembly: {} viewTab.deselected for {}", stub.getId(), this);
 
             // Disconnection of events
             RubberPanel rubberPanel = scrollView.getView();
@@ -563,7 +600,7 @@ public class SheetAssembly
         {
             logger.debug(
                     "SheetAssembly: {} viewTabSelected for {} dim:{}",
-                    sheet.getId(),
+                    stub.getId(),
                     this,
                     scrollView.getView().getPreferredSize());
 
@@ -583,13 +620,18 @@ public class SheetAssembly
             }
 
             // Force update of LocationEvent
-            LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
-                    LocationEvent.class);
-            Rectangle location = (locationEvent != null) ? locationEvent.getData() : null;
+            if (stub.hasSheet()) {
+                // Service for sheet location events
+                SelectionService locationService = stub.getSheet().getLocationService();
 
-            if (location != null) {
-                locationService.publish(
-                        new LocationEvent(this, locationEvent.hint, null, location));
+                LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
+                        LocationEvent.class);
+                Rectangle location = (locationEvent != null) ? locationEvent.getData() : null;
+
+                if (location != null) {
+                    locationService.publish(
+                            new LocationEvent(this, locationEvent.hint, null, location));
+                }
             }
 
             // Keep the same scroll bar positions as with previous tab
@@ -609,9 +651,9 @@ public class SheetAssembly
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
-            sb.append(getClass().getSimpleName());
-            sb.append(" ").append(title);
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
+            sb.append(title);
             sb.append("}");
 
             return sb.toString();

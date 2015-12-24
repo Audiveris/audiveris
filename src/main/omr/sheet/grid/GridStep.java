@@ -92,10 +92,7 @@ public class GridStep
             throws StepException
     {
         new GridBuilder(sheet).buildInfo();
-
-        // Purge sections & runs of staff lines from hLag
-        // Cross-connect vertical & remaining horizontal sections
-        new LagWeaver(sheet).buildInfo();
+        new StaffLineCleaner(sheet).process();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

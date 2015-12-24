@@ -31,14 +31,14 @@ import omr.sig.relation.Relation;
 import omr.sig.relation.SlurHeadRelation;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
+import omr.util.Jaxb;
 import omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -46,11 +46,20 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 /**
  * Class {@code SlurInter} represents a slur interpretation.
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "slur")
 public class SlurInter
         extends AbstractInter
 {
@@ -58,7 +67,8 @@ public class SlurInter
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(SlurInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SlurInter.class);
 
     /** To sort slurs vertically within a measure. */
     public static final Comparator<SlurInter> verticalComparator = new Comparator<SlurInter>()
@@ -67,7 +77,7 @@ public class SlurInter
         public int compare (SlurInter s1,
                             SlurInter s2)
         {
-            return Double.compare(s1.getInfo().getCurve().getY1(), s2.getInfo().getCurve().getY1());
+            return Double.compare(s1.getCurve().getY1(), s2.getCurve().getY1());
         }
     };
 
@@ -97,7 +107,7 @@ public class SlurInter
         {
             if (slur.getHead(RIGHT) == null) {
                 // Check we are in last measure
-                Point2D end = slur.getInfo().getCurve().getP2();
+                Point2D end = slur.getCurve().getP2();
                 SystemInfo system = slur.getSig().getSystem();
                 MeasureStack stack = system.getMeasureStackAt(end);
 
@@ -125,7 +135,7 @@ public class SlurInter
         {
             if (slur.getHead(LEFT) == null) {
                 // Check we are in first measure
-                Point2D end = slur.getInfo().getCurve().getP1();
+                Point2D end = slur.getCurve().getP1();
                 SystemInfo system = slur.getSig().getSystem();
                 MeasureStack stack = system.getMeasureStackAt(end);
 
@@ -146,15 +156,32 @@ public class SlurInter
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Physical characteristics. */
-    private final SlurInfo info;
+    //
+    // Persistent data
+    //----------------
+    //
+    /** Is the slur above heads or below heads. */
+    @XmlAttribute
+    private boolean above;
 
-    /** Is this a tie?. (or a plain slur) */
-    private boolean tie;
+    /** Is this a tie?. (rather than a plain slur) */
+    @XmlElement
+    private Jaxb.True tie;
+
+    /** The precise Bézier curve. */
+    @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.CubicAdapter.class)
+    private CubicCurve2D curve;
 
     /** Extension slur, if any. (at most one per slur) */
     private final Map<HorizontalSide, SlurInter> extensions = new EnumMap<HorizontalSide, SlurInter>(
             HorizontalSide.class);
+
+    // Transient data
+    //---------------
+    //
+    /** Physical characteristics. */
+    private final SlurInfo info;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -169,10 +196,21 @@ public class SlurInter
         super(info.getGlyph(), info.getBounds(), Shape.SLUR, impacts);
         this.info = info;
 
+        above = info.above() == 1;
+        curve = info.getCurve();
+
         // To debug attachments
         for (Entry<String, java.awt.Shape> entry : info.getAttachments().entrySet()) {
             addAttachment(entry.getKey(), entry.getValue());
         }
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private SlurInter ()
+    {
+        info = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -216,10 +254,26 @@ public class SlurInter
 
         // Tie?
         boolean isATie = haveSameHeight(prevSlur.getHead(LEFT), this.getHead(RIGHT));
-        prevSlur.tie = isATie;
-        this.tie = isATie;
+
+        if (isATie) {
+            prevSlur.setTie();
+            setTie();
+        }
 
         logger.debug("{} connection {} -> {}", isATie ? "Tie" : "Slur", prevSlur, this);
+    }
+
+    //----------//
+    // getCurve //
+    //----------//
+    /**
+     * Report the left-to-right Bézier curve which best approximates the slur.
+     *
+     * @return the Bézier curve
+     */
+    public CubicCurve2D getCurve ()
+    {
+        return curve;
     }
 
     //------------//
@@ -230,11 +284,13 @@ public class SlurInter
     {
         StringBuilder sb = new StringBuilder(super.getDetails());
 
-        if (tie) {
+        if (isTie()) {
             sb.append(" tie");
         }
 
-        sb.append(" ").append(info);
+        if (info != null) {
+            sb.append(" ").append(info);
+        }
 
         return sb.toString();
     }
@@ -280,6 +336,17 @@ public class SlurInter
         return info;
     }
 
+    //---------//
+    // isAbove //
+    //---------//
+    /**
+     * @return the above
+     */
+    public boolean isAbove ()
+    {
+        return above;
+    }
+
     //-------//
     // isTie //
     //-------//
@@ -290,7 +357,7 @@ public class SlurInter
      */
     public boolean isTie ()
     {
-        return tie;
+        return tie != null;
     }
 
     //--------//
@@ -301,7 +368,7 @@ public class SlurInter
      */
     public void setTie ()
     {
-        tie = true;
+        tie = Jaxb.TRUE;
     }
 
     //----------------//
@@ -355,11 +422,10 @@ public class SlurInter
         }
 
         // Retrieve prev position, using the right point of the prev slur
-        double prevPp = prevStaff.pitchPositionOf(
-                PointUtil.rounded(prevSlur.getInfo().getCurve().getP2()));
+        double prevPp = prevStaff.pitchPositionOf(PointUtil.rounded(prevSlur.getCurve().getP2()));
 
         // Retrieve position, using the left point of the slur
-        double pp = thisStaff.pitchPositionOf(PointUtil.rounded(info.getCurve().getP1()));
+        double pp = thisStaff.pitchPositionOf(PointUtil.rounded(getCurve().getP1()));
 
         // Compare pitch positions (very roughly)
         double deltaPitch = pp - prevPp;

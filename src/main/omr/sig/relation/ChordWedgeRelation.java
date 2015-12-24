@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import omr.util.HorizontalSide;
 
 /**
@@ -19,12 +22,14 @@ import omr.util.HorizontalSide;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class ChordWedgeRelation
         extends AbstractSupport
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Left or right side of the wedge. */
+    @XmlAttribute
     private final HorizontalSide side;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -36,6 +41,14 @@ public class ChordWedgeRelation
     public ChordWedgeRelation (HorizontalSide side)
     {
         this.side = side;
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private ChordWedgeRelation ()
+    {
+        this.side = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------

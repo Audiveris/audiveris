@@ -11,10 +11,6 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.math.GeoUtil;
-
-import omr.ui.symbol.Symbols;
-
 import java.awt.Point;
 
 /**
@@ -25,7 +21,7 @@ import java.awt.Point;
  * @author Hervé Bitteur
  */
 public class VirtualGlyph
-        extends SymbolGlyph
+        extends SymbolSample
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -40,28 +36,16 @@ public class VirtualGlyph
                          int interline,
                          Point center)
     {
-        // Build a glyph of proper size
-        super(shape, Symbols.getSymbol(shape), interline, GlyphLayer.DROP, null);
-
-        // Translation from generic center to actual center
-        translate(GeoUtil.vectorOf(getAreaCenter(), center));
+        super(shape, interline, null);
+        throw new RuntimeException("HB. Not implemented yet");
+//        // Build a glyph of proper size
+//        super(shape, Symbols.getSymbol(shape), interline, Group.DROP, null);
+//
+//        // Translation from generic center to actual center
+//        translate(GeoUtil.vectorOf(getCenter(), center));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // isActive //
-    //----------//
-    /**
-     * By definition a virtual glyph is always active
-     *
-     * @return true
-     */
-    @Override
-    public boolean isActive ()
-    {
-        return true;
-    }
-
     //-----------//
     // isVirtual //
     //-----------//

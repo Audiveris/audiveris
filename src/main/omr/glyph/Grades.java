@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.classifier.Evaluation;
 import omr.constant.ConstantSet;
 
 /**

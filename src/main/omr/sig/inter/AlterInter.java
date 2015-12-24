@@ -14,8 +14,8 @@ package omr.sig.inter;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.math.GeoOrder;
 
@@ -97,16 +97,16 @@ public class AlterInter
         this.measuredPitch = measuredPitch;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private AlterInter ()
     {
-        visitor.visit(this);
+        super(null, null, null, null, null, 0);
+        this.measuredPitch = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // create //
     //--------//
@@ -149,6 +149,23 @@ public class AlterInter
         Pitches pitches = computePitch(glyph, shape, staff);
 
         return new AlterInter(glyph, shape, impacts, staff, pitches.pitch, pitches.measuredPitch);
+    }
+
+    //--------------------//
+    // getFlatPitchOffset //
+    //--------------------//
+    public static double getFlatPitchOffset ()
+    {
+        return constants.flatPitchOffset.getValue();
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
     }
 
     //--------------------//
@@ -216,14 +233,6 @@ public class AlterInter
     public String getDetails ()
     {
         return super.getDetails() + String.format(" mPitch:%.1f", measuredPitch);
-    }
-
-    //--------------------//
-    // getFlatPitchOffset //
-    //--------------------//
-    public static double getFlatPitchOffset ()
-    {
-        return constants.flatPitchOffset.getValue();
     }
 
     /**

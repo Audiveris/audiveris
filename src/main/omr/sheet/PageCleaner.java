@@ -13,21 +13,19 @@ package omr.sheet;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.facets.Glyph;
-
-import omr.lag.Section;
+import omr.glyph.Glyph;
 
 import omr.math.GeoUtil;
 
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AbstractInterVisitor;
-import omr.sig.inter.BarConnectionInter;
+import omr.sig.inter.BarConnectorInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.BraceInter;
-import omr.sig.inter.BracketConnectionInter;
+import omr.sig.inter.BracketConnectorInter;
 import omr.sig.inter.BracketInter;
-import omr.sig.inter.ChordInter;
+import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.EndingInter;
 import omr.sig.inter.Inter;
@@ -53,7 +51,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
+
 import static java.awt.BasicStroke.*;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -62,16 +62,16 @@ import java.awt.Stroke;
 import java.awt.geom.Area;
 
 /**
- * Class {@code PageCleaner} erases selected inters on the provided graphics environment
- * by painting these inters using white background color.
+ * Class {@code PageCleaner} erases selected inter instances on the provided graphics
+ * environment by painting them using white background color.
  * <p>
  * Painting uses various techniques:<ul>
  * <li>Default is to use inter shape to paint the shape symbol with a thicker
  * {@link #musicFont}.</li>
- * <li>For area-based inters, area is filled exactly and area contour is drawn with
+ * <li>For an area-based inter, area is filled exactly and area contour is drawn with
  * {@link #marginStroke}.</li>
- * <li>For glyph-based inters, all glyph member sections are painted with no margin. </li>
- * <li>For line-based inters, all lines are drawn with a thicker {@link #lineStroke}. </li>
+ * <li>For a glyph-based inter, all glyph runs are painted with no margin. </li>
+ * <li>For a line-based inter, the line is drawn with a thicker {@link #lineStroke}. </li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -175,7 +175,7 @@ public abstract class PageCleaner
     }
 
     @Override
-    public void visit (BarConnectionInter inter)
+    public void visit (BarConnectorInter inter)
     {
         processArea(inter.getArea());
     }
@@ -193,7 +193,7 @@ public abstract class PageCleaner
     }
 
     @Override
-    public void visit (BracketConnectionInter inter)
+    public void visit (BracketConnectorInter inter)
     {
         processArea(inter.getArea());
     }
@@ -211,7 +211,7 @@ public abstract class PageCleaner
     }
 
     @Override
-    public void visit (ChordInter inter)
+    public void visit (AbstractChordInter inter)
     {
         for (Inter member : inter.getNotes()) {
             member.accept(this);
@@ -408,16 +408,17 @@ public abstract class PageCleaner
     //--------------//
     /**
      * Process glyph-based inter.
-     * Strategy is to paint the glyph (its member sections actually) in white.
+     * Strategy is to paint the glyph (its runTable actually) in white.
      *
      * @param glyph the inter underlying glyph
      */
     protected void processGlyph (Glyph glyph)
     {
         // Use pixels of underlying glyph
-        for (Section section : glyph.getMembers()) {
-            section.render(g, false, Color.WHITE);
-        }
+        Color oldColor = g.getColor();
+        g.setColor(Color.WHITE);
+        glyph.getRunTable().render(g, glyph.getTopLeft());
+        g.setColor(oldColor);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

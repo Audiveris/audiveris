@@ -11,10 +11,11 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.util.ByteUtil;
+
 import ij.process.ByteProcessor;
 
-import java.awt.Dimension;
-import java.awt.Rectangle;
+import java.awt.Point;
 
 /**
  * Class {@code Lags} gathers utilities for lags.
@@ -47,20 +48,22 @@ public class Lags
     /**
      * Populate a buffer with the content of all provided lags.
      *
-     * @param dim  dimension of the target buffer
-     * @param lags the contributing lags
+     * @param width  width of the target buffer
+     * @param height height of the target buffer
+     * @param lags   the contributing lags
      * @return the populated buffer
      */
-    public static ByteProcessor buildBuffer (Dimension dim,
+    public static ByteProcessor buildBuffer (int width,
+                                             int height,
                                              Lag... lags)
     {
-        final Rectangle box = new Rectangle(0, 0, dim.width, dim.height);
-        final ByteProcessor buf = new ByteProcessor(dim.width, dim.height);
-        buf.invert();
+        final Point offset = new Point(0, 0);
+        final ByteProcessor buf = new ByteProcessor(width, height);
+        ByteUtil.raz(buf); // buf.invert();
 
         for (Lag lag : lags) {
-            for (Section section : lag.getSections()) {
-                section.fillImage(buf, box);
+            for (Section section : lag.getEntities()) {
+                section.fillBuffer(buf, offset);
             }
         }
 

@@ -11,15 +11,12 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.glyph.facets.Glyph;
-
 import omr.math.Histogram;
 
 import omr.run.Orientation;
 import omr.run.RunTable;
 
 import java.awt.Rectangle;
-import java.util.Collection;
 
 /**
  * Interface {@code Roi} defines aan absolute rectangular region of interest, on which
@@ -40,19 +37,6 @@ public interface Roi
 
     /**
      * Report the histogram obtained in the provided projection orientation
-     * of the runs contained in the provided glyphs
-     *
-     * @param projection the orientation of the projection
-     * @param glyphs     the provided glyphs (which can contain sections of
-     *                   various
-     *                   orientations)
-     * @return the computed histogram
-     */
-    Histogram<Integer> getGlyphHistogram (Orientation projection,
-                                          Collection<Glyph> glyphs);
-
-    /**
-     * Report the histogram obtained in the provided projection orientation
      * of the runs contained in the provided runs table
      *
      * @param projection the orientation of the projection
@@ -61,16 +45,4 @@ public interface Roi
      */
     Histogram<Integer> getRunHistogram (Orientation projection,
                                         RunTable table);
-
-    /**
-     * Report the histogram obtained in the provided projection orientation
-     * of the runs contained in the provided sections
-     *
-     * @param projection the orientation of the projection
-     * @param sections   the provided sections (which can be of various
-     *                   orientations)
-     * @return the computed histogram
-     */
-    Histogram<Integer> getSectionHistogram (Orientation projection,
-                                            Collection<Section> sections);
 }

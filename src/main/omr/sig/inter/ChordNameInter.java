@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code ChordNameInter} is a formatted piece of text that
  * describes a chord symbol such as F#m7, A(9) or BMaj7/D#.
@@ -40,6 +42,7 @@ import java.util.regex.Pattern;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "chord-name")
 public class ChordNameInter
         extends WordInter
 {
@@ -150,7 +153,7 @@ public class ChordNameInter
                     PARS,
                     Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*") + "\\))";
 
-    /** Uncompiled patterns for whole chord symbol. */
+    /** Un-compiled patterns for whole chord symbol. */
     private static final String[] raws = new String[]{
         rootPat + kindPat + "?" + parPat + "?" + bassPat
         + "?"
@@ -237,6 +240,18 @@ public class ChordNameInter
         this(textWord, root, kind, null, Arrays.asList(degrees));
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private ChordNameInter ()
+    {
+        super(null);
+        this.root = null;
+        this.kind = null;
+        this.bass = null;
+        this.degrees = null;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //
     //--------//
@@ -268,8 +283,7 @@ public class ChordNameInter
      * Convenient method to try to build a ChordNameInter instance from a
      * provided piece of text.
      *
-     * textWord text the precise text of the chord symbol
-     *
+     * @param textWord text the precise text of the chord symbol
      * @return a populated ChordNameInter instance if successful, null otherwise
      */
     public static ChordNameInter create (TextWord textWord)
@@ -368,8 +382,8 @@ public class ChordNameInter
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
 
         sb.append(" '").append(value).append("'");
 
@@ -419,8 +433,7 @@ public class ChordNameInter
      * value when the token is valid.
      *
      * @param matcher the matcher
-     * @param name    the group name which is also the standard value to return
-     *                if the token is valid
+     * @param name    group name which is also the standard value to return if the token is valid
      * @return standard value, or empty string
      */
     private static String standard (Matcher matcher,
@@ -438,8 +451,7 @@ public class ChordNameInter
     //-------//
     /**
      * Handling of alteration indication (flat, sharp or nothing).
-     * The class accepts both number (#) and real sharp sign, as well as both
-     * (b) and real flat sign.
+     * The class accepts both number (#) and real sharp sign, as well as both (b) and real flat sign
      */
     public static class Alter
     {
@@ -712,7 +724,8 @@ public class ChordNameInter
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
 
             sb.append(type);
 

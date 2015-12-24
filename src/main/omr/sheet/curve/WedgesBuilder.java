@@ -182,16 +182,31 @@ public class WedgesBuilder
                                          boolean rev,
                                          GradeImpacts impacts)
     {
+        Shape shape = rev ? Shape.CRESCENDO : Shape.DIMINUENDO;
+
         Rectangle box = new Rectangle(s1.getBounds());
         box.add(s2.getBounds());
-
-        Shape shape = rev ? Shape.CRESCENDO : Shape.DIMINUENDO;
 
         // Determine precise closed ends
         Line2D l1 = new Line2D.Double(s1.getInfo().getEnd(true), s1.getInfo().getEnd(false));
         Line2D l2 = new Line2D.Double(s2.getInfo().getEnd(true), s2.getInfo().getEnd(false));
 
-        WedgeInter inter = new WedgeInter(s1, s2, l1, l2, box, shape, impacts);
+        // Beware s1 and s2 are in no particular order
+        final boolean swap;
+
+        if (shape == Shape.CRESCENDO) {
+            swap = l2.getY2() < l1.getY2();
+        } else {
+            swap = l2.getY1() < l1.getY1();
+        }
+
+        if (swap) {
+            Line2D temp = l1;
+            l1 = l2;
+            l2 = temp;
+        }
+
+        WedgeInter inter = new WedgeInter(l1, l2, box, shape, impacts);
 
         /* For a wedge, we can restrict the containing systems as just the closest one. */
         Point2D refPoint = (shape == Shape.CRESCENDO) ? l1.getP1() : l1.getP2();

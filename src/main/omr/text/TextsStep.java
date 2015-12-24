@@ -11,16 +11,11 @@
 // </editor-fold>
 package omr.text;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.step.AbstractSystemStep;
 import omr.step.StepException;
-
-import omr.util.StopWatch;
 
 import ij.process.ByteProcessor;
 
@@ -39,8 +34,6 @@ public class TextsStep
         extends AbstractSystemStep<TextsStep.Context>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TextsStep.class);
 
@@ -62,22 +55,7 @@ public class TextsStep
             throws StepException
     {
         // Process texts at system level
-        context.watch.start("system #" + system.getId());
-        system.getTextBuilder().retrieveLines(context.buffer, context.textLines);
-    }
-
-    //----------//
-    // doEpilog //
-    //----------//
-    @Override
-    protected void doEpilog (Collection<SystemInfo> systems,
-                             Sheet sheet,
-                             Context context)
-            throws StepException
-    {
-        if (constants.printWatch.isSet()) {
-            context.watch.print();
-        }
+        new TextBuilder(system).retrieveLines(context.buffer, context.textLines);
     }
 
     //----------//
@@ -88,52 +66,32 @@ public class TextsStep
                                 Sheet sheet)
             throws StepException
     {
-        final StopWatch watch = new StopWatch("TextsStep");
-        watch.start("prolog");
-
         // Launch OCR on the whole sheet
         SheetScanner scanner = new SheetScanner(sheet);
         List<TextLine> lines = scanner.scanSheet();
 
         // Make all this available for system-level processing
-        return new Context(watch, scanner.getBuffer(), lines);
+        return new Context(scanner.getBuffer(), lines);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//
-    public static class Context
+    protected static class Context
     {
         //~ Instance fields ------------------------------------------------------------------------
-
-        public final StopWatch watch;
 
         public final ByteProcessor buffer;
 
         public final List<TextLine> textLines;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Context (StopWatch watch,
-                        ByteProcessor buffer,
+        public Context (ByteProcessor buffer,
                         List<TextLine> textLines)
         {
-            this.watch = watch;
             this.buffer = buffer;
             this.textLines = textLines;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
     }
 }

@@ -14,17 +14,20 @@ package omr.sig.inter;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
-import omr.glyph.ui.AttachmentHolder;
 
+import omr.sheet.Part;
 import omr.sheet.Staff;
 import omr.sheet.rhythm.Voice;
 
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;
 
-import omr.util.Vip;
+import omr.ui.util.AttachmentHolder;
+
+import omr.util.Entity;
+import omr.util.IdUtil;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -56,7 +59,7 @@ import java.util.Comparator;
  * @author Hervé Bitteur
  */
 public interface Inter
-        extends VisitableInter, Vip, AttachmentHolder
+        extends Entity, VisitableInter, AttachmentHolder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -69,7 +72,7 @@ public interface Inter
         public int compare (Inter i1,
                             Inter i2)
         {
-            return Integer.compare(i1.getId(), i2.getId());
+            return IdUtil.compare(i1.getId(), i2.getId());
         }
     };
 
@@ -96,6 +99,19 @@ public interface Inter
                             Inter i2)
         {
             return Integer.compare(i1.getCenter().x, i2.getCenter().x);
+        }
+    };
+
+    /**
+     * For comparing interpretations by center ordinate.
+     */
+    public static final Comparator<Inter> byCenterOrdinate = new Comparator<Inter>()
+    {
+        @Override
+        public int compare (Inter i1,
+                            Inter i2)
+        {
+            return Integer.compare(i1.getCenter().y, i2.getCenter().y);
         }
     };
 
@@ -148,7 +164,7 @@ public interface Inter
             }
 
             // Finally, use id ...
-            return o1.getId() - o2.getId();
+            return IdUtil.compare(o1.getId(), o2.getId());
         }
     };
 
@@ -245,13 +261,6 @@ public interface Inter
     void delete ();
 
     /**
-     * Report a complete dump for this interpretation.
-     *
-     * @return a complete string dump
-     */
-    String dumpOf ();
-
-    /**
      * Mark this inter as frozen, that cannot be deleted even by a conflicting
      * instance with higher grade.
      */
@@ -270,13 +279,6 @@ public interface Inter
      * @return the contextual grade if available, otherwise the intrinsic grade
      */
     double getBestGrade ();
-
-    /**
-     * Report a COPY of the bounding box for this interpretation.
-     *
-     * @return the bounding box
-     */
-    Rectangle getBounds ();
 
     /**
      * Report the inter center.
@@ -307,7 +309,7 @@ public interface Inter
     Double getContextualGrade ();
 
     /**
-     * Report the core box for this interpretation.
+     * Report the core bounds for this interpretation.
      *
      * @return a small core box
      */
@@ -342,13 +344,6 @@ public interface Inter
     double getGrade ();
 
     /**
-     * Report the interpretation id (for debugging)
-     *
-     * @return the id or 0 if not yet identified
-     */
-    int getId ();
-
-    /**
      * Report details about the final grade
      *
      * @return the grade details
@@ -361,6 +356,13 @@ public interface Inter
      * @return the mirror instance or null
      */
     Inter getMirror ();
+
+    /**
+     * Report the containing part, if any.
+     *
+     * @return the containing part, or null
+     */
+    Part getPart ();
 
     /**
      * Report the shape related to interpretation.
@@ -486,6 +488,13 @@ public interface Inter
     void setEnsemble (InterEnsemble ensemble);
 
     /**
+     * Assign the glyph which is concerned by this interpretation.
+     *
+     * @param glyph the underlying glyph (non null)
+     */
+    void setGlyph (Glyph glyph);
+
+    /**
      * Assign an intrinsic grade (0..1 probability) to interpretation
      *
      * @param grade the new value for intrinsic grade
@@ -493,18 +502,18 @@ public interface Inter
     void setGrade (double grade);
 
     /**
-     * Assign an id to the interpretation
-     *
-     * @param id the inter id
-     */
-    void setId (int id);
-
-    /**
      * Assign the mirror instance.
      *
      * @param mirror the mirrored instance
      */
     void setMirror (Inter mirror);
+
+    /**
+     * Assign the related part, if any.
+     *
+     * @param part the part to set
+     */
+    void setPart (Part part);
 
     /**
      * Assign the containing SIG

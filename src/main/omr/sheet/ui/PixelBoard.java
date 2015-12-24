@@ -13,7 +13,7 @@ package omr.sheet.ui;
 
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
-import omr.selection.PixelLevelEvent;
+import omr.selection.PixelEvent;
 import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
@@ -40,7 +40,8 @@ import javax.swing.KeyStroke;
 /**
  * Class {@code PixelBoard} is a board that displays pixel information as provided by
  * other entities (output side), and which can also be used by a user to directly
- * specify pixel coordinate values by entering numerical values in the fields (input side).
+ * specify pixel coordinate values by entering numerical values in the fields
+ * (input side).
  *
  * @author Hervé Bitteur
  */
@@ -51,9 +52,9 @@ public class PixelBoard
 
     private static final Logger logger = LoggerFactory.getLogger(PixelBoard.class);
 
-    /** Events this entity is interested in */
-    private static final Class<?>[] eventClasses = new Class<?>[]{
-        LocationEvent.class, PixelLevelEvent.class
+    /** Events this board is interested in. */
+    private static final Class<?>[] eventsRead = new Class<?>[]{
+        LocationEvent.class, PixelEvent.class
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -80,7 +81,7 @@ public class PixelBoard
      */
     public PixelBoard (Sheet sheet)
     {
-        super(Board.PIXEL, sheet.getLocationService(), eventClasses, false, true);
+        super(Board.PIXEL, sheet.getLocationService(), eventsRead, false, false, false, true);
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
@@ -96,7 +97,7 @@ public class PixelBoard
     // onEvent //
     //---------//
     /**
-     * Call-back triggered when Location Selection has been modified.
+     * Call-back triggered when Selection has been modified.
      *
      * @param event the selection event
      */
@@ -112,33 +113,9 @@ public class PixelBoard
             logger.debug("PixelBoard: {}", event);
 
             if (event instanceof LocationEvent) {
-                // Display rectangle attributes
-                LocationEvent sheetLocation = (LocationEvent) event;
-                Rectangle rect = sheetLocation.getData();
-
-                if (rect != null) {
-                    x.setValue(rect.x);
-                    y.setValue(rect.y);
-                    width.setValue(rect.width);
-                    height.setValue(rect.height);
-
-                    return;
-                }
-
-                x.setText("");
-                y.setText("");
-                width.setText("");
-                height.setText("");
-            } else if (event instanceof PixelLevelEvent) {
-                // Display pixel gray level
-                PixelLevelEvent pixelLevelEvent = (PixelLevelEvent) event;
-                final Integer pixelLevel = pixelLevelEvent.getData();
-
-                if (pixelLevel != null) {
-                    level.setValue(pixelLevel);
-                } else {
-                    level.setText("");
-                }
+                handleEvent((LocationEvent) event); // Display rectangle attributes
+            } else if (event instanceof PixelEvent) {
+                handleEvent((PixelEvent) event); // Display pixel gray level
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -160,8 +137,8 @@ public class PixelBoard
                 });
 
         PanelBuilder builder = new PanelBuilder(layout, getBody());
-        builder.setDefaultDialogBorder();
 
+        ///builder.setDefaultDialogBorder();
         CellConstraints cst = new CellConstraints();
 
         int r = 1; // --------------------------------
@@ -183,6 +160,50 @@ public class PixelBoard
         builder.add(height.getField(), cst.xy(7, r));
     }
 
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Display rectangle attributes
+     *
+     * @param locEvent
+     */
+    private void handleEvent (LocationEvent locEvent)
+    {
+        Rectangle rect = locEvent.getData();
+
+        if (rect != null) {
+            x.setValue(rect.x);
+            y.setValue(rect.y);
+            width.setValue(rect.width);
+            height.setValue(rect.height);
+        } else {
+            x.setText("");
+            y.setText("");
+            width.setText("");
+            height.setText("");
+        }
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Display pixel gray level
+     *
+     * @param pixelEvent
+     */
+    private void handleEvent (PixelEvent pixelEvent)
+    {
+        final Integer pixelLevel = pixelEvent.getData();
+
+        if (pixelLevel != null) {
+            level.setValue(pixelLevel);
+        } else {
+            level.setText("");
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ParamAction //
@@ -196,8 +217,7 @@ public class PixelBoard
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            // Remember & forward the new pixel selection
-            // A rectangle (which can be degenerated to a point)
+            // Publish the new pixel selection rectangle (which can be degenerated to a point)
             getSelectionService().publish(
                     new LocationEvent(
                             PixelBoard.this,

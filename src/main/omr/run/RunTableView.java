@@ -48,14 +48,16 @@ public class RunTableView
     /**
      * Creates a new {@code RunTableView} object.
      *
+     * @param name            name for the view
      * @param table           the underlying table of runs
      * @param locationService the service where locations are retrieved from
      */
-    public RunTableView (RunTable table,
+    public RunTableView (String name,
+                         RunTable table,
                          SelectionService locationService)
     {
         this.table = table;
-        setName(table.getName());
+        setName(name);
 
         // Location service
         setLocationService(locationService);
@@ -88,7 +90,7 @@ public class RunTableView
             // Default behavior: making point visible & drawing the markers
             super.onEvent(event);
 
-            if (event instanceof LocationEvent) { // Location => Section(s) & Run
+            if (event instanceof LocationEvent) { // Location => Run
                 handleEvent((LocationEvent) event);
             }
         } catch (Exception ex) {
@@ -99,33 +101,11 @@ public class RunTableView
     //--------//
     // render //
     //--------//
-    /**
-     * Render the table in the provided Graphics context, which may be
-     * already scaled.
-     *
-     * @param g the graphics context
-     */
     @Override
     public void render (Graphics2D g)
     {
         // Render all table runs
-        table.render(g);
-
-        // Paint additional items, such as recognized items, etc...
-        renderItems(g);
-    }
-
-    //-------------//
-    // renderItems //
-    //-------------//
-    /**
-     * Room for rendering additional items, if any.
-     *
-     * @param g the graphic context
-     */
-    protected void renderItems (Graphics2D g)
-    {
-        // Void
+        table.render(g, new Point(0, 0));
     }
 
     //-------------//
@@ -156,7 +136,7 @@ public class RunTableView
         }
 
         Point pt = rect.getLocation();
-        Run run = table.lookupRun(pt);
+        Run run = table.getRunAt(pt.x, pt.y);
 
         // Publish Run information
         table.getRunService().publish(new RunEvent(this, hint, movement, run));

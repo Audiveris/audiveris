@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.sheet.Staff;
 import static omr.sig.inter.ClefInter.ClefKind.*;
@@ -24,6 +24,9 @@ import java.awt.Point;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code ClefInter} handles a Clef interpretation.
@@ -41,6 +44,7 @@ import java.util.Map.Entry;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "clef")
 public class ClefInter
         extends AbstractPitchedInter
 {
@@ -92,6 +96,7 @@ public class ClefInter
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Kind of the clef. */
+    @XmlAttribute
     private final ClefKind kind;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -116,16 +121,16 @@ public class ClefInter
         this.kind = kind;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private ClefInter ()
     {
-        visitor.visit(this);
+        super(null, null, null, null, null, 0);
+        this.kind = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // create //
     //--------//
@@ -154,7 +159,7 @@ public class ClefInter
 
             // Depending on precise clef position, we can have
             // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2)
-            Point center = glyph.getLocation();
+            Point center = glyph.getCenter();
             int pp = (int) Math.rint(staff.pitchPositionOf(center));
             ClefKind kind = (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
 
@@ -172,14 +177,6 @@ public class ClefInter
         default:
             return null;
         }
-    }
-
-    /**
-     * @return the kind
-     */
-    public ClefKind getKind ()
-    {
-        return kind;
     }
 
     //-----------//
@@ -249,7 +246,7 @@ public class ClefInter
         case C_CLEF:
 
             // Disambiguate between Alto C-clef (pp=0) and Tenor C-clef (pp=-2)
-            Point center = glyph.getLocation();
+            Point center = glyph.getCenter();
             int pp = (int) Math.rint(staff.pitchPositionOf(center));
 
             return (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
@@ -311,6 +308,23 @@ public class ClefInter
         }
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    /**
+     * @return the kind
+     */
+    public ClefKind getKind ()
+    {
+        return kind;
+    }
+
     //-----------//
     // replicate //
     //-----------//
@@ -318,7 +332,7 @@ public class ClefInter
      * Replicate this clef in a target staff.
      *
      * @param targetStaff the target staff
-     * @return the replicated clef, whose box may need an update
+     * @return the replicated clef, whose bounds may need an update
      */
     public ClefInter replicate (Staff targetStaff)
     {

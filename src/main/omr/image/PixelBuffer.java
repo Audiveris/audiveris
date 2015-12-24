@@ -195,7 +195,7 @@ public class PixelBuffer
     public boolean isFore (int x,
                            int y)
     {
-        return getValue(x, y) < 225;
+        return getValue(x, y) < 225; //TODO: Why not 255 ?????????? A typo?
     }
 
     //-----------------//

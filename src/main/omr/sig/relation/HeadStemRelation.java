@@ -17,6 +17,7 @@ import omr.constant.ConstantSet;
 import omr.sheet.Scale;
 
 import omr.sig.inter.Inter;
+
 import static omr.sig.relation.StemPortion.*;
 
 import omr.util.HorizontalSide;
@@ -26,6 +27,8 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Line2D;
 
+import javax.xml.bind.annotation.XmlAttribute;
+
 /**
  * Class {@code HeadStemRelation} represents the relation support between a head and a
  * stem.
@@ -33,46 +36,29 @@ import java.awt.geom.Line2D;
  * @author Hervé Bitteur
  */
 public class HeadStemRelation
-        extends StemConnection
+        extends AbstractStemConnection
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(HeadStemRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            HeadStemRelation.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Which side of head is used?. */
+    @XmlAttribute(name = "head-side")
     private HorizontalSide headSide;
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
-     * @return the headSide
+     * Creates a new {@code HeadStemRelation} object.
      */
-    public HorizontalSide getHeadSide ()
+    public HeadStemRelation ()
     {
-        return headSide;
     }
 
-    //----------------//
-    // getStemPortion //
-    //----------------//
-    @Override
-    public StemPortion getStemPortion (Inter source,
-                                       Line2D stemLine,
-                                       Scale scale)
-    {
-        final double margin = source.getBounds().height * constants.anchorHeightRatio.getValue();
-        final double midStem = (stemLine.getY1() + stemLine.getY2()) / 2;
-        final double anchor = anchorPoint.getY();
-
-        if (anchor >= midStem) {
-            return (anchor > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
-        } else {
-            return (anchor < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
-        }
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // getXInGapMaximum //
     //------------------//
@@ -95,6 +81,33 @@ public class HeadStemRelation
     public static Scale.Fraction getYGapMaximum ()
     {
         return constants.yGapMax;
+    }
+
+    /**
+     * @return the headSide
+     */
+    public HorizontalSide getHeadSide ()
+    {
+        return headSide;
+    }
+
+    //----------------//
+    // getStemPortion //
+    //----------------//
+    @Override
+    public StemPortion getStemPortion (Inter source,
+                                       Line2D stemLine,
+                                       Scale scale)
+    {
+        final double margin = source.getBounds().height * constants.anchorHeightRatio.getValue();
+        final double midStem = (stemLine.getY1() + stemLine.getY2()) / 2;
+        final double anchor = extensionPoint.getY();
+
+        if (anchor >= midStem) {
+            return (anchor > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
+        } else {
+            return (anchor < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
+        }
     }
 
     /**

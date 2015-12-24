@@ -15,27 +15,37 @@ import omr.glyph.Shape;
 
 import omr.math.PointUtil;
 
-import omr.sheet.PartBarline;
 import omr.sheet.PartBarline.Style;
+
 import static omr.sheet.PartBarline.Style.*;
 
+import omr.sig.SIGraph;
+import omr.sig.inter.AbstractInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.RepeatDotInter;
+import omr.sig.relation.Relation;
+import omr.sig.relation.RepeatDotBarRelation;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlList;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlValue;
 
 /**
- * Class {@code StaffBarline} represents a logical bar-line for one staff only.
+ * Class {@code StaffBarline} represents a logical barline for one staff only.
  * <p>
- * Such logical bar-line may be composed of a horizontal sequence of Inter instances of
+ * Such logical barline may be composed of a horizontal sequence of Inter instances of
  * {@link RepeatDotInter} and {@link BarlineInter} classes.
  * <p>
- * A {@link PartBarline} is a logical bar-line for one part, that is made of one
+ * A {@link PartBarline} is a logical barline for one part, that is made of one
  * {@code StaffBarline} for each staff in the part.
  * <p>
  * Reference abscissa (quoting Michael Good): the best approximation that's application-independent
@@ -45,12 +55,17 @@ import java.util.TreeSet;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "staff-barline")
 public class StaffBarline
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Abscissa-ordered sequence of physical components. */
-    private final SortedSet<Inter> items = new TreeSet<Inter>(Inter.byFullAbscissa);
+    @XmlList
+    @XmlValue
+    @XmlIDREF
+    private final ArrayList<AbstractInter> items = new ArrayList<AbstractInter>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -68,17 +83,17 @@ public class StaffBarline
      */
     public void addInter (RepeatDotInter inter)
     {
-        items.add(inter);
+        addItem(inter);
     }
 
     /**
-     * Insert a bar-line inter as part of the logical barline.
+     * Insert a barline inter as part of the logical barline.
      *
-     * @param inter the bar-line inter to insert
+     * @param inter the barline inter to insert
      */
     public void addInter (BarlineInter inter)
     {
-        items.add(inter);
+        addItem(inter);
     }
 
     //---------//
@@ -220,12 +235,58 @@ public class StaffBarline
         final Point center = getCenter();
 
         for (Inter inter : items) {
-            if (inter instanceof RepeatDotInter && (inter.getCenter().x < center.x)) {
-                return true;
+            //            if (inter instanceof RepeatDotInter && (inter.getCenter().x < center.x)) {
+            //                return true;
+            //            }
+            if (inter instanceof BarlineInter) {
+                SIGraph sig = inter.getSig();
+
+                for (Relation rel : sig.getRelations(inter, RepeatDotBarRelation.class)) {
+                    Inter dot = sig.getOppositeInter(inter, rel);
+
+                    if (dot.getCenter().x < center.x) {
+                        return true;
+                    }
+                }
             }
         }
 
         return false;
+    }
+
+    //----------------//
+    // hasDotsOnRight //
+    //----------------//
+    public boolean hasDotsOnRight ()
+    {
+        final Point center = getCenter();
+
+        for (Inter inter : items) {
+            //            if (inter instanceof RepeatDotInter && (inter.getCenter().x > center.x)) {
+            //                return true;
+            //            }
+            if (inter instanceof BarlineInter) {
+                SIGraph sig = inter.getSig();
+
+                for (Relation rel : sig.getRelations(inter, RepeatDotBarRelation.class)) {
+                    Inter dot = sig.getOppositeInter(inter, rel);
+
+                    if (dot.getCenter().x > center.x) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    //--------------//
+    // isLeftRepeat //
+    //--------------//
+    public boolean isLeftRepeat ()
+    {
+        return (getStyle() == HEAVY_LIGHT) && hasDotsOnRight();
     }
 
     //---------------//
@@ -251,6 +312,23 @@ public class StaffBarline
         return sb.toString();
     }
 
+    //---------//
+    // addItem //
+    //---------//
+    /**
+     * Maintain the 'items' list as if it was an ordered set.
+     * 'Items' is declared as a list to ease JAXB processing
+     *
+     * @param inter the inter to add
+     */
+    private void addItem (AbstractInter inter)
+    {
+        if (!items.contains(inter)) {
+            items.add(inter);
+            Collections.sort(items, Inter.byFullAbscissa);
+        }
+    }
+
     //-------------//
     // getBarCount //
     //-------------//
@@ -266,4 +344,49 @@ public class StaffBarline
 
         return count;
     }
+
+    //
+    //    //~ Inner Classes ------------------------------------------------------------------------------
+    //    private static class Adapter
+    //            extends XmlAdapter<ItemList, SortedSet<AbstractInter>>
+    //    {
+    //        //~ Methods --------------------------------------------------------------------------------
+    //
+    //        @Override
+    //        public ItemList marshal (SortedSet<AbstractInter> set)
+    //                throws Exception
+    //        {
+    //            if (set == null)
+    //                return null;
+    //
+    //            return new ItemList(set);
+    //        }
+    //
+    //        @Override
+    //        public SortedSet<AbstractInter> unmarshal (ItemList lst)
+    //                throws Exception
+    //        {
+    //            SortedSet<AbstractInter> items = new TreeSet<AbstractInter>(Inter.byFullAbscissa);
+    //        }
+    //    }
+    //
+    //    private static class ItemList
+    //    {
+    //        //~ Instance fields ------------------------------------------------------------------------
+    //
+    //        @XmlList
+    //        @XmlIDREF
+    //        @XmlElement(name = "items")
+    //        ArrayList<AbstractInter> inters = new ArrayList<AbstractInter>();
+    //
+    //        //~ Constructors ---------------------------------------------------------------------------
+    //        public ItemList (Collection<AbstractInter> inters)
+    //        {
+    //            this.inters.addAll(inters);
+    //        }
+    //
+    //        public ItemList ()
+    //        {
+    //        }
+    //    }
 }

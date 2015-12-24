@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="13.2">
+<diagram program="umlet" version="13.3">
   <help_text>//Uncomment the following line to change the fontsize:
         //fontsize=14
 
@@ -18,34 +18,34 @@
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>63</x>
-      <y>198</y>
+      <y>207</y>
       <w>44</w>
-      <h>116</h>
+      <h>107</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;-&gt;</panel_attributes>
-    <additional_attributes>27;27;27;99</additional_attributes>
+    <additional_attributes>27;27;27;90</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>90</x>
       <y>171</y>
-      <w>224</w>
+      <w>107</w>
       <h>44</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-    <additional_attributes>27;27;207;27</additional_attributes>
+    <additional_attributes>27;27;90;27</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>0</x>
-      <y>162</y>
+      <y>171</y>
       <w>80</w>
-      <h>116</h>
+      <h>107</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;-&gt;</panel_attributes>
-    <additional_attributes>63;63;63;99;27;99;27;27;54;27</additional_attributes>
+    <additional_attributes>63;63;63;90;27;90;27;27;54;27</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Class</type>
@@ -53,26 +53,29 @@
       <x>54</x>
       <y>180</y>
       <w>63</w>
-      <h>45</h>
+      <h>54</h>
     </coordinates>
     <panel_attributes>*Book*
 bg=#55ffff
 --
-file</panel_attributes>
+path
+offset</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
-      <x>297</x>
+      <x>315</x>
       <y>180</y>
-      <w>108</w>
-      <h>45</h>
+      <w>72</w>
+      <h>72</h>
     </coordinates>
     <panel_attributes>*Sheet*
 bg=#55ffff
 --
-fileIndex</panel_attributes>
+picture
+scale
+skew</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -132,13 +135,13 @@ movementStart?</panel_attributes>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
-      <x>378</x>
+      <x>360</x>
       <y>171</y>
-      <w>89</w>
+      <w>107</w>
       <h>44</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-    <additional_attributes>27;27;72;27</additional_attributes>
+    <additional_attributes>27;27;90;27</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
@@ -155,12 +158,12 @@ movementStart?</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>324</x>
-      <y>198</y>
+      <y>225</y>
       <w>44</w>
-      <h>116</h>
+      <h>89</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-    <additional_attributes>27;27;27;99</additional_attributes>
+    <additional_attributes>27;27;27;72</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
@@ -199,12 +202,12 @@ movementStart?</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>90</x>
-      <y>198</y>
+      <y>207</y>
       <w>134</w>
-      <h>116</h>
+      <h>107</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;-&gt;</panel_attributes>
-    <additional_attributes>27;27;117;99</additional_attributes>
+    <additional_attributes>27;27;117;90</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Class</type>
@@ -339,25 +342,25 @@ grade</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>738</x>
-      <y>342</y>
+      <y>324</y>
       <w>107</w>
-      <h>44</h>
+      <h>63</h>
     </coordinates>
     <panel_attributes>lt=-&gt;&gt;&gt;
-m1=source</panel_attributes>
-    <additional_attributes>90;27;27;27</additional_attributes>
+source</panel_attributes>
+    <additional_attributes>90;45;27;45</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>738</x>
-      <y>378</y>
+      <y>360</y>
       <w>107</w>
-      <h>44</h>
+      <h>63</h>
     </coordinates>
     <panel_attributes>lt=-&gt;&gt;&gt;
-m1=target</panel_attributes>
-    <additional_attributes>90;27;27;27</additional_attributes>
+target</panel_attributes>
+    <additional_attributes>90;45;27;45</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
@@ -454,9 +457,9 @@ m2=members</panel_attributes>
   <element>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
-      <x>261</x>
+      <x>297</x>
       <y>18</y>
-      <w>180</w>
+      <w>117</w>
       <h>117</h>
     </coordinates>
     <panel_attributes>&lt;&lt;singleton&gt;&gt;
@@ -467,8 +470,8 @@ sheetService
 --
 getCurrentSheet()
 getCurrentBook()
-subscribe(EventSubscriber)
-unsubscribe(EventSubscriber)</panel_attributes>
+subscribe()
+unsubscribe()</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -485,9 +488,9 @@ unsubscribe(EventSubscriber)</panel_attributes>
   <element>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
-      <x>36</x>
+      <x>45</x>
       <y>54</y>
-      <w>117</w>
+      <w>99</w>
       <h>81</h>
     </coordinates>
     <panel_attributes>&lt;&lt;singleton&gt;&gt;
@@ -509,5 +512,32 @@ getAllBooks()</panel_attributes>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
     <additional_attributes>27;27;27;72</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>180</x>
+      <y>180</y>
+      <w>72</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>*Stub*
+bg=#55ffff
+--
+number
+doneSteps
+discarded?</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>225</x>
+      <y>171</y>
+      <w>107</w>
+      <h>44</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>27;27;90;27</additional_attributes>
   </element>
 </diagram>

@@ -216,11 +216,10 @@ public class ShapeSet
 
     /** Core shapes for barlines. */
     public static final EnumSet<Shape> CoreBarlines = EnumSet.copyOf(
-            Arrays.asList(
-                    Shape.THICK_BARLINE,
-                    Shape.THICK_CONNECTION,
+            Arrays.asList(Shape.THICK_BARLINE,
+                    Shape.THICK_CONNECTOR,
                     Shape.THIN_BARLINE,
-                    Shape.THIN_CONNECTION));
+                    Shape.THIN_CONNECTOR));
 
     /**
      * Predefined instances of ShapeSet.
@@ -248,8 +247,7 @@ public class ShapeSet
             new Color(0x0000ff),
             shapesOf(
                     CoreBarlines,
-                    shapesOf(
-                            DOUBLE_BARLINE,
+                    shapesOf(DOUBLE_BARLINE,
                             FINAL_BARLINE,
                             REVERSE_FINAL_BARLINE,
                             LEFT_REPEAT_SIGN,
@@ -257,7 +255,7 @@ public class ShapeSet
                             BACK_TO_BACK_REPEAT_SIGN,
                             BRACE,
                             BRACKET,
-                            BRACKET_CONNECTION)));
+                            BRACKET_CONNECTOR)));
 
     public static final ShapeSet Beams = new ShapeSet(
             BEAM,

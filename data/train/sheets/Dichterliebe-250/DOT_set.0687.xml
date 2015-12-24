@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="DOT_set" interline="19" id="687">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-0.9315068493150684</pitch-position>
-    <section orientation="VERTICAL" first-pos="823" id="1450">
-        <run start="2331" length="2"/>
-        <run start="2330" length="4"/>
-        <run start="2329" length="6"/>
-        <run start="2329" length="6"/>
-        <run start="2329" length="6"/>
-        <run start="2329" length="6"/>
-        <run start="2329" length="6"/>
-        <run start="2330" length="4"/>
-    </section>
-</glyph>
+<sample id="687" interline="19" left="823" top="2329" shape="DOT_set">
+    <run-table orientation="VERTICAL" width="8" height="6">
+        <sequences>
+            <item>0 2 2</item>
+            <item>0 1 4</item>
+            <item>6</item>
+            <item>6</item>
+            <item>6</item>
+            <item>6</item>
+            <item>6</item>
+            <item>0 1 4</item>
+        </sequences>
+    </run-table>
+</sample>

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.note;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
 import omr.image.DistanceTable;
 
@@ -81,7 +81,10 @@ public class HeadsStep
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    public static class Context
+    //---------//
+    // Context //
+    //---------//
+    protected static class Context
     {
         //~ Instance fields ------------------------------------------------------------------------
 

@@ -1,63 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="DYNAMICS_P" interline="13" id="822">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>7.918367346938775</pitch-position>
-    <section orientation="VERTICAL" first-pos="480" id="2828">
-        <run start="3251" length="1"/>
-        <run start="3251" length="1"/>
-        <run start="3250" length="2"/>
-        <run start="3250" length="2"/>
-        <run start="3250" length="2"/>
-        <run start="3248" length="4"/>
-        <run start="3245" length="7"/>
-        <run start="3243" length="9"/>
-        <run start="3241" length="11"/>
-        <run start="3238" length="14"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="487" id="2855">
-        <run start="3233" length="2"/>
-        <run start="3232" length="2"/>
-        <run start="3231" length="2"/>
-        <run start="3230" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="490" id="2877">
-        <run start="3236" length="13"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="490" id="2878">
-        <run start="3250" length="2"/>
-        <run start="3251" length="1"/>
-        <run start="3251" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="491" id="2887">
-        <run start="3230" length="17"/>
-        <run start="3230" length="14"/>
-        <run start="3230" length="14"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="494" id="2899">
-        <run start="3231" length="9"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="494" id="2900">
-        <run start="3241" length="3"/>
-        <run start="3243" length="2"/>
-        <run start="3243" length="2"/>
-        <run start="3241" length="4"/>
-        <run start="3240" length="5"/>
-        <run start="3238" length="6"/>
-        <run start="3235" length="9"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="495" id="2909">
-        <run start="3232" length="5"/>
-        <run start="3232" length="3"/>
-        <run start="3231" length="3"/>
-        <run start="3231" length="2"/>
-        <run start="3230" length="3"/>
-        <run start="3230" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="501" id="2945">
-        <run start="3230" length="13"/>
-        <run start="3230" length="12"/>
-        <run start="3231" length="9"/>
-        <run start="3232" length="7"/>
-    </section>
-</glyph>
+<sample id="822" interline="13" left="480" top="3230" shape="DYNAMICS_P">
+    <run-table orientation="VERTICAL" width="25" height="22">
+        <sequences>
+            <item>0 21 1</item>
+            <item>0 21 1</item>
+            <item>0 20 2</item>
+            <item>0 20 2</item>
+            <item>0 20 2</item>
+            <item>0 18 4</item>
+            <item>0 15 7</item>
+            <item>0 3 2 8 9</item>
+            <item>0 2 2 7 11</item>
+            <item>0 1 2 5 14</item>
+            <item>2 4 13 1 2</item>
+            <item>17 4 1</item>
+            <item>14 7 1</item>
+            <item>14</item>
+            <item>0 1 9 1 3</item>
+            <item>0 2 5 6 2</item>
+            <item>0 2 3 8 2</item>
+            <item>0 1 3 7 4</item>
+            <item>0 1 2 7 5</item>
+            <item>3 5 6</item>
+            <item>3 2 9</item>
+            <item>13</item>
+            <item>12</item>
+            <item>0 1 9</item>
+            <item>0 2 7</item>
+        </sequences>
+    </run-table>
+</sample>

@@ -17,8 +17,9 @@ import org.slf4j.LoggerFactory;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+
 import static java.lang.Math.*;
-import java.util.Arrays;
+
 import java.util.Collection;
 
 /**
@@ -91,32 +92,6 @@ public class BasicLine
     }
 
     /**
-     * Creates a line, for which we already know the coefficients.
-     * The coefficients don't have to be normalized, the constructor takes care of this.
-     * This line is not meant to be modified by including additional points (although this is
-     * doable), since it contains no defining points.
-     *
-     * @param a xCoeff
-     * @param b yCoeff
-     * @param c 1Coeff
-     */
-    public BasicLine (double a,
-                      double b,
-                      double c)
-    {
-        this();
-
-        this.a = a;
-        this.b = b;
-        this.c = c;
-
-        normalize();
-        dirty = false;
-
-        checkLineParameters();
-    }
-
-    /**
      * Create a line (and immediately compute its coefficients), as the least square
      * fitted line on the provided points.
      *
@@ -172,16 +147,6 @@ public class BasicLine
         }
 
         checkLineParameters();
-    }
-
-    /**
-     * Creates a new BasicLine object from a Line2D segment.
-     *
-     * @param segment the Line2D segment
-     */
-    public BasicLine (Line2D segment)
-    {
-        this(Arrays.asList(segment.getP1(), segment.getP2()));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -371,28 +336,6 @@ public class BasicLine
         yMax = Math.max(yMax, y);
 
         dirty = true;
-    }
-
-    //--------------//
-    // isHorizontal //
-    //--------------//
-    @Override
-    public boolean isHorizontal ()
-    {
-        checkLineParameters();
-
-        return a == 0d;
-    }
-
-    //------------//
-    // isVertical //
-    //------------//
-    @Override
-    public boolean isVertical ()
-    {
-        checkLineParameters();
-
-        return b == 0d;
     }
 
     //-------//

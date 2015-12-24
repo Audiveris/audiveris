@@ -33,10 +33,12 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.StaffManager;
+import omr.sheet.SystemInfo;
+import omr.sheet.SystemManager;
 import omr.sheet.ui.LagController;
 import omr.sheet.ui.SheetTab;
 
-import omr.util.IntUtil;
+import omr.util.StringUtil;
 
 import ij.process.ByteProcessor;
 
@@ -44,7 +46,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Class {@code LedgersFilter} filters the full sheet image for runs suitable for
@@ -66,7 +71,7 @@ public class LedgersFilter
     private final Sheet sheet;
 
     // Debug
-    final List<Integer> vipSections;
+    final List<String> vipSections;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -79,7 +84,7 @@ public class LedgersFilter
         this.sheet = sheet;
 
         // VIPs
-        vipSections = IntUtil.parseInts(constants.ledgerVipSections.getValue());
+        vipSections = StringUtil.parseStrings(constants.ledgerVipSections.getValue());
 
         if (!vipSections.isEmpty()) {
             logger.info("Ledger VIP sections: {}", vipSections);
@@ -92,8 +97,10 @@ public class LedgersFilter
     //---------//
     /**
      * Start from NO_STAFF image and build the runs and sections that could make ledgers.
+     *
+     * @return the map: system -> relevant sections for ledgers
      */
-    public void process ()
+    public Map<SystemInfo, List<Section>> process ()
     {
         final Scale scale = sheet.getScale();
         final int minDistanceFromStaff = scale.toPixels(
@@ -122,23 +129,57 @@ public class LedgersFilter
 
         final RunTableFactory runFactory = new RunTableFactory(HORIZONTAL, filter);
         final ByteProcessor buffer = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
-        final RunTable ledgerTable = runFactory.createTable("ledger", buffer);
+        final RunTable ledgerTable = runFactory.createTable(buffer);
         final Lag lag = new BasicLag(Lags.LEDGER_LAG, Orientation.HORIZONTAL);
         final int maxShift = scale.toPixels(constants.maxRunShift);
         final SectionFactory sectionsBuilder = new SectionFactory(
                 lag,
                 new JunctionShiftPolicy(maxShift));
 
-        sectionsBuilder.createSections(ledgerTable, null, true);
+        List<Section> sections = sectionsBuilder.createSections(ledgerTable, null, true);
         setVipSections(lag);
 
         sheet.getLagManager().setLag(Lags.LEDGER_LAG, lag);
-        sheet.getSystemManager().dispatchLedgerSections();
 
         if ((OMR.getGui() != null) && constants.displayLedgers.isSet()) {
             // Display a view on this lag
             new LagController(sheet, lag, SheetTab.LEDGER_TAB).refresh();
         }
+
+        return dispatchLedgerSections(sections);
+    }
+
+    //------------------------//
+    // dispatchLedgerSections //
+    //------------------------//
+    /**
+     * Dispatch the various horizontal ledger sections among systems.
+     */
+    private Map<SystemInfo, List<Section>> dispatchLedgerSections (List<Section> sections)
+    {
+        Map<SystemInfo, List<Section>> sectionMap = new TreeMap<SystemInfo, List<Section>>();
+        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        SystemManager systemManager = sheet.getSystemManager();
+
+        for (Section section : sections) {
+            Point center = section.getCentroid();
+            systemManager.getSystemsOf(center, relevants);
+
+            for (SystemInfo system : relevants) {
+                // Check section is within system abscissa boundaries
+                if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
+                    List<Section> list = sectionMap.get(system);
+
+                    if (list == null) {
+                        sectionMap.put(system, list = new ArrayList<Section>());
+                    }
+
+                    list.add(section);
+                }
+            }
+        }
+
+        return sectionMap;
     }
 
     //----------------//
@@ -147,11 +188,11 @@ public class LedgersFilter
     private void setVipSections (Lag lag)
     {
         // Debug sections VIPs
-        for (int id : vipSections) {
-            Section sect = lag.getVertexById(id);
+        for (String id : vipSections) {
+            Section sect = lag.getEntity(id);
 
             if (sect != null) {
-                sect.setVip();
+                sect.setVip(true);
                 logger.info("Ledger vip section: {}", sect);
             }
         }

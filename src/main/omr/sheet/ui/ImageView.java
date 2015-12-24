@@ -15,10 +15,11 @@ import omr.ui.view.RubberPanel;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 
 /**
- * Class {@code ImageView}
+ * Class {@code ImageView} displays a view on an image.
+ * Typically, subclasses would have to only override the {@link #renderItems} method.
  *
  * @author Hervé Bitteur
  */
@@ -27,7 +28,7 @@ public class ImageView
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    private final BufferedImage image;
+    private final RenderedImage image;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -35,26 +36,20 @@ public class ImageView
      *
      * @param image the image to display
      */
-    public ImageView (BufferedImage image)
+    public ImageView (RenderedImage image)
     {
         this.image = image;
 
         setName("Image-View");
-        setPreferredSize(new Dimension(image.getWidth(), image.getHeight()));
+
+        ////setPreferredSize(new Dimension(image.getWidth(), image.getHeight()));
+        setModelSize(new Dimension(image.getWidth(), image.getHeight()));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void render (Graphics2D g)
     {
-        Graphics2D g2 = (Graphics2D) g;
-        g2.drawRenderedImage(image, null);
-
-        renderItems(g);
-    }
-
-    protected void renderItems (Graphics2D g)
-    {
-        // Void by default
+        g.drawRenderedImage(image, null);
     }
 }

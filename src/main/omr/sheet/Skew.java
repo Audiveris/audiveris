@@ -18,6 +18,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAttribute;
+
 /**
  * Class {@code Skew} handles the skew angle of a given sheet picture.
  *
@@ -30,20 +33,21 @@ public class Skew
     private static final Logger logger = LoggerFactory.getLogger(Skew.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Skew slope as measured */
+    /** Skew slope as measured. */
+    @XmlAttribute(name = "slope")
     private final double slope;
 
     /** Corresponding angle (in radians) */
-    private final double angle;
+    private double angle;
 
-    /** Transform to deskew */
-    private final AffineTransform at;
+    /** Transform to de-skew */
+    private AffineTransform at;
 
-    /** Width of deskewed sheet */
-    private final double deskewedWidth;
+    /** Width of de-skewed sheet */
+    private double deskewedWidth;
 
-    /** Height of deskewed sheet */
-    private final double deskewedHeight;
+    /** Height of de-skewed sheet */
+    private double deskewedHeight;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -57,34 +61,19 @@ public class Skew
     {
         this.slope = slope;
 
-        angle = Math.atan(slope);
+        initTransients(sheet);
+    }
 
-        // Rotation for deskew
-        double deskewAngle = -angle;
-        at = AffineTransform.getRotateInstance(deskewAngle);
-
-        // Origin translation for deskew
-        int w = sheet.getWidth();
-        int h = sheet.getHeight();
-        Point2D topRight = at.transform(new Point2D.Double(w, 0), null);
-        Point2D bottomLeft = at.transform(new Point2D.Double(0, h), null);
-        Point2D bottomRight = at.transform(new Point2D.Double(w, h), null);
-        double dx = 0;
-        double dy = 0;
-
-        if (deskewAngle <= 0) { // Counter-clockwise deskew
-            deskewedWidth = bottomRight.getX();
-            dy = -topRight.getY();
-            deskewedHeight = bottomLeft.getY() + dy;
-        } else { // Clockwise deskew
-            dx = -bottomLeft.getX();
-            deskewedWidth = topRight.getX() + dx;
-            deskewedHeight = bottomRight.getY();
-        }
-
-        at.translate(dx, dy);
-
-        sheet.getBench().recordSkew(slope);
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    public Skew ()
+    {
+        this.slope = 0;
+        this.angle = 0;
+        this.at = null;
+        this.deskewedWidth = 0;
+        this.deskewedHeight = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -152,7 +141,7 @@ public class Skew
     // skewed //
     //--------//
     /**
-     * Apply inverse of deskewed
+     * Apply inverse of deskewed().
      *
      * @param point the initial (deskewed) point
      * @return the skewed point
@@ -176,5 +165,52 @@ public class Skew
     public String toString ()
     {
         return "{Skew angle=" + angle + "}";
+    }
+
+    //----------------//
+    // initTransients //
+    //----------------//
+    private void initTransients (Sheet sheet)
+    {
+        angle = Math.atan(slope);
+
+        // Rotation for deskew
+        final double deskewAngle = -angle;
+        at = AffineTransform.getRotateInstance(deskewAngle);
+
+        // Origin translation for deskew
+        final int w = sheet.getWidth();
+        final int h = sheet.getHeight();
+        final Point2D topRight = at.transform(new Point2D.Double(w, 0), null);
+        final Point2D bottomLeft = at.transform(new Point2D.Double(0, h), null);
+        final Point2D bottomRight = at.transform(new Point2D.Double(w, h), null);
+        double dx = 0;
+        double dy = 0;
+
+        if (deskewAngle <= 0) { // Counter-clockwise deskew
+            deskewedWidth = bottomRight.getX();
+            dy = -topRight.getY();
+            deskewedHeight = bottomLeft.getY() + dy;
+        } else { // Clockwise deskew
+            dx = -bottomLeft.getX();
+            deskewedWidth = topRight.getX() + dx;
+            deskewedHeight = bottomRight.getY();
+        }
+
+        at.translate(dx, dy);
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled for this object,
+     * but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        initTransients((Sheet) parent);
     }
 }

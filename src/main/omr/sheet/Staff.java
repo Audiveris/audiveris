@@ -11,26 +11,46 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.glyph.ui.AttachmentHolder;
-import omr.glyph.ui.BasicAttachmentHolder;
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
+import omr.glyph.GlyphIndex;
 
 import omr.math.GeoUtil;
 import omr.math.Population;
 
-import omr.sheet.grid.FilamentLine;
+import omr.run.Orientation;
+
 import omr.sheet.grid.LineInfo;
+import omr.sheet.grid.StaffFilament;
 import omr.sheet.grid.StaffPeak;
 import omr.sheet.header.StaffHeader;
 import omr.sheet.note.NotePosition;
 
+import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.BarlineInter;
+import omr.sig.inter.BlackHeadInter;
 import omr.sig.inter.Inter;
+import omr.sig.inter.InterEnsemble;
 import omr.sig.inter.LedgerInter;
+import omr.sig.inter.RestInter;
+import omr.sig.inter.SmallBlackHeadInter;
+import omr.sig.inter.SmallVoidHeadInter;
+import omr.sig.inter.SmallWholeInter;
+import omr.sig.inter.VoidHeadInter;
+import omr.sig.inter.WholeInter;
+
+import omr.ui.util.AttachmentHolder;
+import omr.ui.util.BasicAttachmentHolder;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
+import omr.util.Jaxb;
 import omr.util.Navigable;
 import omr.util.VerticalSide;
+
 import static omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
@@ -50,14 +70,23 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
+
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code Staff} handles physical information of a staff with its lines.
@@ -67,10 +96,13 @@ import java.util.TreeSet;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class Staff
         implements AttachmentHolder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(
             Staff.class);
@@ -98,8 +130,65 @@ public class Staff
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
+    /** Staff id. (counted globally from 1 within the sheet) */
+    @XmlAttribute
+    @XmlJavaTypeAdapter(type = int.class, value = Jaxb.StringIntegerAdapter.class)
+    private final int id;
+
+    /** Left extrema. (abscissa at beginning of lines) */
+    @XmlAttribute
+    private int left;
+
+    /** Right extrema. (abscissa at end of lines) */
+    @XmlAttribute
+    private int right;
+
+    /** Sequence of staff lines. (from top to bottom) */
+    @XmlElement(name = "line")
+    private final List<LineInfo> lines;
+
+    /** Staff Header information. */
+    @XmlElement
+    private StaffHeader header;
+
+    /** Flag for short staff. (With a neighbor staff on left or right side) */
+    @XmlAttribute
+    private Boolean isShort;
+
+    /** Sequence of bar lines. */
+    @XmlElement(name = "bar")
+    private List<BarlineInter> bars;
+
+    /** Map of ledgers nearby. */
+    @XmlElement(name = "ledgers")
+    @XmlJavaTypeAdapter(Staff.LedgerAdapter.class)
+    private final TreeMap<Integer, List<LedgerInter>> ledgerMap = new TreeMap<Integer, List<LedgerInter>>();
+
+    /** Notes (heads & rests) assigned to this staff. */
+    @XmlElements({
+        @XmlElement(name = "black-head", type = BlackHeadInter.class),
+        @XmlElement(name = "small-black-head", type = SmallBlackHeadInter.class),
+        @XmlElement(name = "small-void-head", type = SmallVoidHeadInter.class),
+        @XmlElement(name = "small-whole", type = SmallWholeInter.class),
+        @XmlElement(name = "void-head", type = VoidHeadInter.class),
+        @XmlElement(name = "whole", type = WholeInter.class),
+        @XmlElement(name = "rest", type = RestInter.class)
+    })
+    private LinkedHashSet<AbstractNoteInter> notes = new LinkedHashSet<AbstractNoteInter>();
+
+    // Transient data
+    //---------------
+    //
     /** To flag a dummy staff. */
     private boolean dummy;
+
+    /** Side bars, if any. */
+    private final Map<HorizontalSide, BarlineInter> sideBars = new EnumMap<HorizontalSide, BarlineInter>(
+            HorizontalSide.class);
 
     /**
      * Area around the staff.
@@ -110,16 +199,10 @@ public class Staff
      * There is no need to be very precise, but a staff line cannot belong to several staff areas.
      * Horizontally, the area is extended half way to the next staff if any, otherwise to the limit
      * of the page.
-     * Vertically, the area is extended to the first line (exclusive) of next staff if any,
-     * otherwise to the limit of the page.
+     * Vertically, the area is extended to the first encountered line (exclusive) of the next staff
+     * if any, otherwise to the limit of the page.
      */
     private Area area;
-
-    /** Staff id. (counted from 1 within the sheet) */
-    private final int id;
-
-    /** Sequence of staff lines. (from top to bottom) */
-    private final List<FilamentLine> lines;
 
     /**
      * Scale specific to this staff. [not used for the time being]
@@ -127,30 +210,8 @@ public class Staff
      */
     private final Scale specificScale;
 
-    /** Left extrema. (beginning of lines) */
-    private int left;
-
-    /** Staff Header information. */
-    private StaffHeader header;
-
-    /** Right extrema. (end of lines) */
-    private int right;
-
-    /** Flag for short staff. (With a neighbor staff on left or right side) */
-    private boolean isShort;
-
-    /** Map of ledgers nearby. */
-    private final SortedMap<Integer, SortedSet<LedgerInter>> ledgerMap = new TreeMap<Integer, SortedSet<LedgerInter>>();
-
     /** Sequence of brace / bracket / bar lines peaks kept. */
     private List<StaffPeak> peaks;
-
-    /** Sequence of bar lines. */
-    private List<BarlineInter> bars;
-
-    /** Side bars, if any. */
-    private final Map<HorizontalSide, BarlineInter> sideBars = new EnumMap<HorizontalSide, BarlineInter>(
-            HorizontalSide.class);
 
     /** Containing system. */
     @Navigable(false)
@@ -173,7 +234,7 @@ public class Staff
                   double left,
                   double right,
                   Scale specificScale,
-                  List<FilamentLine> lines)
+                  List<LineInfo> lines)
     {
         this.id = id;
         this.left = (int) Math.rint(left);
@@ -182,50 +243,23 @@ public class Staff
         this.lines = lines;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------------------//
-    // getLedgerLineIndex //
-    //--------------------//
     /**
-     * Compute staff-based line index, based on provided pitch position
-     *
-     * @param pitchPosition the provided pitch position
-     * @return the computed line index
+     * No-arg constructor needed for JAXB.
      */
-    public static int getLedgerLineIndex (double pitchPosition)
+    public Staff ()
     {
-        if (pitchPosition > 0) {
-            return (int) Math.rint(pitchPosition / 2) - 2;
-        } else {
-            return (int) Math.rint(pitchPosition / 2) + 2;
-        }
+        this.id = 0;
+        this.lines = null;
+        this.specificScale = null;
     }
 
-    //------------------------//
-    // getLedgerPitchPosition //
-    //------------------------//
-    /**
-     * Report the pitch position of a ledger WRT the related staff.
-     * <p>
-     * TODO: This implementation assumes a 5-line staff.
-     * But can we have ledgers on a staff with more (of less) than 5 lines?
-     *
-     * @param lineIndex the ledger line index
-     * @return the ledger pitch position
-     */
-    public static int getLedgerPitchPosition (int lineIndex)
+    //~ Methods ------------------------------------------------------------------------------------
+    //----------------------//
+    // getDefiningPointSize //
+    //----------------------//
+    public static Scale.Fraction getDefiningPointSize ()
     {
-        //        // Safer, for the time being...
-        //        if (getStaff()
-        //                .getLines()
-        //                .size() != 5) {
-        //            throw new RuntimeException("Only 5-line staves are supported");
-        //        }
-        if (lineIndex > 0) {
-            return 4 + (2 * lineIndex);
-        } else {
-            return -4 + (2 * lineIndex);
-        }
+        return constants.definingPointSize;
     }
 
     //
@@ -253,10 +287,10 @@ public class Staff
     {
         assert ledger != null : "Cannot add a null ledger";
 
-        SortedSet<LedgerInter> ledgerSet = ledgerMap.get(index);
+        List<LedgerInter> ledgerSet = ledgerMap.get(index);
 
         if (ledgerSet == null) {
-            ledgerSet = new TreeSet<LedgerInter>(Inter.byFullAbscissa);
+            ledgerSet = new ArrayList<LedgerInter>();
             ledgerMap.put(index, ledgerSet);
         }
 
@@ -277,6 +311,33 @@ public class Staff
         assert ledger != null : "Cannot add a null ledger";
 
         addLedger(ledger, getLedgerLineIndex(pitchPositionOf(ledger.getGlyph().getCentroid())));
+    }
+
+    //---------//
+    // addNote //
+    //---------//
+    /**
+     * Assign a note (head or rest) to this staff.
+     *
+     * @param note the note to add to staff collection
+     */
+    public void addNote (AbstractNoteInter note)
+    {
+        notes.add(note);
+    }
+
+    //-------------//
+    // afterReload //
+    //-------------//
+    public void afterReload ()
+    {
+        try {
+            for (AbstractNoteInter note : notes) {
+                note.setStaff(this);
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+        }
     }
 
     //------------//
@@ -378,6 +439,10 @@ public class Staff
      */
     public Area getArea ()
     {
+        if (area == null) {
+            system.getSheet().getStaffManager().computeStaffArea(this);
+        }
+
         return area;
     }
 
@@ -391,7 +456,7 @@ public class Staff
      */
     public Rectangle2D getAreaBounds ()
     {
-        return area.getBounds2D();
+        return getArea().getBounds2D();
     }
 
     //----------------//
@@ -470,7 +535,7 @@ public class Staff
         // Browse all staff ledgers
         Set<IndexedLedger> foundLedgers = new HashSet<IndexedLedger>();
 
-        for (Map.Entry<Integer, SortedSet<LedgerInter>> entry : ledgerMap.entrySet()) {
+        for (Map.Entry<Integer, List<LedgerInter>> entry : ledgerMap.entrySet()) {
             for (LedgerInter ledger : entry.getValue()) {
                 if (ledger.getBounds().intersects(searchBox)) {
                     foundLedgers.add(new IndexedLedger(ledger, entry.getKey()));
@@ -483,7 +548,7 @@ public class Staff
             double bestDist = Double.MAX_VALUE;
 
             for (IndexedLedger iLedger : foundLedgers) {
-                Point2D center = iLedger.ledger.getGlyph().getAreaCenter();
+                Point2D center = iLedger.ledger.getGlyph().getCenter();
                 double dist = Math.abs(center.getY() - point.getY());
 
                 if (dist < bestDist) {
@@ -505,7 +570,7 @@ public class Staff
      * @param point the provided point
      * @return the closest line found
      */
-    public FilamentLine getClosestLine (Point2D point)
+    public LineInfo getClosestLine (Point2D point)
     {
         double pos = pitchPositionOf(point);
         int idx = (int) Math.rint((pos + (lines.size() - 1)) / 2);
@@ -535,8 +600,8 @@ public class Staff
         List<Double> slopes = new ArrayList<Double>(lines.size());
 
         for (LineInfo l : lines) {
-            FilamentLine line = (FilamentLine) l;
-            slopes.add(line.getSlope(side));
+            StaffFilament line = (StaffFilament) l;
+            slopes.add(line.getSlopeAt(line.getEndPoint(side).getX(), Orientation.HORIZONTAL));
         }
 
         Collections.sort(slopes);
@@ -558,7 +623,7 @@ public class Staff
      *
      * @return the first line
      */
-    public FilamentLine getFirstLine ()
+    public LineInfo getFirstLine ()
     {
         return lines.get(0);
     }
@@ -574,11 +639,38 @@ public class Staff
         return header;
     }
 
+    //------------------------//
+    // getLedgerPitchPosition //
+    //------------------------//
+    /**
+     * Report the pitch position of a ledger WRT the related staff.
+     * <p>
+     * TODO: This implementation assumes a 5-line staff.
+     * But can we have ledgers on a staff with more (of less) than 5 lines?
+     *
+     * @param lineIndex the ledger line index
+     * @return the ledger pitch position
+     */
+    public static int getLedgerPitchPosition (int lineIndex)
+    {
+        //        // Safer, for the time being...
+        //        if (getStaff()
+        //                .getLines()
+        //                .size() != 5) {
+        //            throw new RuntimeException("Only 5-line staves are supported");
+        //        }
+        if (lineIndex > 0) {
+            return 4 + (2 * lineIndex);
+        } else {
+            return -4 + (2 * lineIndex);
+        }
+    }
+
     //----------------//
     // getHeaderStart //
     //----------------//
     /**
-     * @return the dmzStart
+     * @return the start of header area
      */
     public int getHeaderStart ()
     {
@@ -663,15 +755,33 @@ public class Staff
      *
      * @return the last line
      */
-    public FilamentLine getLastLine ()
+    public LineInfo getLastLine ()
     {
         return lines.get(lines.size() - 1);
+    }
+
+    //--------------------//
+    // getLedgerLineIndex //
+    //--------------------//
+    /**
+     * Compute staff-based line index, based on provided pitch position
+     *
+     * @param pitchPosition the provided pitch position
+     * @return the computed line index
+     */
+    public static int getLedgerLineIndex (double pitchPosition)
+    {
+        if (pitchPosition > 0) {
+            return (int) Math.rint(pitchPosition / 2) - 2;
+        } else {
+            return (int) Math.rint(pitchPosition / 2) + 2;
+        }
     }
 
     //--------------//
     // getLedgerMap //
     //--------------//
-    public SortedMap<Integer, SortedSet<LedgerInter>> getLedgerMap ()
+    public SortedMap<Integer, List<LedgerInter>> getLedgerMap ()
     {
         return ledgerMap;
     }
@@ -686,7 +796,7 @@ public class Staff
      *                  distance from staff
      * @return the proper abscissa-ordered set of ledgers, or null
      */
-    public SortedSet<LedgerInter> getLedgers (int lineIndex)
+    public List<LedgerInter> getLedgers (int lineIndex)
     {
         return ledgerMap.get(lineIndex);
     }
@@ -715,7 +825,7 @@ public class Staff
      * @param side TOP for first, BOTTOM for last
      * @return the staff line
      */
-    public FilamentLine getLine (VerticalSide side)
+    public LineInfo getLine (VerticalSide side)
     {
         if (side == TOP) {
             return lines.get(0);
@@ -745,7 +855,7 @@ public class Staff
      *
      * @return the list of lines in this staff
      */
-    public List<FilamentLine> getLines ()
+    public List<LineInfo> getLines ()
     {
         return lines;
     }
@@ -799,7 +909,7 @@ public class Staff
         for (double x = xMin; x <= xMax; x += dx) {
             double prevY = -1;
 
-            for (FilamentLine line : lines) {
+            for (LineInfo line : lines) {
                 double y = line.yAt(x);
 
                 if (prevY != -1) {
@@ -839,7 +949,7 @@ public class Staff
             bestLedger = getClosestLedger(point);
 
             if (bestLedger != null) {
-                Point2D center = bestLedger.ledger.getGlyph().getAreaCenter();
+                Point2D center = bestLedger.ledger.getGlyph().getCenter();
                 int ledgerPitch = getLedgerPitchPosition(bestLedger.index);
                 double deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.getInterline();
                 pitch = ledgerPitch + deltaPitch;
@@ -897,9 +1007,8 @@ public class Staff
             return specificScale;
         } else {
             // Return the scale of the sheet
-            logger.warn("No specific scale available");
-
-            return null;
+            //logger.warn("No specific scale available");
+            return system.getSheet().getScale();
         }
     }
 
@@ -953,7 +1062,7 @@ public class Staff
      */
     public boolean isShort ()
     {
-        return isShort;
+        return (isShort != null) && (isShort == true);
     }
 
     //-----------------//
@@ -1032,10 +1141,18 @@ public class Staff
     public boolean removeLedger (LedgerInter ledger)
     {
         assert ledger != null : "Cannot remove a null ledger";
+        logger.debug("removing {}", ledger);
 
         // Browse all staff ledger indices
-        for (SortedSet<LedgerInter> ledgerSet : ledgerMap.values()) {
+        for (Entry<Integer, List<LedgerInter>> entry : ledgerMap.entrySet()) {
+            List<LedgerInter> ledgerSet = entry.getValue();
+
             if (ledgerSet.remove(ledger)) {
+                if (ledgerSet.isEmpty()) {
+                    // No ledger is left on this line index, thus remove the map entry
+                    ledgerMap.remove(entry.getKey());
+                }
+
                 return true;
             }
         }
@@ -1044,6 +1161,20 @@ public class Staff
         logger.debug("Could not find ledger {}", ledger);
 
         return false;
+    }
+
+    //------------//
+    // removeNote //
+    //------------//
+    /**
+     * Remove a note (head or rest) from staff collection.
+     *
+     * @param note the note to remove
+     * @return true if actually removed, false if not found
+     */
+    public boolean removeNote (AbstractNoteInter note)
+    {
+        return notes.remove(note);
     }
 
     //-------------//
@@ -1058,30 +1189,36 @@ public class Staff
     // render //
     //--------//
     /**
-     * Paint the staff lines.
+     * Paint each staff line, perhaps with its defining points.
      *
      * @param g the graphics context
      * @return true if something has been actually drawn
      */
     public boolean render (Graphics2D g)
     {
-        LineInfo firstLine = getFirstLine();
-        LineInfo lastLine = getLastLine();
+        //        if (area != null) {
+        //            LineInfo firstLine = getFirstLine();
+        //            LineInfo lastLine = getLastLine();
+        //
+        //            if ((firstLine != null) && (lastLine != null)) {
+        //                Rectangle clip = g.getClipBounds();
+        //
+        //                if ((clip != null) && !clip.intersects(getAreaBounds())) {
+        //                    return false;
+        //                }
+        //            }
+        //        }
+        //
+        final boolean showPoints = constants.showDefiningPoints.isSet();
+        final Scale scale = system.getSheet().getScale();
+        final double pointWidth = scale.toPixelsDouble(constants.definingPointSize);
 
-        if ((firstLine != null) && (lastLine != null) && (area != null)) {
-            Rectangle clip = g.getClipBounds();
-
-            if ((clip == null) || clip.intersects(getAreaBounds())) {
-                // Draw each staff line
-                for (LineInfo line : lines) {
-                    line.render(g);
-                }
-
-                return true;
-            }
+        // Draw each staff line
+        for (LineInfo line : lines) {
+            line.renderLine(g, showPoints, pointWidth);
         }
 
-        return false;
+        return true;
     }
 
     //-------------------//
@@ -1091,6 +1228,14 @@ public class Staff
     public void renderAttachments (Graphics2D g)
     {
         attachments.renderAttachments(g);
+    }
+
+    //--------------------//
+    // showDefiningPoints //
+    //--------------------//
+    public static Boolean showDefiningPoints ()
+    {
+        return constants.showDefiningPoints.isSet();
     }
 
     //-----------//
@@ -1150,6 +1295,7 @@ public class Staff
     public void setBars (List<BarlineInter> bars)
     {
         this.bars = bars;
+        retrieveSideBars();
     }
 
     /**
@@ -1202,13 +1348,18 @@ public class Staff
         header.keyRange.valid = true;
     }
 
-    //------------//
-    // setSideBar //
-    //------------//
-    public void setSideBar (HorizontalSide side,
-                            BarlineInter inter)
+    //----------//
+    // setShort //
+    //----------//
+    /**
+     * Flag this staff as a "short" one, because it is displayed side
+     * by side with another one.
+     * This indicates these two staves belong to separate systems, displayed
+     * side by side, rather than one under the other.
+     */
+    public void setShort ()
     {
-        sideBars.put(side, inter);
+        isShort = true;
     }
 
     //-----------//
@@ -1231,6 +1382,31 @@ public class Staff
         header.timeRange.valid = true;
     }
 
+    //---------------//
+    // simplifyLines //
+    //---------------//
+    /**
+     * Replace the transient StaffFilament instances by persistent StaffLine instances.
+     */
+    public void simplifyLines (Sheet sheet)
+    {
+        if (getFirstLine() instanceof StaffLine) {
+            logger.error("Staff lines have already been simplified!");
+
+            return;
+        }
+
+        final GlyphIndex nest = sheet.getGlyphIndex();
+        List<LineInfo> copies = new ArrayList<LineInfo>(lines);
+        lines.clear();
+
+        for (LineInfo line : copies) {
+            StaffFilament staffFilament = (StaffFilament) line;
+            StaffLine staffLine = staffFilament.toStaffLine(nest);
+            lines.add(staffLine);
+        }
+    }
+
     //----------//
     // toString //
     //----------//
@@ -1241,7 +1417,7 @@ public class Staff
 
         sb.append(" id=").append(getId());
 
-        if (isShort) {
+        if (isShort()) {
             sb.append(" SHORT");
         }
 
@@ -1281,32 +1457,117 @@ public class Staff
      */
     public boolean yOverlaps (Staff that)
     {
-        final double thisTop = this.getFirstLine().getLeftPoint().getY();
-        final double thatTop = that.getFirstLine().getLeftPoint().getY();
+        final double thisTop = this.getFirstLine().getEndPoint(LEFT).getY();
+        final double thatTop = that.getFirstLine().getEndPoint(LEFT).getY();
         final double commonTop = Math.max(thisTop, thatTop);
 
-        final double thisBottom = this.getLastLine().getLeftPoint().getY();
-        final double thatBottom = that.getLastLine().getLeftPoint().getY();
+        final double thisBottom = this.getLastLine().getEndPoint(LEFT).getY();
+        final double thatBottom = that.getLastLine().getEndPoint(LEFT).getY();
         final double commonBottom = Math.min(thisBottom, thatBottom);
 
         return commonBottom > commonTop;
     }
 
-    //----------//
-    // setShort //
-    //----------//
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
     /**
-     * Flag this staff as a "short" one, because it is displayed side
-     * by side with another one.
-     * This indicates these two staves belong to separate systems, displayed
-     * side by side, rather than one under the other.
+     * Called after all the properties (except IDREF) are unmarshalled for this object,
+     * but before this object is set to the parent object.
+     * We use this call-back method to re-assign staff to contained inters.
      */
-    void setShort ()
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
     {
-        isShort = true;
+        if (header != null) {
+            if (header.clef != null) {
+                header.clef.setStaff(this);
+            }
+
+            if (header.key != null) {
+                header.key.setStaff(this);
+
+                for (Inter alter : header.key.getMembers()) {
+                    alter.setStaff(this);
+                }
+            }
+
+            if (header.time != null) {
+                header.time.setStaff(this);
+
+                if (header.time instanceof InterEnsemble) {
+                    for (Inter member : ((InterEnsemble) header.time).getMembers()) {
+                        member.setStaff(this);
+                    }
+                }
+            }
+        }
+
+        for (BarlineInter bar : bars) {
+            bar.setStaff(this);
+        }
+
+        retrieveSideBars();
+
+        //
+        //        // Oops: this won't work because notes are IDREF's !!!
+        //        for (AbstractNoteInter note : notes) {
+        //            note.setStaff(this);
+        //        }
+        //
+        for (List<LedgerInter> ledgerSet : ledgerMap.values()) {
+            for (LedgerInter ledger : ledgerSet) {
+                ledger.setStaff(this);
+            }
+        }
+    }
+
+    //------------------//
+    // retrieveSideBars //
+    //------------------//
+    /**
+     * Remember bars on left and right sides, if any.
+     */
+    private void retrieveSideBars ()
+    {
+        if (!bars.isEmpty()) {
+            for (HorizontalSide side : HorizontalSide.values()) {
+                final int end = getAbscissa(side);
+                final BarlineInter bar = bars.get((side == LEFT) ? 0 : (bars.size() - 1));
+                final Rectangle barBox = bar.getBounds();
+
+                if ((barBox.x <= end) && (end <= ((barBox.x + barBox.width) - 1))) {
+                    sideBars.put(side, bar);
+                }
+            }
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Adapter //
+    //---------//
+    public static class Adapter
+            extends XmlAdapter<Integer, Staff>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public Integer marshal (Staff staff)
+                throws Exception
+        {
+            return staff.getId();
+        }
+
+        @Override
+        public Staff unmarshal (Integer id)
+                throws Exception
+        {
+            return null; // Handled later
+        }
+    }
+
     //---------------//
     // IndexedLedger //
     //---------------//
@@ -1330,6 +1591,122 @@ public class Staff
         {
             this.ledger = ledger;
             this.index = index;
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean showDefiningPoints = new Constant.Boolean(
+                false,
+                "Should we show defining points?");
+
+        private final Scale.Fraction definingPointSize = new Scale.Fraction(
+                0.05,
+                "Display width of a defining point");
+    }
+
+    //---------------//
+    // LedgerAdapter //
+    //---------------//
+    private static class LedgerAdapter
+            extends XmlAdapter<LedgersValue, TreeMap<Integer, List<LedgerInter>>>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public LedgersValue marshal (TreeMap<Integer, List<LedgerInter>> map)
+                throws Exception
+        {
+            if (map.isEmpty()) {
+                return null;
+            }
+
+            LedgersValue value = new LedgersValue();
+
+            for (Entry<Integer, List<LedgerInter>> entry : map.entrySet()) {
+                value.entries.add(
+                        new LedgersEntry(entry.getKey(), new ArrayList<LedgerInter>(entry.getValue())));
+            }
+
+            return value;
+        }
+
+        @Override
+        public TreeMap<Integer, List<LedgerInter>> unmarshal (LedgersValue value)
+                throws Exception
+        {
+            if (value == null) {
+                return null;
+            }
+
+            TreeMap<Integer, List<LedgerInter>> map = new TreeMap<Integer, List<LedgerInter>>();
+
+            for (LedgersEntry entry : value.entries) {
+                try {
+                    List<LedgerInter> ledgerSet = new ArrayList<LedgerInter>();
+
+                    // Safer
+                    if (entry.ledgers != null) {
+                        ledgerSet.addAll(entry.ledgers);
+                        map.put(entry.index, ledgerSet);
+                    }
+                } catch (Throwable ex) {
+                    logger.error("Error unmarshalling " + entry.ledgers, ex);
+                }
+            }
+
+            return map;
+        }
+    }
+
+    //--------------//
+    // LedgersEntry //
+    //--------------//
+    @XmlRootElement(name = "ledgers-line")
+    private static class LedgersEntry
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlAttribute
+        private final int index;
+
+        @XmlElement(name = "ledger")
+        private final ArrayList<LedgerInter> ledgers;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public LedgersEntry ()
+        {
+            this.index = 0;
+            this.ledgers = null;
+        }
+
+        public LedgersEntry (int index,
+                             ArrayList<LedgerInter> ledgers)
+        {
+            this.index = index;
+            this.ledgers = ledgers;
+        }
+    }
+
+    //--------------//
+    // LedgersValue //
+    //--------------//
+    private static class LedgersValue
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlElement(name = "ledgers-entry")
+        ArrayList<LedgersEntry> entries = new ArrayList<LedgersEntry>();
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public LedgersValue ()
+        {
         }
     }
 }

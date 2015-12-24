@@ -16,20 +16,17 @@ import omr.OMR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
+import omr.glyph.GlyphFactory;
+import omr.glyph.Symbol.Group;
 
 import omr.image.ImageUtil;
 import omr.image.ShapeDescriptor;
 import omr.image.Template;
 
 import omr.lag.BasicLag;
-import omr.lag.JunctionRatioPolicy;
 import omr.lag.Lag;
 import omr.lag.Lags;
-import omr.lag.Section;
-import omr.lag.SectionFactory;
 
 import omr.run.Orientation;
 import omr.run.RunTable;
@@ -52,6 +49,8 @@ import omr.sig.inter.SentenceInter;
 import omr.sig.inter.StemInter;
 
 import omr.ui.BoardsPane;
+
+import omr.util.ByteUtil;
 
 import ij.process.ByteProcessor;
 
@@ -120,7 +119,7 @@ public class SymbolsFilter
     //---------//
     /**
      * Start from the staff-free image, remove all good inters, and from the remaining
-     * pixels build the runs and sections that compose symbols glyphs put in SYMBOL layer.
+     * pixels build the symbols glyphs put in SYMBOL group.
      * <p>
      * For not good inters (such 'weak' inters have already survived the first REDUCTION step)
      * we put them aside as optional glyphs that can take part of the symbols glyphs clustering and
@@ -173,15 +172,17 @@ public class SymbolsFilter
     {
         // Runs
         RunTableFactory runFactory = new RunTableFactory(SYMBOL_ORIENTATION);
-        RunTable runTable = runFactory.createTable("symbols", buffer);
+        RunTable runTable = runFactory.createTable(buffer);
 
-        // Sections
-        SectionFactory sectionsBuilder = new SectionFactory(symLag, new JunctionRatioPolicy());
-        List<Section> sections = sectionsBuilder.createSections(runTable);
-
+        //
+        //        // Sections
+        //        SectionFactory sectionsBuilder = new SectionFactory(symLag, new JunctionRatioPolicy());
+        //        List<Section> sections = sectionsBuilder.createSections(runTable);
+        //
+        //        GlyphIndex nest = sheet.getGlyphIndex();
+        //        ///List<Glyph> glyphs = nest.retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
         // Glyphs
-        GlyphNest nest = sheet.getGlyphNest();
-        List<Glyph> glyphs = nest.retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
+        List<Glyph> glyphs = GlyphFactory.buildGlyphs(runTable, new Point(0, 0), Group.SYMBOL);
         logger.debug("Symbol glyphs: {}", glyphs.size());
 
         // Dispatch each glyph to its relevant system(s)
@@ -206,7 +207,7 @@ public class SymbolsFilter
             systemManager.getSystemsOf(center, relevants);
 
             for (SystemInfo system : relevants) {
-                system.registerGlyph(glyph);
+                system.registerStandaloneGlyph(glyph);
             }
         }
     }
@@ -231,6 +232,59 @@ public class SymbolsFilter
         private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 0.5,
                 "Margin erased above & below staff header area");
+    }
+
+    //--------//
+    // MyView //
+    //--------//
+    /**
+     * View dedicated to symbols.
+     */
+    private class MyView
+            extends ImageView
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        // All optional glyphs. */
+        private final Set<Glyph> optionals;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public MyView (BufferedImage image,
+                       Map<SystemInfo, List<Glyph>> optionalMap)
+        {
+            super(image);
+
+            optionals = new HashSet<Glyph>();
+
+            for (List<Glyph> glyphs : optionalMap.values()) {
+                optionals.addAll(glyphs);
+            }
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected void renderItems (Graphics2D g)
+        {
+            final Rectangle clip = g.getClipBounds();
+
+            // Good inters are erased and not taken into account for symbols
+            // Weak ones are temporarily erased and used as optional glyphs for symbols
+            Color oldColor = g.getColor();
+            g.setColor(Color.GREEN);
+
+            for (Glyph glyph : optionals) {
+                final Rectangle box = glyph.getBounds();
+
+                if (box.intersects(clip)) {
+                    glyph.getRunTable().render(g, box.getLocation());
+                }
+            }
+
+            g.setColor(oldColor);
+
+            // Global sheet renderers
+            sheet.renderItems(g);
+        }
     }
 
     //----------------//
@@ -291,6 +345,9 @@ public class SymbolsFilter
         //-------------//
         /**
          * Erase from image graphics all instances of provided shapes.
+         * <p>
+         * We check text items for '3' or '6' characters, and consider these characters as
+         * potential tuplet symbols when rather close from a chord.
          *
          * @param weaksMap (output) populated with the erased weak glyph instances per system
          */
@@ -320,11 +377,18 @@ public class SymbolsFilter
                     // since they might be isolated one-letter symbols
                     if (SentenceInter.class.isInstance(inter)) {
                         SentenceInter sentence = (SentenceInter) inter;
+                        String content = sentence.getValue();
 
-                        if (sentence.getValue().length() == 1) {
+                        // One-char sentence
+                        if (content.length() == 1) {
                             continue;
                         }
 
+                        // Sentence with a '3' or a '6'
+                        //TODO: check the letter is close enough to a chord
+                        if (content.indexOf('3') != -1 || content.indexOf('6') != -1) {
+                            continue;
+                        }
                     }
 
                     if (canHide(inter)) {
@@ -409,7 +473,7 @@ public class SymbolsFilter
         {
             // Save the area corresponding glyph(s)?
             if (systemWeaks != null) {
-                //                List<Glyph> glyphs = sheet.getGlyphNest()
+                //                List<Glyph> glyphs = sheet.getGlyphIndex()
                 //                        .retrieveGlyphs(
                 //                                glyph.getMembers(),
                 //                                GlyphLayer.SYMBOL,
@@ -433,12 +497,15 @@ public class SymbolsFilter
 
             // Save the glyph?
             if (systemWeaks != null) {
-                // The glyph may be made of several parts, so it's safer to restart from sections
-                List<Glyph> glyphs = sheet.getGlyphNest().retrieveGlyphs(
-                        glyph.getMembers(),
-                        GlyphLayer.SYMBOL,
-                        true);
-
+                // The glyph may be made of several parts, so it's safer to restart from pixels
+                List<Glyph> glyphs = GlyphFactory.buildGlyphs(
+                        glyph.getRunTable(),
+                        glyph.getTopLeft(),
+                        Group.SYMBOL);
+                //                List<Glyph> glyphs = sheet.getGlyphIndex().buildGlyphs(
+                //                        Arrays.asList(glyph),
+                //                        GlyphLayer.SYMBOL,
+                //                        true);
                 systemWeaks.addAll(glyphs);
             }
         }
@@ -449,15 +516,14 @@ public class SymbolsFilter
         /**
          * Save the provided pixels as optional glyphs.
          *
-         * @param box   the absolute bounding box of inter descriptor (perhaps larger than the
-         *              symbol)
+         * @param box   the absolute bounding box of inter descriptor (perhaps larger than symbol)
          * @param fores foreground pixels with coordinates relative to descriptor bounding box
          */
         private void savePixels (Rectangle box,
                                  List<Point> fores)
         {
             ByteProcessor buf = new ByteProcessor(box.width, box.height);
-            buf.invert();
+            ByteUtil.raz(buf); // buf.invert();
 
             for (Point p : fores) {
                 buf.set(p.x, p.y, 0);
@@ -465,72 +531,15 @@ public class SymbolsFilter
 
             // Runs
             RunTableFactory factory = new RunTableFactory(SYMBOL_ORIENTATION);
-            RunTable runTable = factory.createTable("optionals", buf);
-
-            // Sections
-            SectionFactory sectionsBuilder = new SectionFactory(symLag, new JunctionRatioPolicy());
-            List<Section> sections = sectionsBuilder.createSections(runTable);
-
-            // Translate sections to absolute coordinates
-            for (Section section : sections) {
-                section.translate(box.getLocation());
-            }
+            RunTable runTable = factory.createTable(buf);
 
             // Glyphs
-            List<Glyph> glyphs = sheet.getGlyphNest()
-                    .retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
+            List<Glyph> glyphs = GlyphFactory.buildGlyphs(
+                    runTable,
+                    new Point(0, 0),
+                    Group.SYMBOL);
 
-            for (Glyph glyph : glyphs) {
-                systemWeaks.add(glyph);
-            }
-        }
-    }
-
-    //--------//
-    // MyView //
-    //--------//
-    /**
-     * View dedicated to symbols.
-     */
-    private class MyView
-            extends ImageView
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        // All optional glyphs. */
-        private final Set<Glyph> optionals;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public MyView (BufferedImage image,
-                       Map<SystemInfo, List<Glyph>> optionalMap)
-        {
-            super(image);
-
-            optionals = new HashSet<Glyph>();
-
-            for (List<Glyph> glyphs : optionalMap.values()) {
-                optionals.addAll(glyphs);
-            }
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected void renderItems (Graphics2D g)
-        {
-            final Rectangle clip = g.getClipBounds();
-
-            // Good inters are erased and not taken into account for symbols
-            // Weak ones are temporarily erased and used as optional glyphs for symbols
-            for (Glyph glyph : optionals) {
-                if (glyph.getBounds().intersects(clip)) {
-                    for (Section section : glyph.getMembers()) {
-                        section.render(g, false, Color.GREEN);
-                    }
-                }
-            }
-
-            // Global sheet renderers
-            sheet.renderItems(g);
+            systemWeaks.addAll(glyphs);
         }
     }
 }

@@ -187,7 +187,7 @@ public abstract class AbstractSystemStep<C>
                                     logger.debug(
                                             "{} doSystem #{}",
                                             AbstractSystemStep.this,
-                                            system.idString());
+                                            system.getId());
 
                                     doSystem(system, context);
                                 } catch (Exception ex) {

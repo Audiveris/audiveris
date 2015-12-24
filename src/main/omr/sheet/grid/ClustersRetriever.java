@@ -14,9 +14,8 @@ package omr.sheet.grid;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyphs;
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Symbol.Group;
+import omr.glyph.dynamic.Compounds;
 
 import omr.math.GeoUtil;
 import omr.math.Histogram;
@@ -29,6 +28,7 @@ import omr.sheet.Sheet;
 import omr.sheet.Skew;
 
 import omr.util.Dumping;
+import omr.util.Navigable;
 import omr.util.Wrapper;
 
 import org.slf4j.Logger;
@@ -69,32 +69,28 @@ public class ClustersRetriever
     /**
      * For comparing Filament instances on their starting point.
      */
-    private static final Comparator<Filament> byStartAbscissa = new Comparator<Filament>()
+    private static final Comparator<StaffFilament> byStartAbscissa = new Comparator<StaffFilament>()
     {
         @Override
-        public int compare (Filament f1,
-                            Filament f2)
+        public int compare (StaffFilament f1,
+                            StaffFilament f2)
         {
             // Sort on start
-            return Double.compare(
-                    f1.getStartPoint(HORIZONTAL).getX(),
-                    f2.getStartPoint(HORIZONTAL).getX());
+            return Double.compare(f1.getStartPoint().getX(), f2.getStartPoint().getX());
         }
     };
 
     /**
      * For comparing Filament instances on their stopping point.
      */
-    private static final Comparator<Filament> byStopAbscissa = new Comparator<Filament>()
+    private static final Comparator<StaffFilament> byStopAbscissa = new Comparator<StaffFilament>()
     {
         @Override
-        public int compare (Filament f1,
-                            Filament f2)
+        public int compare (StaffFilament f1,
+                            StaffFilament f2)
         {
             // Sort on stop
-            return Double.compare(
-                    f1.getStopPoint(HORIZONTAL).getX(),
-                    f2.getStopPoint(HORIZONTAL).getX());
+            return Double.compare(f1.getStopPoint().getX(), f2.getStopPoint().getX());
         }
     };
 
@@ -144,6 +140,7 @@ public class ClustersRetriever
     };
 
     /** Related sheet */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Related scale */
@@ -159,10 +156,10 @@ public class ClustersRetriever
     private final int pictureWidth;
 
     /** Long filaments to process */
-    private final List<LineFilament> filaments;
+    private final List<StaffFilament> filaments;
 
     /** Filaments discarded */
-    private final List<LineFilament> discardedFilaments = new ArrayList<LineFilament>();
+    private final List<StaffFilament> discardedFilaments = new ArrayList<StaffFilament>();
 
     /** Skew of the sheet */
     private final Skew skew;
@@ -196,7 +193,7 @@ public class ClustersRetriever
      * @param combColor color to be used for combs display
      */
     public ClustersRetriever (Sheet sheet,
-                              List<LineFilament> filaments,
+                              List<StaffFilament> filaments,
                               int interline,
                               Color combColor)
     {
@@ -217,7 +214,7 @@ public class ClustersRetriever
     //-----------//
     // buildInfo //
     //-----------//
-    public List<LineFilament> buildInfo ()
+    public List<StaffFilament> buildInfo ()
     {
         // Retrieve all vertical combs gathering filaments
         retrieveCombs();
@@ -273,27 +270,6 @@ public class ClustersRetriever
     public int getInterline ()
     {
         return interline;
-    }
-
-    //--------------------//
-    // getStafflineGlyphs //
-    //--------------------//
-    /**
-     * Report the glyphs that are part of actual cluster lines
-     *
-     * @return the collection of glyphs actually used for retained cluster
-     */
-    Collection<Glyph> getStafflineGlyphs ()
-    {
-        List<Glyph> glyphs = new ArrayList<Glyph>();
-
-        for (LineCluster cluster : clusters) {
-            for (FilamentLine line : cluster.getLines()) {
-                glyphs.add(line.fil);
-            }
-        }
-
-        return glyphs;
     }
 
     //-------------//
@@ -463,11 +439,11 @@ public class ClustersRetriever
     //------------------//
     // connectAncestors //
     //------------------//
-    private void connectAncestors (LineFilament one,
-                                   LineFilament two)
+    private void connectAncestors (StaffFilament one,
+                                   StaffFilament two)
     {
-        LineFilament oneAnc = (LineFilament) one.getAncestor();
-        LineFilament twoAnc = (LineFilament) two.getAncestor();
+        StaffFilament oneAnc = (StaffFilament) one.getAncestor();
+        StaffFilament twoAnc = (StaffFilament) two.getAncestor();
 
         if (oneAnc != twoAnc) {
             if (oneAnc.getLength(Orientation.HORIZONTAL) >= twoAnc.getLength(
@@ -488,13 +464,13 @@ public class ClustersRetriever
     //----------------//
     private void createClusters ()
     {
-        Collections.sort(filaments, Glyphs.byReverseLength(Orientation.HORIZONTAL));
+        Collections.sort(filaments, Compounds.byReverseLength(Orientation.HORIZONTAL));
 
-        for (LineFilament fil : filaments) {
-            fil = (LineFilament) fil.getAncestor();
+        for (StaffFilament fil : filaments) {
+            fil = (StaffFilament) fil.getAncestor();
 
             if ((fil.getCluster() == null) && !fil.getCombs().isEmpty()) {
-                LineCluster cluster = new LineCluster(interline, fil);
+                LineCluster cluster = new LineCluster(scale, fil);
                 clusters.add(cluster);
             }
         }
@@ -524,14 +500,14 @@ public class ClustersRetriever
     //------------------------------//
     private void discardNonClusteredFilaments ()
     {
-        for (Iterator<LineFilament> it = filaments.iterator(); it.hasNext();) {
-            LineFilament fil = it.next();
+        for (Iterator<StaffFilament> it = filaments.iterator(); it.hasNext();) {
+            StaffFilament fil = it.next();
 
             if (fil.getCluster() == null) {
                 it.remove();
                 discardedFilaments.add(fil);
             } else {
-                fil.setShape(Shape.STAFF_LINE);
+                fil.addGroup(Group.STAFF_LINE);
             }
         }
     }
@@ -557,13 +533,13 @@ public class ClustersRetriever
      * @param fils    the (properly sorted) collection of filaments
      */
     private void expandCluster (LineCluster cluster,
-                                List<LineFilament> fils)
+                                List<StaffFilament> fils)
     {
         final double slope = sheet.getSkew().getSlope();
         Rectangle clusterBox = null;
 
-        for (LineFilament fil : fils) {
-            fil = (LineFilament) fil.getAncestor();
+        for (StaffFilament fil : fils) {
+            fil = (StaffFilament) fil.getAncestor();
 
             if (fil.getCluster() != null) {
                 continue;
@@ -615,7 +591,7 @@ public class ClustersRetriever
                                         index);
 
                                 if (fil.isVip()) {
-                                    cluster.setVip();
+                                    cluster.setVip(true);
                                 }
                             }
 
@@ -646,10 +622,10 @@ public class ClustersRetriever
      */
     private void expandClusters ()
     {
-        List<LineFilament> startFils = new ArrayList<LineFilament>(filaments);
+        List<StaffFilament> startFils = new ArrayList<StaffFilament>(filaments);
         Collections.sort(startFils, byStartAbscissa);
 
-        List<LineFilament> stopFils = new ArrayList<LineFilament>(startFils);
+        List<StaffFilament> stopFils = new ArrayList<StaffFilament>(startFils);
         Collections.sort(stopFils, byStopAbscissa);
 
         // Browse clusters, starting with the longest ones
@@ -676,11 +652,11 @@ public class ClustersRetriever
     {
         logger.debug("Following combs network");
 
-        for (LineFilament fil : filaments) {
+        for (StaffFilament fil : filaments) {
             Map<Integer, FilamentComb> combs = fil.getCombs();
 
             // Sequence of lines around the filament, indexed by relative pos
-            Map<Integer, LineFilament> lines = new TreeMap<Integer, LineFilament>();
+            Map<Integer, StaffFilament> lines = new TreeMap<Integer, StaffFilament>();
 
             // Loop on all combs this filament is involved in
             for (FilamentComb comb : combs.values()) {
@@ -690,7 +666,7 @@ public class ClustersRetriever
                     int line = pos - posPivot;
 
                     if (line != 0) {
-                        LineFilament f = lines.get(line);
+                        StaffFilament f = lines.get(line);
 
                         if (f != null) {
                             connectAncestors(f, comb.getFilament(pos));
@@ -877,8 +853,8 @@ public class ClustersRetriever
     //-----------------------//
     private void removeMergedFilaments ()
     {
-        for (Iterator<LineFilament> it = filaments.iterator(); it.hasNext();) {
-            LineFilament fil = it.next();
+        for (Iterator<StaffFilament> it = filaments.iterator(); it.hasNext();) {
+            StaffFilament fil = it.next();
 
             if (fil.getPartOf() != null) {
                 it.remove();
@@ -1012,9 +988,8 @@ public class ClustersRetriever
     {
         List<FilY> list = new ArrayList<FilY>();
 
-        for (LineFilament fil : filaments) {
-            if ((x >= fil.getStartPoint(HORIZONTAL).getX())
-                && (x <= fil.getStopPoint(HORIZONTAL).getX())) {
+        for (StaffFilament fil : filaments) {
+            if ((x >= fil.getStartPoint().getX()) && (x <= fil.getStopPoint().getX())) {
                 list.add(new FilY(fil, fil.getPositionAt(x, HORIZONTAL)));
             }
         }
@@ -1124,12 +1099,12 @@ public class ClustersRetriever
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final LineFilament filament;
+        final StaffFilament filament;
 
         final double y;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public FilY (LineFilament filament,
+        public FilY (StaffFilament filament,
                      double y)
         {
             this.filament = filament;

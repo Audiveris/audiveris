@@ -29,6 +29,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.geom.AffineTransform;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -162,7 +163,7 @@ public abstract class UIUtil
      * @param save      true for a SAVE dialog, false for a LOAD dialog
      * @param parent    the parent component for the dialog, if any
      * @param startFile default file, or just default directory, or null
-     * @param filter    a filter to by applied on files
+     * @param filter    a filter to be applied on files
      * @return the selected file, or null
      */
     public static File fileChooser (boolean save,
@@ -183,7 +184,7 @@ public abstract class UIUtil
      * @param save      true for a SAVE dialog, false for a LOAD dialog
      * @param parent    the parent component for the dialog, if any
      * @param startFile default file, or just default directory, or null
-     * @param filter    a filter to by applied on files
+     * @param filter    a filter to be applied on files
      * @param title     a specific dialog title or null
      * @return the selected file, or null
      */
@@ -310,6 +311,56 @@ public abstract class UIUtil
         title.setEnabled(false);
         menu.add(title);
         menu.addSeparator();
+    }
+
+    //-------------//
+    // pathChooser //
+    //-------------//
+    /**
+     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
+     * platform.
+     *
+     * @param save      true for a SAVE dialog, false for a LOAD dialog
+     * @param parent    the parent component for the dialog, if any
+     * @param startPath default path, or just default directory, or null
+     * @param filter    a filter to be applied on files
+     * @return the selected file, or null
+     */
+    public static Path pathChooser (boolean save,
+                                    Component parent,
+                                    Path startPath,
+                                    OmrFileFilter filter)
+    {
+        return pathChooser(save, parent, startPath, filter, null);
+    }
+
+    //-------------//
+    // pathChooser //
+    //-------------//
+    /**
+     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
+     * platform.
+     *
+     * @param save      true for a SAVE dialog, false for a LOAD dialog
+     * @param parent    the parent component for the dialog, if any
+     * @param startPath default path, or just default directory, or null
+     * @param filter    a filter to be applied on files
+     * @param title     a specific dialog title or null
+     * @return the selected file, or null
+     */
+    public static Path pathChooser (boolean save,
+                                    Component parent,
+                                    Path startPath,
+                                    OmrFileFilter filter,
+                                    String title)
+    {
+        File file = fileChooser(save, parent, startPath.toFile(), filter, null);
+
+        if (file != null) {
+            return file.toPath();
+        }
+
+        return null;
     }
 
     //-------------------//

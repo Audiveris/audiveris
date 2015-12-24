@@ -338,7 +338,7 @@ public class SymbolRipper
         FormLayout layout = Panel.makeFormLayout(13, 2, "right:", "35dlu", "45dlu");
 
         PanelBuilder builder = new PanelBuilder(layout, new Panel());
-        builder.setDefaultDialogBorder();
+        ///builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
 

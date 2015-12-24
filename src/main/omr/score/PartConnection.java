@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.score;
 
-
 import omr.sheet.Part;
 import omr.sheet.SystemInfo;
 
@@ -233,8 +232,8 @@ public class PartConnection
     //---------//
     /**
      * The heart of the part connection algorithm, organized to work through interfaces
-     * in order to use the same piece of code, when we connect systems of one page, or
-     * when we connect parts across several pages.
+     * in order to use the same piece of code, when we connect parts across systems of
+     * one page, or when we connect parts across several pages.
      */
     private void connect ()
     {
@@ -364,7 +363,7 @@ public class PartConnection
      * <ul>
      * <li>as Audiveris {@link omr.sheet.Part} instances
      * (produced by the scanning of just one page)</li>
-     * <li>as Audiveris {@link omr.score.entity.LogicalPart}
+     * <li>as Audiveris {@link omr.score.LogicalPart}
      * (when merging Audiveris pages)</li>
      * <li>as ProxyMusic {@link com.audiveris.proxymusic.ScorePart} instances
      * (used when merging MusicXML files).</li>
@@ -374,22 +373,40 @@ public class PartConnection
     {
         //~ Methods --------------------------------------------------------------------------------
 
-        /** Create a related result instance consistent with this type */
+        /** Create a related result instance consistent with this type
+         *
+         * @return
+         */
         Result createResult ();
 
-        /** Report the abbreviation, if any, that relates to this part */
+        /** Report the abbreviation, if any, that relates to this part
+         *
+         * @return
+         */
         String getAbbreviation ();
 
-        /** Index of the input: System # for Part, Page # for LogicalPart */
+        /** Index of the input: System # for Part, Page # for LogicalPart
+         *
+         * @return
+         */
         int getInputIndex ();
 
-        /** Report the name of the part, if any */
+        /** Report the name of the part, if any
+         *
+         * @return
+         */
         String getName ();
 
-        /** Report the number of staves in the part */
+        /** Report the number of staves in the part
+         *
+         * @return
+         */
         int getStaffCount ();
 
-        /** Report the underlying object */
+        /** Report the underlying object
+         *
+         * @return
+         */
         Object getUnderlyingObject ();
     }
 
@@ -406,31 +423,58 @@ public class PartConnection
     {
         //~ Methods --------------------------------------------------------------------------------
 
-        /** Report the part abbreviation, if any */
+        /** Report the part abbreviation, if any
+         *
+         * @return the abbreviation string assigned to the part, or null
+         */
         String getAbbreviation ();
 
-        /** Report the candidate object used to build this result */
+        /** Report the candidate object used to build this result
+         *
+         * @return
+         */
         Candidate getCandidate ();
 
-        /** Report the part id */
+        /** Report the part id
+         *
+         * @return
+         */
         int getId ();
 
-        /** Report the part name */
+        /** Report the part name
+         *
+         * @return
+         */
         String getName ();
 
-        /** Report the number of staves in that part */
+        /** Report the number of staves in that part
+         *
+         * @return
+         */
         int getStaffCount ();
 
-        /** Report the actual underlying instance */
+        /** Report the actual underlying instance
+         *
+         * @return
+         */
         Object getUnderlyingObject ();
 
-        /** Assign an abbreviation to the part */
+        /** Assign an abbreviation to the part
+         *
+         * @param abbreviation
+         */
         void setAbbreviation (String abbreviation);
 
-        /** Assign an unique id to the part */
+        /** Assign an unique id to the part
+         *
+         * @param id
+         */
         void setId (int id);
 
-        /** Assign a name to the part */
+        /** Assign a name to the part
+         *
+         * @param name
+         */
         void setName (String name);
     }
 
@@ -467,8 +511,8 @@ public class PartConnection
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
-            sb.append(getClass().getSimpleName());
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
 
             sb.append(" id:").append(getId());
 
@@ -534,7 +578,7 @@ public class PartConnection
         @Override
         public int getInputIndex ()
         {
-            return page.getSheet().getIndex();
+            return page.getSheet().getNumber();
         }
 
         @Override
@@ -558,9 +602,9 @@ public class PartConnection
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
 
-            sb.append(getClass().getSimpleName());
+            sb.append("{");
 
             sb.append(" page#").append(getInputIndex());
 
@@ -777,9 +821,9 @@ public class PartConnection
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
 
-            sb.append(getClass().getSimpleName());
+            sb.append("{");
 
             sb.append(" page#").append(inputIndex);
 

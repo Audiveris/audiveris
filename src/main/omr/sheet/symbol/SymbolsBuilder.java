@@ -13,16 +13,15 @@ package omr.sheet.symbol;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.Evaluation;
-import omr.glyph.GlyphClassifier;
+import omr.classifier.Evaluation;
+import omr.classifier.GlyphClassifier;
 import omr.glyph.GlyphCluster;
-import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphLink;
-import omr.glyph.GlyphNest;
+import omr.glyph.GlyphIndex;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
-import omr.glyph.ShapeEvaluator;
-import omr.glyph.facets.Glyph;
+import omr.classifier.Classifier;
+import omr.glyph.Glyph;
 
 import omr.math.GeoUtil;
 
@@ -52,6 +51,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import omr.glyph.Symbol.Group;
 
 /**
  * Class {@code SymbolsBuilder} is in charge, at system level, of retrieving all
@@ -78,7 +78,7 @@ public class SymbolsBuilder
     private final Sheet sheet;
 
     /** Shape classifier to use. */
-    private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
+    private final Classifier evaluator = GlyphClassifier.getInstance();
 
     /** Companion factory for symbols inters. */
     private final SymbolFactory factory;
@@ -161,7 +161,7 @@ public class SymbolsBuilder
             logger.info("VIP evaluateGlyph on glyph#{}", glyph.getId());
         }
 
-        final Point center = glyph.getLocation();
+        final Point center = glyph.getCenter();
         final Staff closestStaff = system.getClosestStaff(center); // Just an indication!
 
         if (closestStaff == null) {
@@ -170,13 +170,12 @@ public class SymbolsBuilder
 
         glyph.setPitchPosition(closestStaff.pitchPositionOf(center));
 
-        Evaluation[] evals = evaluator.evaluate(
-                glyph,
-                system,
-                10, // Or any high number...
-                Grades.symbolMinGrade,
-                EnumSet.of(ShapeEvaluator.Condition.CHECKED),
-                null);
+        Evaluation[] evals = evaluator.evaluate(glyph,
+                                                system,
+                                                10, // Or any high number...
+                                                Grades.symbolMinGrade,
+                                                EnumSet.of(Classifier.Condition.CHECKED),
+                                                null);
 
         if (evals.length > 0) {
             // Create one interpretation for each acceptable evaluation
@@ -231,15 +230,13 @@ public class SymbolsBuilder
         List<Glyph> glyphs = new ArrayList<Glyph>(); // Sorted by abscissa, ordinate, id
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.getLayer() == GlyphLayer.SYMBOL) {
+            if (glyph.hasGroup(Group.SYMBOL)) {
                 final int weight = glyph.getWeight();
 
                 if (weight >= params.minWeight) {
                     glyphs.add(glyph);
-                } else {
-                    if ((weight >= params.minFineWeight) && hitFineBox(glyph)) {
-                        glyphs.add(glyph);
-                    }
+                } else if ((weight >= params.minFineWeight) && hitFineBox(glyph)) {
+                    glyphs.add(glyph);
                 }
             }
         }
@@ -253,10 +250,8 @@ public class SymbolsBuilder
 
                 if (weight >= params.minWeight) {
                     glyphs.add(glyph);
-                } else {
-                    if ((weight >= params.minFineWeight) && hitFineBox(glyph)) {
-                        glyphs.add(glyph);
-                    }
+                } else if ((weight >= params.minFineWeight) && hitFineBox(glyph)) {
+                    glyphs.add(glyph);
                 }
             }
         }
@@ -301,17 +296,19 @@ public class SymbolsBuilder
         List<Set<Glyph>> sets = inspector.connectedSets();
         logger.debug("sets: {}", sets.size());
 
+        final int interline = sheet.getInterline();
+
         for (Set<Glyph> set : sets) {
             if (set.size() > 1) {
                 // Use just the subgraph for this set
                 SimpleGraph<Glyph, GlyphLink> clusterGraph = getClusterGraph(set, systemGraph);
 
-                new GlyphCluster(new SymbolAdapter(clusterGraph)).decompose();
+                new GlyphCluster(new SymbolAdapter(clusterGraph), Group.SYMBOL).decompose();
             } else {
                 // The set is just an isolated glyph, to be evaluated directly
                 Glyph glyph = set.iterator().next();
 
-                if (evaluator.isBigEnough(glyph)) {
+                if (evaluator.isBigEnough(glyph, interline)) {
                     evaluateGlyph(glyph);
                 }
             }
@@ -441,9 +438,9 @@ public class SymbolsBuilder
         }
 
         @Override
-        public GlyphNest getNest ()
+        public GlyphIndex getNest ()
         {
-            return sheet.getGlyphNest();
+            return sheet.getGlyphIndex();
         }
 
         @Override

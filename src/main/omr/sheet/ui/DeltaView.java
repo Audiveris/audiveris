@@ -30,6 +30,7 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -138,7 +139,7 @@ public class DeltaView
             switch (painting.getPaintingLayer()) {
             case INPUT:
                 /** Display NEGATIVES. */
-                input.render(gbi);
+                input.render(gbi, new Point(0, 0));
                 gbi.setComposite(AlphaComposite.DstOut);
                 renderOutput(gbi);
 
@@ -147,7 +148,7 @@ public class DeltaView
             case INPUT_OUTPUT:
                 /** Display POSITIVES. */
                 gbi.setColor(veryLight); // Could be totally white...
-                input.render(gbi);
+                input.render(gbi, new Point(0, 0));
                 gbi.setComposite(AlphaComposite.SrcIn);
                 gbi.setColor(Color.BLACK);
                 renderOutput(gbi);
@@ -158,7 +159,7 @@ public class DeltaView
                 /** Display FALSE_POSITIVES. */
                 renderOutput(gbi);
                 gbi.setComposite(AlphaComposite.DstOut);
-                input.render(gbi);
+                input.render(gbi, new Point(0, 0));
 
                 break;
 

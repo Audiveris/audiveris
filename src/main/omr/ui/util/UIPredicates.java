@@ -39,8 +39,7 @@ public abstract class UIPredicates
     //------------------//
     /**
      * Predicate to check if an additional selection is wanted.
-     * Default is the typical selection (left button), while control key is
-     * pressed.
+     * Default is the typical selection (left button), while control key is pressed.
      *
      * @param e the mouse context
      * @return the predicate result

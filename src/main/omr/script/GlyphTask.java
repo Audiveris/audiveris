@@ -11,15 +11,15 @@
 // </editor-fold>
 package omr.script;
 
+import omr.glyph.Glyph;
 import omr.glyph.Glyphs;
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -30,6 +30,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
  * Class {@code GlyphTask} handles a collection of glyphs.
+ *
+ * <p>
  * These glyphs may already exist (as in a plain {@link GlyphUpdateTask})
  * or remain to be created (as in {@link InsertTask})</p>
  *
@@ -69,8 +71,7 @@ public abstract class GlyphTask
                     getClass().getSimpleName() + " needs at least one glyph");
         }
 
-        this.glyphs = new TreeSet<Glyph>(Glyph.byAbscissa);
-        this.glyphs.addAll(glyphs);
+        this.glyphs = new HashSet<Glyph>(glyphs);
     }
 
     /**
@@ -166,7 +167,7 @@ public abstract class GlyphTask
         StringBuilder sb = new StringBuilder(super.internals());
 
         if (glyphs != null) {
-            sb.append(" ").append(Glyphs.toString(glyphs));
+            sb.append(" ").append(Glyphs.ids(glyphs));
         } else {
             sb.append(" no-glyphs");
         }
@@ -210,12 +211,13 @@ public abstract class GlyphTask
                 for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
                     impactedSystems.add(system);
 
-                    Shape shape = glyph.getShape();
+                    //                    Shape shape = glyph.getShape();
+                    //
+                    //                    if ((shape != null) && shape.isPersistent()) {
+                    // Include all following systems
+                    impactedSystems.addAll(remaining(system));
 
-                    if ((shape != null) && shape.isPersistent()) {
-                        // Include all following systems
-                        impactedSystems.addAll(remaining(system));
-                    }
+                    //                    }
                 }
             }
         }

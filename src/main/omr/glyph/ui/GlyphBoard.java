@@ -13,71 +13,43 @@ package omr.glyph.ui;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
+import omr.glyph.Symbol.Group;
 
-import omr.selection.GlyphEvent;
-import omr.selection.GlyphIdEvent;
-import omr.selection.GlyphLayerEvent;
-import omr.selection.GlyphSetEvent;
+import omr.selection.EntityListEvent;
+import omr.selection.GroupEvent;
 import omr.selection.MouseMovement;
-import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
 import omr.ui.Board;
+import omr.ui.EntityBoard;
 import omr.ui.PixelCount;
-import omr.ui.field.LTextField;
-import omr.ui.field.SpinnerUtil;
-import static omr.ui.field.SpinnerUtil.*;
 import omr.ui.util.Panel;
 
-import omr.util.BasicTask;
-
-import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
-import org.jdesktop.application.Task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerListModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code GlyphBoard} defines a UI board dedicated to the display of {@link Glyph}
  * information.
- * <p>
- * The universal <b>idSpinner</b> addresses <i>all</i> glyph instances currently defined in the
- * nest.
- * <p>
- * The spinner can be used to select a glyph by directly entering the glyph id value into the
- * spinner field
  *
  * @author Hervé Bitteur
  */
 public class GlyphBoard
-        extends Board
-        implements ChangeListener // For all spinners
-
+        extends EntityBoard<Glyph>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -85,55 +57,21 @@ public class GlyphBoard
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphBoard.class);
 
-    /** Events this board is interested in. */
+    /** Events this board is interested in.
+     * TODO: not correctly used, need GroupEvent!!!!!!!!!!!!!!!!!!!!!! */
     private static final Class<?>[] eventClasses = new Class<?>[]{
-        GlyphEvent.class, GlyphSetEvent.class,
-        GlyphLayerEvent.class
+        EntityListEvent.class, GroupEvent.class
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The related glyph model. */
     protected final GlyphsController controller;
 
-    /** An active label. */
-    protected final JLabel active = new JLabel("", SwingConstants.CENTER);
-
-    /** Input: Dump. */
-    protected final JButton dump;
-
-    /** Counter of glyph selection. */
-    protected final JLabel count = new JLabel("");
-
-    /** Input : layer selection. */
-    protected final JSpinner layerSpinner;
+    /** Input : group selection. */
+    protected final JSpinner groupSpinner;
 
     /** Input : Deassign action. */
     protected Action deassignAction;
-
-    /** Output : glyph shape icon. */
-    protected final JLabel shapeIcon = new JLabel();
-
-    /** Input / Output : spinner of all glyph id's. */
-    protected JSpinner idSpinner;
-
-    /** Output : shape of the glyph. */
-    protected final LTextField shapeField = new LTextField("", "Assigned shape for this glyph");
-
-    /** The JGoodies/Form constraints to be used by all subclasses. */
-    protected final CellConstraints cst = new CellConstraints();
-
-    /** The JGoodies/Form layout to be used by all subclasses. */
-    protected final FormLayout layout = Panel.makeFormLayout(6, 3);
-
-    /** The JGoodies/Form builder to be used by all subclasses. */
-    protected final PanelBuilder builder;
-
-    /**
-     * We have to avoid endless loop, due to related modifications.
-     * When a GLYPH selection is notified, the id spinner is changed, and When
-     * an id spinner is changed, the GLYPH selection is notified
-     */
-    protected boolean selfUpdating = false;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -147,75 +85,33 @@ public class GlyphBoard
                        boolean useSpinners,
                        boolean expanded)
     {
-        super(
-                Board.GLYPH,
-                controller.getNest().getGlyphService(),
-                eventClasses,
-                true, // Dump
-                expanded);
+        super(Board.GLYPH, controller.getNest().getEntityService(), expanded);
 
         this.controller = controller;
 
-        // Dump
-        dump = getDumpButton();
-        dump.setToolTipText("Dump this glyph");
-        dump.addActionListener(
-                new ActionListener()
-                {
-                    @Override
-                    public void actionPerformed (ActionEvent e)
-                    {
-                        // Retrieve current glyph selection
-                        GlyphEvent glyphEvent = (GlyphEvent) getSelectionService()
-                        .getLastEvent(GlyphEvent.class);
-                        Glyph glyph = glyphEvent.getData();
-
-                        if (glyph != null) {
-                            logger.info(glyph.dumpOf());
-                        }
-                    }
-                });
-        // Until a glyph selection is made
-        dump.setEnabled(false);
         getDeassignAction().setEnabled(false);
 
         // Force a constant height for the shapeIcon field, despite variation in size of the icon
-        Dimension dim = new Dimension(
-                constants.shapeIconWidth.getValue(),
-                constants.shapeIconHeight.getValue());
-        shapeIcon.setPreferredSize(dim);
-        shapeIcon.setMaximumSize(dim);
-        shapeIcon.setMinimumSize(dim);
-
+        //        Dimension dim = new Dimension(
+        //                constants.shapeIconWidth.getValue(),
+        //                constants.shapeIconHeight.getValue());
+        //        shapeIcon.setPreferredSize(dim);
+        //        shapeIcon.setMaximumSize(dim);
+        //        shapeIcon.setMinimumSize(dim);
+        //
         //         Precise layout
         //        layout.setColumnGroups(
         //            new int[][] {
         //                { 1, 5, 9 },
         //                { 3, 7, 11 }
         //            });
-        builder = new PanelBuilder(layout, getBody());
-        builder.setDefaultDialogBorder();
-
-        // Layer spinner
-        layerSpinner = new JSpinner(new SpinnerListModel(GlyphLayer.values()));
-        layerSpinner.addChangeListener(this);
-        layerSpinner.setName("layerSpinner");
-        layerSpinner.setToolTipText("Selection of glyph layer");
+        // Group spinner
+        groupSpinner = new JSpinner(new SpinnerListModel(Group.values()));
+        groupSpinner.addChangeListener(this);
+        groupSpinner.setName("groupSpinner");
+        groupSpinner.setToolTipText("Selection of glyph group");
 
         defineLayout();
-
-        if (useSpinners) {
-            // Model for idSpinner
-            idSpinner = makeGlyphSpinner(controller.getNest());
-            idSpinner.setName("idSpinner");
-            idSpinner.setToolTipText("General spinner for any glyph id");
-
-            // Layout
-            int r = 1; // --------------------------------
-
-            builder.addLabel("Id", cst.xy(1, r));
-            builder.add(idSpinner, cst.xy(3, r));
-        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -255,19 +151,11 @@ public class GlyphBoard
                 return;
             }
 
-            logger.debug("GlyphBoard selfUpdating={} : {}", selfUpdating, event);
+            super.onEvent(event); // count, vip, dump, id
 
-            if (event instanceof GlyphEvent) {
-                // Display Glyph parameters (while preventing circular updates)
-                selfUpdating = true;
-                handleEvent((GlyphEvent) event);
-                selfUpdating = false;
-            } else if (event instanceof GlyphSetEvent) {
-                // Display count of glyphs in the glyph set
-                handleEvent((GlyphSetEvent) event);
-            } else if (event instanceof GlyphLayerEvent) {
-                // Change layer
-                handleEvent((GlyphLayerEvent) event);
+            if (event instanceof GroupEvent) {
+                // Change group
+                handleEvent((GroupEvent) event);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -287,29 +175,21 @@ public class GlyphBoard
     {
         JSpinner spinner = (JSpinner) e.getSource();
 
-        if (spinner == idSpinner) {
-            //  Nota: this method is automatically called whenever the spinner value
-            //  is changed, including when a GLYPH selection notification is
-            //  received leading to such selfUpdating. Hence the check.
-            if (!selfUpdating) {
-                // Notify the new glyph id
-                getSelectionService().publish(
-                        new GlyphIdEvent(
-                                this,
-                                SelectionHint.GLYPH_INIT,
-                                null,
-                                (Integer) spinner.getValue()));
-            }
-        } else if (spinner == layerSpinner) {
-            getSelectionService().publish(
-                    new GlyphLayerEvent(
-                            this,
-                            SelectionHint.GLYPH_INIT,
-                            null,
-                            (GlyphLayer) spinner.getValue()));
+        if (spinner == groupSpinner) {
+//            getSelectionService().publish(
+//                    new GroupEvent(this, SelectionHint.ENTITY_INIT, null, (Group) spinner.getValue()));
         } else {
-            logger.error("No known spinner");
+            super.stateChanged(e);
         }
+    }
+
+    //---------------//
+    // getFormLayout //
+    //---------------//
+    @Override
+    protected FormLayout getFormLayout ()
+    {
+        return Panel.makeFormLayout(6, 3);
     }
 
     //--------------//
@@ -318,14 +198,15 @@ public class GlyphBoard
     /**
      * Define the layout for common fields of all GlyphBoard classes
      */
-    protected void defineLayout ()
+    private void defineLayout ()
     {
+        final CellConstraints cst = new CellConstraints();
+
         int r = 1; // --------------------------------
         // Shape Icon (start, spans several rows) + layer + Deassign button
 
-        builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
-
-        builder.add(layerSpinner, cst.xyw(5, r, 3));
+        ///builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
+        builder.add(groupSpinner, cst.xyw(5, r, 3));
 
         JButton deassignButton = new JButton(getDeassignAction());
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -333,127 +214,68 @@ public class GlyphBoard
         builder.add(deassignButton, cst.xyw(9, r, 3));
 
         r += 2; // --------------------------------
-        // Count + Active + Shape name
-
-        builder.add(count, cst.xy(3, r, "right, center"));
-
-        builder.add(active, cst.xy(5, r));
-
-        builder.add(shapeField.getField(), cst.xyw(7, r, 5));
     }
 
-    //------------------//
-    // makeGlyphSpinner //
-    //------------------//
-    /**
-     * Convenient method to allocate a glyph-based spinner
-     *
-     * @param nest the underlying glyph nest
-     * @return the spinner built
-     */
-    protected JSpinner makeGlyphSpinner (GlyphNest nest)
-    {
-        JSpinner spinner = new JSpinner();
-        spinner.setModel(new SpinnerGlyphIdModel(nest));
-        spinner.addChangeListener(this);
-        SpinnerUtil.setRightAlignment(spinner);
-        SpinnerUtil.setEditable(spinner, true);
-
-        return spinner;
-    }
-
+    //
+    //    //-------------//
+    //    // handleEvent //
+    //    //-------------//
+    //    /**
+    //     * Interest in GlyphList
+    //     *
+    //     * @param glyphsEvent
+    //     */
+    //    private void handleEvent (EntityListEvent<Glyph> glyphsEvent)
+    //    {
+    //        List<Glyph> glyphs = glyphsEvent.getData();
+    //
+    //        // Display count of glyphs in the glyph list
+    //        if ((glyphs != null) && !glyphs.isEmpty()) {
+    //            count.setText(Integer.toString(glyphs.size()));
+    //
+    //            // Display Glyph parameters
+    //            Glyph glyph = glyphs.get(glyphs.size() - 1);
+    //
+    //            ///getDeassignAction().setEnabled((glyph != null) && glyph.isKnown());
+    //            //
+    //            //        // Shape text and icon
+    //            //        Shape shape = (glyph != null) ? glyph.getShape() : null;
+    //            //
+    //            //        if (shape != null) {
+    //            //            if ((shape == Shape.GLYPH_PART) && (glyph.getPartOf() != null)) {
+    //            //                shapeField.setText(shape + " of #" + glyph.getPartOf().getId());
+    //            //            } else {
+    //            //                shapeField.setText(shape.toString());
+    //            //            }
+    //            //
+    //            //            shapeIcon.setIcon(shape.getDecoratedSymbol());
+    //            //        } else {
+    //            //            shapeField.setText("");
+    //            //            shapeIcon.setIcon(null);
+    //            //        }
+    //        } else {
+    //            count.setText("");
+    //            dump.setEnabled(false);
+    //
+    //            if (idSpinner != null) {
+    //                idSpinner.setValue(NO_VALUE);
+    //            }
+    //        }
+    //    }
+    //
     //-------------//
     // handleEvent //
     //-------------//
     /**
-     * Interest in Glyph
+     * Interest in Group
      *
-     * @param GlyphEvent
+     * @param GroupEvent
      */
-    private void handleEvent (GlyphEvent glyphEvent)
+    private void handleEvent (GroupEvent groupEvent)
     {
-        // Display Glyph parameters
-        Glyph glyph = glyphEvent.getData();
-
-        // Active ?
-        if (glyph != null) {
-            if (glyph.isActive()) {
-                if (glyph.isVirtual()) {
-                    active.setText("Virtual");
-                } else {
-                    active.setText("Active");
-                }
-            } else {
-                active.setText("Non Active");
-            }
-        } else {
-            active.setText("");
-        }
-
-        // Dump button and deassign button
-        dump.setEnabled(glyph != null);
-        getDeassignAction().setEnabled((glyph != null) && glyph.isKnown());
-
-        // Shape text and icon
-        Shape shape = (glyph != null) ? glyph.getShape() : null;
-
-        if (shape != null) {
-            if ((shape == Shape.GLYPH_PART) && (glyph.getPartOf() != null)) {
-                shapeField.setText(shape + " of #" + glyph.getPartOf().getId());
-            } else {
-                shapeField.setText(shape.toString());
-            }
-
-            shapeIcon.setIcon(shape.getDecoratedSymbol());
-        } else {
-            shapeField.setText("");
-            shapeIcon.setIcon(null);
-        }
-
-        // Id Spinner
-        if (idSpinner != null) {
-            if (glyph != null) {
-                idSpinner.setValue(glyph.getId());
-            } else {
-                idSpinner.setValue(NO_VALUE);
-            }
-        }
-    }
-
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Interest in GlyphSet
-     *
-     * @param GlyphSetEvent
-     */
-    private void handleEvent (GlyphSetEvent glyphSetEvent)
-    {
-        // Display count of glyphs in the glyph set
-        Set<Glyph> glyphs = glyphSetEvent.getData();
-
-        if ((glyphs != null) && !glyphs.isEmpty()) {
-            count.setText(Integer.toString(glyphs.size()));
-        } else {
-            count.setText("");
-        }
-    }
-
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Interest in GlyphLayer
-     *
-     * @param LayerEvent
-     */
-    private void handleEvent (GlyphLayerEvent glyphLayerEvent)
-    {
-        // Display new layer
-        GlyphLayer layer = glyphLayerEvent.getData();
-
-        layerSpinner.setValue(layer);
+        // Display new group
+        Group group = groupEvent.getData();
+        groupSpinner.setValue(group);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -493,91 +315,96 @@ public class GlyphBoard
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            List<Class<?>> classes = Arrays.asList(eventClasses);
+            logger.warn("HB. To be implemented");
 
-            if ((controller != null) && !classes.isEmpty()) {
-                // Do we have selections for glyph set, or just for glyph?
-                if (classes.contains(GlyphEvent.class)) {
-                    final Glyph glyph = (Glyph) getSelectionService().getSelection(
-                            GlyphEvent.class);
-
-                    if (classes.contains(GlyphSetEvent.class)) {
-                        final Set<Glyph> glyphs = (Set<Glyph>) getSelectionService().getSelection(
-                                GlyphSetEvent.class);
-
-                        boolean noVirtuals = true;
-
-                        for (Glyph g : glyphs) {
-                            if (g.isVirtual()) {
-                                noVirtuals = false;
-
-                                break;
-                            }
-                        }
-
-                        if (noVirtuals) {
-                            new BasicTask()
-                            {
-                                @Override
-                                protected Void doInBackground ()
-                                        throws Exception
-                                {
-                                    // Following actions must be done in sequence
-                                    Task task = controller.asyncDeassignGlyphs(glyphs);
-
-                                    if (task != null) {
-                                        task.get();
-
-                                        // Update focus on current glyph,
-                                        // even if reused in a compound
-                                        Glyph newGlyph = glyph.getFirstSection().getGlyph();
-                                        getSelectionService().publish(
-                                                new GlyphEvent(
-                                                        this,
-                                                        SelectionHint.GLYPH_INIT,
-                                                        null,
-                                                        newGlyph));
-                                    }
-
-                                    return null;
-                                }
-                            }.execute();
-                        } else {
-                            new BasicTask()
-                            {
-                                @Override
-                                protected Void doInBackground ()
-                                        throws Exception
-                                {
-                                    // Following actions must be done in sequence
-                                    Task task = controller.asyncDeleteVirtualGlyphs(glyphs);
-
-                                    if (task != null) {
-                                        task.get();
-
-                                        // Null publication
-                                        getSelectionService().publish(
-                                                new GlyphEvent(
-                                                        this,
-                                                        SelectionHint.GLYPH_INIT,
-                                                        null,
-                                                        null));
-                                    }
-
-                                    return null;
-                                }
-                            }.execute();
-                        }
-                    } else {
-                        // We have selection for glyph only
-                        if (glyph.isVirtual()) {
-                            controller.asyncDeleteVirtualGlyphs(Collections.singleton(glyph));
-                        } else {
-                            controller.asyncDeassignGlyphs(Collections.singleton(glyph));
-                        }
-                    }
-                }
-            }
+            //            List<Class<?>> classes = Arrays.asList(eventClasses);
+            //
+            //            if ((controller != null) && !classes.isEmpty()) {
+            //                // Do we have selections for glyph set, or just for glyph?
+            //                if (classes.contains(GlyphEvent.class)) {
+            //                    final Glyph glyph = (Glyph) getSelectionService().getSelection(
+            //                            GlyphEvent.class);
+            //
+            //                    if (classes.contains(GlyphSetEvent.class)) {
+            //                        final Set<Glyph> glyphs = (Set<Glyph>) getSelectionService().getSelection(
+            //                                GlyphSetEvent.class);
+            //
+            //                        boolean noVirtuals = true;
+            //
+            //                        for (Glyph g : glyphs) {
+            //                            if (g.isVirtual()) {
+            //                                noVirtuals = false;
+            //
+            //                                break;
+            //                            }
+            //                        }
+            //
+            //                        if (noVirtuals) {
+            //                            new BasicTask()
+            //                            {
+            //                                @Override
+            //                                protected Void doInBackground ()
+            //                                        throws Exception
+            //                                {
+            //                                    // Following actions must be done in sequence
+            //                                    Task task = controller.asyncDeassignGlyphs(glyphs);
+            //
+            //                                    if (task != null) {
+            //                                        task.get();
+            //
+            //                                        throw new RuntimeException("HB. To be implemented");
+            //
+            //                                            //                                        // Update focus on current glyph,
+            //                                        //                                                // even if reused in a compound
+            //                                        //
+            //                                        //                                        Glyph newGlyph = glyph.getFirstSection().getCompound();
+            //                                        //                                        getSelectionService().publish(
+            //                                        //                                                new GlyphEvent(
+            //                                        //                                                        this,
+            //                                        //                                                        SelectionHint.GLYPH_INIT,
+            //                                        //                                                        null,
+            //                                        //                                                        newGlyph));
+            //                                    }
+            //
+            //                                    return null;
+            //                                }
+            //                            }.execute();
+            //                        } else {
+            //                            new BasicTask()
+            //                            {
+            //                                @Override
+            //                                protected Void doInBackground ()
+            //                                        throws Exception
+            //                                {
+            //                                    // Following actions must be done in sequence
+            //                                    Task task = controller.asyncDeleteVirtualGlyphs(glyphs);
+            //
+            //                                    if (task != null) {
+            //                                        task.get();
+            //
+            //                                        // Null publication
+            //                                        getSelectionService().publish(
+            //                                                new GlyphEvent(
+            //                                                        this,
+            //                                                        SelectionHint.GLYPH_INIT,
+            //                                                        null,
+            //                                                        null));
+            //                                    }
+            //
+            //                                    return null;
+            //                                }
+            //                            }.execute();
+            //                        }
+            //                    } else {
+            //                        // We have selection for glyph only
+            //                        if (glyph.isVirtual()) {
+            //                            controller.asyncDeleteVirtualGlyphs(Collections.singleton(glyph));
+            //                        } else {
+            //                            controller.asyncDeassignGlyphs(Collections.singleton(glyph));
+            //                        }
+            //                    }
+            //                }
+            //            }
         }
     }
 }

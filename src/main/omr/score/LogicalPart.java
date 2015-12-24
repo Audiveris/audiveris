@@ -17,6 +17,11 @@ import omr.constant.ConstantSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+
 /**
  * Class {@code LogicalPart} describes a part at score or page level.
  * It is "instantiated" in each SystemInfo by a {@link omr.sheet.Part}.
@@ -26,31 +31,38 @@ import org.slf4j.LoggerFactory;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class LogicalPart
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(LogicalPart.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            LogicalPart.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Distinguished id for this logical part.
      * (the same id is used by the corresponding physical Part in each System)
      */
+    @XmlAttribute
     private int id;
 
     /** Count of staves. */
+    @XmlAttribute(name = "staff-count")
     private final int staffCount;
 
     /** Name for this part. */
+    @XmlAttribute
     private String name;
 
     /** Abbreviation for this part, if any. */
+    @XmlElement
     private String abbreviation;
 
     /** Instrument MIDI program, if any. */
+    @XmlElement(name = "midi-program")
     private Integer midiProgram;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -75,6 +87,19 @@ public class LogicalPart
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Set the id of this part
+     *
+     * @param id the distinguished part id
+     */
+    public final void setId (int id)
+    {
+        this.id = id;
+    }
+
     //-----------------//
     // getAbbreviation //
     //-----------------//
@@ -166,7 +191,7 @@ public class LogicalPart
      */
     public String getPid ()
     {
-        return "P" + id;
+        return "P" + getId();
     }
 
     //---------------//
@@ -204,19 +229,6 @@ public class LogicalPart
         this.abbreviation = abbreviation;
     }
 
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Set the id of this part
-     *
-     * @param id the distinguished part id
-     */
-    public final void setId (int id)
-    {
-        this.id = id;
-    }
-
     //----------------//
     // setMidiProgram //
     //----------------//
@@ -245,9 +257,9 @@ public class LogicalPart
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{ScorePart");
+        sb.append("LogicalPart{");
 
-        sb.append(" id=").append(id);
+        sb.append("id=").append(getId());
 
         if (name != null) {
             sb.append(" name=").append(name);

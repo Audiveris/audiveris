@@ -32,23 +32,11 @@ public interface Vertex<D extends Digraph, V extends Vertex<D, V>>
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Create an edge between this vertex and the target vertax
+     * Create an edge between this vertex and the target vertex
      *
      * @param target arrival vertex
      */
     public void addTarget (V target);
-
-    /**
-     * Add a related view of this vertex
-     *
-     * @param view the view to be linked
-     */
-    public void addView (VertexView view);
-
-    /**
-     * Get rid of all views for this vertex
-     */
-    public void clearViews ();
 
     /**
      * Delete this vertex.
@@ -57,8 +45,7 @@ public interface Vertex<D extends Digraph, V extends Vertex<D, V>>
     public void delete ();
 
     /**
-     * Prints on standard output a detailed information about this
-     * vertex.
+     * Prints on standard output a detailed information about this vertex.
      */
     public void dump ();
 
@@ -104,21 +91,6 @@ public interface Vertex<D extends Digraph, V extends Vertex<D, V>>
      * @return the outgoing vertices
      */
     public List<V> getTargets ();
-
-    /**
-     * Report the view at given index
-     *
-     * @param index index of the desired view
-     * @return the desired view
-     */
-    public VertexView getView (int index);
-
-    /**
-     * Report the current number of views on this Vertex
-     *
-     * @return the current number of views
-     */
-    public int getViewsCount ();
 
     /**
      * Remove an edge between this vertex and a target vertex

@@ -13,7 +13,6 @@ package omr.lag;
 
 import omr.run.Orientation;
 import omr.run.Run;
-import omr.run.RunSequence;
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -27,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -84,7 +84,7 @@ public class SectionFactory
     }
 
     /**
-     * Create an instance of SectionFactory, with no target lag.
+     * Create an instance of SectionFactory with no lag.
      *
      * @param orientation    desired orientation for sections
      * @param junctionPolicy the policy to detect junctions
@@ -113,7 +113,7 @@ public class SectionFactory
                                          Point offset)
     {
         // Runs
-        RunTable runTable = new RunTableFactory(orientation).createTable("temp", buffer);
+        RunTable runTable = new RunTableFactory(orientation).createTable(buffer);
 
         return createSections(runTable, offset, false);
     }
@@ -135,7 +135,7 @@ public class SectionFactory
                                          Rectangle roi)
     {
         // Runs
-        RunTable runTable = new RunTableFactory(orientation).createTable("temp", buffer, roi);
+        RunTable runTable = new RunTableFactory(orientation).createTable(buffer, roi);
 
         // Create sections within roi/runtable
         List<Section> sections = createSections(runTable, offset, false);
@@ -174,7 +174,7 @@ public class SectionFactory
      *
      * @param runTable the table of runs
      * @param offset   optional offset for runTable top left corner
-     * @param include  if true, include the content of runsTable into the lag
+     * @param include  if true, include the content of runTable into the lag
      * @return the list of created sections
      */
     public List<Section> createSections (RunTable runTable,
@@ -245,16 +245,14 @@ public class SectionFactory
                                             boolean include)
         {
             // All runs (if any) in first sequence start each their own section
-            for (Run run : runTable.getSequence(0)) {
-                nextActives.add(createSection(0, run));
+            for (Iterator<Run> it = runTable.iterator(0); it.hasNext();) {
+                nextActives.add(createSection(0, it.next()));
             }
 
             // Now scan each pair of sequences, starting at 2nd sequence
-            for (int col = 1; col < runTable.getSize(); col++) {
-                RunSequence runList = runTable.getSequence(col);
-
+            for (int col = 1, size = runTable.getSize(); col < size; col++) {
                 // If we have runs in this sequence
-                if (!runList.isEmpty()) {
+                if (!runTable.isSequenceEmpty(col)) {
                     // Copy the former next actives sections as the new previous active sections
                     prevActives.clear();
                     prevActives.addAll(nextActives);
@@ -265,14 +263,14 @@ public class SectionFactory
                     logger.debug("Prev sequence");
 
                     for (Section section : prevActives) {
-                        processPrevSide(section, runList);
+                        processPrevSide(section, runTable, col);
                     }
 
                     // Process all runs of next sequence
                     logger.debug("Next sequence");
 
-                    for (Run run : runList) {
-                        processNextSide(col, run);
+                    for (Iterator<Run> it = runTable.iterator(col); it.hasNext();) {
+                        processNextSide(col, it.next());
                     }
                 } else {
                     nextActives.clear();
@@ -307,20 +305,30 @@ public class SectionFactory
         //---------------//
         // createSection //
         //---------------//
+        /**
+         * Create a section.
+         *
+         * @param firstPos the starting position of the section
+         * @param firstRun the very first run of the section
+         * @return the created section
+         */
         private Section createSection (int firstPos,
                                        Run firstRun)
         {
-            final Section section;
+            if (firstRun == null) {
+                throw new IllegalArgumentException("null first run");
+            }
+
+            final Section section = new BasicSection(orientation);
 
             if (lag != null) {
-                // Section gets an id from lag
-                section = lag.createSection(firstPos, firstRun);
+                lag.register(section); // Section gets an id from lag
             } else {
-                section = new BasicSection(orientation);
-                section.setId(++localId);
-                section.setFirstPos(firstPos);
-                section.append(firstRun);
+                section.setId("" + ++localId); // Use a local id
             }
+
+            section.setFirstPos(firstPos);
+            section.append(firstRun);
 
             created.add(section);
 
@@ -394,7 +402,8 @@ public class SectionFactory
                     // Create a new section, linked by a junction
                     Section sct = createSection(col, run);
                     nextActives.add(sct);
-                    prevSection.addTarget(sct);
+
+                    ///prevSection.addTarget(sct);
                 }
 
                 break;
@@ -406,7 +415,7 @@ public class SectionFactory
                 nextActives.add(newSection);
 
                 for (Section section : overlappingSections) {
-                    section.addTarget(newSection);
+                    ///section.addTarget(newSection);
                 }
             }
         }
@@ -416,13 +425,15 @@ public class SectionFactory
         //-----------------//
         /**
          * Take care of the first sequence, at the given section/run,
-         * checking links to the nextSequenceRuns that overlap this run.
+         * checking links to the next sequence runs that overlap this run.
          *
-         * @param section          the section at hand
-         * @param nextSequenceRuns runs of the next sequence
+         * @param section  the section at hand
+         * @param runTable the table of runs
+         * @param nextCol  column for the next sequence
          */
         private void processPrevSide (Section section,
-                                      RunSequence nextSequenceRuns)
+                                      RunTable runTable,
+                                      int nextCol)
         {
             Run lastRun = section.getLastRun();
             int prevStart = lastRun.getStart();
@@ -433,7 +444,9 @@ public class SectionFactory
             int overlapNb = 0;
             Run overlapRun = null;
 
-            for (Run run : nextSequenceRuns) {
+            for (Iterator<Run> it = runTable.iterator(nextCol); it.hasNext();) {
+                Run run = it.next();
+
                 if (run.getStart() > prevStop) {
                     break;
                 }

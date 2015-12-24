@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.math.Rational;
 
@@ -86,49 +86,56 @@ public abstract class AbstractNoteInter
      * Creates a new AbstractNoteInter object.
      *
      * @param glyph   the underlying glyph, if any
-     * @param box     the object bounds
+     * @param bounds  the object bounds
      * @param shape   the underlying shape
      * @param impacts the grade details
      * @param staff   the related staff
      * @param pitch   the note pitch
      */
     public AbstractNoteInter (Glyph glyph,
-                              Rectangle box,
+                              Rectangle bounds,
                               Shape shape,
                               GradeImpacts impacts,
                               Staff staff,
                               double pitch)
     {
-        super(glyph, box, shape, impacts, staff, pitch);
+        super(glyph, bounds, shape, impacts, staff, pitch);
     }
 
     /**
      * Creates a new AbstractNoteInter object.
      *
-     * @param glyph the underlying glyph, if any
-     * @param box   the object bounds
-     * @param shape the underlying shape
-     * @param grade the assignment quality
-     * @param staff the related staff
-     * @param pitch the note pitch
+     * @param glyph  the underlying glyph, if any
+     * @param bounds the object bounds
+     * @param shape  the underlying shape
+     * @param grade  the assignment quality
+     * @param staff  the related staff
+     * @param pitch  the note pitch
      */
     public AbstractNoteInter (Glyph glyph,
-                              Rectangle box,
+                              Rectangle bounds,
                               Shape shape,
                               double grade,
                               Staff staff,
                               double pitch)
     {
-        super(glyph, box, shape, grade, staff, pitch);
+        super(glyph, bounds, shape, grade, staff, pitch);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    protected AbstractNoteInter ()
+    {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getChord //
     //----------//
-    public ChordInter getChord ()
+    public AbstractChordInter getChord ()
     {
-        return (ChordInter) getEnsemble();
+        return (AbstractChordInter) getEnsemble();
     }
 
     //-------------//
@@ -171,26 +178,6 @@ public abstract class AbstractNoteInter
         return null;
     }
 
-    //-----------//
-    // getOctave //
-    //-----------//
-    /**
-     * Report the octave for this note, using the current clef, and the pitch position
-     * of the note.
-     *
-     * @return the related octave
-     */
-    public int getOctave ()
-    {
-        if (octave == null) {
-            ChordInter chord = (ChordInter) getEnsemble();
-            Measure measure = chord.getMeasure();
-            octave = ClefInter.octaveOf(measure.getClefBefore(getCenter(), getStaff()), pitch);
-        }
-
-        return octave;
-    }
-
     //------------------//
     // getShapeDuration //
     //------------------//
@@ -206,6 +193,45 @@ public abstract class AbstractNoteInter
         return shapeDurations.get(shape);
     }
 
+    //--------//
+    // delete //
+    //--------//
+    /**
+     * Since a note instance is held by its containing staff, make sure staff
+     * notes collection is updated.
+     *
+     * @see #undelete()
+     */
+    @Override
+    public void delete ()
+    {
+        if (staff != null) {
+            staff.removeNote(this);
+        }
+
+        super.delete();
+    }
+
+    //-----------//
+    // getOctave //
+    //-----------//
+    /**
+     * Report the octave for this note, using the current clef, and the pitch position
+     * of the note.
+     *
+     * @return the related octave
+     */
+    public int getOctave ()
+    {
+        if (octave == null) {
+            AbstractChordInter chord = (AbstractChordInter) getEnsemble();
+            Measure measure = chord.getMeasure();
+            octave = ClefInter.octaveOf(measure.getClefBefore(getCenter(), getStaff()), pitch);
+        }
+
+        return octave;
+    }
+
     //---------//
     // getStep //
     //---------//
@@ -217,7 +243,7 @@ public abstract class AbstractNoteInter
     public Step getStep ()
     {
         if (step == null) {
-            ChordInter chord = (ChordInter) getEnsemble();
+            AbstractChordInter chord = (AbstractChordInter) getEnsemble();
             Measure measure = chord.getMeasure();
             step = ClefInter.noteStepOf(
                     measure.getClefBefore(getCenter(), staff),
@@ -233,13 +259,32 @@ public abstract class AbstractNoteInter
     @Override
     public Voice getVoice ()
     {
-        final ChordInter chord = getChord();
+        final AbstractChordInter chord = getChord();
 
         if (chord != null) {
             return chord.getVoice();
         }
 
         return null;
+    }
+
+    //----------//
+    // undelete //
+    //----------//
+    /**
+     * Since a note instance is held by its containing staff, make sure staff
+     * notes collection is updated.
+     *
+     * @see #delete()
+     */
+    @Override
+    public void undelete ()
+    {
+        super.undelete();
+
+        if (staff != null) {
+            staff.addNote(this);
+        }
     }
 
     //---------------------//

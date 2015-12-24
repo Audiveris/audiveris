@@ -13,6 +13,8 @@ package omr.sheet;
 
 import omr.math.Histogram;
 
+import omr.util.Navigable;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
@@ -34,6 +36,7 @@ public class HistogramPlotter
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Related sheet. */
+    @Navigable(false)
     private final Sheet sheet;
 
     private final String name;

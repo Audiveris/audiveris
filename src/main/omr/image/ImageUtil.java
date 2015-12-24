@@ -21,7 +21,6 @@ import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.renderable.ParameterBlock;
-import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -70,7 +69,7 @@ public abstract class ImageUtil
      */
     public static BufferedImage maxRgbToGray (BufferedImage image)
     {
-        logger.info("Converting max RGB image to gray ...");
+        logger.info("Converting max RGB to gray ...");
 
         // We use the max value among the RGB channels
         int width = image.getWidth();
@@ -148,7 +147,7 @@ public abstract class ImageUtil
      */
     public static BufferedImage rgbToGray (BufferedImage rgb)
     {
-        logger.info("Converting RGB image to gray ...");
+        logger.info("Converting RGB to gray ...");
 
         // We use luminance value based on standard RGB combination
         double[][] matrix = {
@@ -204,7 +203,7 @@ public abstract class ImageUtil
                                    String name)
     {
         try {
-            ImageIO.write(image, "png", new File(WellKnowns.TEMP_FOLDER, name + ".png"));
+            ImageIO.write(image, "png", WellKnowns.TEMP_FOLDER.resolve(name + ".png").toFile());
         } catch (IOException ex) {
             logger.warn("Error storing " + name, ex);
         }

@@ -11,29 +11,30 @@
 // </editor-fold>
 package omr.sheet.header;
 
+import omr.classifier.Classifier;
+import omr.classifier.Evaluation;
+import omr.classifier.GlyphClassifier;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Evaluation;
-import omr.glyph.GlyphClassifier;
+import omr.glyph.Glyph;
 import omr.glyph.GlyphCluster;
-import omr.glyph.GlyphLayer;
+import omr.glyph.GlyphFactory;
 import omr.glyph.GlyphLink;
-import omr.glyph.GlyphNest;
+import omr.glyph.GlyphIndex;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
-import omr.glyph.ShapeEvaluator;
-import omr.glyph.facets.Glyph;
-
-import omr.lag.JunctionRatioPolicy;
-import omr.lag.Section;
-import omr.lag.SectionFactory;
 
 import omr.math.Clustering;
 import omr.math.Population;
 import omr.math.Projection;
+
 import static omr.run.Orientation.VERTICAL;
+
+import omr.run.RunTable;
+import omr.run.RunTableFactory;
 
 import omr.sheet.Picture;
 import omr.sheet.Scale;
@@ -51,7 +52,7 @@ import omr.sig.inter.KeyAlterInter;
 import omr.sig.inter.KeyInter;
 import omr.sig.relation.ClefKeyRelation;
 import omr.sig.relation.Exclusion;
-import omr.sig.relation.KeyAlterRelation;
+import omr.sig.relation.KeyAltersRelation;
 import omr.sig.relation.Relation;
 
 import omr.util.Navigable;
@@ -181,7 +182,7 @@ public class KeyBuilder
     private final boolean inHeader;
 
     /** Shape classifier to use. */
-    private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
+    private final Classifier evaluator = GlyphClassifier.getInstance();
 
     /** Staff-free pixel source. */
     private final ByteProcessor staffFreeSource;
@@ -917,7 +918,7 @@ public class KeyBuilder
             KeyAlterInter alter = alters.get(i);
 
             for (KeyAlterInter sibling : alters.subList(i + 1, alters.size())) {
-                sig.addEdge(alter, sibling, new KeyAlterRelation());
+                sig.addEdge(alter, sibling, new KeyAltersRelation());
             }
         }
 
@@ -1072,20 +1073,19 @@ public class KeyBuilder
         ByteProcessor buf = new ByteProcessor(rect.width, rect.height);
         buf.copyBits(staffFreeSource, -rect.x, -rect.y, Blitter.COPY);
 
-        SectionFactory sectionFactory = new SectionFactory(VERTICAL, new JunctionRatioPolicy());
-        List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
-        List<Glyph> glyphs = sheet.getGlyphNest()
-                .retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
+        RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
+        List<Glyph> glyphs = GlyphFactory.buildGlyphs(runTable, rect.getLocation());
+
         purgeGlyphs(glyphs, rect);
 
         KeyAdapter adapter = new KeyAdapter(glyphs, targetShapes);
-        new GlyphCluster(adapter).decompose();
+        new GlyphCluster(adapter, null).decompose();
 
         if (adapter.bestEval != null) {
             double grade = Inter.intrinsicRatio * adapter.bestEval.grade;
 
             if (grade >= minGrade) {
-                ///sheet.getGlyphNest().registerGlyph(adapter.bestGlyph);
+                ///sheet.getGlyphIndex().registerStandaloneGlyph(adapter.bestGlyph);
                 logger.debug("Glyph#{} {}", adapter.bestGlyph.getId(), adapter.bestEval);
 
                 KeyAlterInter alterInter = KeyAlterInter.create(
@@ -1095,6 +1095,7 @@ public class KeyBuilder
                         staff);
 
                 if (alterInter != null) {
+                    alterInter.setGlyph(sheet.getGlyphIndex().registerOriginal(adapter.bestGlyph));
                     sig.addVertex(alterInter);
                     slice.alter = alterInter;
 
@@ -2040,7 +2041,7 @@ public class KeyBuilder
         {
             trials++;
 
-            Evaluation[] evals = evaluator.getNaturalEvaluations(glyph);
+            Evaluation[] evals = evaluator.getNaturalEvaluations(glyph, sheet.getInterline());
 
             for (Shape shape : targetShapes) {
                 Evaluation eval = evals[shape.ordinal()];
@@ -2059,9 +2060,9 @@ public class KeyBuilder
         }
 
         @Override
-        public GlyphNest getNest ()
+        public GlyphIndex getNest ()
         {
-            return sheet.getGlyphNest();
+            return sheet.getGlyphIndex();
         }
 
         @Override

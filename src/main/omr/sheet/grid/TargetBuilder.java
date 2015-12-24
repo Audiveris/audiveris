@@ -24,20 +24,22 @@ import omr.sheet.Sheet;
 import omr.sheet.Skew;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.ImageView;
 
 import omr.ui.Colors;
 import omr.ui.util.ItemRenderer;
-import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
+import omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
@@ -46,8 +48,9 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,6 +74,7 @@ public class TargetBuilder
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Target width */
@@ -194,7 +198,7 @@ public class TargetBuilder
     // renderWarpGrid //
     //----------------//
     /**
-     * Render the grid used to dewarp the sheet image
+     * Render the grid used to de-warp the sheet image
      *
      * @param g         the graphic context
      * @param useSource true to render the source grid, false to render the
@@ -385,14 +389,14 @@ public class TargetBuilder
     private void storeImage (RenderedImage dewarpedImage)
     {
         String sheetId = sheet.getId();
-        File file = new File(BookManager.getDefaultDewarpDirectory(), sheetId + ".dewarped.png");
+        Path path = Paths.get(BookManager.getDefaultDewarpFolder())
+                .resolve(sheetId + ".dewarped.png");
 
         try {
-            String path = file.getCanonicalPath();
-            ImageIO.write(dewarpedImage, "png", file);
+            ImageIO.write(dewarpedImage, "png", path.toFile());
             logger.info("Wrote {}", path);
         } catch (IOException ex) {
-            logger.warn("Could not write {}", file);
+            logger.warn("Could not write {}", path);
         }
     }
 
@@ -430,21 +434,15 @@ public class TargetBuilder
     // DewarpedView //
     //--------------//
     private class DewarpedView
-            extends RubberPanel
+            extends ImageView
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final AffineTransform identity = new AffineTransform();
-
-        private final RenderedImage image;
-
         //~ Constructors ---------------------------------------------------------------------------
+
         public DewarpedView (RenderedImage image)
         {
-            this.image = image;
+            super(image);
 
-            setModelSize(new Dimension(image.getWidth(), image.getHeight()));
-
+//            setModelSize(new Dimension(image.getWidth(), image.getHeight()));
             // Location service
             setLocationService(sheet.getLocationService());
 
@@ -453,12 +451,9 @@ public class TargetBuilder
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public void render (Graphics2D g)
+        protected void renderItems (Graphics2D g)
         {
-            // Display the dewarped image
-            g.drawRenderedImage(image, identity);
-
-            // Display also the Destination Points
+            // Display the Destination Points
             renderWarpGrid(g, false);
         }
     }

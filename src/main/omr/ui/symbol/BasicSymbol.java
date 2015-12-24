@@ -31,6 +31,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code BasicSymbol} is the base for implementing instances of {@link Symbol}
  * interface.
@@ -39,6 +41,7 @@ import java.util.Arrays;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "symbol")
 public class BasicSymbol
         implements Symbol
 {
@@ -121,6 +124,12 @@ public class BasicSymbol
         this(false, codes);
     }
 
+    public BasicSymbol ()
+    {
+        this.isIcon = false;
+        this.codes = null;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildImage //
@@ -147,15 +156,15 @@ public class BasicSymbol
     // getCentroid //
     //-------------//
     @Override
-    public Point getCentroid (Rectangle area)
+    public Point getCentroid (Rectangle box)
     {
         if (centroidOffset == null) {
             computeCentroidOffset();
         }
 
         return new Point(
-                (int) Math.rint(area.getCenterX() + (area.getWidth() * centroidOffset.getX())),
-                (int) Math.rint(area.getCenterY() + (area.getHeight() * centroidOffset.getY())));
+                (int) Math.rint(box.getCenterX() + (box.getWidth() * centroidOffset.getX())),
+                (int) Math.rint(box.getCenterY() + (box.getHeight() * centroidOffset.getY())));
     }
 
     //--------------//
@@ -275,8 +284,8 @@ public class BasicSymbol
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
 
         sb.append(internalsString());
 

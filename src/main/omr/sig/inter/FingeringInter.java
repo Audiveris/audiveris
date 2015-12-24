@@ -11,14 +11,17 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code FingeringInter} represents the fingering for guitar left-hand.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "fingering")
 public class FingeringInter
         extends AbstractInter
         implements StringSymbolInter
@@ -112,7 +115,7 @@ public class FingeringInter
         case DIGIT_4:
             return 4;
 
-        //
+            //
         //        // Following shapes may be useless
         //        case DIGIT_5:
         //            return 5;

@@ -11,78 +11,162 @@
 // </editor-fold>
 package omr.sheet;
 
-import java.awt.Graphics2D;
-import omr.glyph.GlyphNest;
-
-import omr.image.FilterDescriptor;
+import omr.glyph.GlyphIndex;
+import omr.glyph.dynamic.FilamentIndex;
+import omr.glyph.ui.SymbolsController;
+import omr.glyph.ui.SymbolsEditor;
 
 import omr.lag.LagManager;
-
-import omr.math.Population;
 
 import omr.score.Page;
 
 import omr.selection.SelectionService;
 
-import omr.sheet.stem.StemScale;
 import omr.sheet.ui.SheetAssembly;
 
-import omr.sig.InterManager;
+import omr.sig.InterIndex;
 
 import omr.step.Step;
 import omr.step.StepException;
 
-import omr.util.LiveParam;
-
-import java.awt.image.BufferedImage;
-import java.util.Collection;
-import java.util.List;
-import omr.glyph.ui.SymbolsController;
-import omr.glyph.ui.SymbolsEditor;
 import omr.ui.ErrorsEditor;
 import omr.ui.util.ItemRenderer;
 
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
+
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 /**
- * Interface {@code Sheet} corresponds to an image in a book image file.
+ * Interface {@code Sheet} corresponds to one image in a book image file.
  * <p>
- * If a movement break occurs in the middle of a sheet, this sheet will contain several pages, but
- * in most cases there is exactly one {@link Page} instance per Sheet instance.
+ * If a movement break occurs in the middle of a sheet, this sheet will contain at least two pages,
+ * but in most cases there is exactly one {@link Page} instance per Sheet instance.
+ * <p>
+ * Methods are organized as follows:
+ * <dl>
+ * <dt>Admin</dt>
+ * <dd><ul>
+ * <li>{@link #getId}</li>
+ * <li>{@link #getLogPrefix}</li>
+ * <li>{@link #getBook}</li>
+ * <li>{@link #getNumber}</li>
+ * <li>{@link #setImage}</li>
+ * <li>{@link #close}</li>
+ * </ul></dd>
+ *
+ * <dt>Pages</dt>
+ * <dd><ul>
+ * <li>{@link #addPage}</li>
+ * <li>{@link #getPages}</li>
+ * </ul></dd>
+ *
+ * <dt>Transcription</dt>
+ * <dd><ul>
+ * <li>{@link #transcribe}</li>
+ * <li>{@link #doStep}</li>
+ * <li>{@link #isDone}</li>
+ * <li>{@link #ensureStep}</li>
+ * <li>{@link #getCurrentStep}</li>
+ * <li>{@link #getLatestStep}</li>
+ * </ul></dd>
+ *
+ * <dt>Companions</dt>
+ * <dd><ul>
+ * <li>{@link #getSystemManager}</li>
+ * <li>{@link #getStaffManager}</li>
+ * <li>{@link #getLagManager}</li>
+ * <li>{@link #getInterIndex}</li>
+ * <li>{@link #getGlyphIndex}</li>
+ * <li>{@link #getFilamentIndex}</li>
+ * </ul></dd>
+ *
+ * <dt>Artifacts</dt>
+ * <dd><ul>
+ * <li>{@link #getPicture}</li>
+ * <li>{@link #getWidth}</li>
+ * <li>{@link #getHeight}</li>
+ * <li>{@link #getScale}</li>
+ * <li>{@link #setScale}</li>
+ * <li>{@link #getInterline}</li>
+ * <li>{@link #getSkew}</li>
+ * <li>{@link #setSkew}</li>
+ * <li>{@link #getSystems}</li>
+ * <li>{@link #getSheetDelta}</li>
+ * <li>{@link #export}</li>
+ * <li>{@link #deleteExport}</li>
+ * <li>{@link #print}</li>
+ * <li>{@link #store}</li>
+ * </ul></dd>
+ *
+ * <dt>UI</dt>
+ * <dd><ul>
+ * <li>{@link #getLocationService}</li>
+ * <li>{@link #getAssembly}</li>
+ * <li>{@link #getSymbolsEditor}</li>
+ * <li>{@link #getErrorsEditor}</li>
+ * <li>{@link #getSymbolsController}</li>
+ * <li>{@link #addItemRenderer}</li>
+ * <li>{@link #renderItems}</li>
+ * </ul></dd>
+ * </dl>
  *
  * @author Hervé Bitteur
  */
+@XmlJavaTypeAdapter(BasicSheet.Adapter.class)
 public interface Sheet
+        extends SheetStub
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** The radix used for folder of this sheet internals. */
+    static final String INTERNALS_RADIX = "sheet#";
+
+    //~ Methods ------------------------------------------------------------------------------------
     // -------------
     // --- Admin ---
     // -------------
     //
     /**
+     * Complete sheet initialization, after reload.
+     *
+     * @param stub the sheet stub
+     */
+    void afterReload (SheetStub stub);
+
+    /**
      * Report the distinguished name for this sheet.
      *
      * @return sheet name
      */
+    @Override
     String getId ();
 
     /**
-     * Report the proper prefix to use when logging a message
+     * Report the related sheet stub.
      *
-     * @return the proper prefix
+     * @return the related stub (non null)
      */
-    String getLogPrefix ();
+    SheetStub getStub ();
 
     /**
      * Report the containing book.
      *
      * @return containing book
      */
+    @Override
     Book getBook ();
 
     /**
-     * @return the sheet index (1-based) in containing book
+     * Report the number for this sheet in containing book
+     *
+     * @return the sheet index number (1-based) in containing book
      */
-    int getIndex ();
+    @Override
+    int getNumber ();
 
     /**
      * Assign the related image to this sheet
@@ -90,14 +174,8 @@ public interface Sheet
      * @param image the loaded image
      * @throws StepException
      */
-    void setImage (BufferedImage image) throws StepException;
-
-    /**
-     * Close this sheet, and remove it from the containing book.
-     *
-     * @param bookIsClosing true if book is being closed
-     */
-    void close (boolean bookIsClosing);
+    void setImage (BufferedImage image)
+            throws StepException;
 
     // -------------
     // --- Pages ---
@@ -145,6 +223,7 @@ public interface Sheet
      * @param step the step to check
      * @return true if already performed
      */
+    @Override
     boolean isDone (Step step);
 
     /**
@@ -153,13 +232,15 @@ public interface Sheet
      * @param step the step to check
      * @return true if OK
      */
+    @Override
     boolean ensureStep (Step step);
 
     /**
-     * Retrieve the step being processed "as we speak"
+     * Report the step being processed, if any.
      *
-     * @return the current step
+     * @return the current step or null
      */
+    @Override
     Step getCurrentStep ();
 
     /**
@@ -167,25 +248,8 @@ public interface Sheet
      *
      * @return the latest step done, or null
      */
+    @Override
     Step getLatestStep ();
-
-    // ------------------
-    // --- Parameters ---
-    // ------------------
-    //
-    /**
-     * Report the binarization filter defined at sheet level.
-     *
-     * @return the filter param
-     */
-    LiveParam<FilterDescriptor> getFilterParam ();
-
-    /**
-     * Report the OCR language(s) specification defined at sheet level
-     *
-     * @return the OCR language(s) spec
-     */
-    LiveParam<String> getLanguageParam ();
 
     // ------------------
     // --- Companions ---
@@ -213,36 +277,43 @@ public interface Sheet
     LagManager getLagManager ();
 
     /**
-     * Access to the Inter manager for this sheet
+     * Access to the Inter index for this sheet
      *
-     * @return the sheet Inter's manager
+     * @return the sheet Inter's index
      */
-    InterManager getInterManager ();
+    InterIndex getInterIndex ();
 
     /**
      * Report the global nest for glyphs of this sheet, or null
      *
      * @return the nest for glyphs, perhaps null
      */
-    GlyphNest getGlyphNest ();
+    GlyphIndex getGlyphIndex ();
+
+    /**
+     * Report the global index for filaments of this sheet, or null
+     *
+     * @return the index for filaments, perhaps null
+     */
+    FilamentIndex getFilamentIndex ();
 
     // -----------------
     // --- Artifacts ---
     // -----------------
     //
     /**
-     * Report the related sheet bench
-     *
-     * @return the related bench
-     */
-    SheetBench getBench ();
-
-    /**
-     * Report the picture of this sheet, that is the image to be processed.
+     * Report the picture of this sheet, that provides sources and tables.
      *
      * @return the related picture
      */
     Picture getPicture ();
+
+    /**
+     * Report whether the Picture instance exists in sheet.
+     *
+     * @return true if so
+     */
+    boolean hasPicture ();
 
     /**
      * Report the picture width in pixels
@@ -267,7 +338,7 @@ public interface Sheet
     Scale getScale ();
 
     /**
-     * Link scale information to this sheet
+     * Remember scale information to this sheet
      *
      * @param scale the computed sheet global scale
      */
@@ -279,27 +350,6 @@ public interface Sheet
      * @return the scale interline value
      */
     int getInterline ();
-
-    /**
-     * Remember the stem scale observed
-     *
-     * @param stemScale the stem scaling data
-     */
-    void setStemScale (StemScale stemScale);
-
-    /**
-     * Report the most frequent stem thickness within the sheet
-     *
-     * @return the main Stem thickness
-     */
-    int getMainStem ();
-
-    /**
-     * Report the maximum stem thickness within the sheet
-     *
-     * @return the maximum Stem thickness
-     */
-    int getMaxStem ();
 
     /**
      * Report the skew information for this sheet.
@@ -316,20 +366,6 @@ public interface Sheet
     void setSkew (Skew skew);
 
     /**
-     * Report the population of vertical gaps observed between items of a beam group
-     *
-     * @return the beamGaps
-     */
-    Population getBeamGaps ();
-
-    /**
-     * Remember the population of beam gaps
-     *
-     * @param beamGaps the beamGaps to set
-     */
-    void setBeamGaps (Population beamGaps);
-
-    /**
      * Convenient way to get an unmodifiable view on sheet systems.
      *
      * @return a view on systems list
@@ -337,6 +373,8 @@ public interface Sheet
     List<SystemInfo> getSystems ();
 
     /**
+     * Report the measured difference between entities and pixels.
+     *
      * @return the sheetDelta
      */
     SheetDiff getSheetDelta ();
@@ -347,7 +385,7 @@ public interface Sheet
      * The output is structured differently according to whether the sheet contains one or several
      * pages.<ul>
      * <li>A single-page sheet results in one score output.</li>
-     * <li>A multi-page sheet results in one opus output (if useOpus is set) or a folder of scores
+     * <li>A multi-page sheet results in one opus output (if useOpus is set) or a series of scores
      * (is useOpus is not set).</li>
      * </ul>
      */
@@ -360,8 +398,19 @@ public interface Sheet
 
     /**
      * Print the sheet physical appearance using PDF format.
+     *
+     * @param sheetPrintPath path of sheet print file
      */
-    void print ();
+    void print (Path sheetPrintPath);
+
+    /**
+     * Store sheet internals into book project file system.
+     *
+     * @param sheetPath    path of sheet in new) project file
+     * @param oldSheetPath path of sheet in old project file, if any
+     */
+    void store (Path sheetPath,
+                Path oldSheetPath);
 
     // ----------
     // --- UI ---
@@ -379,14 +428,8 @@ public interface Sheet
      *
      * @return the sheet UI assembly, or null in batch mode
      */
+    @Override
     SheetAssembly getAssembly ();
-
-    /**
-     * In non batch mode, report the editor dealing with detected errors in this sheet
-     *
-     * @return the errors editor, or null
-     */
-    ErrorsEditor getErrorsEditor ();
 
     /**
      * In non batch mode, report the editor dealing with symbols recognition in this sheet
@@ -394,6 +437,13 @@ public interface Sheet
      * @return the symbols editor, or null
      */
     SymbolsEditor getSymbolsEditor ();
+
+    /**
+     * In non batch mode, report the editor dealing with detected errors in this sheet
+     *
+     * @return the errors editor, or null
+     */
+    ErrorsEditor getErrorsEditor ();
 
     /**
      * In non batch mode, report the UI module for symbol assignment in this sheet
@@ -417,4 +467,13 @@ public interface Sheet
      */
     void renderItems (Graphics2D g);
 
+    /**
+     * Display the main tabs related to this sheet.
+     */
+    void displayMainTabs ();
+
+    /**
+     * Display the DATA_TAB.
+     */
+    void displayDataTab ();
 }

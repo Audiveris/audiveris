@@ -11,12 +11,9 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.glyph.facets.Glyph;
-
 import omr.lag.Lag;
 import omr.lag.Lags;
 import omr.lag.Section;
-import omr.lag.Sections;
 
 import omr.run.Orientation;
 
@@ -34,6 +31,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import omr.util.Entities;
 
 /**
  * Class {@code SectionSets} handles a collection of section sets,
@@ -50,10 +48,10 @@ public class SectionSets
             SectionSets.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The collection of sections sets */
+    /** The collection of sections sets. */
     protected Collection<Collection<Section>> sets;
 
-    /** The collection of sets (=glyphs) of section descriptors */
+    /** The collection of sets (=glyphs) of section descriptors. */
     @XmlElement(name = "sections")
     private Collection<SectionDescSet> descSets;
 
@@ -88,14 +86,15 @@ public class SectionSets
      */
     public static SectionSets createFromGlyphs (Collection<Glyph> glyphs)
     {
-        SectionSets sectionSets = new SectionSets();
-        sectionSets.sets = new ArrayList<Collection<Section>>();
-
-        for (Glyph glyph : glyphs) {
-            sectionSets.sets.add(new ArrayList<Section>(glyph.getMembers()));
-        }
-
-        return sectionSets;
+        throw new RuntimeException("HB. Not implemented yet");
+//        SectionSets sectionSets = new SectionSets();
+//        sectionSets.sets = new ArrayList<Collection<Section>>();
+//
+//        for (Glyph glyph : glyphs) {
+//            sectionSets.sets.add(new ArrayList<Section>(glyph.getMembers()));
+//        }
+//
+//        return sectionSets;
     }
 
     //--------------------//
@@ -137,7 +136,7 @@ public class SectionSets
                 for (SectionDesc sectionId : idSet.sections) {
                     Lag lag = sheet.getLagManager().getLag(
                             (sectionId.orientation == Orientation.VERTICAL) ? Lags.VLAG : Lags.HLAG);
-                    Section section = lag.getVertexById(sectionId.id);
+                    Section section = lag.getEntity(sectionId.id);
 
                     if (section == null) {
                         logger.warn(
@@ -170,7 +169,7 @@ public class SectionSets
                     sb.append(" ");
                 }
 
-                sb.append(Sections.toString(set));
+                sb.append(Entities.ids(set));
             }
 
             return sb.toString();
@@ -223,7 +222,7 @@ public class SectionSets
         //private Collection<Integer> ids = new ArrayList<Integer>();
         /** Section id */
         @XmlAttribute(name = "id")
-        Integer id;
+        String id;
 
         /** Section orientation */
         @XmlAttribute(name = "orientation")
@@ -235,7 +234,7 @@ public class SectionSets
         {
         }
 
-        public SectionDesc (Integer id,
+        public SectionDesc (String id,
                             Orientation orientation)
         {
             this.id = id;

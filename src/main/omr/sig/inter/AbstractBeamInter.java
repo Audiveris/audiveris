@@ -12,7 +12,6 @@
 package omr.sig.inter;
 
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.math.AreaUtil;
 
@@ -22,6 +21,7 @@ import omr.sheet.rhythm.Voice;
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;
 
+import omr.util.Jaxb;
 import omr.util.VerticalSide;
 
 import org.slf4j.Logger;
@@ -31,61 +31,76 @@ import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlList;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 /**
- * Abstract class {@code AbstractBeamInter} is the basis for {@link FullBeamInter},
+ * Abstract class {@code AbstractBeamInter} is the basis for {@link BeamInter},
  * {@link BeamHookInter} and {@link SmallBeamInter} classes.
  * <p>
- * The following image shows two beams (a full beam and a beam hook):
+ * The following image shows two beams - a (full) beam and a beam hook:
  * <p>
  * <img alt="Beam image"
  * src="http://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Beamed_notes.svg/220px-Beamed_notes.svg.png">
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public abstract class AbstractBeamInter
         extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractBeamInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            AbstractBeamInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Median line. */
-    private final Line2D median;
-
     /** Beam height. */
+    @XmlElement
+    @XmlJavaTypeAdapter(value = Jaxb.Double1Adapter.class, type = double.class)
     private final double height;
+
+    /** Median line. */
+    @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
+    private final Line2D median;
 
     /** The containing beam group. */
     private BeamGroup group;
 
     /** Chords that are linked by this beam. */
-    private final List<ChordInter> chords = new ArrayList<ChordInter>();
+    @XmlList
+    @XmlIDREF
+    @XmlElement(name = "chords")
+    private final List<AbstractChordInter> chords = new ArrayList<AbstractChordInter>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractBeamInter object.
+     * Note there is no underlying glyph, cleaning will be based on beam area.
      *
-     * @param glyph   the underlying glyph
      * @param shape   BEAM or BEAM_HOOK
      * @param impacts the grade details
      * @param median  median beam line
      * @param height  beam height
      */
-    protected AbstractBeamInter (Glyph glyph,
-                                 Shape shape,
+    protected AbstractBeamInter (Shape shape,
                                  GradeImpacts impacts,
                                  Line2D median,
                                  double height)
     {
-        super(glyph, null, shape, impacts);
+        super(null, null, shape, impacts);
         this.median = median;
         this.height = height;
 
-        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
-
-        // Define precise bounds based on this path
-        setBounds(getArea().getBounds());
+        if (median != null) {
+            computeArea();
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -101,7 +116,7 @@ public abstract class AbstractBeamInter
     //----------//
     // addChord //
     //----------//
-    public void addChord (ChordInter chord)
+    public void addChord (AbstractChordInter chord)
     {
         if (!chords.contains(chord)) {
             chords.add(chord);
@@ -124,7 +139,7 @@ public abstract class AbstractBeamInter
     //        // Check if this beam should belong to an existing group
     //        for (BeamGroup grp : measure.getBeamGroups()) {
     //            for (AbstractBeamInter beam : grp.getBeams()) {
-    //                for (ChordInter chord : beam.getChords()) {
+    //                for (AbstractChordInter chord : beam.getChords()) {
     //                    if (this.chords.contains(chord)) {
     //                        // We have a chord in common with this beam, so we are in same group
     //                        switchToGroup(grp);
@@ -170,7 +185,7 @@ public abstract class AbstractBeamInter
      *
      * @return the linked chords
      */
-    public List<ChordInter> getChords ()
+    public List<AbstractChordInter> getChords ()
     {
         return chords;
     }
@@ -245,7 +260,7 @@ public abstract class AbstractBeamInter
     //-------------//
     // removeChord //
     //-------------//
-    public void removeChord (ChordInter chord)
+    public void removeChord (AbstractChordInter chord)
     {
         chords.remove(chord);
     }
@@ -288,6 +303,33 @@ public abstract class AbstractBeamInter
 
         // Remember assignment
         this.group = group;
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled for this object,
+     * but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        if (median != null) {
+            computeArea();
+        }
+    }
+
+    //-------------//
+    // computeArea //
+    //-------------//
+    private void computeArea ()
+    {
+        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
+
+        // Define precise bounds based on this path
+        setBounds(getArea().getBounds());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

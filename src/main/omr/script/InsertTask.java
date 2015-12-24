@@ -11,16 +11,15 @@
 // </editor-fold>
 package omr.script;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
-import omr.selection.GlyphSetEvent;
+import omr.selection.EntityListEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-
-import omr.util.PointFacade;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -29,10 +28,6 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
@@ -52,12 +47,9 @@ public class InsertTask
     private final Shape shape;
 
     /** Locations */
-    private List<Point> locations;
-
-    /** Wrapping of the collections of points */
     @XmlElementWrapper(name = "locations")
     @XmlElement(name = "point")
-    private PointFacade[] points;
+    private List<Point> locations;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -117,8 +109,12 @@ public class InsertTask
         logger.debug("{}", this);
 
         // Take inserted glyph(s) as selected glyph(s)
-        sheet.getGlyphNest().getGlyphService().publish(
-                new GlyphSetEvent(this, SelectionHint.GLYPH_INIT, MouseMovement.PRESSING, glyphs));
+        sheet.getGlyphIndex().getEntityService().publish(
+                new EntityListEvent<Glyph>(
+                        this,
+                        SelectionHint.ENTITY_INIT,
+                        MouseMovement.PRESSING,
+                        new ArrayList<Glyph>(glyphs)));
     }
 
     //------------------//
@@ -210,7 +206,7 @@ public class InsertTask
         //            // TODO: Some location other than the areacenter may be desired
         //            // (depending on the shape)?
         //            for (SystemInfo system : systemManager.getSystemsOf(location)) {
-        //                glyph = system.registerGlyph(glyph);
+        //                glyph = system.register(glyph);
         //
         //                // Specific for LEDGERs: add them to related staff
         //                if (shape == Shape.LEDGER) {
@@ -222,49 +218,5 @@ public class InsertTask
         //
         //            glyphs.add(glyph);
         //        }
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled
-     * for this object, but before this object is set to the parent object.
-     */
-    @PostConstruct // Don't remove this method, invoked by JAXB through reflection
-
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        // Convert array of point facades -> locations
-        if (locations == null) {
-            locations = new ArrayList<Point>();
-
-            for (PointFacade facade : points) {
-                locations.add(new Point(facade.getX(), facade.getY()));
-            }
-        }
-    }
-
-    //---------------//
-    // beforeMarshal //
-    //---------------//
-    /**
-     * Called immediately before the marshalling of this object begins.
-     */
-    @PreDestroy // Don't remove this method, invoked by JAXB through reflection
-
-    private void beforeMarshal (Marshaller m)
-    {
-        // Convert locations -> array of point facades
-        if (points == null) {
-            List<PointFacade> facades = new ArrayList<PointFacade>();
-
-            for (Point point : locations) {
-                facades.add(new PointFacade(point));
-            }
-
-            points = facades.toArray(new PointFacade[facades.size()]);
-        }
     }
 }

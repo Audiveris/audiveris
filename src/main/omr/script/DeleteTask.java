@@ -11,13 +11,11 @@
 // </editor-fold>
 package omr.script;
 
+import omr.glyph.Glyph;
 import omr.glyph.Glyphs;
-import omr.glyph.facets.Glyph;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-
-import omr.util.PointFacade;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -27,10 +25,6 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
@@ -45,12 +39,9 @@ public class DeleteTask
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Locations */
-    private List<Point> locations;
-
-    /** Wrapping of the collections of points */
     @XmlElementWrapper(name = "locations")
     @XmlElement(name = "point")
-    private PointFacade[] points;
+    private List<Point> locations;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -68,7 +59,7 @@ public class DeleteTask
         locations = new ArrayList<Point>();
 
         for (Glyph glyph : glyphs) {
-            locations.add(glyph.getAreaCenter());
+            locations.add(glyph.getCenter());
         }
     }
 
@@ -96,7 +87,7 @@ public class DeleteTask
     public void epilog (Sheet sheet)
     {
         super.epilog(sheet);
-        logger.info("Deletion of virtual {}", Glyphs.toString(glyphs));
+        logger.info("Deletion of virtual {}", Glyphs.ids(glyphs));
     }
 
     //-----------//
@@ -133,7 +124,7 @@ public class DeleteTask
         logger.error("Not yet implemented");
 
         //        for (Glyph glyph : glyphs) {
-        //            Point location = glyph.getAreaCenter();
+        //            Point location = glyph.getCenter();
         //            SystemInfo system = sheet.getSystemOf(location);
         //
         //            if (system != null) {
@@ -161,54 +152,9 @@ public class DeleteTask
         glyphs = new LinkedHashSet<Glyph>();
 
         for (Point location : locations) {
-            Glyph glyph = sheet.getGlyphNest().lookupVirtualGlyph(location);
+            Glyph glyph = sheet.getGlyphIndex().lookupVirtualGlyph(location);
             glyphs.add(glyph);
             logger.debug("To be deleted: {}", glyph);
-        }
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled
-     * for this object, but before this object is set to the parent
-     * object.
-     */
-    @PostConstruct // Don't remove this method, invoked by JAXB through reflection
-
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        // Convert array of point facades -> locations
-        if (locations == null) {
-            locations = new ArrayList<Point>();
-
-            for (PointFacade facade : points) {
-                locations.add(new Point(facade.getX(), facade.getY()));
-            }
-        }
-    }
-
-    //---------------//
-    // beforeMarshal //
-    //---------------//
-    /**
-     * Called immediately before the marshalling of this object begins.
-     */
-    @PreDestroy // Don't remove this method, invoked by JAXB through reflection
-
-    private void beforeMarshal (Marshaller m)
-    {
-        // Convert locations -> array of point facades
-        if (points == null) {
-            List<PointFacade> facades = new ArrayList<PointFacade>();
-
-            for (Point point : locations) {
-                facades.add(new PointFacade(point));
-            }
-
-            points = facades.toArray(new PointFacade[facades.size()]);
         }
     }
 }

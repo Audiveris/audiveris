@@ -17,6 +17,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * Class {@code Rational} implements non-mutable rational numbers
@@ -33,6 +35,9 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "rational")
+@XmlType(propOrder = {
+    "num", "den"}
+)
 public class Rational
         extends Number
         implements Comparable<Rational>
@@ -52,13 +57,13 @@ public class Rational
     public static final Rational MAX_VALUE = new Rational(Integer.MAX_VALUE, 1);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Final denominator value. */
-    @XmlAttribute
-    public final int den;
-
     /** Final numerator value. */
     @XmlAttribute
     public final int num;
+
+    /** Final denominator value. */
+    @XmlAttribute
+    public final int den;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -98,6 +103,50 @@ public class Rational
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // decode //
+    //--------//
+    public static Rational decode (String str)
+    {
+        final int slash = str.indexOf('/');
+
+        if (slash == -1) {
+            return new Rational(Integer.decode(str), 1);
+        }
+
+        final int num = Integer.decode(str.substring(0, slash));
+        final int den = Integer.decode(str.substring(slash + 1));
+
+        return new Rational(num, den);
+    }
+
+    //-----//
+    // gcd //
+    //-----//
+    public static Rational gcd (Rational a,
+                                Rational b)
+    {
+        if (a.num == 0) {
+            return b;
+        } else {
+            return new Rational(1, GCD.lcm(a.den, b.den));
+        }
+    }
+
+    //-----//
+    // gcd //
+    //-----//
+    public static Rational gcd (Rational... vals)
+    {
+        Rational s = Rational.ZERO;
+
+        for (Rational val : vals) {
+            s = gcd(s, val);
+        }
+
+        return s;
+    }
+
     //-----//
     // abs //
     //-----//
@@ -205,33 +254,6 @@ public class Rational
     public float floatValue ()
     {
         return (float) doubleValue();
-    }
-
-    //-----//
-    // gcd //
-    //-----//
-    public static Rational gcd (Rational a,
-                                Rational b)
-    {
-        if (a.num == 0) {
-            return b;
-        } else {
-            return new Rational(1, GCD.lcm(a.den, b.den));
-        }
-    }
-
-    //-----//
-    // gcd //
-    //-----//
-    public static Rational gcd (Rational... vals)
-    {
-        Rational s = Rational.ZERO;
-
-        for (Rational val : vals) {
-            s = gcd(s, val);
-        }
-
-        return s;
     }
 
     //----------//
@@ -393,6 +415,30 @@ public class Rational
             return num + "";
         } else {
             return num + "/" + den;
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Adapter //
+    //---------//
+    public static class Adapter
+            extends XmlAdapter<String, Rational>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public String marshal (Rational val)
+                throws Exception
+        {
+            return val.toString();
+        }
+
+        @Override
+        public Rational unmarshal (String str)
+                throws Exception
+        {
+            return decode(str);
         }
     }
 }

@@ -11,19 +11,22 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.sheet.rhythm.Voice;
 
 import omr.sig.relation.Relation;
 import omr.sig.relation.StaccatoChordRelation;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code StaccatoInter} represents a staccato dot.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "staccato")
 public class StaccatoInter
         extends AbstractInter
 {
@@ -39,6 +42,13 @@ public class StaccatoInter
                           double grade)
     {
         super(glyph, null, Shape.STACCATO, grade);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private StaccatoInter ()
+    {
     }
 
     //~ Methods ------------------------------------------------------------------------------------

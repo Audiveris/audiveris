@@ -18,6 +18,7 @@ installer/build/*
 config/run.properties
 data/benches
 data/print/*
+data/projects/*
 data/scores/*
 data/scripts/*
 data/temp/*

@@ -14,8 +14,8 @@ package omr.sig.inter;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.math.GeoUtil;
 
@@ -36,12 +36,15 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code RestInter} represents a rest.
  * TODO: Should be closer to AbstractNoteInter?
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "rest")
 public class RestInter
         extends AbstractNoteInter
 {
@@ -70,16 +73,14 @@ public class RestInter
         super(glyph, null, shape, grade, staff, pitch);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private RestInter ()
     {
-        visitor.visit(this);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // create //
     //--------//
@@ -129,19 +130,19 @@ public class RestInter
             measureChords = SIGraph.inters(
                     systemHeadChords,
                     new Predicate<Inter>()
-                    {
-                        @Override
-                        public boolean check (Inter inter)
-                        {
-                            if (inter.getStaff() != staff) {
-                                return false;
-                            }
+            {
+                @Override
+                public boolean check (Inter inter)
+                {
+                    if (inter.getStaff() != staff) {
+                        return false;
+                    }
 
-                            final Point center = inter.getCenter();
+                    final Point center = inter.getCenter();
 
-                            return (center.x >= left) && (center.x <= right);
-                        }
-                    });
+                    return (center.x >= left) && (center.x <= right);
+                }
+            });
 
             // Pitch value WRT staff
             final double measuredPitch = staff.pitchPositionOf(centroid);
@@ -196,7 +197,19 @@ public class RestInter
         }
 
         // Everything is OK
-        return new RestInter(glyph, shape, grade, restStaff, restPitch);
+        RestInter restInter = new RestInter(glyph, shape, grade, restStaff, restPitch);
+        restStaff.addNote(restInter);
+
+        return restInter;
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
     }
 
     //----------//

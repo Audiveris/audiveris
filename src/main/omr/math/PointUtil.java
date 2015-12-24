@@ -12,7 +12,9 @@
 package omr.math;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.util.Collection;
 import java.util.Comparator;
 
 /**
@@ -61,6 +63,40 @@ public abstract class PointUtil
                                     Point2D p2)
     {
         return new Point2D.Double(p1.getX() + p2.getX(), p1.getY() + p2.getY());
+    }
+
+    //----------//
+    // boundsOf //
+    //----------//
+    /**
+     * Report the bounding box for all points
+     *
+     * @param points the provided points
+     * @return the smallest rectangle that really contains all the points.
+     */
+    public static Rectangle boundsOf (Collection<? extends Point> points)
+    {
+        if ((points == null) || points.isEmpty()) {
+            return null;
+        }
+
+        Rectangle bounds = null;
+
+        for (Point point : points) {
+            if (bounds == null) {
+                bounds = new Rectangle(point);
+            } else {
+                bounds.add(point);
+            }
+        }
+
+        if (bounds != null) {
+            // So that points located on right or bottom borders get really contained by the bounds
+            bounds.width++;
+            bounds.height++;
+        }
+
+        return bounds;
     }
 
     //------------//

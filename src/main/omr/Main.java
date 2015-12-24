@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr;
 
-import omr.CLI.Parameters;
-
 import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
@@ -32,7 +30,6 @@ import org.kohsuke.args4j.CmdLineException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
@@ -63,9 +60,6 @@ public class Main
 
     /** CLI parameters. */
     private static CLI cli;
-
-    /** Parameters read from CLI. */
-    private static Parameters parameters;
 
     //~ Constructors -------------------------------------------------------------------------------
     private Main ()
@@ -115,7 +109,7 @@ public class Main
         // Engine
         OMR.setEngine(BookManager.getInstance());
 
-        if (!parameters.batchMode) {
+        if (!cli.isBatchMode()) {
             // Here we are in interactive mode
             logger.debug("Main. Launching MainGui");
             Application.launch(MainGui.class, args);
@@ -241,10 +235,10 @@ public class Main
         try {
             // First get the provided arguments if any
             cli = new CLI(WellKnowns.TOOL_NAME);
-            parameters = cli.getParameters(args);
+            cli.getParameters(args);
 
             // Interactive or Batch mode ?
-            if (parameters.batchMode) {
+            if (cli.isBatchMode()) {
                 logger.info("Running in batch mode");
 
                 ///System.setProperty("java.awt.headless", "true"); //TODO: Useful?
@@ -266,9 +260,7 @@ public class Main
     private static boolean runBatchTasks ()
     {
         boolean failure = false;
-        final List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
-        tasks.addAll(cli.getFilesTasks());
-        tasks.addAll(cli.getScriptsTasks());
+        final List<Callable<Void>> tasks = cli.getCliTasks();
 
         if (!tasks.isEmpty()) {
             // Run all tasks in parallel or one task at a time

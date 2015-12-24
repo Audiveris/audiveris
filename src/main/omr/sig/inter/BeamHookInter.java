@@ -12,19 +12,21 @@
 package omr.sig.inter;
 
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.sig.GradeImpacts;
 
 import java.awt.geom.Line2D;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code BeamHookInter} represents a beam hook interpretation.
  *
- * @see FullBeamInter
+ * @see BeamInter
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "beam-hook")
 public class BeamHookInter
         extends AbstractBeamInter
 {
@@ -33,17 +35,20 @@ public class BeamHookInter
     /**
      * Creates a new HookInter object.
      *
-     * @param glyph   the underlying glyph
      * @param impacts the grade details
      * @param median  median beam line
      * @param height  beam height
      */
-    public BeamHookInter (Glyph glyph,
-                          GradeImpacts impacts,
+    public BeamHookInter (GradeImpacts impacts,
                           Line2D median,
                           double height)
     {
-        super(glyph, Shape.BEAM_HOOK, impacts, median, height);
+        super(Shape.BEAM_HOOK, impacts, median, height);
+    }
+
+    private BeamHookInter ()
+    {
+        super(null, null, null, 0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

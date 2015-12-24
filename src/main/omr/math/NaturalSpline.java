@@ -11,12 +11,24 @@
 // </editor-fold>
 package omr.math;
 
+import static omr.math.GeoPath.countOf;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.PathIterator;
 import static java.awt.geom.PathIterator.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
+import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Class {@code NaturalSpline} defines a natural (cubic) spline interpolated on a
@@ -40,10 +52,17 @@ import java.awt.geom.QuadCurve2D;
  */
 public class NaturalSpline
         extends GeoPath
-        implements Line
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(NaturalSpline.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    private Point2D first; // Cached for faster access. Really useful???
+
+    private Point2D last; // Cached for faster access. Really useful???
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new NaturalSpline object from a sequence of connected shapes.
      *
@@ -66,19 +85,17 @@ public class NaturalSpline
      * @param points the provided points
      * @return the resulting spline curve
      */
-    public static NaturalSpline interpolate (Point2D... points)
+    public static NaturalSpline interpolate (Collection<? extends Point2D> points)
     {
-        // Check parameters
-        if (points == null) {
-            throw new IllegalArgumentException("NaturalSpline cannot interpolate null arrays");
-        }
+        Objects.requireNonNull(points, "NaturalSpline cannot interpolate null arrays");
 
-        double[] xx = new double[points.length];
-        double[] yy = new double[points.length];
+        double[] xx = new double[points.size()];
+        double[] yy = new double[points.size()];
 
-        for (int i = 0; i < points.length; i++) {
-            Point2D pt = points[i];
-            xx[i] = pt.getX();
+        int i = -1;
+
+        for (Point2D pt : points) {
+            xx[++i] = pt.getX();
             yy[i] = pt.getY();
         }
 
@@ -99,9 +116,8 @@ public class NaturalSpline
                                              double[] yy)
     {
         // Check parameters
-        if ((xx == null) || (yy == null)) {
-            throw new IllegalArgumentException("NaturalSpline cannot interpolate null arrays");
-        }
+        Objects.requireNonNull(xx, "NaturalSpline cannot interpolate null arrays");
+        Objects.requireNonNull(yy, "NaturalSpline cannot interpolate null arrays");
 
         if (xx.length != yy.length) {
             throw new IllegalArgumentException(
@@ -156,121 +172,87 @@ public class NaturalSpline
         }
     }
 
+    //---------------//
+    // getFirstPoint //
+    //---------------//
     @Override
-    public double distanceOf (double x,
-                              double y)
+    public Point2D getFirstPoint ()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (first == null) {
+            first = super.getFirstPoint();
+        }
+
+        return new Point2D.Double(first.getX(), first.getY());
     }
 
+    //--------------//
+    // getLastPoint //
+    //--------------//
     @Override
-    public double getInvertedSlope ()
+    public Point2D getLastPoint ()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+        if (last == null) {
+            last = super.getLastPoint();
+        }
 
-    @Override
-    public double getMeanDistance ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public int getNumberOfPoints ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public double getSlope ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Line includeLine (Line other)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void includePoint (double x,
-                              double y)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean isHorizontal ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean isVertical ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    //    //------------//
-    //    // renderLine //
-    //    //------------//
-    //    /**
-    //     * Specific rendering of the curved line
-    //     * @param g graphical context
-    //     * @param r radius for control and defining points
-    //     */
-    //    public void renderLine (Graphics2D g,
-    //                            double     r)
-    //    {
-    //        // Draw the curved line itself
-    //        g.draw(this);
-    //
-    //        // Draw the control & defining points on top of it
-    //        Color     oldColor = g.getColor();
-    //        Ellipse2D ellipse = new Ellipse2D.Double();
-    //        double[]  buffer = new double[6];
-    //
-    //        for (PathIterator it = getPathIterator(null); !it.isDone();
-    //             it.next()) {
-    //            int     segmentKind = it.currentSegment(buffer);
-    //            int     coords = countOf(segmentKind);
-    //            boolean control = false;
-    //
-    //            for (int ic = coords - 2; ic >= 0; ic -= 2) {
-    //                ellipse.setFrame(
-    //                    buffer[ic] - r,
-    //                    buffer[ic + 1] - r,
-    //                    2 * r,
-    //                    2 * r);
-    //                g.setColor(control ? Color.PINK : Color.BLUE);
-    //                g.fill(ellipse);
-    //
-    //                control = true;
-    //            }
-    //        }
-    //
-    //        g.setColor(oldColor);
-    //    }
-    @Override
-    public Line swappedCoordinates ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Point2D.Double(last.getX(), last.getY());
     }
 
     //--------//
-    // toPath //
+    // render //
     //--------//
-    @Override
-    public GeoPath toPath ()
+    /**
+     * Paint the spline on the provided environment, perhaps with its defining points.
+     *
+     * @param g          the graphics context
+     * @param showPoints true to show the defining points
+     * @param pointWidth width for any displayed defining point
+     */
+    public void render (Graphics2D g,
+                        boolean showPoints,
+                        double pointWidth)
     {
-        return this;
+        final Rectangle clip = g.getClipBounds();
+
+        if (clip != null) {
+            final Rectangle bounds = getBounds();
+            bounds.grow(1, 1); // Since interior of a perfect vertical or horizontal line is void!
+
+            if (!clip.intersects(bounds)) {
+                return;
+            }
+        }
+
+        // The spline itself
+        g.draw(this);
+
+        // Then the defining points?
+        if (showPoints) {
+            Color oldColor = g.getColor();
+            g.setColor(Color.RED);
+
+            final double r = pointWidth / 2; // Point radius
+            final Ellipse2D ellipse = new Ellipse2D.Double();
+            final double[] coords = new double[6];
+            final PathIterator it = getPathIterator(null);
+
+            while (!it.isDone()) {
+                final int segmentKind = it.currentSegment(coords);
+                final int count = countOf(segmentKind);
+                final double x = coords[count - 2];
+                final double y = coords[count - 1];
+                ellipse.setFrame(x - r, y - r, 2 * r, 2 * r);
+                g.fill(ellipse);
+                it.next();
+            }
+
+            g.setColor(oldColor);
+        }
     }
 
     //------//
     // xAtY //
     //------//
-    @Override
     public int xAtY (int y)
     {
         return (int) Math.rint(xAtY((double) y));
@@ -280,8 +262,8 @@ public class NaturalSpline
     // xDerivativeAtY //
     //----------------//
     /**
-     * Report the abscissa derivative value of the spline at provided
-     * ordinate (assuming true function).
+     * Report the abscissa derivative value of the spline at provided ordinate
+     * (assuming true function).
      *
      * @param y the provided ordinate
      * @return the x derivative value at this ordinate
@@ -324,7 +306,6 @@ public class NaturalSpline
     //------//
     // yAtX //
     //------//
-    @Override
     public int yAtX (int x)
     {
         return (int) Math.rint(yAtX((double) x));
@@ -334,8 +315,8 @@ public class NaturalSpline
     // yDerivativeAtX //
     //----------------//
     /**
-     * Report the ordinate derivative value of the spline at provided
-     * abscissa (assuming true function).
+     * Report the ordinate derivative value of the spline at provided abscissa
+     * (assuming true function).
      *
      * @param x the provided abscissa
      * @return the y derivative value at this abscissa
@@ -379,8 +360,8 @@ public class NaturalSpline
     // getCubicDerivatives //
     //---------------------//
     /**
-     * Computes the derivatives of natural cubic spline that
-     * interpolates the provided knots
+     * Computes the derivatives of natural cubic spline that interpolates the provided
+     * knots.
      *
      * @param z the provided n knots
      * @return the corresponding array of derivative values
@@ -407,7 +388,7 @@ public class NaturalSpline
          * and then back substitution.
          */
         double[] gamma = new double[n + 1];
-        gamma[0] = 1.0f / 2.0f;
+        gamma[0] = 0.5;
 
         for (int i = 1; i < n; i++) {
             gamma[i] = 1 / (4 - gamma[i - 1]);

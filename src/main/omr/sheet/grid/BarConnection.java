@@ -64,11 +64,18 @@ public class BarConnection
     public Area getArea ()
     {
         if (area == null) {
-            double width = (topPeak.getWidth() + bottomPeak.getWidth()) / 2d;
-            area = AreaUtil.verticalRibbon(getMedian(), width);
+            area = AreaUtil.verticalRibbon(getMedian(), getWidth());
         }
 
         return area;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    public double getWidth ()
+    {
+        return (topPeak.getWidth() + bottomPeak.getWidth()) / 2d;
     }
 
     //------------//

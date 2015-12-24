@@ -11,42 +11,67 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.BasicGlyph;
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import static omr.run.Orientation.VERTICAL;
+import omr.run.RunTable;
+import omr.run.RunTableFactory;
 
 import omr.sheet.Scale;
+import omr.sheet.Sheet;
 import omr.sheet.rhythm.Voice;
 
 import omr.sig.GradeImpacts;
+import omr.sig.relation.AbstractStemConnection;
 import omr.sig.relation.BeamStemRelation;
 import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
-import omr.sig.relation.StemConnection;
 import omr.sig.relation.StemPortion;
-
 import static omr.sig.relation.StemPortion.STEM_BOTTOM;
 import static omr.sig.relation.StemPortion.STEM_TOP;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
+import omr.util.Jaxb;
 
+import ij.process.ByteProcessor;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code StemInter} represents Stem interpretations.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "stem")
 public class StemInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
+    /** Top point. */
+    @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
+    private final Point2D top;
+
+    /** Bottom point. */
+    @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
+    private final Point2D bottom;
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemInter object.
      *
@@ -57,9 +82,42 @@ public class StemInter
                       GradeImpacts impacts)
     {
         super(glyph, null, Shape.STEM, impacts);
+        top = glyph.getStartPoint(VERTICAL);
+        bottom = glyph.getStopPoint(VERTICAL);
+    }
+
+    /**
+     * Creates a new StemInter object.
+     *
+     * @param glyph the underlying glyph
+     * @param grade the assigned grade
+     */
+    public StemInter (Glyph glyph,
+                      double grade)
+    {
+        super(glyph, null, Shape.STEM, grade);
+        top = glyph.getStartPoint(VERTICAL);
+        bottom = glyph.getStopPoint(VERTICAL);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private StemInter ()
+    {
+        super(null, null, null, null);
+        top = bottom = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    public static double getMinGrade ()
+    {
+        return AbstractInter.getMinGrade();
+    }
+
     //--------//
     // accept //
     //--------//
@@ -69,36 +127,24 @@ public class StemInter
         visitor.visit(this);
     }
 
-    //-----------//
-    // duplicate //
-    //-----------//
-    public StemInter duplicate ()
-    {
-        StemInter clone = new StemInter(glyph, impacts);
-        clone.setMirror(this);
-        sig.addVertex(clone);
-        setMirror(clone);
-
-        return clone;
-    }
-
-    //--------------//
-    // getDirection //
-    //--------------//
+    //------------------//
+    // computeDirection //
+    //------------------//
     /**
-     * Report the direction (from head to tail) of this stem.
+     * Report the direction (from head to tail) of this stem, compliant with standard
+     * display y orientation (-1 for stem up, +1 for stem down, 0 for unknown).
      * <p>
      * For this, we check what is found on each stem end (is it a tail: beam/flag or is it a head)
      * and use contextual grade to pick up the best reference.
      *
-     * @return -1 for stem up, +1 for stem down, 0 for unknown
+     * @return the stem direction
      */
-    public int getDirection ()
+    public int computeDirection ()
     {
         Scale scale = sig.getSystem().getSheet().getScale();
         final Line2D stemLine = sig.getStemLine(this);
         final List<Relation> links = new ArrayList<Relation>(
-                sig.getRelations(this, StemConnection.class));
+                sig.getRelations(this, AbstractStemConnection.class));
         sig.sortBySource(links);
 
         for (Relation rel : links) {
@@ -119,39 +165,113 @@ public class StemInter
                         return 1;
                     }
                 }
+            } else if (rel instanceof BeamStemRelation) {
+                // Beam -> Stem
+                BeamStemRelation link = (BeamStemRelation) rel;
+                StemPortion portion = link.getStemPortion(source, stemLine, scale);
+
+                return (portion == STEM_TOP) ? (-1) : 1;
             } else {
-                // Tail (Beam or Flag) -> Stem
-                if (rel instanceof BeamStemRelation) {
-                    // Beam -> Stem
-                    BeamStemRelation link = (BeamStemRelation) rel;
-                    StemPortion portion = link.getStemPortion(source, stemLine, scale);
+                // Flag -> Stem
+                FlagStemRelation link = (FlagStemRelation) rel;
+                StemPortion portion = link.getStemPortion(source, stemLine, scale);
 
-                    return (portion == STEM_TOP) ? (-1) : 1;
-                } else {
-                    // Flag -> Stem
-                    FlagStemRelation link = (FlagStemRelation) rel;
-                    StemPortion portion = link.getStemPortion(source, stemLine, scale);
+                if (portion == STEM_TOP) {
+                    return -1;
+                }
 
-                    if (portion == STEM_TOP) {
-                        return -1;
-                    }
-
-                    if (portion == STEM_BOTTOM) {
-                        return 1;
-                    }
+                if (portion == STEM_BOTTOM) {
+                    return 1;
                 }
             }
         }
 
-        return 0; // Cannot decide!
+        return 0; // Cannot decide with current config!
     }
 
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    public static double getMinGrade ()
+    //-----------//
+    // duplicate //
+    //-----------//
+    public StemInter duplicate ()
     {
-        return AbstractInter.getMinGrade();
+        StemInter clone = new StemInter(glyph, impacts);
+        clone.setGlyph(this.glyph);
+        clone.setMirror(this);
+
+        if (impacts == null) {
+            clone.setGrade(this.grade);
+        }
+
+        sig.addVertex(clone);
+        setMirror(clone);
+
+        return clone;
+    }
+
+    //----------------//
+    // extractSubStem //
+    //----------------//
+    /**
+     * Build a new stem from a portion of this one (extrema ordinates can be provided
+     * in any order).
+     *
+     * @param y1 ordinate of one side of sub-stem
+     * @param y2 ordinate of the other side of sub-stem
+     * @return the extracted sub-stem inter
+     */
+    public StemInter extractSubStem (int y1,
+                                     int y2)
+    {
+        final int yTop = Math.min(y1, y2);
+        final int yBottom = Math.max(y1, y2);
+
+        final Sheet sheet = sig.getSystem().getSheet();
+        final ByteProcessor buffer = glyph.getRunTable().getBuffer();
+
+        // ROI definition (WRT stem buffer coordinates)
+        final Rectangle roi = new Rectangle(
+                0,
+                yTop - glyph.getTop(),
+                glyph.getWidth(),
+                yBottom - yTop + 1);
+
+        // Create sub-glyph
+        final Point stemOffset = new Point();
+        final RunTableFactory factory = new RunTableFactory(VERTICAL);
+        final RunTable table = factory.createTable(buffer, roi).trim(stemOffset);
+        final int x = glyph.getLeft() + stemOffset.x;
+        final int y = glyph.getTop() + roi.y + stemOffset.y;
+        final Glyph g = sheet.getGlyphIndex().registerOriginal(
+                new BasicGlyph(x, y, table));
+
+        // Create sub-stem
+        final StemInter subStem = new StemInter(g, getGrade());
+        sheet.getInterIndex().register(subStem);
+        sig.addVertex(subStem);
+
+        return subStem;
+    }
+
+    //-----------//
+    // getBottom //
+    //-----------//
+    /**
+     * @return the bottom
+     */
+    public Point2D getBottom ()
+    {
+        return bottom;
+    }
+
+    //--------//
+    // getTop //
+    //--------//
+    /**
+     * @return the top
+     */
+    public Point2D getTop ()
+    {
+        return top;
     }
 
     //----------//

@@ -134,7 +134,7 @@ public class MacApplication
             } else {
                 // Actually load the sheet picture
                 Book book = OMR.getEngine().loadInput(Paths.get(filename));
-                book.createSheets(null); // So that sheets are visible
+                book.createStubs(null); // So that sheets stubs are visible
             }
 
             break;

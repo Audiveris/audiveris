@@ -159,8 +159,8 @@ public class Barycenter
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName()).append(" weight:").append(weight);
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{").append(" weight:").append(weight);
 
         if (weight > 0) {
             sb.append(" x:").append((float) getX()).append(" y:").append((float) getY());

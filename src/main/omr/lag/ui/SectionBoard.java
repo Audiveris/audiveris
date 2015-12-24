@@ -16,35 +16,20 @@ import omr.lag.Section;
 
 import omr.run.Orientation;
 
+import omr.selection.EntityListEvent;
 import omr.selection.MouseMovement;
-import omr.selection.SectionEvent;
-import omr.selection.SectionIdEvent;
-import omr.selection.SectionSetEvent;
-import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
 import omr.ui.Board;
+import omr.ui.EntityBoard;
 import omr.ui.field.LIntegerField;
-import omr.ui.field.SpinnerUtil;
-import omr.ui.util.Panel;
 
-import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Set;
-
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JSpinner;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code SectionBoard} defines a board dedicated to the display of {@link
@@ -54,120 +39,68 @@ import javax.swing.event.ChangeListener;
  * @author Hervé Bitteur
  */
 public class SectionBoard
-        extends Board
+        extends EntityBoard<Section>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SectionBoard.class);
 
-    /** Events this board is interested in */
-    private static final Class<?>[] eventsRead = new Class<?>[]{
-        SectionEvent.class, SectionSetEvent.class
-    };
-
     //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying lag */
     protected final Lag lag;
 
-    /** Counter of section selection */
-    protected final JLabel count = new JLabel("");
-
-    // Section input devices
-    //
-    /** Button for section dump */
-    private final JButton dump;
-
-    /** Spinner for section id */
-    private final JSpinner id = new JSpinner();
-
-    // Output for plain Section
-    //
-    /** Field for left abscissa */
+    /** Field for left abscissa. */
     private final LIntegerField x = new LIntegerField(false, "X", "Left abscissa in pixels");
 
-    /** Field for top ordinate */
+    /** Field for top ordinate. */
     private final LIntegerField y = new LIntegerField(false, "Y", "Top ordinate in pixels");
 
-    /** Field for width */
+    /** Field for width. */
     private final LIntegerField width = new LIntegerField(
             false,
             "Width",
             "Horizontal width in pixels");
 
-    /** Field for height */
+    /** Field for height. */
     private final LIntegerField height = new LIntegerField(
             false,
             "Height",
             "Vertical height in pixels");
 
-    /** Field for weight */
+    /** Field for weight. */
     private final LIntegerField weight = new LIntegerField(
             false,
             "Weight",
             "Number of pixels in this section");
-
-    /** To avoid loop, indicate that selecting is being done by the spinner */
-    private boolean idSelecting = false;
-
-    /** To avoid loop, indicate that update() method id being processed */
-    private boolean updating = false;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Section Board
      *
      * @param lag      the related lag
-     * @param expanded true for initially expanded, false for collapsed
+     * @param expanded true for expanded, false for collapsed
      */
-    public SectionBoard (final Lag lag,
+    public SectionBoard (Lag lag,
                          boolean expanded)
     {
         super(
-                Board.SECTION.name
-                + ((lag.getOrientation() == Orientation.VERTICAL) ? " Vert" : " Hori"),
-                Board.SECTION.position + ((lag.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
-                lag.getSectionService(),
-                eventsRead,
-                true, // Dump
+                new Desc(
+                        Board.SECTION.name
+                        + ((lag.getOrientation() == Orientation.VERTICAL) ? " Vert" : " Hori"),
+                        Board.SECTION.position
+                        + ((lag.getOrientation() == Orientation.VERTICAL) ? 100 : 0)),
+                lag.getEntityService(),
                 expanded);
 
         this.lag = lag;
 
-        // Dump button
-        dump = getDumpButton();
-        dump.setToolTipText("Dump this section");
-        dump.addActionListener(new DumpActionListener(lag));
-        dump.setEnabled(false); // Until a section selection is made
+        // Initial status
+        x.setEnabled(false);
+        y.setEnabled(false);
+        weight.setEnabled(false);
+        width.setEnabled(false);
+        height.setEnabled(false);
 
-        // ID Spinner
-        id.setToolTipText("General spinner for any section id");
-        id.addChangeListener(
-                new ChangeListener()
-                {
-                    @Override
-                    public void stateChanged (ChangeEvent e)
-                    {
-                        // Make sure this new Id value is due to user action on an Id spinner,
-                        // and not to the mere update of section fields (which include this id).
-                        if (!updating) {
-                            Integer sectionId = (Integer) id.getValue();
-                            logger.debug("sectionId={} for {}", sectionId, lag);
-
-                            idSelecting = true;
-                            lag.getSectionService().publish(
-                                    new SectionIdEvent(
-                                            SectionBoard.this,
-                                            SelectionHint.SECTION_INIT,
-                                            sectionId));
-                            idSelecting = false;
-                        }
-                    }
-                });
-        id.setModel(new SpinnerSectionModel(lag));
-        SpinnerUtil.setEditable(id, true);
-        SpinnerUtil.setRightAlignment(id);
-
-        // Component layout
         defineLayout();
     }
 
@@ -192,10 +125,11 @@ public class SectionBoard
 
             logger.debug("SectionBoard: {}", event);
 
-            if (event instanceof SectionEvent) {
-                handleEvent((SectionEvent) event);
-            } else if (event instanceof SectionSetEvent) {
-                handleEvent((SectionSetEvent) event);
+            // Standard behavior
+            super.onEvent(event); // ->  (count, vip, dump, id)
+
+            if (event instanceof EntityListEvent) {
+                handleEvent((EntityListEvent<Section>) event);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -207,19 +141,9 @@ public class SectionBoard
     //--------------//
     private void defineLayout ()
     {
-        FormLayout layout = Panel.makeFormLayout(3, 3);
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
-        builder.setDefaultDialogBorder();
-
         CellConstraints cst = new CellConstraints();
+
         int r = 1; // --------------------------------
-
-        builder.add(count, cst.xy(9, r));
-
-        r += 2; // --------------------------------
-        builder.addLabel("Id", cst.xy(1, r));
-        builder.add(id, cst.xy(3, r));
-
         builder.add(x.getLabel(), cst.xy(5, r));
         builder.add(x.getField(), cst.xy(7, r));
 
@@ -241,102 +165,32 @@ public class SectionBoard
     // handleEvent //
     //-------------//
     /**
-     * Interest in Section
+     * Interest in EntityListEvent
      *
-     * @param sectionEvent
+     * @param listEvent
      */
-    private void handleEvent (SectionEvent sectionEvent)
+    private void handleEvent (EntityListEvent<Section> listEvent)
     {
-        if (updating) {
-            return;
+        // Info on last section in list
+        final Section section = listEvent.getEntity();
+
+        // Update section fields in this board
+        emptyFields(getBody());
+
+        if (section != null) {
+            // We have a valid section, let's display its fields
+            Rectangle box = section.getBounds();
+            x.setValue(box.x);
+            y.setValue(box.y);
+            width.setValue(box.width);
+            height.setValue(box.height);
+            weight.setValue(section.getWeight());
         }
 
-        try {
-            // Update section fields in this board
-            updating = true;
-
-            final Section section = (sectionEvent != null) ? sectionEvent.getData() : null;
-            dump.setEnabled(section != null);
-
-            Integer sectionId = null;
-
-            if (idSelecting) {
-                sectionId = (Integer) id.getValue();
-            }
-
-            emptyFields(getBody());
-
-            if (section == null) {
-                // If the user is currently using the Id spinner, make sure we display the right Id
-                // value in the spinner, even if there is no corresponding section
-                if (idSelecting) {
-                    id.setValue(sectionId);
-                } else {
-                    id.setValue(SpinnerUtil.NO_VALUE);
-                }
-            } else {
-                // We have a valid section, let's display its fields
-                id.setValue(section.getId());
-
-                Rectangle box = section.getBounds();
-                x.setValue(box.x);
-                y.setValue(box.y);
-                width.setValue(box.width);
-                height.setValue(box.height);
-                weight.setValue(section.getWeight());
-            }
-        } finally {
-            updating = false;
-        }
-    }
-
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Interest in SectionSet
-     *
-     * @param sectionSetEvent
-     */
-    private void handleEvent (SectionSetEvent sectionSetEvent)
-    {
-        // Display count of sections in the section set
-        Set<Section> sections = sectionSetEvent.getData();
-
-        if ((sections != null) && !sections.isEmpty()) {
-            count.setText(Integer.toString(sections.size()));
-        } else {
-            count.setText("");
-        }
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //--------------------//
-    // DumpActionListener //
-    //--------------------//
-    private static class DumpActionListener
-            implements ActionListener
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Lag lag;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public DumpActionListener (Lag lag)
-        {
-            this.lag = lag;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            // Retrieve current section selection
-            Section section = (Section) lag.getSectionService().getSelection(SectionEvent.class);
-
-            if (section != null) {
-                section.dump();
-            }
-        }
+        x.setEnabled(section != null);
+        y.setEnabled(section != null);
+        weight.setEnabled(section != null);
+        width.setEnabled(section != null);
+        height.setEnabled(section != null);
     }
 }

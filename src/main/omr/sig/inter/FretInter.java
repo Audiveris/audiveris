@@ -11,14 +11,17 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code FretInter} represents a fret number for guitar left-hand.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "fret")
 public class FretInter
         extends AbstractInter
         implements StringSymbolInter

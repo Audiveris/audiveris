@@ -1,35 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="FLAT" interline="13" id="840">
-    <stem-number>1</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-2.693877551020408</pitch-position>
-    <section orientation="VERTICAL" first-pos="2680" id="8538">
-        <run start="3504" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="2681" id="8540">
-        <run start="3484" length="29"/>
-        <run start="3484" length="28"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="2683" id="8545">
-        <run start="3498" length="3"/>
-        <run start="3498" length="2"/>
-        <run start="3498" length="2"/>
-        <run start="3497" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="2683" id="8546">
-        <run start="3509" length="2"/>
-        <run start="3508" length="3"/>
-        <run start="3507" length="3"/>
-        <run start="3504" length="5"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="2687" id="8549">
-        <run start="3497" length="11"/>
-        <run start="3497" length="11"/>
-        <run start="3498" length="9"/>
-        <run start="3499" length="6"/>
-        <run start="3500" length="5"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="2692" id="8552">
-        <run start="3504" length="1"/>
-    </section>
-</glyph>
+<sample id="840" interline="13" left="2680" top="3484" shape="FLAT">
+    <run-table orientation="VERTICAL" width="13" height="29">
+        <sequences>
+            <item>0 20 1</item>
+            <item>29</item>
+            <item>28</item>
+            <item>0 14 3 8 2</item>
+            <item>0 14 2 8 3</item>
+            <item>0 14 2 7 3</item>
+            <item>0 13 4 3 5</item>
+            <item>0 13 11</item>
+            <item>0 13 11</item>
+            <item>0 14 9</item>
+            <item>0 15 6</item>
+            <item>0 16 5</item>
+            <item>0 20 1</item>
+        </sequences>
+    </run-table>
+</sample>

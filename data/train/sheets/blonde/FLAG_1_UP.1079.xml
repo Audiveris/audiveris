@@ -1,43 +1,30 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<glyph id="1079" interline="22" shape="FLAG_1_UP">
-    <stem-number>1</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>5.379310344827586</pitch-position>
-        <section orientation="VERTICAL" id="3583" first-pos="1868">
-            <run start="1057" length="24"/>
-            <run start="1061" length="20"/>
-            <run start="1061" length="18"/>
-            <run start="1060" length="15"/>
-            <run start="1059" length="15"/>
-            <run start="1058" length="14"/>
-            <run start="1058" length="13"/>
-            <run start="1057" length="13"/>
-            <run start="1055" length="14"/>
-            <run start="1055" length="13"/>
-            <run start="1054" length="13"/>
-            <run start="1053" length="13"/>
-            <run start="1052" length="12"/>
-            <run start="1051" length="12"/>
-            <run start="1050" length="12"/>
-            <run start="1048" length="11"/>
-            <run start="1046" length="12"/>
-            <run start="1043" length="13"/>
-        </section>
-        <section orientation="VERTICAL" id="3606" first-pos="1886">
-            <run start="1027" length="26"/>
-            <run start="1028" length="23"/>
-        </section>
-        <section orientation="VERTICAL" id="3603" first-pos="1885">
-            <run start="1028" length="10"/>
-        </section>
-        <section orientation="VERTICAL" id="3604" first-pos="1885">
-            <run start="1039" length="2"/>
-        </section>
-        <section orientation="VERTICAL" id="3608" first-pos="1888">
-            <run start="1032" length="14"/>
-        </section>
-        <section orientation="VERTICAL" id="3609" first-pos="1889">
-            <run start="1040" length="3"/>
-            <run start="1040" length="1"/>
-        </section>
-</glyph>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sample id="1079" interline="22" left="1868" top="1027" shape="FLAG_1_UP">
+    <run-table orientation="VERTICAL" width="23" height="54">
+        <sequences>
+            <item>0 30 24</item>
+            <item>0 34 20</item>
+            <item>0 34 18</item>
+            <item>0 33 15</item>
+            <item>0 32 15</item>
+            <item>0 31 14</item>
+            <item>0 31 13</item>
+            <item>0 30 13</item>
+            <item>0 28 14</item>
+            <item>0 28 13</item>
+            <item>0 27 13</item>
+            <item>0 26 13</item>
+            <item>0 25 12</item>
+            <item>0 24 12</item>
+            <item>0 23 12</item>
+            <item>0 21 11</item>
+            <item>0 19 12</item>
+            <item>0 1 10 1 2 2 13</item>
+            <item>26</item>
+            <item>0 1 23</item>
+            <item>0 5 14</item>
+            <item>0 13 3</item>
+            <item>0 13 1</item>
+        </sequences>
+    </run-table>
+</sample>

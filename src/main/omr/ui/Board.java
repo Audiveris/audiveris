@@ -14,6 +14,7 @@ package omr.ui;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
+import omr.ui.field.LCheckBox;
 import omr.ui.util.Panel;
 
 import omr.util.ClassUtil;
@@ -31,6 +32,7 @@ import java.awt.Component;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -75,6 +77,8 @@ public abstract class Board
     public static final Desc RUN = new Desc("Run", 200);
 
     public static final Desc SECTION = new Desc("Section", 250);
+
+    public static final Desc FILAMENT = new Desc("Filament", 300);
 
     public static final Desc SAMPLE = new Desc("Sample", 400);
 
@@ -126,17 +130,29 @@ public abstract class Board
      *
      * @param desc             the board descriptor
      * @param selectionService the related selection service for input & output
-     * @param eventList        the collection of event classes to observe
+     * @param eventsRead       the collection of event classes to observe
+     * @param withCount        true for a count field
+     * @param withVip          true for a VIP label & field
      * @param withDump         true for a dump button
      * @param selected         true to make the board initially selected
      */
     public Board (Desc desc,
                   SelectionService selectionService,
-                  Class<?>[] eventList,
+                  Class<?>[] eventsRead,
+                  boolean withCount,
+                  boolean withVip,
                   boolean withDump,
                   boolean selected)
     {
-        this(desc.name, desc.position, selectionService, eventList, withDump, selected);
+        this(
+                desc.name,
+                desc.position,
+                selectionService,
+                eventsRead,
+                withCount,
+                withVip,
+                withDump,
+                selected);
     }
 
     /**
@@ -145,26 +161,30 @@ public abstract class Board
      * @param name             a name assigned to the board
      * @param position         the preferred position within BoardsPane display
      * @param selectionService the related selection service for input & output
-     * @param eventList        the collection of event classes to observe
+     * @param eventsRead       the collection of event classes to observe
+     * @param withCount        true for a count field
+     * @param withVip          true for a VIP label & field
      * @param withDump         true for a dump button
-     * @param selected         true to make the board initially selected
+     * @param selected         true to make the board selected
      */
     public Board (String name,
                   int position,
                   SelectionService selectionService,
-                  Class[] eventList,
+                  Class[] eventsRead,
+                  boolean withCount,
+                  boolean withVip,
                   boolean withDump,
                   boolean selected)
     {
         this.name = name;
         this.position = position;
         this.selectionService = selectionService;
-        this.eventsRead = eventList;
+        this.eventsRead = eventsRead;
         this.selected = selected;
 
         // Layout header and body parts
-        header = new Header(name, withDump);
-        defineBoardLayout();
+        header = new Header(name, withCount, withVip, withDump);
+        defineLayout();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -291,11 +311,22 @@ public abstract class Board
     /**
      * Select or not this board in its containing BoardsPane.
      *
-     * @param bool true for selected
+     * @param newBool true for selected, false for deselected
      */
-    public void setSelected (boolean bool)
+    public void setSelected (boolean newBool)
     {
-        selected = bool;
+        // No modification?
+        if (selected == newBool) {
+            return;
+        }
+
+        if (newBool) {
+            connect();
+        } else {
+            disconnect();
+        }
+
+        selected = newBool;
 
         if (parent != null) {
             parent.update();
@@ -338,6 +369,14 @@ public abstract class Board
     }
 
     //---------------//
+    // getCountField //
+    //---------------//
+    protected JLabel getCountField ()
+    {
+        return header.count;
+    }
+
+    //---------------//
     // getDumpButton //
     //---------------//
     /**
@@ -347,7 +386,7 @@ public abstract class Board
      */
     protected JButton getDumpButton ()
     {
-        return header.dumpButton;
+        return header.dump;
     }
 
     //---------------------//
@@ -363,10 +402,23 @@ public abstract class Board
         return selectionService;
     }
 
-    //-------------------//
-    // defineBoardLayout //
-    //-------------------//
-    private void defineBoardLayout ()
+    //-----------//
+    // getVipBox //
+    //-----------//
+    /**
+     * Get access to the VIP box, if any.
+     *
+     * @return the vip label+field
+     */
+    protected LCheckBox getVipBox ()
+    {
+        return header.vip;
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
     {
         component.setNoInsets();
         body.setNoInsets();
@@ -419,19 +471,30 @@ public abstract class Board
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** The board title */
+        /** The board title. */
         private final String title;
 
-        /** Dump button */
-        public final JButton dumpButton;
+        /** Output: Count of entities, if any. */
+        private final JLabel count;
+
+        /** Input / Output : VIP flag, if any. */
+        private final LCheckBox vip;
+
+        /** Dump button, if any. */
+        private final JButton dump;
 
         //~ Constructors ---------------------------------------------------------------------------
         public Header (String title,
+                       boolean withCount,
+                       boolean withVip,
                        boolean withDump)
         {
             this.title = title;
 
-            dumpButton = withDump ? new JButton("Dump") : null;
+            count = withCount ? new JLabel("") : null;
+            vip = withVip ? new LCheckBox("Vip", "Is this entity flagged as VIP?") : null;
+            dump = withDump ? new JButton("Dump") : null;
+
             setNoInsets();
             defineLayout();
         }
@@ -440,17 +503,39 @@ public abstract class Board
         private void defineLayout ()
         {
             CellConstraints cst = new CellConstraints();
-            FormLayout layout = new FormLayout(
-                    "152" + "dlu," + Panel.getFieldInterval() + ",35dlu",
-                    "pref");
+            StringBuilder sb = new StringBuilder();
+            // title & separator
+            sb.append("107dlu");
+            // count label
+            sb.append(",").append(Panel.getFieldInterval()).append(",15dlu");
+            // vip label+box
+            sb.append(",").append(Panel.getFieldInterval()).append(",12dlu,").append(
+                    Panel.getLabelInterval()).append(",10dlu");
+            // dump button
+            sb.append(",").append(Panel.getFieldInterval()).append(",35dlu");
+
+            FormLayout layout = new FormLayout(sb.toString(), "pref");
             PanelBuilder builder = new PanelBuilder(layout, this);
 
-            if (dumpButton != null) {
-                builder.addSeparator(title, cst.xy(1, 1));
-                builder.add(dumpButton, cst.xyw(3, 1, 1));
-            } else {
-                builder.addSeparator(title, cst.xyw(1, 1, 3));
+            int sepEnd = 9;
+
+            if (dump != null) {
+                sepEnd = 7;
+                builder.add(dump, cst.xyw(9, 1, 1));
             }
+
+            if (vip != null) {
+                sepEnd = 3;
+                builder.add(vip.getLabel(), cst.xy(5, 1));
+                builder.add(vip.getField(), cst.xy(7, 1));
+            }
+
+            if (count != null) {
+                sepEnd = 1;
+                builder.add(count, cst.xy(3, 1, "right, center"));
+            }
+
+            builder.addSeparator(title, cst.xyw(1, 1, sepEnd));
         }
     }
 }

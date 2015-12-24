@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.GlyphNest;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
+import omr.glyph.GlyphIndex;
 
 import omr.sheet.Sheet;
 
@@ -21,7 +21,7 @@ import omr.ui.util.SeparableMenu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * Abstract class {@code AbstractGlyphMenu} is the base for glyph-based menus such as
@@ -43,10 +43,10 @@ public abstract class AbstractGlyphMenu
     protected final Sheet sheet;
 
     /** Related nest. */
-    protected final GlyphNest nest;
+    protected final GlyphIndex nest;
 
     /** The selected glyphs. */
-    protected Set<Glyph> glyphs;
+    protected Collection<Glyph> glyphs;
 
     /** Current number of selected glyphs. */
     protected int glyphNb;
@@ -65,7 +65,7 @@ public abstract class AbstractGlyphMenu
                               String text)
     {
         this.sheet = sheet;
-        nest = sheet.getGlyphNest();
+        nest = sheet.getGlyphIndex();
         menu.setText(text);
     }
 
@@ -92,7 +92,7 @@ public abstract class AbstractGlyphMenu
      * @param glyphs the selected glyphs
      * @return the number of selected glyphs
      */
-    public int updateMenu (Set<Glyph> glyphs)
+    public int updateMenu (Collection<Glyph> glyphs)
     {
         if (!initDone) {
             initMenu();
