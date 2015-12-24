@@ -13,9 +13,30 @@ package omr.lag;
 
 import omr.OMR;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
+import omr.run.Orientation;
+import static omr.run.Orientation.HORIZONTAL;
+import static omr.run.Orientation.VERTICAL;
+import omr.run.Run;
+import omr.run.RunTable;
+import omr.run.RunTableFactory;
+
+import omr.sheet.Picture;
+import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
+import omr.util.Navigable;
+import omr.util.Predicate;
+import omr.util.StringUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collection;
+import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -26,29 +47,130 @@ import java.util.TreeMap;
  */
 public class LagManager
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(
+            LagManager.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Map of all public lags. */
     private final Map<String, Lag> lagMap = new TreeMap<String, Lag>();
 
     /** Id of last long horizontal section. */
-    private int lastLongHSectionId = -1;
+    private String lastLongHSectionId;
+
+    /** (Debug)Predefined IDs for VIP sections. */
+    private final EnumMap<Orientation, List<String>> vipMap;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LagManager} object.
      *
-     * @param sheet DOCUMENT ME!
+     * @param sheet the related sheet
      */
     public LagManager (Sheet sheet)
     {
         this.sheet = sheet;
+
+        vipMap = getVipSections();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------------//
+    // buildHorizontalLag //
+    //--------------------//
+    /**
+     * Build the underlying horizontal lag from the provided runs table.
+     *
+     * @param horiTable the provided table of all (horizontal) runs
+     * @param hLag      the horizontal lag to populate, existing or created if null
+     * @return the created hLag
+     */
+    public Lag buildHorizontalLag (RunTable horiTable,
+                                   Lag hLag)
+    {
+        Lag lag = (hLag != null) ? hLag : new BasicLag(Lags.HLAG, HORIZONTAL);
+        SectionFactory sectionsFactory = new SectionFactory(lag, JunctionRatioPolicy.DEFAULT);
+        sectionsFactory.createSections(horiTable, null, true);
+        setLag(Lags.HLAG, lag);
+        setVipSections(HORIZONTAL);
+
+        return lag;
+    }
+
+    //------------------//
+    // buildVerticalLag //
+    //------------------//
+    /**
+     * Build the underlying vertical lag, from the provided runs table.
+     * This method must be called before building info.
+     *
+     * @param vertTable the provided table of (long) vertical runs
+     * @return the created vLag
+     */
+    public Lag buildVerticalLag (RunTable vertTable)
+    {
+        final Lag vLag = new BasicLag(Lags.VLAG, VERTICAL);
+        final Scale scale = sheet.getScale();
+        final int maxVerticalRunShift = scale.toPixels(constants.maxVerticalRunShift);
+        SectionFactory factory = new SectionFactory(
+                vLag,
+                new JunctionShiftPolicy(maxVerticalRunShift));
+        factory.createSections(vertTable, null, true);
+        setLag(Lags.VLAG, vLag);
+        setVipSections(VERTICAL);
+
+        return vLag;
+    }
+
+    //------------//
+    // filterRuns //
+    //------------//
+    /**
+     * Filter the source table into vertical table and horizontal table.
+     *
+     * @param sourceTable the source table (BINARY or NO_STAF)
+     * @param vertTable   (output) populated by long vertical runs, can be null
+     * @return the horizontal table built from no-long vertical runs
+     */
+    public RunTable filterRuns (RunTable sourceTable,
+                                RunTable vertTable)
+    {
+        final int minVerticalRunLength = 1
+                                         + (int) Math.rint(
+                        sheet.getScale().getMaxFore() * constants.ledgerThickness.getValue());
+
+        // Remove runs whose height is larger than line thickness
+        RunTable shortVertTable = sourceTable.copy().purge(
+                new Predicate<Run>()
+                {
+                    @Override
+                    public final boolean check (Run run)
+                    {
+                        return run.getLength() >= minVerticalRunLength;
+                    }
+                },
+                vertTable);
+        RunTableFactory runFactory = new RunTableFactory(HORIZONTAL);
+        RunTable horiTable = runFactory.createTable(shortVertTable.getBuffer());
+//
+//        logger.info("source:{} weight:{}", sourceTable, sourceTable.getWeight());
+//
+//        if (vertTable != null) {
+//            logger.info("vert:{} weight:{}", vertTable, vertTable.getWeight());
+//        }
+//
+//        logger.info("hori:{} weight:{}", horiTable, horiTable.getWeight());
+//
+        return horiTable;
+    }
+
     //------------//
     // getAllLags //
     //------------//
@@ -73,7 +195,23 @@ public class LagManager
      */
     public Lag getLag (String key)
     {
-        return lagMap.get(key);
+        Lag lag = lagMap.get(key);
+
+        if (lag == null) {
+            switch (key) {
+            case Lags.HLAG:
+                rebuildBothLags();
+
+                return lagMap.get(key);
+
+            case Lags.VLAG:
+                rebuildBothLags();
+
+                return lagMap.get(key);
+            }
+        }
+
+        return lag;
     }
 
     //---------------------//
@@ -84,9 +222,27 @@ public class LagManager
      *
      * @return the id of the last long horizontal section
      */
-    public int getLongSectionMaxId ()
+    public String getLongSectionMaxId ()
     {
         return lastLongHSectionId;
+    }
+
+    //-------------//
+    // rebuildHLag //
+    //-------------//
+    /**
+     * Rebuild hLag from NO_STAFF table.
+     */
+    public void rebuildHLag ()
+    {
+        // Build tables
+        RunTable sourceTable = sheet.getPicture().getTable(Picture.TableKey.NO_STAFF);
+        RunTable horiTable = filterRuns(sourceTable, null);
+
+        // Repopulate hLag
+        Lag hLag = lagMap.get(Lags.HLAG);
+        hLag.reset();
+        buildHorizontalLag(horiTable, hLag);
     }
 
     //--------//
@@ -101,16 +257,18 @@ public class LagManager
     public void setLag (String key,
                         Lag lag)
     {
-        Lag oldLag = getLag(key);
-
-        if ((oldLag != null) && (OMR.getGui() != null)) {
-            oldLag.cutServices();
-        }
-
+        //        Lag oldLag = getLag(key);
+        //
+        //        if ((oldLag != null) && (OMR.getGui() != null)) {
+        //            logger.warn("Need to cut lag services?");
+        //
+        //            ///oldLag.cutServices();
+        //        }
+        //
         lagMap.put(key, lag);
 
-        if ((lag != null) && (OMR.getGui() != null)) {
-            lag.setServices(sheet.getLocationService());
+        if ((lag != null) && (OMR.getGui() != null) && (lag.getEntityService() == null)) {
+            lag.setEntityService(new SectionService(lag, sheet.getLocationService()));
         }
     }
 
@@ -122,8 +280,100 @@ public class LagManager
      *
      * @param id the id of the last long horizontal section
      */
-    public void setLongSectionMaxId (int id)
+    public void setLongSectionMaxId (String id)
     {
         lastLongHSectionId = id;
+    }
+
+    //----------------//
+    // setVipSections //
+    //----------------//
+    public void setVipSections (Orientation orientation)
+    {
+        List<String> ids = vipMap.get(orientation);
+        Lag lag = lagMap.get(orientation.isVertical() ? Lags.VLAG : Lags.HLAG);
+
+        // Debug sections VIPs
+        for (String id : ids) {
+            Section sect = lag.getEntity(id);
+
+            if (sect != null) {
+                sect.setVip(true);
+                logger.info("{} vip section: {}", orientation, sect);
+            }
+        }
+    }
+
+    //----------------//
+    // getVipSections //
+    //----------------//
+    private EnumMap<Orientation, List<String>> getVipSections ()
+    {
+        EnumMap<Orientation, List<String>> map = new EnumMap<Orientation, List<String>>(
+                Orientation.class);
+
+        for (Orientation orientation : Orientation.values()) {
+            String vipStr = orientation.isVertical()
+                    ? constants.verticalVipSections.getValue()
+                    : constants.horizontalVipSections.getValue();
+            List<String> ids = StringUtil.parseStrings(vipStr);
+
+            if (!ids.isEmpty()) {
+                logger.info("{} VIP sections: {}", orientation, ids);
+            }
+
+            map.put(orientation, ids);
+        }
+
+        return map;
+    }
+
+    //-----------------//
+    // rebuildBothLags //
+    //-----------------//
+    /**
+     * Rebuild both hLag and vLag directly from NO_STAFF table.
+     */
+    private void rebuildBothLags ()
+    {
+        // Build tables
+        RunTable sourceTable = sheet.getPicture().getTable(Picture.TableKey.NO_STAFF);
+        RunTable vertTable = new RunTable(VERTICAL, sheet.getWidth(), sheet.getHeight());
+        RunTable horiTable = filterRuns(sourceTable, vertTable);
+
+        // Build lags
+        buildHorizontalLag(horiTable, null);
+        buildVerticalLag(vertTable);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Scale.Fraction maxVerticalRunShift = new Scale.Fraction(
+                0.05,
+                "Max shift between two runs of vertical sections");
+
+        // Constants specified WRT *maximum* line thickness (scale.getmaxFore())
+        // ----------------------------------------------
+        // Should be 1.0, unless ledgers are thicker than staff lines
+        private final Constant.Ratio ledgerThickness = new Constant.Ratio(
+                1.2,
+                "Ratio of ledger thickness vs staff line MAXIMUM thickness");
+
+        // Constants for debugging
+        // -----------------------
+        private final Constant.String horizontalVipSections = new Constant.String(
+                "",
+                "(Debug) Comma-separated values of VIP horizontal sections IDs");
+
+        private final Constant.String verticalVipSections = new Constant.String(
+                "",
+                "(Debug) Comma-separated values of VIP vertical sections IDs");
     }
 }

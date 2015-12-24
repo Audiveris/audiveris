@@ -30,15 +30,13 @@ import omr.plugin.PluginManager;
 
 import omr.score.PartwiseBuilder;
 
-import omr.script.ScriptActions;
-
 import omr.selection.MouseMovement;
-import omr.selection.SheetEvent;
+import omr.selection.StubEvent;
 
 import omr.sheet.Book;
-import omr.sheet.Sheet;
-import omr.sheet.ui.SheetActions;
-import omr.sheet.ui.SheetsController;
+import omr.sheet.SheetStub;
+import omr.sheet.ui.BookActions;
+import omr.sheet.ui.StubsController;
 
 import omr.step.ui.StepMenu;
 import omr.step.ui.StepMonitoring;
@@ -76,6 +74,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -90,7 +89,7 @@ import javax.swing.SwingUtilities;
  */
 public class MainGui
         extends OmrGui
-        implements EventSubscriber<SheetEvent>, PropertyChangeListener
+        implements EventSubscriber<StubEvent>, PropertyChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -104,7 +103,7 @@ public class MainGui
     private String appName;
 
     /** Sheet tabbed pane, which may contain several views. */
-    public SheetsController sheetsController;
+    public StubsController stubsController;
 
     /** The related concrete frame. */
     private JFrame frame;
@@ -159,7 +158,7 @@ public class MainGui
                 frame,
                 message,
                 "Confirm - " + appName,
-                JOptionPane.WARNING_MESSAGE);
+                JOptionPane.YES_NO_OPTION);
 
         return answer == JOptionPane.YES_OPTION;
     }
@@ -260,41 +259,41 @@ public class MainGui
     /**
      * Notification of sheet selection, to update frame title.
      *
-     * @param sheetEvent the event about selected sheet
+     * @param stubEvent the event about selected sheet
      */
     @Override
-    public void onEvent (SheetEvent sheetEvent)
+    public void onEvent (StubEvent stubEvent)
     {
         try {
             // Ignore RELEASING
-            if (sheetEvent.movement == MouseMovement.RELEASING) {
+            if (stubEvent.movement == MouseMovement.RELEASING) {
                 return;
             }
 
-            final Sheet sheet = sheetEvent.getData();
+            final SheetStub stub = stubEvent.getData();
             SwingUtilities.invokeLater(
                     new Runnable()
-                    {
-                        @Override
-                        public void run ()
-                        {
-                            final StringBuilder sb = new StringBuilder();
+            {
+                @Override
+                public void run ()
+                {
+                    final StringBuilder sb = new StringBuilder();
 
-                            if (sheet != null) {
-                                Book book = sheet.getBook();
-                                // Frame title tells score name
-                                sb.append(book.getRadix());
-                            }
+                    if (stub != null) {
+                        Book book = stub.getBook();
+                        // Frame title tells score name
+                        sb.append(book.getRadix());
+                    }
 
-                            // Update frame title
-                            sb.append(" - ");
+                    // Update frame title
+                    sb.append(" - ");
 
-                            ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-                                    getClass());
-                            sb.append(resource.getString("mainFrame.title"));
-                            frame.setTitle(sb.toString());
-                        }
-                    });
+                    ResourceMap resource = Application.getInstance().getContext().getResourceMap(
+                            getClass());
+                    sb.append(resource.getString("mainFrame.title"));
+                    frame.setTitle(sb.toString());
+                }
+            });
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
@@ -344,10 +343,10 @@ public class MainGui
             // Toggle display of errors
             if (display) {
                 JComponent comp = null;
-                Sheet sheet = sheetsController.getSelectedSheet();
+                SheetStub stub = stubsController.getSelectedStub();
 
-                if (sheet != null) {
-                    ErrorsEditor editor = sheet.getErrorsEditor();
+                if (stub != null) {
+                    ErrorsEditor editor = stub.getSheet().getErrorsEditor();
 
                     if (editor != null) {
                         comp = editor.getComponent();
@@ -452,13 +451,8 @@ public class MainGui
         // Just in case we already have messages pending
         notifyLog();
 
-        // Launch scores
-        for (Callable<Void> task : Main.getCli().getFilesTasks()) {
-            OmrExecutors.getCachedLowExecutor().submit(task);
-        }
-
-        // Launch scripts
-        for (Callable<Void> task : Main.getCli().getScriptsTasks()) {
+        // Launch inputs, projects & scripts
+        for (Callable<Void> task : Main.getCli().getCliTasks()) {
             OmrExecutors.getCachedLowExecutor().submit(task);
         }
     }
@@ -473,13 +467,13 @@ public class MainGui
 
         frame = getMainFrame();
 
-        sheetsController = SheetsController.getInstance();
-        sheetsController.subscribe(this);
+        stubsController = StubsController.getInstance();
+        stubsController.subscribe(this);
 
         defineMenus();
         defineLayout();
 
-        // Allow dropping files
+        // Allow dropping of files
         frame.setTransferHandler(new FileDropHandler());
 
         // Handle ghost drop from shape palette
@@ -508,7 +502,7 @@ public class MainGui
          * |+=========================================+=================+|
          * | . . . . . . . . . . . . . . . . . . . . .|boardsScrollPane ||
          * | +========================================+ . . . . . . . . ||
-         * | | sheetController . . . . . . . . . . . .| . . . . . . . . ||
+         * | | stubsController . . . . . . . . . . . .| . . . . . . . . ||
          * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
          * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
          * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
@@ -539,8 +533,8 @@ public class MainGui
         bottomPane.setDividerSize(1);
         bottomPane.setResizeWeight(0.5d); // Cut in half initially
 
-        // mainPane =  sheetsController / bottomPane
-        mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sheetsController.getComponent(), null);
+        // mainPane =  stubsController / bottomPane
+        mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, stubsController.getComponent(), null);
         mainPane.setBorder(null);
         mainPane.setOneTouchExpandable(true);
         mainPane.setResizeWeight(0.9d); // Give bulk space to upper part
@@ -591,9 +585,6 @@ public class MainGui
         // Specific file menu
         JMenu fileMenu = new SeparableMenu();
 
-        // Specific history sub-menu of sheet menu
-        fileMenu.add(SheetActions.HistoryMenu.getInstance().getMenu());
-
         // Specific step menu
         stepMenu = new StepMenu(new SeparableMenu());
 
@@ -609,6 +600,25 @@ public class MainGui
         // All other commands (which may populate the toolBar as well)
         mgr.loadAllDescriptors();
         mgr.registerAllActions();
+
+        // Specific history sub-menus in fileMenu
+        for (int i = 0, itemCount = fileMenu.getItemCount(); i < itemCount; i++) {
+            final JMenuItem item = fileMenu.getItem(i);
+
+            if (item != null) {
+                final String itemName = item.getName();
+
+                if (itemName != null) {
+                    BookActions ba = BookActions.getInstance();
+
+                    if (itemName.equals("inputHistory")) {
+                        ba.getInputHistoryMenu().populate((JMenu) item, BookActions.class);
+                    } else if (itemName.equals("projectHistory")) {
+                        ba.getProjectHistoryMenu().populate((JMenu) item, BookActions.class);
+                    }
+                }
+            }
+        }
 
         // Menu bar
         JMenuBar innerBar = mgr.getMenuBar();
@@ -653,19 +663,6 @@ public class MainGui
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-                true,
-                "Should we preload costly packages in the background?");
-    }
-
     //
     //------------------//
     // BoardsScrollPane //
@@ -684,6 +681,19 @@ public class MainGui
             setViewportView(boards);
             revalidate();
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
+                true,
+                "Should we preload costly packages in the background?");
     }
 
     //-----------------//
@@ -705,9 +715,14 @@ public class MainGui
         @Override
         public boolean canExit (EventObject eo)
         {
-            // Are all scripts stored (or explicitly ignored)?
             for (Book book : OMR.getEngine().getAllBooks()) {
-                if (!ScriptActions.checkStored(book.getScript())) {
+                //                // Is script stored (or explicitly ignored)?
+                //                if (!ScriptActions.checkStored(book.getScript())) {
+                //                    return false;
+                //                }
+                //
+                // Check whether the book has been saved (or user has declined)
+                if (!BookActions.checkStored(book)) {
                     return false;
                 }
             }

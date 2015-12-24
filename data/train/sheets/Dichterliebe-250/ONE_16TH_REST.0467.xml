@@ -1,72 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="ONE_16TH_REST" interline="19" id="467">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-5.534246575342466</pitch-position>
-    <section orientation="VERTICAL" first-pos="1557" id="2522">
-        <run start="773" length="8"/>
-        <run start="772" length="10"/>
-        <run start="771" length="12"/>
-        <run start="771" length="15"/>
-        <run start="771" length="15"/>
-        <run start="770" length="16"/>
-        <run start="770" length="16"/>
-        <run start="770" length="16"/>
-        <run start="771" length="15"/>
-        <run start="771" length="12"/>
-        <run start="772" length="11"/>
-        <run start="774" length="8"/>
-        <run start="778" length="4"/>
-        <run start="778" length="3"/>
-        <run start="777" length="4"/>
-        <run start="776" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1562" id="2535">
-        <run start="755" length="7"/>
-        <run start="754" length="10"/>
-        <run start="753" length="11"/>
-        <run start="752" length="12"/>
-        <run start="752" length="12"/>
-        <run start="752" length="12"/>
-        <run start="752" length="12"/>
-        <run start="752" length="12"/>
-        <run start="752" length="12"/>
-        <run start="753" length="11"/>
-        <run start="754" length="10"/>
-        <run start="756" length="8"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1565" id="2538">
-        <run start="804" length="1"/>
-        <run start="801" length="4"/>
-        <run start="798" length="7"/>
-        <run start="795" length="10"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1569" id="2541">
-        <run start="792" length="10"/>
-        <run start="789" length="9"/>
-        <run start="786" length="8"/>
-        <run start="781" length="10"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1569" id="2542">
-        <run start="803" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1573" id="2544">
-        <run start="775" length="12"/>
-        <run start="773" length="10"/>
-        <run start="770" length="9"/>
-        <run start="766" length="9"/>
-        <run start="763" length="9"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1574" id="2546">
-        <run start="760" length="3"/>
-        <run start="759" length="4"/>
-        <run start="759" length="3"/>
-        <run start="758" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1578" id="2549">
-        <run start="757" length="11"/>
-        <run start="756" length="8"/>
-        <run start="755" length="6"/>
-        <run start="755" length="2"/>
-    </section>
-</glyph>
+<sample id="467" interline="19" left="1557" top="752" shape="ONE_16TH_REST">
+    <run-table orientation="VERTICAL" width="25" height="53">
+        <sequences>
+            <item>0 21 8</item>
+            <item>0 20 10</item>
+            <item>0 19 12</item>
+            <item>0 19 15</item>
+            <item>0 19 15</item>
+            <item>0 3 7 8 16</item>
+            <item>0 2 10 6 16</item>
+            <item>0 1 11 6 16</item>
+            <item>12 7 15 18 1</item>
+            <item>12 7 12 18 4</item>
+            <item>12 8 11 15 7</item>
+            <item>12 10 8 13 10</item>
+            <item>12 14 4 10 10 1 2</item>
+            <item>12 14 3 8 9</item>
+            <item>0 1 11 13 4 5 8</item>
+            <item>0 2 10 12 4 1 10</item>
+            <item>0 4 8 11 12</item>
+            <item>0 8 3 10 10</item>
+            <item>0 7 4 7 9</item>
+            <item>0 7 3 4 9</item>
+            <item>0 6 4 1 9</item>
+            <item>0 5 11</item>
+            <item>0 4 8</item>
+            <item>0 3 6</item>
+            <item>0 3 2</item>
+        </sequences>
+    </run-table>
+</sample>

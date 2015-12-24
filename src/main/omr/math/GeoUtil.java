@@ -72,6 +72,38 @@ public abstract class GeoUtil
         return d;
     }
 
+    //-------//
+    // touch //
+    //-------//
+    /**
+     * Report whether the two provided rectangles intersect or touch one another.
+     *
+     * @param r1 first provided rectangle
+     * @param r2 the other provided rectangle
+     * @return true if there is a horizontal or vertical connection (diagonals are not accepted)
+     */
+    public static boolean touch (Rectangle r1,
+                                 Rectangle r2)
+    {
+        int x1 = Math.max(r1.x, r2.x);
+        int x2 = Math.min(r1.x + r1.width, r2.x + r2.width);
+        int xOver = x2 - x1;
+
+        if (xOver < 0) {
+            return false;
+        }
+
+        int y1 = Math.max(r1.y, r2.y);
+        int y2 = Math.min(r1.y + r1.height, r2.y + r2.height);
+        int yOver = y2 - y1;
+
+        if (yOver < 0) {
+            return false;
+        }
+
+        return (xOver > 0) || (yOver > 0);
+    }
+
     //----------//
     // vectorOf //
     //----------//

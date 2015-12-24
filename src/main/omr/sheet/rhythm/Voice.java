@@ -19,9 +19,11 @@ import omr.score.TimeRational;
 
 import omr.sheet.Part;
 import omr.sheet.beam.BeamGroup;
+import static omr.sheet.rhythm.Voice.Status.BEGIN;
 
+import omr.sig.inter.AbstractBeamInter;
+import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractHeadInter;
-import omr.sig.inter.ChordInter;
 import omr.sig.inter.Inter;
 
 import omr.util.Navigable;
@@ -36,11 +38,20 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code Voice} gathers all informations related to a voice within a measure.
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "voice")
 public class Voice
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -86,7 +97,7 @@ public class Voice
                     continue;
                 }
 
-                ChordInter c1 = vc1.chord;
+                AbstractChordInter c1 = vc1.chord;
 
                 SlotVoice vc2 = v2.getSlotInfo(slot);
 
@@ -94,14 +105,14 @@ public class Voice
                     continue;
                 }
 
-                ChordInter c2 = vc2.chord;
+                AbstractChordInter c2 = vc2.chord;
 
                 return Inter.byOrdinate.compare(c1, c2);
             }
 
             // No common slot found, use ordinate of first chord for each voice
-            ChordInter c1 = v1.getFirstChord();
-            ChordInter c2 = v2.getFirstChord();
+            AbstractChordInter c1 = v1.getFirstChord();
+            AbstractChordInter c2 = v2.getFirstChord();
 
             return Inter.byOrdinate.compare(c1, c2);
         }
@@ -119,15 +130,20 @@ public class Voice
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Containing measure */
-    @Navigable(false)
-    private final Measure measure;
-
+    // Persistent data
+    //----------------
+    //
     /** The voice id. */
+    @XmlAttribute
     private int id;
 
+    /** Whole chord of the voice, if any. */
+    @XmlIDREF
+    @XmlElement(name = "whole-chord")
+    private AbstractChordInter wholeChord;
+
     /**
-     * Map (Slot -> SlotVoice) to store chord information for each slot.
+     * Map (SlotId -> SlotVoice) to store chord information for each slot.
      * If a voice is assigned to a whole/multi rest, then this rest chord is defined as the
      * wholeChord of this voice, and the whole slot table is left empty.
      * If the voice/slot combination is empty, the voice is free for this slot.
@@ -135,7 +151,15 @@ public class Voice
      * slot where the chord starts, and the potential following slots for which the chord is still
      * active.
      */
-    private final SortedMap<Slot, SlotVoice> slotTable = new TreeMap<Slot, SlotVoice>();
+    @XmlElement
+    private final SortedMap<Integer, SlotVoice> slots = new TreeMap<Integer, SlotVoice>();
+
+    // Transient data
+    //---------------
+    //
+    /** Containing measure */
+    @Navigable(false)
+    private Measure measure;
 
     /**
      * How the voice finishes (value = voiceEndTime - expectedMeasureEndTime).
@@ -145,9 +169,6 @@ public class Voice
      * - positive: Voice is too long WRT measure expected duration
      */
     private Rational termination;
-
-    /** Whole chord of the voice, if any. */
-    private ChordInter wholeChord;
 
     /** Inferred time signature based on this voice content. */
     private TimeRational inferredTimeSig;
@@ -159,16 +180,15 @@ public class Voice
      * @param chord   the initial chord for this voice
      * @param measure the containing measure
      */
-    public Voice (ChordInter chord,
+    public Voice (AbstractChordInter chord,
                   Measure measure)
     {
-        this.measure = measure;
+        initTransient(measure);
 
         if (measure.isDummy()) {
             id = measure.getVoices().size() + 1;
         } else {
-            MeasureStack stack = measure.getStack();
-            id = stack.getVoiceCount() + 1;
+            id = measure.getVoiceCount() + 1;
         }
 
         chord.setVoice(this);
@@ -180,7 +200,62 @@ public class Voice
         logger.debug("Created voice#{}", id);
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private Voice ()
+    {
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // afterReload //
+    //-------------//
+    public void afterReload (Measure measure)
+    {
+        try {
+            this.measure = measure;
+
+            // Set chord voices
+            if (isWhole()) {
+                wholeChord.setVoice(this);
+            } else {
+                for (SlotVoice info : slots.values()) {
+                    if (info.status == BEGIN) {
+                        info.chord.assignVoice(this);
+
+                        for (AbstractBeamInter beam : info.chord.getBeams()) {
+                            beam.getGroup().assignVoice(this);
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+        }
+    }
+
+    //------------------//
+    // createWholeVoice //
+    //------------------//
+    /**
+     * Factory method to create a voice made of just one whole/multi rest.
+     *
+     * @param wholeChord the whole/multi rest chord
+     * @param measure    the containing measure
+     * @return the created voice instance
+     */
+    public static Voice createWholeVoice (AbstractChordInter wholeChord,
+                                          Measure measure)
+    {
+        logger.debug("createWholeVoice for {} in {}", wholeChord, measure);
+
+        Voice voice = new Voice(wholeChord, measure);
+        voice.wholeChord = wholeChord;
+
+        return voice;
+    }
+
     //---------------//
     // checkDuration //
     //---------------//
@@ -198,9 +273,9 @@ public class Voice
             } else {
                 Rational timeCounter = Rational.ZERO;
 
-                for (SlotVoice info : slotTable.values()) {
+                for (SlotVoice info : slots.values()) {
                     if (info.status == Status.BEGIN) {
-                        ChordInter chord = info.chord;
+                        AbstractChordInter chord = info.chord;
                         Slot slot = chord.getSlot();
 
                         // Need a forward before this chord ?
@@ -231,27 +306,8 @@ public class Voice
                 }
             }
         } catch (Exception ex) {
-            // User has been informed
+            logger.warn("Error checking stack duration " + ex, ex);
         }
-    }
-
-    //------------------//
-    // createWholeVoice //
-    //------------------//
-    /**
-     * Factory method to create a voice made of just one whole/multi rest.
-     *
-     * @param wholeChord the whole/multi rest chord
-     * @param measure    the containing measure
-     * @return the created voice instance
-     */
-    public static Voice createWholeVoice (ChordInter wholeChord,
-                                          Measure measure)
-    {
-        Voice voice = new Voice(wholeChord, measure);
-        voice.wholeChord = wholeChord;
-
-        return voice;
     }
 
     //----------------//
@@ -263,12 +319,12 @@ public class Voice
      * @param slot the provided slot
      * @return the latest chord, in this voice, before the provided slot
      */
-    public ChordInter getChordBefore (Slot slot)
+    public AbstractChordInter getChordBefore (Slot slot)
     {
-        ChordInter prevChord = null;
+        AbstractChordInter prevChord = null;
 
-        for (Map.Entry<Slot, SlotVoice> entry : slotTable.entrySet()) {
-            if (slot == entry.getKey()) {
+        for (Map.Entry<Integer, SlotVoice> entry : slots.entrySet()) {
+            if (slot.getId() == entry.getKey()) {
                 break;
             }
 
@@ -316,12 +372,12 @@ public class Voice
      *
      * @return the first chord, which may be a whole/multi
      */
-    public ChordInter getFirstChord ()
+    public AbstractChordInter getFirstChord ()
     {
         if (isWhole()) {
             return wholeChord;
         } else {
-            for (SlotVoice info : slotTable.values()) {
+            for (SlotVoice info : slots.values()) {
                 return info.chord;
             }
 
@@ -362,11 +418,11 @@ public class Voice
             // Start time of last note in group, if any
             Rational groupLastTime = null;
 
-            for (Map.Entry<Slot, SlotVoice> entry : slotTable.entrySet()) {
+            for (Map.Entry<Integer, SlotVoice> entry : slots.entrySet()) {
                 SlotVoice info = entry.getValue();
 
                 if (info.status == Voice.Status.BEGIN) {
-                    ChordInter chord = info.chord;
+                    AbstractChordInter chord = info.chord;
 
                     // Skip the remaining parts of beam group, including embraced rests
                     if ((groupLastTime != null)
@@ -386,7 +442,8 @@ public class Voice
                     }
 
                     if (startTime == null) {
-                        startTime = entry.getKey().getStartTime();
+                        Slot slot = measure.getStack().getSlots().get(entry.getKey() - 1);
+                        startTime = slot.getStartTime();
                     }
                 }
             }
@@ -468,14 +525,14 @@ public class Voice
      *
      * @return the last chord, which may be a whole/multi
      */
-    public ChordInter getLastChord ()
+    public AbstractChordInter getLastChord ()
     {
         if (isWhole()) {
             return wholeChord;
         } else {
-            ChordInter lastChord = null;
+            AbstractChordInter lastChord = null;
 
-            for (SlotVoice info : slotTable.values()) {
+            for (SlotVoice info : slots.values()) {
                 lastChord = info.chord;
             }
 
@@ -502,9 +559,9 @@ public class Voice
     //     * @param chord the provided chord
     //     * @return the chord right before, or null
     //     */
-    //    public ChordInter getPreviousChord (ChordInter chord)
+    //    public AbstractChordInter getPreviousChord (AbstractChordInter chord)
     //    {
-    //        ChordInter prevChord = null;
+    //        AbstractChordInter prevChord = null;
     //
     //        for (Map.Entry<Slot, SlotVoice> entry : slotTable.entrySet()) {
     //            SlotVoice info = entry.getValue();
@@ -527,16 +584,16 @@ public class Voice
      *
      * @return only the rests
      */
-    public List<ChordInter> getRests ()
+    public List<AbstractChordInter> getRests ()
     {
-        List<ChordInter> rests = new ArrayList<ChordInter>();
+        List<AbstractChordInter> rests = new ArrayList<AbstractChordInter>();
 
         if (isWhole()) {
             rests.add(wholeChord);
         } else {
-            for (SlotVoice info : slotTable.values()) {
+            for (SlotVoice info : slots.values()) {
                 if (info.status == Status.BEGIN) {
-                    ChordInter chord = info.chord;
+                    AbstractChordInter chord = info.chord;
 
                     if (chord.isRest()) {
                         rests.add(chord);
@@ -559,7 +616,7 @@ public class Voice
      */
     public SlotVoice getSlotInfo (Slot slot)
     {
-        return slotTable.get(slot);
+        return slots.get(slot.getId());
     }
 
     //----------------//
@@ -583,9 +640,17 @@ public class Voice
      *
      * @return the whole chord or null
      */
-    public ChordInter getWholeChord ()
+    public AbstractChordInter getWholeChord ()
     {
         return wholeChord;
+    }
+
+    //---------------//
+    // initTransient //
+    //---------------//
+    public final void initTransient (Measure measure)
+    {
+        this.measure = measure;
     }
 
     //--------//
@@ -599,7 +664,7 @@ public class Voice
      */
     public boolean isFree (Slot slot)
     {
-        return ((getWholeChord() == null) && (slotTable.get(slot) == null));
+        return ((getWholeChord() == null) && (slots.get(slot.getId()) == null));
     }
 
     //------------//
@@ -670,7 +735,7 @@ public class Voice
             return;
         }
 
-        slotTable.put(slot, chordInfo);
+        slots.put(slot.getId(), chordInfo);
         updateSlotTable();
         logger.debug("setSlotInfo slot#{} {}", slot.getId(), this);
     }
@@ -685,7 +750,7 @@ public class Voice
      * @param chord the incoming chord
      */
     public void startChord (Slot slot,
-                            ChordInter chord)
+                            AbstractChordInter chord)
     {
         setSlotInfo(slot, new SlotVoice(chord, Voice.Status.BEGIN));
     }
@@ -719,7 +784,7 @@ public class Voice
 
         // Whole/Multi
         if (wholeChord != null) {
-            sb.append("|Ch#").append(String.format("%-4d", wholeChord.getId()));
+            sb.append("|Ch#").append(String.format("%-4s", wholeChord.getId()));
 
             for (int s = 1; s < measure.getStack().getSlots().size(); s++) {
                 sb.append("========");
@@ -735,7 +800,7 @@ public class Voice
                 if (info != null) {
                     // Active chord => busy
                     if (info.status == Status.BEGIN) {
-                        sb.append("|Ch#").append(String.format("%-4d", info.chord.getId()));
+                        sb.append("|Ch#").append(String.format("%-4s", info.chord.getId()));
 
                         Rational chordEnd = slot.getStartTime().plus(info.chord.getDuration());
 
@@ -774,7 +839,7 @@ public class Voice
      */
     public void updateSlotTable ()
     {
-        ChordInter lastChord = null;
+        AbstractChordInter lastChord = null;
 
         for (Slot slot : measure.getStack().getSlots()) {
             if (slot.getStartTime() != null) {
@@ -797,7 +862,7 @@ public class Voice
     //---------------//
     private void insertForward (Rational duration,
                                 Mark.Position position,
-                                ChordInter chord)
+                                AbstractChordInter chord)
     {
         //        Point point = new Point(
         //                chord.getHeadLocation().x,
@@ -863,24 +928,36 @@ public class Voice
     // SlotVoice //
     //-----------//
     /**
-     * Define which chord represents this voice in a given slot. If any.
+     * Define which chord, if any, represents this voice in a given slot.
      */
+    @XmlAccessorType(XmlAccessType.NONE)
+    @XmlRootElement(name = "slot-voice")
     public static class SlotVoice
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Related chord. */
-        public final ChordInter chord;
+        @XmlIDREF
+        @XmlAttribute
+        public final AbstractChordInter chord;
 
         /** Current status. */
+        @XmlAttribute
         public final Status status;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public SlotVoice (ChordInter chord,
+        public SlotVoice (AbstractChordInter chord,
                           Status status)
         {
             this.chord = chord;
             this.status = status;
+        }
+
+        // For JAXB.
+        private SlotVoice ()
+        {
+            this.chord = null;
+            this.status = null;
         }
 
         //~ Methods --------------------------------------------------------------------------------

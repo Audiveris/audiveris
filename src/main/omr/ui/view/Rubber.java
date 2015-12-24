@@ -42,48 +42,43 @@ import javax.swing.event.MouseInputAdapter;
  * Class {@code Rubber} keeps track of nothing more than a rectangle,
  * to define an area of interest.
  *
- * The rectangle can be degenerated to a simple point, when both its width and
- * height are zero. Moreover, the display can be moved or resized
- * (see the precise triggers below).
+ * The rectangle can be degenerated to a simple point, when both its width and height are zero.
+ * Moreover, the display can be moved or resized (see the precise triggers below).
  * <p>
- * The rubber data is rendered as a 'rubber', so the name, using a
- * rectangle, reflecting the dragged position of the mouse.
+ * The rubber data is rendered as a 'rubber', so the name, using a rectangle, reflecting the dragged
+ * position of the mouse.
  * <p>
- * Rubber data is meant to be modified by the user when he presses
- * and/or drags the mouse. But it can also be modified programmatically,
- * thanks to the {@link #resetOrigin} and {@link #resetRectangle} methods.
+ * Rubber data is meant to be modified by the user when he presses and/or drags the mouse. But it
+ * can also be modified programmatically, thanks to the {@link #resetOrigin} and
+ * {@link #resetRectangle} methods.
  * <p>
  * Basic mouse handling is provided in the following way : <ul>
- * <li> Define the point of interest. Default trigger is to click with the
- * <b>Left</b> button. </li>
- * <li> Define the rectangle of interest. Default trigger is to keep
- * <b>Shift</b> pressed when mouse is moved. </li>
- * <li> Zoom the display to the area delimited by the rubber. Default
- * trigger is <b>Shift + Control</b> when mouse is released. </li>
- * <li> Drag the component itself. Default trigger is when both <b>Left +
- * Right</b> buttons are dragged. </li> </ul>
- * <p/>
- * Note: Actual triggers are defined by protected predicate methods
- * that can be redefined in a subclass.
+ * <li> Define the point of interest. Default trigger is to click with the <b>Left</b> button. </li>
+ * <li> Define the rectangle of interest. Default trigger is to keep <b>Shift</b> pressed when mouse
+ * is moved. </li>
+ * <li> Zoom the display to the area delimited by the rubber. Default trigger is <b>Shift +
+ * Control</b> when mouse is released. </li>
+ * <li> Drag the component itself. Default trigger is when both <b>Left + Right</b> buttons are
+ * dragged. </li> </ul>
+ * <p>
+ * Note: Actual triggers are defined by protected predicate methods that can be redefined in a
+ * subclass.
  * <p>
  * Mouse Events are handled in the following way: <ul>
  *
- * <li> <b>Low-level events</b> originate from a JComponent, where the
- * Rubber is registered as a MouseListener and a MouseMotionListener. The
- * component can be linked by the Rubber constructor, or later by using the
- * {@link #connectComponent} method. Rubber is then called on its
+ * <li> <b>Low-level events</b> originate from a JComponent, where the Rubber is registered as a
+ * MouseListener and a MouseMotionListener. The component can be linked by the Rubber constructor,
+ * or later by using the {@link #connectComponent} method. Rubber is then called on its
  * <i>mouseDragged, mousePressed, mouseReleased</i> methods.
  *
- * <li> <b>High-level events</b>, as computed by Rubber from low-level mouse
- * events, are forwarded to a connected {@link MouseMonitor} if any, which is
- * then called on its <i>pointSelected, pointAdded, contextSelected,
- * rectangleSelected, rectangleZoomed</i> methods. Generally, this
+ * <li> <b>High-level events</b>, as computed by Rubber from low-level mouse events, are forwarded
+ * to a connected {@link MouseMonitor} if any, which is then called on its <i>pointSelected,
+ * pointAdded, contextSelected, rectangleSelected, rectangleZoomed</i> methods. Generally, this
  * MouseMonitor is the originating JComponent, but this is not mandatory.
  * </ul>
  * <p>
- * The Rubber can be linked to a {@link Zoom} to cope with display
- * factor of the related component, but this is not mandatory: If no zoom
- * is connected, a display factor of 1.0 is assumed.
+ * The Rubber can be linked to a {@link Zoom} to cope with display factor of the related component,
+ * but this is not mandatory: If no zoom is connected, a display factor of 1.0 is assumed.
  *
  * @author Hervé Bitteur
  */
@@ -98,7 +93,7 @@ public class Rubber
 
     private static AtomicInteger globalId = new AtomicInteger(0);
 
-    /** To handle zoom through mouse wheel */
+    /** To handle zoom through mouse wheel. */
     private static final double base = 2;
 
     private static final double intervals = 5;
@@ -106,22 +101,22 @@ public class Rubber
     private static final double factor = Math.pow(base, 1d / intervals);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** View from which the rubber will receive physical mouse events */
+    /** View from which the rubber will receive physical mouse events. */
     protected JComponent component;
 
-    /** The controller to be notified about mouse actions */
+    /** The controller to be notified about mouse actions. */
     protected MouseMonitor mouseMonitor;
 
-    /** Related zoom if any */
+    /** Related zoom if any. */
     protected Zoom zoom;
 
     // The raw (zoomed) rubber rectangle, with x & y as the original point
     // where mouse was pressed, with possibly negative width & height, and
-    // may be going past the component borders
+    // may be going past the component borders.
     private Rectangle rawRect;
 
     // The normalized unzoomed rubber rectangle, inside the component, with
-    // x & y at the top left and positive width & height
+    // x & y at the top left and positive width & height.
     private Rectangle rect;
 
     // To ease debugging
@@ -181,33 +176,18 @@ public class Rubber
         // Remember the related component (to get visible rect, etc ...)
         this.component = component;
 
-        // To be notified of mouse clicks
-        component.removeMouseListener(this); // No multiple notifications
-        component.addMouseListener(this);
-
-        // To be notified of mouse mouvements
-        component.removeMouseMotionListener(this); // No multiple notifs
-        component.addMouseMotionListener(this);
-
-        // To be notified of mouse  wheel mouvements
-        component.removeMouseWheelListener(this); // No multiple notifs
-        component.addMouseWheelListener(this);
-    }
-
-    //---------------------//
-    // disconnectComponent //
-    //---------------------//
-    /**
-     * Disconnect the provided component
-     *
-     * @param component the component to disconnect
-     */
-    public void disconnectComponent (JComponent component)
-    {
         if (component != null) {
-            component.removeMouseListener(this);
-            component.removeMouseMotionListener(this);
-            component.removeMouseWheelListener(this);
+            // To be notified of mouse clicks
+            component.removeMouseListener(this); // No multiple notifications
+            component.addMouseListener(this);
+
+            // To be notified of mouse mouvements
+            component.removeMouseMotionListener(this); // No multiple notifs
+            component.addMouseMotionListener(this);
+
+            // To be notified of mouse  wheel mouvements
+            component.removeMouseWheelListener(this); // No multiple notifs
+            component.addMouseWheelListener(this);
         }
     }
 
@@ -269,13 +249,13 @@ public class Rubber
                     vr.height);
             SwingUtilities.invokeLater(
                     new Runnable()
-                    {
-                        @Override
-                        public void run ()
-                        {
-                            component.scrollRectToVisible(vr);
-                        }
-                    });
+            {
+                @Override
+                public void run ()
+                {
+                    component.scrollRectToVisible(vr);
+                }
+            });
         } else if (isRubberWanted(e)) {
             updateSize(e);
             mouseMonitor.rectangleSelected(rect, DRAGGING);
@@ -289,12 +269,10 @@ public class Rubber
                 } else {
                     mouseMonitor.pointAdded(getCenter(), DRAGGING);
                 }
+            } else if (isContextWanted(e)) {
+                mouseMonitor.contextSelected(getCenter(), DRAGGING);
             } else {
-                if (isContextWanted(e)) {
-                    mouseMonitor.contextSelected(getCenter(), DRAGGING);
-                } else {
-                    mouseMonitor.pointSelected(getCenter(), DRAGGING);
-                }
+                mouseMonitor.pointSelected(getCenter(), DRAGGING);
             }
         }
     }
@@ -325,12 +303,10 @@ public class Rubber
                 } else {
                     mouseMonitor.pointAdded(getCenter(), PRESSING);
                 }
+            } else if (isContextWanted(e)) {
+                mouseMonitor.contextSelected(getCenter(), PRESSING);
             } else {
-                if (isContextWanted(e)) {
-                    mouseMonitor.contextSelected(getCenter(), PRESSING);
-                } else {
-                    mouseMonitor.pointSelected(getCenter(), PRESSING);
-                }
+                mouseMonitor.pointSelected(getCenter(), PRESSING);
             }
         }
     }
@@ -366,13 +342,11 @@ public class Rubber
         } else if (rect != null) {
             if (isContextWanted(e)) {
                 mouseMonitor.contextSelected(getCenter(), RELEASING);
+            } else if ((rect.width != 0) && (rect.height != 0)) {
+                updateSize(e);
+                mouseMonitor.rectangleSelected(rect, RELEASING);
             } else {
-                if ((rect.width != 0) && (rect.height != 0)) {
-                    updateSize(e);
-                    mouseMonitor.rectangleSelected(rect, RELEASING);
-                } else {
-                    mouseMonitor.pointSelected(getCenter(), RELEASING);
-                }
+                mouseMonitor.pointSelected(getCenter(), RELEASING);
             }
         }
 
@@ -432,7 +406,7 @@ public class Rubber
     /**
      * Render the rubber rectangle. This should be called late, typically
      * when everything else has already been painted. Note that this needs an
-     * unscaled graphics, since we want to draw the rubber lines (vertical
+     * un-scaled graphics, since we want to draw the rubber lines (vertical
      * and horizontal) perfectly on top of image pixels.
      *
      * @param unscaledGraphics the graphic context (not transformed!)
@@ -573,7 +547,24 @@ public class Rubber
         return "{Rubber #" + id + " " + rect + "}";
     }
 
-    //-- private access ---------------------------------------------------
+    //-- private access ----------------------------------------------------------------------------
+    //---------------------//
+    // disconnectComponent //
+    //---------------------//
+    /**
+     * Disconnect the provided component
+     *
+     * @param component the component to disconnect
+     */
+    private void disconnectComponent (JComponent component)
+    {
+        if (component != null) {
+            component.removeMouseListener(this);
+            component.removeMouseMotionListener(this);
+            component.removeMouseWheelListener(this);
+        }
+    }
+
     //-----------//
     // normalize //
     //-----------//

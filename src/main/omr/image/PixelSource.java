@@ -33,8 +33,7 @@ public interface PixelSource
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Report the pixel element, as read at location (x, y) in the
-     * source.
+     * Report the pixel element, as read at location (x, y) in the source.
      *
      * @param x abscissa value
      * @param y ordinate value

@@ -27,9 +27,6 @@ public class TargetLine
     /** Related raw information */
     public final LineInfo info;
 
-    /** Id for debug */
-    public final int id;
-
     /** Ordinate in containing page */
     public final double y;
 
@@ -47,7 +44,7 @@ public class TargetLine
      * Creates a new TargetLine object.
      *
      * @param info  the physical information
-     * @param y     ordinate in containing pag
+     * @param y     ordinate in containing sheet
      * @param staff the containing staff
      */
     public TargetLine (LineInfo info,
@@ -57,8 +54,6 @@ public class TargetLine
         this.info = info;
         this.y = y;
         this.staff = staff;
-
-        id = info.getId();
 
         // Compute sin & cos values
         Point2D left = info.getEndPoint(LEFT);
@@ -121,7 +116,6 @@ public class TargetLine
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{Line");
-        sb.append("#").append(id);
         sb.append(" y:").append(y);
         sb.append("}");
 

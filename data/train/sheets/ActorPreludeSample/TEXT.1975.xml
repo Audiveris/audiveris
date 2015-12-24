@@ -1,441 +1,218 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="TEXT" interline="13" id="1975">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-15.428571428571429</pitch-position>
-    <section orientation="VERTICAL" first-pos="446" id="2100">
-        <run start="3086" length="1"/>
-        <run start="3086" length="1"/>
-        <run start="3086" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="446" id="2101">
-        <run start="3104" length="1"/>
-        <run start="3104" length="1"/>
-        <run start="3103" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="449" id="2259">
-        <run start="3086" length="19"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="450" id="2295">
-        <run start="3086" length="3"/>
-        <run start="3086" length="6"/>
-        <run start="3086" length="8"/>
-        <run start="3086" length="10"/>
-        <run start="3086" length="13"/>
-        <run start="3089" length="12"/>
-        <run start="3091" length="12"/>
-        <run start="3094" length="11"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="450" id="2296">
-        <run start="3103" length="2"/>
-        <run start="3104" length="1"/>
-        <run start="3104" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="458" id="2574">
-        <run start="3096" length="7"/>
-        <run start="3097" length="4"/>
-        <run start="3095" length="4"/>
-        <run start="3092" length="4"/>
-        <run start="3090" length="4"/>
-        <run start="3087" length="5"/>
-        <run start="3086" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="462" id="2732">
-        <run start="3104" length="1"/>
-        <run start="3104" length="1"/>
-        <run start="3103" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="465" id="2812">
-        <run start="3086" length="19"/>
-        <run start="3086" length="19"/>
-        <run start="3086" length="19"/>
-        <run start="3086" length="19"/>
-        <run start="3086" length="19"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="470" id="2815">
-        <run start="3086" length="1"/>
-        <run start="3086" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="470" id="2816">
-        <run start="3104" length="1"/>
-        <run start="3104" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="473" id="2818">
-        <run start="3097" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="474" id="2820">
-        <run start="3094" length="9"/>
-        <run start="3093" length="11"/>
-        <run start="3092" length="13"/>
-        <run start="3092" length="13"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="478" id="2824">
-        <run start="3091" length="3"/>
-        <run start="3091" length="2"/>
-        <run start="3091" length="2"/>
-        <run start="3092" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="478" id="2825">
-        <run start="3103" length="2"/>
-        <run start="3104" length="2"/>
-        <run start="3104" length="1"/>
-        <run start="3101" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="482" id="2837">
-        <run start="3092" length="13"/>
-        <run start="3093" length="11"/>
-        <run start="3093" length="10"/>
-        <run start="3095" length="7"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="488" id="2862">
-        <run start="3095" length="7"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="489" id="2871">
-        <run start="3093" length="11"/>
-        <run start="3092" length="13"/>
-        <run start="3092" length="13"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="492" id="2893">
-        <run start="3091" length="4"/>
-        <run start="3091" length="2"/>
-        <run start="3091" length="2"/>
-        <run start="3092" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="492" id="2894">
-        <run start="3101" length="4"/>
-        <run start="3103" length="2"/>
-        <run start="3103" length="2"/>
-        <run start="3103" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="495" id="2908">
-        <run start="3086" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="496" id="2915">
-        <run start="3086" length="19"/>
-        <run start="3086" length="19"/>
-        <run start="3086" length="19"/>
-        <run start="3086" length="19"/>
-        <run start="3086" length="19"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="501" id="2943">
-        <run start="3103" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="503" id="2955">
-        <run start="3098" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="504" id="2962">
-        <run start="3095" length="8"/>
-        <run start="3093" length="11"/>
-        <run start="3092" length="13"/>
-        <run start="3092" length="13"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="508" id="2974">
-        <run start="3091" length="2"/>
-        <run start="3091" length="2"/>
-        <run start="3091" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="508" id="2975">
-        <run start="3097" length="1"/>
-        <run start="3097" length="1"/>
-        <run start="3097" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="508" id="2976">
-        <run start="3101" length="4"/>
-        <run start="3102" length="4"/>
-        <run start="3103" length="2"/>
-        <run start="3103" length="2"/>
-        <run start="3103" length="2"/>
-        <run start="3102" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="511" id="2983">
-        <run start="3092" length="6"/>
-        <run start="3092" length="6"/>
-        <run start="3093" length="5"/>
-        <run start="3095" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="514" id="2990">
-        <run start="3101" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="516" id="2996">
-        <run start="3104" length="1"/>
-        <run start="3104" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="517" id="2999">
-        <run start="3092" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="518" id="3002">
-        <run start="3092" length="13"/>
-        <run start="3092" length="13"/>
-        <run start="3092" length="13"/>
-        <run start="3092" length="13"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="522" id="3009">
-        <run start="3093" length="3"/>
-        <run start="3092" length="3"/>
-        <run start="3092" length="3"/>
-        <run start="3091" length="4"/>
-        <run start="3091" length="4"/>
-        <run start="3092" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="522" id="3010">
-        <run start="3104" length="1"/>
-        <run start="3104" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="529" id="3020">
-        <run start="3095" length="1"/>
-        <run start="3093" length="4"/>
-        <run start="3092" length="5"/>
-        <run start="3092" length="5"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="529" id="3021">
-        <run start="3101" length="3"/>
-        <run start="3100" length="5"/>
-        <run start="3099" length="6"/>
-        <run start="3098" length="7"/>
-        <run start="3098" length="7"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="533" id="3025">
-        <run start="3091" length="2"/>
-        <run start="3091" length="2"/>
-        <run start="3091" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="533" id="3026">
-        <run start="3095" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="534" id="3029">
-        <run start="3097" length="2"/>
-        <run start="3097" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="534" id="3030">
-        <run start="3102" length="3"/>
-        <run start="3102" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="536" id="3032">
-        <run start="3091" length="13"/>
-        <run start="3091" length="14"/>
-        <run start="3092" length="13"/>
-        <run start="3093" length="12"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="540" id="3035">
-        <run start="3103" length="2"/>
-        <run start="3103" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="543" id="3038">
-        <run start="3092" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="544" id="3040">
-        <run start="3091" length="12"/>
-        <run start="3090" length="14"/>
-        <run start="3089" length="16"/>
-        <run start="3087" length="18"/>
-        <run start="3087" length="18"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="549" id="3045">
-        <run start="3092" length="2"/>
-        <run start="3092" length="2"/>
-        <run start="3092" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="549" id="3046">
-        <run start="3103" length="2"/>
-        <run start="3103" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="551" id="3049">
-        <run start="3102" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="553" id="3051">
-        <run start="3095" length="7"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="554" id="3053">
-        <run start="3093" length="11"/>
-        <run start="3092" length="13"/>
-        <run start="3092" length="13"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="557" id="3056">
-        <run start="3091" length="3"/>
-        <run start="3091" length="2"/>
-        <run start="3091" length="2"/>
-        <run start="3091" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="557" id="3057">
-        <run start="3103" length="2"/>
-        <run start="3104" length="2"/>
-        <run start="3104" length="2"/>
-        <run start="3102" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="561" id="3059">
-        <run start="3092" length="13"/>
-        <run start="3092" length="12"/>
-        <run start="3093" length="10"/>
-        <run start="3095" length="7"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="574" id="3073">
-        <run start="3095" length="7"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="575" id="3078">
-        <run start="3093" length="12"/>
-        <run start="3091" length="15"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="577" id="3087">
-        <run start="3090" length="3"/>
-        <run start="3089" length="2"/>
-        <run start="3089" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="577" id="3088">
-        <run start="3104" length="3"/>
-        <run start="3106" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="579" id="3090">
-        <run start="3108" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="585" id="3096">
-        <run start="3102" length="4"/>
-        <run start="3100" length="7"/>
-        <run start="3100" length="7"/>
-        <run start="3099" length="9"/>
-        <run start="3099" length="9"/>
-        <run start="3098" length="10"/>
-        <run start="3098" length="9"/>
-        <run start="3098" length="9"/>
-        <run start="3098" length="9"/>
-        <run start="3098" length="8"/>
-        <run start="3099" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="596" id="3120">
-        <run start="3075" length="29"/>
-        <run start="3076" length="26"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="605" id="3124">
-        <run start="3095" length="2"/>
-        <run start="3095" length="2"/>
-        <run start="3095" length="2"/>
-        <run start="3095" length="2"/>
-        <run start="3095" length="2"/>
-        <run start="3095" length="2"/>
-        <run start="3095" length="2"/>
-        <run start="3095" length="2"/>
-        <run start="3095" length="2"/>
-        <run start="3095" length="2"/>
-        <run start="3095" length="2"/>
-        <run start="3095" length="2"/>
-        <run start="3095" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="605" id="3125">
-        <run start="3100" length="2"/>
-        <run start="3100" length="2"/>
-        <run start="3100" length="2"/>
-        <run start="3100" length="2"/>
-        <run start="3100" length="2"/>
-        <run start="3100" length="2"/>
-        <run start="3100" length="2"/>
-        <run start="3100" length="2"/>
-        <run start="3100" length="2"/>
-        <run start="3100" length="2"/>
-        <run start="3100" length="2"/>
-        <run start="3100" length="2"/>
-        <run start="3100" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="625" id="3132">
-        <run start="3090" length="4"/>
-        <run start="3089" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="625" id="3133">
-        <run start="3099" length="4"/>
-        <run start="3098" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="627" id="3139">
-        <run start="3089" length="2"/>
-        <run start="3088" length="2"/>
-        <run start="3088" length="1"/>
-        <run start="3088" length="1"/>
-        <run start="3088" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="627" id="3140">
-        <run start="3092" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="627" id="3141">
-        <run start="3097" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="627" id="3142">
-        <run start="3102" length="3"/>
-        <run start="3104" length="1"/>
-        <run start="3104" length="1"/>
-        <run start="3104" length="1"/>
-        <run start="3104" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="628" id="3145">
-        <run start="3094" length="4"/>
-        <run start="3095" length="3"/>
-        <run start="3095" length="4"/>
-        <run start="3094" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="632" id="3150">
-        <run start="3089" length="6"/>
-        <run start="3090" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="632" id="3151">
-        <run start="3097" length="8"/>
-        <run start="3098" length="6"/>
-        <run start="3099" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="637" id="3154">
-        <run start="3103" length="1"/>
-        <run start="3103" length="2"/>
-        <run start="3103" length="2"/>
-        <run start="3103" length="2"/>
-        <run start="3104" length="1"/>
-        <run start="3104" length="1"/>
-        <run start="3104" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="638" id="3156">
-        <run start="3094" length="1"/>
-        <run start="3091" length="4"/>
-        <run start="3089" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="641" id="3159">
-        <run start="3088" length="3"/>
-        <run start="3088" length="3"/>
-        <run start="3088" length="3"/>
-        <run start="3088" length="3"/>
-        <run start="3088" length="3"/>
-        <run start="3088" length="3"/>
-        <run start="3088" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="641" id="3160">
-        <run start="3093" length="3"/>
-        <run start="3093" length="3"/>
-        <run start="3093" length="4"/>
-        <run start="3094" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="644" id="3161">
-        <run start="3103" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="645" id="3163">
-        <run start="3095" length="9"/>
-        <run start="3096" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="647" id="3168">
-        <run start="3099" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="650" id="3174">
-        <run start="3088" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="651" id="3177">
-        <run start="3089" length="1"/>
-        <run start="3089" length="2"/>
-        <run start="3090" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="651" id="3178">
-        <run start="3108" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="652" id="3180">
-        <run start="3106" length="2"/>
-        <run start="3105" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="654" id="3187">
-        <run start="3092" length="14"/>
-        <run start="3093" length="12"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="656" id="3191">
-        <run start="3095" length="7"/>
-    </section>
-</glyph>
+<sample id="1975" interline="13" left="446" top="3075" shape="TEXT">
+    <run-table orientation="VERTICAL" width="211" height="34">
+        <sequences>
+            <item>0 11 1 17 1</item>
+            <item>0 11 1 17 1</item>
+            <item>0 11 1 16 2</item>
+            <item>0 11 19</item>
+            <item>0 11 3 14 2</item>
+            <item>0 11 6 12 1</item>
+            <item>0 11 8 10 1</item>
+            <item>0 11 10</item>
+            <item>0 11 13</item>
+            <item>0 14 12</item>
+            <item>0 16 12</item>
+            <item>0 19 11</item>
+            <item>0 21 7</item>
+            <item>0 22 4</item>
+            <item>0 20 4</item>
+            <item>0 17 4</item>
+            <item>0 15 4 10 1</item>
+            <item>0 12 5 12 1</item>
+            <item>0 11 4 13 2</item>
+            <item>0 11 19</item>
+            <item>0 11 19</item>
+            <item>0 11 19</item>
+            <item>0 11 19</item>
+            <item>0 11 19</item>
+            <item>0 11 1 17 1</item>
+            <item>0 11 1 17 1</item>
+            <item/>
+            <item>0 22 3</item>
+            <item>0 19 9</item>
+            <item>0 18 11</item>
+            <item>0 17 13</item>
+            <item>0 17 13</item>
+            <item>0 16 3 9 2</item>
+            <item>0 16 2 11 2</item>
+            <item>0 16 2 11 1</item>
+            <item>0 17 3 6 4</item>
+            <item>0 17 13</item>
+            <item>0 18 11</item>
+            <item>0 18 10</item>
+            <item>0 20 7</item>
+            <item/>
+            <item/>
+            <item>0 20 7</item>
+            <item>0 18 11</item>
+            <item>0 17 13</item>
+            <item>0 17 13</item>
+            <item>0 16 4 6 4</item>
+            <item>0 16 2 10 2</item>
+            <item>0 16 2 10 2</item>
+            <item>0 11 1 5 2 9 2</item>
+            <item>0 11 19</item>
+            <item>0 11 19</item>
+            <item>0 11 19</item>
+            <item>0 11 19</item>
+            <item>0 11 19</item>
+            <item>0 28 2</item>
+            <item/>
+            <item>0 23 1</item>
+            <item>0 20 8</item>
+            <item>0 18 11</item>
+            <item>0 17 13</item>
+            <item>0 17 13</item>
+            <item>0 16 2 4 1 3 4</item>
+            <item>0 16 2 4 1 4 4</item>
+            <item>0 16 2 4 1 5 2</item>
+            <item>0 17 6 5 2</item>
+            <item>0 17 6 5 2</item>
+            <item>0 18 5 4 2</item>
+            <item>0 20 3 3 1</item>
+            <item/>
+            <item>0 29 1</item>
+            <item>0 17 1 11 1</item>
+            <item>0 17 13</item>
+            <item>0 17 13</item>
+            <item>0 17 13</item>
+            <item>0 17 13</item>
+            <item>0 18 3 8 1</item>
+            <item>0 17 3 9 1</item>
+            <item>0 17 3</item>
+            <item>0 16 4</item>
+            <item>0 16 4</item>
+            <item>0 17 3</item>
+            <item/>
+            <item>0 20 1 5 3</item>
+            <item>0 18 4 3 5</item>
+            <item>0 17 5 2 6</item>
+            <item>0 17 5 1 7</item>
+            <item>0 16 2 2 1 2 7</item>
+            <item>0 16 2 4 2 3 3</item>
+            <item>0 16 2 4 1 4 2</item>
+            <item>0 16 13</item>
+            <item>0 16 14</item>
+            <item>0 17 13</item>
+            <item>0 18 12</item>
+            <item>0 28 2</item>
+            <item>0 28 1</item>
+            <item/>
+            <item>0 17 2</item>
+            <item>0 16 12</item>
+            <item>0 15 14</item>
+            <item>0 14 16</item>
+            <item>0 12 18</item>
+            <item>0 12 18</item>
+            <item>0 17 2 9 2</item>
+            <item>0 17 2 9 1</item>
+            <item>0 17 1 9 1</item>
+            <item/>
+            <item>0 20 7</item>
+            <item>0 18 11</item>
+            <item>0 17 13</item>
+            <item>0 17 13</item>
+            <item>0 16 3 9 2</item>
+            <item>0 16 2 11 2</item>
+            <item>0 16 2 11 2</item>
+            <item>0 16 3 8 3</item>
+            <item>0 17 13</item>
+            <item>0 17 12</item>
+            <item>0 18 10</item>
+            <item>0 20 7</item>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item>0 20 7</item>
+            <item>0 18 12</item>
+            <item>0 16 15</item>
+            <item>0 15 3 11 3</item>
+            <item>0 14 2 15 2</item>
+            <item>0 14 1 18 1</item>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item>0 27 4</item>
+            <item>0 25 7</item>
+            <item>0 25 7</item>
+            <item>0 24 9</item>
+            <item>0 24 9</item>
+            <item>0 23 10</item>
+            <item>0 23 9</item>
+            <item>0 23 9</item>
+            <item>0 23 9</item>
+            <item>0 23 8</item>
+            <item>0 24 6</item>
+            <item>29</item>
+            <item>0 1 26</item>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item>0 20 2 3 2</item>
+            <item>0 20 2 3 2</item>
+            <item>0 20 2 3 2</item>
+            <item>0 20 2 3 2</item>
+            <item>0 20 2 3 2</item>
+            <item>0 20 2 3 2</item>
+            <item>0 20 2 3 2</item>
+            <item>0 20 2 3 2</item>
+            <item>0 20 2 3 2</item>
+            <item>0 20 2 3 2</item>
+            <item>0 20 2 3 2</item>
+            <item>0 20 2 3 2</item>
+            <item>0 20 2 3 2</item>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item/>
+            <item>0 15 4 5 4</item>
+            <item>0 14 6 3 6</item>
+            <item>0 14 2 1 4 1 2 3 3</item>
+            <item>0 13 2 4 4 6 1</item>
+            <item>0 13 1 6 3 6 1</item>
+            <item>0 13 1 6 4 5 1</item>
+            <item>0 13 2 4 6 4 1</item>
+            <item>0 14 6 2 8</item>
+            <item>0 15 4 4 6</item>
+            <item>0 24 4</item>
+            <item/>
+            <item/>
+            <item>0 28 1</item>
+            <item>0 19 1 8 2</item>
+            <item>0 16 4 8 2</item>
+            <item>0 14 6 8 2</item>
+            <item>0 13 3 2 3 8 1</item>
+            <item>0 13 3 2 3 8 1</item>
+            <item>0 13 3 2 4 7 1</item>
+            <item>0 13 3 3 3 6 1</item>
+            <item>0 13 3 4 9</item>
+            <item>0 13 3 5 6</item>
+            <item>0 13 1 10 1</item>
+            <item/>
+            <item/>
+            <item>0 13 1</item>
+            <item>0 14 1 18 1</item>
+            <item>0 14 2 15 2</item>
+            <item>0 15 3 12 2</item>
+            <item>0 17 14</item>
+            <item>0 18 12</item>
+            <item>0 20 7</item>
+        </sequences>
+    </run-table>
+</sample>

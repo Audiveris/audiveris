@@ -10,7 +10,6 @@
         </buildExtensions>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
             <name>audiveris</name>
-            <explicit-platform explicit-source-supported="true"/>
             <source-roots>
                 <root id="src.java.dir"/>
                 <root id="src.dir"/>
@@ -20,5 +19,29 @@
             </test-roots>
         </data>
         <references xmlns="http://www.netbeans.org/ns/ant-project-references/1"/>
+        <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>arg</word>
+            <word>barline</word>
+            <word>barlines</word>
+            <word>binarization</word>
+            <word>binarized</word>
+            <word>Bézier</word>
+            <word>epilog</word>
+            <word>fermata</word>
+            <word>glyphs</word>
+            <word>Initially</word>
+            <word>inters</word>
+            <word>marshallable</word>
+            <word>marshalled</word>
+            <word>marshalling</word>
+            <word>plugin</word>
+            <word>plugins</word>
+            <word>toolbar</word>
+            <word>tuplet</word>
+            <word>tuplets</word>
+            <word>Unmarshal</word>
+            <word>unmarshalled</word>
+            <word>unmarshalling</word>
+        </spellchecker-wordlist>
     </configuration>
 </project>

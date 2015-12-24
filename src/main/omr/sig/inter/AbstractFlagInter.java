@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.ShapeSet.FlagsUp;
 import static omr.glyph.ShapeSet.SmallFlags;
-import omr.glyph.facets.Glyph;
 
 import omr.math.GeoOrder;
 import omr.math.LineUtil;
@@ -42,7 +42,7 @@ import java.util.List;
  *
  * @author Hervé Bitteur
  */
-public class AbstractFlagInter
+public abstract class AbstractFlagInter
         extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -50,10 +50,19 @@ public class AbstractFlagInter
     private static final Logger logger = LoggerFactory.getLogger(AbstractFlagInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Value of this flag (compound?) in terms of individual flags. */
-    protected final int value;
+    /** Value of this flag (compound?) in terms of individual flags.
+     * (Lazily evaluated)
+     */
+    protected Integer value;
 
     //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code AbstractFlagInter} object.
+     */
+    protected AbstractFlagInter ()
+    {
+    }
+
     /**
      * Creates a new {@code AbstractFlagInter} object.
      *
@@ -66,19 +75,9 @@ public class AbstractFlagInter
                                  double grade)
     {
         super(glyph, null, shape, grade);
-        value = getFlagValue(shape);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //--------//
     // create //
     //--------//
@@ -86,7 +85,7 @@ public class AbstractFlagInter
      * (Try to) create a Flag inter (either standard FlagInter or SmallFlagInter).
      * <p>
      * At this time note heads have already been validated (with their attached stem).
-     * So, a flag is created only if it can be related to stems with standard size head(s),
+     * So, a flag is created only if it can be related to stems with consistent size head(s),
      * and if it is correctly located WRT note heads on the stem.
      *
      * @param glyph       the flag glyph
@@ -110,7 +109,7 @@ public class AbstractFlagInter
         // Look for stems nearby, using the lowest (for up) or highest (for down) third of height
         final boolean isFlagUp = FlagsUp.contains(shape);
         final boolean isSmall = SmallFlags.contains(shape);
-        final int stemWidth = system.getSheet().getMaxStem();
+        final int stemWidth = system.getSheet().getScale().getMaxStem();
         final Rectangle flagBox = glyph.getBounds();
         final int footHeight = (int) Math.rint(flagBox.height / 3.0);
 
@@ -144,8 +143,8 @@ public class AbstractFlagInter
             Glyph stemGlyph = stem.getGlyph();
             Point2D start = stemGlyph.getStartPoint(VERTICAL);
             Point2D stop = stemGlyph.getStopPoint(VERTICAL);
-            Point2D crossPt = LineUtil.intersectionAtY(start, stop, refPt.getY());
-            final double xGap = refPt.getX() - crossPt.getX();
+            double crossX = LineUtil.xAtY(start, stop, refPt.getY());
+            final double xGap = refPt.getX() - crossX;
             final double yGap;
 
             if (refPt.getY() < start.getY()) {
@@ -160,7 +159,7 @@ public class AbstractFlagInter
             fRel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
             if (fRel.getGrade() >= fRel.getMinGrade()) {
-                fRel.setAnchorPoint(
+                fRel.setExtensionPoint(
                         LineUtil.intersectionAtY(
                                 start,
                                 stop,
@@ -175,7 +174,7 @@ public class AbstractFlagInter
                         continue;
                     }
 
-                    if (stem.getDirection() == -1) {
+                    if (stem.computeDirection() == -1) {
                         continue;
                     }
                 } else {
@@ -183,7 +182,7 @@ public class AbstractFlagInter
                         continue;
                     }
 
-                    if (stem.getDirection() == 1) {
+                    if (stem.computeDirection() == 1) {
                         continue;
                     }
                 }
@@ -191,12 +190,16 @@ public class AbstractFlagInter
                 if (flag == null) {
                     flag = isSmall ? new SmallFlagInter(glyph, shape, grade)
                             : new FlagInter(glyph, shape, grade);
+                    system.getSheet().getGlyphIndex().register(glyph);
                     sig.addVertex(flag);
                 }
 
                 sig.addEdge(flag, stem, fRel);
 
                 if (flag.getStaff() == null) {
+                    if (isFlagUp) {
+
+                    }
                     flag.setStaff(stem.getStaff());
                 } else if (flag.getStaff() != stem.getStaff()) {
                     logger.warn("Different staves for {} & {}", flag, stem);
@@ -205,6 +208,15 @@ public class AbstractFlagInter
         }
 
         return flag;
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
     }
 
     //----------//
@@ -217,6 +229,10 @@ public class AbstractFlagInter
      */
     public int getValue ()
     {
+        if (value == null) {
+            value = getFlagValue(shape);
+        }
+
         return value;
     }
 

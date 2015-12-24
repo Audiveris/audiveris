@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sig.ui;
 
-import omr.selection.InterListEvent;
+import omr.selection.EntityListEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 
@@ -96,9 +96,9 @@ class RelationAction
     {
         if (other != null) {
             SIGraph sig = other.getSig();
-            InterListEvent event = new InterListEvent(
+            EntityListEvent<Inter> event = new EntityListEvent<Inter>(
                     this,
-                    SelectionHint.INTER_INIT,
+                    SelectionHint.ENTITY_INIT,
                     MouseMovement.PRESSING,
                     Arrays.asList(other));
             sig.publish(event);

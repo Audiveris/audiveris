@@ -12,10 +12,12 @@
 package omr.math;
 
 import omr.math.LinearEvaluator.Printer;
-import omr.math.LinearEvaluator.Sample;
+import omr.math.LinearEvaluator.LinearSample;
 
 import org.junit.AfterClass;
+
 import static org.junit.Assert.*;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -44,19 +46,18 @@ public class LinearEvaluatorTest
 
     private static final String fileName = "linear.xml";
 
-    private static final List<Sample> samples = Arrays.asList(
-            new Sample("A", new double[]{10, 20}),
-            new Sample("A", new double[]{11, 23}),
-            new Sample("A", new double[]{9, 20}),
-            new Sample("B", new double[]{5, 40}),
-            new Sample("B", new double[]{7, 50}),
-            new Sample("C", new double[]{100, 200}),
-            new Sample("C", new double[]{90, 205}),
-            new Sample("C", new double[]{95, 220}),
-            new Sample("C", new double[]{98, 210}),
-            new Sample("D", new double[]{30, 60}),
-            new Sample("E", new double[]{80, 20}),
-            new Sample("E", new double[]{80, 25}));
+    private static final List<LinearSample> samples = Arrays.asList(new LinearSample("A", new double[]{10, 20}),
+            new LinearSample("A", new double[]{11, 23}),
+            new LinearSample("A", new double[]{9, 20}),
+            new LinearSample("B", new double[]{5, 40}),
+            new LinearSample("B", new double[]{7, 50}),
+            new LinearSample("C", new double[]{100, 200}),
+            new LinearSample("C", new double[]{90, 205}),
+            new LinearSample("C", new double[]{95, 220}),
+            new LinearSample("C", new double[]{98, 210}),
+            new LinearSample("D", new double[]{30, 60}),
+            new LinearSample("E", new double[]{80, 20}),
+            new LinearSample("E", new double[]{80, 25}));
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -133,7 +134,7 @@ public class LinearEvaluatorTest
         double[] one = new double[]{10, 20};
         System.out.println("Distances to " + Arrays.toString(one));
 
-        for (Sample sample : samples) {
+        for (LinearSample sample : samples) {
             double result = instance.patternDistance(one, sample.pattern);
             System.out.println("dist:" + result + " " + sample);
         }

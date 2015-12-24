@@ -20,17 +20,24 @@ import org.slf4j.LoggerFactory;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code PartBarline} represents a logical bar-line for a part, that is
- * composed of several {@link StaffBarline} instances when the part comprises several
- * staves.
+ * Class {@code PartBarline} represents a logical barline for a part, that is composed
+ * of several {@link StaffBarline} instances when the part comprises several staves.
  * <p>
  * In the case of "back to back" repeat configuration, we use two instances of this class, one
  * for the backward repeat and one for the forward repeat.
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "part-barline")
 public class PartBarline
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -61,6 +68,7 @@ public class PartBarline
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** * Underlying {@link StaffBarline} instances, one per staff in the part. */
+    @XmlElement(name = "staff-barline")
     private final List<StaffBarline> staffBarlines = new ArrayList<StaffBarline>();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -74,9 +82,7 @@ public class PartBarline
     //-----------------//
     public void addStaffBarline (StaffBarline staffBarline)
     {
-        if (staffBarline == null) {
-            throw new NullPointerException("Trying to add a null StaffBarline");
-        }
+        Objects.requireNonNull(staffBarline, "Trying to add a null StaffBarline");
 
         staffBarlines.add(staffBarline);
     }
@@ -150,6 +156,20 @@ public class PartBarline
         }
 
         return staffBarlines.get(0).getStyle();
+    }
+
+    //--------------//
+    // isLeftRepeat //
+    //--------------//
+    public boolean isLeftRepeat ()
+    {
+        for (StaffBarline sb : staffBarlines) {
+            if (sb.isLeftRepeat()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //---------------//

@@ -11,11 +11,14 @@
 // </editor-fold>
 package omr.sig;
 
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 /**
  * Interface {@code GradeImpacts} defines data that impact a resulting grade value.
  *
  * @author Hervé Bitteur
  */
+@XmlJavaTypeAdapter(AbstractImpacts.Adapter.class)
 public interface GradeImpacts
 {
     //~ Methods ------------------------------------------------------------------------------------

@@ -13,8 +13,6 @@ package omr.sig.inter;
 
 import omr.glyph.Shape;
 
-import omr.sheet.Part;
-
 import omr.text.FontInfo;
 import omr.text.TextLine;
 import omr.text.TextRole;
@@ -32,22 +30,31 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import omr.sheet.SystemInfo;
+
 /**
  * Class {@code SentenceInter} represents a full sentence of words.
  * <p>
  * This class is used for any text role other than Lyrics (Title, Direction, Number, PartName,
- * Creator & al, Rights, ChordName, UnknownRole)
+ * Creator et al, Rights, ChordName, UnknownRole)
  * For Lyrics role , the specific subclass {@link LyricLineInter} is used.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "sentence")
 public class SentenceInter
         extends AbstractInter
         implements InterMutableEnsemble
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(SentenceInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SentenceInter.class);
 
     /** For ordering sentences by their de-skewed ordinate. */
     public static Comparator<SentenceInter> byOrdinate = new Comparator<SentenceInter>()
@@ -64,32 +71,37 @@ public class SentenceInter
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /** Sequence of sentence words. */
+    @XmlIDREF
+    @XmlElement(name = "word")
+    protected final List<WordInter> words;
+
     /** Average font for the sentence. */
+    @XmlAttribute(name = "font")
+    @XmlJavaTypeAdapter(FontInfo.Adapter.class)
     protected final FontInfo meanFont;
 
     /** Role of this sentence. */
+    @XmlAttribute
     protected final TextRole role;
-
-    /** Sequence of sentence words. */
-    protected final List<WordInter> words;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SentenceInter} object.
      *
-     * @param box      the bounding box
+     * @param bounds   the bounding bounds
      * @param grade    the interpretation quality
      * @param meanFont the font averaged on whole text line
      * @param role     text role for the line
      * @param words    the sequence of words
      */
-    protected SentenceInter (Rectangle box,
+    protected SentenceInter (Rectangle bounds,
                              double grade,
                              FontInfo meanFont,
                              TextRole role,
                              List<WordInter> words)
     {
-        super(null, box, Shape.TEXT, grade);
+        super(null, bounds, Shape.TEXT, grade);
 
         this.meanFont = meanFont;
         this.role = role;
@@ -98,6 +110,17 @@ public class SentenceInter
         for (WordInter word : words) {
             word.setEnsemble(this);
         }
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    protected SentenceInter ()
+    {
+        super(null, null, null, null);
+        this.words = null;
+        this.meanFont = null;
+        this.role = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -239,19 +262,6 @@ public class SentenceInter
     }
 
     //---------//
-    // getPart //
-    //---------//
-    /**
-     * Report the part that contains this sentence.
-     *
-     * @return the containing part
-     */
-    public Part getPart ()
-    {
-        return staff.getPart();
-    }
-
-    //---------//
     // getRole //
     //---------//
     /**
@@ -330,5 +340,32 @@ public class SentenceInter
         sb.append(' ').append(role);
 
         return sb.toString();
+    }
+
+    //-------------//
+    // assignStaff //
+    //-------------//
+    public void assignStaff (SystemInfo system)
+    {
+        if (staff != null) {
+            return;
+        }
+
+        final Point loc = getLocation();
+
+        if (role != TextRole.ChordName) {
+            staff = system.getStaffAtOrAbove(loc);
+        }
+
+        if (staff == null) {
+            staff = system.getStaffAtOrBelow(loc);
+        }
+
+        if (staff != null) {
+            for (Inter wInter : getMembers()) {
+                WordInter wordInter = (WordInter) wInter;
+                wordInter.setStaff(staff);
+            }
+        }
     }
 }

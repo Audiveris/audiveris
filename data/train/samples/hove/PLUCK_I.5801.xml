@@ -1,56 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph id="5801" interline="20" shape="PLUCK_I">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>0.0</pitch-position>
-    <section first-pos="1081" orientation="VERTICAL" id="1628">
-        <run start="1010" length="1"/>
-    </section>
-    <section first-pos="1082" orientation="VERTICAL" id="1634">
-        <run start="1009" length="3"/>
-    </section>
-    <section first-pos="1082" orientation="VERTICAL" id="1635">
-        <run start="1020" length="4"/>
-    </section>
-    <section first-pos="1083" orientation="VERTICAL" id="1636">
-        <run start="1007" length="4"/>
-        <run start="1006" length="4"/>
-    </section>
-    <section first-pos="1083" orientation="VERTICAL" id="1637">
-        <run start="1017" length="8"/>
-    </section>
-    <section first-pos="1084" orientation="VERTICAL" id="1639">
-        <run start="1013" length="12"/>
-    </section>
-    <section first-pos="1085" orientation="VERTICAL" id="1641">
-        <run start="1005" length="20"/>
-        <run start="1005" length="20"/>
-    </section>
-    <section first-pos="1087" orientation="VERTICAL" id="1647">
-        <run start="995" length="3"/>
-    </section>
-    <section first-pos="1087" orientation="VERTICAL" id="1648">
-        <run start="1005" length="12"/>
-    </section>
-    <section first-pos="1087" orientation="VERTICAL" id="1649">
-        <run start="1020" length="4"/>
-    </section>
-    <section first-pos="1088" orientation="VERTICAL" id="1651">
-        <run start="995" length="4"/>
-        <run start="994" length="5"/>
-        <run start="995" length="4"/>
-    </section>
-    <section first-pos="1088" orientation="VERTICAL" id="1652">
-        <run start="1005" length="8"/>
-    </section>
-    <section first-pos="1088" orientation="VERTICAL" id="1653">
-        <run start="1020" length="3"/>
-        <run start="1019" length="3"/>
-    </section>
-    <section first-pos="1089" orientation="VERTICAL" id="1655">
-        <run start="1007" length="2"/>
-    </section>
-    <section first-pos="1090" orientation="VERTICAL" id="1657">
-        <run start="1019" length="2"/>
-    </section>
-</glyph>
+<sample id="5801" interline="20" left="1081" top="994" shape="PLUCK_I">
+    <run-table orientation="VERTICAL" width="10" height="31">
+        <sequences>
+            <item>0 16 1</item>
+            <item>0 15 3 8 4</item>
+            <item>0 13 4 6 8</item>
+            <item>0 12 4 3 12</item>
+            <item>0 11 20</item>
+            <item>0 11 20</item>
+            <item>0 1 3 7 12 3 4</item>
+            <item>0 1 4 6 8 7 3</item>
+            <item>5 8 2 10 3</item>
+            <item>0 1 4 20 2</item>
+        </sequences>
+    </run-table>
+</sample>

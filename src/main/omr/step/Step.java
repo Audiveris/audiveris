@@ -34,9 +34,9 @@ import omr.text.TextsStep;
 import java.util.Collection;
 
 /**
- * Enum {@code Step} describes a sheet processing step.
+ * Enum {@code Step} describes the steps of sheet processing pipeline.
  * <p>
- * <img src="doc-files/Step.png" alt="Step image" />
+ * <img src="doc-files/Step.png" alt="Step image">
  *
  * @author Hervé Bitteur
  */
@@ -46,7 +46,7 @@ public enum Step
     LOAD("Load the sheet (gray) picture", new LoadStep()),
     BINARY("Binarize the sheet picture", new BinaryStep()),
     SCALE("Compute sheet line thickness, interline, beam thickness", new ScaleStep()),
-    GRID("Retrieve Staff lines, bar-lines, systems & parts", new GridStep()),
+    GRID("Retrieve staff lines, barlines, systems & parts", new GridStep()),
     HEADERS("Retrieve Clef-Key-Time systems headers", new HeadersStep()),
     STEM_SEEDS("Retrieve Stem thickness & seeds for stems", new StemSeedsStep()),
     BEAMS("Retrieve beams", new BeamsStep()),
@@ -56,8 +56,8 @@ public enum Step
     REDUCTION("Reduce structures of heads, stems & beams", new ReductionStep()),
     CUE_BEAMS("Retrieve cue beams", new CueBeamsStep()),
     TEXTS("Call OCR on textual items", new TextsStep()),
-    CHORDS("Gather notes heads into chords", new ChordsStep()),
     MEASURES("Retrieve raw measures from groups of bar lines", new MeasuresStep()),
+    CHORDS("Gather notes heads into chords", new ChordsStep()),
     CURVES("Retrieve slurs, wedges & endings", new CurvesStep()),
     SYMBOLS("Retrieve fixed-shape symbols", new SymbolsStep()),
     RHYTHMS("Handle rhythms within measures", new RhythmsStep()),

@@ -12,8 +12,8 @@
 package omr.util;
 
 /**
- * Interface {@code Vip} allows to flag an entity as a VIP and generally triggers
- * specific printouts related to this entity.
+ * Interface {@code Vip} allows to flag an object as a VIP and generally triggers
+ * specific debugging printouts related to this object.
  *
  * @author Hervé Bitteur
  */
@@ -29,7 +29,9 @@ public interface Vip
     boolean isVip ();
 
     /**
-     * (Debug) Flag this object as VIP
+     * (Debug) Assign the VIP flag
+     *
+     * @param vip true if VIP, false if not
      */
-    void setVip ();
+    void setVip (boolean vip);
 }

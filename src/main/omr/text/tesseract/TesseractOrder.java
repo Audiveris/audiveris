@@ -31,10 +31,11 @@ import tesseract.TessBridge.TessBaseAPI.SegmentationMode;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -144,7 +145,7 @@ public class TesseractOrder
     public List<TextLine> process ()
     {
         try {
-            api = new TessBaseAPI(WellKnowns.OCR_FOLDER.getPath());
+            api = new TessBaseAPI(WellKnowns.OCR_FOLDER.toString());
 
             // Init API with proper language
             if (!api.Init(lang)) {
@@ -335,15 +336,14 @@ public class TesseractOrder
         // Should we keep a local copy of this buffer on disk?
         if (keepImage) {
             String name = String.format("%03d-", serial) + ((label != null) ? label : "");
-            File file = new File(WellKnowns.TEMP_FOLDER, name + ".tif");
+            Path path = WellKnowns.TEMP_FOLDER.resolve(name + ".tif");
 
             // Make sure the TEMP directory exists
-            if (!WellKnowns.TEMP_FOLDER.exists()) {
-                WellKnowns.TEMP_FOLDER.mkdir();
+            if (!Files.exists(WellKnowns.TEMP_FOLDER)) {
+                Files.createDirectories(WellKnowns.TEMP_FOLDER);
             }
 
-            try (final FileOutputStream fos = new FileOutputStream(
-                    file.getAbsolutePath())) {
+            try (final FileOutputStream fos = new FileOutputStream(path.toFile())) {
                 fos.write(bytes);
             }
         }

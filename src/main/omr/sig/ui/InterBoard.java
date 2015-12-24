@@ -15,27 +15,20 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 
-import omr.selection.InterIdEvent;
-import omr.selection.InterListEvent;
+import omr.selection.EntityListEvent;
 import omr.selection.MouseMovement;
-import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 
-import omr.sig.InterManager;
-import omr.sig.SIGraph;
 import omr.sig.inter.Inter;
 
 import omr.ui.Board;
+import omr.ui.EntityBoard;
 import omr.ui.PixelCount;
-import omr.ui.field.LCheckBox;
 import omr.ui.field.LTextField;
-import omr.ui.field.SpinnerUtil;
-import static omr.ui.field.SpinnerUtil.NO_VALUE;
 import omr.ui.util.Panel;
 
-import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -44,19 +37,12 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
-import java.util.Locale;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JSpinner;
 import javax.swing.SwingConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code InterBoard} defines a UI board for {@link Inter} information.
@@ -64,8 +50,7 @@ import javax.swing.event.ChangeListener;
  * @author Hervé Bitteur
  */
 public class InterBoard
-        extends Board
-        implements ChangeListener, ActionListener
+        extends EntityBoard<Inter>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -73,27 +58,15 @@ public class InterBoard
 
     private static final Logger logger = LoggerFactory.getLogger(InterBoard.class);
 
-    /** Events this board is interested in. */
-    private static final Class<?>[] eventClasses = new Class<?>[]{InterListEvent.class};
-
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
-    /** Input: Dump. */
-    private final JButton dump;
-
     /** Output : shape icon. */
     private final JLabel shapeIcon = new JLabel();
 
-    /** Input / Output : spinner of all inter id's. */
-    private JSpinner idSpinner;
-
     /** Output : grade (intrinsic/contextual). */
     private final LTextField grade = new LTextField("Grade", "Intrinsic / Contextual");
-
-    /** Input / Output : VIP flag. */
-    private final LCheckBox vip = new LCheckBox("Vip", "Is this inter flagged as VIP?");
 
     /** Output : shape. */
     private final LTextField shapeField = new LTextField("", "Shape for this interpretation");
@@ -101,24 +74,8 @@ public class InterBoard
     /** Output : grade details. */
     private final JLabel details = new JLabel("");
 
-    /** The JGoodies/Form constraints to be used by all subclasses. */
-    protected final CellConstraints cst = new CellConstraints();
-
-    /** The JGoodies/Form layout to be used by all subclasses. */
-    protected final FormLayout layout = Panel.makeFormLayout(4, 3);
-
-    /** The JGoodies/Form builder to be used by all subclasses. */
-    protected final PanelBuilder builder;
-
     /** To delete/deassign. */
     private final DeassignAction deassignAction = new DeassignAction();
-
-    /**
-     * We have to avoid endless loop, due to related modifications.
-     * When an Inter selection is notified, the id spinner is changed, and When
-     * an id spinner is changed, the Inter selection is notified
-     */
-    private boolean selfUpdating = false;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -128,50 +85,10 @@ public class InterBoard
      */
     public InterBoard (Sheet sheet)
     {
-        super(
-                Board.INTER,
-                sheet.getInterManager().getInterService(),
-                eventClasses,
-                true, // withDump
-                true); // initially expanded
+        super(Board.INTER, sheet.getInterIndex().getEntityService(), true); // initially expanded
         this.sheet = sheet;
 
-        // Dump
-        dump = getDumpButton();
-        dump.setToolTipText("Dump this interpretation");
-        dump.addActionListener(
-                new ActionListener()
-                {
-                    @Override
-                    public void actionPerformed (ActionEvent e)
-                    {
-                        // Retrieve current inter selection
-                        InterListEvent interListEvent = (InterListEvent) getSelectionService().getLastEvent(
-                                InterListEvent.class);
-                        List<Inter> interList = interListEvent.getData();
-
-                        if ((interList != null) && !interList.isEmpty()) {
-                            Inter inter = interList.get(interList.size() - 1);
-
-                            // Details of contextual grade?
-                            SIGraph sig = inter.getSig();
-
-                            if ((sig != null) && !inter.isDeleted()) {
-                                sig.computeContextualGrade(inter, true);
-                            }
-
-                            logger.info(inter.dumpOf());
-                        }
-                    }
-                });
-        // Until a glyph selection is made
-        dump.setEnabled(false);
-
-        // Listener for VIP
-        vip.addActionListener(this);
-
-        // Force a constant height for the shapeIcon field, despite the
-        // variation in size of the icon
+        // Force a constant height for the shapeIcon field, despite variation in size of the icon
         Dimension dim = new Dimension(
                 constants.shapeIconWidth.getValue(),
                 constants.shapeIconHeight.getValue());
@@ -179,45 +96,17 @@ public class InterBoard
         shapeIcon.setMaximumSize(dim);
         shapeIcon.setMinimumSize(dim);
 
-        builder = new PanelBuilder(layout, getBody());
-        builder.setDefaultDialogBorder();
+        details.setToolTipText("Grade details");
+        details.setHorizontalAlignment(SwingConstants.CENTER);
 
         // Initial status
-        defineLayout();
-        vip.setEnabled(false);
         grade.setEnabled(false);
         details.setEnabled(false);
 
-        details.setToolTipText("Grade details");
-        details.setHorizontalAlignment(SwingConstants.CENTER);
+        defineLayout();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------//
-    // actionPerformed //
-    //-----------------//
-    /**
-     * Triggered by VIP check box.
-     *
-     * @param e
-     */
-    @Override
-    public void actionPerformed (ActionEvent e)
-    {
-        if (vip.getField() == e.getSource()) {
-            final JCheckBox box = vip.getField();
-            final Inter inter = getSelectedInter();
-
-            if (inter != null) {
-                if (!inter.isVip()) {
-                    inter.setVip();
-                    box.setEnabled(false);
-                    logger.info("{} flagged as VIP", inter);
-                }
-            }
-        }
-    }
-
     //---------//
     // onEvent //
     //---------//
@@ -237,67 +126,53 @@ public class InterBoard
                 return;
             }
 
-            if (event instanceof InterListEvent) {
-                // Display inter parameters (while preventing circular updates)
-                selfUpdating = true;
-                handleEvent((InterListEvent) event);
-                selfUpdating = false;
+            super.onEvent(event);
+
+            if (event instanceof EntityListEvent) {
+                handleEvent((EntityListEvent<Inter>) event);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 
-    //--------------//
-    // stateChanged //
-    //--------------//
-    /**
-     * CallBack triggered by a change in one of the spinners.
-     *
-     * @param e the change event, this allows to retrieve the originating
-     *          spinner
-     */
+    //---------------------//
+    // dumpActionPerformed //
+    //---------------------//
     @Override
-    public void stateChanged (ChangeEvent e)
+    protected void dumpActionPerformed (ActionEvent e)
     {
-        JSpinner spinner = (JSpinner) e.getSource();
+        final Inter inter = getSelectedEntity();
 
-        if (spinner == idSpinner) {
-            // Nota: this method is automatically called whenever the spinner
-            // value is changed, including when an inter selection notification
-            // is received leading to such selfUpdating. Hence the check.
-            if (!selfUpdating) {
-                // Notify the new inter id
-                getSelectionService().publish(
-                        new InterIdEvent(
-                                this,
-                                SelectionHint.INTER_INIT,
-                                null,
-                                (Integer) spinner.getValue()));
-            }
-        } else {
-            logger.error("No known spinner");
+        // Compute contextual grade
+        if ((inter.getSig() != null) && !inter.isDeleted()) {
+            inter.getSig().computeContextualGrade(inter, false);
         }
+
+        super.dumpActionPerformed(e);
+    }
+
+    //---------------//
+    // getFormLayout //
+    //---------------//
+    @Override
+    protected FormLayout getFormLayout ()
+    {
+        return Panel.makeFormLayout(4, 3);
     }
 
     //--------------//
     // defineLayout //
     //--------------//
     /**
-     * Define the layout for common fields of all GlyphBoard classes
+     * Define the layout for InterBoard specific fields.
      */
-    protected void defineLayout ()
+    private void defineLayout ()
     {
-        // Model for idSpinner
-        idSpinner = makeInterSpinner(sheet.getInterManager());
-        idSpinner.setName("idSpinner");
-        idSpinner.setToolTipText("Spinner for any interpretation id");
+        final CellConstraints cst = new CellConstraints();
 
         // Layout
         int r = 1; // --------------------------------
-
-        builder.addLabel("Id", cst.xy(1, r));
-        builder.add(idSpinner, cst.xy(3, r));
 
         // Shape Icon (start, spans several rows) + layer + Deassign button
         builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
@@ -312,13 +187,6 @@ public class InterBoard
         builder.add(deassignButton, cst.xyw(9, r, 3));
 
         r += 2; // --------------------------------
-        // Count + Active + Shape name
-
-        //        builder.add(count, cst.xy(3, r, "right, center"));
-        //
-        //        builder.add(active, cst.xy(5, r));
-        builder.add(vip.getLabel(), cst.xy(1, r));
-        builder.add(vip.getField(), cst.xy(3, r));
 
         builder.add(shapeField.getField(), cst.xyw(7, r, 5));
 
@@ -327,65 +195,17 @@ public class InterBoard
         builder.add(details, cst.xyw(1, r, 11));
     }
 
-    //------------------//
-    // makeInterSpinner //
-    //------------------//
-    /**
-     * Convenient method to allocate an inter-based spinner
-     *
-     * @param sigManager the underlying SIG manager
-     * @return the spinner built
-     */
-    protected JSpinner makeInterSpinner (InterManager sigManager)
-    {
-        JSpinner spinner = new JSpinner();
-        spinner.setModel(new SpinnerInterIdModel(sigManager));
-        spinner.addChangeListener(this);
-        spinner.setLocale(Locale.ENGLISH);
-        SpinnerUtil.setRightAlignment(spinner);
-        SpinnerUtil.setEditable(spinner, true);
-
-        return spinner;
-    }
-
-    //------------------//
-    // getSelectedInter //
-    //------------------//
-    private Inter getSelectedInter ()
-    {
-        final List<Inter> interList = (List<Inter>) getSelectionService()
-                .getSelection(InterListEvent.class);
-
-        if ((interList != null) && !interList.isEmpty()) {
-            return interList.get(interList.size() - 1);
-        } else {
-            return null;
-        }
-    }
-
     //-------------//
     // handleEvent //
     //-------------//
     /**
      * Interest in InterList
      *
-     * @param InterListEvent
+     * @param interListEvent
      */
-    private void handleEvent (InterListEvent interListEvent)
+    private void handleEvent (EntityListEvent<Inter> interListEvent)
     {
-        List<Inter> interList = interListEvent.getData();
-
-        final Inter inter;
-
-        if ((interList != null) && !interList.isEmpty()) {
-            inter = interList.get(interList.size() - 1);
-        } else {
-            inter = null;
-        }
-
-        // Dump button and deassign button
-        dump.setEnabled(inter != null);
-        deassignAction.setEnabled((inter != null) && !inter.isDeleted());
+        final Inter inter = interListEvent.getEntity();
 
         // Shape text and icon
         Shape shape = (inter != null) ? inter.getShape() : null;
@@ -396,15 +216,6 @@ public class InterBoard
         } else {
             shapeField.setText((inter != null) ? inter.shapeString() : "");
             shapeIcon.setIcon(null);
-        }
-
-        // Id Spinner
-        if (idSpinner != null) {
-            if (inter != null) {
-                idSpinner.setValue(inter.getId());
-            } else {
-                idSpinner.setValue(NO_VALUE);
-            }
         }
 
         // Inter characteristics
@@ -432,7 +243,9 @@ public class InterBoard
             deassignAction.putValue(Action.NAME, " ");
         }
 
+        deassignAction.setEnabled((inter != null) && !inter.isDeleted());
         grade.setEnabled(inter != null);
+        shapeField.setEnabled(inter != null);
         details.setEnabled(inter != null);
     }
 

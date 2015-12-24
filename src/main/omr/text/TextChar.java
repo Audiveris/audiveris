@@ -23,14 +23,10 @@ public class TextChar
 {
     //~ Constructors -------------------------------------------------------------------------------
 
-    //
-    //---------//
-    // TextChar //
-    //---------//
     /**
      * Creates a new TextChar object.
      *
-     * @param bounds the bounding box of this character wrt the decoded image
+     * @param bounds the bounding box of this character WRT the decoded image
      * @param value  the character string value
      */
     public TextChar (Rectangle bounds,

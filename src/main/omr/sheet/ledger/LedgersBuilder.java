@@ -14,15 +14,16 @@ package omr.sheet.ledger;
 import omr.check.Check;
 import omr.check.CheckBoard;
 import omr.check.CheckSuite;
-import omr.check.Checkable;
 import omr.check.Failure;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
+import omr.glyph.Symbol.Group;
+import omr.glyph.dynamic.Filament;
+import omr.glyph.dynamic.FilamentFactory;
+import omr.glyph.dynamic.StraightFilament;
 
 import omr.lag.Section;
 
@@ -30,7 +31,7 @@ import omr.math.GeoUtil;
 import omr.math.LineUtil;
 import static omr.run.Orientation.*;
 
-import omr.selection.GlyphEvent;
+import omr.selection.EntityListEvent;
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
@@ -39,9 +40,6 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
-import omr.sheet.SystemManager;
-import omr.sheet.grid.Filament;
-import omr.sheet.grid.FilamentsFactory;
 import omr.sheet.grid.LineInfo;
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.SheetTab;
@@ -55,6 +53,7 @@ import omr.sig.relation.Exclusion;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
+import omr.util.Navigable;
 import omr.util.Predicate;
 
 import ij.process.ByteProcessor;
@@ -62,7 +61,6 @@ import ij.process.ByteProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -96,7 +94,7 @@ public class LedgersBuilder
     private static final Logger logger = LoggerFactory.getLogger(LedgersBuilder.class);
 
     /** Events this entity is interested in. */
-    private static final Class<?>[] eventClasses = new Class<?>[]{GlyphEvent.class};
+    private static final Class<?>[] eventClasses = new Class<?>[]{EntityListEvent.class};
 
     /** Failure codes */
     private static final Failure TOO_SHORT = new Failure("Hori-TooShort");
@@ -114,6 +112,7 @@ public class LedgersBuilder
     //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related sheet. */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Dedicated system. */
@@ -125,6 +124,9 @@ public class LedgersBuilder
     /** Global sheet scale. */
     private final Scale scale;
 
+    /** Candidate sections for this system. */
+    private final List<Section> sections;
+
     /** Check suite for short candidates. */
     private final LedgerSuite shortSuite = new LedgerSuite(false);
 
@@ -132,18 +134,21 @@ public class LedgersBuilder
     private final LedgerSuite longSuite = new LedgerSuite(true);
 
     /** The system-wide collection of ledger candidates. */
-    private List<Glyph> ledgerCandidates;
+    private List<StraightFilament> ledgerCandidates;
 
-    /** The (good) system-wide beams and hooks. */
-    private List<Inter> systemBeams;
+    /** The (good) system-wide beams and hooks, sorted by left abscissa. */
+    private List<Inter> sortedSystemBeams;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * @param system the related system to process
+     * @param system   the related system to process
+     * @param sections candidate sections for this system
      */
-    public LedgersBuilder (SystemInfo system)
+    public LedgersBuilder (SystemInfo system,
+                           List<Section> sections)
     {
         this.system = system;
+        this.sections = sections;
 
         sig = system.getSig();
         sheet = system.getSheet();
@@ -174,13 +179,13 @@ public class LedgersBuilder
     {
         try {
             // Put apart the (good) system beams
-            systemBeams = getGoodBeams();
+            sortedSystemBeams = getGoodBeams();
 
             // Retrieve system sections to provide to factory
-            List<Section> sections = getCandidateSections();
+            List<Section> keptSections = getCandidateSections();
 
             // Retrieve system candidate glyphs out of candidate sections
-            ledgerCandidates = getCandidateGlyphs(sections);
+            ledgerCandidates = getCandidateFilaments(keptSections);
 
             // Filter candidates accurately, line by line
             filterLedgers();
@@ -198,7 +203,7 @@ public class LedgersBuilder
      * @param stick the candidate
      * @return the proper check suite to apply
      */
-    public CheckSuite selectSuite (Glyph stick)
+    public CheckSuite selectSuite (Filament stick)
     {
         return (stick.getLength(HORIZONTAL) <= scale.toPixels(constants.maxShortLength))
                 ? shortSuite : longSuite;
@@ -213,11 +218,11 @@ public class LedgersBuilder
      * @param stick the candidate to check
      * @return true if a beam overlap was detected
      */
-    private boolean beamOverlap (Glyph stick)
+    private boolean beamOverlap (Filament stick)
     {
         Point2D middle = getMiddle(stick);
 
-        for (Inter inter : systemBeams) {
+        for (Inter inter : sortedSystemBeams) {
             AbstractBeamInter beam = (AbstractBeamInter) inter;
 
             if (beam.getArea().contains(middle)) {
@@ -269,24 +274,23 @@ public class LedgersBuilder
         }
     }
 
-    //--------------------//
-    // getCandidateGlyphs //
-    //--------------------//
+    //-----------------------//
+    // getCandidateFilaments //
+    //-----------------------//
     /**
-     * Retrieve possible candidate glyph instances built from provided sections.
+     * Retrieve possible candidate filaments built from provided sections.
      *
-     * @param sections the section population to build sticks from
-     * @return a collection of candidate glyph instances
+     * @param sections the section population to build filaments from
+     * @return a collection of candidate filaments
      */
-    private List<Glyph> getCandidateGlyphs (List<Section> sections)
+    private List<StraightFilament> getCandidateFilaments (List<Section> sections)
     {
         // Use filament factory
-        FilamentsFactory factory = new FilamentsFactory(
+        FilamentFactory<StraightFilament> factory = new FilamentFactory<StraightFilament>(
                 scale,
-                sheet.getGlyphNest(),
-                GlyphLayer.LEDGER,
+                sheet.getFilamentIndex(),
                 HORIZONTAL,
-                Filament.class);
+                StraightFilament.class);
 
         // Adjust factory parameters
         final int maxThickness = Math.min(
@@ -305,30 +309,30 @@ public class LedgersBuilder
 
         for (Section section : sections) {
             //TODO: this may prevent the processing of systems in parallel!???
-            section.setGlyph(null); // Needed for sections "shared" by two systems!
+            section.setCompound(null); // Needed for sections "shared" by two systems!
         }
 
-        List<Glyph> glyphs = factory.retrieveFilaments(sections);
+        List<StraightFilament> filaments = factory.retrieveFilaments(sections);
 
         // Purge candidates that overlap good beams
-        List<Glyph> toRemove = new ArrayList<Glyph>();
+        List<Filament> toRemove = new ArrayList<Filament>();
 
-        for (Glyph glyph : glyphs) {
-            if (beamOverlap(glyph)) {
-                toRemove.add(glyph);
+        for (Filament fil : filaments) {
+            if (beamOverlap(fil)) {
+                toRemove.add(fil);
             }
         }
 
         if (!toRemove.isEmpty()) {
-            glyphs.removeAll(toRemove);
+            filaments.removeAll(toRemove);
         }
 
-        // This is only meant to show them in specific color
-        for (Glyph glyph : glyphs) {
-            glyph.setShape(Shape.LEDGER_CANDIDATE);
+        // This is only meant to show them in a specific color
+        for (Filament fil : filaments) {
+            fil.addGroup(Group.LEDGER_CANDIDATE);
         }
 
-        return glyphs;
+        return filaments;
     }
 
     //----------------------//
@@ -336,8 +340,8 @@ public class LedgersBuilder
     //----------------------//
     /**
      * Retrieve good candidate sections.
-     * These are sections from a (complete) horizontal lag that do not stand within staves and that
-     * intersect a horizontal section.
+     * These are sections from a (complete) horizontal lag that do not stand within staves and are
+     * long enough.
      *
      * @return list of sections kept
      */
@@ -346,7 +350,7 @@ public class LedgersBuilder
         List<Section> keptSections = new ArrayList<Section>();
         int minWidth = scale.toPixels(constants.minLedgerLengthLow);
 
-        for (Section section : system.getLedgerSections()) {
+        for (Section section : sections) {
             // Check minimum length
             if (section.getBounds().width < minWidth) {
                 continue;
@@ -389,63 +393,6 @@ public class LedgersBuilder
         return beams;
     }
 
-    //-----------------//
-    // getLedgerTarget //
-    //-----------------//
-    /**
-     * Report the line index and ordinate target for a candidate ledger, based on the
-     * reference found (other ledger or staff line).
-     *
-     * @param stick the ledger candidate
-     * @return the index value and target ordinate, or null if not found.
-     */
-    private IndexTarget getLedgerTarget (Glyph stick)
-    {
-        final Point center = stick.getCentroid();
-
-        // Check possibles staves
-        for (Staff staff : system.getStavesOf(center)) {
-            // Search for best virtual line index
-            double rawPitch = staff.pitchPositionOf(center);
-
-            if (Math.abs(rawPitch) <= 4) {
-                return null; // Point is within staff core height
-            }
-
-            int sign = (rawPitch > 0) ? 1 : (-1);
-            int rawIndex = (int) Math.rint((Math.abs(rawPitch) - 4) / 2);
-            int iMin = Math.max(1, rawIndex - 1);
-            int iMax = rawIndex + 1;
-
-            Integer bestIndex = null;
-            Double bestTarget = null;
-            double bestDy = Double.MAX_VALUE;
-            double yMid = getMiddle(stick).getY();
-
-            for (int i = iMin; i <= iMax; i++) {
-                int index = i * sign;
-                Double yRef = getYReference(staff, index, stick);
-
-                if (yRef != null) {
-                    double yTarget = yRef + (sign * scale.getInterline());
-                    double dy = Math.abs(yTarget - yMid);
-
-                    if (dy < bestDy) {
-                        bestDy = dy;
-                        bestIndex = index;
-                        bestTarget = yTarget;
-                    }
-                }
-            }
-
-            if (bestIndex != null) {
-                return new IndexTarget(bestIndex, bestTarget);
-            }
-        }
-
-        return null;
-    }
-
     //-----------//
     // getMiddle //
     //-----------//
@@ -455,10 +402,10 @@ public class LedgersBuilder
      * @param stick the stick to process
      * @return the middle point
      */
-    private static Point2D getMiddle (Glyph stick)
+    private static Point2D getMiddle (Filament stick)
     {
-        final Point2D startPoint = stick.getStartPoint(HORIZONTAL);
-        final Point2D stopPoint = stick.getStopPoint(HORIZONTAL);
+        final Point2D startPoint = stick.getStartPoint();
+        final Point2D stopPoint = stick.getStopPoint();
 
         return new Point2D.Double(
                 (startPoint.getX() + stopPoint.getX()) / 2,
@@ -479,12 +426,12 @@ public class LedgersBuilder
      */
     private Double getYReference (Staff staff,
                                   int index,
-                                  Glyph stick)
+                                  Filament stick)
     {
         final int prevIndex = (index < 0) ? (index + 1) : (index - 1);
 
         if (prevIndex != 0) {
-            final Set<LedgerInter> prevLedgers = staff.getLedgers(prevIndex);
+            final List<LedgerInter> prevLedgers = staff.getLedgers(prevIndex);
 
             // If no previous ledger for reference, give up
             if ((prevLedgers == null) || prevLedgers.isEmpty()) {
@@ -508,17 +455,17 @@ public class LedgersBuilder
 
                 if (GeoUtil.xOverlap(stickBox, ledgerBox) > 0) {
                     // Use this previous ledger as ordinate reference
-                    double xMid = stick.getAreaCenter().x;
+                    double xMid = stick.getCenter().x;
                     Glyph ledgerGlyph = ledger.getGlyph();
 
                     // Middle of stick may fall outside of ledger width
                     if (GeoUtil.xEmbraces(ledgerBox, xMid)) {
-                        return ledgerGlyph.getLine().yAtX(xMid);
+                        return LineUtil.intersectionAtX(ledgerGlyph.getLine(), xMid).y;
                     } else {
-                        return LineUtil.intersectionAtX(
+                        return LineUtil.yAtX(
                                 ledgerGlyph.getStartPoint(HORIZONTAL),
                                 ledgerGlyph.getStopPoint(HORIZONTAL),
-                                xMid).getY();
+                                xMid);
                     }
                 }
             }
@@ -532,7 +479,7 @@ public class LedgersBuilder
             // Use staff line as reference
             LineInfo staffLine = (index < 0) ? staff.getFirstLine() : staff.getLastLine();
 
-            return staffLine.yAt(stick.getAreaCenter().getX());
+            return staffLine.yAt(stick.getCenter().getX());
         }
     }
 
@@ -595,7 +542,7 @@ public class LedgersBuilder
         final List<LedgerInter> ledgers = new ArrayList<LedgerInter>();
 
         // Filter enclosed candidates and populate acceptable ledgers
-        for (Glyph stick : ledgerCandidates) {
+        for (StraightFilament stick : ledgerCandidates) {
             // Rough containment
             final Point2D middle = getMiddle(stick);
 
@@ -625,7 +572,7 @@ public class LedgersBuilder
             // Choose which suite to apply
             CheckSuite suite = selectSuite(stick);
 
-            GradeImpacts impacts = suite.getImpacts(new GlyphContext(stick, yTarget));
+            GradeImpacts impacts = suite.getImpacts(new StickContext(stick, yTarget));
 
             if (impacts != null) {
                 double grade = impacts.getGrade();
@@ -635,16 +582,10 @@ public class LedgersBuilder
                 }
 
                 if (grade >= suite.getMinThreshold()) {
-                    stick = system.registerGlyph(stick); // Useful???
+                    Glyph glyph = stick.toGlyph(Group.LEDGER);
+                    sheet.getGlyphIndex().register(glyph);
 
-                    // Sanity check
-                    Inter inter = sig.getInter(stick, LedgerInter.class);
-
-                    if (inter != null) {
-                        logger.error("Double ledger definition {}", inter);
-                    }
-
-                    LedgerInter ledger = new LedgerInter(stick, impacts);
+                    LedgerInter ledger = new LedgerInter(glyph, impacts);
                     ledger.setIndex(index);
                     sig.addVertex(ledger);
                     ledgers.add(ledger);
@@ -658,8 +599,9 @@ public class LedgersBuilder
 
             // Populate staff with ledgers kept
             for (LedgerInter ledger : ledgers) {
-                ledger.getGlyph().setShape(Shape.LEDGER); // Useful???
+                ledger.getGlyph().addGroup(Group.LEDGER); // Useful???
                 staff.addLedger(ledger, index);
+                ledger.setStaff(staff);
 
                 if (ledger.isVip()) {
                     logger.info(
@@ -800,59 +742,11 @@ public class LedgersBuilder
 
         private final Scale.Fraction maxDistanceHigh = new Scale.Fraction(
                 0.3,
-                "Maximum average distance to straight line");
+                "Low Minimum radius for ledger");
 
         private final Scale.Fraction maxShortLength = new Scale.Fraction(
                 2.0,
                 "Maximum length for 'short' ledgers");
-    }
-
-    //--------------//
-    // GlyphContext //
-    //--------------//
-    private static class GlyphContext
-            implements Checkable
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** The stick being checked. */
-        final Glyph stick;
-
-        /** Target ordinate. */
-        final double yTarget;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public GlyphContext (Glyph stick,
-                             double yTarget)
-        {
-            this.stick = stick;
-            this.yTarget = yTarget;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void addFailure (Failure failure)
-        {
-            stick.addFailure(failure);
-        }
-
-        @Override
-        public boolean isVip ()
-        {
-            return stick.isVip();
-        }
-
-        @Override
-        public void setVip ()
-        {
-            stick.setVip();
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "stick#" + stick.getId();
-        }
     }
 
     //-------------//
@@ -882,7 +776,7 @@ public class LedgersBuilder
      * A specific board to display intrinsic checks of ledger sticks.
      */
     private static class LedgerCheckBoard
-            extends CheckBoard<GlyphContext>
+            extends CheckBoard<StickContext>
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -891,7 +785,7 @@ public class LedgersBuilder
         //~ Constructors ---------------------------------------------------------------------------
         public LedgerCheckBoard (Sheet sheet)
         {
-            super("Ledger", null, sheet.getGlyphNest().getGlyphService(), eventClasses);
+            super("Ledger", null, sheet.getGlyphIndex().getEntityService(), eventClasses);
             this.sheet = sheet;
         }
 
@@ -905,37 +799,65 @@ public class LedgersBuilder
                     return;
                 }
 
-                if (event instanceof GlyphEvent) {
-                    GlyphEvent glyphEvent = (GlyphEvent) event;
-                    Glyph glyph = glyphEvent.getData();
-
-                    // Make sure we have a rather horizontal stick
-                    if ((glyph != null)
-                        && (Math.abs(glyph.getSlope()) <= constants.maxSlopeForCheck.getValue())) {
-                        // Check if there is a staff line or ledger for reference
-                        // For this we have to operate from some relevant system
-                        SystemManager systemManager = sheet.getSystemManager();
-
-                        for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
-                            LedgersBuilder builder = new LedgersBuilder(system);
-                            IndexTarget it = builder.getLedgerTarget(glyph);
-
-                            // Run the check suite?
-                            if (it != null) {
-                                applySuite(
-                                        builder.selectSuite(glyph),
-                                        new GlyphContext(glyph, it.target));
-
-                                return;
-                            }
-                        }
-                    }
-
-                    tellObject(null);
-                }
+                //                if (event instanceof EntityListEvent) {
+                //                    EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
+                //                    final Glyph glyph = listEvent.getEntity();
+                //
+                //                    // Make sure we have a rather horizontal stick
+                //                    if ((glyph != null)
+                //                        && (Math.abs(glyph.getSlope()) <= constants.maxSlopeForCheck.getValue())) {
+                //                        // Check if there is a staff line or ledger for reference
+                //                        // For this we have to operate from some relevant system
+                //                        SystemManager systemManager = sheet.getSystemManager();
+                //
+                //                        for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                //                            LedgersBuilder builder = new LedgersBuilder(system);
+                //                            IndexTarget it = builder.getLedgerTarget(glyph);
+                //
+                //                            // Run the check suite?
+                //                            if (it != null) {
+                //                                applySuite(builder.selectSuite(glyph),
+                //                                        new StickContext(glyph, it.target));
+                //
+                //                                return;
+                //                            }
+                //                        }
+                //                    }
+                //
+                //                    tellObject(null);
+                //                }
             } catch (Exception ex) {
                 logger.warn(getClass().getName() + " onEvent error", ex);
             }
+        }
+    }
+
+    //--------------//
+    // StickContext //
+    //--------------//
+    private static class StickContext
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** The stick being checked. */
+        final StraightFilament stick;
+
+        /** Target ordinate. */
+        final double yTarget;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public StickContext (StraightFilament stick,
+                             double yTarget)
+        {
+            this.stick = stick;
+            this.yTarget = yTarget;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            return "stick#" + stick.getId();
         }
     }
 
@@ -943,7 +865,7 @@ public class LedgersBuilder
     // ConvexityCheck //
     //----------------//
     private class ConvexityCheck
-            extends Check<GlyphContext>
+            extends Check<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -961,11 +883,11 @@ public class LedgersBuilder
         //~ Methods --------------------------------------------------------------------------------
         // Retrieve the density
         @Override
-        protected double getValue (GlyphContext context)
+        protected double getValue (StickContext context)
         {
             ByteProcessor pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
 
-            Glyph stick = context.stick;
+            Filament stick = context.stick;
             Rectangle box = stick.getBounds();
             int convexities = 0;
 
@@ -999,7 +921,7 @@ public class LedgersBuilder
     // LedgerSuite //
     //-------------//
     private class LedgerSuite
-            extends CheckSuite<GlyphContext>
+            extends CheckSuite<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -1029,7 +951,7 @@ public class LedgersBuilder
     // LeftPitchCheck //
     //----------------//
     private class LeftPitchCheck
-            extends Check<GlyphContext>
+            extends Check<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -1046,11 +968,11 @@ public class LedgersBuilder
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        protected double getValue (GlyphContext context)
+        protected double getValue (StickContext context)
         {
-            Glyph stick = context.stick;
+            Filament stick = context.stick;
             double yTarget = context.yTarget;
-            double y = stick.getStartPoint(HORIZONTAL).getY();
+            double y = stick.getStartPoint().getY();
 
             return sheet.getScale().pixelsToFrac(Math.abs(y - yTarget));
         }
@@ -1060,7 +982,7 @@ public class LedgersBuilder
     // MaxThicknessCheck //
     //-------------------//
     private class MaxThicknessCheck
-            extends Check<GlyphContext>
+            extends Check<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -1078,9 +1000,9 @@ public class LedgersBuilder
         //~ Methods --------------------------------------------------------------------------------
         // Retrieve the thickness data
         @Override
-        protected double getValue (GlyphContext context)
+        protected double getValue (StickContext context)
         {
-            Glyph stick = context.stick;
+            Filament stick = context.stick;
 
             return sheet.getScale().pixelsToLineFrac(stick.getMeanThickness(HORIZONTAL));
         }
@@ -1090,7 +1012,7 @@ public class LedgersBuilder
     // MinLengthCheck //
     //----------------//
     private class MinLengthCheck
-            extends Check<GlyphContext>
+            extends Check<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -1108,9 +1030,9 @@ public class LedgersBuilder
         //~ Methods --------------------------------------------------------------------------------
         // Retrieve the length data
         @Override
-        protected double getValue (GlyphContext context)
+        protected double getValue (StickContext context)
         {
-            Glyph stick = context.stick;
+            Filament stick = context.stick;
 
             return sheet.getScale().pixelsToFrac(stick.getLength(HORIZONTAL));
         }
@@ -1120,7 +1042,7 @@ public class LedgersBuilder
     // MinThicknessCheck //
     //-------------------//
     private class MinThicknessCheck
-            extends Check<GlyphContext>
+            extends Check<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -1138,9 +1060,9 @@ public class LedgersBuilder
         //~ Methods --------------------------------------------------------------------------------
         // Retrieve the thickness data
         @Override
-        protected double getValue (GlyphContext context)
+        protected double getValue (StickContext context)
         {
-            Glyph stick = context.stick;
+            Filament stick = context.stick;
 
             return sheet.getScale().pixelsToFrac(stick.getMeanThickness(HORIZONTAL));
         }
@@ -1150,7 +1072,7 @@ public class LedgersBuilder
     // RightPitchCheck //
     //-----------------//
     private class RightPitchCheck
-            extends Check<GlyphContext>
+            extends Check<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -1167,11 +1089,11 @@ public class LedgersBuilder
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        protected double getValue (GlyphContext context)
+        protected double getValue (StickContext context)
         {
-            Glyph stick = context.stick;
+            Filament stick = context.stick;
             double yTarget = context.yTarget;
-            double y = stick.getStopPoint(HORIZONTAL).getY();
+            double y = stick.getStopPoint().getY();
 
             return sheet.getScale().pixelsToFrac(Math.abs(y - yTarget));
         }
@@ -1181,7 +1103,7 @@ public class LedgersBuilder
     // StraightCheck //
     //---------------//
     private class StraightCheck
-            extends Check<GlyphContext>
+            extends Check<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -1198,9 +1120,9 @@ public class LedgersBuilder
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        protected double getValue (GlyphContext context)
+        protected double getValue (StickContext context)
         {
-            Glyph stick = context.stick;
+            StraightFilament stick = context.stick;
 
             return sheet.getScale().pixelsToFrac(stick.getMeanDistance());
         }
@@ -1227,7 +1149,7 @@ public class LedgersBuilder
 //
 //        //~ Methods --------------------------------------------------------------------------------
 //        @Override
-//        protected double getValue (GlyphContext context)
+//        protected double getValue (StickContext context)
 //        {
 //            Glyph stick = context.stick;
 //            double sumFree = 0;
@@ -1262,7 +1184,7 @@ public class LedgersBuilder
 //
 //        //~ Methods --------------------------------------------------------------------------------
 //        @Override
-//        protected double getValue (GlyphContext context)
+//        protected double getValue (StickContext context)
 //        {
 //            Glyph stick = context.stick;
 //            double sumFree = 0;
@@ -1278,3 +1200,61 @@ public class LedgersBuilder
 //    }
 //
 //    private static final Failure TOO_BLACK = new Failure("Hori-TooBlack");
+//
+//    //-----------------//
+//    // getLedgerTarget //
+//    //-----------------//
+//    /**
+//     * Report the line index and ordinate target for a candidate ledger, based on the
+//     * reference found (other ledger or staff line).
+//     *
+//     * @param stick the ledger candidate
+//     * @return the index value and target ordinate, or null if not found.
+//     */
+//    private IndexTarget getLedgerTarget (Filament stick)
+//    {
+//        final Point center = stick.getCentroid();
+//
+//        // Check possibles staves
+//        for (Staff staff : system.getStavesOf(center)) {
+//            // Search for best virtual line index
+//            double rawPitch = staff.pitchPositionOf(center);
+//
+//            if (Math.abs(rawPitch) <= 4) {
+//                return null; // Point is within staff core height
+//            }
+//
+//            int sign = (rawPitch > 0) ? 1 : (-1);
+//            int rawIndex = (int) Math.rint((Math.abs(rawPitch) - 4) / 2);
+//            int iMin = Math.max(1, rawIndex - 1);
+//            int iMax = rawIndex + 1;
+//
+//            Integer bestIndex = null;
+//            Double bestTarget = null;
+//            double bestDy = Double.MAX_VALUE;
+//            double yMid = getMiddle(stick).getY();
+//
+//            for (int i = iMin; i <= iMax; i++) {
+//                int index = i * sign;
+//                Double yRef = getYReference(staff, index, stick);
+//
+//                if (yRef != null) {
+//                    double yTarget = yRef + (sign * scale.getInterline());
+//                    double dy = Math.abs(yTarget - yMid);
+//
+//                    if (dy < bestDy) {
+//                        bestDy = dy;
+//                        bestIndex = index;
+//                        bestTarget = yTarget;
+//                    }
+//                }
+//            }
+//
+//            if (bestIndex != null) {
+//                return new IndexTarget(bestIndex, bestTarget);
+//            }
+//        }
+//
+//        return null;
+//    }
+//

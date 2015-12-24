@@ -37,6 +37,13 @@ public class BeamHeadRelation
         super(grade);
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private BeamHeadRelation ()
+    {
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getTargetCoeff //

@@ -14,7 +14,6 @@ package omr.sig.inter;
 import omr.glyph.Shape;
 
 import omr.image.Anchored.Anchor;
-import omr.image.ShapeDescriptor;
 
 import omr.sheet.Staff;
 
@@ -23,11 +22,14 @@ import omr.sig.GradeImpacts;
 import java.awt.Point;
 import java.awt.Rectangle;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code VoidHeadInter} represents a void note head interpretation.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "void-head")
 public class VoidHeadInter
         extends AbstractHeadInter
 {
@@ -36,23 +38,26 @@ public class VoidHeadInter
     /**
      * Creates a new VoidHeadInter object.
      *
-     * @param descriptor the shape template descriptor
-     * @param pivot      the template pivot
-     * @param anchor     relative pivot configuration
-     * @param box        the object bounds
-     * @param impacts    the grade details
-     * @param staff      the related staff
-     * @param pitch      the note pitch
+     * @param pivot   the template pivot
+     * @param anchor  relative pivot configuration
+     * @param bounds  the object bounds
+     * @param impacts the grade details
+     * @param staff   the related staff
+     * @param pitch   the note pitch
      */
-    public VoidHeadInter (ShapeDescriptor descriptor,
-                          Point pivot,
+    public VoidHeadInter (Point pivot,
                           Anchor anchor,
-                          Rectangle box,
+                          Rectangle bounds,
                           GradeImpacts impacts,
                           Staff staff,
                           double pitch)
     {
-        super(descriptor, pivot, anchor, box, Shape.NOTEHEAD_VOID, impacts, staff, pitch);
+        super(pivot, anchor, bounds, Shape.NOTEHEAD_VOID, impacts, staff, pitch);
+    }
+
+    private VoidHeadInter ()
+    {
+        super(null, null, null, null, null, null, 0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -66,15 +71,14 @@ public class VoidHeadInter
      */
     public VoidHeadInter duplicate ()
     {
-        VoidHeadInter clone = new VoidHeadInter(
-                descriptor,
-                pivot,
-                anchor,
-                box,
-                impacts,
-                staff,
-                pitch);
+        VoidHeadInter clone = new VoidHeadInter(pivot, anchor, bounds, impacts, staff, pitch);
+        clone.setGlyph(this.glyph);
         clone.setMirror(this);
+
+        if (impacts == null) {
+            clone.setGrade(this.grade);
+        }
+
         sig.addVertex(clone);
         setMirror(clone);
 
@@ -91,15 +95,14 @@ public class VoidHeadInter
      */
     public BlackHeadInter duplicateAsBlack ()
     {
-        BlackHeadInter clone = new BlackHeadInter(
-                descriptor,
-                pivot,
-                anchor,
-                box,
-                impacts,
-                staff,
-                pitch);
+        BlackHeadInter clone = new BlackHeadInter(pivot, anchor, bounds, impacts, staff, pitch);
+        clone.setGlyph(this.glyph);
         clone.setMirror(this);
+
+        if (impacts == null) {
+            clone.setGrade(this.grade);
+        }
+
         sig.addVertex(clone);
         setMirror(clone);
 

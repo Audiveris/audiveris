@@ -12,6 +12,7 @@
 package omr.sheet.ui;
 
 import omr.run.RunBoard;
+import omr.run.RunService;
 import omr.run.RunTable;
 import omr.run.RunTableView;
 
@@ -54,13 +55,18 @@ public class RunsViewer
     /**
      * Display a view on provided runs table
      *
+     * @param name  name for the view
      * @param table the runs to display
      */
-    public void display (RunTable table)
+    public void display (String name,
+                         RunTable table)
     {
-        RubberPanel view = new MyRunsTableView(table);
-        view.setName(table.getName());
+        RubberPanel view = new MyRunsTableView(name, table);
         view.setPreferredSize(table.getDimension());
+
+        if (table.getRunService() == null) {
+            table.setRunService(new RunService(name, table));
+        }
 
         BoardsPane boards = new BoardsPane(
                 new PixelBoard(sheet),
@@ -68,7 +74,7 @@ public class RunsViewer
                 new RunBoard(table, true));
 
         // Here we create new tab with the name of the table
-        sheet.getAssembly().addViewTab(table.getName(), new ScrollView(view), boards);
+        sheet.getAssembly().addViewTab(name, new ScrollView(view), boards);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -84,9 +90,10 @@ public class RunsViewer
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public MyRunsTableView (RunTable table)
+        public MyRunsTableView (String name,
+                                RunTable table)
         {
-            super(table, sheet.getLocationService());
+            super(name, table, sheet.getLocationService());
         }
 
         //~ Methods --------------------------------------------------------------------------------

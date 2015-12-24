@@ -16,10 +16,9 @@ import omr.OMR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyphs;
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
-import omr.glyph.facets.Glyph;
 
 import omr.script.InsertTask;
 
@@ -42,6 +41,8 @@ import omr.ui.util.Panel;
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 
+import omr.util.Navigable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -111,6 +113,7 @@ public class ShapeBoard
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** The controller in charge of symbol assignments */
@@ -182,16 +185,13 @@ public class ShapeBoard
         public void mouseClicked (MouseEvent e)
         {
             if (e.getClickCount() == 2) {
-                Glyph glyph = sheet.getGlyphNest().getSelectedGlyph();
+                Glyph glyph = sheet.getGlyphIndex().getSelectedGlyph();
 
                 if (glyph != null) {
                     ShapeButton button = (ShapeButton) e.getSource();
 
                     // Actually assign the shape
-                    symbolsController.asyncAssignGlyphs(
-                            Glyphs.sortedSet(glyph),
-                            button.shape,
-                            false);
+                    symbolsController.asyncAssignGlyphs(Arrays.asList(glyph), button.shape, false);
                 }
             }
         }
@@ -230,7 +230,7 @@ public class ShapeBoard
                        SymbolsController symbolsController,
                        boolean expanded)
     {
-        super(Board.SHAPE, null, null, false, expanded);
+        super(Board.SHAPE, null, null, false, false, false, expanded);
         this.symbolsController = symbolsController;
         this.sheet = sheet;
 

@@ -11,14 +11,17 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code PluckingInter} represents the fingering for guitar right-hand.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "plucking")
 public class PluckingInter
         extends AbstractInter
         implements StringSymbolInter

@@ -32,7 +32,7 @@ import java.awt.geom.Line2D;
  * @author Hervé Bitteur
  */
 public class FlagStemRelation
-        extends StemConnection
+        extends AbstractStemConnection
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -52,9 +52,9 @@ public class FlagStemRelation
         final double margin = scale.getInterline(); // TODO: use a constant instead?
 
         if (FlagsUp.contains(source.getShape())) {
-            return (anchorPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
+            return (extensionPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
         } else {
-            return (anchorPoint.getY() < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
+            return (extensionPoint.getY() < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
         }
     }
 

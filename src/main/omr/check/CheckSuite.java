@@ -43,7 +43,7 @@ import java.util.List;
  *
  * @author Hervé Bitteur
  */
-public class CheckSuite<C extends Checkable>
+public class CheckSuite<C>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -288,7 +288,7 @@ public class CheckSuite<C extends Checkable>
         int index = 0;
 
         for (Check<C> check : checks) {
-            check.pass(checkable, result, true);
+            check.pass(checkable, result);
 
             if (impacts != null) {
                 ///impacts.setValue(index, result.value);

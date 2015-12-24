@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -22,6 +23,7 @@ import omr.sig.GradeImpacts;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "bar-connection")
 public class BarConnectionRelation
         extends AbstractSupport
 {
@@ -39,6 +41,11 @@ public class BarConnectionRelation
     {
         super(impacts.getGrade());
         setImpacts(impacts);
+    }
+
+    // For JAXB
+    private BarConnectionRelation ()
+    {
     }
 
     //~ Methods ------------------------------------------------------------------------------------

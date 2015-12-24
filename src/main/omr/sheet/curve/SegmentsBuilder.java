@@ -14,7 +14,7 @@ package omr.sheet.curve;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
 import omr.math.LineUtil;
 

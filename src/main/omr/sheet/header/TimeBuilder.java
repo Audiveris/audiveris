@@ -11,27 +11,27 @@
 // </editor-fold>
 package omr.sheet.header;
 
+import omr.classifier.Evaluation;
+import omr.classifier.GlyphClassifier;
+
 import omr.constant.ConstantSet;
 
-import omr.glyph.Evaluation;
-import omr.glyph.GlyphClassifier;
+import omr.glyph.Glyph;
 import omr.glyph.GlyphCluster;
-import omr.glyph.GlyphLayer;
+import omr.glyph.GlyphFactory;
+import omr.glyph.GlyphIndex;
 import omr.glyph.GlyphLink;
-import omr.glyph.GlyphNest;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
-import omr.glyph.facets.Glyph;
-
-import omr.lag.BasicLag;
-import omr.lag.JunctionRatioPolicy;
-import omr.lag.Lag;
-import omr.lag.Section;
-import omr.lag.SectionFactory;
 
 import omr.math.Projection;
+
+import static omr.run.Orientation.VERTICAL;
+
+import omr.run.RunTable;
+import omr.run.RunTableFactory;
 
 import omr.score.TimeRational;
 import omr.score.TimeValue;
@@ -42,9 +42,10 @@ import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.header.HeaderBuilder.Plotter;
+
 import static omr.sheet.header.TimeBuilder.TimeKind.*;
+
 import omr.sheet.rhythm.MeasureStack;
-import static omr.sheet.symbol.SymbolsFilter.SYMBOL_ORIENTATION;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.BarlineInter;
@@ -55,7 +56,7 @@ import omr.sig.inter.TimePairInter;
 import omr.sig.inter.TimeWholeInter;
 import omr.sig.relation.Exclusion;
 import omr.sig.relation.Relation;
-import omr.sig.relation.TimeNumberRelation;
+import omr.sig.relation.TimeTopBottomRelation;
 
 import omr.util.Navigable;
 import omr.util.VerticalSide;
@@ -185,28 +186,6 @@ public abstract class TimeBuilder
         return getClass().getSimpleName() + "#" + staff.getId();
     }
 
-    //-----------//
-    // createSig //
-    //-----------//
-    /**
-     * Actually assign the time signature to the staff.
-     *
-     * @param bestTimeInter the time inter instance for this staff
-     */
-    protected void createSig (TimeInter bestTimeInter)
-    {
-        // Store time ending abscissa for this staff
-        if (bestTimeInter != null) {
-            bestTimeInter.setStaff(staff);
-
-            // If best time is a whole signature (common/cut) it is already in SIG.
-            // If it is a pair, only the halves (num & den) are already in SIG, so save the pair.
-            if (bestTimeInter instanceof TimePairInter) {
-                sig.addVertex(bestTimeInter);
-            }
-        }
-    }
-
     /**
      * Discard all inters that do not pertain to chosen time signature.
      * <p>
@@ -216,14 +195,6 @@ public abstract class TimeBuilder
      * @param chosenTime the time inter chosen for this staff
      */
     protected abstract void discardOtherMaterial (TimeValue chosenTime);
-
-    /**
-     * Retrieve all acceptable candidates (whole or half) for this staff.
-     * <p>
-     * All candidates are stored as Inter instances in system sig, and in dedicated builder lists
-     * (wholes, nums or dens).
-     */
-    protected abstract void findCandidates ();
 
     //------------------//
     // filterCandidates //
@@ -255,27 +226,67 @@ public abstract class TimeBuilder
 
                     if (TimeInter.isSupported(nd)) {
                         // Halves support each other
-                        sig.addEdge(top, bottom, new TimeNumberRelation());
+                        sig.addEdge(top, bottom, new TimeTopBottomRelation());
                     } else {
                         sig.insertExclusion(top, bottom, Exclusion.Cause.INCOMPATIBLE);
                     }
                 }
             }
+        }
 
-            // Make sure each half has a compatible partnering half
-            for (List<Inter> list : Arrays.asList(nums, dens)) {
-                for (Iterator<Inter> it = list.iterator(); it.hasNext();) {
-                    Inter inter = it.next();
+        // Make sure each half has a compatible partnering half
+        for (List<Inter> list : Arrays.asList(nums, dens)) {
+            for (Iterator<Inter> it = list.iterator(); it.hasNext();) {
+                Inter inter = it.next();
 
-                    if (!sig.hasRelation(inter, TimeNumberRelation.class)) {
-                        inter.delete();
-                        it.remove();
-                    }
+                if (!sig.hasRelation(inter, TimeTopBottomRelation.class)) {
+                    inter.delete();
+                    it.remove();
                 }
             }
         }
 
         return !wholes.isEmpty() || !nums.isEmpty();
+    }
+
+    /**
+     * Retrieve all acceptable candidates (whole or half) for this staff.
+     * <p>
+     * All candidates are stored as Inter instances in system sig, and in dedicated builder lists
+     * (wholes, nums or dens).
+     */
+    protected abstract void findCandidates ();
+
+    //-----------//
+    // createSig //
+    //-----------//
+    /**
+     * Actually assign the time signature to the staff.
+     *
+     * @param bestTimeInter the time inter instance for this staff
+     */
+    protected void createSig (TimeInter bestTimeInter)
+    {
+        // Store time ending abscissa for this staff
+        if (bestTimeInter != null) {
+            bestTimeInter.setStaff(staff);
+
+            final GlyphIndex nest = system.getSheet().getGlyphIndex();
+
+            // If best time is a whole signature (common/cut) it is already in SIG.
+            // If it is a pair, only the halves (num & den) are already in SIG, so save the pair.
+            if (bestTimeInter instanceof TimePairInter) {
+                sig.addVertex(bestTimeInter);
+
+                TimePairInter pair = (TimePairInter) bestTimeInter;
+
+                for (Inter inter : pair.getMembers()) {
+                    inter.setGlyph(nest.registerOriginal(inter.getGlyph()));
+                }
+            } else {
+                bestTimeInter.setGlyph(nest.registerOriginal(bestTimeInter.getGlyph()));
+            }
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -627,8 +638,7 @@ public abstract class TimeBuilder
      * presence of chunks.
      * A global match can be tried for COMMON_TIME and for CUT_TIME shapes.
      * All other shapes combine a numerator and a denominator, hence the area is split using
-     * middle
-     * staff line to ease the recognition of individual numbers.
+     * middle staff line to ease the recognition of individual numbers.
      */
     public static class HeaderTimeBuilder
             extends TimeBuilder
@@ -776,6 +786,9 @@ public abstract class TimeBuilder
             }
         }
 
+        //----------------//
+        // findCandidates //
+        //----------------//
         @Override
         protected void findCandidates ()
         {
@@ -848,18 +861,20 @@ public abstract class TimeBuilder
             //        SectionFactory sectionFactory = new SectionFactory(VERTICAL, new JunctionRatioPolicy());
             //        List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
             // Needs a lag
-            final String name = "LagForTime";
-            Lag lag = sheet.getLagManager().getLag(name);
-
-            if (lag == null) {
-                lag = new BasicLag(name, SYMBOL_ORIENTATION);
-                sheet.getLagManager().setLag(name, lag);
-            }
-
-            SectionFactory sectionFactory = new SectionFactory(lag, new JunctionRatioPolicy());
-            List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
-            List<Glyph> parts = sheet.getGlyphNest()
-                    .retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
+            //            final String name = "LagForTime";
+            //            Lag lag = sheet.getLagManager().getLag(name);
+            //
+            //            if (lag == null) {
+            //                lag = new BasicLag(name, SYMBOL_ORIENTATION);
+            //                sheet.getLagManager().setLag(name, lag);
+            //            }
+            //
+            //            SectionFactory sectionFactory = new SectionFactory(lag, new JunctionRatioPolicy());
+            //            List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
+            //            List<Glyph> parts = sheet.getGlyphIndex()
+            //                    .retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
+            RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
+            List<Glyph> parts = GlyphFactory.buildGlyphs(runTable, rect.getLocation());
 
             // Keep only interesting parts
             purgeParts(parts, rect);
@@ -1008,17 +1023,17 @@ public abstract class TimeBuilder
             HalfAdapter adapter = new HalfAdapter(half, parts);
             adapters.put(half, adapter);
 
-            new GlyphCluster(adapter).decompose();
+            new GlyphCluster(adapter, null).decompose();
             logger.debug(
                     "Staff#{} {} {} trials:{}",
                     staff.getId(),
                     half,
-                    Glyphs.toString("parts", parts),
+                    Glyphs.ids("parts", parts),
                     adapter.trials);
 
             if (!adapter.bestMap.isEmpty()) {
                 for (Entry<Shape, Inter> entry : adapter.bestMap.entrySet()) {
-                    ///sheet.getGlyphNest().registerGlyph(adapter.bestGlyph);
+                    ///sheet.getGlyphIndex().registerStandaloneGlyph(adapter.bestGlyph);
                     Inter inter = entry.getValue();
 
                     Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
@@ -1026,7 +1041,8 @@ public abstract class TimeBuilder
                     inter.setStaff(staff);
                     sig.addVertex(inter);
                     inters.add(inter);
-                    int gid = inter.getGlyph().getId();
+
+                    String gid = inter.getGlyph().getId();
                     logger.debug(
                             "Staff#{} {} {} g#{} {}",
                             staff.getId(),
@@ -1059,16 +1075,16 @@ public abstract class TimeBuilder
             List<Glyph> parts = getParts(rect);
             TimeAdapter wholeAdapter = new WholeAdapter(parts);
             adapters.put(WHOLE, wholeAdapter);
-            new GlyphCluster(wholeAdapter).decompose();
+            new GlyphCluster(wholeAdapter, null).decompose();
             logger.debug(
                     "Staff#{} WHOLE {} trials:{}",
                     staff.getId(),
-                    Glyphs.toString("parts", parts),
+                    Glyphs.ids("parts", parts),
                     wholeAdapter.trials);
 
             if (!wholeAdapter.bestMap.isEmpty()) {
                 for (Entry<Shape, Inter> entry : wholeAdapter.bestMap.entrySet()) {
-                    ///sheet.getGlyphNest().registerGlyph(adapter.bestGlyph);
+                    ///sheet.getGlyphIndex().registerStandaloneGlyph(adapter.bestGlyph);
                     Inter inter = entry.getValue();
                     Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
                     inter.setBounds(timeBox);
@@ -1076,7 +1092,7 @@ public abstract class TimeBuilder
                     sig.addVertex(inter);
                     wholes.add(inter);
 
-                    int gid = inter.getGlyph().getId();
+                    String gid = inter.getGlyph().getId();
                     logger.debug("Staff#{} {} g#{} {}", staff.getId(), inter, gid, timeBox);
                 }
             }
@@ -1155,13 +1171,11 @@ public abstract class TimeBuilder
         // retrieveTime //
         //--------------//
         /**
-         * This is the main entry point for time signature, it retrieves the
-         * column of staves candidates time signatures, and selects the best one at
-         * system level.
+         * This is the main entry point for time signature, it retrieves the column of
+         * staves candidates time signatures, and selects the best one at system level.
          *
          * @return the ending abscissa offset of time-sig column WRT measure start when
-         *         processing
-         *         header, 0 outside header
+         *         processing header, 0 outside header
          */
         public int retrieveTime ()
         {
@@ -1200,6 +1214,12 @@ public abstract class TimeBuilder
          */
         protected abstract TimeBuilder allocateBuilder (Staff staff);
 
+        /**
+         * This is called when we discover that a column of candidate(s) is wrong,
+         * so that all related data inserted in sig is removed.
+         */
+        protected abstract void cleanup ();
+
         //------------------//
         // checkConsistency //
         //------------------//
@@ -1210,20 +1230,16 @@ public abstract class TimeBuilder
          * The selection is driven from the whole system column point of view, as follows:
          * <ol>
          * <li>For each staff, identify all the possible & supported TimeInter instances, each
-         * with
-         * its own grade.</li>
+         * with its own grade.</li>
          * <li>Then for each possible TimeInter value (called TimeValue), make sure it appears
-         * in
-         * each staff as a TimeInter instance and assign a global grade (as average of
-         * staff-based
-         * TimeInter instances for the same TimeValue).</li>
+         * in each staff as a TimeInter instance and assign a global grade (as average of
+         * staff-based TimeInter instances for the same TimeValue).</li>
          * <li>The best system-based TimeValue is then chosen as THE time signature for this
          * system column. </li>
          * <li>All staff non compatible TimeInter instances are destroyed and the member numbers
          * that don't belong to the chosen TimeInter are destroyed.
          * (TODO: perhaps removed from SIG but saved apart and restored if ever a new TimeValue
-         * is
-         * chosen based on measure intrinsic rhythm data?)</li>
+         * is chosen based on measure intrinsic rhythm data?)</li>
          * </ol>
          */
         protected void checkConsistency ()
@@ -1286,12 +1302,6 @@ public abstract class TimeBuilder
         }
 
         /**
-         * This is called when we discover that a column of candidate(s) is wrong,
-         * so that all related data inserted in sig is removed.
-         */
-        protected abstract void cleanup ();
-
-        /**
          * Report the system vector of values for each time value found.
          * A vector is an array, one element per staff, the element being the staff candidate
          * TimeInter for the desired time value, or null if the time value has no acceptable
@@ -1329,7 +1339,7 @@ public abstract class TimeBuilder
                 for (Inter nInter : builder.nums) {
                     TimeNumberInter num = (TimeNumberInter) nInter;
 
-                    for (Relation rel : sig.getRelations(num, TimeNumberRelation.class)) {
+                    for (Relation rel : sig.getRelations(num, TimeTopBottomRelation.class)) {
                         TimeNumberInter den = (TimeNumberInter) sig.getOppositeInter(nInter, rel);
                         TimePairInter pair = TimePairInter.create(num, den);
                         TimeValue time = pair.getValue();
@@ -1414,6 +1424,73 @@ public abstract class TimeBuilder
         }
     }
 
+    //-------------//
+    // TimeAdapter //
+    //-------------//
+    private abstract class TimeAdapter
+            implements GlyphCluster.Adapter
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Graph of the connected glyphs, with their distance edges if any. */
+        protected final SimpleGraph<Glyph, GlyphLink> graph;
+
+        /** Best inter per time shape. */
+        public Map<Shape, Inter> bestMap = new EnumMap<Shape, Inter>(Shape.class);
+
+        // For debug only
+        public int trials = 0;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public TimeAdapter (List<Glyph> parts)
+        {
+            graph = Glyphs.buildLinks(parts, params.maxPartGap);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public void cleanup ()
+        {
+            for (Inter inter : bestMap.values()) {
+                inter.delete();
+            }
+        }
+
+        @Override
+        public List<Glyph> getNeighbors (Glyph part)
+        {
+            return Graphs.neighborListOf(graph, part);
+        }
+
+        @Override
+        public GlyphIndex getNest ()
+        {
+            return system.getSheet().getGlyphIndex();
+        }
+
+        @Override
+        public List<Glyph> getParts ()
+        {
+            return new ArrayList<Glyph>(graph.vertexSet());
+        }
+
+        public Inter getSingleInter ()
+        {
+            for (Inter inter : bestMap.values()) {
+                if (!inter.isDeleted()) {
+                    return inter;
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public boolean isSizeAcceptable (Rectangle box)
+        {
+            return box.width <= params.maxTimeWidth;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -1477,6 +1554,63 @@ public abstract class TimeBuilder
                 "Maximum inner space within time signature");
     }
 
+    //-------------//
+    // HalfAdapter //
+    //-------------//
+    /**
+     * Handles the integration between glyph clustering class and time-sig environment.
+     * <p>
+     * For each time kind, we keep the best result found if any.
+     */
+    private class HalfAdapter
+            extends TimeAdapter
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Which half is being searched. (NUM or DEN) */
+        private final TimeKind half;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public HalfAdapter (TimeKind half,
+                            List<Glyph> parts)
+        {
+            super(parts);
+            this.half = half;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void evaluateGlyph (Glyph glyph)
+        {
+            trials++;
+
+            Evaluation[] evals = GlyphClassifier.getInstance().getNaturalEvaluations(
+                    glyph,
+                    system.getSheet().getInterline());
+
+            for (Shape shape : halfShapes) {
+                Evaluation eval = evals[shape.ordinal()];
+                double grade = Inter.intrinsicRatio * eval.grade;
+
+                if (grade >= Grades.timeMinGrade) {
+                    logger.debug("   {} eval {} for glyph#{}", half, eval, glyph.getId());
+
+                    Inter bestInter = bestMap.get(shape);
+
+                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
+                        bestMap.put(shape, TimeNumberInter.create(glyph, shape, grade, staff));
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean isWeightAcceptable (int weight)
+        {
+            return weight >= params.minHalfTimeWeight;
+        }
+    }
+
     //-------//
     // Space //
     //-------//
@@ -1510,128 +1644,6 @@ public abstract class TimeBuilder
         }
     }
 
-    //-------------//
-    // HalfAdapter //
-    //-------------//
-    /**
-     * Handles the integration between glyph clustering class and time-sig environment.
-     * <p>
-     * For each time kind, we keep the best result found if any.
-     */
-    private class HalfAdapter
-            extends TimeAdapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Which half is being searched. (NUM or DEN) */
-        private final TimeKind half;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public HalfAdapter (TimeKind half,
-                            List<Glyph> parts)
-        {
-            super(parts);
-            this.half = half;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void evaluateGlyph (Glyph glyph)
-        {
-            trials++;
-
-            Evaluation[] evals = GlyphClassifier.getInstance().getNaturalEvaluations(glyph);
-
-            for (Shape shape : halfShapes) {
-                Evaluation eval = evals[shape.ordinal()];
-                double grade = Inter.intrinsicRatio * eval.grade;
-
-                if (grade >= Grades.timeMinGrade) {
-                    logger.debug("   {} eval {} for glyph#{}", half, eval, glyph.getId());
-
-                    Inter bestInter = bestMap.get(shape);
-
-                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
-                        bestMap.put(shape, TimeNumberInter.create(glyph, shape, grade, staff));
-                    }
-                }
-            }
-        }
-
-        @Override
-        public boolean isWeightAcceptable (int weight)
-        {
-            return weight >= params.minHalfTimeWeight;
-        }
-    }
-
-    //-------------//
-    // TimeAdapter //
-    //-------------//
-    private abstract class TimeAdapter
-            implements GlyphCluster.Adapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Graph of the connected glyphs, with their distance edges if any. */
-        protected final SimpleGraph<Glyph, GlyphLink> graph;
-
-        /** Best inter per time shape. */
-        public Map<Shape, Inter> bestMap = new EnumMap<Shape, Inter>(Shape.class);
-
-        // For debug only
-        public int trials = 0;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public TimeAdapter (List<Glyph> parts)
-        {
-            graph = Glyphs.buildLinks(parts, params.maxPartGap);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public void cleanup ()
-        {
-            for (Inter inter : bestMap.values()) {
-                inter.delete();
-            }
-        }
-
-        @Override
-        public List<Glyph> getNeighbors (Glyph part)
-        {
-            return Graphs.neighborListOf(graph, part);
-        }
-
-        @Override
-        public GlyphNest getNest ()
-        {
-            return system.getSheet().getGlyphNest();
-        }
-
-        @Override
-        public List<Glyph> getParts ()
-        {
-            return new ArrayList<Glyph>(graph.vertexSet());
-        }
-
-        public Inter getSingleInter ()
-        {
-            for (Inter inter : bestMap.values()) {
-                if (!inter.isDeleted()) {
-                    return inter;
-                }
-            }
-
-            return null;
-        }
-
-        @Override
-        public boolean isSizeAcceptable (Rectangle box)
-        {
-            return box.width <= params.maxTimeWidth;
-        }
-    }
-
     //--------------//
     // WholeAdapter //
     //--------------//
@@ -1657,7 +1669,9 @@ public abstract class TimeBuilder
             //TODO: check glyph centroid for a whole symbol is not too far from staff middle line
             trials++;
 
-            Evaluation[] evals = GlyphClassifier.getInstance().getNaturalEvaluations(glyph);
+            Evaluation[] evals = GlyphClassifier.getInstance().getNaturalEvaluations(
+                    glyph,
+                    system.getSheet().getInterline());
 
             for (Shape shape : wholeShapes) {
                 Evaluation eval = evals[shape.ordinal()];

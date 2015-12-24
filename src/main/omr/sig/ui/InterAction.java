@@ -11,9 +11,10 @@
 // </editor-fold>
 package omr.sig.ui;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
-import omr.selection.InterListEvent;
+import omr.selection.EntityListEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 
@@ -97,11 +98,21 @@ public class InterAction
     //---------//
     public void publish ()
     {
+        // Publish selected inter
         inter.getSig().publish(
-                new InterListEvent(
+                new EntityListEvent<Inter>(
                         this,
-                        SelectionHint.INTER_INIT,
+                        SelectionHint.ENTITY_INIT,
                         MouseMovement.PRESSING,
                         Arrays.asList(inter)));
+
+        // Publish underlying glyph, if any
+        final Glyph glyph = inter.getGlyph();
+        inter.getSig().getSystem().getSheet().getGlyphIndex().getEntityService().publish(
+                new EntityListEvent<Glyph>(
+                        this,
+                        SelectionHint.ENTITY_INIT,
+                        MouseMovement.PRESSING,
+                        (glyph != null) ? Arrays.asList(glyph) : null));
     }
 }

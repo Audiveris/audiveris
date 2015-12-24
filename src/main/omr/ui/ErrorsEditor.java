@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
 import omr.sheet.Sheet;
 

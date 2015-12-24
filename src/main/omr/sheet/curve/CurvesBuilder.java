@@ -203,7 +203,6 @@ public abstract class CurvesBuilder
         for (boolean rev : new boolean[]{false, true}) {
             Set<Curve> clump = rev ? leftClump : rightClump;
             reverse = rev;
-            trunk.setCrossedLine(null);
             extend(trunk, clump);
 
             weed(clump); // Filter out the least interesting candidates

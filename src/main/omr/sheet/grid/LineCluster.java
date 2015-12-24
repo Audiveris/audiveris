@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.glyph.Glyphs;
+import omr.glyph.dynamic.Compounds;
+import omr.glyph.dynamic.Filament;
 
 import omr.lag.Section;
 
@@ -19,12 +20,13 @@ import omr.math.GeoUtil;
 
 import omr.run.Orientation;
 
+import omr.sheet.Scale;
+
 import omr.util.Vip;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -35,6 +37,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import omr.util.IdUtil;
 
 /**
  * Class {@code LineCluster} is meant to aggregate instances of {@link Filament} that
@@ -64,16 +67,16 @@ public class LineCluster
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Id for debug. */
-    private final int id;
+    private final String id;
 
-    /** Interline for this cluster. */
-    private final int interline;
+    /** Scaling information. */
+    private final Scale scale;
 
     /** Reference to cluster this one has been included into, if any. */
     private LineCluster parent;
 
     /** Composing lines, ordered by their relative position (ordinate). */
-    private SortedMap<Integer, FilamentLine> lines;
+    private SortedMap<Integer, StaffFilament> lines;
 
     /** (Cached) bounding box of this cluster. */
     private Rectangle contourBox;
@@ -88,24 +91,24 @@ public class LineCluster
     /**
      * Creates a new LineCluster object.
      *
-     * @param interline the scaling information
-     * @param seed      the first filament of the cluster
+     * @param scale the scaling information
+     * @param seed  the first filament of the cluster
      */
-    public LineCluster (int interline,
-                        LineFilament seed)
+    public LineCluster (Scale scale,
+                        StaffFilament seed)
     {
         if (logger.isDebugEnabled() || seed.isVip()) {
             logger.info("VIP creating cluster with F{}", seed.getId());
 
             if (seed.isVip()) {
-                setVip();
+                setVip(true);
             }
         }
 
-        this.interline = interline;
-        this.id = seed.getId();
+        this.scale = scale;
+        this.id = "C" + IdUtil.getIntValue(seed.getId());
 
-        lines = new TreeMap<Integer, FilamentLine>();
+        lines = new TreeMap<Integer, StaffFilament>();
 
         include(seed, 0);
     }
@@ -119,9 +122,9 @@ public class LineCluster
      */
     public void destroy ()
     {
-        for (FilamentLine line : lines.values()) {
-            line.fil.setCluster(null, 0);
-            line.fil.getCombs().clear();
+        for (StaffFilament line : lines.values()) {
+            line.setCluster(null, 0);
+            line.getCombs().clear();
         }
     }
 
@@ -152,7 +155,7 @@ public class LineCluster
         if (contourBox == null) {
             Rectangle box = null;
 
-            for (FilamentLine line : getLines()) {
+            for (StaffFilament line : getLines()) {
                 if (box == null) {
                     box = new Rectangle(line.getBounds());
                 } else {
@@ -188,7 +191,7 @@ public class LineCluster
     //--------------//
     // getFirstLine //
     //--------------//
-    public FilamentLine getFirstLine ()
+    public StaffFilament getFirstLine ()
     {
         return lines.get(lines.firstKey());
     }
@@ -199,7 +202,7 @@ public class LineCluster
     /**
      * @return the id
      */
-    public int getId ()
+    public String getId ()
     {
         return id;
     }
@@ -212,13 +215,13 @@ public class LineCluster
      */
     public int getInterline ()
     {
-        return interline;
+        return scale.getInterline();
     }
 
     //-------------//
     // getLastLine //
     //-------------//
-    public FilamentLine getLastLine ()
+    public StaffFilament getLastLine ()
     {
         return lines.get(lines.lastKey());
     }
@@ -226,7 +229,7 @@ public class LineCluster
     //----------//
     // getLines //
     //----------//
-    public Collection<FilamentLine> getLines ()
+    public Collection<StaffFilament> getLines ()
     {
         return lines.values();
     }
@@ -265,9 +268,9 @@ public class LineCluster
         SortedMap<Integer, Point2D> points = new TreeMap<Integer, Point2D>();
         List<Integer> holes = new ArrayList<Integer>();
 
-        for (Entry<Integer, FilamentLine> entry : lines.entrySet()) {
+        for (Entry<Integer, StaffFilament> entry : lines.entrySet()) {
             int pos = entry.getKey();
-            FilamentLine line = entry.getValue();
+            StaffFilament line = entry.getValue();
 
             if (line.isWithinRange(x)) {
                 points.put(pos, new Point2D.Double(x, line.yAt(x)));
@@ -319,7 +322,7 @@ public class LineCluster
                     y = nextVal - interline;
                 } else {
                     // Extrapolate horizontally on a short distance
-                    FilamentLine line = lines.get(pos);
+                    StaffFilament line = lines.get(pos);
                     Point2D point = (x <= line.getStartPoint().getX()) ? line.getStartPoint()
                             : line.getStopPoint();
                     double dx = x - point.getX();
@@ -351,7 +354,7 @@ public class LineCluster
     {
         List<Point2D> points = new ArrayList<Point2D>(getSize());
 
-        for (FilamentLine line : lines.values()) {
+        for (StaffFilament line : lines.values()) {
             points.add(line.getStartPoint());
         }
 
@@ -365,7 +368,7 @@ public class LineCluster
     {
         List<Point2D> points = new ArrayList<Point2D>(getSize());
 
-        for (FilamentLine line : lines.values()) {
+        for (StaffFilament line : lines.values()) {
             points.add(line.getStopPoint());
         }
 
@@ -386,8 +389,8 @@ public class LineCluster
             // Determine mean true line length in this cluster
             int meanTrueLength = 0;
 
-            for (FilamentLine line : lines.values()) {
-                meanTrueLength += line.fil.trueLength();
+            for (StaffFilament line : lines.values()) {
+                meanTrueLength += lineTrueLength(line);
             }
 
             meanTrueLength /= lines.size();
@@ -411,32 +414,33 @@ public class LineCluster
      * @param index    the zero-based line index
      * @return true if there was room for inclusion
      */
-    public boolean includeFilamentByIndex (LineFilament filament,
+    public boolean includeFilamentByIndex (StaffFilament filament,
                                            int index)
     {
         final Rectangle filBox = filament.getBounds();
         int i = 0;
 
-        for (Entry<Integer, FilamentLine> entry : lines.entrySet()) {
+        for (Entry<Integer, StaffFilament> entry : lines.entrySet()) {
             if (i++ == index) {
-                FilamentLine line = entry.getValue();
+                StaffFilament line = entry.getValue();
 
                 // Check for horizontal room
                 // For filaments one above the other, check resulting thickness
-                for (Section section : line.fil.getMembers()) {
+                for (Section section : line.getMembers()) {
                     // Horizontal overlap?
                     Rectangle sctBox = section.getBounds();
                     int overlap = GeoUtil.xOverlap(filBox, sctBox);
 
                     if (overlap > 0) {
                         // Check resulting thickness
-                        double thickness = Glyphs.getThicknessAt(
+                        double thickness = Compounds.getThicknessAt(
                                 Math.max(filBox.x, sctBox.x) + (overlap / 2),
                                 Orientation.HORIZONTAL,
+                                scale,
                                 filament,
-                                line.fil);
+                                line);
 
-                        if (thickness > line.fil.getScale().getMaxFore()) {
+                        if (thickness > scale.getMaxFore()) {
                             if (filament.isVip() || logger.isDebugEnabled()) {
                                 logger.info("VIP no room for {} in {}", filament, this);
                             }
@@ -446,7 +450,7 @@ public class LineCluster
                     }
                 }
 
-                line.add(filament);
+                line.include(filament);
                 filament.setCluster(this, entry.getKey());
                 invalidateCache();
 
@@ -475,16 +479,6 @@ public class LineCluster
         include(that, deltaPos + (this.lines.firstKey() - that.lines.firstKey()));
     }
 
-    //--------//
-    // render //
-    //--------//
-    public void render (Graphics2D g)
-    {
-        for (FilamentLine line : lines.values()) {
-            line.render(g);
-        }
-    }
-
     //---------------//
     // renumberLines //
     //---------------//
@@ -497,14 +491,14 @@ public class LineCluster
         int firstPos = lines.firstKey();
 
         if (firstPos != 0) {
-            SortedMap<Integer, FilamentLine> newLines = new TreeMap<Integer, FilamentLine>();
+            SortedMap<Integer, StaffFilament> newLines = new TreeMap<Integer, StaffFilament>();
 
-            for (Entry<Integer, FilamentLine> entry : lines.entrySet()) {
+            for (Entry<Integer, StaffFilament> entry : lines.entrySet()) {
                 int pos = entry.getKey();
                 int newPos = pos - firstPos;
-                FilamentLine line = entry.getValue();
-                line.fil.setCluster(this, newPos);
-                newLines.put(newPos, new FilamentLine(line.fil));
+                StaffFilament line = entry.getValue();
+                line.setCluster(this, newPos);
+                newLines.put(newPos, line);
             }
 
             lines = newLines;
@@ -517,9 +511,9 @@ public class LineCluster
     // setVip //
     //--------//
     @Override
-    public void setVip ()
+    public void setVip (boolean vip)
     {
-        vip = true;
+        this.vip = vip;
     }
 
     //----------//
@@ -535,7 +529,7 @@ public class LineCluster
 
         sb.append(" size:").append(getSize());
 
-        for (Entry<Integer, FilamentLine> entry : lines.entrySet()) {
+        for (Entry<Integer, StaffFilament> entry : lines.entrySet()) {
             sb.append(" ").append(entry.getValue());
         }
 
@@ -567,15 +561,15 @@ public class LineCluster
         // Pruning
         while (lines.size() > count) {
             // Remove the top or bottom line
-            final FilamentLine top = lines.get(lines.firstKey());
-            int topCount = top.fil.getCombs().size();
-            int topWL = top.fil.trueLength();
+            final StaffFilament top = lines.get(lines.firstKey());
+            int topCount = top.getCombs().size();
+            int topWL = lineTrueLength(top);
 
-            final FilamentLine bot = lines.get(lines.lastKey());
-            int botCount = bot.fil.getCombs().size();
-            int botWL = bot.fil.trueLength();
+            final StaffFilament bot = lines.get(lines.lastKey());
+            int botCount = bot.getCombs().size();
+            int botWL = lineTrueLength(bot);
 
-            final FilamentLine line; // Which line to remove?
+            final StaffFilament line; // Which line to remove?
 
             if (topCount == botCount) {
                 // Use reverse true length
@@ -597,8 +591,8 @@ public class LineCluster
             }
 
             // House keeping
-            line.fil.setCluster(null, 0);
-            line.fil.getCombs().clear();
+            line.setCluster(null, 0);
+            line.getCombs().clear();
         }
 
         renumberLines();
@@ -614,18 +608,18 @@ public class LineCluster
      * @param pivot    the filament to include
      * @param pivotPos the imposed position within the cluster
      */
-    private void include (LineFilament pivot,
+    private void include (StaffFilament pivot,
                           int pivotPos)
     {
         if (logger.isDebugEnabled() || pivot.isVip()) {
             logger.info("VIP {} include pivot:{} at pos:{}", this, pivot.getId(), pivotPos);
 
             if (pivot.isVip()) {
-                setVip();
+                setVip(true);
             }
         }
 
-        LineFilament ancestor = (LineFilament) pivot.getAncestor();
+        StaffFilament ancestor = (StaffFilament) pivot.getAncestor();
 
         // Loop on all combs that involve this filament
         // Use a copy to avoid concurrent modification error
@@ -643,23 +637,22 @@ public class LineCluster
 
             // Dispatch content of comb to proper lines
             for (int i = 0; i < comb.getCount(); i++) {
-                LineFilament fil = (LineFilament) comb.getFilament(i).getAncestor();
+                StaffFilament fil = (StaffFilament) comb.getFilament(i).getAncestor();
                 LineCluster cluster = fil.getCluster();
 
                 if (cluster == null) {
                     int pos = i + deltaPos;
-                    FilamentLine line = lines.get(pos);
+                    StaffFilament line = lines.get(pos);
 
                     if (line == null) {
-                        line = new FilamentLine(null);
-                        lines.put(pos, line);
+                        lines.put(pos, fil);
+                    } else {
+                        line.include(fil);
                     }
-
-                    line.add(fil);
 
                     if (fil.isVip()) {
                         logger.info("VIP adding {} to {} at pos {}", fil, this, pos);
-                        setVip();
+                        setVip(true);
                     }
 
                     fil.setCluster(this, pos);
@@ -691,18 +684,18 @@ public class LineCluster
             logger.info("VIP inclusion of {} into {} deltaPos:{}", that, this, deltaPos);
 
             if (that.isVip()) {
-                setVip();
+                setVip(true);
             }
         }
 
-        for (Entry<Integer, FilamentLine> entry : that.lines.entrySet()) {
+        for (Entry<Integer, StaffFilament> entry : that.lines.entrySet()) {
             int thisPos = entry.getKey() + deltaPos;
-            FilamentLine thatLine = entry.getValue();
-            FilamentLine thisLine = lines.get(thisPos);
+            StaffFilament thatLine = entry.getValue();
+            StaffFilament thisLine = lines.get(thisPos);
 
             if (thisLine == null) {
-                thisLine = new FilamentLine(thatLine.fil);
-                thatLine.fil.setCluster(this, thisPos);
+                thisLine = thatLine;
+                thatLine.setCluster(this, thisPos);
                 lines.put(thisPos, thisLine);
             } else {
                 thisLine.include(thatLine);
@@ -726,5 +719,18 @@ public class LineCluster
     {
         contourBox = null;
         trueLength = null;
+    }
+
+    //----------------//
+    // lineTrueLength //
+    //----------------//
+    /**
+     * Report an evaluation of how this filament is filled by sections
+     *
+     * @return how solid this filament is
+     */
+    private int lineTrueLength (Filament line)
+    {
+        return (int) Math.rint((double) line.getWeight() / scale.getMainFore());
     }
 }

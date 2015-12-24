@@ -75,7 +75,7 @@ public class InterMenu
     @Override
     public void updateUserLocation (Rectangle rect)
     {
-        updateMenu(sheet.getInterManager().getSelectedInterList());
+        updateMenu(sheet.getInterIndex().getEntityService().getSelectedEntityList());
 
         super.updateUserLocation(rect);
     }

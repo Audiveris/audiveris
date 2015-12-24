@@ -70,7 +70,7 @@ public class BookBrowser
 
     private static final Logger logger = LoggerFactory.getLogger(BookBrowser.class);
 
-    /** The filter for relevant classes and fields */
+    /** The filter for relevant classes and fields. */
     private static final Relevance filter = new PackageRelevance(Main.class.getPackage());
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -223,6 +223,60 @@ public class BookBrowser
         private final Constant.Boolean hideEmptyDummies = new Constant.Boolean(
                 false,
                 "Should we hide empty dummy containers");
+    }
+
+    //-----------------//
+    // NamedCollection //
+    //-----------------//
+    private static class NamedCollection
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final String name;
+
+        private final Collection<?> collection;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public NamedCollection (String name,
+                                Collection<?> collection)
+        {
+            this.name = name;
+            this.collection = collection;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            return name;
+        }
+    }
+
+    //-----------//
+    // NamedData //
+    //-----------//
+    private static class NamedData
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final String name;
+
+        private final Object data;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public NamedData (String name,
+                          Object data)
+        {
+            this.name = name;
+            this.data = data;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            return name + ":" + data;
+        }
     }
 
     //-------//
@@ -421,6 +475,7 @@ public class BookBrowser
                 return relevants;
             }
 
+            ///logger.info("standard node: " + node);
             Class<?> classe = node.getClass();
             relevants = new ArrayList<Object>();
             nodeMap.put(node, relevants);
@@ -482,11 +537,6 @@ public class BookBrowser
                             continue;
                         }
 
-                        // No leaf on left pane
-                        if (getChildCount(object) == 0) {
-                            continue;
-                        }
-
                         ///System.out.println(" ...OK");
                         relevants.add(new NamedData(field.getName(), object));
                     } catch (Exception ex) {
@@ -521,60 +571,6 @@ public class BookBrowser
         }
     }
 
-    //-----------------//
-    // NamedCollection //
-    //-----------------//
-    private static class NamedCollection
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final String name;
-
-        private final Collection<?> collection;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public NamedCollection (String name,
-                                Collection<?> collection)
-        {
-            this.name = name;
-            this.collection = collection;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            return name;
-        }
-    }
-
-    //-----------//
-    // NamedData //
-    //-----------//
-    private static class NamedData
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final String name;
-
-        private final Object data;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public NamedData (String name,
-                          Object data)
-        {
-            this.name = name;
-            this.data = data;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            return name + ":" + data;
-        }
-    }
-
     //-------------------//
     // SelectionListener //
     //-------------------//
@@ -586,17 +582,21 @@ public class BookBrowser
         @Override
         public void valueChanged (TreeSelectionEvent e)
         {
-            TreePath p = e.getNewLeadSelectionPath();
+            try {
+                TreePath p = e.getNewLeadSelectionPath();
 
-            if (p != null) {
-                Object obj = p.getLastPathComponent();
+                if (p != null) {
+                    Object obj = p.getLastPathComponent();
 
-                if (obj instanceof NamedData) {
-                    NamedData nd = (NamedData) obj;
-                    obj = nd.data;
+                    if (obj instanceof NamedData) {
+                        NamedData nd = (NamedData) obj;
+                        obj = nd.data;
+                    }
+
+                    htmlPane.setText(new Dumper.Html(filter, obj).toString());
                 }
-
-                htmlPane.setText(new Dumper.Html(filter, obj).toString());
+            } catch (Throwable ex) {
+                logger.warn("BookBrowser error: " + ex, ex);
             }
         }
     }

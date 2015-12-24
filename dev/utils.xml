@@ -125,7 +125,7 @@ import"
             update="yes"
             destfile="${backup.dir}/${name}/${DSTAMP}-${machine.name}-src.zip" >
             <fileset dir="${basedir}"  
-                     includes="build.xml, dev/**, src/**, config/**, eval/**, symbols/**, data/www/**, nbproject/**, res/**, *.jnlp, installer/build.xml, installer/config/**, installer/dev/**, installer/nbproject/**"
+                     includes="build.xml, dev/**, src/**, config/**, eval/**, symbols/**, data/www/**, data/train/**, nbproject/**, res/**, *.jnlp, installer/build.xml, installer/config/**, installer/dev/**, installer/nbproject/**"
                      excludes="${dist.excludes},data/www/docs/api/**,dev/externals/**,dev/tools/**, nbproject/private/**, installer/nbproject/private/**"/>
         </zip>
 

@@ -11,9 +11,10 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.dynamic.Filament;
 
 import omr.sheet.Staff;
+
 import static omr.sheet.grid.StaffPeak.Attribute.*;
 
 import omr.sig.GradeImpacts;
@@ -22,8 +23,11 @@ import omr.sig.inter.BraceInter;
 import omr.sig.inter.Inter;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.LEFT;
+
 import omr.util.VerticalSide;
+
 import static omr.util.VerticalSide.TOP;
 
 import java.awt.Rectangle;
@@ -32,7 +36,7 @@ import java.util.EnumSet;
 /**
  * Class {@code StaffPeak} represents a peak in staff projection onto x-axis.
  * <p>
- * Such peak can represent a brace peak or a bar peak (bar-line or bracket).
+ * Such peak can represent a brace peak or a bar peak (barline or bracket).
  *
  * @author Hervé Bitteur
  */
@@ -102,8 +106,8 @@ public abstract class StaffPeak
     /** Precise right abscissa. */
     protected final int stop;
 
-    /** Underlying stick. */
-    protected Glyph glyph;
+    /** Underlying filament. */
+    protected Filament filament;
 
     /** Corresponding inter, if any. */
     protected Inter inter;
@@ -164,15 +168,12 @@ public abstract class StaffPeak
         return new Rectangle(start, top, getWidth(), bottom - top + 1);
     }
 
-    //----------//
-    // getGlyph //
-    //----------//
-    /**
-     * @return the glyph
-     */
-    public Glyph getGlyph ()
+    //-------------//
+    // getFilament //
+    //-------------//
+    public Filament getFilament ()
     {
-        return glyph;
+        return filament;
     }
 
     //----------//
@@ -368,15 +369,12 @@ public abstract class StaffPeak
         set((side == TOP) ? BRACKET_TOP : BRACKET_BOTTOM);
     }
 
-    //----------//
-    // setGlyph //
-    //----------//
-    /**
-     * @param glyph the glyph to set
-     */
-    public void setGlyph (Glyph glyph)
+    //-------------//
+    // setFilament //
+    //-------------//
+    public void setFilament (Filament filament)
     {
-        this.glyph = glyph;
+        this.filament = filament;
     }
 
     //-------------//
@@ -407,8 +405,8 @@ public abstract class StaffPeak
         sb.append(stop);
         sb.append(")");
 
-        if (glyph != null) {
-            sb.append(" glyph#").append(glyph.getId());
+        if (filament != null) {
+            sb.append(" glyph#").append(filament.getId());
         }
 
         sb.append(internals());

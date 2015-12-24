@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.graph.Digraph;
-
 import omr.run.Oriented;
 import omr.run.Run;
 import omr.run.RunTable;
@@ -22,9 +20,9 @@ import omr.selection.SelectionService;
 import omr.util.Predicate;
 
 import java.awt.Rectangle;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import omr.util.EntityIndex;
 
 /**
  * Interface {@code Lag} defines a graph of {@link Section} instances (sets of
@@ -34,11 +32,7 @@ import java.util.Set;
  * Sections are thus vertices of the graph, while junctions are directed edges between sections. All
  * the sections (and runs) have the same orientation shared by the lag.
  * <p>
- * A lag may have a related UI selection service accessible through {@link #getSectionService}. This
- * selection service handles Section, SectionId and SectionSet events.
- * The {@link #getSelectedSection} and {@link #getSelectedSectionSet} methods are just convenient
- * ways to retrieve the last selected section, sectionId or sectionSet from the lag selection
- * service.
+ * A lag may have a related UI selection service accessible through {@link #getEntityService}.
  * <p>
  * Run selection is provided by a separate selection service hosted by the underlying RunTable
  * instance. For convenience, one can use the method {@link #getRunService()} to get access to this
@@ -47,7 +41,7 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public interface Lag
-        extends Digraph<Lag, Section>, Oriented
+        extends EntityIndex<Section>, Oriented
 {
     //~ Methods ------------------------------------------------------------------------------------
 
@@ -57,31 +51,6 @@ public interface Lag
      * @param runTable the related table of runs
      */
     void addRunTable (RunTable runTable);
-
-    /**
-     * Lookup for lag sections that are <b>contained</b> in the
-     * provided rectangle.
-     * Specific sections are not considered.
-     *
-     * @param rect the given rectangle
-     * @return the set of lag sections contained, which may be empty
-     */
-    Set<Section> containedSections (Rectangle rect);
-
-    /**
-     * Create a section in the lag (using the defined vertexClass).
-     *
-     * @param firstPos the starting position of the section
-     * @param firstRun the very first run of the section
-     * @return the created section
-     */
-    Section createSection (int firstPos,
-                           Run firstRun);
-
-    /**
-     * Cut dependency about other services for lag.
-     */
-    void cutServices ();
 
     /**
      * Report the run found at given coordinates, if any.
@@ -108,47 +77,6 @@ public interface Lag
     RunTable getRunTable ();
 
     /**
-     * Report the section found at given coordinates, if any.
-     *
-     * @param x absolute abscissa
-     * @param y absolute ordinate
-     * @return the section found, or null otherwise
-     */
-    Section getSectionAt (int x,
-                          int y);
-
-    /**
-     * Report the section selection service.
-     *
-     * @return the section selection service
-     */
-    SelectionService getSectionService ();
-
-    /**
-     * Return a view of the collection of sections that are currently
-     * part of this lag.
-     *
-     * @return the sections collection
-     */
-    Collection<Section> getSections ();
-
-    /**
-     * Convenient method to report the UI currently selected Section,
-     * if any, in this lag.
-     *
-     * @return the UI selected section, or null if none
-     */
-    Section getSelectedSection ();
-
-    /**
-     * Convenient method to report the UI currently selected set of
-     * Sections, if any, in this lag.
-     *
-     * @return the UI selected section set, or null if none
-     */
-    Set<Section> getSelectedSectionSet ();
-
-    /**
      * Lookup for lag sections that are <b>intersected</b> by the
      * provided rectangle.
      * Specific sections are not considered.
@@ -172,11 +100,4 @@ public interface Lag
      * @param runsTable the populated runs
      */
     void setRuns (RunTable runsTable);
-
-    /**
-     * Inject dependency about other services for lag.
-     *
-     * @param locationService the location service to read and write
-     */
-    void setServices (SelectionService locationService);
 }

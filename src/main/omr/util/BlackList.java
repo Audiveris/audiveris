@@ -23,6 +23,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -48,16 +52,16 @@ public class BlackList
     protected static final String BLACK_LIST_NAME = ".glyphignore";
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Set of black listed file names */
+    /** Set of black listed file names. */
     protected final SortedSet<String> bl = new TreeSet<String>();
 
-    /** Containing directory */
-    protected final File dir;
+    /** Containing directory. */
+    protected final Path dir;
 
-    /** Specific blacklist file */
-    protected final File blackFile;
+    /** Specific blacklist file. */
+    protected final Path blackFile;
 
-    /** Specific filter for blacklist */
+    /** Specific filter for blacklist. */
     protected final FileFilter blackFilter = new FileFilter()
     {
         @Override
@@ -73,10 +77,10 @@ public class BlackList
      *
      * @param dir the containing directory
      */
-    public BlackList (File dir)
+    public BlackList (Path dir)
     {
         this.dir = dir;
-        blackFile = new File(dir, BLACK_LIST_NAME);
+        blackFile = dir.resolve(BLACK_LIST_NAME);
         load();
     }
 
@@ -87,11 +91,11 @@ public class BlackList
     /**
      * Blacklist a file.
      *
-     * @param file the file to blacklist
+     * @param path the file to blacklist
      */
-    public void add (File file)
+    public void add (Path path)
     {
-        String name = file.getName().trim();
+        String name = path.getFileName().toString().trim();
 
         if (!bl.contains(name)) {
             bl.add(name);
@@ -122,7 +126,7 @@ public class BlackList
      *
      * @return an array of legal File instances
      */
-    public File[] listFiles ()
+    public Path[] listFiles ()
     {
         return listFiles(null);
     }
@@ -135,28 +139,29 @@ public class BlackList
      * in the containing directory of this BlackList file, and that are
      * accepted by the provided file filter.
      *
+     * @param filter potential filter, or null
      * @return an array of filtered legal File instances
      */
-    public File[] listFiles (FileFilter filter)
+    public Path[] listFiles (Filter filter)
     {
         logger.debug("Retrieving legal slots in directory {}", dir);
 
         // Getting all legal files & dirs, w/ additional filter if any
-        List<File> legals = new ArrayList<File>();
-        File[] files = dir.listFiles(blackFilter);
-
-        if (files != null) {
-            for (File file : files) {
-                if ((filter == null) || filter.accept(file)) {
-                    legals.add(file);
-                }
+        List<Path> legals = new ArrayList<Path>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, filter)) {
+            for (Path path : stream) {
+                legals.add(path);
             }
-        } else {
-            logger.info("No files in dir {}", dir);
+        } catch (IOException ex) {
+            logger.warn("Error iterating in " + dir, ex);
+        }
+
+        if (legals.isEmpty()) {
+            logger.info("No legal files in dir {}", dir);
         }
 
         // Return legals as an array
-        return legals.toArray(new File[legals.size()]);
+        return legals.toArray(new Path[legals.size()]);
     }
 
     //--------//
@@ -196,11 +201,11 @@ public class BlackList
     //------//
     private void load ()
     {
-        if (blackFile.exists()) {
+        if (Files.exists(blackFile)) {
             BufferedReader in = null;
 
             try {
-                in = new BufferedReader(new FileReader(blackFile));
+                in = new BufferedReader(new FileReader(blackFile.toFile()));
 
                 String fileName;
 
@@ -239,7 +244,7 @@ public class BlackList
         PrintWriter out = null;
 
         try {
-            out = new PrintWriter(new BufferedWriter(new FileWriter(blackFile)));
+            out = new PrintWriter(new BufferedWriter(new FileWriter(blackFile.toFile())));
 
             for (String name : bl) {
                 out.println(name);

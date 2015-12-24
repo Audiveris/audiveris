@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.script;
 
+import omr.OMR;
+
 import omr.sheet.Book;
 import omr.sheet.Sheet;
 
@@ -32,18 +34,26 @@ public class PrintTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The folder used for print. */
+    /** The full target file used for print. */
+    @XmlAttribute(name = "file")
+    private File file;
+
+    /** The target folder used for print. */
     @XmlAttribute(name = "folder")
     private File folder;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a task to print the score to a PDF file
+     * Create a task to print the score to a PDF file, providing either the full target
+     * file or just the target folder (and using default file name).
      *
-     * @param folder the full path of the PDF file folder
+     * @param file   the full path of the PDF file, or null
+     * @param folder the full path of the PDF file folder, or null
      */
-    public PrintTask (File folder)
+    public PrintTask (File file,
+                      File folder)
     {
+        this.file = file;
         this.folder = folder;
     }
 
@@ -60,7 +70,9 @@ public class PrintTask
     public void core (Sheet sheet)
     {
         Book book = sheet.getBook();
-        Path bookPath = (folder != null) ? new File(folder, book.getRadix()).toPath() : null;
+        Path bookPath = (file != null) ? file.toPath()
+                : ((folder != null)
+                        ? new File(folder, book.getRadix() + OMR.PDF_EXTENSION).toPath() : null);
         book.setPrintPath(bookPath);
         book.print();
     }
@@ -73,6 +85,10 @@ public class PrintTask
     {
         StringBuilder sb = new StringBuilder(super.internals());
         sb.append(" print ");
+
+        if (file != null) {
+            sb.append(" file=").append(file);
+        }
 
         if (folder != null) {
             sb.append(" folder=").append(folder);

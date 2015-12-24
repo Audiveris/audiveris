@@ -11,13 +11,11 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
-
-import omr.graph.BasicVertex;
+import omr.glyph.dynamic.SectionCompound;
 
 import omr.math.Barycenter;
 import omr.math.BasicLine;
+import omr.math.GeoUtil;
 import omr.math.Line;
 import omr.math.PointsCollector;
 
@@ -26,6 +24,8 @@ import omr.run.Run;
 
 import omr.ui.Colors;
 import omr.ui.util.UIUtil;
+
+import omr.util.AbstractEntity;
 
 import ij.process.ByteProcessor;
 
@@ -42,13 +42,8 @@ import java.awt.Stroke;
 import java.awt.geom.PathIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -65,7 +60,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "section")
 public class BasicSection
-        extends BasicVertex<Lag, Section>
+        extends AbstractEntity
         implements Section
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -86,6 +81,9 @@ public class BasicSection
     @XmlElement(name = "run")
     private final List<Run> runs = new ArrayList<Run>();
 
+    /** Containing lag, if any. */
+    private Lag lag;
+
     /** Oriented bounding rectangle */
     protected Rectangle orientedBounds;
 
@@ -101,15 +99,12 @@ public class BasicSection
     /** Absolute contour points */
     private Polygon polygon;
 
-    /** Adjacent sections from the other orientation */
-    private Set<Section> oppositeSections;
-
     /**
      * Glyph this section belongs to.
      * This reference is kept in sync with the containing GlyphLag activeMap.
-     * Don't directly assign a value to 'glyph', use the setGlyph() method instead.
+     * Don't directly assign a value to 'glyph', use the setCompound() method instead.
      */
-    private Glyph glyph;
+    private SectionCompound compound;
 
     /** To flag sections too thick for staff line (null = don't know) */
     private Boolean fat = null;
@@ -117,20 +112,10 @@ public class BasicSection
     /** Flag to remember processing has been done */
     private boolean processed = false;
 
-    /** (Debug) flag this section as VIP */
-    private boolean vip;
-
     /** Approximating oriented line for this section */
     protected Line orientedLine;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new BasicSection.
-     */
-    public BasicSection ()
-    {
-    }
-
     /**
      * Creates a new BasicSection.
      *
@@ -163,53 +148,6 @@ public class BasicSection
         return table;
     }
 
-    //----------------//
-    // drawingOfTable //
-    //----------------//
-    /**
-     * Printout the filled drawing table
-     *
-     * @param table the filled table
-     * @param box   the table limits in the image
-     * @return the drawing as a string
-     */
-    public static String drawingOfTable (char[][] table,
-                                         Rectangle box)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%n"));
-
-        sb.append(String.format("xMin=%d, xMax=%d%n", box.x, (box.x + box.width) - 1));
-        sb.append(String.format("yMin=%d, yMax=%d%n", box.y, (box.y + box.height) - 1));
-
-        for (int iy = 0; iy < table.length; iy++) {
-            sb.append(String.format("%d:", iy + box.y));
-
-            char[] line = table[iy];
-
-            for (int ix = 0; ix < line.length; ix++) {
-                sb.append(line[ix]);
-            }
-
-            sb.append(String.format("%n"));
-        }
-
-        return sb.toString();
-    }
-
-    //--------------------//
-    // addOppositeSection //
-    //--------------------//
-    @Override
-    public void addOppositeSection (Section otherSection)
-    {
-        if (oppositeSections == null) {
-            oppositeSections = new HashSet<Section>();
-        }
-
-        oppositeSections.add(otherSection);
-    }
-
     //--------//
     // append //
     //--------//
@@ -221,45 +159,6 @@ public class BasicSection
         addRun(run);
 
         logger.debug("Appended {} to {}", run, this);
-    }
-
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * Needed to implement Comparable, sorting sections first by
-     * absolute abscissa, then by absolute ordinate.
-     *
-     * @param other the other section to compare to
-     * @return the result of ordering
-     */
-    @Override
-    public int compareTo (Section other)
-    {
-        if (this == other) {
-            return 0;
-        }
-
-        final Point ref = this.getBounds().getLocation();
-        final Point otherRef = other.getBounds().getLocation();
-
-        // Are x values different?
-        final int dx = ref.x - otherRef.x;
-
-        if (dx != 0) {
-            return dx;
-        }
-
-        // Vertically aligned, so use ordinates
-        final int dy = ref.y - otherRef.y;
-
-        if (dy != 0) {
-            return dy;
-        }
-
-        // Finally, use id. Note this should return zero since different
-        // sections cannot overlap
-        return this.getId() - other.getId();
     }
 
     //-------------------//
@@ -296,6 +195,15 @@ public class BasicSection
                              int y)
     {
         return getPolygon().contains(x, y);
+    }
+
+    //----------//
+    // contains //
+    //----------//
+    @Override
+    public boolean contains (Point point)
+    {
+        return contains(point.x, point.y);
     }
 
     //----------//
@@ -433,6 +341,40 @@ public class BasicSection
         drawingOfTable(table, box);
     }
 
+    //----------------//
+    // drawingOfTable //
+    //----------------//
+    /**
+     * Printout the filled drawing table
+     *
+     * @param table the filled table
+     * @param box   the table limits in the image
+     * @return the drawing as a string
+     */
+    public static String drawingOfTable (char[][] table,
+                                         Rectangle box)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%n"));
+
+        sb.append(String.format("xMin=%d, xMax=%d%n", box.x, (box.x + box.width) - 1));
+        sb.append(String.format("yMin=%d, yMax=%d%n", box.y, (box.y + box.height) - 1));
+
+        for (int iy = 0; iy < table.length; iy++) {
+            sb.append(String.format("%d:", iy + box.y));
+
+            char[] line = table[iy];
+
+            for (int ix = 0; ix < line.length; ix++) {
+                sb.append(line[ix]);
+            }
+
+            sb.append(String.format("%n"));
+        }
+
+        return sb.toString();
+    }
+
     //--------//
     // equals //
     //--------//
@@ -440,35 +382,35 @@ public class BasicSection
     public boolean equals (Object obj)
     {
         if (obj instanceof Section) {
-            return compareTo((Section) obj) == 0;
+            return byFullAbscissa.compare(this, (Section) obj) == 0;
         }
 
         return false;
     }
 
-    //-----------//
-    // fillImage //
-    //-----------//
+    //------------//
+    // fillBuffer //
+    //------------//
     @Override
-    public void fillImage (ByteProcessor buf,
-                           Rectangle box)
+    public void fillBuffer (ByteProcessor buffer,
+                            Point offset)
     {
         if (isVertical()) {
-            int x = getFirstPos() - box.x;
+            int x = getFirstPos() - offset.x;
 
             for (Run run : runs) {
                 for (int y = run.getStart(); y <= run.getStop(); y++) {
-                    buf.set(x, y - box.y, 0);
+                    buffer.set(x, y - offset.y, 0);
                 }
 
                 x += 1;
             }
         } else {
-            int y = getFirstPos() - box.y;
+            int y = getFirstPos() - offset.y;
 
             for (Run run : runs) {
                 for (int x = run.getStart(); x <= run.getStop(); x++) {
-                    buf.set(x - box.x, y, 0);
+                    buffer.set(x - offset.x, y, 0);
                 }
 
                 y += 1;
@@ -593,28 +535,13 @@ public class BasicSection
         return centroid;
     }
 
-    //-------------------//
-    // getFirstAdjacency //
-    //-------------------//
+    //-------------//
+    // getCompound //
+    //-------------//
     @Override
-    public double getFirstAdjacency ()
+    public SectionCompound getCompound ()
     {
-        Run run = getFirstRun();
-        int runStart = run.getStart();
-        int runStop = run.getStop();
-        int adjacency = 0;
-
-        for (Section source : getSources()) {
-            Run lastRun = source.getLastRun();
-            int start = Math.max(runStart, lastRun.getStart());
-            int stop = Math.min(runStop, lastRun.getStop());
-
-            if (stop >= start) {
-                adjacency += (stop - start + 1);
-            }
-        }
-
-        return (double) adjacency / (double) run.getLength();
+        return compound;
     }
 
     //-------------//
@@ -635,51 +562,13 @@ public class BasicSection
         return runs.get(0);
     }
 
-    //----------//
-    // getGlyph //
-    //----------//
+    //--------//
+    // getLag //
+    //--------//
     @Override
-    public Glyph getGlyph ()
+    public Lag getLag ()
     {
-        return glyph;
-    }
-
-    //----------//
-    // getGraph //
-    //----------//
-    /**
-     * Report the containing graph (lag) of this vertex (section)
-     *
-     * @return the containing graph
-     */
-    @Override
-    public Lag getGraph ()
-    {
-        return graph;
-    }
-
-    //------------------//
-    // getLastAdjacency //
-    //------------------//
-    @Override
-    public double getLastAdjacency ()
-    {
-        Run run = getLastRun();
-        int runStart = run.getStart();
-        int runStop = run.getStop();
-        int adjacency = 0;
-
-        for (Section target : getTargets()) {
-            Run firstRun = target.getFirstRun();
-            int start = Math.max(runStart, firstRun.getStart());
-            int stop = Math.min(runStop, firstRun.getStop());
-
-            if (stop >= start) {
-                adjacency += (stop - start + 1);
-            }
-        }
-
-        return (double) adjacency / (double) run.getLength();
+        return lag;
     }
 
     //------------//
@@ -747,19 +636,6 @@ public class BasicSection
     public double getMeanThickness (Orientation orientation)
     {
         return (double) getWeight() / getLength(orientation);
-    }
-
-    //---------------------//
-    // getOppositeSections //
-    //---------------------//
-    @Override
-    public Set<Section> getOppositeSections ()
-    {
-        if (oppositeSections != null) {
-            return Collections.unmodifiableSet(oppositeSections);
-        } else {
-            return Collections.emptySet();
-        }
     }
 
     //----------------//
@@ -931,70 +807,6 @@ public class BasicSection
         return hash;
     }
 
-    //---------------//
-    // inNextSibling //
-    //---------------//
-    @Override
-    public Section inNextSibling ()
-    {
-        // Check we have sources
-        if (getInDegree() == 0) {
-            return null;
-        }
-
-        // Proper source section
-        Section source = getSources().get(getInDegree() - 1);
-
-        // Browse till we get to this as target
-        for (Iterator<Section> li = source.getTargets().iterator(); li.hasNext();) {
-            Section section = li.next();
-
-            if (section == this) {
-                if (li.hasNext()) {
-                    return li.next();
-                } else {
-                    return null;
-                }
-            }
-        }
-
-        logger.error("inNextSibling inconsistent graph");
-
-        return null;
-    }
-
-    //-------------------//
-    // inPreviousSibling //
-    //-------------------//
-    @Override
-    public Section inPreviousSibling ()
-    {
-        if (getInDegree() == 0) {
-            return null;
-        }
-
-        // Proper source section
-        Section source = getSources().get(0);
-
-        // Browse till we get to this as target
-        for (ListIterator<Section> li = source.getTargets().listIterator(source.getOutDegree());
-                li.hasPrevious();) {
-            Section section = li.previous();
-
-            if (section == this) {
-                if (li.hasPrevious()) {
-                    return li.previous();
-                } else {
-                    return null;
-                }
-            }
-        }
-
-        logger.error("inPreviousSibling inconsistent graph");
-
-        return null;
-    }
-
     //------------//
     // intersects //
     //------------//
@@ -1037,6 +849,15 @@ public class BasicSection
         return intersects(that.getPolygon());
     }
 
+    //------------------//
+    // isCompoundMember //
+    //------------------//
+    @Override
+    public boolean isCompoundMember ()
+    {
+        return compound != null;
+    }
+
     //-------//
     // isFat //
     //-------//
@@ -1044,15 +865,6 @@ public class BasicSection
     public Boolean isFat ()
     {
         return fat;
-    }
-
-    //---------------//
-    // isGlyphMember //
-    //---------------//
-    @Override
-    public boolean isGlyphMember ()
-    {
-        return glyph != null;
     }
 
     //-------------//
@@ -1071,78 +883,6 @@ public class BasicSection
     public boolean isVertical ()
     {
         return orientation == Orientation.VERTICAL;
-    }
-
-    //-------//
-    // isVip //
-    //-------//
-    @Override
-    public boolean isVip ()
-    {
-        return vip;
-    }
-
-    //----------------//
-    // outNextSibling //
-    //----------------//
-    @Override
-    public Section outNextSibling ()
-    {
-        if (getOutDegree() == 0) {
-            return null;
-        }
-
-        // Proper target section
-        Section target = getTargets().get(getOutDegree() - 1);
-
-        // Browse till we get to this as source
-        for (Iterator<Section> li = target.getSources().iterator(); li.hasNext();) {
-            Section section = li.next();
-
-            if (section == this) {
-                if (li.hasNext()) {
-                    return li.next();
-                } else {
-                    return null;
-                }
-            }
-        }
-
-        logger.error("outNextSibling inconsistent graph");
-
-        return null;
-    }
-
-    //--------------------//
-    // outPreviousSibling //
-    //--------------------//
-    @Override
-    public Section outPreviousSibling ()
-    {
-        if (getOutDegree() == 0) {
-            return null;
-        }
-
-        // Proper target section
-        Section target = getTargets().get(getOutDegree() - 1);
-
-        // Browse till we get to this as source
-        for (ListIterator<Section> li = target.getSources().listIterator(target.getInDegree());
-                li.hasPrevious();) {
-            Section section = li.previous();
-
-            if (section == this) {
-                if (li.hasPrevious()) {
-                    return li.previous();
-                } else {
-                    return null;
-                }
-            }
-        }
-
-        logger.error("outPreviousSibling inconsistent graph");
-
-        return null;
     }
 
     //---------//
@@ -1169,45 +909,54 @@ public class BasicSection
                            boolean drawBorders,
                            Color specificColor)
     {
-        Rectangle clip = g.getClipBounds();
-        Rectangle rect = getBounds();
-        Color oldColor = g.getColor();
+        final Rectangle clip = g.getClipBounds();
+        final Rectangle rect = getBounds();
 
-        if ((clip == null) || clip.intersects(rect)) {
-            if (specificColor != null) {
-                g.setColor(specificColor);
-            } else {
-                // Default section color
-                Color color = isVertical() ? Colors.GRID_VERTICAL : Colors.GRID_HORIZONTAL;
-
-                // Use color defined for section glyph shape, if any
-                if (glyph != null) {
-                    Shape shape = glyph.getShape();
-
-                    if (shape != null) {
-                        color = shape.getColor();
-                    }
-                }
-
-                g.setColor(color);
-            }
-
-            // Fill polygon with proper color
-            getPolygon();
-            g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
-
-            // Draw polygon borders if so desired
-            if (drawBorders) {
-                g.setColor(Color.black);
-                g.drawPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
-            }
-
-            g.setColor(oldColor);
-
-            return true;
-        } else {
+        if ((clip != null) && !clip.intersects(rect)) {
             return false;
         }
+
+        // Which color to be used?
+        Color oldColor = g.getColor();
+
+        if (specificColor != null) {
+            if (oldColor != specificColor) {
+                g.setColor(specificColor);
+            }
+        } else {
+            // Default section color
+            Color color = isVertical() ? Colors.GRID_VERTICAL : Colors.GRID_HORIZONTAL;
+
+            //
+            //                // Use color defined for section glyph shape, if any
+            //                if (glyph != null) {
+            //                    Shape shape = glyph.getShape();
+            //
+            //                    if (shape != null) {
+            //                        color = shape.getColor();
+            //                    }
+            //                }
+            //
+            if (color != oldColor) {
+                g.setColor(color);
+            }
+        }
+
+        // Fill polygon
+        getPolygon();
+        g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
+
+        // Draw polygon borders if so desired
+        if (drawBorders) {
+            g.setColor(Color.black);
+            g.drawPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
+        }
+
+        if (g.getColor() != oldColor) {
+            g.setColor(oldColor);
+        }
+
+        return true;
     }
 
     //----------------//
@@ -1245,6 +994,23 @@ public class BasicSection
         this.fat = null;
     }
 
+    //-------------//
+    // setCompound //
+    //-------------//
+    @Override
+    public void setCompound (SectionCompound compound)
+    {
+        if (isVip()) {
+            logger.info("VIP {} linkedTo {}", this, compound);
+
+            if (compound != null) {
+                compound.setVip(true);
+            }
+        }
+
+        this.compound = compound;
+    }
+
     //--------//
     // setFat //
     //--------//
@@ -1263,35 +1029,18 @@ public class BasicSection
         this.firstPos = firstPos;
     }
 
-    //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
-    {
-        if (isVip()) {
-            logger.info("VIP {} linkedTo {}", this, glyph);
-
-            if (glyph != null) {
-                glyph.setVip();
-            }
-        }
-
-        this.glyph = glyph;
-    }
-
-    //----------//
-    // setGraph //
-    //----------//
+    //--------//
+    // setLag //
+    //--------//
     /**
-     * (package access from graph)
+     * (package access from lag?)
      *
      * @param lag the containing lag
      */
     @Override
-    public void setGraph (Lag lag)
+    public void setLag (Lag lag)
     {
-        super.setGraph(lag);
+        this.lag = lag;
 
         if (lag != null) {
             orientation = lag.getOrientation();
@@ -1305,40 +1054,6 @@ public class BasicSection
     public void setProcessed (boolean processed)
     {
         this.processed = processed;
-    }
-
-    //--------//
-    // setVip //
-    //--------//
-    @Override
-    public void setVip ()
-    {
-        vip = true;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("{Section");
-
-        if (orientation != null) {
-            sb.append(isVertical() ? "V" : "H");
-        } else {
-            sb.append("?");
-        }
-
-        sb.append("#").append(getId());
-
-        sb.append(internalsString());
-
-        sb.append("}");
-
-        return sb.toString();
     }
 
     //---------//
@@ -1373,18 +1088,8 @@ public class BasicSection
                     final Rectangle r2 = (that.getOrientation() == Orientation.HORIZONTAL)
                             ? new Rectangle(thatStart, thatPos, thatLength, 1)
                             : new Rectangle(thatPos, thatStart, 1, thatLength);
-                    int x1 = Math.max(r1.x, r2.x);
-                    int x2 = Math.min(r1.x + r1.width, r2.x + r2.width);
-                    int xOver = x2 - x1;
-                    int y1 = Math.max(r1.y, r2.y);
-                    int y2 = Math.min(r1.y + r1.height, r2.y + r2.height);
-                    int yOver = y2 - y1;
 
-                    if ((xOver > 0) && (yOver >= 0)) {
-                        return true;
-                    }
-
-                    if ((xOver >= 0) && (yOver > 0)) {
+                    if (GeoUtil.touch(r1, r2)) {
                         return true;
                     }
 
@@ -1449,18 +1154,15 @@ public class BasicSection
         return poly;
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internals());
 
-        if (oppositeSections != null) {
-            sb.append("/").append(oppositeSections.size());
-        }
-
+        ///sb.append(isVertical() ? "V" : "H");
         //        sb.append(" fPos=")
         //          .append(firstPos)
         //          .append(" ");
@@ -1483,12 +1185,13 @@ public class BasicSection
             sb.append(" fat");
         }
 
-        if (glyph != null) {
-            sb.append(" ").append(glyph.idString());
+        if (compound != null) {
+            sb.append(" compound#").append(compound.getId());
 
-            if (glyph.getShape() != null) {
-                sb.append(":").append(glyph.getShape());
-            }
+            //
+            //            if (glyph.getShape() != null) {
+            //                sb.append(":").append(glyph.getShape());
+            //            }
         }
 
         //        if (system != null) {
@@ -1630,3 +1333,195 @@ public class BasicSection
         }
     }
 }
+//
+//    //---------------------//
+//    // getOppositeSections //
+//    //---------------------//
+//    @Override
+//    public Set<Section> getOppositeSections ()
+//    {
+//        if (oppositeSections != null) {
+//            return Collections.unmodifiableSet(oppositeSections);
+//        } else {
+//            return Collections.emptySet();
+//        }
+//    }
+//
+//    //------------------//
+//    // getLastAdjacency //
+//    //------------------//
+//    @Override
+//    public double getLastAdjacency ()
+//    {
+//        Run run = getLastRun();
+//        int runStart = run.getStart();
+//        int runStop = run.getStop();
+//        int adjacency = 0;
+//
+//        for (Section target : getTargets()) {
+//            Run firstRun = target.getFirstRun();
+//            int start = Math.max(runStart, firstRun.getStart());
+//            int stop = Math.min(runStop, firstRun.getStop());
+//
+//            if (stop >= start) {
+//                adjacency += (stop - start + 1);
+//            }
+//        }
+//
+//        return (double) adjacency / (double) run.getLength();
+//    }
+//
+//
+//    //-------------------//
+//    // getFirstAdjacency //
+//    //-------------------//
+//    @Override
+//    public double getFirstAdjacency ()
+//    {
+//        Run run = getFirstRun();
+//        int runStart = run.getStart();
+//        int runStop = run.getStop();
+//        int adjacency = 0;
+//
+//        for (Section source : getSources()) {
+//            Run lastRun = source.getLastRun();
+//            int start = Math.max(runStart, lastRun.getStart());
+//            int stop = Math.min(runStop, lastRun.getStop());
+//
+//            if (stop >= start) {
+//                adjacency += (stop - start + 1);
+//            }
+//        }
+//
+//        return (double) adjacency / (double) run.getLength();
+//    }
+//
+//
+//    //---------------//
+//    // inNextSibling //
+//    //---------------//
+//    @Override
+//    public Section inNextSibling ()
+//    {
+//        // Check we have sources
+//        if (getInDegree() == 0) {
+//            return null;
+//        }
+//
+//        // Proper source section
+//        Section source = getSources().get(getInDegree() - 1);
+//
+//        // Browse till we get to this as target
+//        for (Iterator<Section> li = source.getTargets().iterator(); li.hasNext();) {
+//            Section section = li.next();
+//
+//            if (section == this) {
+//                if (li.hasNext()) {
+//                    return li.next();
+//                } else {
+//                    return null;
+//                }
+//            }
+//        }
+//
+//        logger.error("inNextSibling inconsistent graph");
+//
+//        return null;
+//    }
+//
+//    //-------------------//
+//    // inPreviousSibling //
+//    //-------------------//
+//    @Override
+//    public Section inPreviousSibling ()
+//    {
+//        if (getInDegree() == 0) {
+//            return null;
+//        }
+//
+//        // Proper source section
+//        Section source = getSources().get(0);
+//
+//        // Browse till we get to this as target
+//        for (ListIterator<Section> li = source.getTargets().listIterator(source.getOutDegree());
+//                li.hasPrevious();) {
+//            Section section = li.previous();
+//
+//            if (section == this) {
+//                if (li.hasPrevious()) {
+//                    return li.previous();
+//                } else {
+//                    return null;
+//                }
+//            }
+//        }
+//
+//        logger.error("inPreviousSibling inconsistent graph");
+//
+//        return null;
+//    }
+//
+//
+//    //----------------//
+//    // outNextSibling //
+//    //----------------//
+//    @Override
+//    public Section outNextSibling ()
+//    {
+//        if (getOutDegree() == 0) {
+//            return null;
+//        }
+//
+//        // Proper target section
+//        Section target = getTargets().get(getOutDegree() - 1);
+//
+//        // Browse till we get to this as source
+//        for (Iterator<Section> li = target.getSources().iterator(); li.hasNext();) {
+//            Section section = li.next();
+//
+//            if (section == this) {
+//                if (li.hasNext()) {
+//                    return li.next();
+//                } else {
+//                    return null;
+//                }
+//            }
+//        }
+//
+//        logger.error("outNextSibling inconsistent graph");
+//
+//        return null;
+//    }
+//
+//    //--------------------//
+//    // outPreviousSibling //
+//    //--------------------//
+//    @Override
+//    public Section outPreviousSibling ()
+//    {
+//        if (getOutDegree() == 0) {
+//            return null;
+//        }
+//
+//        // Proper target section
+//        Section target = getTargets().get(getOutDegree() - 1);
+//
+//        // Browse till we get to this as source
+//        for (ListIterator<Section> li = target.getSources().listIterator(target.getInDegree());
+//                li.hasPrevious();) {
+//            Section section = li.previous();
+//
+//            if (section == this) {
+//                if (li.hasPrevious()) {
+//                    return li.previous();
+//                } else {
+//                    return null;
+//                }
+//            }
+//        }
+//
+//        logger.error("outPreviousSibling inconsistent graph");
+//
+//        return null;
+//    }
+//

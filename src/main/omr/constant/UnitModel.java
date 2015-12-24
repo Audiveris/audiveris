@@ -12,8 +12,8 @@
 package omr.constant;
 
 import omr.sheet.Scale;
-import omr.sheet.Sheet;
-import omr.sheet.ui.SheetsController;
+import omr.sheet.SheetStub;
+import omr.sheet.ui.StubsController;
 
 import omr.ui.treetable.AbstractTreeTableModel;
 import omr.ui.treetable.TreeTableModel;
@@ -326,10 +326,10 @@ public class UnitModel
                     // Compute the equivalent in pixels of this interline-based
                     // fraction, line or area fraction, provided that we have a
                     // current sheet and its scale is available.
-                    Sheet sheet = SheetsController.getCurrentSheet();
+                    SheetStub stub = StubsController.getCurrentStub();
 
-                    if (sheet != null) {
-                        Scale scale = sheet.getScale();
+                    if ((stub != null) && stub.hasSheet()) {
+                        Scale scale = stub.getSheet().getScale();
 
                         if (scale != null) {
                             if (constant instanceof Scale.Fraction) {

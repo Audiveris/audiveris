@@ -11,19 +11,19 @@
 // </editor-fold>
 package omr.sig.inter;
 
-import omr.sig.relation.HeadStemRelation;
-import omr.sig.relation.Relation;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
- * Class {@code HeadChordInter} is a ChordInter composed of heads.
+ * Class {@code HeadChordInter} is a AbstractChordInter composed of heads.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "head-chord")
 public class HeadChordInter
-        extends ChordInter
+        extends AbstractChordInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -40,17 +40,24 @@ public class HeadChordInter
         super(grade);
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private HeadChordInter ()
+    {
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // duplicate //
     //-----------//
     /**
-     * Make a clone of a chord (except for its beams).
+     * Make a clone of a chord (just its heads, not its stem or its beams).
      * <p>
      * This duplication is needed when a chord is shared by two BeamGroups.
      *
      * @param toBlack should we duplicate to black head? (for void head)
-     * @return a clone of this chord (including notes, but beams are not copied)
+     * @return a clone of this chord (including heads, but stem and beams are not copied)
      */
     public HeadChordInter duplicate (boolean toBlack)
     {
@@ -61,9 +68,9 @@ public class HeadChordInter
         setMirror(clone);
 
         clone.setStaff(staff);
-
-        clone.stem = stem.duplicate();
-
+//
+//        clone.stem = stem.duplicate();
+//
         // Notes (we make a deep copy of each note)
         for (AbstractNoteInter note : notes) {
             AbstractNoteInter newHead = null;
@@ -80,20 +87,14 @@ public class HeadChordInter
 
             if (newHead != null) {
                 clone.addMember(newHead);
-
-                // Replicate HeadStem relations
-                for (Relation hs : sig.getRelations(note, HeadStemRelation.class)) {
-                    sig.addEdge(newHead, clone.stem, hs.duplicate());
-                }
+//
+//                // Replicate HeadStem relations
+//                for (Relation hs : sig.getRelations(note, HeadStemRelation.class)) {
+//                    sig.addEdge(newHead, clone.stem, hs.duplicate());
+//                }
             }
         }
 
-        clone.tupletFactor = tupletFactor; /// ??? TODO
-        clone.dotsNumber = dotsNumber; /// ??? TODO
-
-        ///clone.flagsNumber = flagsNumber; // Not sure TODO
-        // Insure correct ordering of chords within their container
-        ///Collections.sort(getParent().getChildren(), chordComparator);
         return clone;
     }
 
@@ -105,4 +106,5 @@ public class HeadChordInter
     {
         return "HeadChord";
     }
+
 }

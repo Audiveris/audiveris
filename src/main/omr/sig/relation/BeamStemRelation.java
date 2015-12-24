@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Line2D;
+import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class {@code BeamStemRelation} implements the geographic link between a beam
@@ -30,7 +31,7 @@ import java.awt.geom.Line2D;
  * @author Hervé Bitteur
  */
 public class BeamStemRelation
-        extends StemConnection
+        extends AbstractStemConnection
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -40,33 +41,18 @@ public class BeamStemRelation
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Which portion of beam is used?. */
+    @XmlAttribute(name = "beam-portion")
     private BeamPortion beamPortion;
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // getBeamPortion //
-    //----------------//
+    //~ Constructors -------------------------------------------------------------------------------
     /**
-     * @return the beamPortion
+     * Creates a new {@code BeamStemRelation} object.
      */
-    public BeamPortion getBeamPortion ()
+    public BeamStemRelation ()
     {
-        return beamPortion;
     }
 
-    //----------------//
-    // getStemPortion //
-    //----------------//
-    @Override
-    public StemPortion getStemPortion (Inter source,
-                                       Line2D stemLine,
-                                       Scale scale)
-    {
-        double midStem = (stemLine.getY1() + stemLine.getY2()) / 2;
-
-        return (anchorPoint.getY() < midStem) ? StemPortion.STEM_TOP : StemPortion.STEM_BOTTOM;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // getXInGapMaximum //
     //------------------//
@@ -89,6 +75,30 @@ public class BeamStemRelation
     public static Scale.Fraction getYGapMaximum ()
     {
         return constants.yGapMax;
+    }
+
+    //----------------//
+    // getBeamPortion //
+    //----------------//
+    /**
+     * @return the beamPortion
+     */
+    public BeamPortion getBeamPortion ()
+    {
+        return beamPortion;
+    }
+
+    //----------------//
+    // getStemPortion //
+    //----------------//
+    @Override
+    public StemPortion getStemPortion (Inter source,
+                                       Line2D stemLine,
+                                       Scale scale)
+    {
+        double midStem = (stemLine.getY1() + stemLine.getY2()) / 2;
+
+        return (extensionPoint.getY() < midStem) ? StemPortion.STEM_TOP : StemPortion.STEM_BOTTOM;
     }
 
     /**

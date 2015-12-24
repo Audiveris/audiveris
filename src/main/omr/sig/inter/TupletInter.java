@@ -13,10 +13,11 @@ package omr.sig.inter;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.math.GeoOrder;
+import omr.math.Rational;
 
 import omr.sheet.DurationFactor;
 import omr.sheet.Scale;
@@ -31,7 +32,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code TupletInter} represents a tuplet sign (3 or 6).
@@ -41,6 +46,7 @@ import java.util.List;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "tuplet")
 public class TupletInter
         extends AbstractNotationInter
 {
@@ -51,7 +57,14 @@ public class TupletInter
     private static final Logger logger = LoggerFactory.getLogger(TupletInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    private final DurationFactor durationFactor;
+    // Factor lazily computed
+    private DurationFactor durationFactor;
+
+    /** Sequence of embraced chords. Lazily computed. */
+    private List<AbstractChordInter> chords;
+
+    /** Base duration. Lazily computed. */
+    private Rational baseDuration;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -66,7 +79,13 @@ public class TupletInter
                          double grade)
     {
         super(glyph, glyph.getBounds(), shape, grade);
-        durationFactor = getFactor(shape);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private TupletInter ()
+    {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -107,6 +126,49 @@ public class TupletInter
         return new TupletInter(glyph, shape, grade);
     }
 
+    //-----------------//
+    // getBaseDuration //
+    //-----------------//
+    public Rational getBaseDuration ()
+    {
+        if (baseDuration == null) {
+            for (Relation rel : sig.getRelations(this, TupletChordRelation.class)) {
+                AbstractChordInter chord = (AbstractChordInter) sig.getOppositeInter(this, rel);
+                Rational rawDur = chord.getDurationSansDotOrTuplet();
+
+                if ((baseDuration == null) || (baseDuration.compareTo(rawDur) > 0)) {
+                    baseDuration = rawDur;
+                }
+            }
+        }
+
+        return baseDuration;
+    }
+
+    //-----------//
+    // getChords //
+    //-----------//
+    /**
+     * Report the sequence of chords embraced by this tuplet.
+     *
+     * @return the left to right sequence of chords
+     */
+    public List<AbstractChordInter> getChords ()
+    {
+        if (chords == null) {
+            List<AbstractChordInter> list = new ArrayList<AbstractChordInter>();
+
+            for (Relation tcRel : sig.getRelations(this, TupletChordRelation.class)) {
+                list.add((AbstractChordInter) sig.getOppositeInter(this, tcRel));
+            }
+
+            Collections.sort(list, Inter.byAbscissa);
+            chords = Collections.unmodifiableList(list);
+        }
+
+        return chords;
+    }
+
     //-------------------//
     // getDurationFactor //
     //-------------------//
@@ -115,6 +177,10 @@ public class TupletInter
      */
     public DurationFactor getDurationFactor ()
     {
+        if (durationFactor == null) {
+            durationFactor = getFactor(shape);
+        }
+
         return durationFactor;
     }
 
@@ -168,10 +234,10 @@ public class TupletInter
 
         private final Scale.Fraction maxTupletChordDx = new Scale.Fraction(
                 3,
-                "Maximum dx between tuplet and closest chord");
+                "Maximum abscissa gap between tuplet and closest chord");
 
         private final Scale.Fraction maxTupletChordDy = new Scale.Fraction(
                 3,
-                "Maximum dy between tuplet and closest chord");
+                "Maximum ordinate gap between tuplet and closest chord");
     }
 }

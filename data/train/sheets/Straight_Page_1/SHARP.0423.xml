@@ -1,57 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="SHARP" interline="15" id="423">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>2.8</pitch-position>
-    <section orientation="VERTICAL" first-pos="1361" id="1917">
-        <run start="840" length="1"/>
-        <run start="840" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1363" id="1918">
-        <run start="838" length="6"/>
-        <run start="838" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1363" id="1919">
-        <run start="854" length="7"/>
-        <run start="854" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1365" id="1920">
-        <run start="827" length="43"/>
-        <run start="827" length="43"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1367" id="1921">
-        <run start="836" length="7"/>
-        <run start="836" length="6"/>
-        <run start="835" length="7"/>
-        <run start="835" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1367" id="1922">
-        <run start="854" length="5"/>
-        <run start="854" length="5"/>
-        <run start="854" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1368" id="1923">
-        <run start="852" length="1"/>
-        <run start="852" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1370" id="1924">
-        <run start="852" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1371" id="1926">
-        <run start="824" length="43"/>
-        <run start="824" length="43"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1373" id="1928">
-        <run start="834" length="7"/>
-        <run start="833" length="8"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1373" id="1929">
-        <run start="850" length="7"/>
-        <run start="850" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1375" id="1932">
-        <run start="853" length="2"/>
-        <run start="853" length="2"/>
-        <run start="854" length="1"/>
-    </section>
-</glyph>
+<sample id="423" interline="15" left="1361" top="824" shape="SHARP">
+    <run-table orientation="VERTICAL" width="17" height="46">
+        <sequences>
+            <item>0 16 1</item>
+            <item>0 16 1</item>
+            <item>0 14 6 10 7</item>
+            <item>0 14 6 10 6</item>
+            <item>0 3 43</item>
+            <item>0 3 43</item>
+            <item>0 12 7 11 5</item>
+            <item>0 12 6 10 1 1 5</item>
+            <item>0 11 7 10 1 1 4</item>
+            <item>0 11 6 11 6</item>
+            <item>43</item>
+            <item>43</item>
+            <item>0 10 7 9 7</item>
+            <item>0 9 8 9 6</item>
+            <item>0 29 2</item>
+            <item>0 29 2</item>
+            <item>0 30 1</item>
+        </sequences>
+    </run-table>
+</sample>

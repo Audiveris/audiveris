@@ -348,8 +348,8 @@ public class Arc
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
 
         sb.append(internals());
         sb.append("}");

@@ -12,10 +12,12 @@
 package omr.script;
 
 import omr.sheet.Book;
+import omr.sheet.ExportPattern;
 import omr.sheet.Sheet;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -32,19 +34,26 @@ public class ExportTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The folder used for exports. */
+    /** The full target file used for export. */
+    @XmlAttribute
+    private File file;
+
+    /** The target folder used for export. */
     @XmlAttribute
     private File folder;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     /**
-     * Create a task to export the related score entities of a sheet
+     * Create a task to export the related score entities of a book, providing either
+     * the full target file or just the target folder (and using default file name).
      *
-     * @param folder the folder for export files
+     * @param file   the full path of export file, or null
+     * @param folder the full path of export folder, or null
      */
-    public ExportTask (File folder)
+    public ExportTask (File file,
+                       File folder)
     {
+        this.file = file;
         this.folder = folder;
     }
 
@@ -61,8 +70,9 @@ public class ExportTask
     public void core (Sheet sheet)
     {
         Book book = sheet.getBook();
-        Path bookPath = (folder != null) ? new File(folder, book.getRadix()).toPath() : null;
-        book.setExportPath(bookPath);
+        Path exportPath = (file != null) ? file.toPath()
+                : ((folder != null) ? Paths.get(folder.toString(), book.getRadix()) : null);
+        book.setExportPathSansExt(ExportPattern.getPathSansExt(exportPath));
         book.export();
     }
 
@@ -74,6 +84,10 @@ public class ExportTask
     {
         StringBuilder sb = new StringBuilder(super.internals());
         sb.append(" export");
+
+        if (file != null) {
+            sb.append(" file=").append(file);
+        }
 
         if (folder != null) {
             sb.append(" folder=").append(folder);

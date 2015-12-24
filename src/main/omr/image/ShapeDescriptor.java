@@ -135,7 +135,7 @@ public class ShapeDescriptor
     // getBounds //
     //-----------//
     /**
-     * Report the descriptor box knowing the symbol box.
+     * Report the descriptor bounds knowing the symbol box.
      *
      * @param symBox the symbol box
      * @return the bounds of containing descriptor

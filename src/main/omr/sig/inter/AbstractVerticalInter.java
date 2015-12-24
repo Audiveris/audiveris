@@ -11,14 +11,24 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.math.AreaUtil;
-import omr.math.Line;
 
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;
+
+import omr.util.Jaxb;
+
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
+
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code AbstractVerticalInter} is the basis for similar vertical inter classes:
@@ -26,16 +36,21 @@ import omr.sig.GradeImpacts;
  *
  * @author Hervé Bitteur
  */
-public class AbstractVerticalInter
+@XmlAccessorType(XmlAccessType.NONE)
+public abstract class AbstractVerticalInter
         extends AbstractInter
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Median line, perhaps not fully straight. */
-    protected final Line median;
-
     /** Line width. */
+    @XmlElement
+    @XmlJavaTypeAdapter(value = Jaxb.Double1Adapter.class, type = double.class)
     protected final double width;
+
+    /** Median line, perhaps not fully straight. */
+    @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
+    protected final Line2D median;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -50,7 +65,7 @@ public class AbstractVerticalInter
     public AbstractVerticalInter (Glyph glyph,
                                   Shape shape,
                                   GradeImpacts impacts,
-                                  Line median,
+                                  Line2D median,
                                   double width)
     {
         super(glyph, null, shape, impacts);
@@ -58,10 +73,7 @@ public class AbstractVerticalInter
         this.width = width;
 
         if (median != null) {
-            setArea(AreaUtil.verticalRibbon(median.toPath(), width));
-
-            // Define precise bounds based on this path
-            setBounds(getArea().getBounds());
+            computeArea();
         }
     }
 
@@ -81,7 +93,7 @@ public class AbstractVerticalInter
     /**
      * @return the median
      */
-    public Line getMedian ()
+    public Line2D getMedian ()
     {
         return median;
     }
@@ -95,6 +107,33 @@ public class AbstractVerticalInter
     public double getWidth ()
     {
         return width;
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled for this object,
+     * but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        if (median != null) {
+            computeArea();
+        }
+    }
+
+    //-------------//
+    // computeArea //
+    //-------------//
+    private void computeArea ()
+    {
+        setArea(AreaUtil.verticalRibbon(new Path2D.Double(median), width));
+
+        // Define precise bounds based on this path
+        setBounds(getArea().getBounds());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

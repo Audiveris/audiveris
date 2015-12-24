@@ -13,6 +13,8 @@ package omr.sig.relation;
 
 import omr.util.HorizontalSide;
 
+import javax.xml.bind.annotation.XmlAttribute;
+
 /**
  * Class {@code EndingBarRelation} connects an ending side with a bar line.
  *
@@ -24,6 +26,7 @@ public class EndingBarRelation
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Which side of ending is used?. */
+    @XmlAttribute(name = "side")
     private final HorizontalSide endingSide;
 
     /** Horizontal delta (in interline) between bar line and ending side. */
@@ -41,6 +44,15 @@ public class EndingBarRelation
     {
         this.endingSide = endingSide;
         this.xDistance = xDistance;
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private EndingBarRelation ()
+    {
+        this.endingSide = null;
+        this.xDistance = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------

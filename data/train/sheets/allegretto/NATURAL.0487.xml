@@ -1,53 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<glyph id="487" interline="22" shape="NATURAL">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>7.2</pitch-position>
-        <section orientation="VERTICAL" id="1535" first-pos="785">
-            <run start="1930" length="8"/>
-        </section>
-        <section orientation="VERTICAL" id="1539" first-pos="786">
-            <run start="1928" length="48"/>
-            <run start="1928" length="48"/>
-        </section>
-        <section orientation="VERTICAL" id="1536" first-pos="785">
-            <run start="1939" length="3"/>
-        </section>
-        <section orientation="VERTICAL" id="1537" first-pos="785">
-            <run start="1943" length="3"/>
-        </section>
-        <section orientation="VERTICAL" id="1538" first-pos="785">
-            <run start="1959" length="4"/>
-        </section>
-        <section orientation="VERTICAL" id="1540" first-pos="788">
-            <run start="1945" length="11"/>
-            <run start="1944" length="11"/>
-            <run start="1944" length="10"/>
-            <run start="1944" length="10"/>
-            <run start="1943" length="10"/>
-            <run start="1943" length="10"/>
-            <run start="1943" length="9"/>
-            <run start="1943" length="9"/>
-            <run start="1942" length="10"/>
-            <run start="1942" length="10"/>
-            <run start="1941" length="10"/>
-        </section>
-        <section orientation="VERTICAL" id="1568" first-pos="799">
-            <run start="1941" length="48"/>
-            <run start="1941" length="48"/>
-            <run start="1944" length="44"/>
-        </section>
-        <section orientation="VERTICAL" id="1541" first-pos="788">
-            <run start="1965" length="11"/>
-            <run start="1966" length="10"/>
-            <run start="1965" length="10"/>
-            <run start="1965" length="10"/>
-            <run start="1965" length="10"/>
-            <run start="1964" length="10"/>
-            <run start="1964" length="10"/>
-            <run start="1964" length="10"/>
-            <run start="1963" length="10"/>
-            <run start="1963" length="10"/>
-            <run start="1963" length="10"/>
-        </section>
-</glyph>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sample id="487" interline="22" left="785" top="1928" shape="NATURAL">
+    <run-table orientation="VERTICAL" width="17" height="61">
+        <sequences>
+            <item>0 2 8 1 3 1 3 13 4</item>
+            <item>48</item>
+            <item>48</item>
+            <item>0 17 11 9 11</item>
+            <item>0 16 11 11 10</item>
+            <item>0 16 10 11 10</item>
+            <item>0 16 10 11 10</item>
+            <item>0 15 10 12 10</item>
+            <item>0 15 10 11 10</item>
+            <item>0 15 9 12 10</item>
+            <item>0 15 9 12 10</item>
+            <item>0 14 10 11 10</item>
+            <item>0 14 10 11 10</item>
+            <item>0 13 10 12 10</item>
+            <item>0 13 48</item>
+            <item>0 13 48</item>
+            <item>0 16 44</item>
+        </sequences>
+    </run-table>
+</sample>

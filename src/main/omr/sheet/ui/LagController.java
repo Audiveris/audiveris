@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.glyph.GlyphNest;
+import omr.glyph.GlyphIndex;
 import omr.glyph.GlyphsModel;
 import omr.glyph.ui.GlyphsController;
 import omr.glyph.ui.NestView;
@@ -59,7 +59,7 @@ public class LagController
                           Lag lag,
                           SheetTab tab)
     {
-        super(new GlyphsModel(sheet, sheet.getGlyphNest(), null));
+        super(new GlyphsModel(sheet, sheet.getGlyphIndex(), null));
         this.lag = lag;
         this.tab = tab;
     }
@@ -76,7 +76,7 @@ public class LagController
         if (view == null) {
             displayFrame();
         } else if (view != null) {
-            view.refresh();
+            view.repaint();
         }
     }
 
@@ -106,9 +106,9 @@ public class LagController
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public MyView (GlyphNest nest)
+        public MyView (GlyphIndex nest)
         {
-            super(nest, Arrays.asList(lag), sheet);
+            super(nest.getEntityService(), Arrays.asList(lag), sheet);
 
             setLocationService(sheet.getLocationService());
 

@@ -24,6 +24,8 @@ import omr.sheet.Scale;
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.TemplateSymbol;
 
+import omr.util.ByteUtil;
+
 import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
@@ -328,7 +330,7 @@ public class Template
         bufBox.grow(dilation, dilation);
 
         final ByteProcessor buf = new ByteProcessor(bufBox.width, bufBox.height);
-        buf.invert();
+        ByteUtil.raz(buf); //buf.invert();
 
         for (Point p : fores) {
             buf.set(p.x + dilation, p.y + dilation, 0);
@@ -437,8 +439,7 @@ public class Template
     // getSymbolBoundsAt //
     //-------------------//
     /**
-     * Report the symbol bounds when positioning anchor
-     * at location (x,y).
+     * Report the symbol bounds when positioning anchor at location (x,y).
      *
      * @param x      abscissa for anchor
      * @param y      ordinate for anchor

@@ -15,11 +15,15 @@ import omr.math.InjectionSolver;
 import omr.math.Population;
 import omr.math.Rational;
 
+import omr.sheet.Part;
 import omr.sheet.Scale;
 import omr.sheet.Staff;
+import omr.sheet.SystemInfo;
 import omr.sheet.beam.BeamGroup;
+import omr.sheet.rhythm.Voice.SlotVoice;
+import static omr.sheet.rhythm.Voice.Status.BEGIN;
 
-import omr.sig.inter.ChordInter;
+import omr.sig.inter.AbstractChordInter;
 
 import omr.util.Navigable;
 
@@ -31,8 +35,13 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code Slot} represents a roughly defined time slot within a measure stack,
@@ -48,29 +57,42 @@ import java.util.TreeMap;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "slot")
 public class Slot
         implements Comparable<Slot>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(Slot.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Slot.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    // Persistent data
+    //----------------
+    //
+    /** Sequential Id unique within the containing stack. Starts at 1. */
+    @XmlAttribute
+    private final int id;
+
+    /** Reference abscissa offset since measure start. */
+    @XmlAttribute(name = "x-offset")
+    private int xOffset;
+
+    /** Time offset since measure start. */
+    @XmlAttribute(name = "start")
+    @XmlJavaTypeAdapter(Rational.Adapter.class)
+    private Rational startTime;
+
+    // Transient data
+    //---------------
+    //
     /** The containing measure stack. */
     @Navigable(false)
     private MeasureStack stack;
 
-    /** Sequential Id unique within the containing stack. Starts at 1. */
-    private final int id;
-
-    /** Reference abscissa offset since measure start. */
-    private int xOffset;
-
     /** Chords incoming into this slot, sorted by ordinate. */
-    private final List<ChordInter> incomings;
-
-    /** Time offset since measure start. */
-    private Rational startTime;
+    private List<AbstractChordInter> incomings;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -82,20 +104,59 @@ public class Slot
      */
     public Slot (int id,
                  MeasureStack stack,
-                 List<ChordInter> incomings)
+                 List<AbstractChordInter> incomings)
     {
         this.id = id;
         this.stack = stack;
-        this.incomings = new ArrayList<ChordInter>(incomings);
+        this.incomings = new ArrayList<AbstractChordInter>(incomings);
 
-        for (ChordInter chord : incomings) {
+        for (AbstractChordInter chord : incomings) {
             chord.setSlot(this);
         }
 
         computeXOffset();
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private Slot ()
+    {
+        this.id = 0;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // afterReload //
+    //-------------//
+    public void afterReload ()
+    {
+        try {
+            // Populate incomings
+            incomings = new ArrayList<AbstractChordInter>();
+
+            final SystemInfo system = stack.getSystem();
+
+            for (Part part : system.getParts()) {
+                final Measure measure = stack.getMeasureAt(part);
+
+                for (Voice voice : measure.getVoices()) {
+                    final SlotVoice slotVoice = voice.getSlotInfo(this);
+
+                    if ((slotVoice != null) && (slotVoice.status == BEGIN)) {
+                        incomings.add(slotVoice.chord);
+
+                        // Forward startTime to incoming chord
+                        slotVoice.chord.setStartTime(startTime);
+                        slotVoice.chord.setSlot(this);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+        }
+    }
+
     //-------------//
     // buildVoices //
     //-------------//
@@ -104,19 +165,19 @@ public class Slot
      *
      * @param freeEndings the chords that end right at this slot, with their voice available.
      */
-    public void buildVoices (List<ChordInter> freeEndings)
+    public void buildVoices (List<AbstractChordInter> freeEndings)
     {
         logger.debug("incomings={}", incomings);
 
         // Sort incoming chords vertically
-        Collections.sort(incomings, ChordInter.byOrdinate);
+        Collections.sort(incomings, AbstractChordInter.byOrdinate);
 
-        List<ChordInter> rookies = new ArrayList<ChordInter>();
+        List<AbstractChordInter> rookies = new ArrayList<AbstractChordInter>();
 
         // Some chords already have their voice assigned
-        for (ChordInter ch : incomings) {
+        for (AbstractChordInter ch : incomings) {
             if (ch.getVoice() != null) {
-                // This pseudo-reassign is needed to populate the voice slotTable (???)
+                // This pseudo-reassign seems needed to populate the voice slotTable (???)
                 ch.setVoice(ch.getVoice());
             } else {
                 rookies.add(ch);
@@ -145,7 +206,7 @@ public class Slot
                     Voice voice = freeEndings.get(index).getVoice();
                     logger.debug("Slot#{} Reusing voice#{}", getId(), voice.getId());
 
-                    ChordInter ch = rookies.get(i);
+                    AbstractChordInter ch = rookies.get(i);
 
                     try {
                         ch.setVoice(voice);
@@ -177,24 +238,6 @@ public class Slot
         return Double.compare(xOffset, other.xOffset);
     }
 
-    public void computeXOffset ()
-    {
-        // Compute slot refPoint as average of chords centers
-        Population xPop = new Population();
-        Population yPop = new Population();
-
-        for (ChordInter chord : incomings) {
-            Point center = chord.getCenter();
-            xPop.includeValue(center.x);
-            yPop.includeValue(center.y);
-        }
-
-        Point2D ref = new Point2D.Double(xPop.getMeanValue(), yPop.getMeanValue());
-
-        // Store abscissa offset WRT measure stack left border
-        xOffset = (int) Math.rint(stack.getXOffset(ref));
-    }
-
     //-------------------//
     // getChordJustAbove //
     //-------------------//
@@ -204,20 +247,20 @@ public class Slot
      * @param point the given point
      * @return the chord above, or null
      */
-    public ChordInter getChordJustAbove (Point2D point)
+    public AbstractChordInter getChordJustAbove (Point2D point)
     {
-        ChordInter chordAbove = null;
+        AbstractChordInter chordAbove = null;
 
         // Staff at or above point
         Staff staff = stack.getSystem().getStaffAtOrAbove(point);
 
         if (staff != null) {
             // We look for the chord just above
-            for (ChordInter chord : getChords()) {
+            for (AbstractChordInter chord : getChords()) {
                 Point head = chord.getHeadLocation();
 
                 if ((head != null) && (head.y < point.getY())) {
-                    if (chord.getStaff() == staff) {
+                    if (chord.getBottomStaff() == staff) {
                         chordAbove = chord;
                     }
                 } else {
@@ -238,17 +281,17 @@ public class Slot
      * @param point the given point
      * @return the chord below, or null
      */
-    public ChordInter getChordJustBelow (Point2D point)
+    public AbstractChordInter getChordJustBelow (Point2D point)
     {
         // Staff at or below point
         Staff staff = stack.getSystem().getStaffAtOrBelow(point);
 
         if (staff != null) {
             // We look for the chord just below
-            for (ChordInter chord : getChords()) {
+            for (AbstractChordInter chord : getChords()) {
                 Point head = chord.getHeadLocation();
 
-                if ((head != null) && (head.y > point.getY()) && (chord.getStaff() == staff)) {
+                if ((head != null) && (head.y > point.getY()) && (chord.getTopStaff() == staff)) {
                     return chord;
                 }
             }
@@ -258,67 +301,6 @@ public class Slot
         return null;
     }
 
-    //
-    //    //-------------------//
-    //    // getChordJustAbove //
-    //    //-------------------//
-    //    /**
-    //     * Report the chord which is in staff just above the given point in this slot.
-    //     *
-    //     * @param point the given point
-    //     * @return the chord above, or null
-    //     */
-    //    public ChordInter getChordJustAbove (Point point)
-    //    {
-    //        ChordInter chordAbove = null;
-    //
-    //        // Staff at or above point
-    //        Staff targetStaff = stack.getPart().getStaffJustAbove(point);
-    //
-    //        // We look for the chord just above
-    //        for (ChordInter chord : getChords()) {
-    //            Point head = chord.getHeadLocation();
-    //
-    //            if ((head != null) && (head.y < point.y)) {
-    //                if (chord.getStaff() == targetStaff) {
-    //                    chordAbove = chord;
-    //                }
-    //            } else {
-    //                break; // Since slot chords are sorted from top to bottom
-    //            }
-    //        }
-    //
-    //        return chordAbove;
-    //    }
-    //
-    //    //-------------------//
-    //    // getChordJustBelow //
-    //    //-------------------//
-    //    /**
-    //     * Report the chord which is in staff just below the given point
-    //     * in this slot.
-    //     *
-    //     * @param point the given point
-    //     * @return the chord below, or null
-    //     */
-    //    public ChordInter getChordJustBelow (Point point)
-    //    {
-    //        // Staff at or below
-    //        Staff targetStaff = stack.getPart().getStaffJustBelow(point);
-    //
-    //        // We look for the chord just below
-    //        for (ChordInter chord : getChords()) {
-    //            Point head = chord.getHeadLocation();
-    //
-    //            if ((head != null) && (head.y > point.y) && (chord.getStaff() == targetStaff)) {
-    //                return chord;
-    //            }
-    //        }
-    //
-    //        // Not found
-    //        return null;
-    //    }
-    //
     //-----------//
     // getChords //
     //-----------//
@@ -327,7 +309,7 @@ public class Slot
      *
      * @return the collection of chords
      */
-    public List<ChordInter> getChords ()
+    public List<AbstractChordInter> getChords ()
     {
         return incomings;
     }
@@ -342,12 +324,12 @@ public class Slot
      * @param bottom lower point of range
      * @return the collection of chords, which may be empty
      */
-    public List<ChordInter> getEmbracedChords (Point top,
-                                               Point bottom)
+    public List<AbstractChordInter> getEmbracedChords (Point top,
+                                                       Point bottom)
     {
-        List<ChordInter> embracedChords = new ArrayList<ChordInter>();
+        List<AbstractChordInter> embracedChords = new ArrayList<AbstractChordInter>();
 
-        for (ChordInter chord : getChords()) {
+        for (AbstractChordInter chord : getChords()) {
             if (chord.isEmbracedBy(top, bottom)) {
                 embracedChords.add(chord);
             }
@@ -436,14 +418,14 @@ public class Slot
             this.startTime = startTime;
 
             // Assign to all chords of this slot first
-            for (ChordInter chord : incomings) {
+            for (AbstractChordInter chord : incomings) {
                 if (!chord.setStartTime(startTime)) {
                     failed = true;
                 }
             }
 
             // Then, extend this information through the beamed chords if any
-            for (ChordInter chord : incomings) {
+            for (AbstractChordInter chord : incomings) {
                 BeamGroup group = chord.getBeamGroup();
 
                 if (group != null) {
@@ -455,14 +437,12 @@ public class Slot
             for (Voice voice : stack.getVoices()) {
                 voice.updateSlotTable();
             }
-        } else {
-            if (!this.startTime.equals(startTime)) {
-                logger.warn(
-                        "Reassigning startTime from " + this.startTime + " to " + startTime + " in "
-                        + this);
+        } else if (!this.startTime.equals(startTime)) {
+            logger.warn(
+                    "Reassigning startTime from " + this.startTime + " to " + startTime + " in "
+                    + this);
 
-                failed = true;
-            }
+            failed = true;
         }
 
         return !failed;
@@ -489,7 +469,7 @@ public class Slot
 
         boolean started = false;
 
-        for (ChordInter chord : getChords()) {
+        for (AbstractChordInter chord : getChords()) {
             if (started) {
                 sb.append(",");
             }
@@ -510,7 +490,7 @@ public class Slot
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Slot#").append(id);
+        sb.append("Slot{#").append(id);
 
         sb.append(" xOffset=").append(xOffset);
 
@@ -520,7 +500,7 @@ public class Slot
 
         sb.append(" incomings=[");
 
-        for (ChordInter chord : incomings) {
+        for (AbstractChordInter chord : incomings) {
             sb.append("#").append(chord.getId());
         }
 
@@ -541,69 +521,92 @@ public class Slot
      */
     public String toVoiceString ()
     {
+        logger.warn("HB to be reimplemented");
+
         StringBuilder sb = new StringBuilder();
-        sb.append("slot#").append(getId()).append(" start=")
-                .append(String.format("%5s", getStartTime())).append(" [");
 
-        SortedMap<Integer, ChordInter> voiceChords = new TreeMap<Integer, ChordInter>();
-
-        for (ChordInter chord : getChords()) {
-            voiceChords.put(chord.getVoice().getId(), chord);
-        }
-
-        boolean started = false;
-        int voiceMax = stack.getVoiceCount();
-
-        for (int iv = 1; iv <= voiceMax; iv++) {
-            if (started) {
-                sb.append(", ");
-            } else {
-                started = true;
-            }
-
-            ChordInter chord = voiceChords.get(iv);
-
-            if (chord != null) {
-                sb.append("V").append(chord.getVoice().getId());
-                sb.append(" Ch#").append(String.format("%02d", chord.getId()));
-                sb.append(" St").append(chord.getStaff().getId());
-                sb.append(" Dur=").append(String.format("%5s", chord.getDuration()));
-            } else {
-                sb.append("----------------------");
-            }
-        }
-
-        sb.append("]");
-
+        //        sb.append("slot#").append(getId()).append(" start=")
+        //                .append(String.format("%5s", getStartTime())).append(" [");
+        //
+        //        SortedMap<Integer, AbstractChordInter> voiceChords = new TreeMap<Integer, AbstractChordInter>();
+        //
+        //        for (AbstractChordInter chord : getChords()) {
+        //            voiceChords.put(chord.getVoice().getId(), chord);
+        //        }
+        //
+        //        boolean started = false;
+        //        int voiceMax = stack.getVoiceCount();
+        //
+        //        for (int iv = 1; iv <= voiceMax; iv++) {
+        //            if (started) {
+        //                sb.append(", ");
+        //            } else {
+        //                started = true;
+        //            }
+        //
+        //            AbstractChordInter chord = voiceChords.get(iv);
+        //
+        //            if (chord != null) {
+        //                sb.append("V").append(chord.getVoice().getId());
+        //                sb.append(" Ch#").append(String.format("%02d", chord.getId()));
+        //                sb.append(" St").append(chord.getTopStaff().getId());
+        //
+        //                if (chord.getBottomStaff() != chord.getTopStaff()) {
+        //                    sb.append("-").append(chord.getBottomStaff().getId());
+        //                }
+        //
+        //                sb.append(" Dur=").append(String.format("%5s", chord.getDuration()));
+        //            } else {
+        //                sb.append("----------------------");
+        //            }
+        //        }
+        //
+        //        sb.append("]");
         return sb.toString();
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled
+     * for this object, but before this object is set to the parent object.
+     */
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        stack = (MeasureStack) parent;
     }
 
     //--------------//
     // assignVoices //
     //--------------//
     /**
-     * Assign available voices to the chords that have yet no voice assigned.
+     * Assign available voices to the chords that have no voice assigned yet.
      */
     private void assignVoices ()
     {
         // Assign remaining non-mapped chords, using first voice available
         // with staff continuity whenever possible
-        for (ChordInter chord : incomings) {
+        for (AbstractChordInter chord : incomings) {
             // Process only the chords that have no voice assigned yet
             if (chord.getVoice() != null) {
                 continue;
             }
 
+            final Part part = chord.getPart();
+            final Measure measure = stack.getMeasureAt(part);
+
             // Try to reuse an existing voice (within same staff if possible)
-            for (Voice voice : stack.getVoices()) {
+            for (Voice voice : measure.getVoices()) {
                 if (voice.isFree(this)) {
                     // If we have more than one incoming,
                     // avoid migrating a voice from one staff to another
-                    ChordInter latestVoiceChord = voice.getChordBefore(this);
+                    AbstractChordInter latestVoiceChord = voice.getChordBefore(this);
 
                     if (latestVoiceChord != null) {
                         if ((incomings.size() > 1)
-                            && (latestVoiceChord.getStaff() != chord.getStaff())) {
+                            && (latestVoiceChord.getTopStaff() != chord.getTopStaff())) {
                             continue;
                         }
 
@@ -613,7 +616,7 @@ public class Slot
                         Rational delta = startTime.minus(latestVoiceChord.getEndTime());
 
                         if (delta.compareTo(Rational.ZERO) > 0) {
-                            logger.debug("{} {} {} time hole: {}", stack, this, voice, delta);
+                            logger.debug("{} {} {} time hole: {}", measure, this, voice, delta);
                         }
                     }
 
@@ -625,12 +628,33 @@ public class Slot
 
             // No compatible voice found, let's create a new one
             if (chord.getVoice() == null) {
-                logger.debug("{} Slot#{} creating voice for Ch#{}", stack, id, chord.getId());
+                logger.debug("{} Slot#{} creating voice for Ch#{}", measure, id, chord.getId());
 
                 // Add a new voice
-                stack.getVoices().add(new Voice(chord, chord.getMeasure()));
+                measure.addVoice(new Voice(chord, chord.getMeasure()));
             }
         }
+    }
+
+    //----------------//
+    // computeXOffset //
+    //----------------//
+    private void computeXOffset ()
+    {
+        // Compute slot refPoint as average of chords centers
+        Population xPop = new Population();
+        Population yPop = new Population();
+
+        for (AbstractChordInter chord : incomings) {
+            Point center = chord.getCenter();
+            xPop.includeValue(center.x);
+            yPop.includeValue(center.y);
+        }
+
+        Point2D ref = new Point2D.Double(xPop.getMeanValue(), yPop.getMeanValue());
+
+        // Store abscissa offset WRT measure stack left border
+        xOffset = (int) Math.rint(stack.getXOffset(ref));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -652,15 +676,15 @@ public class Slot
         private static final int INCOMPATIBLE_VOICES = 10000; // Forbidden
 
         //~ Instance fields ------------------------------------------------------------------------
-        private final List<ChordInter> news;
+        private final List<AbstractChordInter> news;
 
-        private final List<ChordInter> olds;
+        private final List<AbstractChordInter> olds;
 
         private final Scale scale;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public MyDistance (List<ChordInter> news,
-                           List<ChordInter> olds,
+        public MyDistance (List<AbstractChordInter> news,
+                           List<AbstractChordInter> olds,
                            Scale scale)
         {
             this.news = news;
@@ -678,33 +702,38 @@ public class Slot
                 return NO_LINK;
             }
 
-            ChordInter newChord = news.get(in);
-            ChordInter oldChord = olds.get(ip);
+            AbstractChordInter newChord = news.get(in);
+            AbstractChordInter oldChord = olds.get(ip);
 
+            // Different assigned voices?
             if ((newChord.getVoice() != null)
                 && (oldChord.getVoice() != null)
                 && (newChord.getVoice() != oldChord.getVoice())) {
                 return INCOMPATIBLE_VOICES;
-            } else if (newChord.getStaff() != oldChord.getStaff()) {
-                // Different staves, but are they in same part?
-                if (newChord.getStaff().getPart() != oldChord.getStaff().getPart()) {
+            }
+
+            // Different staves? (beware: some chords embrace two staves, hence we use topStaff)
+            if (newChord.getTopStaff() != oldChord.getTopStaff()) {
+                // Different (top) staves, but are they in same part?
+                if (newChord.getPart() != oldChord.getPart()) {
                     return INCOMPATIBLE_VOICES;
                 } else {
                     return STAFF_DIFF;
                 }
-            } else {
-                int ds = 0;
-                BeamGroup group = oldChord.getBeamGroup();
-
-                if ((group != null) && group.isMultiStaff()) {
-                    ds = NEW_IN_STAFF;
-                }
-
-                int dy = Math.abs(newChord.getHeadLocation().y - oldChord.getHeadLocation().y) / scale.getInterline();
-                int dStem = Math.abs(newChord.getStemDir() - oldChord.getStemDir());
-
-                return ds + dy + (2 * dStem);
             }
+
+            // Same staff
+            int ds = 0;
+            BeamGroup group = oldChord.getBeamGroup();
+
+            if ((group != null) && group.isMultiStaff()) {
+                ds = NEW_IN_STAFF;
+            }
+
+            int dy = Math.abs(newChord.getHeadLocation().y - oldChord.getHeadLocation().y) / scale.getInterline();
+            int dStem = Math.abs(newChord.getStemDir() - oldChord.getStemDir());
+
+            return ds + dy + (2 * dStem);
         }
     }
 }

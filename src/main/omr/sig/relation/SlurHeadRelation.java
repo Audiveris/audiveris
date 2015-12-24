@@ -19,6 +19,8 @@ import omr.util.HorizontalSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.XmlAttribute;
+
 /**
  * Class {@code SlurHeadRelation} represents a link between a slur and one of the two
  * embraced note heads.
@@ -37,20 +39,12 @@ public class SlurHeadRelation
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(SlurHeadRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SlurHeadRelation.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //    private static final double[] IN_WEIGHTS = new double[]{
-    //        constants.xInWeight.getValue(),
-    //        constants.yWeight.getValue()
-    //    };
-    //
-    //    private static final double[] OUT_WEIGHTS = new double[]{
-    //        constants.xOutWeight.getValue(),
-    //        constants.yWeight.getValue()
-    //    };
-    //
     /** Left or right side of the slur. */
+    @XmlAttribute(name = "side")
     private final HorizontalSide side;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -62,6 +56,14 @@ public class SlurHeadRelation
     public SlurHeadRelation (HorizontalSide side)
     {
         this.side = side;
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private SlurHeadRelation ()
+    {
+        this.side = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------

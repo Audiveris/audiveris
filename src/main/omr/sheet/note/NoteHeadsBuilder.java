@@ -14,10 +14,11 @@ package omr.sheet.note;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Symbol;
 
 import omr.image.Anchored.Anchor;
 import static omr.image.Anchored.Anchor.*;
@@ -41,7 +42,6 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
-import omr.sheet.grid.FilamentLine;
 import omr.sheet.grid.LineInfo;
 
 import omr.sig.GradeImpacts;
@@ -56,9 +56,9 @@ import omr.sig.inter.SmallVoidHeadInter;
 import omr.sig.inter.SmallWholeInter;
 import omr.sig.inter.VoidHeadInter;
 import omr.sig.inter.WholeInter;
-import omr.sig.relation.Exclusion;
 
 import omr.util.Dumping;
+import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.StopWatch;
@@ -81,7 +81,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 
 /**
  * Class {@code NoteHeadsBuilder} retrieves the void note heads, the black note heads,
@@ -116,8 +115,8 @@ public class NoteHeadsBuilder
             Arrays.asList(
                     Shape.THICK_BARLINE,
                     Shape.THIN_BARLINE,
-                    Shape.THICK_CONNECTION,
-                    Shape.THIN_CONNECTION,
+                    Shape.THICK_CONNECTOR,
+                    Shape.THIN_CONNECTOR,
                     Shape.BEAM,
                     Shape.BEAM_HOOK,
                     Shape.BEAM_SMALL,
@@ -214,9 +213,9 @@ public class NoteHeadsBuilder
     {
         StopWatch watch = new StopWatch("buildNotes S#" + system.getId());
         systemCompetitors = getSystemCompetitors(); // Competitors
-        systemSeeds = system.lookupShapedGlyphs(Shape.VERTICAL_SEED); // Vertical seeds
-        Collections.sort(systemSeeds, Glyph.byOrdinate);
-        Collections.sort(systemSpots, Glyph.byOrdinate);
+        systemSeeds = system.lookupGroupedGlyphs(Symbol.Group.VERTICAL_SEED); // Vertical seeds
+        Collections.sort(systemSeeds, Glyphs.byOrdinate);
+        Collections.sort(systemSpots, Glyphs.byOrdinate);
 
         image = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
 
@@ -248,6 +247,11 @@ public class NoteHeadsBuilder
 
             if (duplicates > 0) {
                 logger.debug("Staff#{} {} duplicates", staff.getId(), duplicates);
+            }
+
+            // Keep created heads in staff
+            for (Inter inter : ch) {
+                staff.addNote((AbstractHeadInter) inter);
             }
         }
 
@@ -329,7 +333,7 @@ public class NoteHeadsBuilder
     private int[] computeXOffsets ()
     {
         // Use a window as wide as maxStem value, ensure odd value
-        int length = sheet.getMaxStem();
+        int length = sheet.getScale().getMaxStem();
 
         if ((length % 2) == 0) {
             length++;
@@ -382,22 +386,22 @@ public class NoteHeadsBuilder
 
         switch (desc.getShape()) {
         case NOTEHEAD_BLACK:
-            return new BlackHeadInter(desc, pivot, anchor, box, impacts, staff, pitch);
+            return new BlackHeadInter(pivot, anchor, box, impacts, staff, pitch);
 
         case NOTEHEAD_BLACK_SMALL:
-            return new SmallBlackHeadInter(desc, pivot, anchor, box, impacts, staff, pitch);
+            return new SmallBlackHeadInter(pivot, anchor, box, impacts, staff, pitch);
 
         case NOTEHEAD_VOID:
-            return new VoidHeadInter(desc, pivot, anchor, box, impacts, staff, pitch);
+            return new VoidHeadInter(pivot, anchor, box, impacts, staff, pitch);
 
         case NOTEHEAD_VOID_SMALL:
-            return new SmallVoidHeadInter(desc, pivot, anchor, box, impacts, staff, pitch);
+            return new SmallVoidHeadInter(pivot, anchor, box, impacts, staff, pitch);
 
         case WHOLE_NOTE:
-            return new WholeInter(desc, pivot, anchor, box, impacts, staff, pitch);
+            return new WholeInter(pivot, anchor, box, impacts, staff, pitch);
 
         case WHOLE_NOTE_SMALL:
-            return new SmallWholeInter(desc, pivot, anchor, box, impacts, staff, pitch);
+            return new SmallWholeInter(pivot, anchor, box, impacts, staff, pitch);
         }
 
         logger.error("No root shape for " + desc.getShape());
@@ -430,35 +434,6 @@ public class NoteHeadsBuilder
         return filtered;
     }
 
-    //--------------//
-    // flagOverlaps //
-    //--------------//
-    /**
-     * In the provided list of note interpretations, detect and flag as
-     * such the overlapping ones.
-     *
-     * @param inters the provided interpretations (for a staff)
-     */
-    private void flagOverlaps (List<Inter> inters)
-    {
-        for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
-            Inter left = inters.get(i);
-            Rectangle box = left.getBounds();
-            Rectangle2D smallBox = AbstractHeadInter.shrink(box);
-            double xMax = smallBox.getMaxX();
-
-            for (Inter right : inters.subList(i + 1, inters.size())) {
-                Rectangle rightBox = right.getBounds();
-
-                if (smallBox.intersects(rightBox)) {
-                    sig.insertExclusion(left, right, Exclusion.Cause.OVERLAP);
-                } else if (rightBox.x > xMax) {
-                    break;
-                }
-            }
-        }
-    }
-
     //---------------------//
     // getCompetitorsSlice //
     //---------------------//
@@ -470,7 +445,10 @@ public class NoteHeadsBuilder
      */
     private List<Inter> getCompetitorsSlice (Area area)
     {
-        List<Inter> rawComps = sig.intersectedInters(systemCompetitors, GeoOrder.BY_ORDINATE, area);
+        List<Inter> rawComps = SIGraph.intersectedInters(
+                systemCompetitors,
+                GeoOrder.BY_ORDINATE,
+                area);
 
         // Keep only the "good" competitors
         List<Inter> kept = new ArrayList<Inter>();
@@ -502,7 +480,7 @@ public class NoteHeadsBuilder
                                         Area area)
     {
         List<Glyph> slice = new ArrayList<Glyph>(Glyphs.intersectedGlyphs(glyphs, area));
-        Collections.sort(slice, Glyph.byAbscissa);
+        Collections.sort(slice, Glyphs.byAbscissa);
 
         return slice;
     }
@@ -533,7 +511,7 @@ public class NoteHeadsBuilder
         int p = dir * 4;
 
         for (int i = dir;; i += dir) {
-            SortedSet<LedgerInter> set = staff.getLedgers(i);
+            List<LedgerInter> set = staff.getLedgers(i);
 
             if ((set == null) || set.isEmpty()) {
                 break;
@@ -566,13 +544,13 @@ public class NoteHeadsBuilder
     {
         List<Inter> comps = sig.inters(
                 new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        return inter.isGood() && competingShapes.contains(inter.getShape());
-                    }
-                });
+        {
+            @Override
+            public boolean check (Inter inter)
+            {
+                return inter.isGood() && competingShapes.contains(inter.getShape());
+            }
+        });
 
         Collections.sort(comps, Inter.byOrdinate);
 
@@ -676,7 +654,7 @@ public class NoteHeadsBuilder
         int pitch = -5; // Current pitch
         LineAdapter prevAdapter = null;
 
-        for (FilamentLine line : staff.getLines()) {
+        for (LineInfo line : staff.getLines()) {
             LineAdapter adapter = new StaffLineAdapter(staff, line);
 
             // Look above line
@@ -698,7 +676,7 @@ public class NoteHeadsBuilder
             pitch = dir * 4;
 
             for (int i = dir;; i += dir) {
-                SortedSet<LedgerInter> set = staff.getLedgers(i);
+                List<LedgerInter> set = staff.getLedgers(i);
 
                 if ((set == null) || set.isEmpty()) {
                     break;
@@ -903,8 +881,8 @@ public class NoteHeadsBuilder
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{");
-            sb.append(getClass().getSimpleName());
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
 
             if (point != null) {
                 sb.append(" point:(").append(point.x).append(",").append(point.y).append(")");
@@ -1022,7 +1000,7 @@ public class NoteHeadsBuilder
         @Override
         public double yAt (double x)
         {
-            return LineUtil.intersectionAtX(left, right, x).getY();
+            return LineUtil.yAtX(left, right, x);
         }
     }
 
@@ -1261,13 +1239,10 @@ public class NoteHeadsBuilder
                         return (int) Math.rint(line.yAt((double) x) - (scale.getInterline() / 2d));
                     }
                 }
+            } else if (line2 != null) {
+                return (int) Math.rint((line.yAt((double) x) + line2.yAt((double) x)) / 2d);
             } else {
-                // Within staff lines, compute ordinate precisely
-                if (line2 != null) {
-                    return (int) Math.rint((line.yAt((double) x) + line2.yAt((double) x)) / 2d);
-                } else {
-                    return line.yAt(x);
-                }
+                return line.yAt(x);
             }
         }
 
@@ -1358,7 +1333,7 @@ public class NoteHeadsBuilder
             inters = filterSeedConflicts(inters, competitors);
 
             for (AbstractHeadInter inter : inters) {
-                inter.retrieveGlyph(image, sheet.getGlyphNest());
+                inter.retrieveGlyph(image, sheet.getInterline(), sheet.getGlyphIndex());
                 sig.addVertex(inter);
             }
 
@@ -1387,8 +1362,7 @@ public class NoteHeadsBuilder
                 int yLine = line.yAt(x0); // Rather good line y value
                 final Point2D top = seed.getStartPoint(Orientation.VERTICAL);
                 final Point2D bot = seed.getStopPoint(Orientation.VERTICAL);
-                final Point2D pt = LineUtil.intersectionAtY(top, bot, yLine);
-                x0 = (int) Math.rint(pt.getX()); // Precise x value
+                x0 = (int) Math.rint(LineUtil.xAtY(top, bot, yLine)); // Precise x value
 
                 final int y0 = getTheoreticalOrdinate(x0); // Precise y value
 
@@ -1432,7 +1406,10 @@ public class NoteHeadsBuilder
                                     pitch);
 
                             if (inter != null) {
-                                inter.retrieveGlyph(image, sheet.getGlyphNest());
+                                inter.retrieveGlyph(
+                                        image,
+                                        sheet.getInterline(),
+                                        sheet.getGlyphIndex());
                                 sig.addVertex(inter);
                                 inters.add(inter);
                             }
@@ -1471,9 +1448,7 @@ public class NoteHeadsBuilder
         public Area getArea (double above,
                              double below)
         {
-            FilamentLine fLine = (FilamentLine) line;
-            NaturalSpline spline = fLine.getFilament().getAlignment().getLine();
-
+            NaturalSpline spline = line.getSpline();
             GeoPath path = new GeoPath();
             AffineTransform at;
 
@@ -1493,13 +1468,13 @@ public class NoteHeadsBuilder
         @Override
         public int getLeftAbscissa ()
         {
-            return (int) Math.floor(line.getLeftPoint().getX());
+            return (int) Math.floor(line.getEndPoint(LEFT).getX());
         }
 
         @Override
         public int getRightAbscissa ()
         {
-            return (int) Math.floor(line.getRightPoint().getX());
+            return (int) Math.floor(line.getEndPoint(RIGHT).getX());
         }
 
         @Override
@@ -1515,3 +1490,33 @@ public class NoteHeadsBuilder
         }
     }
 }
+//
+//    //--------------//
+//    // flagOverlaps //
+//    //--------------//
+//    /**
+//     * In the provided list of note interpretations, detect and flag as
+//     * such the overlapping ones.
+//     *
+//     * @param inters the provided interpretations (for a staff)
+//     */
+//    private void flagOverlaps (List<Inter> inters)
+//    {
+//        for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
+//            Inter left = inters.get(i);
+//            Rectangle box = left.getBounds();
+//            Rectangle2D smallBox = AbstractHeadInter.shrink(box);
+//            double xMax = smallBox.getMaxX();
+//
+//            for (Inter right : inters.subList(i + 1, inters.size())) {
+//                Rectangle rightBox = right.getBounds();
+//
+//                if (smallBox.intersects(rightBox)) {
+//                    sig.insertExclusion(left, right, Exclusion.Cause.OVERLAP);
+//                } else if (rightBox.x > xMax) {
+//                    break;
+//                }
+//            }
+//        }
+//    }
+//

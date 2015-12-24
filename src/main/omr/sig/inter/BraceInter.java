@@ -11,14 +11,17 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code BraceInter} represents a brace.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "brace")
 public class BraceInter
         extends AbstractInter
 {
@@ -34,6 +37,14 @@ public class BraceInter
                        double grade)
     {
         super(glyph, null, Shape.BRACE, grade);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private BraceInter ()
+    {
+        super(null, null, null, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

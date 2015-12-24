@@ -23,7 +23,6 @@ import omr.math.IntegerHistogram;
 
 import omr.run.Orientation;
 import omr.run.Run;
-import omr.run.RunSequence;
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -31,6 +30,7 @@ import omr.sheet.HistogramPlotter;
 import omr.sheet.PageCleaner;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
+import omr.sheet.Scale.StemScale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -50,6 +50,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -110,7 +111,7 @@ public class StemScaler
     public void displayChart ()
     {
         if (histoKeeper == null) {
-            retrieveStem();
+            retrieveStemWidth();
         }
 
         if (histoKeeper != null) {
@@ -120,15 +121,15 @@ public class StemScaler
         }
     }
 
-    //--------------//
-    // retrieveStem //
-    //--------------//
+    //-------------------//
+    // retrieveStemWidth //
+    //-------------------//
     /**
      * Retrieve the global stem thickness for the sheet.
      *
      * @return the stem scale data
      */
-    public StemScale retrieveStem ()
+    public StemScale retrieveStemWidth ()
     {
         StopWatch watch = new StopWatch("Stem scaler for " + sheet.getId());
 
@@ -143,7 +144,7 @@ public class StemScaler
             watch.start("stem retrieval");
 
             RunTableFactory runFactory = new RunTableFactory(Orientation.HORIZONTAL);
-            RunTable horiTable = runFactory.createTable("horiRuns", buffer);
+            RunTable horiTable = runFactory.createTable(buffer);
             histoKeeper = new HistoKeeper(picture.getWidth() - 1);
             histoKeeper.buildHistograms(horiTable, picture.getHeight());
 
@@ -189,11 +190,10 @@ public class StemScaler
         BufferedImage img = buf.getBufferedImage();
         StemsCleaner eraser = new StemsCleaner(buf, img.createGraphics(), sheet);
         eraser.eraseShapes(
-                Arrays.asList(
-                        Shape.THICK_BARLINE,
-                        Shape.THICK_CONNECTION,
-                        Shape.THIN_BARLINE,
-                        Shape.THIN_CONNECTION));
+                Arrays.asList(Shape.THICK_BARLINE,
+                              Shape.THICK_CONNECTOR,
+                              Shape.THIN_BARLINE,
+                              Shape.THIN_CONNECTOR));
         buf = new ByteProcessor(img);
         buf.threshold(127); // Binarize
 
@@ -313,9 +313,9 @@ public class StemScaler
                                       int height)
         {
             for (int y = 0; y < height; y++) {
-                RunSequence runSeq = horiTable.getSequence(y);
+                for (Iterator<Run> it = horiTable.iterator(y); it.hasNext();) {
+                    Run run = it.next();
 
-                for (Run run : runSeq) {
                     // Process this foreground run
                     int foreLength = run.getLength();
 

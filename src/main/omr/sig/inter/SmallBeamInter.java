@@ -12,17 +12,19 @@
 package omr.sig.inter;
 
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.sig.GradeImpacts;
 
 import java.awt.geom.Line2D;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code SmallBeamInter} represents a small (cue) beam.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "small-beam")
 public class SmallBeamInter
         extends AbstractBeamInter
 {
@@ -31,16 +33,22 @@ public class SmallBeamInter
     /**
      * Creates a new SmallBeamInter object.
      *
-     * @param glyph   the underlying glyph
      * @param impacts the grade details
      * @param median  median beam line
      * @param height  beam height
      */
-    public SmallBeamInter (Glyph glyph,
-                           GradeImpacts impacts,
+    public SmallBeamInter (GradeImpacts impacts,
                            Line2D median,
                            double height)
     {
-        super(glyph, Shape.BEAM_SMALL, impacts, median, height);
+        super(Shape.BEAM_SMALL, impacts, median, height);
+    }
+
+    /**
+     * Creates a new {@code SmallBeamInter} object.
+     */
+    public SmallBeamInter ()
+    {
+        super(null, null, null, 0);
     }
 }

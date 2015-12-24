@@ -29,12 +29,8 @@ import javax.swing.SpinnerModel;
  */
 public abstract class SpinnerUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    /** Specific value to indicate that spinner value is invalid : {@value} */
-    public static final int NO_VALUE = 0;
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------//
     // fixIntegerList //
     //----------------//

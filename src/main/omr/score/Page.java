@@ -18,8 +18,9 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.rhythm.MeasureStack;
 
-import omr.sig.inter.ChordInter;
+import omr.sig.inter.AbstractChordInter;
 
+import omr.util.Jaxb;
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -31,6 +32,11 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+
 /**
  * Class {@code Page} represents a page in the score hierarchy, and corresponds to a
  * (part of) {@link Sheet}.
@@ -41,40 +47,59 @@ import java.util.TreeSet;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class Page
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(Page.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Page.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Containing (physical) sheet. */
-    @Navigable(false)
-    private final Sheet sheet;
-
+    //
+    // Persistent data
+    //----------------
+    //
     /** Page ID. */
-    private String id;
+    @XmlAttribute
+    private final int id;
 
     /** Does this page start a movement?. */
-    private boolean movementStart;
+    @XmlElement(name = "movement-start")
+    private Jaxb.True movementStart;
 
-    /** LogicalPart list for the page. */
-    private List<LogicalPart> logicalParts;
-
-    /** Number of measures in this page. */
+    /** Number of measures counted in this page. */
+    @XmlElement(name = "measure-count")
     private Integer measureCount;
 
     /** Progression of measure id within this page. */
-    private Integer deltaMeasureId;
+    @XmlElement(name = "measure-delta-id")
+    private Integer measureDeltaId;
+
+    /** LogicalPart list for the page. */
+    @XmlElement(name = "logical-part")
+    private List<LogicalPart> logicalParts;
+
+    /** (Sub)list of systems, within sheet systems. */
+    @XmlElement(name = "system")
+    private List<SystemInfo> systems;
+
+    // Transient data
+    //---------------
+    //
+    /** Containing (physical) sheet. */
+    @Navigable(false)
+    private Sheet sheet;
+
+    /** Containing (logical) score. */
+    @Navigable(false)
+    private Score score;
 
     /** Id of first system in sheet, if any. */
     private Integer firstSystemId;
 
     /** Id of last system in sheet, if any. */
     private Integer lastSystemId;
-
-    /** (Sub)list of systems, within sheet systems. */
-    private List<SystemInfo> systems;
 
     /** Greatest duration divisor (in this page). */
     private Integer durationDivisor;
@@ -83,20 +108,42 @@ public class Page
     /**
      * Creates a new Page object.
      *
-     * @param sheet         the containing sheet
+     * @param sheet         containing sheet
+     * @param id            id for the page (1-based number within sheet)
      * @param firstSystemId id of first system in sheet, if any
      */
     public Page (Sheet sheet,
+                 int id,
                  Integer firstSystemId)
     {
-        this.sheet = sheet;
+        this.id = id;
         this.firstSystemId = firstSystemId;
 
-        // Define id
-        computeId();
+        initTransients(sheet);
+    }
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private Page ()
+    {
+        id = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // initTransients //
+    //----------------//
+    /**
+     * Initialize transient data after construction or unmarshalling.
+     *
+     * @param sheet the containing sheet
+     */
+    public final void initTransients (Sheet sheet)
+    {
+        this.sheet = sheet;
+    }
+
     //---------------------//
     // computeMeasureCount //
     //---------------------//
@@ -136,7 +183,7 @@ public class Page
                 sb.append(", ");
             }
 
-            sb.append(part.getMeasures().size()).append(" in ").append(sys.idString());
+            sb.append(part.getMeasures().size()).append(" in system#").append(sys.getId());
             count += part.getMeasures().size();
         }
 
@@ -151,19 +198,6 @@ public class Page
         msg.append(": [").append(sb).append("]");
 
         logger.info("{}{}", sheet.getLogPrefix(), msg.toString());
-    }
-
-    //-------------------//
-    // getDeltaMeasureId //
-    //-------------------//
-    /**
-     * Report the progression of measure IDs within this page.
-     *
-     * @return the deltaMeasureId
-     */
-    public Integer getDeltaMeasureId ()
-    {
-        return deltaMeasureId;
     }
 
     //--------------//
@@ -223,13 +257,10 @@ public class Page
         return firstSystemId;
     }
 
-    //-------//
-    // getId //
-    //-------//
     /**
      * @return the id
      */
-    public String getId ()
+    public int getId ()
     {
         return id;
     }
@@ -259,6 +290,22 @@ public class Page
         return lastSystemId;
     }
 
+    //--------------------//
+    // getLogicalPartById //
+    //--------------------//
+    public LogicalPart getLogicalPartById (int id)
+    {
+        if (logicalParts != null) {
+            for (LogicalPart log : logicalParts) {
+                if (log.getId() == id) {
+                    return log;
+                }
+            }
+        }
+
+        return null;
+    }
+
     //-----------------//
     // getLogicalParts //
     //-----------------//
@@ -285,6 +332,19 @@ public class Page
         return measureCount;
     }
 
+    //-------------------//
+    // getMeasureDeltaId //
+    //-------------------//
+    /**
+     * Report the progression of measure IDs within this page.
+     *
+     * @return the deltaMeasureId
+     */
+    public Integer getMeasureDeltaId ()
+    {
+        return measureDeltaId;
+    }
+
     //---------------------//
     // getPrecedingInScore //
     //---------------------//
@@ -297,15 +357,23 @@ public class Page
     public Page getPrecedingInScore (Score score)
     {
         if (score != null) {
-            List<Page> pages = score.getPages();
-            int index = pages.indexOf(this);
-
-            if (index > 0) {
-                return pages.get(index - 1);
-            }
+            return score.getPrecedingPage(this);
         }
 
         return null;
+    }
+
+    //----------//
+    // getScore //
+    //----------//
+    /**
+     * Report the containing score if any.
+     *
+     * @return the containing score, perhaps still null
+     */
+    public Score getScore ()
+    {
+        return score;
     }
 
     //----------//
@@ -342,7 +410,7 @@ public class Page
      */
     public boolean isMovementStart ()
     {
-        return movementStart;
+        return movementStart != null;
     }
 
     //----------------//
@@ -368,7 +436,7 @@ public class Page
         }
 
         // Very temporary raw values
-        setDeltaMeasureId(systemOffset);
+        setMeasureDeltaId(systemOffset);
         computeMeasureCount();
     }
 
@@ -380,19 +448,6 @@ public class Page
         durationDivisor = null;
     }
 
-    //-------------------//
-    // setDeltaMeasureId //
-    //-------------------//
-    /**
-     * Assign the progression of measure IDs within this page.
-     *
-     * @param deltaMeasureId the deltaMeasureId to set
-     */
-    public void setDeltaMeasureId (Integer deltaMeasureId)
-    {
-        this.deltaMeasureId = deltaMeasureId;
-    }
-
     //------------------//
     // setFirstSystemId //
     //------------------//
@@ -402,7 +457,6 @@ public class Page
     public void setFirstSystemId (Integer firstSystemId)
     {
         this.firstSystemId = firstSystemId;
-        computeId();
     }
 
     //-----------------//
@@ -414,7 +468,6 @@ public class Page
     public void setLastSystemId (Integer lastSystemId)
     {
         this.lastSystemId = lastSystemId;
-        computeId();
     }
 
     //-----------------//
@@ -430,6 +483,23 @@ public class Page
         this.logicalParts = logicalParts;
     }
 
+    //-------------------//
+    // setDeltaMeasureId //
+    //-------------------//
+    /**
+     * Assign the progression of measure IDs within this page.
+     *
+     * @param measureDeltaId the measureDeltaId to set
+     */
+    public void setMeasureDeltaId (Integer measureDeltaId)
+    {
+        this.measureDeltaId = measureDeltaId;
+
+        if (score != null) {
+            score.setDeltaMeasureId(this, measureDeltaId);
+        }
+    }
+
     //------------------//
     // setMovementStart //
     //------------------//
@@ -438,7 +508,20 @@ public class Page
      */
     public void setMovementStart (boolean movementStart)
     {
-        this.movementStart = movementStart;
+        this.movementStart = movementStart ? Jaxb.TRUE : null;
+    }
+
+    //----------//
+    // setScore //
+    //----------//
+    /**
+     * Assign the containing score.
+     *
+     * @param score the score to set
+     */
+    public void setScore (Score score)
+    {
+        this.score = score;
     }
 
     //------------//
@@ -479,7 +562,7 @@ public class Page
     @Override
     public String toString ()
     {
-        return "{Page " + id + "}";
+        return "{Page " + getId() + "}";
     }
 
     //------------------------//
@@ -497,10 +580,10 @@ public class Page
         try {
             final SortedSet<Rational> durations = new TreeSet<Rational>();
 
-            // Collect duration values for each chord in this page
+            // Collect duration values for each standard chord in this page
             for (SystemInfo system : getSystems()) {
                 for (MeasureStack stack : system.getMeasureStacks()) {
-                    for (ChordInter chord : stack.getChords()) {
+                    for (AbstractChordInter chord : stack.getStandardChords()) {
                         try {
                             final Rational duration = chord.isWholeRest()
                                     ? stack.getExpectedDuration()
@@ -529,26 +612,5 @@ public class Page
 
             return 0;
         }
-    }
-
-    //-----------//
-    // computeId //
-    //-----------//
-    /**
-     * Build the ID string for this page.
-     */
-    private void computeId ()
-    {
-        StringBuilder sb = new StringBuilder(sheet.getId());
-
-        if (firstSystemId != null) {
-            sb.append("-F").append(firstSystemId);
-        }
-
-        if (lastSystemId != null) {
-            sb.append("-L").append(lastSystemId);
-        }
-
-        id = sb.toString();
     }
 }

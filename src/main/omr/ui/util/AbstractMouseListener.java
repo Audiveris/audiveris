@@ -16,7 +16,7 @@ import java.awt.event.MouseListener;
 
 /**
  * Class {@code AbstractMouseListener} is a void implementation of {@link MouseListener}
- * except for the mouseEntered() method which remains to be provided by subclass.
+ * interface.
  *
  * @author Hervé Bitteur
  */
@@ -27,6 +27,11 @@ public abstract class AbstractMouseListener
 
     @Override
     public void mouseClicked (MouseEvent e)
+    {
+    }
+
+    @Override
+    public void mouseEntered (MouseEvent e)
     {
     }
 

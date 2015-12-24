@@ -12,7 +12,7 @@
 package omr.sig.inter;
 
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
 import omr.sig.GradeImpacts;
 
@@ -23,7 +23,7 @@ import java.awt.Rectangle;
  *
  * @author Hervé Bitteur
  */
-public class AbstractDirectionInter
+public abstract class AbstractDirectionInter
         extends AbstractInter
 {
     //~ Constructors -------------------------------------------------------------------------------

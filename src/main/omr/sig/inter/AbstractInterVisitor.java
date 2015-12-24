@@ -41,7 +41,7 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
-    public void visit (BarConnectionInter inter)
+    public void visit (BarConnectorInter inter)
     {
         // Void by default
     }
@@ -59,7 +59,7 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
-    public void visit (BracketConnectionInter inter)
+    public void visit (BracketConnectorInter inter)
     {
         // Void by default
     }
@@ -71,7 +71,7 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
-    public void visit (ChordInter inter)
+    public void visit (AbstractChordInter inter)
     {
         // Void by default
     }

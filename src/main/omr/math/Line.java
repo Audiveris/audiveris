@@ -90,20 +90,6 @@ public interface Line
                        double y);
 
     /**
-     * Check if line is horizontal ('a' coeff is null)
-     *
-     * @return true if horizontal
-     */
-    boolean isHorizontal ();
-
-    /**
-     * Check if line is vertical ('b' coeff is null).
-     *
-     * @return true if vertical
-     */
-    boolean isVertical ();
-
-    /**
      * Remove the whole population of points.
      * The line is not immediately usable, it needs now to include defining points.
      */

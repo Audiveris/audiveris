@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="PERCUSSION_CLEF" interline="13" id="1524">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-0.08163265306122448</pitch-position>
-    <section orientation="VERTICAL" first-pos="398" id="1427">
-        <run start="2688" length="25"/>
-        <run start="2688" length="25"/>
-        <run start="2688" length="25"/>
-        <run start="2688" length="25"/>
-        <run start="2688" length="25"/>
-        <run start="2688" length="25"/>
-        <run start="2688" length="25"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="407" id="1577">
-        <run start="2688" length="25"/>
-        <run start="2688" length="25"/>
-        <run start="2688" length="25"/>
-        <run start="2688" length="25"/>
-        <run start="2688" length="25"/>
-        <run start="2688" length="25"/>
-        <run start="2688" length="25"/>
-    </section>
-</glyph>
+<sample id="1524" interline="13" left="398" top="2688" shape="PERCUSSION_CLEF">
+    <run-table orientation="VERTICAL" width="16" height="25">
+        <sequences>
+            <item>25</item>
+            <item>25</item>
+            <item>25</item>
+            <item>25</item>
+            <item>25</item>
+            <item>25</item>
+            <item>25</item>
+            <item/>
+            <item/>
+            <item>25</item>
+            <item>25</item>
+            <item>25</item>
+            <item>25</item>
+            <item>25</item>
+            <item>25</item>
+            <item>25</item>
+        </sequences>
+    </run-table>
+</sample>

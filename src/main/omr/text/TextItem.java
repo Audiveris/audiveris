@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code TextItem} is an abstract basis for any Ocr entity.
+ * Class {@code TextItem} is an abstract basis for any OCR entity.
  *
  * @author Hervé Bitteur
  */
@@ -125,8 +125,8 @@ public abstract class TextItem
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
         ///sb.append('@').append(Integer.toHexString(hashCode()));
         sb.append(internals());
 

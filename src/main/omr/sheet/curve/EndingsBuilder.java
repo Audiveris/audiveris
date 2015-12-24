@@ -14,24 +14,23 @@ package omr.sheet.curve;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.facets.BasicGlyph;
-import omr.glyph.facets.Glyph;
+import omr.glyph.dynamic.Filament;
+import omr.glyph.dynamic.FilamentFactory;
+import omr.glyph.dynamic.StraightFilament;
 
 import omr.lag.Section;
 import omr.lag.Sections;
 
 import omr.math.GeoOrder;
 import omr.math.LineUtil;
-
-import omr.run.Orientation;
 import static omr.run.Orientation.VERTICAL;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
-import omr.sheet.grid.FilamentsFactory;
+import omr.sheet.rhythm.Measure;
+import omr.sheet.rhythm.MeasureStack;
 
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;
@@ -124,8 +123,8 @@ public class EndingsBuilder
      * We simply have to make sure that the lookup area is wide enough.
      * <p>
      * An ending which starts a staff may have its left side after the clef and key signature, which
-     * means far after the starting bar line. Perhaps we should consider the staff header in such
-     * case.
+     * means far after the starting barline (if any).
+     * Perhaps we should consider the staff header in such case.
      *
      * @param seg        the horizontal segment
      * @param reverse    which side is at stake
@@ -143,9 +142,7 @@ public class EndingsBuilder
         box.grow(params.maxBarShift, 0);
         box.height = staff.getLastLine().yAt(end.x) - end.y;
 
-        SystemInfo system = staff.getSystem();
-        SIGraph sig = system.getSig();
-        List<Inter> bars = sig.intersectedInters(systemBars, GeoOrder.NONE, box);
+        List<Inter> bars = SIGraph.intersectedInters(systemBars, GeoOrder.NONE, box);
         Collections.sort(bars, Inter.byAbscissa);
 
         if (bars.isEmpty()) {
@@ -166,9 +163,9 @@ public class EndingsBuilder
      * @param staff   related staff
      * @return the best seed found or null if none.
      */
-    private Glyph lookupLeg (SegmentInfo seg,
-                             boolean reverse,
-                             Staff staff)
+    private Filament lookupLeg (SegmentInfo seg,
+                                boolean reverse,
+                                Staff staff)
     {
         Point end = seg.getEnd(reverse);
         Rectangle box = new Rectangle(end);
@@ -176,18 +173,19 @@ public class EndingsBuilder
         box.height = staff.getFirstLine().yAt(end.x) - end.y;
 
         SystemInfo system = staff.getSystem();
-        Set<Section> sections = Sections.intersectedSections(box, system.getVerticalSections());
+        Set<Section> sections = Sections.intersectedSections(
+                box,
+                system.getVerticalSections());
         Scale scale = sheet.getScale();
-        FilamentsFactory factory = new FilamentsFactory(
+        FilamentFactory<StraightFilament> factory = new FilamentFactory<StraightFilament>(
                 scale,
-                sheet.getGlyphNest(),
-                GlyphLayer.DEFAULT,
+                sheet.getFilamentIndex(),
                 VERTICAL,
-                BasicGlyph.class);
+                StraightFilament.class);
 
         // Adjust factory parameters
         factory.setMaxThickness(
-                (int) Math.ceil(sheet.getMaxStem() * constants.stemRatio.getValue()));
+                (int) Math.ceil(sheet.getScale().getMaxStem() * constants.stemRatio.getValue()));
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
         factory.setMaxOverlapSpace(constants.maxOverlapSpace);
         factory.setMaxCoordGap(constants.maxCoordGap);
@@ -197,29 +195,29 @@ public class EndingsBuilder
         }
 
         // Retrieve candidates
-        List<Glyph> glyphs = factory.retrieveFilaments(sections);
+        List<StraightFilament> filaments = factory.retrieveFilaments(sections);
 
-        if (glyphs.isEmpty()) {
+        if (filaments.isEmpty()) {
             return null;
         }
 
         // Choose the seed whose top end is closest to segment end
-        Glyph bestGlyph = null;
+        Filament bestFil = null;
         double bestDistSq = Double.MAX_VALUE;
 
-        for (Glyph glyph : glyphs) {
-            Point2D top = glyph.getStartPoint(Orientation.VERTICAL);
+        for (Filament filament : filaments) {
+            Point2D top = filament.getStartPoint();
             double dx = top.getX() - end.getX();
             double dy = top.getY() - end.getY();
             double distSq = (dx * dx) + (dy * dy);
 
-            if ((bestGlyph == null) || (bestDistSq > distSq)) {
+            if ((bestFil == null) || (bestDistSq > distSq)) {
                 bestDistSq = distSq;
-                bestGlyph = glyph;
+                bestFil = filament;
             }
         }
 
-        return bestGlyph;
+        return bestFil;
     }
 
     //----------------//
@@ -269,7 +267,7 @@ public class EndingsBuilder
             List<Inter> systemBars = sig.inters(BarlineInter.class);
 
             // Left leg (mandatory)
-            Glyph leftLeg = lookupLeg(seg, true, staff);
+            Filament leftLeg = lookupLeg(seg, true, staff);
 
             if (leftLeg == null) {
                 continue;
@@ -277,15 +275,24 @@ public class EndingsBuilder
 
             // Left bar (or header)
             BarlineInter leftBar = lookupBar(seg, true, staff, systemBars);
+            final Double leftDist;
 
             if (leftBar == null) {
-                continue;
+                // Check the special case of a staff start (with header?, with no barline?)
+                MeasureStack firstStack = system.getFirstMeasureStack();
+                Measure firstMeasure = firstStack.getMeasureAt(staff);
+
+                if (leftEnd.x >= firstMeasure.getAbscissa(RIGHT, staff)) {
+                    continue; // segment starts after end of first measure
+                }
+
+                leftDist = null;
+            } else {
+                leftDist = Math.abs(LineUtil.xAtY(leftBar.getMedian(), leftEnd.y) - leftEnd.x);
             }
 
-            double leftDist = Math.abs(leftBar.getMedian().xAtY(leftEnd.y) - leftEnd.x);
-
             // Right leg (optional)
-            Glyph rightLeg = lookupLeg(seg, false, staff);
+            Filament rightLeg = lookupLeg(seg, false, staff);
 
             // Right bar
             BarlineInter rightBar = lookupBar(seg, false, staff, systemBars);
@@ -294,27 +301,29 @@ public class EndingsBuilder
                 continue;
             }
 
-            double rightDist = Math.abs(rightBar.getMedian().xAtY(rightEnd.y) - rightEnd.x);
+            double rightDist = Math.abs(
+                    LineUtil.xAtY(rightBar.getMedian(), rightEnd.y) - rightEnd.x);
 
             // Create ending inter
             GradeImpacts segImp = segment.getImpacts();
             double straight = segImp.getGrade() / segImp.getIntrinsicRatio();
+            double leftImpact = (leftDist != null) ? (1 - (leftDist / params.maxBarShift)) : 0.5;
 
             GradeImpacts impacts = new EndingInter.Impacts(
                     straight,
                     1 - (slope / params.maxSlope),
                     (length - params.minLengthLow) / (params.minLengthHigh - params.minLengthLow),
-                    1 - (leftDist / params.maxBarShift),
+                    leftImpact,
                     1 - (rightDist / params.maxBarShift));
 
             if (impacts.getGrade() >= EndingInter.getMinGrade()) {
                 Line2D leftLine = new Line2D.Double(
-                        leftLeg.getStartPoint(VERTICAL),
-                        leftLeg.getStopPoint(VERTICAL));
+                        leftLeg.getStartPoint(),
+                        leftLeg.getStopPoint());
                 Line2D rightLine = (rightLeg == null) ? null
                         : new Line2D.Double(
-                                rightLeg.getStartPoint(VERTICAL),
-                                rightLeg.getStopPoint(VERTICAL));
+                                rightLeg.getStartPoint(),
+                                rightLeg.getStopPoint());
                 EndingInter endingInter = new EndingInter(
                         segment,
                         line,
@@ -325,10 +334,14 @@ public class EndingsBuilder
                 sig.addVertex(endingInter);
 
                 Scale scale = sheet.getScale();
-                sig.addEdge(
-                        endingInter,
-                        leftBar,
-                        new EndingBarRelation(LEFT, scale.pixelsToFrac(leftDist)));
+
+                if (leftBar != null) {
+                    sig.addEdge(
+                            endingInter,
+                            leftBar,
+                            new EndingBarRelation(LEFT, scale.pixelsToFrac(leftDist)));
+                }
+
                 sig.addEdge(
                         endingInter,
                         rightBar,

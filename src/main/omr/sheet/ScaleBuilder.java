@@ -23,13 +23,14 @@ import omr.math.Histogram.PeakEntry;
 import omr.math.IntegerHistogram;
 
 import omr.run.Run;
-import omr.run.RunSequence;
 import omr.run.RunTable;
 
-import omr.sheet.ui.SheetsController;
+import omr.sheet.Scale.BeamScale;
+import omr.sheet.ui.StubsController;
 
 import omr.step.StepException;
 
+import omr.util.Navigable;
 import omr.util.StopWatch;
 
 import org.slf4j.Logger;
@@ -37,9 +38,11 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /**
  * Class {@code ScaleBuilder} computes the global scale of a given sheet by processing
@@ -87,6 +90,7 @@ public class ScaleBuilder
     //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related sheet. */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Keeper of vertical run length histograms, for foreground & background. */
@@ -127,9 +131,6 @@ public class ScaleBuilder
 
     /** Second frequent length of vertical background runs found, if any. */
     private PeakEntry<Double> secondBackPeak;
-
-    /** Resulting scale, if everything goes well. */
-    private Scale scale;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -206,8 +207,8 @@ public class ScaleBuilder
             return new Scale(
                     computeLine(),
                     computeInterline(),
-                    computeBeam(),
-                    computeSecondInterline());
+                    computeSecondInterline(),
+                    computeBeam());
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -276,19 +277,28 @@ public class ScaleBuilder
     //-------------//
     // computeBeam //
     //-------------//
-    private int computeBeam ()
+    /**
+     * Report the beam scale information for the sheet.
+     *
+     * @return the beam scale
+     */
+    private BeamScale computeBeam ()
     {
         if (beamEntry != null) {
-            return beamEntry.getKey();
+            return new BeamScale(beamEntry.getKey(), false);
         }
 
         if (backPeak != null) {
-            logger.info("{}No beam peak found, computing a default value", sheet.getLogPrefix());
+            final int guess = (int) Math.rint(
+                    constants.beamAsBackRatio.getValue() * backPeak.getKey().best);
+            logger.info("{}No beam peak found, guessed value {}", sheet.getLogPrefix(), guess);
 
-            return (int) Math.rint(constants.beamAsBackRatio.getValue() * backPeak.getKey().best);
+            return new BeamScale(guess, true);
         }
 
-        return -1;
+        logger.warn("No global scale information available");
+
+        return null;
     }
 
     //------------------//
@@ -350,7 +360,7 @@ public class ScaleBuilder
     // makeDecision //
     //--------------//
     /**
-     * An abnormal situation has been found, as detailed in provided msg,
+     * An abnormal situation has been found, as detailed in provided message,
      * now how should we proceed, depending on batch mode or user answer.
      *
      * @param msg the problem description
@@ -364,15 +374,23 @@ public class ScaleBuilder
         Book book = sheet.getBook();
 
         if (OMR.getGui() != null) {
-            // Make sheet visible to the user
-            SheetsController.getInstance().showAssembly(sheet);
+            SwingUtilities.invokeLater(
+                    new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    // Make sheet visible to the user
+                    StubsController.getInstance().showAssembly(sheet.getStub());
+                }
+            });
         }
 
         if ((OMR.getGui() == null)
             || (OMR.getGui()
                 .displayModelessConfirm(msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
             if (book.isMultiSheet()) {
-                sheet.close(false);
+                sheet.close();
                 throw new StepException("Sheet removed");
             } else {
                 throw new StepException("Sheet ignored");
@@ -427,13 +445,11 @@ public class ScaleBuilder
                         (backPeak.getValue() + secondBackPeak.getValue()) / 2);
                 secondBackPeak = null;
                 logger.info("Merged two close background peaks");
-            } else {
-                // Check whether this second background peak can be an interline
-                // We check that p2 is not too large, compared with p1
-                if (p2.best > (p1.best * constants.maxSecondRatio.getValue())) {
-                    logger.info("Second background peak too large {}, ignored", p2.best);
-                    secondBackPeak = null;
-                }
+            } else // Check whether this second background peak can be an interline
+            // We check that p2 is not too large, compared with p1
+            if (p2.best > (p1.best * constants.maxSecondRatio.getValue())) {
+                logger.info("Second background peak too large {}, ignored", p2.best);
+                secondBackPeak = null;
             }
         }
 
@@ -568,8 +584,8 @@ public class ScaleBuilder
             int upper = (int) Math.min(
                     fore.length,
                     ((backPeak != null) ? ((backPeak.getKey().best * 3) / 2) : 20));
-            Scale theScale = (scale != null) ? scale : sheet.getScale();
-            String xLabel = "Lengths - " + ((theScale != null) ? theScale : "*no scale*");
+            Scale scale = sheet.getScale();
+            String xLabel = "Lengths - " + ((scale != null) ? scale : "*no scale*");
 
             new HistogramPlotter(sheet, "vertical both", both, bothHisto, bothPeak, null, upper).plot(
                     new Point(0, 0),
@@ -603,12 +619,12 @@ public class ScaleBuilder
             final int maxFore = height / 16;
 
             for (int x = 0; x < width; x++) {
-                RunSequence runSeq = wholeVertTable.getSequence(x); // All vertical foreground runs
                 int yLast = 0; // Ordinate of first pixel not yet processed
                 int lastBackLength = 0; // Length of last valid background run
                 int lastForeLength = 0; // Length of last valid foreground run
 
-                for (Run run : runSeq) {
+                for (Iterator<Run> it = wholeVertTable.iterator(x); it.hasNext();) {
+                    Run run = it.next();
                     int y = run.getStart();
 
                     if (y > yLast) {

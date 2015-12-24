@@ -13,8 +13,7 @@ package omr.sheet;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
 import omr.lag.Lags;
 import omr.lag.Section;
@@ -82,7 +81,7 @@ public class SystemManager
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
-    private final Sheet sheet;
+    private Sheet sheet;
 
     /** Sheet retrieved systems. */
     private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
@@ -98,7 +97,73 @@ public class SystemManager
         this.sheet = sheet;
     }
 
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private SystemManager ()
+    {
+        this.sheet = null;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------------//
+    // computeSystemArea //
+    //-------------------//
+    /**
+     * Compute the system related area.
+     * <p>
+     * For vertical borders, use plain vertical lines.
+     * For horizontal borders, use first line encountered in next system.
+     * <p>
+     * If we have no system neighbor on left or right, compute the area with north and south paths.
+     * If we do have neighbor(s) on left or right, compute the global area and intersect with
+     * rectangular slice of the system
+     *
+     * @param system the system to process
+     */
+    public void computeSystemArea (SystemInfo system)
+    {
+        final int sheetWidth = sheet.getWidth();
+        final int sheetHeight = sheet.getHeight();
+        final List<SystemInfo> aboves = vertNeighbors(system, TOP);
+        final List<SystemInfo> belows = vertNeighbors(system, BOTTOM);
+
+        // Vertical abscissae on system left & right
+        final SystemInfo leftNeighbor = horiNeighbor(system, LEFT);
+        final int left = (leftNeighbor != null)
+                ? ((leftNeighbor.getRight() + system.getLeft()) / 2) : 0;
+        system.setAreaEnd(LEFT, left);
+
+        final SystemInfo rightNeighbor = horiNeighbor(system, RIGHT);
+        final int right = (rightNeighbor != null)
+                ? ((system.getRight() + rightNeighbor.getLeft()) / 2) : sheetWidth;
+        system.setAreaEnd(RIGHT, right);
+
+        PathIterator north = aboves.isEmpty()
+                ? new GeoPath(new Line2D.Double(left, 0, right, 0)).getPathIterator(
+                        null) : getGlobalLine(aboves, BOTTOM);
+
+        PathIterator south = belows.isEmpty()
+                ? new GeoPath(
+                        new Line2D.Double(left, sheetHeight, right, sheetHeight)).getPathIterator(null)
+                : getGlobalLine(belows, TOP);
+
+        // Define sheet-wide area
+        GeoPath wholePath = new GeoPath();
+        wholePath.append(north, false);
+        wholePath.append(new ReversePathIterator(south), true);
+
+        final Area area = new Area(wholePath);
+
+        // If we have neighbor(s) on left or right, intersect with proper slice
+        if ((left != 0) || (right != sheetWidth)) {
+            Rectangle slice = new Rectangle(left, 0, right - left, sheetHeight);
+            area.intersect(new Area(slice));
+        }
+
+        system.setArea(area);
+    }
+
     //-------------------//
     // containingSystems //
     //-------------------//
@@ -129,57 +194,54 @@ public class SystemManager
         return found;
     }
 
-    //----------------//
-    // dispatchGlyphs //
-    //----------------//
+    //----------------------------//
+    // dispatchHorizontalSections //
+    //----------------------------//
     /**
-     * Dispatch the sheet glyphs among systems
-     *
-     * @param glyphs the collection of glyphs to dispatch among sheet systems.
-     *               If null, the nest glyphs are used.
+     * Dispatch the various horizontal sections among systems.
      */
-    public void dispatchGlyphs (Collection<Glyph> glyphs)
+    public void dispatchHorizontalSections ()
     {
-        if (glyphs == null) {
-            for (GlyphLayer layer : GlyphLayer.concreteValues()) {
-                dispatchGlyphs(sheet.getGlyphNest().getGlyphs(layer));
-            }
-        } else {
-            // Assign the glyphs to the proper system glyphs collection
-            List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        // Clear systems containers
+        for (SystemInfo system : systems) {
+            system.getMutableHorizontalSections().clear();
+        }
 
-            for (Glyph glyph : glyphs) {
-                getSystemsOf(glyph.getCentroid(), relevants);
+        // Now dispatch the lag sections among relevant systems
+        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
 
-                for (SystemInfo system : relevants) {
-                    system.registerGlyph(glyph);
-                }
+        for (Section section : sheet.getLagManager().getLag(Lags.HLAG).getEntities()) {
+            getSystemsOf(section.getCentroid(), relevants);
+
+            for (SystemInfo system : relevants) {
+                // Link system <>-> section
+                system.getMutableHorizontalSections().add(section);
             }
         }
     }
 
-    //------------------------//
-    // dispatchLedgerSections //
-    //------------------------//
+    //--------------------------//
+    // dispatchVerticalSections //
+    //--------------------------//
     /**
-     * Dispatch the various horizontal ledger sections among systems.
+     * Dispatch the various vertical sections among systems.
      */
-    public void dispatchLedgerSections ()
+    public void dispatchVerticalSections ()
     {
         // Clear systems containers
         for (SystemInfo system : systems) {
-            system.getMutableLedgerSections().clear();
+            system.getMutableVerticalSections().clear();
         }
 
-        // Now dispatch the lag huge sections among the systems
+        // Now dispatch the lag sections among relevant systems
         List<SystemInfo> relevants = new ArrayList<SystemInfo>();
 
-        for (Section section : sheet.getLagManager().getLag(Lags.LEDGER_LAG).getSections()) {
+        for (Section section : sheet.getLagManager().getLag(Lags.VLAG).getEntities()) {
             getSystemsOf(section.getCentroid(), relevants);
 
             for (SystemInfo system : relevants) {
-                // Link system O-> section
-                system.getMutableLedgerSections().add(section);
+                // Link system <>-> section
+                system.getMutableVerticalSections().add(section);
             }
         }
     }
@@ -346,9 +408,13 @@ public class SystemManager
             }
         }
 
-        // Dispatch sections & glyphs per system
-        dispatchSystemEntities();
-
+        // Dispatch sections to relevant systems
+        dispatchHorizontalSections();
+        dispatchVerticalSections();
+//
+//        // Dispatch glyphs to relevant systems
+//        dispatchGlyphs();
+//
         // Allocate one (or several) page instances for the sheet
         allocatePages();
 
@@ -370,6 +436,14 @@ public class SystemManager
             this.systems.clear();
             this.systems.addAll(systems);
         }
+    }
+
+    //----------------//
+    // initTransients //
+    //----------------//
+    void initTransients (Sheet sheet)
+    {
+        this.sheet = sheet;
     }
 
     //---------------//
@@ -400,11 +474,15 @@ public class SystemManager
                 }
 
                 // Start a new page
-                sheet.addPage(page = new Page(sheet, (systId == 1) ? null : systId));
+                sheet.addPage(
+                        page = new Page(
+                                sheet,
+                                1 + sheet.getPages().size(),
+                                (systId == 1) ? null : systId));
                 page.setMovementStart(true);
             } else if (page == null) {
                 // Start first page in sheet
-                sheet.addPage(page = new Page(sheet, null));
+                sheet.addPage(page = new Page(sheet, 1 + sheet.getPages().size(), null));
             }
 
             system.setPage(page);
@@ -451,130 +529,6 @@ public class SystemManager
                         break;
                     }
                 }
-            }
-        }
-    }
-
-    //-------------------//
-    // computeSystemArea //
-    //-------------------//
-    /**
-     * Compute the system related area.
-     * <p>
-     * For vertical borders, use plain vertical lines.
-     * For horizontal borders, use first line encountered in next system.
-     * <p>
-     * If we have no system neighbor on left or right, compute the area with
-     * north and south paths.
-     * If we do have neighbor(s) on left or right, compute the global area and
-     * intersect with rectangular slice of the system
-     */
-    private void computeSystemArea (SystemInfo system)
-    {
-        final int sheetWidth = sheet.getWidth();
-        final int sheetHeight = sheet.getHeight();
-        final List<SystemInfo> aboves = vertNeighbors(system, TOP);
-        final List<SystemInfo> belows = vertNeighbors(system, BOTTOM);
-
-        // Vertical abscissae on system left & right
-        final SystemInfo leftNeighbor = horiNeighbor(system, LEFT);
-        final int left = (leftNeighbor != null)
-                ? ((leftNeighbor.getRight() + system.getLeft()) / 2) : 0;
-        system.setAreaEnd(LEFT, left);
-
-        final SystemInfo rightNeighbor = horiNeighbor(system, RIGHT);
-        final int right = (rightNeighbor != null)
-                ? ((system.getRight() + rightNeighbor.getLeft()) / 2) : sheetWidth;
-        system.setAreaEnd(RIGHT, right);
-
-        PathIterator north = aboves.isEmpty()
-                ? new GeoPath(new Line2D.Double(left, 0, right, 0)).getPathIterator(
-                        null) : getGlobalLine(aboves, BOTTOM);
-
-        PathIterator south = belows.isEmpty()
-                ? new GeoPath(
-                        new Line2D.Double(left, sheetHeight, right, sheetHeight)).getPathIterator(null)
-                : getGlobalLine(belows, TOP);
-
-        // Define sheet-wide area
-        GeoPath wholePath = new GeoPath();
-        wholePath.append(north, false);
-        wholePath.append(new ReversePathIterator(south), true);
-
-        final Area area = new Area(wholePath);
-
-        // If we have neighbor(s) on left or right, intersect with proper slice
-        if ((left != 0) || (right != sheetWidth)) {
-            Rectangle slice = new Rectangle(left, 0, right - left, sheetHeight);
-            area.intersect(new Area(slice));
-        }
-
-        system.setArea(area);
-    }
-
-    //----------------------------//
-    // dispatchHorizontalSections //
-    //----------------------------//
-    /**
-     * Dispatch the various horizontal sections among systems.
-     */
-    private void dispatchHorizontalSections ()
-    {
-        // Clear systems containers
-        for (SystemInfo system : systems) {
-            system.getMutableHorizontalSections().clear();
-        }
-
-        // Now dispatch the lag sections among relevant systems
-        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
-
-        for (Section section : sheet.getLagManager().getLag(Lags.HLAG).getSections()) {
-            getSystemsOf(section.getCentroid(), relevants);
-
-            for (SystemInfo system : relevants) {
-                // Link system <>-> section
-                system.getMutableHorizontalSections().add(section);
-            }
-        }
-    }
-
-    //------------------------//
-    // dispatchSystemEntities //
-    //------------------------//
-    /**
-     * Split horizontal sections, vertical sections, glyph instances
-     * per system.
-     */
-    private void dispatchSystemEntities ()
-    {
-        // Dispatch sections and glyphs to relevant systems
-        dispatchHorizontalSections();
-        dispatchVerticalSections();
-        dispatchGlyphs(null);
-    }
-
-    //--------------------------//
-    // dispatchVerticalSections //
-    //--------------------------//
-    /**
-     * Dispatch the various vertical sections among systems
-     */
-    private void dispatchVerticalSections ()
-    {
-        // Clear systems containers
-        for (SystemInfo system : systems) {
-            system.getMutableVerticalSections().clear();
-        }
-
-        // Now dispatch the lag sections among relevant systems
-        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
-
-        for (Section section : sheet.getLagManager().getLag(Lags.VLAG).getSections()) {
-            getSystemsOf(section.getCentroid(), relevants);
-
-            for (SystemInfo system : relevants) {
-                // Link system <>-> section
-                system.getMutableVerticalSections().add(section);
             }
         }
     }
@@ -671,8 +625,6 @@ public class SystemManager
                 sb.append("no part found");
             }
 
-            sheet.getBench().recordPartCount(partNb);
-
             int sysNb = page.getSystems().size();
 
             if (sysNb > 0) {
@@ -684,8 +636,6 @@ public class SystemManager
             } else {
                 sb.append(", no system found");
             }
-
-            sheet.getBench().recordSystemCount(sysNb);
 
             logger.info("{}{}", sheet.getLogPrefix(), sb);
         }

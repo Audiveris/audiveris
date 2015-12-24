@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.sheet.symbol;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 import omr.glyph.ui.SymbolsEditor;
 
-import omr.selection.GlyphEvent;
+import omr.selection.EntityListEvent;
 import omr.selection.SelectionService;
 
 import omr.sheet.Sheet;
@@ -70,11 +70,12 @@ public class SymbolsStep
         }
 
         // Update glyph board if needed (to see OCR'ed data)
-        SelectionService service = sheet.getGlyphNest().getGlyphService();
-        GlyphEvent glyphEvent = (GlyphEvent) service.getLastEvent(GlyphEvent.class);
+        SelectionService service = sheet.getGlyphIndex().getEntityService();
+        EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) service.getLastEvent(
+                EntityListEvent.class);
 
-        if (glyphEvent != null) {
-            service.publish(glyphEvent);
+        if (listEvent != null) {
+            service.publish(listEvent);
         }
     }
 
@@ -91,11 +92,14 @@ public class SymbolsStep
         // Retrieve symbols inters
         new SymbolsBuilder(system, factory).buildSymbols(context.optionalsMap);
 
+        // Allocate rest-based chords
+        new ChordsBuilder(system).buildRestChords();
+
         // Retrieve relations between symbols inters
         factory.linkSymbols();
 
-        // Allocate rest-based chords
-        new ChordsBuilder(system).buildRestChords();
+        // Compute all contextual grades (for better UI)
+        system.getSig().contextualize();
     }
 
     //----------//
@@ -120,7 +124,7 @@ public class SymbolsStep
     //---------//
     // Context //
     //---------//
-    public static class Context
+    protected static class Context
     {
         //~ Instance fields ------------------------------------------------------------------------
 

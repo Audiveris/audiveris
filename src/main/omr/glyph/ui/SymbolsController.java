@@ -12,7 +12,7 @@
 package omr.glyph.ui;
 
 import omr.glyph.SymbolsModel;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
 import omr.score.TimeRational;
 

@@ -14,6 +14,7 @@ package omr.run;
 import static omr.run.Orientation.HORIZONTAL;
 
 import omr.util.BaseTestCase;
+import omr.util.Dumping;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,7 +31,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.PropertyException;
 import javax.xml.bind.Unmarshaller;
-import omr.util.Dumping;
 
 /**
  * Class {@code RunTableBindingTest} tests the (un-)marshaling of RunTable.
@@ -47,8 +47,6 @@ public class RunTableBindingTest
     private static final Dimension dim = new Dimension(10, 5);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    private final File fileSequence = new File(dir, "runsequence.xml");
-
     private final File fileTable = new File(dir, "runtable.xml");
 
     private JAXBContext jaxbContext;
@@ -58,29 +56,6 @@ public class RunTableBindingTest
     public static void createTempFolder ()
     {
         dir.mkdirs();
-    }
-
-    @Test
-    public void testMarshalSequence ()
-            throws PropertyException, JAXBException, FileNotFoundException
-    {
-        RunSequence sequence = new BasicRunSequence();
-        sequence.add(new Run(1, 2));
-        sequence.add(new Run(5, 3));
-        System.out.println("sequence: " + sequence);
-
-        Marshaller m = jaxbContext.createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(sequence, new FileOutputStream(fileSequence));
-        System.out.println("Marshalled to " + fileSequence);
-        m.marshal(sequence, System.out);
-
-        Unmarshaller um = jaxbContext.createUnmarshaller();
-        InputStream is = new FileInputStream(fileSequence);
-        RunSequence newSequence = (RunSequence) um.unmarshal(is);
-        System.out.println("Unmarshalled from " + fileSequence);
-        new Dumping().dump(newSequence);
-        System.out.println("newSequence: " + newSequence);
     }
 
     @Test
@@ -117,30 +92,24 @@ public class RunTableBindingTest
     //--------------------------//
     private RunTable createHorizontalInstance ()
     {
-        RunTable instance = new RunTable("hori", HORIZONTAL, dim.width, dim.height);
+        RunTable instance = new RunTable(HORIZONTAL, dim.width, dim.height);
 
-        RunSequence seq;
+        instance.addRun(0, new Run(1, 2));
+        instance.addRun(0, new Run(5, 3));
 
-        seq = instance.getSequence(0);
-        seq.add(new Run(1, 2));
-        seq.add(new Run(5, 3));
+        instance.addRun(1, new Run(0, 1));
+        instance.addRun(1, new Run(4, 2));
 
-        seq = instance.getSequence(1);
-        seq.add(new Run(0, 1));
-        seq.add(new Run(4, 2));
+        // Leave sequence empty at index 2
+        //
+        instance.addRun(3, new Run(0, 2));
+        instance.addRun(3, new Run(4, 1));
+        instance.addRun(3, new Run(8, 2));
 
-        seq = instance.getSequence(2);
-        seq.add(new Run(3, 1));
-        seq.add(new Run(5, 4));
+        instance.addRun(4, new Run(2, 2));
+        instance.addRun(4, new Run(6, 4));
 
-        seq = instance.getSequence(3);
-        seq.add(new Run(0, 2));
-        seq.add(new Run(4, 1));
-        seq.add(new Run(8, 2));
-
-        seq = instance.getSequence(4);
-        seq.add(new Run(2, 2));
-        seq.add(new Run(6, 4));
+        System.out.println("createHorizontalInstance:\n" + instance.dumpOf());
 
         return instance;
     }

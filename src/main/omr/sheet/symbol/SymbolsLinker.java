@@ -16,8 +16,8 @@ import omr.sheet.rhythm.MeasureStack;
 import omr.sheet.rhythm.Voice;
 
 import omr.sig.SIGraph;
+import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractHeadInter;
-import omr.sig.inter.ChordInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.LyricItemInter;
 import omr.sig.inter.PedalInter;
@@ -132,9 +132,14 @@ class SymbolsLinker
     {
         for (Inter inter : sig.inters(PedalInter.class)) {
             final PedalInter pedal = (PedalInter) inter;
+
+            if (pedal.isVip()) {
+                logger.info("VIP linkPedal for {}", pedal);
+            }
+
             final Point location = pedal.getCenter();
             final MeasureStack stack = system.getMeasureStackAt(location);
-            final ChordInter chordAbove = stack.getChordAbove(location);
+            final AbstractChordInter chordAbove = stack.getStandardChordAbove(location);
 
             if (chordAbove != null) {
                 sig.addEdge(chordAbove, pedal, new ChordPedalRelation());
@@ -167,7 +172,7 @@ class SymbolsLinker
 
             switch (role) {
             case Lyrics: {
-                // Map each syllable with proper chord
+                // Map each syllable with proper chord, in staff just above
                 for (Inter wInter : sentence.getMembers()) {
                     LyricItemInter item = (LyricItemInter) wInter;
                     item.mapToChord();
@@ -179,12 +184,12 @@ class SymbolsLinker
             case Direction: {
                 // Map direction with proper chord
                 MeasureStack stack = system.getMeasureStackAt(location);
-                ChordInter chord = stack.getEventChord(location);
+                AbstractChordInter chord = stack.getEventChord(location);
 
                 if (chord != null) {
                     sig.addEdge(chord, sentence, new ChordSentenceRelation());
                 } else {
-                    logger.info("No chord above {}", sentence);
+                    logger.info("No chord above direction {}", sentence);
                 }
             }
 
@@ -193,13 +198,13 @@ class SymbolsLinker
             case ChordName: {
                 // Map chordName with proper chord
                 MeasureStack stack = system.getMeasureStackAt(location);
-                ChordInter chordBelow = stack.getChordBelow(location);
+                AbstractChordInter chordBelow = stack.getChordBelow(location);
 
                 if (chordBelow != null) {
                     WordInter word = sentence.getFirstWord(); // The single word in fact
                     sig.addEdge(chordBelow, word, new ChordNameRelation());
                 } else {
-                    logger.info("No chord above {}", sentence);
+                    logger.info("No chord above chordName {}", sentence);
                 }
             }
 
@@ -228,12 +233,12 @@ class SymbolsLinker
                 final Point2D location = (side == LEFT) ? topLine.getP1() : topLine.getP2();
                 final MeasureStack stack = system.getMeasureStackAt(location);
 
-                final ChordInter chordAbove = stack.getChordAbove(location);
+                final AbstractChordInter chordAbove = stack.getStandardChordAbove(location);
 
                 if (chordAbove != null) {
                     sig.addEdge(chordAbove, wedge, new ChordWedgeRelation(side));
                 } else {
-                    final ChordInter chordBelow = stack.getChordBelow(location);
+                    final AbstractChordInter chordBelow = stack.getChordBelow(location);
 
                     if (chordBelow != null) {
                         sig.addEdge(chordBelow, wedge, new ChordWedgeRelation(side));

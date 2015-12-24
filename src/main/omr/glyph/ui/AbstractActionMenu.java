@@ -11,15 +11,15 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
 import omr.sheet.Sheet;
 
 import omr.ui.util.SeparableMenu;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -68,7 +68,7 @@ public abstract class AbstractActionMenu
     // updateMenu //
     //------------//
     @Override
-    public int updateMenu (Set<Glyph> glyphs)
+    public int updateMenu (Collection<Glyph> glyphs)
     {
         super.updateMenu(glyphs);
 

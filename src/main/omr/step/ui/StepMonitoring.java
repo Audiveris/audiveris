@@ -11,8 +11,7 @@
 // </editor-fold>
 package omr.step.ui;
 
-import omr.sheet.Sheet;
-import omr.sheet.ui.SheetsController;
+import omr.sheet.ui.StubsController;
 
 import omr.step.Step;
 
@@ -20,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.SwingUtilities;
+import omr.sheet.SheetStub;
 
 /**
  * Class {@code StepMonitoring} handles the step progress notification to user, when
@@ -109,36 +109,35 @@ public abstract class StepMonitoring
      * Notify the UI part that the provided step has started or stopped in the provided
      * sheet.
      *
-     * @param sheet the sheet concerned
-     * @param step  the step notified
+     * @param stub the sheet stub concerned
+     * @param step the step notified
      */
-    public static void notifyStep (final Sheet sheet,
+    public static void notifyStep (final SheetStub stub,
                                    final Step step)
     {
         if (monitor != null) {
-            final boolean finished = sheet.getCurrentStep() == null;
-            SwingUtilities.invokeLater(
-                    new Runnable()
-                    {
-                        @Override
-                        public void run ()
-                        {
-                            // Update sheet view for this step?
-                            if (finished) {
-                                step.displayUI(sheet);
-                                sheet.getAssembly().selectViewTab(step.getSheetTab());
-                            }
+            final boolean finished = stub.getCurrentStep() == null;
+            SwingUtilities.invokeLater(new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    // Update sheet view for this step?
+                    if (finished) {
+                        step.displayUI(stub.getSheet());
+                        stub.getAssembly().selectViewTab(step.getSheetTab());
+                    }
 
                             // Call attention to this sheet (only if displayed),
-                            // so that score-dependent actions can get enabled.
-                            SheetsController ctrl = SheetsController.getInstance();
-                            Sheet currentSheet = ctrl.getSelectedSheet();
+                    // so that score-dependent actions can get enabled.
+                    StubsController ctrl = StubsController.getInstance();
+                    SheetStub currentStub = ctrl.getSelectedStub();
 
-                            if (currentSheet == sheet) {
-                                ctrl.callAboutSheet(sheet);
-                            }
-                        }
-                    });
+                    if (currentStub == stub) {
+                        ctrl.callAboutSheet(currentStub);
+                    }
+                }
+            });
         }
     }
 

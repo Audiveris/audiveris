@@ -121,8 +121,12 @@ public class Population
      */
     public double getVariance ()
     {
-        if (n < 2) {
-            throw new RuntimeException("Not enough cumulated values : " + n);
+        if (n == 0) {
+            throw new RuntimeException("Population is empty");
+        }
+
+        if (n == 1) {
+            return 0;
         }
 
         return Math.max(0d, (s2 - ((s * s) / n)) / (n - 1)); // Unbiased
@@ -193,13 +197,13 @@ public class Population
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("n:").append(n);
+        sb.append("count:").append(n);
 
         if (n > 0) {
             sb.append(String.format(" mean:%.2f", getMeanValue()));
 
             if (n > 1) {
-                sb.append(String.format(" std:%.2f", getStandardDeviation()));
+                sb.append(String.format(" stdDev:%.2f", getStandardDeviation()));
             }
         }
 

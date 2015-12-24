@@ -14,10 +14,9 @@ package omr.sig.inter;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-
 import omr.glyph.ShapeSet;
-import omr.glyph.facets.Glyph;
 
 import omr.score.TimeRational;
 import omr.score.TimeValue;
@@ -35,12 +34,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 /**
  * Class {@code TimeInter} represents a time signature, with either one (full) symbol
  * (COMMON, CUT or predefined combo) or a pair of top and bottom numbers.
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public abstract class TimeInter
         extends AbstractInter
 {
@@ -87,7 +92,13 @@ public abstract class TimeInter
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /** TimeRational components. */
+    @XmlElement(name = "time-rational")
+    @XmlJavaTypeAdapter(TimeRational.Adapter.class)
     protected TimeRational timeRational;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -110,20 +121,40 @@ public abstract class TimeInter
      * Creates a new TimeInter object.
      *
      * @param glyph        underlying glyph
-     * @param box          bounding box
+     * @param bounds       bounding bounds
      * @param timeRational the pair of num and den numbers
      * @param grade        evaluation grade
      */
     public TimeInter (Glyph glyph,
-                      Rectangle box,
+                      Rectangle bounds,
                       TimeRational timeRational,
                       double grade)
     {
-        super(glyph, box, null, grade);
+        super(glyph, bounds, null, grade);
         this.timeRational = timeRational;
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private TimeInter ()
+    {
+        super(null, null, null, null);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------//
+    // replicate //
+    //-----------//
+    /**
+     * Use this TimeInter instance as a template for creating another one.
+     * NOTA: Its bounds should be updated to the target location.
+     *
+     * @param targetStaff the target staff
+     * @return the duplicate (not inserted in sig)
+     */
+    public abstract TimeInter replicate (Staff targetStaff);
+
     //--------//
     // create //
     //--------//
@@ -134,12 +165,45 @@ public abstract class TimeInter
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    //-------------//
-    // isSupported //
-    //-------------//
-    public static boolean isSupported (TimeRational tr)
+    //------------//
+    // rationalOf //
+    //------------//
+    /**
+     * Report the num/den pair of predefined time signature shapes.
+     *
+     * @param shape the queried shape
+     * @return the related num/den or null
+     */
+    public static TimeRational rationalOf (Shape shape)
     {
-        return defaultTimes.contains(tr) || optionalTimes.contains(tr);
+        if (shape == null) {
+            return null;
+        }
+
+        switch (shape) {
+        case COMMON_TIME:
+        case TIME_FOUR_FOUR:
+            return new TimeRational(4, 4);
+
+        case CUT_TIME:
+        case TIME_TWO_TWO:
+            return new TimeRational(2, 2);
+
+        case TIME_TWO_FOUR:
+            return new TimeRational(2, 4);
+
+        case TIME_THREE_FOUR:
+            return new TimeRational(3, 4);
+
+        case TIME_FIVE_FOUR:
+            return new TimeRational(5, 4);
+
+        case TIME_SIX_EIGHT:
+            return new TimeRational(6, 8);
+
+        default:
+            return null;
+        }
     }
 
     //----------------//
@@ -179,43 +243,6 @@ public abstract class TimeInter
         return timeRational;
     }
 
-    //------------//
-    // rationalOf //
-    //------------//
-    /**
-     * Report the num/den pair of predefined time signature shapes.
-     *
-     * @param shape the queried shape
-     * @return the related num/den or null
-     */
-    public static TimeRational rationalOf (Shape shape)
-    {
-        switch (shape) {
-        case COMMON_TIME:
-        case TIME_FOUR_FOUR:
-            return new TimeRational(4, 4);
-
-        case CUT_TIME:
-        case TIME_TWO_TWO:
-            return new TimeRational(2, 2);
-
-        case TIME_TWO_FOUR:
-            return new TimeRational(2, 4);
-
-        case TIME_THREE_FOUR:
-            return new TimeRational(3, 4);
-
-        case TIME_FIVE_FOUR:
-            return new TimeRational(5, 4);
-
-        case TIME_SIX_EIGHT:
-            return new TimeRational(6, 8);
-
-        default:
-            return null;
-        }
-    }
-
     //----------//
     // getValue //
     //----------//
@@ -227,6 +254,14 @@ public abstract class TimeInter
     public TimeValue getValue ()
     {
         return new TimeValue(timeRational);
+    }
+
+    //-------------//
+    // isSupported //
+    //-------------//
+    public static boolean isSupported (TimeRational tr)
+    {
+        return defaultTimes.contains(tr) || optionalTimes.contains(tr);
     }
 
     //--------//
@@ -256,16 +291,16 @@ public abstract class TimeInter
     }
 
     //-----------//
-    // replicate //
+    // internals //
     //-----------//
-    /**
-     * Use this TimeInter instance as a template for creating another one.
-     * NOTA: Its box should be updated to the target location.
-     *
-     * @param targetStaff the target staff
-     * @return the duplicate (not inserted in sig)
-     */
-    public abstract TimeInter replicate (Staff targetStaff);
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(' ').append(getValue());
+
+        return sb.toString();
+    }
 
     //-----------------//
     // predefinedShape //

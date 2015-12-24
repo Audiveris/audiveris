@@ -16,6 +16,8 @@
 <!-- the Compile on Save feature is turned off for the project. -->
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
+
+<!-- for JDK8 javadoc, add -Xdoclint:none in Build/Documenting/Additional Javadoc Options -->
 <project basedir="." default="run" name="audiveris">
     <description>
         Build, test, and run the Audiveris project
@@ -299,7 +301,8 @@ public class ProgramId
     <!-- ============== -->
     <!-- -javadoc-build -->
     <!-- ============== -->
-    <target depends="-uml, audiveris-impl.-javadoc-build" name="-javadoc-build"/>
+    <!-- Purpose of this pseudo re-definition is just to insert a dependency on "uml" target. -->
+    <target depends="uml, audiveris-impl.-javadoc-build" name="-javadoc-build"/>
     <!-- ========== -->
     <!-- -no-hg-tip -->
     <!-- ========== -->
@@ -386,11 +389,11 @@ Implementation-Version: ${version.revision}
             <fileset dir="${dev.dir}/icons" includes="crystal/**/*"/>
         </copy>
     </target>
-    <!-- ==== -->
-    <!-- -uml -->
-    <!-- ==== -->
+    <!-- === -->
+    <!-- uml -->
+    <!-- === -->
     <!-- Generate UML drawings with Umlet utility -->
-    <target name="-uml">
+    <target name="uml">
         <for param="file">
             <path>
                 <fileset dir="${src.dir}" includes="**/*.uxf">
@@ -407,11 +410,16 @@ Implementation-Version: ${version.revision}
             <sequential>
                 <for list="png,pdf" param="format">
                     <sequential>
-                        <echo><![CDATA[Umlet format=@{format} file=@{file}]]></echo>
+                        <!-- Discard the ".uxf" extension for the 'output' property -->
+                        <local name="output"/>
+                        <propertyregex property="output" input="@{file}" regexp="(.*)\.uxf" select="\1" />
+                        <echo><![CDATA[Umlet format=@{format} filename=@{file} output=${output}]]></echo>
+                        <!-- Call Umlet application -->
                         <java classname="com.baselet.control.Main" classpathref="tools.classpath" fork="true">
                             <arg value="-action=convert"/>
                             <arg value="-format=@{format}"/>
                             <arg value="-filename=@{file}"/>
+                            <arg value="-output=${output}"/>
                         </java>
                     </sequential>
                 </for>

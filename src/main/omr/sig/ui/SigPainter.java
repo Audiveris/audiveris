@@ -24,12 +24,12 @@ import omr.sheet.SystemInfo;
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractHeadInter;
-import omr.sig.inter.BarConnectionInter;
+import omr.sig.inter.BarConnectorInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.BraceInter;
-import omr.sig.inter.BracketConnectionInter;
+import omr.sig.inter.BracketConnectorInter;
 import omr.sig.inter.BracketInter;
-import omr.sig.inter.ChordInter;
+import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.EndingInter;
 import omr.sig.inter.Inter;
@@ -216,10 +216,10 @@ public class SigPainter
     // visit //
     //-------//
     @Override
-    public void visit (BarConnectionInter connection)
+    public void visit (BarConnectorInter connector)
     {
-        setColor(connection);
-        g.fill(connection.getArea());
+        setColor(connector);
+        g.fill(connector.getArea());
     }
 
     //-------//
@@ -251,7 +251,7 @@ public class SigPainter
     // visit //
     //-------//
     @Override
-    public void visit (BracketConnectionInter connection)
+    public void visit (BracketConnectorInter connection)
     {
         setColor(connection);
         g.fill(connection.getArea());
@@ -357,7 +357,7 @@ public class SigPainter
     // visit //
     //-------//
     @Override
-    public void visit (ChordInter inter)
+    public void visit (AbstractChordInter inter)
     {
         // Nothing: let note & stem be painted on their own
     }
@@ -376,10 +376,10 @@ public class SigPainter
 
         ///Glyph glyph = inter.getGlyph();
         ///Point center = (glyph != null) ? glyph.getCentroid() : GeoUtil.centerOf(inter.getBounds());
-        Point center = GeoUtil.centerOf(inter.getBounds());
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
 
         if (symbol != null) {
+            Point center = GeoUtil.centerOf(inter.getBounds());
             symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
         } else {
             logger.error("No symbol to paint {}", inter);
@@ -458,7 +458,7 @@ public class SigPainter
     @Override
     public void visit (SlurInter slur)
     {
-        CubicCurve2D curve = slur.getInfo().getCurve();
+        CubicCurve2D curve = slur.getCurve();
 
         if (curve != null) {
             setColor(slur);

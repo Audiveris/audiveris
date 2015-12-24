@@ -22,12 +22,12 @@ import omr.step.Step;
 import omr.util.Param;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.SortedSet;
 
 import javax.swing.JFrame;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Interface {@code Book} is the root class for handling a physical set of image input
@@ -36,26 +36,89 @@ import javax.swing.JFrame;
  * A book instance generally corresponds to an input file containing one or several images, each
  * image resulting in a separate {@link Sheet} instance.
  * <p>
- * A sheet generally contains one or several systems. An indented system (prefixed by part names)
- * usually indicates the beginning of a movement. Such indented system may appear in the middle of a
- * sheet, thus (logical) movement frontiers do not always match (physical) sheet frontiers.
+ * A sheet generally contains one or several systems.
+ * An indented system (sometimes prefixed by part names) usually indicates a new movement.
+ * Such indented system may appear in the middle of a sheet, thus (logical) movement frontiers do
+ * not always match (physical) sheet frontiers.
  * <p>
  * A (super-) book may also contain (sub-) books to recursively gather a sequence of input files.
  * <p>
- * <img src="doc-files/Book.png" />
+ * Methods are organized as follows:
+ * <dl>
+ * <dt>Administration</dt>
+ * <dd><ul>
+ * <li>{@link #includeBook}</li>
+ * <li>{@link #getOffset}</li>
+ * <li>{@link #setOffset}</li>
+ * <li>{@link #getInputPath}</li>
+ * <li>{@link #getRadix}</li>
+ * <li>{@link #getLogPrefix}</li>
+ * <li>{@link #close}</li>
+ * <li>{@link #isClosing}</li>
+ * <li>{@link #setClosing}</li>
+ * </ul></dd>
+ *
+ * <dt>Sheets</dt>
+ * <dd><ul>
+ * <li>{@link #createStubs}</li>
+ * <li>{@link #loadSheetImage}</li>
+ * <li>{@link #isMultiSheet}</li>
+ * <li>{@link #getStub}</li>
+ * <li>{@link #getStubs}</li>
+ * <li>{@link #removeStub}</li>
+ * </ul></dd>
+ *
+ * <dt>Transcription</dt>
+ * <dd><ul>
+ * <li>{@link #transcribe}</li>
+ * <li>{@link #doStep}</li>
+ * <li>{@link #buildScores}</li>
+ * <li>{@link #getScores}</li>
+ * </ul></dd>
+ *
+ * <dt>Parameters</dt>
+ * <dd><ul>
+ * <li>{@link #getFilterParam}</li>
+ * <li>{@link #getLanguageParam}</li>
+ * </ul></dd>
+ *
+ * <dt>Artifacts</dt>
+ * <dd><ul>
+ * <li>{@link #getBrowserFrame}</li>
+ * <li>{@link #getExportPathSansExt}</li>
+ * <li>{@link #setExportPathSansExt}</li>
+ * <li>{@link #export}</li>
+ * <li>{@link #deleteExport}</li>
+ * <li>{@link #getPrintPath}</li>
+ * <li>{@link #setPrintPath}</li>
+ * <li>{@link #print}</li>
+ * <li>{@link #getScript}</li>
+ * <li>{@link #getScriptPath}</li>
+ * <li>{@link #setScriptPath}</li>
+ * <li>{@link #getProjectPath}</li>
+ * <li>{@link #store}</li>
+ * </ul></dd>
+ * </dl>
+ * <p>
+ * <img src="doc-files/Book.png">
  *
  * @author Hervé Bitteur
  */
+@XmlJavaTypeAdapter(BasicBook.Adapter.class)
 public interface Book
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** File name for book internals in project file system: {@value}. */
+    static final String BOOK_INTERNALS = "book.xml";
+
+    //~ Methods ------------------------------------------------------------------------------------
     // -------------
     // --- Admin ---
     // -------------
     //
     /**
-     * Include a (sub) book into this (super) one.
+     * Include a (sub) book into this (super) book.
      *
      * @param book the sub book to include
      */
@@ -66,14 +129,14 @@ public interface Book
      *
      * @return the offset (in terms of number of sheets)
      */
-    int getOffset ();
+    Integer getOffset ();
 
     /**
      * Assign this book offset (WRT containing super-book)
      *
      * @param offset the offset to set
      */
-    void setOffset (int offset);
+    void setOffset (Integer offset);
 
     /**
      * Report the path name of the book image(s) input.
@@ -103,29 +166,54 @@ public interface Book
     void close ();
 
     /**
-     * Report whether this book is being closed
+     * Report whether this book is closing
      *
      * @return the closing flag
      */
     boolean isClosing ();
 
     /**
+     * Flag this book as closing.
      *
      * @param closing the closing to set
      */
     void setClosing (boolean closing);
+
+    /**
+     * Report whether the book has been modified with respect to its project data.
+     *
+     * @return true if modified
+     */
+    boolean isModified ();
+
+    /**
+     * Set the modified flag.
+     *
+     * @param val the new flag value
+     */
+    void setModified (boolean val);
 
     // --------------
     // --- Sheets ---
     // --------------
     //
     /**
-     * Create as many sheets as there are images in the input image file.
-     * A created sheet is nearly empty, the related image will have to be loaded later.
+     * Create as many sheet stubs as there are images in the input image file.
+     * A created stub is nearly empty, the related image will have to be loaded later.
      *
-     * @param sheetIds set of sheet IDs (1-based) explicitly included, null for all
+     * @param sheetNumbers set of sheet numbers (1-based) explicitly included, null for all
      */
-    void createSheets (SortedSet<Integer> sheetIds);
+    void createStubs (SortedSet<Integer> sheetNumbers);
+
+    /**
+     * Display assemblies of all sheets, including the invalid ones.
+     */
+    void displayAllSheets ();
+
+    /**
+     * Hide assemblies of invalid sheets.
+     */
+    void hideInvalidSheets ();
 
     /**
      * Actually load the image that corresponds to the specified sheet id.
@@ -143,30 +231,57 @@ public interface Book
     boolean isMultiSheet ();
 
     /**
-     * Report the sheet with provided id (counted from 1).
+     * Report the sheet stub with provided id (counted from 1).
      *
      * @param sheetId the desired value for sheet id
-     * @return the proper sheet, or null if not found
+     * @return the proper sheet stub, or null if not found
      */
-    Sheet getSheet (int sheetId);
+    SheetStub getStub (int sheetId);
 
     /**
-     * Report the sheets contained in this book.
+     * Report the first non-discarded stub in this book
      *
-     * @return the immutable list of sheets
+     * @return the first non-discarded stub, or null
      */
-    List<Sheet> getSheets ();
+    SheetStub getFirstValidStub ();
 
     /**
-     * Remove the specified sheet from the containing book.
+     * Open (in the project zipped file) the folder for provided sheet number
+     *
+     * @param number sheet number (1-based) within the book
+     * @return the path to sheet folder
+     */
+    Path openSheetFolder (int number);
+
+    /**
+     * Report all the sheets stubs contained in this book.
+     *
+     * @return the immutable list of sheets stubs, list may be empty but is never null
+     */
+    List<SheetStub> getStubs ();
+
+    /**
+     * Report the non-discarded sheets stubs in this book.
+     *
+     * @return the immutable list of valid sheets stubs
+     */
+    List<SheetStub> getValidStubs ();
+
+    /**
+     * Remove the specified sheet stub from the containing book.
      * <p>
      * Typically, when the sheet carries no music information, it can be removed from the book
      * (without changing the IDs of the sibling sheets in the book)
      *
-     * @param sheet the sheet to remove
+     * @param stub the sheet stub to remove
      * @return true if actually removed
      */
-    boolean removeSheet (Sheet sheet);
+    boolean removeStub (SheetStub stub);
+
+    /**
+     * Swap all sheets, except the current one if any.
+     */
+    void swapAllSheets ();
 
     // ---------------------
     // --- Transcription ---
@@ -227,13 +342,6 @@ public interface Book
     // -----------------
     //
     /**
-     * Report the related book bench.
-     *
-     * @return the related bench
-     */
-    BookBench getBench ();
-
-    /**
      * Create a dedicated frame, where book hierarchy can be browsed interactively.
      *
      * @return the created frame
@@ -241,21 +349,31 @@ public interface Book
     JFrame getBrowserFrame ();
 
     /**
-     * Report the path, if any and sans extension, where book is to be exported.
+     * Report the path (without extension) where book is to be exported.
      *
-     * @return the book export path sans extension, or null
+     * @return the book export path without extension, or null
      */
-    Path getExportPath ();
+    Path getExportPathSansExt ();
 
     /**
-     * Remember where the book is to be exported.
+     * Remember the path (without extension) where the book is to be exported.
      *
-     * @param exportPath the book export path (without .xml or .mxl extension)
+     * @param exportPathSansExt the book export path (without extension)
      */
-    void setExportPath (Path exportPath);
+    void setExportPathSansExt (Path exportPathSansExt);
 
     /**
      * Export this book scores using MusicXML format.
+     * <p>
+     * Assuming 'BOOK' is the radix of book name, several outputs can be considered:
+     * <ul>
+     * <li>If we don't use opus and the book contains a single score, it is exported as "BOOK.ext"
+     * where "ext" is either "mxl" or "xml" depending upon whether compression is used.</li>
+     * <li>If we don't use opus and the book contains several scores, it is exported as several
+     * "BOOK.mvt#.ext" files, where "#" stands for the movement number and "ext" is either "mxl" or
+     * "xml" depending upon whether compression is used.</li>
+     * <li>If we use opus, everything goes into "BOOK.opus.mxl" as a single container file.</li>
+     * </ul>
      */
     void export ();
 
@@ -265,7 +383,7 @@ public interface Book
     void deleteExport ();
 
     /**
-     * Report the path, if any and sans extension, where book is to be printed.
+     * Report the path, if any, where book is to be printed.
      *
      * @return the print path, or null
      */
@@ -291,16 +409,35 @@ public interface Book
     Script getScript ();
 
     /**
-     * Report the file, if any, where the book script should be written.
+     * Report the path, if any, where the book script should be written.
      *
-     * @return the related script file or null
+     * @return the related script path or null
      */
-    File getScriptFile ();
+    Path getScriptPath ();
 
     /**
-     * Remember the file where the book script is written.
+     * Remember the path where the book script is written.
      *
-     * @param scriptFile the related script file
+     * @param scriptPath the related script path
      */
-    void setScriptFile (File scriptFile);
+    void setScriptPath (Path scriptPath);
+
+    /**
+     * Report where the book project is kept.
+     *
+     * @return the book project path
+     */
+    Path getProjectPath ();
+
+    /**
+     * Store book project to disk.
+     *
+     * @param projectPath target path for storing the project
+     */
+    void store (Path projectPath);
+
+    /**
+     * Store book project to disk, using its current project path.
+     */
+    void store ();
 }

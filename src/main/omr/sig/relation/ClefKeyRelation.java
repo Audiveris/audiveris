@@ -27,6 +27,14 @@ public class ClefKeyRelation
 
     private static final Constants constants = new Constants();
 
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code ClefKeyRelation} object.
+     */
+    public ClefKeyRelation ()
+    {
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getSourceCoeff //

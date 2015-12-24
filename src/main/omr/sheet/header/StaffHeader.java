@@ -14,8 +14,19 @@ package omr.sheet.header;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.KeyInter;
 import omr.sig.inter.TimeInter;
+import omr.sig.inter.TimePairInter;
+import omr.sig.inter.TimeWholeInter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
 
 /**
  * Class {@code StaffHeader} gathers information about the (Clef + Key + Time) sequence
@@ -23,25 +34,51 @@ import java.util.List;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class StaffHeader
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(
+            StaffHeader.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /**
      * Abscissa for start of staff header.
      * This is typically the point right after the right-most bar line of the starting bar group,
      * or the beginning abscissa of staff lines when there is no left bar line.
      */
+    @XmlAttribute(name = "start")
     public final int start;
 
     /** Abscissa for end of staff header. */
+    @XmlAttribute(name = "stop")
     public int stop;
 
+    /** Clef found. */
+    @XmlElement(name = "clef")
+    public ClefInter clef;
+
+    /** Key-sig found, if any. */
+    @XmlElement(name = "key")
+    public KeyInter key;
+
+    /** Time-sig found, if any. */
+    @XmlElements({
+        @XmlElement(name = "time-pair", type = TimePairInter.class),
+        @XmlElement(name = "time-whole", type = TimeWholeInter.class)
+    })
+    public TimeInter time;
+
+    // Transient data
+    //---------------
+    //
     /** Abscissa range for clef. */
     public Range clefRange;
-
-    /** Clef found. */
-    public ClefInter clef;
 
     /** Abscissa range for key. */
     public Range keyRange;
@@ -49,14 +86,8 @@ public class StaffHeader
     /** Abscissa for start of each key alter. */
     public List<Integer> alterStarts;
 
-    /** Key-sig found, if any. */
-    public KeyInter key;
-
     /** Abscissa range for time. */
     public Range timeRange;
-
-    /** Time-sig found, if any. */
-    public TimeInter time;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -67,6 +98,14 @@ public class StaffHeader
     public StaffHeader (int start)
     {
         this.start = start;
+    }
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private StaffHeader ()
+    {
+        this.start = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------

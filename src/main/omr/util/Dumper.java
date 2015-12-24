@@ -14,6 +14,7 @@ package omr.util;
 import omr.util.Dumping.Relevance;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
@@ -197,8 +198,8 @@ public class Dumper
     // printField //
     //------------//
     /**
-     * Basic printing of field name and value. The method can of course be
-     * overridden.
+     * Basic printing of field name and value.
+     * The method can of course be overridden.
      *
      * @param name  the field name
      * @param value the field value, which may be null
@@ -208,15 +209,55 @@ public class Dumper
     {
         if (value == null) {
             sb.append("null");
+        } else if (value instanceof Collection) {
+            printCollectionValue((Collection) value);
+        } else if (value instanceof Map) {
+            printCollectionValue(((Map) value).entrySet());
+        } else if (value instanceof boolean[]) {
+            sb.append(Arrays.toString((boolean[]) value));
+        } else if (value instanceof byte[]) {
+            sb.append(Arrays.toString((byte[]) value));
+        } else if (value instanceof short[]) {
+            sb.append(Arrays.toString((short[]) value));
+        } else if (value instanceof char[]) {
+            sb.append(Arrays.toString((char[]) value));
+        } else if (value instanceof int[]) {
+            sb.append(Arrays.toString((int[]) value));
+        } else if (value instanceof long[]) {
+            sb.append(Arrays.toString((long[]) value));
+        } else if (value instanceof float[]) {
+            sb.append(Arrays.toString((float[]) value));
+        } else if (value instanceof double[]) {
+            sb.append(Arrays.toString((double[]) value));
+        } else if (value.getClass().isArray()) {
+            printArrayValue((Object[]) value);
         } else {
-            if (value instanceof Collection) {
-                printCollectionValue((Collection) value);
-            } else if (value instanceof Map) {
-                printCollectionValue(((Map) value).entrySet());
+            sb.append(value.toString());
+        }
+    }
+
+    private void printArrayValue (Object[] value)
+    {
+        sb.append("[");
+
+        int i = 0;
+
+        for (Object obj : value) {
+            if (i++ > 0) {
+                sb.append(useHtml ? ",<br/>" : ",");
+            }
+
+            // Safeguard action when the object is a big collection
+            if (i > MAX_COLLECTION_INDEX) {
+                sb.append(" ... ").append(value.length).append(" items");
+
+                break;
             } else {
-                sb.append(value.toString());
+                sb.append(obj);
             }
         }
+
+        sb.append("]");
     }
 
     //--------------//

@@ -11,16 +11,19 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.sheet.Staff;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code RepeatDotInter} represents a repeat dot, near a bar line.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "repeat-dot")
 public class RepeatDotInter
         extends AbstractPitchedInter
 {
@@ -40,5 +43,12 @@ public class RepeatDotInter
                            int pitch)
     {
         super(glyph, null, Shape.REPEAT_DOT, grade, staff, pitch);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private RepeatDotInter ()
+    {
     }
 }

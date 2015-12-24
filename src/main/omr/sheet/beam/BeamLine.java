@@ -76,9 +76,9 @@ public class BeamLine
     // setVip //
     //--------//
     @Override
-    public void setVip ()
+    public void setVip (boolean vip)
     {
-        vip = true;
+        this.vip = vip;
     }
 
     //----------//

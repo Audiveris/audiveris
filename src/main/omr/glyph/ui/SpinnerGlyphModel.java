@@ -11,19 +11,20 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.GlyphNest;
-import omr.glyph.facets.Glyph;
-import static omr.ui.field.SpinnerUtil.*;
+import omr.glyph.Glyph;
+import omr.glyph.GlyphIndex;
 
 import omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
+
 import javax.swing.AbstractSpinnerModel;
 
 /**
- * Class {@code SpinnerGlyphModel} is a spinner model backed by a {@link GlyphNest}.
+ * Class {@code SpinnerGlyphModel} is a spinner model backed by a {@link GlyphIndex}.
  * Any modification in the nest is thus transparently handled, since the nest <b>is</b> the model.
  * <p>
  * A glyph {@link Predicate} can be assigned to this SpinnerGlyphModel at construction time in order
@@ -41,34 +42,32 @@ public class SpinnerGlyphModel
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph nest */
-    private final GlyphNest nest;
+    private final GlyphIndex nest;
 
     /** Additional predicate if any */
     private final Predicate<Glyph> predicate;
 
     /** Current glyph id */
-    private Integer currentId;
+    private String currentId;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new SpinnerGlyphModel object, on all nest glyph
-     * instances.
+     * Creates a new SpinnerGlyphModel object, on all nest glyph instances.
      *
      * @param nest the underlying glyph nest
      */
-    public SpinnerGlyphModel (GlyphNest nest)
+    public SpinnerGlyphModel (GlyphIndex nest)
     {
         this(nest, null);
     }
 
     /**
-     * Creates a new SpinnerGlyphModel object, with a related glyph
-     * predicate.
+     * Creates a new SpinnerGlyphModel object, with a related glyph predicate.
      *
      * @param nest      the underlying glyph nest
      * @param predicate predicate of glyph, or null
      */
-    public SpinnerGlyphModel (GlyphNest nest,
+    public SpinnerGlyphModel (GlyphIndex nest,
                               Predicate<Glyph> predicate)
     {
         if (nest == null) {
@@ -77,8 +76,6 @@ public class SpinnerGlyphModel
 
         this.nest = nest;
         this.predicate = predicate;
-
-        currentId = NO_VALUE;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -95,13 +92,14 @@ public class SpinnerGlyphModel
     @Override
     public Object getNextValue ()
     {
-        final int cur = currentId.intValue();
-        logger.debug("getNextValue cur={}", cur);
+        logger.debug("getNextValue cur={}", currentId);
 
-        if (cur == NO_VALUE) {
+        if (currentId == null) {
             // Return first suitable glyph in nest
-            for (Glyph glyph : nest.getAllGlyphsEver()) {
-                if ((predicate == null) || predicate.check(glyph)) {
+            for (Iterator<Glyph> it = nest.iterator(); it.hasNext();) {
+                Glyph glyph = it.next();
+
+                if ((glyph != null) && ((predicate == null) || predicate.check(glyph))) {
                     return glyph.getId();
                 }
             }
@@ -111,9 +109,11 @@ public class SpinnerGlyphModel
             // Return first suitable glyph after current glyph in nest
             boolean found = false;
 
-            for (Glyph glyph : nest.getAllGlyphsEver()) {
+            for (Iterator<Glyph> it = nest.iterator(); it.hasNext();) {
+                final Glyph glyph = it.next();
+
                 if (!found) {
-                    if (glyph.getId() == cur) {
+                    if (glyph.getId().equals(currentId)) {
                         found = true;
                     }
                 } else if ((predicate == null) || predicate.check(glyph)) {
@@ -139,17 +139,18 @@ public class SpinnerGlyphModel
     public Object getPreviousValue ()
     {
         Glyph prevGlyph = null;
-        final int cur = currentId.intValue();
-        logger.debug("getPreviousValue cur={}", cur);
+        logger.debug("getPreviousValue cur={}", currentId);
 
-        if (cur == NO_VALUE) {
-            return NO_VALUE;
+        if (currentId == null) {
+            return null;
         }
 
-        // GlyphNest
-        for (Glyph glyph : nest.getAllGlyphsEver()) {
-            if (glyph.getId() == cur) {
-                return (prevGlyph != null) ? prevGlyph.getId() : NO_VALUE;
+        // GlyphIndex
+        for (Iterator<Glyph> it = nest.iterator(); it.hasNext();) {
+            final Glyph glyph = it.next();
+
+            if (glyph.getId().equals(currentId)) {
+                return (prevGlyph != null) ? prevGlyph.getId() : null;
             }
 
             // Should we remember this as (suitable) previous glyph ?
@@ -182,8 +183,7 @@ public class SpinnerGlyphModel
     //----------//
     /**
      * Changes current glyph id of the model.
-     * If the glyph id is illegal then an {@code IllegalArgumentException} is
-     * thrown.
+     * If the glyph id is illegal then an {@code IllegalArgumentException} is thrown.
      *
      * @param value the value to set
      * @throws IllegalArgumentException if {@code value} isn't allowed
@@ -193,14 +193,14 @@ public class SpinnerGlyphModel
     {
         logger.debug("setValue value={}", value);
 
-        Integer id = (Integer) value;
+        String id = (String) value;
         boolean ok = false;
 
-        if (id == NO_VALUE) {
+        if (id == null) {
             ok = true;
         } else {
-            // GlyphNest
-            Glyph glyph = nest.getGlyph(id);
+            // GlyphIndex
+            final Glyph glyph = nest.getEntity(id);
 
             if (glyph != null) {
                 if (predicate != null) {

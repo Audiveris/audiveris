@@ -21,12 +21,14 @@ import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -44,26 +46,36 @@ public abstract class FileUtil
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // avoidExtension //
-    //----------------//
+    //-----------------//
+    // avoidExtensions //
+    //-----------------//
     /**
-     * Remove the undesired extension from provided path
+     * Remove the undesired extensions from the provided path.
+     * <p>
+     * The method is able to handle multiple extensions (such as .foo.bar) as well as simple
+     * extensions (such .bar) PROVIDED THAT the multiple extensions appear first in the sequence of
+     * undesired extensions.
+     * Otherwise, in the provided example, "name.foo.bar" would give "name.foo" rather than "name"
      *
-     * @param path    the path to check and perhaps shorten
-     * @param toAvoid the extension to avoid
-     * @return the path without the undesired extension, if any
+     * @param path    the path to check for extensions
+     * @param toAvoid the extensions to avoid (not case-sensitive)
+     * @return the path without any of the undesired extensions
      */
-    public static Path avoidExtension (Path path,
-                                       String toAvoid)
+    public static Path avoidExtensions (Path path,
+                                        String... toAvoid)
     {
-        final String ext = getExtension(path.toString());
+        final String pathStr = path.toString().toLowerCase();
 
-        if (!ext.equalsIgnoreCase(toAvoid)) {
-            return path;
+        for (String s : toAvoid) {
+            final String str = s.toLowerCase();
+            int li = pathStr.lastIndexOf(str);
+
+            if ((li != -1) && ((li + str.length()) == pathStr.length())) {
+                return Paths.get(path.toString().substring(0, li));
+            }
         }
 
-        return path.resolveSibling(getNameSansExtension(path));
+        return path;
     }
 
     //------//
@@ -99,6 +111,47 @@ public abstract class FileUtil
                 output.close();
             }
         }
+    }
+
+    //----------//
+    // copyTree //
+    //----------//
+    public static void copyTree (final Path sourceDir,
+                                 final Path targetDir)
+            throws IOException
+    {
+        Files.walkFileTree(
+                sourceDir,
+                new SimpleFileVisitor<Path>()
+        {
+            @Override
+            public FileVisitResult preVisitDirectory (Path dir,
+                                                      BasicFileAttributes attrs)
+                    throws IOException
+            {
+                Path target = targetDir.resolve(sourceDir.relativize(dir));
+
+                try {
+                    Files.copy(dir, target);
+                } catch (FileAlreadyExistsException e) {
+                    if (!Files.isDirectory(target)) {
+                        throw e;
+                    }
+                }
+
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile (Path file,
+                                              BasicFileAttributes attrs)
+                    throws IOException
+            {
+                Files.copy(file, targetDir.resolve(sourceDir.relativize(file)));
+
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
     //-----------//
@@ -296,43 +349,43 @@ public abstract class FileUtil
             Files.walkFileTree(
                     folder,
                     new SimpleFileVisitor<Path>()
-                    {
-                        @Override
-                        public FileVisitResult preVisitDirectory (Path dir,
-                                                                  BasicFileAttributes attrs)
-                        throws IOException
-                        {
-                            if (dir.equals(folder) || dirMatcher.matches(dir)) {
-                                return FileVisitResult.CONTINUE;
-                            } else {
-                                return FileVisitResult.SKIP_SUBTREE;
-                            }
-                        }
-
-                        @Override
-                        public FileVisitResult visitFile (Path file,
+            {
+                @Override
+                public FileVisitResult preVisitDirectory (Path dir,
                                                           BasicFileAttributes attrs)
                         throws IOException
-                        {
-                            if (fileMatcher.matches(file)) {
-                                pathsFound.add(file);
-                            }
+                {
+                    if (dir.equals(folder) || dirMatcher.matches(dir)) {
+                        return FileVisitResult.CONTINUE;
+                    } else {
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                }
 
-                            return FileVisitResult.CONTINUE;
-                        }
-
-                        @Override
-                        public FileVisitResult postVisitDirectory (Path dir,
-                                                                   IOException exc)
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs)
                         throws IOException
-                        {
-                            if (dirMatcher.matches(dir)) {
-                                pathsFound.add(dir);
-                            }
+                {
+                    if (fileMatcher.matches(file)) {
+                        pathsFound.add(file);
+                    }
 
-                            return FileVisitResult.CONTINUE;
-                        }
-                    });
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory (Path dir,
+                                                           IOException exc)
+                        throws IOException
+                {
+                    if (dirMatcher.matches(dir)) {
+                        pathsFound.add(dir);
+                    }
+
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         } catch (IOException ex) {
             logger.warn("Error in browsing " + folder + " " + ex, ex);
         }

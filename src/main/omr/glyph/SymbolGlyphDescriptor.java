@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.util.PointFacade;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +35,7 @@ import javax.xml.bind.annotation.XmlType;
  * drawn thanks to MusicFont.
  * The descriptor can be augmented by informations such as stem number, with
  * ledger, pitch position, reference point.
- * These informations are thus copied to the {@link SymbolGlyph} instance for better training.
+ * These informations are thus copied to the {@link SymbolSample} instance for better training.
  * We can have several descriptors from the same shape, which allows different values for additional
  * informations (for example, the stem number may be 1 or 2 for NOTEHEAD_BLACK shape).
  *
@@ -47,7 +45,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "xmlRefPoint", "stemNumber", "withLedger", "pitchPosition"}
 )
-@XmlRootElement(name = "symbol")
+@XmlRootElement(name = "symbol-desc")
 public class SymbolGlyphDescriptor
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -67,22 +65,12 @@ public class SymbolGlyphDescriptor
     @XmlAttribute
     private String name;
 
-    /** How many stems is it connected to ? */
-    @XmlElement(name = "stem-number")
-    private Integer stemNumber;
-
-    /** Connected to Ledger ? */
-    @XmlElement(name = "with-ledger")
-    private Boolean withLedger;
-
     /** Pitch position within staff lines */
     @XmlElement(name = "pitch-position")
     private Double pitchPosition;
 
-    /**
-     * Reference point, if any. (Un)Marshalling is done through getXmlRefPoint()
-     * and setXmlRefPoint().
-     */
+    /** Reference point, if any */
+    @XmlElement(name = "ref-point")
     private Point refPoint;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -133,32 +121,6 @@ public class SymbolGlyphDescriptor
         return refPoint;
     }
 
-    //---------------//
-    // getStemNumber //
-    //---------------//
-    /**
-     * Report the number of stems this entity is connected to
-     *
-     * @return the number of stems
-     */
-    public Integer getStemNumber ()
-    {
-        return stemNumber;
-    }
-
-    //--------------//
-    // isWithLedger //
-    //--------------//
-    /**
-     * Is this entity connected to a ledger
-     *
-     * @return true if there is at least one ledger
-     */
-    public Boolean isWithLedger ()
-    {
-        return withLedger;
-    }
-
     //-------------------//
     // loadFromXmlStream //
     //-------------------//
@@ -186,8 +148,8 @@ public class SymbolGlyphDescriptor
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
 
         if (name != null) {
             sb.append(" name:").append(name);
@@ -195,14 +157,6 @@ public class SymbolGlyphDescriptor
 
         if (interline != null) {
             sb.append(" interline:").append(interline);
-        }
-
-        if (stemNumber != null) {
-            sb.append(" stem-number:").append(stemNumber);
-        }
-
-        if (withLedger != null) {
-            sb.append(" with-ledger:").append(withLedger);
         }
 
         if (pitchPosition != null) {
@@ -228,18 +182,6 @@ public class SymbolGlyphDescriptor
         return jaxbContext;
     }
 
-    //----------------//
-    // getXmlRefPoint //
-    //----------------//
-    private PointFacade getXmlRefPoint ()
-    {
-        if (refPoint != null) {
-            return new PointFacade(refPoint);
-        } else {
-            return null;
-        }
-    }
-
     //---------------//
     // jaxbUnmarshal //
     //---------------//
@@ -249,14 +191,5 @@ public class SymbolGlyphDescriptor
         Unmarshaller um = getJaxbContext().createUnmarshaller();
 
         return um.unmarshal(is);
-    }
-
-    //----------------//
-    // setXmlRefPoint //
-    //----------------//
-    @XmlElement(name = "ref-point")
-    private void setXmlRefPoint (PointFacade xp)
-    {
-        refPoint = xp.getPoint();
     }
 }

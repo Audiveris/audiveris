@@ -24,6 +24,7 @@ public enum SheetTab
     DELTA_TAB("Delta"),
     DIFF_TAB("Diff"),
     DATA_TAB("Data"),
+    FILAMENT_TAB("Filaments"),
     BEAM_SPOT_TAB("BeamSpots"),
     GRAY_SPOT_TAB("GraySpots"),
     LEDGER_TAB("Ledgers"),

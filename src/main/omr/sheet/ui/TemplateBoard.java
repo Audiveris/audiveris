@@ -111,7 +111,7 @@ public class TemplateBoard
                           DistanceTable table,
                           SelectionService templateService)
     {
-        super(Board.TEMPLATE, sheet.getLocationService(), eventsRead, false, true);
+        super(Board.TEMPLATE, sheet.getLocationService(), eventsRead, false, false, false, true);
         this.sheet = sheet;
         this.table = table;
         this.templateService = templateService;
@@ -219,7 +219,7 @@ public class TemplateBoard
         }
 
         templateService.publish(
-                new AnchoredTemplateEvent(this, SelectionHint.GLYPH_INIT, null, at));
+                new AnchoredTemplateEvent(this, SelectionHint.ENTITY_INIT, null, at));
         tryEvaluate(refPoint, at);
     }
 
@@ -257,8 +257,8 @@ public class TemplateBoard
     {
         FormLayout layout = Panel.makeFormLayout(2, 3);
         PanelBuilder builder = new PanelBuilder(layout, getBody());
-        builder.setDefaultDialogBorder();
 
+        ///builder.setDefaultDialogBorder();
         CellConstraints cst = new CellConstraints();
 
         int r = 1; // --------------------------------

@@ -11,16 +11,19 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.sig.GradeImpacts;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code LedgerInter} represents a Ledger interpretation.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "ledger")
 public class LedgerInter
         extends AbstractInter
 {
@@ -57,6 +60,11 @@ public class LedgerInter
         super(glyph, null, Shape.LEDGER, impacts);
     }
 
+    private LedgerInter ()
+    {
+        super(null, null, null, null);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
@@ -65,6 +73,23 @@ public class LedgerInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //--------//
+    // delete //
+    //--------//
+    /**
+     * Since a ledger instance is held by its containing staff, make sure staff
+     * ledgers collection is updated.
+     */
+    @Override
+    public void delete ()
+    {
+        if (staff != null) {
+            staff.removeLedger(this);
+        }
+
+        super.delete();
     }
 
     //------------//

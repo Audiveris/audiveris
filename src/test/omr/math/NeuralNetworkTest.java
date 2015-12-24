@@ -13,14 +13,18 @@ package omr.math;
 
 import omr.util.BaseTestCase;
 import omr.util.Dumping;
+
 import static junit.framework.Assert.*;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 //import org.testng.annotations.*;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.xml.bind.*;
 
@@ -108,7 +112,7 @@ public class NeuralNetworkTest
     //-----------------//
     //@Test
     public void testMarshalling ()
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException, IOException
     {
         double[][] inputs = new double[][]{
             {0, 0},
@@ -131,19 +135,19 @@ public class NeuralNetworkTest
 
         nn.dump();
 
-        File dir = new File("data/temp");
-        dir.mkdirs();
+        Path dir = Paths.get("data/temp");
+        Files.createDirectories(dir);
 
-        File file = new File(dir, "nn.xml");
+        Path path = dir.resolve("nn.xml");
 
         // Marshalling
-        System.out.println("Marshalling to " + file);
-        nn.marshal(new FileOutputStream(file));
+        System.out.println("Marshalling to " + path);
+        nn.marshal(new FileOutputStream(path.toFile()));
         System.out.println("Marshalled");
 
         // Unmarshalling
-        System.out.println("Unmarshalling from " + file);
-        nn = NeuralNetwork.unmarshal(new FileInputStream(file));
+        System.out.println("Unmarshalling from " + path);
+        nn = NeuralNetwork.unmarshal(new FileInputStream(path.toFile()));
         System.out.println("Unmarshalled");
         new Dumping().dump(nn);
         nn.dump();
@@ -234,13 +238,23 @@ public class NeuralNetworkTest
         double maxError = 0.02;
         int epochs = 500000;
 
+        String[] iLabels = new String[inputSize];
+        for (int i = 0; i < inputSize; i++) {
+            iLabels[i] = "in-" + i;
+        }
+
+        String[] oLabels = new String[outputSize];
+        for (int i = 0; i < outputSize; i++) {
+            oLabels[i] = "out-" + i;
+        }
+
         return new NeuralNetwork(
                 inputSize,
                 hiddenSize,
                 outputSize,
                 amplitude,
-                null,
-                null,
+                iLabels,
+                oLabels,
                 learningRate,
                 momentum,
                 maxError,

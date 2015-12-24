@@ -42,9 +42,15 @@
     </root>
     
     <!-- Define DEBUG loggers here below: -->
+<!--    <logger name="omr.action.ActionManager" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.rhythm.SlotsBuilder" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.rhythm.PageRhythm" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.rhythm.StackTuner" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.header.HeaderBuilder" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.ui.BookBrowser" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.grid.LineCluster" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.rhythm.TupletsBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.text.tesseract.TesseractOrder" level="DEBUG"/>-->
-<!--    <logger name="omr.sheet.SlotsBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.score.PartwiseBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.text.tesseract.TesseractOrder" level="DEBUG"/>-->
 <!--    <logger name="omr.image.ImageLoading" level="DEBUG"/>-->
@@ -53,7 +59,7 @@
 <!--    <logger name="omr.grid.StaffProjector" level="DEBUG"/>-->
 <!--    <logger name="omr.grid.BarsRetriever" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.CktBuilder" level="DEBUG"/>-->
-<!--    <logger name="omr.sheet.ClefBuilder" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.header.ClefBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.KeyBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.TimeBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.sig.SIGraph" level="DEBUG"/>-->

@@ -29,11 +29,11 @@ public class Run
 
     /** Abscissa (for horizontal) / ordinate (for vertical) of first pixel. */
     @XmlAttribute
-    private int start;
+    protected int start;
 
     /** Number of pixels. */
     @XmlAttribute
-    private int length;
+    protected int length;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -159,7 +159,7 @@ public class Run
     public String toString ()
     {
         StringBuilder sb = new StringBuilder(80);
-        sb.append("{Run ");
+        sb.append("Run{");
         sb.append(start).append("/").append(length);
         sb.append("}");
 

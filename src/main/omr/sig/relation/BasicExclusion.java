@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+
 /**
  * Class {@code BasicExclusion}
  *
@@ -22,6 +25,7 @@ public class BasicExclusion
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
+    @XmlAttribute
     public final Cause cause;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -35,6 +39,14 @@ public class BasicExclusion
         this.cause = cause;
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private BasicExclusion ()
+    {
+        this.cause = null;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String getName ()
@@ -46,5 +58,34 @@ public class BasicExclusion
     protected String internals ()
     {
         return super.internals() + cause;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Adapter //
+    //---------//
+    static class Adapter
+            extends XmlAdapter<BasicExclusion, Exclusion>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public Adapter ()
+        {
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public BasicExclusion marshal (Exclusion itf)
+                throws Exception
+        {
+            return (BasicExclusion) itf;
+        }
+
+        @Override
+        public Exclusion unmarshal (BasicExclusion impl)
+                throws Exception
+        {
+            return impl;
+        }
     }
 }

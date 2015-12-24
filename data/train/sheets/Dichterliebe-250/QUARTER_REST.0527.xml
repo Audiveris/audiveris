@@ -1,78 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="QUARTER_REST" interline="19" id="527">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>0.0547945205479452</pitch-position>
-    <section orientation="VERTICAL" first-pos="353" id="622">
-        <run start="1433" length="2"/>
-        <run start="1433" length="2"/>
-        <run start="1430" length="5"/>
-        <run start="1429" length="7"/>
-        <run start="1428" length="9"/>
-        <run start="1426" length="12"/>
-        <run start="1424" length="15"/>
-        <run start="1423" length="17"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="353" id="623">
-        <run start="1448" length="6"/>
-        <run start="1446" length="9"/>
-        <run start="1445" length="11"/>
-        <run start="1445" length="12"/>
-        <run start="1444" length="14"/>
-        <run start="1444" length="15"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="356" id="635">
-        <run start="1407" length="2"/>
-        <run start="1407" length="3"/>
-        <run start="1408" length="4"/>
-        <run start="1409" length="5"/>
-        <run start="1411" length="5"/>
-        <run start="1412" length="5"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="359" id="638">
-        <run start="1444" length="10"/>
-        <run start="1444" length="10"/>
-        <run start="1444" length="10"/>
-        <run start="1444" length="7"/>
-        <run start="1444" length="7"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="359" id="639">
-        <run start="1455" length="5"/>
-        <run start="1455" length="5"/>
-        <run start="1458" length="3"/>
-        <run start="1459" length="3"/>
-        <run start="1460" length="2"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="361" id="641">
-        <run start="1419" length="22"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="362" id="644">
-        <run start="1413" length="29"/>
-        <run start="1414" length="29"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="364" id="647">
-        <run start="1416" length="17"/>
-        <run start="1416" length="17"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="364" id="648">
-        <run start="1436" length="14"/>
-        <run start="1440" length="10"/>
-        <run start="1442" length="8"/>
-        <run start="1443" length="7"/>
-        <run start="1445" length="5"/>
-        <run start="1446" length="5"/>
-        <run start="1447" length="4"/>
-        <run start="1448" length="3"/>
-        <run start="1450" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="366" id="650">
-        <run start="1417" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="366" id="651">
-        <run start="1419" length="11"/>
-        <run start="1419" length="10"/>
-        <run start="1421" length="6"/>
-        <run start="1422" length="4"/>
-        <run start="1423" length="1"/>
-    </section>
-</glyph>
+<sample id="527" interline="19" left="353" top="1407" shape="QUARTER_REST">
+    <run-table orientation="VERTICAL" width="20" height="55">
+        <sequences>
+            <item>0 26 2 13 6</item>
+            <item>0 26 2 11 9</item>
+            <item>0 23 5 10 11</item>
+            <item>2 20 7 9 12</item>
+            <item>3 18 9 7 14</item>
+            <item>0 1 4 14 12 6 15</item>
+            <item>0 2 5 10 15 5 10 1 5</item>
+            <item>0 4 5 7 17 4 10 1 5</item>
+            <item>0 5 5 2 22 3 10 4 3</item>
+            <item>0 6 29 2 7 8 3</item>
+            <item>0 7 29 1 7 9 2</item>
+            <item>0 9 17 3 14</item>
+            <item>0 9 17 7 10</item>
+            <item>0 10 1 1 11 12 8</item>
+            <item>0 12 10 14 7</item>
+            <item>0 14 6 18 5</item>
+            <item>0 15 4 20 5</item>
+            <item>0 16 1 23 4</item>
+            <item>0 41 3</item>
+            <item>0 43 1</item>
+        </sequences>
+    </run-table>
+</sample>

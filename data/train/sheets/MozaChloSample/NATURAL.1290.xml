@@ -1,34 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="NATURAL" interline="18" id="1290">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>1.0</pitch-position>
-    <section orientation="VERTICAL" first-pos="1762" id="3187">
-        <run start="2394" length="41"/>
-        <run start="2394" length="41"/>
-        <run start="2394" length="41"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1765" id="3188">
-        <run start="2409" length="7"/>
-        <run start="2409" length="7"/>
-        <run start="2408" length="8"/>
-        <run start="2408" length="8"/>
-        <run start="2408" length="7"/>
-        <run start="2408" length="7"/>
-        <run start="2407" length="8"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1765" id="3189">
-        <run start="2427" length="8"/>
-        <run start="2427" length="7"/>
-        <run start="2427" length="7"/>
-        <run start="2426" length="8"/>
-        <run start="2426" length="8"/>
-        <run start="2426" length="7"/>
-        <run start="2425" length="8"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1772" id="3192">
-        <run start="2407" length="42"/>
-        <run start="2407" length="42"/>
-        <run start="2407" length="42"/>
-    </section>
-</glyph>
+<sample id="1290" interline="18" left="1762" top="2394" shape="NATURAL">
+    <run-table orientation="VERTICAL" width="13" height="55">
+        <sequences>
+            <item>41</item>
+            <item>41</item>
+            <item>41</item>
+            <item>0 15 7 11 8</item>
+            <item>0 15 7 11 7</item>
+            <item>0 14 8 11 7</item>
+            <item>0 14 8 10 8</item>
+            <item>0 14 7 11 8</item>
+            <item>0 14 7 11 7</item>
+            <item>0 13 8 10 8</item>
+            <item>0 13 42</item>
+            <item>0 13 42</item>
+            <item>0 13 42</item>
+        </sequences>
+    </run-table>
+</sample>

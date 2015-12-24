@@ -11,14 +11,14 @@
 // </editor-fold>
 package omr.sheet.note;
 
-import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
+import omr.sheet.beam.BeamGroup;
+import omr.sheet.rhythm.MeasureStack;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractBeamInter;
+import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractHeadInter;
-import omr.sig.inter.ChordInter;
-import omr.sig.inter.FermataInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.StemInter;
 import omr.sig.relation.BeamStemRelation;
@@ -30,12 +30,8 @@ import omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * Class {@code ChordsLinker} works at system level to handle relations between chords
@@ -59,10 +55,6 @@ public class ChordsLinker
     /** System SIG. */
     private final SIGraph sig;
 
-    /** Chords in system, organized by staff. */
-    private final Map<Staff, List<ChordInter>> chordMap = new TreeMap<Staff, List<ChordInter>>(
-            Staff.byId);
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ChordsLinker} object.
@@ -81,37 +73,17 @@ public class ChordsLinker
     //------------//
     public void linkChords ()
     {
-        // Sort retrieved chords by "closest" staff
-        getChords();
-
-        // Handle fermata relationships
-        linkFermatas();
-
         // Handle beam relationships
         linkBeams();
-    }
 
-    //-----------//
-    // getChords //
-    //-----------//
-    private void getChords ()
-    {
-        // Abscissa-ordered list of chords in each staff
-        for (Staff staff : system.getStaves()) {
-            List<ChordInter> chords = new ArrayList<ChordInter>();
-            chordMap.put(staff, chords);
-
-            List<Inter> chordInters = sig.inters(staff, ChordInter.class);
-            Collections.sort(chordInters, Inter.byAbscissa);
-
-            for (Inter inter : chordInters) {
-                chords.add((ChordInter) inter);
-            }
+        // Allocate beam groups
+        for (MeasureStack stack : system.getMeasureStacks()) {
+            BeamGroup.populate(stack);
         }
     }
 
     //-----------//
-    // linkBeams // TODO: probably useless when beams are no longer recorded in chords
+    // linkBeams //
     //-----------//
     private void linkBeams ()
     {
@@ -127,29 +99,10 @@ public class ChordsLinker
 
                 for (Relation hs : hsRels) {
                     AbstractHeadInter head = (AbstractHeadInter) sig.getOppositeInter(stem, hs);
-                    ChordInter chord = head.getChord();
+                    AbstractChordInter chord = head.getChord();
                     chord.addBeam(beam);
                     beam.addChord(chord);
                 }
-            }
-        }
-    }
-
-    //--------------//
-    // linkFermatas //
-    //--------------//
-    private void linkFermatas ()
-    {
-        List<Inter> fermatas = sig.inters(FermataInter.class);
-
-        for (Inter inter : fermatas) {
-            FermataInter fermata = (FermataInter) inter;
-
-            // Look for a chord related to this fermata
-            List<ChordInter> chords = chordMap.get(fermata.getStaff());
-
-            if (!fermata.linkWithChords(chords)) {
-                fermata.delete();
             }
         }
     }

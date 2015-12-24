@@ -42,12 +42,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code RubberPanel} is a combination of two linked entities:
+ * Class {@code RubberPanel} is a JPanel combined with two linked entities:
  * a {@link Zoom} and a {@link Rubber}.
  * <p>
- * Its <i>paintComponent</i> method is declared final to ensure that the rendering is done in proper
- * sequence, with the rubber rectangle rendered at the end on top of any other stuff. Any specific
- * rendering required by a subclass is performed by overriding the {@link #render} method.
+ * Its {@link #paintComponent} method is declared final to ensure that the rendering is done in
+ * proper sequence, with the rubber rectangle rendered at the end, on top of any other stuff.
+ * Any specific rendering required by a subclass is performed by overriding the {@link #render}
+ * method for global objects and/or the {@link #renderItems} method for some selected items.
  * <p>
  * The Zoom instance and the Rubber instance can be provided separately, after this RubberPanel has
  * been constructed. This is meant for cases where the same Zoom and Rubber instances are shared by
@@ -85,8 +86,7 @@ public class RubberPanel
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a bare RubberPanel, assuming zoom and rubber will be
-     * assigned later.
+     * Create a bare RubberPanel, assuming zoom and rubber will be assigned later.
      */
     public RubberPanel ()
     {
@@ -94,8 +94,8 @@ public class RubberPanel
     }
 
     /**
-     * Create a RubberPanel, with the specified Rubber to interact via the
-     * mouse, and a specified Zoom instance
+     * Create a RubberPanel, with the specified Rubber to interact via the mouse,
+     * and a specified Zoom instance
      *
      * @param zoom   related display zoom
      * @param rubber the rubber instance to be linked to this panel
@@ -114,8 +114,8 @@ public class RubberPanel
     // setRubber //
     //-----------//
     /**
-     * Allows to provide the rubber instance, only after this RubberPanel
-     * has been built. This can be used to solve circular elaboration problems.
+     * Allows to provide the rubber instance, only after this RubberPanel has been built.
+     * This can be used to solve circular elaboration problems.
      *
      * @param rubber the rubber instance to be used
      */
@@ -156,7 +156,7 @@ public class RubberPanel
     public void contextAdded (Point pt,
                               MouseMovement movement)
     {
-        // Nothing by default
+        // Void by default
     }
 
     //-----------------//
@@ -166,7 +166,7 @@ public class RubberPanel
     public void contextSelected (Point pt,
                                  MouseMovement movement)
     {
-        // Nothing by default
+        // Void by default
     }
 
     //--------------//
@@ -229,7 +229,7 @@ public class RubberPanel
     // getSelectedRectangle //
     //----------------------//
     /**
-     * Report the rectangle currently selected, or null
+     * Report the rectangle currently selected, or null.
      *
      * @return the absolute rectangle selected
      */
@@ -264,7 +264,7 @@ public class RubberPanel
     // onEvent //
     //---------//
     /**
-     * Notification of a location selection (pixel or score)
+     * Notification of a location selection.
      *
      * @param event the location event
      */
@@ -344,16 +344,16 @@ public class RubberPanel
             // Then, adjust zoom ratio to fit the rectangle size
             SwingUtilities.invokeLater(
                     new Runnable()
-                    {
-                        @Override
-                        public void run ()
-                        {
-                            Rectangle vr = getVisibleRect();
-                            double zoomX = (double) vr.width / (double) rect.width;
-                            double zoomY = (double) vr.height / (double) rect.height;
-                            zoom.setRatio(Math.min(zoomX, zoomY));
-                        }
-                    });
+            {
+                @Override
+                public void run ()
+                {
+                    Rectangle vr = getVisibleRect();
+                    double zoomX = (double) vr.width / (double) rect.width;
+                    double zoomY = (double) vr.height / (double) rect.height;
+                    zoom.setRatio(Math.min(zoomX, zoomY));
+                }
+            });
         }
     }
 
@@ -376,25 +376,19 @@ public class RubberPanel
     // setLocationService //
     //--------------------//
     /**
-     * Allow to inject a dependency on a location service.
-     * This location is used
-     * for two purposes: <ol>
-     *
-     * <li>First, this panel is a producer of location information. The
-     * location can be modified both programmatically (by calling method
-     * {@link #setFocusLocation}) and interactively by mouse event
-     * (pointSelected or rectangleSelected which in turn call
-     * setFocusLocation) .</li>
-     *
-     * <li>Second, this panel is a consumer of location information, since
-     * it makes the selected location visible in the display, through the
-     * method {@link #showFocusLocation}.</li> </ol>
-     *
+     * Inject a dependency on a location service.
+     * This location is used for two purposes:
+     * <ol>
+     * <li>First, this panel is a producer of location information. The location can be modified
+     * both programmatically (by calling method {@link #setFocusLocation}) and interactively by
+     * mouse event (pointSelected or rectangleSelected which in turn call setFocusLocation) .</li>
+     * <li>Second, this panel is a consumer of location information, since it makes the selected
+     * location visible in the display, through the method {@link #showFocusLocation}.</li>
+     * </ol>
      * <p>
-     * <b>Nota</b>: Setting the location selection does not
-     * automatically register this view on the selection object. If
-     * such registering is needed, it must be done manually through method
-     * {@link #subscribe}. (TODO: Question: Why?)
+     * <b>Nota</b>: Setting the location selection does not automatically register this view on the
+     * selection object. If such registering is needed, it must be done manually through method
+     * {@link #subscribe}. (TODO: Question: Why is registering differed?)
      *
      * @param locationService the proper location service to be updated
      */
@@ -411,7 +405,7 @@ public class RubberPanel
     // setModelSize //
     //--------------//
     /**
-     * Assign the size of the model object, that is the unscaled size.
+     * Assign the size of the model object, that is the un-scaled size.
      *
      * @param modelSize the model size to use
      */
@@ -430,7 +424,7 @@ public class RubberPanel
      * super implementation or the display will not be updated by default.
      *
      * @param rect     the location information
-     * @param centered true to center the display on rect center
+     * @param centered true to center the display on 'rect' center
      */
     public void showFocusLocation (final Rectangle rect,
                                    final boolean centered)
@@ -439,11 +433,11 @@ public class RubberPanel
             return; // For degenerated cases (no real view)
         }
 
-        if (getModelSize() == null) {
+        if (modelSize == null) {
             return;
         }
 
-        setPreferredSize(zoom.scaled(getModelSize()));
+        setPreferredSize(zoom.scaled(modelSize));
         revalidate();
         repaint();
 
@@ -528,6 +522,7 @@ public class RubberPanel
     public void unsetRubber (Rubber rubber)
     {
         rubber.setMouseMonitor(null);
+        rubber.connectComponent(null);
     }
 
     //-----------//
@@ -552,7 +547,7 @@ public class RubberPanel
     // unsubscribe //
     //-------------//
     /**
-     * Un-subscribe from the related location service
+     * Un-subscribe from the related location service.
      */
     public void unsubscribe ()
     {
@@ -568,15 +563,16 @@ public class RubberPanel
     // paintComponent //
     //----------------//
     /**
-     * Final method, called by Swing. If something has to be changed in the
-     * rendering of the model, override the render method instead.
+     * Final method, called by Swing.
+     * If something has to be changed in the rendering of the model, override the {@link #render}
+     * and/or the {@link #renderItems} methods instead.
      *
      * @param initialGraphics the graphic context
      */
     @Override
     protected final void paintComponent (Graphics initialGraphics)
     {
-        // Paint background first
+        // First, paint view background
         super.paintComponent(initialGraphics);
 
         // Adjust graphics context to desired zoom ratio
@@ -585,17 +581,19 @@ public class RubberPanel
             g.scale(zoom.getRatio(), zoom.getRatio());
 
             try {
-                // Then, drawing specific to the view (to be provided in subclass)
+                // Second, drawing specific to the view (to be provided in subclass)
                 render(g);
+
+                // Third, draw selected items (to be provided in subclass)
+                renderItems(g);
             } catch (ConcurrentModificationException ex) {
-                // It's hard to avoid concurrent modifs since the GUI may need to
+                // It's hard to avoid all concurrent modifs since the GUI may need to
                 // repaint a view, while some processing is taking place ...
-                ///logger.warn("RubberPanel paintComponent failed", ex);
-                repaint(); // To trigger another painting later ...
+                repaint(); // Simply trigger another painting later ...
             } catch (Throwable ex) {
-                logger.warn("RubberPanel paintComponent ", ex);
+                logger.warn("RubberPanel paintComponent " + ex, ex);
             } finally {
-                // Finally the rubber, now that everything else has been drawn
+                // Finally, draw the location rubber, now that everything else has been drawn
                 if (rubber != null) {
                     rubber.render(initialGraphics);
                 }
@@ -609,24 +607,58 @@ public class RubberPanel
     // render //
     //--------//
     /**
-     * This is just a place holder, the real rendering must be provided by a
-     * subclass to actually render the object displayed, since the rubber is
-     * automatically rendered after this one.
+     * Render the global data in the provided Graphics context, perhaps already scaled.
+     * This is just a place holder, the real global rendering must be provided by a subclass.
      *
      * @param g the graphic context
      */
     protected void render (Graphics2D g)
     {
-        // Empty by default
+        // Void by default
+    }
+
+    //---------------//
+    // renderBoxArea //
+    //---------------//
+    /**
+     * Render the provided box area, using inverted color.
+     *
+     * @param box the rectangle whose area is to be rendered
+     * @param g   the graphic context
+     */
+    protected void renderBoxArea (Rectangle box,
+                                  Graphics2D g)
+    {
+        // Check the clipping
+        Rectangle clip = g.getClipBounds();
+
+        if ((box != null) && ((clip == null) || clip.intersects(box))) {
+            g.drawRect(box.x, box.y, box.width, box.height);
+        }
+    }
+
+    //-------------//
+    // renderItems //
+    //-------------//
+    /**
+     * Room for rendering additional items, typically some user-selected items if any,
+     * on top of the global ones already rendered by the {@link #render} method.
+     * This is just a place holder, the real items rendering must be provided by a subclass.
+     *
+     * @param g the graphic context
+     */
+    protected void renderItems (Graphics2D g)
+    {
+        // Void by default
     }
 
     //------------------//
     // setFocusLocation //
     //------------------//
     /**
-     * Modifies the location information. This method simply posts the location information on the
-     * proper Service object, provided that such object has been previously injected (by means of
-     * the method {@link #setLocationService}.
+     * Modifies the location information.
+     * This method simply posts the location information on the proper Service object, provided that
+     * such object has been previously injected (by means of the method {@link #setLocationService}.
      *
      * @param rect     the location information
      * @param movement the button movement

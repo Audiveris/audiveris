@@ -84,7 +84,14 @@ public class BinarizationBoard
      */
     public BinarizationBoard (Sheet sheet)
     {
-        super(Board.BINARIZATION, sheet.getLocationService(), eventClasses, false, false);
+        super(
+                Board.BINARIZATION,
+                sheet.getLocationService(),
+                eventClasses,
+                false,
+                false,
+                false,
+                false);
 
         this.sheet = sheet;
 
@@ -113,7 +120,7 @@ public class BinarizationBoard
                 Rectangle rect = sheetLocation.getData();
 
                 if (rect != null) {
-                    FilterDescriptor desc = sheet.getFilterParam().getTarget();
+                    FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
                     ByteProcessor source = sheet.getPicture().getSource(
                             Picture.SourceKey.INITIAL);
                     PixelFilter filter = desc.getFilter(source);
@@ -159,8 +166,8 @@ public class BinarizationBoard
     {
         FormLayout layout = Panel.makeFormLayout(1, 3);
         PanelBuilder builder = new PanelBuilder(layout, getBody());
-        builder.setDefaultDialogBorder();
 
+        ///builder.setDefaultDialogBorder();
         CellConstraints cst = new CellConstraints();
 
         int r = 1; // --------------------------------

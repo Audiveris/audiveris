@@ -11,12 +11,19 @@
 // </editor-fold>
 package omr.text;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+
 /**
  * Non-mutable font attributes (generally for a word).
  */
 public class FontInfo
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(FontInfo.class);
 
     /** A default FontInfo instance when we absolutely need one. */
     public static final FontInfo DEFAULT = createDefault(36);
@@ -98,6 +105,30 @@ public class FontInfo
         return new FontInfo(false, false, false, false, true, false, fontSize, "Serif");
     }
 
+    //--------//
+    // decode //
+    //--------//
+    public static FontInfo decode (String str)
+    {
+        int dash = str.indexOf('-');
+
+        if (dash == -1) {
+            throw new IllegalArgumentException("Illegal font mnemo: " + str);
+        }
+
+        int size = Integer.decode(str.substring(dash + 1));
+
+        return new FontInfo(
+                str.indexOf('B') != -1,
+                str.indexOf('I') != -1,
+                str.indexOf('U') != -1,
+                str.indexOf('M') != -1,
+                str.indexOf('S') != -1,
+                str.indexOf('C') != -1,
+                size,
+                "generic");
+    }
+
     //----------//
     // getMnemo //
     //----------//
@@ -145,11 +176,48 @@ public class FontInfo
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
         sb.append(fontName);
         sb.append(' ').append(getMnemo());
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Adapter //
+    //---------//
+    public static class Adapter
+            extends XmlAdapter<String, FontInfo>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public String marshal (FontInfo info)
+                throws Exception
+        {
+            if (info == null) {
+                logger.warn("Null FontInfo");
+
+                return null;
+            }
+
+            return info.getMnemo();
+        }
+
+        @Override
+        public FontInfo unmarshal (String mnemo)
+                throws Exception
+        {
+            if (mnemo == null) {
+                logger.warn("Null mnemo");
+
+                return null;
+            }
+
+            return FontInfo.decode(mnemo);
+        }
     }
 }

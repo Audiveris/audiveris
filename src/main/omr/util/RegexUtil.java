@@ -20,7 +20,28 @@ import java.util.regex.Matcher;
  */
 public abstract class RegexUtil
 {
+    //~ Constructors -------------------------------------------------------------------------------
+
+    // Not meant to be instantiated
+    private RegexUtil ()
+    {
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // escape //
+    //--------//
+    /**
+     * Escape the special characters in the provided content (for the time being, the
+     * only escaped characters are: '.')
+     *
+     * @param content the string to process
+     * @return content with special characters escaped
+     */
+    public static String escape (String content)
+    {
+        return content.replaceAll("\\.", "\\\\.");
+    }
 
     //----------//
     // getGroup //
@@ -53,7 +74,7 @@ public abstract class RegexUtil
     // group //
     //-------//
     /**
-     * Convenient method to build a named-group like "(?<name>content)"
+     * Convenient method to build a named-group like "(?&lt;name&gt;content)"
      *
      * @param name    name for the group
      * @param content inner content of the group

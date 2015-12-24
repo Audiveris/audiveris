@@ -15,30 +15,36 @@ import omr.score.TimeRational;
 
 import omr.sheet.Staff;
 
+import omr.util.Entities;
+
 import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code TimePairInter} is a time signature composed of two halves.
  *
- * @see TimeComboInter
- *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "time-pair")
+@XmlAccessorType(XmlAccessType.NONE)
 public class TimePairInter
         extends TimeInter
         implements InterEnsemble
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Numerator. */
-    private final TimeNumberInter num;
-
-    /** Denominator. */
-    private final TimeNumberInter den;
-
-    private final List<? extends Inter> members;
+    // Persistent data
+    //----------------
+    //
+    //@XmlIDREF
+    @XmlElement(name = "item")
+    private List<TimeNumberInter> members;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -51,17 +57,32 @@ public class TimePairInter
      */
     private TimePairInter (TimeNumberInter num,
                            TimeNumberInter den,
-                           Rectangle box,
+                           Rectangle bounds,
                            TimeRational timeRational,
                            double grade)
     {
-        super(null, box, timeRational, grade);
-        this.num = num;
-        this.den = den;
+        super(null, bounds, timeRational, grade);
         members = Arrays.asList(num, den);
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private TimePairInter ()
+    {
+        super(null, null, 0);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
     //--------//
     // create //
     //--------//
@@ -86,13 +107,17 @@ public class TimePairInter
         return pair;
     }
 
-    //--------//
-    // accept //
-    //--------//
+    //-----------//
+    // getBounds //
+    //-----------//
     @Override
-    public void accept (InterVisitor visitor)
+    public Rectangle getBounds ()
     {
-        visitor.visit(this);
+        if (bounds == null) {
+            bounds = Entities.getBounds(getMembers());
+        }
+
+        return bounds;
     }
 
     /**
@@ -100,7 +125,7 @@ public class TimePairInter
      */
     public TimeNumberInter getDen ()
     {
-        return den;
+        return (TimeNumberInter) members.get(1);
     }
 
     //------------//
@@ -117,7 +142,7 @@ public class TimePairInter
      */
     public TimeNumberInter getNum ()
     {
-        return num;
+        return (TimeNumberInter) members.get(0);
     }
 
     //-----------------//
@@ -134,8 +159,8 @@ public class TimePairInter
     @Override
     public Rectangle getSymbolBounds (int interline)
     {
-        Rectangle rect = num.getSymbolBounds(interline);
-        rect.add(den.getSymbolBounds(interline));
+        Rectangle rect = getNum().getSymbolBounds(interline);
+        rect.add(getDen().getSymbolBounds(interline));
 
         return rect;
     }

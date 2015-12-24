@@ -12,21 +12,22 @@
 package omr.run;
 
 import omr.image.GlobalFilter;
+
 import static omr.run.Orientation.*;
 
 import omr.util.Predicate;
 
 import ij.process.ByteProcessor;
 
-import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.Assert;
+
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
+
 import org.junit.Test;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.util.Arrays;
 
 /**
  *
@@ -40,48 +41,20 @@ public class RunTableTest
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new RunsTableTest object.
+     * Creates a new {@code RunTableTest} object.
      */
     public RunTableTest ()
     {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Before
-    public void setUp ()
-            throws Exception
-    {
-    }
-
-    @BeforeClass
-    public static void setUpClass ()
-            throws Exception
-    {
-    }
-
-    @After
-    public void tearDown ()
-            throws Exception
-    {
-    }
-
-    @AfterClass
-    public static void tearDownClass ()
-            throws Exception
-    {
-    }
-
-    //----------//
-    // testCopy //
-    //----------//
     /**
      * Test of copy method, of class RunTable.
      */
     @Test
     public void testCopy_0args ()
-            throws Exception
     {
-        System.out.println("copy");
+        System.out.println("\n+++ copy");
 
         RunTable instance = createHorizontalInstance();
         RunTable expResult = instance;
@@ -98,13 +71,13 @@ public class RunTableTest
     @Test
     public void testCopy_String ()
     {
-        System.out.println("copy");
+        System.out.println("\n+++ copy");
 
         RunTable instance = createHorizontalInstance();
         RunTable expResult = createHorizontalInstance();
-        RunTable result = instance.copy("hori");
+        RunTable result = instance.copy();
 
-        if (!expResult.isIdentical(result) || !expResult.getName().equals(result.getName())) {
+        if (!expResult.isIdentical(result)) {
             fail("Copy not identical to original");
         }
     }
@@ -115,7 +88,7 @@ public class RunTableTest
     @Test
     public void testDumpOf ()
     {
-        System.out.println("dumpOf");
+        System.out.println("\n+++ dumpOf");
 
         RunTable instance = createHorizontalInstance();
         System.out.println(instance.dumpOf());
@@ -130,7 +103,7 @@ public class RunTableTest
     @Test
     public void testDumpSequences ()
     {
-        System.out.println("dumpSequences");
+        System.out.println("\n+++ dumpSequences");
 
         RunTable instance = createHorizontalInstance();
         instance.dumpSequences();
@@ -145,7 +118,7 @@ public class RunTableTest
     @Test
     public void testGet ()
     {
-        System.out.println("get");
+        System.out.println("\n+++ get");
 
         RunTable instance = createVerticalInstance();
         assertEquals(255, instance.get(0, 0));
@@ -162,7 +135,7 @@ public class RunTableTest
     @Test
     public void testGetBuffer ()
     {
-        System.out.println("getBuffer");
+        System.out.println("\n+++ getBuffer");
 
         RunTable instance = createVerticalInstance();
         String expResult = "ip[width=10, height=5, bits=8, min=0.0, max=255.0]";
@@ -171,16 +144,13 @@ public class RunTableTest
         assertEquals(expResult, result.toString());
     }
 
-    //------------------//
-    // testGetDimension //
-    //------------------//
     /**
      * Test of getDimension method, of class RunTable.
      */
     @Test
     public void testGetDimension ()
     {
-        System.out.println("getDimension");
+        System.out.println("\n+++ getDimension");
 
         RunTable instance = createHorizontalInstance();
         Dimension expResult = new Dimension(10, 5);
@@ -198,7 +168,7 @@ public class RunTableTest
     @Test
     public void testGetHeight ()
     {
-        System.out.println("getHeight");
+        System.out.println("\n+++ getHeight");
 
         RunTable instance = createHorizontalInstance();
         int expResult = dim.height;
@@ -207,29 +177,12 @@ public class RunTableTest
     }
 
     /**
-     * Test of getName method, of class RunTable.
-     */
-    @Test
-    public void testGetName ()
-    {
-        System.out.println("getName");
-
-        RunTable instance = createHorizontalInstance();
-        String expResult = "hori";
-        String result = instance.getName();
-        assertEquals(expResult, result);
-    }
-
-    //--------------------//
-    // testGetOrientation //
-    //--------------------//
-    /**
      * Test of getOrientation method, of class RunTable.
      */
     @Test
     public void testGetOrientation ()
     {
-        System.out.println("getOrientation");
+        System.out.println("\n+++ getOrientation");
 
         RunTable instance = createHorizontalInstance();
         Orientation expResult = HORIZONTAL;
@@ -243,7 +196,7 @@ public class RunTableTest
     @Test
     public void testGetRunAt ()
     {
-        System.out.println("getRunAt");
+        System.out.println("\n+++ getRunAt");
 
         RunTable instance = createHorizontalInstance();
         Run result = instance.getRunAt(0, 0);
@@ -261,29 +214,24 @@ public class RunTableTest
     @Test
     public void testGetSequence ()
     {
-        System.out.println("getSequence");
+        System.out.println("\n+++ getSequence");
 
         int index = 1;
         RunTable instance = createHorizontalInstance();
-        RunSequence expResult = new BasicRunSequence();
-        expResult.add(new Run(0, 1));
-        expResult.add(new Run(4, 2));
-        System.out.println("expResult: " + expResult);
+        short[] expResult = new short[]{1, 3, 2};
+        System.out.println("expResult: " + Arrays.toString(expResult));
 
-        RunSequence result = instance.getSequence(index);
-        assertEquals(expResult, result);
+        short[] result = instance.getSequence(index);
+        Assert.assertArrayEquals(expResult, result);
     }
 
-    //-------------//
-    // testGetSize //
-    //-------------//
     /**
      * Test of getSize method, of class RunTable.
      */
     @Test
     public void testGetSize ()
     {
-        System.out.println("getSize");
+        System.out.println("\n+++ getSize");
 
         RunTable instance = createHorizontalInstance();
         int expResult = 5;
@@ -297,15 +245,15 @@ public class RunTableTest
     @Test
     public void testGetTotalRunCount ()
     {
-        System.out.println("getTotalRunCount");
+        System.out.println("\n+++ getTotalRunCount");
 
         RunTable instance = createHorizontalInstance();
-        int expResult = 11;
+        int expResult = 9;
         int result = instance.getTotalRunCount();
         assertEquals(expResult, result);
 
         instance = createVerticalInstance();
-        expResult = 19;
+        expResult = 16;
         result = instance.getTotalRunCount();
         assertEquals(expResult, result);
     }
@@ -316,7 +264,7 @@ public class RunTableTest
     @Test
     public void testGetWidth ()
     {
-        System.out.println("getWidth");
+        System.out.println("\n+++ getWidth");
 
         RunTable instance = createHorizontalInstance();
         int expResult = dim.width;
@@ -330,22 +278,23 @@ public class RunTableTest
     @Test
     public void testInclude ()
     {
-        System.out.println("include");
+        System.out.println("\n+++ include");
 
         RunTable instance = createHorizontalInstance();
+        System.out.println("initial:\n" + instance.dumpOf());
 
         ByteProcessor buffer = instance.getBuffer();
         buffer.invert();
 
         GlobalFilter filter = new GlobalFilter(buffer, 127);
         RunTableFactory factory = new RunTableFactory(HORIZONTAL);
-        RunTable that = factory.createTable("inverted", filter.filteredImage());
+        RunTable that = factory.createTable(filter.filteredImage());
+        System.out.println("inverted:\n" + that.dumpOf());
         that.dumpSequences();
-        System.out.println("inverted" + that.dumpOf());
 
         instance.include(that);
+        System.out.println("full:\n" + instance.dumpOf());
         instance.dumpSequences();
-        System.out.println("full" + instance.dumpOf());
         assertEquals(5, instance.getTotalRunCount());
     }
 
@@ -355,7 +304,7 @@ public class RunTableTest
     @Test
     public void testIsIdentical ()
     {
-        System.out.println("isIdentical");
+        System.out.println("\n+++ isIdentical");
 
         RunTable that = createHorizontalInstance();
         RunTable instance = createHorizontalInstance();
@@ -370,31 +319,12 @@ public class RunTableTest
     }
 
     /**
-     * Test of lookupRun method, of class RunTable.
-     */
-    @Test
-    public void testLookupRun ()
-    {
-        System.out.println("lookupRun");
-
-        RunTable instance = createHorizontalInstance();
-        Point point = new Point(6, 0);
-        Run expResult = new Run(5, 3);
-        Run result = instance.lookupRun(point);
-        assertEquals(expResult.toString(), result.toString());
-
-        point = new Point(7, 1);
-        result = instance.lookupRun(point);
-        assertEquals(null, result);
-    }
-
-    /**
      * Test of purge method, of class RunTable.
      */
     @Test
     public void testPurge_Predicate ()
     {
-        System.out.println("purge_predicate");
+        System.out.println("\n+++ purge_predicate");
 
         RunTable instance = createHorizontalInstance();
         Predicate<Run> predicate1 = new Predicate<Run>()
@@ -407,9 +337,9 @@ public class RunTableTest
         };
 
         RunTable result = instance.purge(predicate1);
-        instance.dumpSequences();
         System.out.println("table after1:" + instance.dumpOf());
-        assertEquals(3, result.getTotalRunCount());
+        instance.dumpSequences();
+        assertEquals(2, result.getTotalRunCount());
 
         Predicate<Run> predicate2 = new Predicate<Run>()
         {
@@ -421,8 +351,8 @@ public class RunTableTest
         };
 
         result = instance.purge(predicate2);
-        instance.dumpSequences();
         System.out.println("table after2:" + instance.dumpOf());
+        instance.dumpSequences();
         assertEquals(0, result.getTotalRunCount());
     }
 
@@ -432,7 +362,7 @@ public class RunTableTest
     @Test
     public void testPurge_Predicate_RunTable ()
     {
-        System.out.println("purge_predicate_removed");
+        System.out.println("\n+++ purge_predicate_removed");
 
         Predicate<Run> predicate1 = new Predicate<Run>()
         {
@@ -444,16 +374,16 @@ public class RunTableTest
         };
 
         RunTable instance = createHorizontalInstance();
-        instance.dumpSequences();
         System.out.println("table before1:" + instance.dumpOf());
-
-        RunTable removed = new RunTable("purged", HORIZONTAL, dim.width, dim.height);
-        instance.purge(predicate1, removed);
         instance.dumpSequences();
-        System.out.println("table after1:" + instance.dumpOf());
 
-        removed.dumpSequences();
+        RunTable removed = new RunTable(HORIZONTAL, dim.width, dim.height);
+        instance.purge(predicate1, removed);
+        System.out.println("table after1:" + instance.dumpOf());
+        instance.dumpSequences();
+
         System.out.println("purge after1:" + removed.dumpOf());
+        removed.dumpSequences();
 
         Predicate<Run> predicate2 = new Predicate<Run>()
         {
@@ -465,11 +395,11 @@ public class RunTableTest
         };
 
         instance.purge(predicate2, removed);
-        instance.dumpSequences();
         System.out.println("table after2:" + instance.dumpOf());
+        instance.dumpSequences();
 
-        removed.dumpSequences();
         System.out.println("purge after2:" + removed.dumpOf());
+        removed.dumpSequences();
     }
 
     /**
@@ -478,18 +408,18 @@ public class RunTableTest
     @Test
     public void testRemoveRun ()
     {
-        System.out.println("removeRun");
+        System.out.println("\n+++ removeRun");
 
         int pos = 3;
         Run run = new Run(4, 1);
         RunTable instance = createHorizontalInstance();
-        RunSequence seq1 = instance.getSequence(pos);
-        System.out.println("sequence before: " + seq1);
+        short[] seq1 = instance.getSequence(pos);
+        System.out.println("sequence before: " + Arrays.toString(seq1));
         System.out.println("table before:" + instance.dumpOf());
         instance.removeRun(pos, run);
 
-        RunSequence seq2 = instance.getSequence(pos);
-        System.out.println("sequence  after: " + seq2);
+        short[] seq2 = instance.getSequence(pos);
+        System.out.println("sequence  after: " + Arrays.toString(seq2));
         System.out.println("table after:" + instance.dumpOf());
     }
 
@@ -499,10 +429,10 @@ public class RunTableTest
     @Test
     public void testSetSequence ()
     {
-        System.out.println("setSequence");
+        System.out.println("\n+++ setSequence");
 
         int index = 1;
-        RunSequence seq = new BasicRunSequence(new short[]{0, 3, 7});
+        short[] seq = new short[]{0, 3, 7};
         RunTable instance = createHorizontalInstance();
         System.out.println("table before:" + instance.dumpOf());
         instance.setSequence(index, seq);
@@ -515,12 +445,59 @@ public class RunTableTest
     @Test
     public void testToString ()
     {
-        System.out.println("toString");
+        System.out.println("\n+++ toString");
 
         RunTable instance = createHorizontalInstance();
-        String expResult = "{RunTable hori HORIZONTAL 10x5 runs:11}";
+        String expResult = "RunTable{HORIZONTAL 10x5}";
         String result = instance.toString();
         assertEquals(expResult, result);
+    }
+
+    //-------------------------------//
+    // createLargeHorizontalInstance //
+    //-------------------------------//
+    private RunTable createLargeHorizontalInstance ()
+    {
+        RunTable instance = new RunTable(HORIZONTAL, dim.width + 5, dim.height + 3);
+
+        int i = 2;
+        instance.addRun(i, new Run(1, 2));
+        instance.addRun(i, new Run(5, 3));
+
+        i++;
+        instance.addRun(i, new Run(4, 2));
+
+        i++;
+        i++;
+        instance.addRun(i, new Run(4, 1));
+        instance.addRun(i, new Run(8, 2));
+
+        i++;
+        instance.addRun(i, new Run(2, 2));
+        instance.addRun(i, new Run(6, 4));
+
+        return instance;
+    }
+
+    /**
+     * Test of trim method, of class RunTable.
+     */
+    @Test
+    public void testTrim ()
+    {
+        System.out.println("\n+++ trim");
+
+        RunTable instance = createLargeHorizontalInstance();
+        System.out.println("beforeTrim:\n" + instance.dumpOf());
+
+        Point expOffset = new Point(1, 2);
+        Point offset = new Point();
+        RunTable trimmed = instance.trim(offset);
+        System.out.println("afterTrim:\n" + trimmed.dumpOf());
+
+        assertEquals(expOffset, offset);
+        assertEquals(9, trimmed.getWidth());
+        assertEquals(5, trimmed.getHeight());
     }
 
     //--------------------------//
@@ -528,31 +505,22 @@ public class RunTableTest
     //--------------------------//
     private RunTable createHorizontalInstance ()
     {
-        RunTable instance = new RunTable("hori", HORIZONTAL, dim.width, dim.height);
+        RunTable instance = new RunTable(HORIZONTAL, dim.width, dim.height);
 
-        RunSequence seq;
+        instance.addRun(0, new Run(1, 2));
+        instance.addRun(0, new Run(5, 3));
 
-        seq = instance.getSequence(0);
-        seq.add(new Run(1, 2));
-        seq.add(new Run(5, 3));
+        instance.addRun(1, new Run(0, 1));
+        instance.addRun(1, new Run(4, 2));
 
-        seq = instance.getSequence(1);
-        seq.add(new Run(0, 1));
-        seq.add(new Run(4, 2));
+        instance.addRun(3, new Run(0, 2));
+        instance.addRun(3, new Run(4, 1));
+        instance.addRun(3, new Run(8, 2));
 
-        seq = instance.getSequence(2);
-        seq.add(new Run(3, 1));
-        seq.add(new Run(5, 4));
+        instance.addRun(4, new Run(2, 2));
+        instance.addRun(4, new Run(6, 4));
 
-        seq = instance.getSequence(3);
-        seq.add(new Run(0, 2));
-        seq.add(new Run(4, 1));
-        seq.add(new Run(8, 2));
-
-        seq = instance.getSequence(4);
-        seq.add(new Run(2, 2));
-        seq.add(new Run(6, 4));
-
+        ///System.out.println("createHorizontalInstance:\n" + instance.dumpOf());
         return instance;
     }
 
@@ -566,45 +534,9 @@ public class RunTableTest
         GlobalFilter filter = new GlobalFilter(buffer, 127);
         RunTableFactory factory = new RunTableFactory(VERTICAL);
 
-        return factory.createTable("vert", filter.filteredImage());
+        RunTable instance = factory.createTable(filter.filteredImage());
+
+        ///System.out.println("createVerticalInstance:\n" + instance.dumpOf());
+        return instance;
     }
 }
-//    /**
-//     * Test of setMaxForeground method, of class RunTable.
-//     */
-//    @Test
-//    public void testSetMaxForeground() {
-//        System.out.println("setMaxForeground");
-//        int level = 0;
-//        RunTable instance = null;
-//        instance.setMaxForeground(level);
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getMaxForeground method, of class RunTable.
-//     */
-//    @Test
-//    public void testGetMaxForeground() {
-//        System.out.println("getMaxForeground");
-//        RunTable instance = null;
-//        int expResult = 0;
-//        int result = instance.getMaxForeground();
-//        assertEquals(expResult, result);
-//        fail("The test case is a prototype.");
-//    }
-//    /**
-//     * Test of isIdentical method, of class RunTable.
-//     */
-//    @Test
-//    public void testIsIdentical ()
-//    {
-//        System.out.println("isIdentical");
-//
-//        RunTable that = createHorizontalInstance();
-//        RunTable instance = createHorizontalInstance();
-//        boolean   expResult = true;
-//        boolean   result = instance.isIdentical(that);
-//        assertEquals(expResult, result);
-//    }
-//

@@ -72,18 +72,20 @@ public class RunBoard
     /**
      * Create a Run Board on the provided RunTable
      *
-     * @param runsTable the table of runs
-     * @param expanded  true for expanded, false for collapsed
+     * @param runTable the table of runs
+     * @param expanded true for expanded, false for collapsed
      */
-    public RunBoard (RunTable runsTable,
+    public RunBoard (RunTable runTable,
                      boolean expanded)
     {
         super(
                 Board.RUN.name
-                + ((runsTable.getOrientation() == Orientation.VERTICAL) ? " Vert" : " Hori"),
-                Board.RUN.position + ((runsTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
-                runsTable.getRunService(),
+                + ((runTable.getOrientation() == Orientation.VERTICAL) ? " Vert" : " Hori"),
+                Board.RUN.position + ((runTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
+                runTable.getRunService(),
                 eventClasses,
+                false,
+                false,
                 false,
                 expanded);
         defineLayout();
@@ -130,11 +132,10 @@ public class RunBoard
     //--------------//
     private void defineLayout ()
     {
-        FormLayout layout = Panel.makeFormLayout(1, 3);
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
-        builder.setDefaultDialogBorder();
+        final FormLayout layout = Panel.makeFormLayout(1, 3);
+        final PanelBuilder builder = new PanelBuilder(layout, getBody());
+        final CellConstraints cst = new CellConstraints();
 
-        CellConstraints cst = new CellConstraints();
         int r = 1; // --------------------------------
 
         builder.add(rStart.getLabel(), cst.xy(1, r));

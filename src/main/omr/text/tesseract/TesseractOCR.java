@@ -99,7 +99,7 @@ public class TesseractOCR
     {
         if (isAvailable()) {
             try {
-                String[] langs = TessBaseAPI.getInstalledLanguages(WellKnowns.OCR_FOLDER.getPath());
+                String[] langs = TessBaseAPI.getInstalledLanguages(WellKnowns.OCR_FOLDER.toString());
 
                 return new TreeSet<String>(Arrays.asList(langs));
             } catch (Throwable ex) {

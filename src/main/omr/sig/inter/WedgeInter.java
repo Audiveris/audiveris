@@ -16,8 +16,17 @@ import omr.glyph.Shape;
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;
 
+import omr.util.HorizontalSide;
+import omr.util.Jaxb;
+
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code WedgeInter} represents a wedge (crescendo or diminuendo).
@@ -27,46 +36,57 @@ import java.awt.geom.Line2D;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "wedge")
 public class WedgeInter
         extends AbstractDirectionInter
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    private final SegmentInter s1;
-
-    private final SegmentInter s2;
-
+    //
+    //    private final SegmentInter s1;
+    //
+    //    private final SegmentInter s2;
+    //
     /** Top line. */
+    @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private final Line2D l1;
 
     /** Bottom line. */
+    @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private final Line2D l2;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new WedgeInter object.
      *
-     * @param s1      first segment
-     * @param s2      second segment
      * @param l1      precise first line
      * @param l2      precise second line
-     * @param bounds  bounding box
+     * @param bounds  bounding bounds
      * @param shape   CRESCENDO or DECRESCENDO
      * @param impacts assignments details
      */
-    public WedgeInter (SegmentInter s1,
-                       SegmentInter s2,
-                       Line2D l1,
+    public WedgeInter (Line2D l1,
                        Line2D l2,
                        Rectangle bounds,
                        Shape shape,
                        GradeImpacts impacts)
     {
         super(null, bounds, shape, impacts);
-        this.s1 = s1;
-        this.s2 = s2;
         this.l1 = l1;
         this.l2 = l2;
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private WedgeInter ()
+    {
+        super(null, null, null, 0);
+        this.l1 = null;
+        this.l2 = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -77,6 +97,21 @@ public class WedgeInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        Rectangle box = super.getBounds();
+
+        if (box != null) {
+            return box;
+        }
+
+        return new Rectangle(bounds = l1.getBounds().union(l2.getBounds()));
     }
 
     //----------//
@@ -98,12 +133,12 @@ public class WedgeInter
     //-----------//
     // getSpread //
     //-----------//
-    public double getSpread ()
+    public double getSpread (HorizontalSide side)
     {
-        if (shape == Shape.CRESCENDO) {
-            return l2.getY2() - l1.getY2();
-        } else {
+        if (side == HorizontalSide.LEFT) {
             return l2.getY1() - l1.getY1();
+        } else {
+            return l2.getY2() - l1.getY2();
         }
     }
 

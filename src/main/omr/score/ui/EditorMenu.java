@@ -59,7 +59,7 @@ public class EditorMenu
     private static final Logger logger = LoggerFactory.getLogger(EditorMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Glyph submenu. */
+    /** Glyph sub-menu. */
     private final SymbolMenu symbolMenu;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ public class EditorMenu
     public boolean updateMenu (Rectangle rect)
     {
         // Update symbol menu (which is a specific case)
-        int symbolNb = symbolMenu.updateMenu(sheet.getGlyphNest().getSelectedGlyphSet());
+        int symbolNb = symbolMenu.updateMenu(sheet.getGlyphIndex().getSelectedGlyphList());
         symbolMenu.getMenu().setVisible(symbolNb > 0);
 
         return super.updateMenu(rect);
@@ -107,7 +107,7 @@ public class EditorMenu
         addMenu(new MeasureMenu());
         addMenu(new SlotMenu());
         ///addMenu(new ChordMenu());
-        addMenu(symbolMenu);
+        ///addMenu(symbolMenu);
         addMenu(new StaffMenu());
         addMenu(new ExtractionMenu(sheet));
     }
@@ -435,7 +435,11 @@ public class EditorMenu
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                new StaffProjector(sheet, staff).plot();
+                try {
+                    new StaffProjector(sheet, staff).plot();
+                } catch (Throwable ex) {
+                    logger.warn("StaffProjector error " + ex, ex);
+                }
             }
         }
 
