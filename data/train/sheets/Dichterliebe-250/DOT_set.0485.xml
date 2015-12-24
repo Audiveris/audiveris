@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="DOT_set" interline="19" id="485">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-39.50684931506849</pitch-position>
-    <section orientation="VERTICAL" first-pos="1882" id="2854">
-        <run start="239" length="5"/>
-        <run start="237" length="9"/>
-        <run start="236" length="11"/>
-        <run start="236" length="11"/>
-        <run start="236" length="11"/>
-        <run start="236" length="11"/>
-        <run start="236" length="11"/>
-        <run start="236" length="11"/>
-        <run start="236" length="11"/>
-        <run start="237" length="9"/>
-        <run start="239" length="5"/>
-    </section>
-</glyph>
+<sample id="485" interline="19" left="1882" top="236" shape="DOT_set">
+    <run-table orientation="VERTICAL" width="11" height="11">
+        <sequences>
+            <item>0 3 5</item>
+            <item>0 1 9</item>
+            <item>11</item>
+            <item>11</item>
+            <item>11</item>
+            <item>11</item>
+            <item>11</item>
+            <item>11</item>
+            <item>11</item>
+            <item>0 1 9</item>
+            <item>0 3 5</item>
+        </sequences>
+    </run-table>
+</sample>

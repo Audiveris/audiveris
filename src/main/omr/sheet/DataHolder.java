@@ -14,14 +14,12 @@ package omr.sheet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -33,7 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * <p>
  * It handles: <ul>
  * <li>The data itself, if any.</li>
- * <li>A path to disk where data can be un-marshalled from.</li>
+ * <li>A path to disk where data can be unmarshalled from.</li>
  * </ul>
  *
  * @param <T> specific type for data handled
@@ -102,13 +100,21 @@ public class DataHolder<T>
             try {
                 JAXBContext jaxbContext = JAXBContext.newInstance(classe);
                 Unmarshaller um = jaxbContext.createUnmarshaller();
-                Path path = sheet.getPath().resolve(pathString);
-                logger.debug("path: {}", path);
 
-                InputStream is = Files.newInputStream(path, StandardOpenOption.READ);
+                // Open project file system
+                Path dataFile = sheet.getBook().openSheetFolder(sheet.getNumber())
+                        .resolve(pathString);
+                logger.debug("path: {}", dataFile);
+
+                InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
                 data = (T) um.unmarshal(is);
                 is.close();
-                logger.info("{} unmarshalled from {}", data, path);
+
+                // Close project file system
+                dataFile.getFileSystem().close();
+
+                logger.info("Loaded {}", dataFile);
+
             } catch (Exception ex) {
                 logger.warn("Error unmarshalling from " + pathString, ex);
             }
@@ -125,21 +131,5 @@ public class DataHolder<T>
     public void setData (T data)
     {
         this.data = data;
-    }
-
-    public void store ()
-    {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(classe);
-            Marshaller m = jaxbContext.createMarshaller();
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
-            Path path = sheet.getPath().resolve(pathString);
-            Files.deleteIfExists(path);
-            m.marshal(data, new FileOutputStream(path.toFile()));
-            logger.info("{} marshalled to {}", data, path);
-        } catch (Exception ex) {
-            logger.warn("Error marshalling to " + pathString, ex);
-        }
     }
 }

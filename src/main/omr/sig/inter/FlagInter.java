@@ -11,14 +11,23 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+
+import omr.sheet.Part;
+
+import omr.sig.relation.FlagStemRelation;
+import omr.sig.relation.HeadStemRelation;
+import omr.sig.relation.Relation;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code FlagInter} represents one or several flags.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "flag")
 public class FlagInter
         extends AbstractFlagInter
 {
@@ -36,5 +45,36 @@ public class FlagInter
                          double grade)
     {
         super(glyph, shape, grade);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    protected FlagInter ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // getPart //
+    //---------//
+    @Override
+    public Part getPart ()
+    {
+        if (part == null) {
+            // Flag -> Stem
+            for (Relation fsRel : sig.getRelations(this, FlagStemRelation.class)) {
+                StemInter stem = (StemInter) sig.getOppositeInter(this, fsRel);
+
+                // Stem -> Head
+                for (Relation hsRel : sig.getRelations(stem, HeadStemRelation.class)) {
+                    Inter head = sig.getOppositeInter(stem, hsRel);
+
+                    return part = head.getPart();
+                }
+            }
+        }
+
+        return part;
     }
 }

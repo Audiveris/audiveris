@@ -18,26 +18,6 @@ import org.slf4j.LoggerFactory;
  * Interface {@code UserEvent} defines the common behavior of user events that are
  * stored as selections, and handled by the EventBus.
  *
- * <p>
- * All events are subclasses of this abstract class, and managed by proper EventService instances:
- * <ul>
- *
- * <li>SheetManager event service: a singleton which handles THE currently selected sheet as
- * {@link SheetEvent}
- *
- * <li>Sheet event service: each Sheet instance handles events of types {@link LocationEvent} and
- * {@link PixelLevelEvent}
- *
- * <li>Run event service: each RunsTable instance handles {@link RunEvent}
- *
- * <li>Lag event service: each Lag instance handles {@link SectionEvent}, {@link SectionIdEvent} and
- * {@link SectionSetEvent} (all are subclasses of {@link LagEvent})
- *
- * <li>Nest event service: each glyph Nest instance handles {@link GlyphEvent}, {@link GlyphIdEvent}
- * and {@link GlyphSetEvent} (all are subclasses of {@link NestEvent})
- *
- * </ul>
- *
  * @author Hervé Bitteur
  */
 public abstract class UserEvent
@@ -47,13 +27,13 @@ public abstract class UserEvent
     private static final Logger logger = LoggerFactory.getLogger(UserEvent.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The entity which created this event */
+    /** The entity which created this event (cannot be null). */
     public final Object source;
 
-    /** Hint about the event origin (can be null) */
+    /** Hint about the event origin (can be null). */
     public final SelectionHint hint;
 
-    /** Precise user mouse action (can be null) */
+    /** Precise user mouse action (can be null). */
     public MouseMovement movement;
 
     //~ Constructors -------------------------------------------------------------------------------

@@ -1,34 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="FLAG_1" interline="15" id="1039">
-    <stem-number>1</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-3.6</pitch-position>
-    <section orientation="VERTICAL" first-pos="1431" id="1975">
-        <run start="1409" length="9"/>
-        <run start="1411" length="8"/>
-        <run start="1412" length="7"/>
-        <run start="1413" length="6"/>
-        <run start="1414" length="6"/>
-        <run start="1415" length="6"/>
-        <run start="1416" length="6"/>
-        <run start="1417" length="6"/>
-        <run start="1418" length="6"/>
-        <run start="1419" length="6"/>
-        <run start="1421" length="5"/>
-        <run start="1422" length="5"/>
-        <run start="1423" length="6"/>
-        <run start="1425" length="8"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1444" id="1987">
-        <run start="1434" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1445" id="1989">
-        <run start="1427" length="15"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1446" id="1990">
-        <run start="1431" length="7"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1447" id="1991">
-        <run start="1434" length="1"/>
-    </section>
-</glyph>
+<sample id="1039" interline="15" left="1431" top="1409" shape="FLAG_1">
+    <run-table orientation="VERTICAL" width="17" height="33">
+        <sequences>
+            <item>9</item>
+            <item>0 2 8</item>
+            <item>0 3 7</item>
+            <item>0 4 6</item>
+            <item>0 5 6</item>
+            <item>0 6 6</item>
+            <item>0 7 6</item>
+            <item>0 8 6</item>
+            <item>0 9 6</item>
+            <item>0 10 6</item>
+            <item>0 12 5</item>
+            <item>0 13 5</item>
+            <item>0 14 6</item>
+            <item>0 16 8 1 1</item>
+            <item>0 18 15</item>
+            <item>0 22 7</item>
+            <item>0 25 1</item>
+        </sequences>
+    </run-table>
+</sample>

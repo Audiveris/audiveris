@@ -15,7 +15,6 @@ import omr.score.LogicalPart;
 import omr.score.StaffPosition;
 
 import omr.sheet.rhythm.Measure;
-import omr.sheet.rhythm.MeasureStack;
 import omr.sheet.rhythm.Voice;
 
 import omr.sig.inter.ClefInter;
@@ -69,11 +68,10 @@ import javax.xml.bind.annotation.XmlElement;
  * concrete structure of page/system/part/measure/staff to ease the handling of logical parts along
  * the pages and score.
  * <p>
- * Before {@link PageStep} is run, part IDs are defined as negative numbers, starting from -1
- * within the containing system.
- * After {@link PageStep} is run, part IDs are defined as positive numbers, starting from 1 and,
- * because of dummy parts, may not be exactly the position within the containing system. But all the
- * (physical) Parts related to the same (logical) LogicalPart share the same ID.
+ * Before {@link PageStep} is run, a part IDs is the 1-based index within the containing system.
+ * After {@link PageStep} is run, part IDs, because of dummy parts, may not be exactly the position
+ * number within the containing system. But all the (physical) Parts related to the same (logical)
+ * LogicalPart share the same ID.
  *
  * @author Hervé Bitteur
  */
@@ -113,6 +111,22 @@ public class Part
     @XmlAttribute
     private String name;
 
+    /** Starting barline, if any. (the others are linked to measures) */
+    @XmlElement(name = "starting-barline")
+    private PartBarline startingBarline;
+
+    /** Measures in this part. */
+    @XmlElement(name = "measure")
+    private final List<Measure> measures = new ArrayList<Measure>();
+
+    /** Lyric lines in this part. */
+    @XmlElement(name = "lyric-line")
+    private final List<LyricLineInter> lyrics = new ArrayList<LyricLineInter>();
+
+    /** Slurs in this part. */
+    @XmlElement(name = "slur")
+    private final List<SlurInter> slurs = new ArrayList<SlurInter>();
+
     // Transient data
     //---------------
     //
@@ -122,21 +136,6 @@ public class Part
     /** The containing system. */
     @Navigable(false)
     private SystemInfo system;
-
-    /** The corresponding LogicalPart. */
-    private LogicalPart logicalPart;
-
-    /** Starting bar-line, if any. (the others are linked to measures) */
-    private PartBarline startingBarline;
-
-    /** Measures in this part. */
-    private final List<Measure> measures = new ArrayList<Measure>();
-
-    /** Slurs in this part. */
-    private final List<SlurInter> slurs = new ArrayList<SlurInter>();
-
-    /** Lyric lines in this part. */
-    private final List<LyricLineInter> lyrics = new ArrayList<LyricLineInter>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -157,6 +156,14 @@ public class Part
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // addLyric //
+    //----------//
+    public void addLyric (LyricLineInter lyric)
+    {
+        lyrics.add(lyric);
+    }
+
     //------------//
     // addmeasure //
     //------------//
@@ -181,6 +188,26 @@ public class Part
         staves.add(staff);
     }
 
+    //-------------//
+    // afterReload //
+    //-------------//
+    public void afterReload ()
+    {
+        try {
+            // Process staves upfront, so that their notes have their staff assigned.
+            // Doing so, measure chords can determine which staves they belong to.
+            for (Staff staff : staves) {
+                staff.afterReload();
+            }
+
+            for (Measure measure : measures) {
+                measure.afterReload();
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+        }
+    }
+
     //------------------//
     // connectSlursWith //
     //------------------//
@@ -188,8 +215,8 @@ public class Part
      * Try to connect the orphan slurs at the beginning of this part
      * with the orphan slurs at the end of the provided preceding part.
      *
-     * @param precedingPart the part to connect to, either in the preceding
-     *                      system, or in the last system of the preceding page
+     * @param precedingPart the part to connect to, in the preceding system,
+     *                      [TODO: or in the last system of the preceding page]
      */
     public void connectSlursWith (Part precedingPart)
     {
@@ -214,12 +241,14 @@ public class Part
 
                 // No connection for this orphan
                 logger.info("Could not left-connect slur#" + slur.getId());
+                slur.delete();
             }
 
             // Check previous orphans
             for (SlurInter prevSlur : precedingOrphans) {
                 if (prevSlur.getExtension(RIGHT) == null) {
                     logger.info("Could not right-connect slur#" + prevSlur.getId());
+                    prevSlur.delete();
                 }
             }
         }
@@ -419,7 +448,7 @@ public class Part
     //----------------//
     public LogicalPart getLogicalPart ()
     {
-        return logicalPart;
+        return system.getPage().getLogicalPartById(id);
     }
 
     //-----------//
@@ -450,7 +479,7 @@ public class Part
 
         if ((point.x >= staff.getAbscissa(LEFT)) && (point.x <= staff.getAbscissa(RIGHT))) {
             for (Measure measure : measures) {
-                PartBarline barline = measure.getBarline();
+                PartBarline barline = measure.getRightBarline();
 
                 if ((barline == null) || (point.x <= barline.getRightX(this, staff))) {
                     return measure;
@@ -639,13 +668,9 @@ public class Part
     {
         SortedSet<Integer> found = new TreeSet<Integer>();
 
-        for (Staff staff : staves) {
-            for (MeasureStack stack : system.getMeasureStacks()) {
-                final List<Voice> incomings = stack.getStaffVoices(staff);
-
-                for (Voice voice : incomings) {
-                    found.add(voice.getId());
-                }
+        for (Measure measure : measures) {
+            for (Voice voice : measure.getVoices()) {
+                found.add(voice.getId());
             }
         }
 
@@ -665,15 +690,6 @@ public class Part
     //-----------------//
     public void purgeContainers ()
     {
-        // Slurs
-        for (Iterator<SlurInter> it = slurs.iterator(); it.hasNext();) {
-            SlurInter slur = it.next();
-
-            if (slur.isDeleted()) {
-                it.remove();
-            }
-        }
-
         // Lyrics
         for (Iterator<LyricLineInter> it = lyrics.iterator(); it.hasNext();) {
             LyricLineInter lyric = it.next();
@@ -710,7 +726,7 @@ public class Part
     //----------------//
     public void setLogicalPart (LogicalPart logicalPart)
     {
-        this.logicalPart = logicalPart;
+        setId(logicalPart.getId());
     }
 
     //---------//
@@ -728,13 +744,21 @@ public class Part
     // setStartingBarline //
     //--------------------//
     /**
-     * Set the bar-line that starts the part.
+     * Set the barline that starts the part.
      *
-     * @param startingBarline the starting bar-line
+     * @param startingBarline the starting barline
      */
     public void setStartingBarline (PartBarline startingBarline)
     {
         this.startingBarline = startingBarline;
+    }
+
+    //-----------//
+    // setSystem //
+    //-----------//
+    public void setSystem (SystemInfo system)
+    {
+        this.system = system;
     }
 
     //-------------//
@@ -752,16 +776,14 @@ public class Part
         // Voice IDs currently used in this part
         List<Integer> voiceIds = new ArrayList<Integer>(getVoiceIds());
 
-        for (MeasureStack stack : system.getMeasureStacks()) {
-            for (Voice voice : stack.getVoices()) {
-                if (voice.getMeasure().getPart() == this) {
-                    int voiceIndex = voiceIds.indexOf(voice.getId());
+        for (Measure measure : measures) {
+            for (Voice voice : measure.getVoices()) {
+                int voiceIndex = voiceIds.indexOf(voice.getId());
 
-                    if (voiceIndex == index) {
-                        stack.swapVoiceId(voice, newId);
+                if (voiceIndex == index) {
+                    measure.swapVoiceId(voice, newId);
 
-                        break;
-                    }
+                    break;
                 }
             }
         }

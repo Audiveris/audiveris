@@ -28,21 +28,9 @@ public class ActionDescriptor
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Class name. */
-    @XmlAttribute(name = "class")
-    public String className;
-
-    /** Name of method within class. */
-    @XmlAttribute(name = "method")
-    public String methodName;
-
     /** Which UI domain (menu) should host this action. */
     @XmlAttribute(name = "domain")
     public String domain;
-
-    /** Menu level, 0 for pull-down menu, 1 for sub-menu. */
-    @XmlAttribute(name = "level")
-    public Integer level;
 
     /**
      * Which UI section should host this action.
@@ -51,6 +39,18 @@ public class ActionDescriptor
      */
     @XmlAttribute(name = "section")
     public Integer section;
+
+    /** Sub-menu name. (exclusive of class+method) */
+    @XmlAttribute(name = "menu")
+    public String menuName;
+
+    /** Class name. (exclusive of menu) */
+    @XmlAttribute(name = "class")
+    public String className;
+
+    /** Name of method within class. (exclusive of menu) */
+    @XmlAttribute(name = "method")
+    public String methodName;
 
     /**
      * Which kind of menu item should be generated for this action, default is JMenuItem.
@@ -76,18 +76,26 @@ public class ActionDescriptor
     //----------//
     // toString //
     //----------//
-    /**
-     * Report a one-line information on this descriptor
-     */
     @Override
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{action");
-        sb.append(" class:").append(className).append(" method:").append(methodName);
 
         sb.append(" domain:").append(domain);
         sb.append(" section:").append(section);
+
+        if (className != null) {
+            sb.append(" class:").append(className);
+        }
+
+        if (methodName != null) {
+            sb.append(" method:").append(methodName);
+        }
+
+        if (menuName != null) {
+            sb.append(" menu:").append(menuName);
+        }
 
         if (itemClassName != null) {
             sb.append(" item:").append(itemClassName);

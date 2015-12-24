@@ -35,7 +35,8 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import static java.awt.RenderingHints.KEY_ANTIALIASING;
+import static java.awt.RenderingHints.VALUE_ANTIALIAS_OFF;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -131,14 +132,11 @@ public class PictureView
         @Override
         public void render (Graphics2D g)
         {
-            Color oldColor = g.getColor();
+            final Color oldColor = g.getColor();
+            final PaintingParameters painting = PaintingParameters.getInstance();
+            g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_OFF);
 
-            // Anti-aliasing OFF
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-
-            PaintingParameters painting = PaintingParameters.getInstance();
-
-            // Render the picture image
+            // Render the picture image (either initial or binary)
             if (painting.isInputPainting()) {
                 Picture picture = sheet.getPicture();
                 BufferedImage initial = picture.getInitialImage();
@@ -149,7 +147,7 @@ public class PictureView
                     RunTable table = picture.getTable(Picture.TableKey.BINARY);
 
                     if (table != null) {
-                        table.render(g);
+                        table.render(g, new Point(0, 0));
                     }
                 }
             } else {
@@ -165,18 +163,8 @@ public class PictureView
             // Render the recognized score entities?
             if (painting.isOutputPainting()) {
                 final boolean mixed = painting.isInputPainting();
-                g.setColor(mixed ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE);
-
-                //                final PagePhysicalPainter painter = new PagePhysicalPainter(
-                //                        g,
-                //                        mixed ? false : painting.isVoicePainting(),
-                //                        true,
-                //                        false);
-                //
-                //                for (Page page : sheet.getPages()) {
-                //                    page.accept(painter);
-                //                }
                 final boolean coloredVoices = mixed ? false : painting.isVoicePainting();
+                g.setColor(mixed ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE);
                 new SheetResultPainter(sheet, g, coloredVoices, true, false).process();
             }
 

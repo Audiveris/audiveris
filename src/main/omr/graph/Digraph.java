@@ -107,11 +107,4 @@ public interface Digraph<D extends Digraph<D, V>, V extends Vertex>
      * @param vertex the vertex to be removed
      */
     void removeVertex (V vertex);
-
-    /**
-     * Restore an old vertex
-     *
-     * @param vertex the old vertex to restore
-     */
-    void restoreVertex (V vertex);
 }

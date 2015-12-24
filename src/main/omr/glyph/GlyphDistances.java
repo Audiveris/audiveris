@@ -11,17 +11,14 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.glyph.facets.Glyph;
-
 import omr.image.ChamferDistance;
 import omr.image.DistanceTable;
 
-import omr.lag.Section;
-
-import omr.run.Orientation;
 import omr.run.Run;
+import omr.run.RunTable;
 
 import java.awt.Rectangle;
+import java.util.Iterator;
 
 /**
  * Class {@code GlyphDistances} handles distances around a glyph.
@@ -61,33 +58,74 @@ public class GlyphDistances
      * Report the distance (from this glyph) to the provided other glyph.
      *
      * @param other the other glyph
-     * @return the minimum distance measured between the two glyphs
+     * @return the minimum distance measured between the two glyph instances
      */
     public double distanceTo (Glyph other)
     {
+        final RunTable otherTable = other.getRunTable();
+        final int xOffset = other.getLeft();
+        final int yOffset = other.getTop();
         int bestDist = Integer.MAX_VALUE;
 
-        for (Section section : other.getMembers()) {
-            Orientation orientation = section.getOrientation();
-            int p = section.getFirstPos();
+        if (otherTable.getOrientation().isVertical()) {
+            // Vertical runs
+            for (int iSeq = 0, iBreak = otherTable.getSize(); iSeq < iBreak; iSeq++) {
+                final int x = xOffset + iSeq;
 
-            for (Run run : section.getRuns()) {
-                final int start = run.getStart();
+                if (x < tableBox.x) {
+                    continue;
+                }
 
-                for (int ic = run.getLength() - 1; ic >= 0; ic--) {
-                    final int x = (orientation == Orientation.HORIZONTAL) ? (start + ic) : p;
-                    final int y = (orientation == Orientation.HORIZONTAL) ? p : (start + ic);
+                if (x >= (tableBox.x + tableBox.width)) {
+                    break;
+                }
 
-                    if (tableBox.contains(x, y)) {
-                        int dist = distTable.getValue(x - tableBox.x, y - tableBox.y);
+                for (Iterator<Run> it = otherTable.iterator(iSeq); it.hasNext();) {
+                    final Run run = it.next();
+                    final int runStart = yOffset + run.getStart();
 
-                        if (dist < bestDist) {
-                            bestDist = dist;
+                    for (int ic = run.getLength() - 1; ic >= 0; ic--) {
+                        final int y = runStart + ic;
+
+                        if (tableBox.contains(x, y)) {
+                            final int dist = distTable.getValue(x - tableBox.x, y - tableBox.y);
+
+                            if (dist < bestDist) {
+                                bestDist = dist;
+                            }
                         }
                     }
                 }
+            }
+        } else {
+            // Horizontal runs
+            for (int iSeq = 0, iBreak = otherTable.getSize(); iSeq < iBreak; iSeq++) {
+                final int y = yOffset + iSeq;
 
-                p++;
+                if (y < tableBox.y) {
+                    continue;
+                }
+
+                if (y >= (tableBox.y + tableBox.height)) {
+                    break;
+                }
+
+                for (Iterator<Run> it = otherTable.iterator(iSeq); it.hasNext();) {
+                    final Run run = it.next();
+                    final int runStart = xOffset + run.getStart();
+
+                    for (int ic = run.getLength() - 1; ic >= 0; ic--) {
+                        final int x = runStart + ic;
+
+                        if (tableBox.contains(x, y)) {
+                            final int dist = distTable.getValue(x - tableBox.x, y - tableBox.y);
+
+                            if (dist < bestDist) {
+                                bestDist = dist;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -111,22 +149,37 @@ public class GlyphDistances
             // Initialize with glyph data (0 for glyph, -1 for other pixels)
             output.fill(-1);
 
-            for (Section section : glyph.getMembers()) {
-                Orientation orientation = section.getOrientation();
-                int p = section.getFirstPos();
+            final int xOffset = glyph.getLeft();
+            final int yOffset = glyph.getTop();
+            final RunTable runTable = glyph.getRunTable();
 
-                for (Run run : section.getRuns()) {
-                    final int start = run.getStart();
+            if (runTable.getOrientation().isVertical()) {
+                // Vertical runs
+                for (int iSeq = 0, iBreak = runTable.getSize(); iSeq < iBreak; iSeq++) {
+                    final int x = xOffset + iSeq;
 
-                    for (int ic = run.getLength() - 1; ic >= 0; ic--) {
-                        if (orientation == Orientation.HORIZONTAL) {
-                            output.setValue((start + ic) - box.x, p - box.y, 0);
-                        } else {
-                            output.setValue(p - box.x, (start + ic) - box.y, 0);
+                    for (Iterator<Run> it = runTable.iterator(iSeq); it.hasNext();) {
+                        final Run run = it.next();
+                        final int runStart = yOffset + run.getStart();
+
+                        for (int ic = run.getLength() - 1; ic >= 0; ic--) {
+                            output.setValue(x - box.x, (runStart + ic) - box.y, 0);
                         }
                     }
+                }
+            } else {
+                // Horizontal runs
+                for (int iSeq = 0, iBreak = runTable.getSize(); iSeq < iBreak; iSeq++) {
+                    final int y = yOffset + iSeq;
 
-                    p++;
+                    for (Iterator<Run> it = runTable.iterator(iSeq); it.hasNext();) {
+                        final Run run = it.next();
+                        final int runStart = xOffset + run.getStart();
+
+                        for (int ic = run.getLength() - 1; ic >= 0; ic--) {
+                            output.setValue((runStart + ic) - box.x, y - box.y, 0);
+                        }
+                    }
                 }
             }
 

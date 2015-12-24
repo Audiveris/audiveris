@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.text;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
 import omr.ui.symbol.TextFont;
 
@@ -369,7 +369,7 @@ public class TextWord
         this.glyph = glyph;
 
         if (glyph.isVip()) {
-            setVip();
+            setVip(true);
         }
     }
 
@@ -400,7 +400,7 @@ public class TextWord
         this.textLine = textLine;
 
         if (isVip() && (textLine != null)) {
-            textLine.setVip();
+            textLine.setVip(true);
         }
     }
 

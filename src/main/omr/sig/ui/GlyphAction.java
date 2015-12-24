@@ -11,23 +11,34 @@
 // </editor-fold>
 package omr.sig.ui;
 
-import omr.glyph.GlyphNest;
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
+import omr.glyph.GlyphIndex;
 
-import omr.selection.GlyphEvent;
+import omr.selection.EntityListEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
 
 import javax.swing.AbstractAction;
 
-class GlyphAction
+/**
+ * Action related to UI glyph selection.
+ *
+ * @author Hervé Bitteur
+ */
+public class GlyphAction
         extends AbstractAction
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(GlyphAction.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying glyph. */
     private final Glyph glyph;
 
@@ -71,9 +82,18 @@ class GlyphAction
     //---------//
     public void publish ()
     {
-        GlyphNest nest = glyph.getNest();
-        nest.getGlyphService().publish(
-                new GlyphEvent(this, SelectionHint.GLYPH_INIT, MouseMovement.PRESSING, glyph));
+        GlyphIndex glyphIndex = glyph.getIndex();
+
+        if (glyphIndex == null) {
+            logger.warn("No index for {}", glyph);
+        } else {
+            glyphIndex.getEntityService().publish(
+                    new EntityListEvent<Glyph>(
+                            this,
+                            SelectionHint.ENTITY_INIT,
+                            MouseMovement.PRESSING,
+                            Arrays.asList(glyph)));
+        }
     }
 
     //-------//
@@ -81,13 +101,14 @@ class GlyphAction
     //-------//
     private String tipOf (Glyph glyph)
     {
-        String tip = "layer: " + glyph.getLayer();
-        Shape shape = glyph.getShape();
+        String tip = "groups: " + glyph.getGroups();
 
-        if (shape != null) {
-            tip += (", shape: " + shape);
-        }
-
+        //        Shape shape = glyph.getShape();
+        //
+        //        if (shape != null) {
+        //            tip += (", shape: " + shape);
+        //        }
+        //
         return tip;
     }
 }

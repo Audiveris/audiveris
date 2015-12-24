@@ -1,35 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph id="2737" interline="22" shape="CLUTTER">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-18.3485311086561</pitch-position>
-    <section first-pos="1288" orientation="VERTICAL" id="3262">
-        <run length="2" start="167"/>
-        <run length="2" start="167"/>
-    </section>
-    <section first-pos="1290" orientation="VERTICAL" id="3269">
-        <run length="19" start="166"/>
-        <run length="22" start="165"/>
-        <run length="24" start="164"/>
-        <run length="25" start="163"/>
-        <run length="26" start="162"/>
-        <run length="28" start="160"/>
-    </section>
-    <section first-pos="1296" orientation="VERTICAL" id="3294">
-        <run length="2" start="167"/>
-        <run length="2" start="167"/>
-        <run length="2" start="167"/>
-        <run length="2" start="167"/>
-        <run length="2" start="167"/>
-    </section>
-    <section first-pos="1296" orientation="VERTICAL" id="3295">
-        <run length="3" start="185"/>
-    </section>
-    <section first-pos="1297" orientation="VERTICAL" id="3300">
-        <run length="2" start="186"/>
-        <run length="2" start="185"/>
-    </section>
-    <section first-pos="1299" orientation="VERTICAL" id="3309">
-        <run length="1" start="185"/>
-    </section>
-</glyph>
+<sample id="2737" interline="22" left="1288" top="160" shape="CLUTTER">
+    <run-table orientation="VERTICAL" width="13" height="28">
+        <sequences>
+            <item>0 7 2</item>
+            <item>0 7 2</item>
+            <item>0 6 19</item>
+            <item>0 5 22</item>
+            <item>0 4 24</item>
+            <item>0 3 25</item>
+            <item>0 2 26</item>
+            <item>28</item>
+            <item>0 7 2 16 3</item>
+            <item>0 7 2 17 2</item>
+            <item>0 7 2 16 2</item>
+            <item>0 7 2 16 1</item>
+            <item>0 7 2</item>
+        </sequences>
+    </run-table>
+</sample>

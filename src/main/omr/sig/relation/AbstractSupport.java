@@ -16,11 +16,21 @@ import omr.constant.ConstantSet;
 
 import omr.sig.GradeImpacts;
 
+import omr.util.Jaxb;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 /**
  * Class {@code AbstractSupport} is the base implementation of {@link Support} interface.
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "support")
 public class AbstractSupport
         extends AbstractRelation
         implements Support
@@ -31,6 +41,8 @@ public class AbstractSupport
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Quality of the geometric junction. */
+    @XmlAttribute
+    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
     protected double grade;
 
     /** Details about grade (for debugging). */
@@ -56,6 +68,24 @@ public class AbstractSupport
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // getSourceRatio //
+    //----------------//
+    @Override
+    public final double getSourceRatio ()
+    {
+        return 1.0 + (getSourceCoeff() * grade);
+    }
+
+    //----------------//
+    // getTargetRatio //
+    //----------------//
+    @Override
+    public final double getTargetRatio ()
+    {
+        return 1.0 + (getTargetCoeff() * grade);
+    }
+
     //----------//
     // getGrade //
     //----------//
@@ -82,24 +112,6 @@ public class AbstractSupport
     public double getMinGrade ()
     {
         return constants.minGrade.getValue();
-    }
-
-    //----------------//
-    // getSourceRatio //
-    //----------------//
-    @Override
-    public final double getSourceRatio ()
-    {
-        return 1.0 + (getSourceCoeff() * grade);
-    }
-
-    //----------------//
-    // getTargetRatio //
-    //----------------//
-    @Override
-    public final double getTargetRatio ()
-    {
-        return 1.0 + (getTargetCoeff() * grade);
     }
 
     //----------//

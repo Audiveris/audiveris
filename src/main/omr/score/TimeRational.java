@@ -23,6 +23,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * Class {@code TimeRational} is a marshallable and non-mutable structure,
@@ -31,7 +33,10 @@ import javax.xml.bind.annotation.XmlRootElement;
  * For example, (3/4) and (6/8) share the same rational value, but with different actual members.
  */
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement(name = "rational")
+@XmlRootElement(name = "time-rational")
+@XmlType(propOrder = {
+    "num", "den"}
+)
 public class TimeRational
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -39,13 +44,13 @@ public class TimeRational
     private static final Logger logger = LoggerFactory.getLogger(TimeRational.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The actual denominator. */
-    @XmlAttribute
-    public final int den;
-
     /** The actual numerator. */
     @XmlAttribute
     public final int num;
+
+    /** The actual denominator. */
+    @XmlAttribute
+    public final int den;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -93,35 +98,6 @@ public class TimeRational
         }
     }
 
-    //-------------//
-    // parseValues //
-    //-------------//
-    /**
-     * Convenient method to parse a string of TimeRational values, separated by commas.
-     *
-     * @param str the string to parse
-     * @return the sequence of TimeRational values decoded
-     */
-    public static List<TimeRational> parseValues (String str)
-    {
-        final List<TimeRational> list = new ArrayList<TimeRational>();
-        final String[] tokens = str.split("\\s*,\\s*");
-
-        for (String token : tokens) {
-            String trimmedToken = token.trim();
-
-            if (!trimmedToken.isEmpty()) {
-                TimeRational val = decode(trimmedToken);
-
-                if (val != null) {
-                    list.add(val);
-                }
-            }
-        }
-
-        return list;
-    }
-
     //--------//
     // equals //
     //--------//
@@ -158,6 +134,35 @@ public class TimeRational
         return hash;
     }
 
+    //-------------//
+    // parseValues //
+    //-------------//
+    /**
+     * Convenient method to parse a string of TimeRational values, separated by commas.
+     *
+     * @param str the string to parse
+     * @return the sequence of TimeRational values decoded
+     */
+    public static List<TimeRational> parseValues (String str)
+    {
+        final List<TimeRational> list = new ArrayList<TimeRational>();
+        final String[] tokens = str.split("\\s*,\\s*");
+
+        for (String token : tokens) {
+            String trimmedToken = token.trim();
+
+            if (!trimmedToken.isEmpty()) {
+                TimeRational val = decode(trimmedToken);
+
+                if (val != null) {
+                    list.add(val);
+                }
+            }
+        }
+
+        return list;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -165,5 +170,29 @@ public class TimeRational
     public String toString ()
     {
         return num + "/" + den;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Adapter //
+    //---------//
+    public static class Adapter
+            extends XmlAdapter<String, TimeRational>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public String marshal (TimeRational val)
+                throws Exception
+        {
+            return val.toString();
+        }
+
+        @Override
+        public TimeRational unmarshal (String str)
+                throws Exception
+        {
+            return decode(str);
+        }
     }
 }

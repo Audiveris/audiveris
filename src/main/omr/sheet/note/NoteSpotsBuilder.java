@@ -11,18 +11,10 @@
 // </editor-fold>
 package omr.sheet.note;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
+import omr.glyph.GlyphFactory;
+import omr.glyph.Symbol.Group;
 
-import omr.lag.BasicLag;
-import omr.lag.JunctionAllPolicy;
-import omr.lag.Lag;
-import omr.lag.Section;
-import omr.lag.SectionFactory;
-
-import omr.run.Orientation;
 import omr.run.RunTable;
 
 import omr.sheet.Picture;
@@ -75,16 +67,7 @@ public class NoteSpotsBuilder
     public Map<SystemInfo, List<Glyph>> getSpots ()
     {
         RunTable noteRuns = sheet.getPicture().getTable(Picture.TableKey.HEAD_SPOTS);
-
-        final Lag noteLag = new BasicLag("noteLag", Orientation.VERTICAL);
-
-        // Sections
-        SectionFactory sectionsBuilder = new SectionFactory(noteLag, JunctionAllPolicy.INSTANCE);
-        List<Section> sections = sectionsBuilder.createSections(noteRuns);
-
-        // Glyphs
-        GlyphNest nest = sheet.getGlyphNest();
-        List<Glyph> spots = nest.retrieveGlyphs(sections, GlyphLayer.SPOT, true);
+        List<Glyph> spots = GlyphFactory.buildGlyphs(noteRuns, new Point(0, 0), Group.HEAD_SPOT);
 
         // Dispose the runTable
         sheet.getPicture().removeTable(Picture.TableKey.HEAD_SPOTS);
@@ -122,7 +105,7 @@ public class NoteSpotsBuilder
                         spotMap.put(system, list = new ArrayList<Glyph>());
                     }
 
-                    spot.setShape(Shape.NOTE_SPOT); // Useful?
+                    spot.addGroup(Group.HEAD_SPOT); // Needed
                     list.add(spot);
                 }
             }

@@ -16,7 +16,7 @@ import java.util.List;
 
 /**
  * Class {@code FilamentComb} describe a series of y values corresponding to horizontal
- * filaments rather regularly separated.
+ * staff filaments rather regularly separated.
  *
  * @author Hervé Bitteur
  */
@@ -28,7 +28,7 @@ public class FilamentComb
     private final int col;
 
     /** Series of filaments involved. */
-    private final List<LineFilament> filaments;
+    private final List<StaffFilament> filaments;
 
     /** Ordinate value for each filament. */
     private final List<Double> ys;
@@ -46,7 +46,7 @@ public class FilamentComb
     {
         this.col = col;
 
-        filaments = new ArrayList<LineFilament>();
+        filaments = new ArrayList<StaffFilament>();
         ys = new ArrayList<Double>();
     }
 
@@ -60,7 +60,7 @@ public class FilamentComb
      * @param filament the filament to append
      * @param y        the filament ordinate at x abscissa
      */
-    public void append (LineFilament filament,
+    public void append (StaffFilament filament,
                         double y)
     {
         filaments.add(filament);
@@ -84,7 +84,7 @@ public class FilamentComb
     //-------------//
     // getFilament //
     //-------------//
-    public LineFilament getFilament (int index)
+    public StaffFilament getFilament (int index)
     {
         return filaments.get(index);
     }
@@ -92,7 +92,7 @@ public class FilamentComb
     //--------------//
     // getFilaments //
     //--------------//
-    public List<LineFilament> getFilaments ()
+    public List<StaffFilament> getFilaments ()
     {
         return filaments;
     }
@@ -100,12 +100,12 @@ public class FilamentComb
     //----------//
     // getIndex //
     //----------//
-    public int getIndex (LineFilament filament)
+    public int getIndex (StaffFilament filament)
     {
-        LineFilament ancestor = (LineFilament) filament.getAncestor();
+        StaffFilament ancestor = (StaffFilament) filament.getAncestor();
 
         for (int index = 0; index < filaments.size(); index++) {
-            LineFilament fil = filaments.get(index);
+            StaffFilament fil = filaments.get(index);
 
             if (fil.getAncestor() == ancestor) {
                 return index;
@@ -159,7 +159,7 @@ public class FilamentComb
         sb.append(" ").append(filaments.size());
 
         for (int i = 0; i < filaments.size(); i++) {
-            LineFilament fil = (LineFilament) filaments.get(i).getAncestor();
+            StaffFilament fil = (StaffFilament) filaments.get(i).getAncestor();
             double y = ys.get(i);
             sb.append(" F#").append(fil.getId()).append("@").append((float) y);
         }

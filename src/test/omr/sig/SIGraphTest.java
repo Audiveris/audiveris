@@ -18,7 +18,7 @@ import omr.sig.relation.AbstractSupport;
 import omr.sig.inter.AbstractInter;
 import omr.sig.inter.Inter;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
 import omr.sig.relation.Exclusion.Cause;
 

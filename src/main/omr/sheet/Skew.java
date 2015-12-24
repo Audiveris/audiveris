@@ -18,6 +18,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
@@ -169,7 +170,7 @@ public class Skew
     //----------------//
     // initTransients //
     //----------------//
-    void initTransients (Sheet sheet)
+    private void initTransients (Sheet sheet)
     {
         angle = Math.atan(slope);
 
@@ -197,5 +198,19 @@ public class Skew
         }
 
         at.translate(dx, dy);
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled for this object,
+     * but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        initTransients((Sheet) parent);
     }
 }

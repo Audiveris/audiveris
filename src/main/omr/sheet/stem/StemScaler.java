@@ -111,7 +111,7 @@ public class StemScaler
     public void displayChart ()
     {
         if (histoKeeper == null) {
-            retrieveStem();
+            retrieveStemWidth();
         }
 
         if (histoKeeper != null) {
@@ -121,15 +121,15 @@ public class StemScaler
         }
     }
 
-    //--------------//
-    // retrieveStem //
-    //--------------//
+    //-------------------//
+    // retrieveStemWidth //
+    //-------------------//
     /**
      * Retrieve the global stem thickness for the sheet.
      *
      * @return the stem scale data
      */
-    public StemScale retrieveStem ()
+    public StemScale retrieveStemWidth ()
     {
         StopWatch watch = new StopWatch("Stem scaler for " + sheet.getId());
 
@@ -190,11 +190,10 @@ public class StemScaler
         BufferedImage img = buf.getBufferedImage();
         StemsCleaner eraser = new StemsCleaner(buf, img.createGraphics(), sheet);
         eraser.eraseShapes(
-                Arrays.asList(
-                        Shape.THICK_BARLINE,
-                        Shape.THICK_CONNECTION,
-                        Shape.THIN_BARLINE,
-                        Shape.THIN_CONNECTION));
+                Arrays.asList(Shape.THICK_BARLINE,
+                              Shape.THICK_CONNECTOR,
+                              Shape.THIN_BARLINE,
+                              Shape.THIN_CONNECTOR));
         buf = new ByteProcessor(img);
         buf.threshold(127); // Binarize
 

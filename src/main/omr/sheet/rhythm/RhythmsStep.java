@@ -55,7 +55,7 @@ public class RhythmsStep
         for (Page page : sheet.getPages()) {
             new PageRhythm(page).process();
 
-            // Populate each measure with its data
+            // Complete each measure with its needed data
             for (SystemInfo system : page.getSystems()) {
                 new MeasureFiller(system).process();
             }

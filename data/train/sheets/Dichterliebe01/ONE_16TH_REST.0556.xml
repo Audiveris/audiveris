@@ -1,74 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="ONE_16TH_REST" interline="18" id="556">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>0.3835616438356164</pitch-position>
-    <section orientation="VERTICAL" first-pos="1700" id="3176">
-        <run start="1887" length="7"/>
-        <run start="1886" length="9"/>
-        <run start="1885" length="11"/>
-        <run start="1885" length="14"/>
-        <run start="1884" length="15"/>
-        <run start="1884" length="15"/>
-        <run start="1884" length="15"/>
-        <run start="1884" length="15"/>
-        <run start="1884" length="15"/>
-        <run start="1885" length="11"/>
-        <run start="1886" length="10"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1705" id="3180">
-        <run start="1868" length="8"/>
-        <run start="1867" length="10"/>
-        <run start="1866" length="12"/>
-        <run start="1866" length="12"/>
-        <run start="1866" length="12"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1708" id="3183">
-        <run start="1916" length="1"/>
-        <run start="1913" length="4"/>
-        <run start="1910" length="7"/>
-        <run start="1907" length="9"/>
-        <run start="1904" length="9"/>
-        <run start="1900" length="9"/>
-        <run start="1898" length="7"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1709" id="3186">
-        <run start="1862" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1710" id="3193">
-        <run start="1862" length="16"/>
-        <run start="1862" length="16"/>
-        <run start="1865" length="13"/>
-        <run start="1866" length="12"/>
-        <run start="1867" length="11"/>
-        <run start="1868" length="9"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1711" id="3199">
-        <run start="1890" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1711" id="3200">
-        <run start="1892" length="4"/>
-        <run start="1892" length="3"/>
-        <run start="1891" length="3"/>
-        <run start="1891" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1715" id="3209">
-        <run start="1889" length="11"/>
-        <run start="1888" length="11"/>
-        <run start="1886" length="8"/>
-        <run start="1882" length="8"/>
-        <run start="1877" length="9"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1716" id="3211">
-        <run start="1873" length="4"/>
-        <run start="1873" length="3"/>
-        <run start="1872" length="3"/>
-        <run start="1872" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1720" id="3214">
-        <run start="1871" length="11"/>
-        <run start="1869" length="9"/>
-        <run start="1868" length="7"/>
-        <run start="1868" length="3"/>
-    </section>
-</glyph>
+<sample id="556" interline="18" left="1700" top="1862" shape="ONE_16TH_REST">
+    <run-table orientation="VERTICAL" width="24" height="55">
+        <sequences>
+            <item>0 25 7</item>
+            <item>0 24 9</item>
+            <item>0 23 11</item>
+            <item>0 23 14</item>
+            <item>0 22 15</item>
+            <item>0 6 8 8 15</item>
+            <item>0 5 10 7 15</item>
+            <item>0 4 12 6 15</item>
+            <item>0 4 12 6 15 17 1</item>
+            <item>3 1 12 7 11 17 4</item>
+            <item>16 8 10 14 7</item>
+            <item>16 12 1 1 4 11 9</item>
+            <item>0 3 13 14 3 9 9</item>
+            <item>0 4 12 13 3 6 9</item>
+            <item>0 5 11 13 3 4 7</item>
+            <item>0 6 9 12 11</item>
+            <item>0 11 4 11 11</item>
+            <item>0 11 3 10 8</item>
+            <item>0 10 3 7 8</item>
+            <item>0 10 3 2 9</item>
+            <item>0 9 11</item>
+            <item>0 7 9</item>
+            <item>0 6 7</item>
+            <item>0 6 3</item>
+        </sequences>
+    </run-table>
+</sample>

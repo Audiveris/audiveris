@@ -14,7 +14,6 @@ package omr.sig.inter;
 import omr.glyph.Shape;
 
 import omr.image.Anchored;
-import omr.image.ShapeDescriptor;
 
 import omr.sheet.Staff;
 
@@ -23,11 +22,14 @@ import omr.sig.GradeImpacts;
 import java.awt.Point;
 import java.awt.Rectangle;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code WholeInter} represents a whole note interpretation.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "whole")
 public class WholeInter
         extends AbstractHeadInter
 {
@@ -36,22 +38,25 @@ public class WholeInter
     /**
      * Creates a new WholeInter object.
      *
-     * @param descriptor the shape template descriptor
-     * @param pivot      the template pivot
-     * @param anchor     relative pivot configuration
-     * @param box        the object bounds
-     * @param impacts    the grade details
-     * @param staff      the related staff
-     * @param pitch      the note pitch
+     * @param pivot   the template pivot
+     * @param anchor  relative pivot configuration
+     * @param bounds  the object bounds
+     * @param impacts the grade details
+     * @param staff   the related staff
+     * @param pitch   the note pitch
      */
-    public WholeInter (ShapeDescriptor descriptor,
-                       Point pivot,
+    public WholeInter (Point pivot,
                        Anchored.Anchor anchor,
-                       Rectangle box,
+                       Rectangle bounds,
                        GradeImpacts impacts,
                        Staff staff,
                        int pitch)
     {
-        super(descriptor, pivot, anchor, box, Shape.WHOLE_NOTE, impacts, staff, pitch);
+        super(pivot, anchor, bounds, Shape.WHOLE_NOTE, impacts, staff, pitch);
+    }
+
+    private WholeInter ()
+    {
+        super(null, null, null, null, null, null, 0);
     }
 }

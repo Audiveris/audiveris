@@ -18,8 +18,6 @@ import omr.math.AreaUtil.CoreData;
 import omr.math.GeoPath;
 import omr.math.Projection;
 
-import omr.run.Orientation;
-
 import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -30,7 +28,9 @@ import omr.sig.inter.BarlineInter;
 import omr.sig.inter.Inter;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 
 import ij.process.ByteProcessor;
@@ -301,9 +301,8 @@ public class StaffProjector
     {
         double linesHeight = 0;
 
-        for (FilamentLine line : staff.getLines()) {
-            LineFilament fil = line.getFilament();
-            linesHeight += fil.getMeanThickness(Orientation.HORIZONTAL);
+        for (LineInfo line : staff.getLines()) {
+            linesHeight += line.getThickness();
         }
 
         logger.debug("Staff#{} linesheight: {}", staff.getId(), linesHeight);
@@ -343,8 +342,8 @@ public class StaffProjector
     {
         projection = new Projection.Short(0, sheet.getWidth() - 1);
 
-        final FilamentLine firstLine = staff.getFirstLine();
-        final FilamentLine lastLine = staff.getLastLine();
+        final LineInfo firstLine = staff.getFirstLine();
+        final LineInfo lastLine = staff.getLastLine();
         final int dx = params.staffAbscissaMargin;
         final int xMin = xClamp(staff.getAbscissa(LEFT) - dx);
         final int xMax = xClamp(staff.getAbscissa(RIGHT) + dx);

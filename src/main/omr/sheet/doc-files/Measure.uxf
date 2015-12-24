@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="13.2">
-    <help_text>//Uncomment the following line to change the fontsize:
+<diagram program="umlet" version="13.3">
+  <help_text>//Uncomment the following line to change the fontsize:
         //fontsize=14
 
         //Welcome to UMLet!
@@ -13,19 +13,21 @@
         // *Press c to copy the UML diagram to the system clipboard.
         // * This text will be stored with each diagram. Feel free to use the area for notes.
     </help_text>
-    <zoom_level>10</zoom_level>
-    <element>
-        <type>com.baselet.element.old.element.Class</type>
-        <coordinates>
-            <x>100</x>
-            <y>20</y>
-            <w>120</w>
-            <h>220</h>
-        </coordinates>
-        <panel_attributes>*SystemInfo*
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>100</x>
+      <y>40</y>
+      <w>120</w>
+      <h>220</h>
+    </coordinates>
+    <panel_attributes>*SystemInfo*
 --
 id
 indented?
+sig
+--
 top
 bottom
 deltaY
@@ -33,19 +35,18 @@ left
 width
 area
 areaLeft
-areaRight
-sig</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Class</type>
-        <coordinates>
-            <x>170</x>
-            <y>320</y>
-            <w>100</w>
-            <h>110</h>
-        </coordinates>
-        <panel_attributes>*Part*
+areaRight</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>170</x>
+      <y>370</y>
+      <w>100</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>*Part*
 --
 id
 dummy?
@@ -53,17 +54,17 @@ name
 startingBarline
 slurs
         </panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Class</type>
-        <coordinates>
-            <x>150</x>
-            <y>490</y>
-            <w>80</w>
-            <h>200</h>
-        </coordinates>
-        <panel_attributes>*Staff*
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>150</x>
+      <y>540</y>
+      <w>80</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>*Staff*
 --
 id
 dummy?
@@ -75,101 +76,105 @@ ledgerMap
 peaks
 bars
 sideBars</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>130</x>
-            <y>210</y>
-            <w>50</w>
-            <h>300</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;30;280</additional_attributes>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>180</x>
-            <y>400</y>
-            <w>50</w>
-            <h>110</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;30;90</additional_attributes>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Class</type>
-        <coordinates>
-            <x>320</x>
-            <y>320</y>
-            <w>120</w>
-            <h>200</h>
-        </coordinates>
-        <panel_attributes>*Measure*
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>130</x>
+      <y>230</y>
+      <w>50</w>
+      <h>330</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;30;310</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>180</x>
+      <y>450</y>
+      <w>50</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;30;90</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>320</x>
+      <y>370</y>
+      <w>120</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>*Measure*
+--
+leftBarline
+midBarline
+rightBarline
 --
 dummy?
-leftBarline
-insideBarline
-barline
 clefs
 keySigs
 timeSigs
 chords
 otherTimings
 wholeChords</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>240</x>
-            <y>300</y>
-            <w>100</w>
-            <h>50</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;80;30</additional_attributes>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Class</type>
-        <coordinates>
-            <x>680</x>
-            <y>20</y>
-            <w>80</w>
-            <h>100</h>
-        </coordinates>
-        <panel_attributes>*Slot*
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>240</x>
+      <y>350</y>
+      <w>100</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;80;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>680</x>
+      <y>40</y>
+      <w>80</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>*Slot*
 --
 id
 xOffset
 startTime
 incomings</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>410</x>
-            <y>0</y>
-            <w>290</w>
-            <h>50</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;270;30</additional_attributes>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Class</type>
-        <coordinates>
-            <x>320</x>
-            <y>20</y>
-            <w>120</w>
-            <h>240</h>
-        </coordinates>
-        <panel_attributes>*MeasureStack*
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>410</x>
+      <y>20</y>
+      <w>290</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;270;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>320</x>
+      <y>40</y>
+      <w>120</w>
+      <h>270</h>
+    </coordinates>
+    <panel_attributes>*MeasureStack*
 --
 id
+left
+right
+--
 special
 repeat
 expectedDuration
@@ -181,166 +186,168 @@ wholeRestChords
 rhythms
 actualDuration
 excess</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>190</x>
-            <y>0</y>
-            <w>150</w>
-            <h>50</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;130;30</additional_attributes>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>350</x>
-            <y>230</y>
-            <w>50</w>
-            <h>110</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;30;90</additional_attributes>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>180</x>
-            <y>210</y>
-            <w>50</w>
-            <h>130</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;30;110</additional_attributes>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Class</type>
-        <coordinates>
-            <x>490</x>
-            <y>240</y>
-            <w>110</w>
-            <h>100</h>
-        </coordinates>
-        <panel_attributes>*Voice*
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>190</x>
+      <y>0</y>
+      <w>150</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+stacks</panel_attributes>
+    <additional_attributes>30;50;130;50</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>350</x>
+      <y>280</y>
+      <w>50</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;30;90</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>160</x>
+      <y>230</y>
+      <w>88</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+parts</panel_attributes>
+    <additional_attributes>50;30;50;140</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>490</x>
+      <y>290</y>
+      <w>110</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>*Voice*
 --
 id
 wholeChord
 termination
 inferredTimeSig</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>410</x>
-            <y>220</y>
-            <w>100</w>
-            <h>50</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;80;30</additional_attributes>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Class</type>
-        <coordinates>
-            <x>680</x>
-            <y>240</y>
-            <w>80</w>
-            <h>70</h>
-        </coordinates>
-        <panel_attributes>*SlotVoice*
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>410</x>
+      <y>270</y>
+      <w>100</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;80;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>680</x>
+      <y>290</y>
+      <w>80</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>*SlotVoice*
 --
 chord
 status</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>690</x>
-            <y>90</y>
-            <w>50</w>
-            <h>170</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;30;150</additional_attributes>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>570</x>
-            <y>220</y>
-            <w>130</w>
-            <h>50</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>690</x>
+      <y>110</y>
+      <w>50</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;30;180</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>570</x>
+      <y>270</y>
+      <w>130</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
 m2=slotTable</panel_attributes>
-        <additional_attributes>30;30;110;30</additional_attributes>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Class</type>
-        <coordinates>
-            <x>30</x>
-            <y>490</y>
-            <w>90</w>
-            <h>120</h>
-        </coordinates>
-        <panel_attributes>*PartGroup*
+    <additional_attributes>30;30;110;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>30</x>
+      <y>540</y>
+      <w>90</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>*PartGroup*
 --
 number
 symbol
 barline?
 name
 abbreviation</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>90</x>
-            <y>470</y>
-            <w>82</w>
-            <h>70</h>
-        </coordinates>
-        <panel_attributes>lt=-&gt;
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>90</x>
+      <y>520</y>
+      <w>82</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
 first</panel_attributes>
-        <additional_attributes>30;50;60;50</additional_attributes>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>90</x>
-            <y>510</y>
-            <w>80</w>
-            <h>70</h>
-        </coordinates>
-        <panel_attributes>lt=-&gt;
+    <additional_attributes>30;50;60;50</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>90</x>
+      <y>560</y>
+      <w>80</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
 last</panel_attributes>
-        <additional_attributes>30;50;60;50</additional_attributes>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>80</x>
-            <y>210</y>
-            <w>50</w>
-            <h>300</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;30;280</additional_attributes>
-    </element>
-    <element>
-        <type>com.baselet.element.old.element.Relation</type>
-        <coordinates>
-            <x>410</x>
-            <y>300</y>
-            <w>100</w>
-            <h>50</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;80;30</additional_attributes>
-    </element>
+    <additional_attributes>30;50;60;50</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>80</x>
+      <y>230</y>
+      <w>50</w>
+      <h>330</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;30;310</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>410</x>
+      <y>350</y>
+      <w>100</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;80;30</additional_attributes>
+  </element>
 </diagram>

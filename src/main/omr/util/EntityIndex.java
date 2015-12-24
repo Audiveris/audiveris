@@ -1,0 +1,157 @@
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      E n t i t y I n d e x                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright � Herv� Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
+// </editor-fold>
+package omr.util;
+
+import omr.selection.EntityService;
+
+import java.util.Collection;
+import java.util.Iterator;
+
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+/**
+ * Interface {@code EntityIndex} describes a collection manager, with the ability to
+ * retrieve a entity within the collection based on its (strictly positive integer) ID.
+ *
+ * @param <E> specific type for entity
+ *
+ * @author Hervé Bitteur
+ */
+@XmlJavaTypeAdapter(BasicIndex.InterfaceAdapter.class)
+public interface EntityIndex<E extends Entity>
+{
+    //~ Methods ------------------------------------------------------------------------------------
+
+    /**
+     * Report the used integer id value, if any, right after the provided one
+     *
+     * @param idValue the provided id value
+     * @return the next used id, or null
+     */
+    public Integer getIdValueAfter (Integer idValue);
+
+    /**
+     * Report the used integer id value, if any, right before the provided one
+     *
+     * @param idValue the provided id value
+     * @return the previous used id, or null
+     */
+    public Integer getIdValueBefore (Integer idValue);
+
+    /**
+     * Export the whole unmodifiable collection of entities in the nest, sorted on ID.
+     *
+     * @return the collection of entities
+     */
+    Collection<E> getEntities ();
+
+    /**
+     * Retrieve a entity via its Id.
+     *
+     * @param id the entity id to search for
+     * @return the entity found, or null otherwise
+     */
+    E getEntity (String id);
+
+    /**
+     * Report the entity selection service, if any.
+     *
+     * @return the entity service, perhaps null
+     */
+    EntityService<E> getEntityService ();
+
+    /**
+     * Report the used id, if any, right after the provided one
+     *
+     * @param id the provided id
+     * @return the next used id, or null
+     */
+    String getIdAfter (String id);
+
+    /**
+     * Report the used id, if any, right before the provided one
+     *
+     * @param id the provided id
+     * @return the previous used id, or null
+     */
+    String getIdBefore (String id);
+
+    /**
+     * Report the last ID assigned so far.
+     *
+     * @return the last ID used so far, 0 if none
+     */
+    String getLastId ();
+
+    /**
+     * Report the distinguished name of this index (for debug mainly).
+     *
+     * @return name for this index
+     */
+    String getName ();
+
+    /**
+     * Report the prefix used for IDs in this index.
+     *
+     * @return the ID prefix string
+     */
+    String getPrefix ();
+
+    /**
+     * Check whether the provided ID has been declared as VIP.
+     *
+     * @param id the ID to check
+     * @return true if id was declared as VIP
+     */
+    boolean isVipId (String id);
+
+    /**
+     * Return an iterator on entities in this index.
+     *
+     * @return an entity iterator
+     */
+    Iterator<E> iterator ();
+
+    /**
+     * Assign a unique id (within this index) to the provided entity.
+     *
+     * @param entity the provided entity
+     * @return the assigned unique id
+     */
+    String register (E entity);
+
+    /**
+     * Remove the provided entity
+     *
+     * @param entity the entity to remove
+     */
+    void remove (E entity);
+
+    /**
+     * Reset index internals (entities and last ID value).
+     */
+    void reset ();
+
+    /**
+     * Assign and connect an entity selection service.
+     *
+     * @param entityService the entity service, not null
+     */
+    void setEntityService (EntityService<E> entityService);
+
+    /**
+     * Reset last ID to the provided value
+     *
+     * @param lastId ID assigned
+     */
+    void setLastId (String lastId);
+}

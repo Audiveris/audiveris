@@ -11,9 +11,11 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.util.ByteUtil;
+
 import ij.process.ByteProcessor;
 
-import java.awt.Rectangle;
+import java.awt.Point;
 
 /**
  * Class {@code Lags} gathers utilities for lags.
@@ -55,13 +57,13 @@ public class Lags
                                              int height,
                                              Lag... lags)
     {
-        final Rectangle box = new Rectangle(0, 0, width, height);
+        final Point offset = new Point(0, 0);
         final ByteProcessor buf = new ByteProcessor(width, height);
-        buf.invert();
+        ByteUtil.raz(buf); // buf.invert();
 
         for (Lag lag : lags) {
-            for (Section section : lag.getSections()) {
-                section.fillImage(buf, box);
+            for (Section section : lag.getEntities()) {
+                section.fillBuffer(buf, offset);
             }
         }
 

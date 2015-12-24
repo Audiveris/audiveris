@@ -11,13 +11,11 @@
 // </editor-fold>
 package omr.sheet.beam;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
+import omr.glyph.Glyph;
+import omr.glyph.GlyphIndex;
 import omr.glyph.GlyphsModel;
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Symbol.Group;
 import omr.glyph.ui.GlyphsController;
-import omr.glyph.ui.NestView;
 import omr.glyph.ui.SymbolGlyphBoard;
 
 import omr.lag.Lag;
@@ -27,6 +25,8 @@ import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetTab;
 
 import omr.ui.BoardsPane;
+import omr.ui.EntityView;
+import omr.ui.util.UIUtil;
 import omr.ui.view.ScrollView;
 
 import org.slf4j.Logger;
@@ -35,8 +35,9 @@ import org.slf4j.LoggerFactory;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.util.Arrays;
-import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -50,9 +51,6 @@ public class SpotsController
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SpotsController.class);
-
-    /** Set of shapes of interest. */
-    private static final EnumSet<Shape> relevantShapes = EnumSet.of(Shape.BEAM_SPOT);
 
     //~ Instance fields ----------------------------------------------------------------------------
     private final Lag[] lags;
@@ -70,7 +68,7 @@ public class SpotsController
     public SpotsController (Sheet sheet,
                             Lag... lags)
     {
-        super(new GlyphsModel(sheet, sheet.getGlyphNest(), null));
+        super(new GlyphsModel(sheet, sheet.getGlyphIndex(), null));
         this.lags = lags;
     }
 
@@ -86,7 +84,7 @@ public class SpotsController
         if (view == null) {
             displayFrame();
         } else if (view != null) {
-            view.refresh();
+            view.repaint();
         }
     }
 
@@ -109,14 +107,14 @@ public class SpotsController
     // MyView //
     //--------//
     private final class MyView
-            extends NestView
+            extends EntityView<Glyph>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public MyView (GlyphNest nest,
+        public MyView (GlyphIndex nest,
                        List<Lag> lags)
         {
-            super(nest, lags, sheet);
+            super(nest.getEntityService());
 
             setLocationService(sheet.getLocationService());
 
@@ -130,25 +128,24 @@ public class SpotsController
         @Override
         public void renderItems (Graphics2D g)
         {
-            super.renderItems(g);
+            final GlyphIndex nest = (GlyphIndex) entityIndex;
+            final Rectangle clip = g.getClipBounds();
+            final Color oldColor = g.getColor();
+            final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
 
-            Rectangle clip = g.getClipBounds();
+            for (Iterator<Glyph> it = nest.iterator(); it.hasNext();) {
+                final Glyph glyph = it.next();
 
-            Color oldColor = g.getColor();
-            g.setColor(Color.RED);
-
-            for (GlyphLayer layer : GlyphLayer.concreteValues()) {
-                for (Glyph glyph : nest.getGlyphs(layer)) {
-                    final Shape shape = glyph.getShape();
-
-                    if (relevantShapes.contains(shape)
-                        && ((clip == null) || clip.intersects(glyph.getBounds()))) {
-                        // Draw mean line
-                        glyph.renderLine(g);
-                    }
+                if (glyph.hasGroup(Group.BEAM_SPOT)
+                    && ((clip == null) || clip.intersects(glyph.getBounds()))) {
+                    g.setColor(Color.LIGHT_GRAY);
+                    glyph.getRunTable().render(g, glyph.getTopLeft()); // Draw glyph
+                    g.setColor(Color.RED);
+                    glyph.renderLine(g); // Draw glyph mean line
                 }
             }
 
+            g.setStroke(oldStroke);
             g.setColor(oldColor);
         }
     }

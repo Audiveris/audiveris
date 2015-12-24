@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.sig.GradeImpacts;
 
@@ -23,7 +23,7 @@ import java.awt.Rectangle;
  *
  * @author Hervé Bitteur
  */
-public class AbstractNotationInter
+public abstract class AbstractNotationInter
         extends AbstractInter
 {
     //~ Constructors -------------------------------------------------------------------------------
@@ -31,32 +31,39 @@ public class AbstractNotationInter
     /**
      * Creates a new {@code AbstractNotationInter} object.
      *
-     * @param glyph the glyph to interpret
-     * @param box   the precise object bounds (if different from glyph bounds)
-     * @param shape the possible shape
-     * @param grade the interpretation quality
+     * @param glyph  the glyph to interpret
+     * @param bounds the precise object bounds (if different from glyph bounds)
+     * @param shape  the possible shape
+     * @param grade  the interpretation quality
      */
     public AbstractNotationInter (Glyph glyph,
-                                  Rectangle box,
+                                  Rectangle bounds,
                                   Shape shape,
                                   double grade)
     {
-        super(glyph, box, shape, grade);
+        super(glyph, bounds, shape, grade);
     }
 
     /**
      * Creates a new {@code AbstractNotationInter} object.
      *
      * @param glyph   the glyph to interpret
-     * @param box     the precise object bounds (if different from glyph bounds)
+     * @param bounds  the precise object bounds (if different from glyph bounds)
      * @param shape   the possible shape
      * @param impacts assignment details
      */
     public AbstractNotationInter (Glyph glyph,
-                                  Rectangle box,
+                                  Rectangle bounds,
                                   Shape shape,
                                   GradeImpacts impacts)
     {
-        super(glyph, box, shape, impacts);
+        super(glyph, bounds, shape, impacts);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    protected AbstractNotationInter ()
+    {
     }
 }

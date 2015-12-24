@@ -1,32 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="FLAG_1_UP" interline="15" id="978">
-    <stem-number>1</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>3.6</pitch-position>
-    <section orientation="VERTICAL" first-pos="652" id="1071">
-        <run start="1062" length="12"/>
-        <run start="1062" length="10"/>
-        <run start="1062" length="8"/>
-        <run start="1062" length="7"/>
-        <run start="1061" length="7"/>
-        <run start="1061" length="6"/>
-        <run start="1060" length="6"/>
-        <run start="1059" length="6"/>
-        <run start="1058" length="6"/>
-        <run start="1057" length="6"/>
-        <run start="1056" length="6"/>
-        <run start="1055" length="5"/>
-        <run start="1054" length="5"/>
-        <run start="1052" length="6"/>
-        <run start="1048" length="8"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="667" id="1090">
-        <run start="1039" length="15"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="668" id="1094">
-        <run start="1043" length="7"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="669" id="1098">
-        <run start="1047" length="1"/>
-    </section>
-</glyph>
+<sample id="978" interline="15" left="652" top="1039" shape="FLAG_1_UP">
+    <run-table orientation="VERTICAL" width="18" height="35">
+        <sequences>
+            <item>0 23 12</item>
+            <item>0 23 10</item>
+            <item>0 23 8</item>
+            <item>0 23 7</item>
+            <item>0 22 7</item>
+            <item>0 22 6</item>
+            <item>0 21 6</item>
+            <item>0 20 6</item>
+            <item>0 19 6</item>
+            <item>0 18 6</item>
+            <item>0 17 6</item>
+            <item>0 16 5</item>
+            <item>0 15 5</item>
+            <item>0 13 6</item>
+            <item>0 9 8</item>
+            <item>15</item>
+            <item>0 4 7</item>
+            <item>0 8 1</item>
+        </sequences>
+    </run-table>
+</sample>

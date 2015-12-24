@@ -14,8 +14,6 @@ package omr.step;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphFactory;
-
 import omr.image.FilterDescriptor;
 import omr.image.PixelFilter;
 
@@ -88,9 +86,9 @@ public class BinaryStep
 
         Picture picture = sheet.getPicture();
         ByteProcessor initial = picture.getSource(SourceKey.INITIAL);
-        FilterDescriptor desc = sheet.getFilterParam().getTarget();
+        FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
         logger.debug("{}{}", sheet.getLogPrefix(), "Binarization");
-        sheet.getFilterParam().setActual(desc);
+        sheet.getStub().getFilterParam().setActual(desc);
 
         PixelFilter filter = desc.getFilter(initial);
         watch.start("Binarize source");
@@ -105,9 +103,6 @@ public class BinaryStep
 
         // To discard image
         picture.disposeSource(SourceKey.INITIAL);
-
-        watch.start("marked");
-        GlyphFactory.createGlyphs(wholeVertTable, null);
 
         if (constants.printWatch.isSet()) {
             watch.print();

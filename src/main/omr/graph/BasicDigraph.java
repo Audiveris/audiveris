@@ -24,6 +24,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Class {@code BasicDigraph} is a basic implementation of Digraph.
  *
+ * @param <D> specific Digraph type
+ * @param <V> specific Vertex type
+ *
  * @author Hervé Bitteur
  */
 @ThreadSafe
@@ -181,15 +184,6 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
         if (vertices.remove(vertex.getId()) == null) { // Atomic removal
             throw new RuntimeException("Trying to remove an unknown vertex: " + vertex);
         }
-    }
-
-    //---------------//
-    // restoreVertex //
-    //---------------//
-    @Override
-    public void restoreVertex (V vertex)
-    {
-        vertices.put(vertex.getId(), vertex); // Atomic insertion
     }
 
     //----------//

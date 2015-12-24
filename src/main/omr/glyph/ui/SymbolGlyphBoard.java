@@ -11,23 +11,18 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
-import omr.selection.GlyphEvent;
+import omr.selection.EntityListEvent;
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
-import omr.ui.field.LCheckBox;
 import omr.ui.field.LDoubleField;
+
+import com.jgoodies.forms.layout.CellConstraints;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JCheckBox;
 
 /**
  * Class {@code SymbolGlyphBoard} defines an extended glyph board, with characteristics
@@ -46,7 +41,6 @@ import javax.swing.JCheckBox;
  */
 public class SymbolGlyphBoard
         extends GlyphBoard
-        implements ActionListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -68,27 +62,24 @@ public class SymbolGlyphBoard
     //    /** Input/Output : textual content */
     //    protected LTextField textField;
     //
-    /** Glyph characteristics : position wrt staff */
+    /** Glyph characteristics : position wrt staff. */
     private final LDoubleField pitchPosition = new LDoubleField(
             false,
             "Pitch",
             "Logical pitch position",
             "%.3f");
 
-    /** Glyph characteristics : vip */
-    private final LCheckBox vip = new LCheckBox("Vip", "Is this glyph flagged as VIP?");
-
-    /** Glyph characteristics : normalized weight */
+    /** Glyph characteristics : normalized weight. */
     private final LDoubleField weight = new LDoubleField(
             false,
             "Weight",
             "Normalized weight",
             "%.3f");
 
-    /** Glyph characteristics : normalized width */
+    /** Glyph characteristics : normalized width. */
     private final LDoubleField width = new LDoubleField(false, "Width", "Normalized width", "%.3f");
 
-    /** Glyph characteristics : normalized height */
+    /** Glyph characteristics : normalized height. */
     private final LDoubleField height = new LDoubleField(
             false,
             "Height",
@@ -107,7 +98,7 @@ public class SymbolGlyphBoard
      *
      * @param glyphsController the companion which handles glyph (de)assignments
      * @param useSpinners      true for use of spinners
-     * @param expanded         true to initially expand this board
+     * @param expanded         true to expand this board
      */
     public SymbolGlyphBoard (GlyphsController glyphsController,
                              boolean useSpinners,
@@ -116,11 +107,7 @@ public class SymbolGlyphBoard
         // For all glyphs
         super(glyphsController, useSpinners, true);
 
-        // Listener for VIP
-        vip.addActionListener(this);
-
         // Initial status
-        vip.setEnabled(false);
         width.setEnabled(false);
         height.setEnabled(false);
         pitchPosition.setEnabled(false);
@@ -141,7 +128,7 @@ public class SymbolGlyphBoard
         //        timeNum = new LIntegerField("Num", "");
         //        timeDen = new LIntegerField("Den", "");
         //
-        defineSpecificLayout();
+        defineLayout();
 
         //
         //        // Needed to process user input when RETURN/ENTER is pressed
@@ -152,31 +139,6 @@ public class SymbolGlyphBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------//
-    // actionPerformed //
-    //-----------------//
-    /**
-     * Triggered by VIP check box.
-     *
-     * @param e triggering event
-     */
-    @Override
-    public void actionPerformed (ActionEvent e)
-    {
-        if (vip.getField() == e.getSource()) {
-            final JCheckBox box = vip.getField();
-            final Glyph glyph = (Glyph) getSelectionService().getSelection(GlyphEvent.class);
-
-            if (glyph != null) {
-                if (!glyph.isVip()) {
-                    glyph.setVip();
-                    box.setEnabled(false);
-                    logger.info("{} flagged as VIP", glyph.idString());
-                }
-            }
-        }
-    }
-
     //---------//
     // onEvent //
     //---------//
@@ -196,122 +158,30 @@ public class SymbolGlyphBoard
 
             super.onEvent(event);
 
-            if (event instanceof GlyphEvent) {
-                selfUpdating = true;
-
-                GlyphEvent glyphEvent = (GlyphEvent) event;
-                Glyph glyph = glyphEvent.getData();
-                Shape shape = (glyph != null) ? glyph.getShape() : null;
-
-                // Fill symbol characteristics
-                if (glyph != null) {
-                    vip.getLabel().setEnabled(true);
-                    vip.getField().setEnabled(!glyph.isVip());
-                    vip.getField().setSelected(glyph.isVip());
-                    pitchPosition.setValue(glyph.getPitchPosition());
-                    weight.setValue(glyph.getNormalizedWeight());
-                    width.setValue(glyph.getNormalizedWidth());
-                    height.setValue(glyph.getNormalizedHeight());
-                } else {
-                    vip.setEnabled(false);
-                    vip.getField().setSelected(false);
-                    pitchPosition.setText("");
-                    weight.setText("");
-                    width.setText("");
-                    height.setText("");
-                }
-
-                width.setEnabled(glyph != null);
-                height.setEnabled(glyph != null);
-                pitchPosition.setEnabled(glyph != null);
-                weight.setEnabled(glyph != null);
-
-                //                // Text info
-                //                if (roleCombo != null) {
-                //                    if ((shape != null) && shape.isText()) {
-                //                        selfUpdatingText = true;
-                //                        confField.setVisible(false);
-                //                        textField.setVisible(true);
-                //                        roleCombo.setVisible(true);
-                //
-                //                        roleCombo.setEnabled(true);
-                //                        textField.setEnabled(true);
-                //
-                //                        if (glyph.getTextValue() != null) {
-                //                            textField.setText(glyph.getTextValue());
-                //
-                //                            // Related word?
-                //                            TextWord word = glyph.getTextWord();
-                //
-                //                            if (word != null) {
-                //                                confField.setValue(word.getConfidence());
-                //                                confField.setVisible(true);
-                //                            }
-                //                        } else {
-                //                            textField.setText("");
-                //                        }
-                //
-                //                        if (glyph.getTextRole() != null) {
-                //                            roleCombo.setSelectedItem(glyph.getTextRole());
-                //                        } else {
-                //                            roleCombo.setSelectedItem(TextRole.UnknownRole);
-                //                        }
-                //
-                //                        selfUpdatingText = false;
-                //                    } else {
-                //                        confField.setVisible(false);
-                //                        textField.setVisible(false);
-                //                        roleCombo.setVisible(false);
-                //                    }
-                //                }
-                //
-                //                // Time Signature info
-                //                if (timeNum != null) {
-                //                    if (ShapeSet.Times.contains(shape)) {
-                //                        timeNum.setVisible(true);
-                //                        timeDen.setVisible(true);
-                //
-                //                        timeNum.setEnabled(shape == Shape.CUSTOM_TIME);
-                //                        timeDen.setEnabled(shape == Shape.CUSTOM_TIME);
-                //
-                //                        TimeRational timeRational = (shape == Shape.CUSTOM_TIME)
-                //                                ? glyph.getTimeRational()
-                //                                : TimeInter.rationalOf(shape);
-                //
-                //                        if (timeRational != null) {
-                //                            timeNum.setValue(timeRational.num);
-                //                            timeDen.setValue(timeRational.den);
-                //                        } else {
-                //                            timeNum.setText("");
-                //                            timeDen.setText("");
-                //                        }
-                //                    } else {
-                //                        timeNum.setVisible(false);
-                //                        timeDen.setVisible(false);
-                //                    }
-                //                }
-                selfUpdating = false;
+            if (event instanceof EntityListEvent) {
+                handleEvent((EntityListEvent<Glyph>) event);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 
-    //----------------------//
-    // defineSpecificLayout //
-    //----------------------//
+    //--------------//
+    // defineLayout //
+    //--------------//
     /**
      * Define a specific layout for this Symbol GlyphBoard
      */
-    private void defineSpecificLayout ()
+    private void defineLayout ()
     {
+        final CellConstraints cst = new CellConstraints();
+
         int r = 1; // --------------------------------
         // Glyph ---
 
         r += 2; // --------------------------------
-        builder.add(vip.getLabel(), cst.xy(1, r));
-        builder.add(vip.getField(), cst.xy(3, r));
         // shape
+
         r += 2; // --------------------------------
         // Glyph characteristics, first line
 
@@ -425,4 +295,106 @@ public class SymbolGlyphBoard
     //            }
     //        }
     //    }
+    //-------------//
+    // handleEvent //
+    //-------------//
+    private void handleEvent (EntityListEvent<Glyph> listEvent)
+    {
+        final Glyph glyph = listEvent.getEntity();
+
+        // Fill symbol characteristics
+        if (glyph != null) {
+            Double pitch = glyph.getPitchPosition();
+
+            if (pitch != null) {
+                pitchPosition.setValue(pitch);
+            } else {
+                pitchPosition.setText("");
+            }
+
+            int interline = controller.getModel().getSheet().getScale().getInterline();
+            weight.setValue(glyph.getNormalizedWeight(interline));
+            width.setValue((double) glyph.getWidth() / interline);
+            height.setValue((double) glyph.getHeight() / interline);
+
+//            if (glyph.getGroup() != null) {
+//                groupSpinner.setValue(glyph.getGroup()); //TODO: judicious???
+//            }
+        } else {
+            pitchPosition.setText("");
+            weight.setText("");
+            width.setText("");
+            height.setText("");
+        }
+
+        width.setEnabled(glyph != null);
+        height.setEnabled(glyph != null);
+        pitchPosition.setEnabled(glyph != null);
+        weight.setEnabled(glyph != null);
+
+        //                // Text info
+        //                if (roleCombo != null) {
+        //                    if ((shape != null) && shape.isText()) {
+        //                        selfUpdatingText = true;
+        //                        confField.setVisible(false);
+        //                        textField.setVisible(true);
+        //                        roleCombo.setVisible(true);
+        //
+        //                        roleCombo.setEnabled(true);
+        //                        textField.setEnabled(true);
+        //
+        //                        if (glyph.getTextValue() != null) {
+        //                            textField.setText(glyph.getTextValue());
+        //
+        //                            // Related word?
+        //                            TextWord word = glyph.getTextWord();
+        //
+        //                            if (word != null) {
+        //                                confField.setValue(word.getConfidence());
+        //                                confField.setVisible(true);
+        //                            }
+        //                        } else {
+        //                            textField.setText("");
+        //                        }
+        //
+        //                        if (glyph.getTextRole() != null) {
+        //                            roleCombo.setSelectedItem(glyph.getTextRole());
+        //                        } else {
+        //                            roleCombo.setSelectedItem(TextRole.UnknownRole);
+        //                        }
+        //
+        //                        selfUpdatingText = false;
+        //                    } else {
+        //                        confField.setVisible(false);
+        //                        textField.setVisible(false);
+        //                        roleCombo.setVisible(false);
+        //                    }
+        //                }
+        //
+        //                // Time Signature info
+        //                if (timeNum != null) {
+        //                    if (ShapeSet.Times.contains(shape)) {
+        //                        timeNum.setVisible(true);
+        //                        timeDen.setVisible(true);
+        //
+        //                        timeNum.setEnabled(shape == Shape.CUSTOM_TIME);
+        //                        timeDen.setEnabled(shape == Shape.CUSTOM_TIME);
+        //
+        //                        TimeRational timeRational = (shape == Shape.CUSTOM_TIME)
+        //                                ? glyph.getTimeRational()
+        //                                : TimeInter.rationalOf(shape);
+        //
+        //                        if (timeRational != null) {
+        //                            timeNum.setValue(timeRational.num);
+        //                            timeDen.setValue(timeRational.den);
+        //                        } else {
+        //                            timeNum.setText("");
+        //                            timeDen.setText("");
+        //                        }
+        //                    } else {
+        //                        timeNum.setVisible(false);
+        //                        timeDen.setVisible(false);
+        //                    }
+        //                }
+    }
 }

@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.Comparator;
 
@@ -50,6 +52,38 @@ public abstract class Inters
     };
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // getClosestChord //
+    //-----------------//
+    /**
+     * From a provided Inter collection, report the one with the lowest euclidian
+     * distance to the provided point.
+     *
+     * @param inters the collection of inters to browse
+     * @param point  the provided point
+     * @return the closest inter
+     */
+    public static Inter getClosestInter (Collection<? extends Inter> inters,
+                                         Point2D point)
+    {
+        Inter bestInter = null;
+        double bestDistSq = Double.MAX_VALUE;
+
+        for (Inter inter : inters) {
+            final Point center = inter.getCenter();
+            final double dx = center.x - point.getX();
+            final double dy = center.y - point.getY();
+            final double distSq = (dx * dx) + (dy * dy);
+
+            if (distSq < bestDistSq) {
+                bestDistSq = distSq;
+                bestInter = inter;
+            }
+        }
+
+        return bestInter;
+    }
+
     //------------------//
     // getMeanBestGrade //
     //------------------//

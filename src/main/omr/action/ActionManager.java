@@ -14,8 +14,6 @@ package omr.action;
 import omr.OMR;
 import omr.WellKnowns;
 
-import omr.action.Actions.Domain;
-
 import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtil;
 
@@ -27,6 +25,7 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -38,7 +37,6 @@ import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.ActionMap;
-import javax.swing.Box;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -256,19 +254,16 @@ public class ActionManager
 
             SeparableMenu.trimSeparator(menu); // No separator at end of menu
 
-            // Do not include sub-menus
-            for (Domain domainEnum : Actions.Domain.values()) {
-                if (domainEnum.name().equals(domain) && !domainEnum.isTop) {
-                    continue DomainLoop;
-                }
-            }
-
-            // Smart insertion of the menu into the menu bar
-            toolBar.addSeparator();
-
+            // Smart insertion of the menu into the menu bar, and separators into the toolBar
             if (menu.getItemCount() > 0) {
-                if (domain.equalsIgnoreCase("help")) {
-                    menuBar.add(Box.createHorizontalStrut(50));
+                final int toolCount = toolBar.getComponentCount();
+
+                if (toolCount > 0) {
+                    Component comp = toolBar.getComponent(toolCount - 1);
+
+                    if (!(comp instanceof JToolBar.Separator)) {
+                        toolBar.addSeparator();
+                    }
                 }
 
                 menuBar.add(menu);
@@ -309,7 +304,6 @@ public class ActionManager
 
             if (instance == null) {
                 // Fall back to allocate a new class instance
-                ///logger.warn("instantiating instance of " + classe);
                 instance = classe.newInstance();
             }
 
@@ -319,9 +313,8 @@ public class ActionManager
             if (action != null) {
                 // Insertion of a button on Tool Bar?
                 if (desc.buttonClassName != null) {
-                    Class<? extends AbstractButton> buttonClass = (Class<? extends AbstractButton>) classLoader.loadClass(
-                            desc.buttonClassName);
-                    AbstractButton button = buttonClass.newInstance();
+                    Class buttonClass = classLoader.loadClass(desc.buttonClassName);
+                    AbstractButton button = (AbstractButton) buttonClass.newInstance();
                     button.setAction(action);
                     toolBar.add(button);
                     button.setBorder(UIUtil.getToolBorder());
@@ -356,26 +349,37 @@ public class ActionManager
                     logger.debug("Registering {}", desc);
 
                     try {
+                        // Allocate menu item of proper class
                         final Class<? extends JMenuItem> itemClass;
 
                         if (desc.itemClassName != null) {
                             itemClass = (Class<? extends JMenuItem>) classLoader.loadClass(
                                     desc.itemClassName);
+                        } else if (desc.menuName != null) {
+                            itemClass = JMenu.class;
                         } else {
                             itemClass = JMenuItem.class;
                         }
 
                         JMenuItem item = itemClass.newInstance();
-                        item.setText(desc.methodName);
 
-                        ApplicationAction action = registerAction(desc);
+                        // Inject menu item information
+                        if (desc.methodName != null) {
+                            item.setText(desc.methodName); // As default
 
-                        if (action != null) {
-                            action.setSelected(action.isSelected());
-                            item.setAction(action);
+                            ApplicationAction action = registerAction(desc);
+
+                            if (action != null) {
+                                action.setSelected(action.isSelected());
+                                item.setAction(action);
+                                menu.add(item);
+                            } else {
+                                logger.warn("Could not register {}", desc);
+                            }
+                        } else if (desc.menuName != null) {
+                            item.setText(desc.menuName); // As default
+                            item.setName(desc.menuName);
                             menu.add(item);
-                        } else {
-                            logger.warn("Could not register {}", desc);
                         }
                     } catch (Throwable ex) {
                         logger.warn("Error with " + desc.itemClassName, ex);

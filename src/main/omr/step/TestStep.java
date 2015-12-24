@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import omr.sheet.SheetStub;
 
 /**
  * Class {@code TestStep} is an attempt to add a pseudo step for specific tests.
@@ -61,10 +62,10 @@ public class TestStep
     {
         final Book book = aSheet.getBook();
 
-        for (Sheet sheet : book.getSheets()) {
+        for (SheetStub stub : book.getStubs()) {
             boolean sheetStarted = false;
 
-            for (SystemInfo system : sheet.getSystems()) {
+            for (SystemInfo system : stub.getSheet().getSystems()) {
                 boolean systemStarted = false;
                 SIGraph sig = system.getSig();
                 List<Inter> brackets = sig.inters(BracketInter.class);
@@ -72,7 +73,7 @@ public class TestStep
                 if (!brackets.isEmpty()) {
                     for (Inter inter : brackets) {
                         if (!sheetStarted) {
-                            Holder.writer.println("Sheet " + sheet.getId());
+                            Holder.writer.println("Sheet " + stub.getId());
                             sheetStarted = true;
                         }
 

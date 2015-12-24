@@ -14,18 +14,13 @@ package omr.ui;
 import omr.OMR;
 import omr.WellKnowns;
 
+import omr.classifier.ui.SampleVerifier;
+import omr.classifier.ui.Trainer;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.ui.SampleVerifier;
 import omr.glyph.ui.ShapeColorChooser;
-import omr.glyph.ui.panel.GlyphTrainer;
-
-import omr.sheet.ui.SheetDependent;
-
-import static omr.sheet.ui.SheetDependent.SHEET_AVAILABLE;
-
-import omr.sheet.ui.SheetsController;
 
 import omr.ui.symbol.SymbolRipper;
 import omr.ui.util.WebBrowser;
@@ -37,6 +32,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -69,13 +65,12 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.JTextComponent;
 
 /**
- * Class {@code GuiActions} gathers individual actions triggered from
- * the main Gui interface.
+ * Class {@code GuiActions} gathers general actions triggered from the main GUI.
  *
  * @author Hervé Bitteur
  */
 public class GuiActions
-        extends SheetDependent
+        extends AbstractBean
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -106,23 +101,6 @@ public class GuiActions
     public static final String BOARDS_DISPLAYED = "boardsDisplayed";
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized GuiActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new GuiActions();
-        }
-
-        return INSTANCE;
-    }
-
     //----------//
     // clearLog //
     //----------//
@@ -167,20 +145,6 @@ public class GuiActions
         ShapeColorChooser.showFrame();
     }
 
-    //-------------------//
-    // dumpEventServices //
-    //-------------------//
-    /**
-     * Action to erase the dump the content of all event services
-     *
-     * @param e the event which triggered this action
-     */
-    @Action(enabledProperty = SHEET_AVAILABLE)
-    public void dumpEventServices (ActionEvent e)
-    {
-        SheetsController.getInstance().dumpCurrentSheetServices();
-    }
-
     //------//
     // exit //
     //------//
@@ -193,6 +157,23 @@ public class GuiActions
     public void exit (ActionEvent e)
     {
         OMR.getApplication().exit();
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized GuiActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new GuiActions();
+        }
+
+        return INSTANCE;
     }
 
     //-------------------//
@@ -248,15 +229,14 @@ public class GuiActions
     // launchTrainer //
     //---------------//
     /**
-     * Action that launches the window dedicated to the training of the neural
-     * network
+     * Action that launches the window dedicated to the training of the neural network
      *
      * @param e the event which triggered this action
      */
     @Action
     public void launchTrainer (ActionEvent e)
     {
-        GlyphTrainer.launch();
+        Trainer.launch();
     }
 
     //--------------------//
@@ -500,8 +480,7 @@ public class GuiActions
             final PanelBuilder builder = new PanelBuilder(layout);
             final CellConstraints cst = new CellConstraints();
 
-            builder.setDefaultDialogBorder();
-
+            ///builder.setDefaultDialogBorder();
             int iRow = 1;
 
             URI uri = UriUtil.toURI(WellKnowns.RES_URI, "splash.png");

@@ -12,17 +12,12 @@
 package omr.sheet.rhythm;
 
 import omr.sheet.Part;
-import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
-import omr.sig.inter.AbstractHeadInter;
-import omr.sig.inter.ChordInter;
+import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.KeyInter;
-import omr.sig.inter.SlurInter;
-
-import omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,10 +37,10 @@ public class MeasureFiller
     private static final Logger logger = LoggerFactory.getLogger(MeasureFiller.class);
 
     /** Filling classes. */
-    public static final Class<?>[] fillingClasses = new Class<?>[]{
+    public static final Class<?>[] FILLING_CLASSES = new Class<?>[]{
         ClefInter.class, // Clefs
         KeyInter.class, // Key signatures
-        ChordInter.class // Chords (heads & rests)
+        AbstractChordInter.class // Chords (heads & rests) BOF! BOF! BOF! BOF! BOF!
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -67,41 +62,18 @@ public class MeasureFiller
     public void process ()
     {
         // Lookup the relevant inters from system SIG
-        final List<Inter> systemInters = system.getSig().inters(fillingClasses);
+        final List<Inter> systemInters = system.getSig().inters(FILLING_CLASSES);
 
         // Dispatch system inters per stack & measure
         for (MeasureStack stack : system.getMeasureStacks()) {
             final List<Inter> stackInters = stack.filter(systemInters);
 
             for (Inter inter : stackInters) {
-                Staff staff = inter.getStaff();
+                Part part = inter.getPart();
 
-                if (staff != null) {
-                    Measure measure = stack.getMeasureAt(staff);
+                if (part != null) {
+                    Measure measure = stack.getMeasureAt(part);
                     measure.addInter(inter);
-                }
-            }
-        }
-
-        // Slurs to their containing part
-        final List<Inter> slurs = system.getSig().inters(SlurInter.class);
-
-        for (Inter inter : slurs) {
-            SlurInter slur = (SlurInter) inter;
-            Part slurPart = null;
-
-            for (HorizontalSide side : HorizontalSide.values()) {
-                AbstractHeadInter head = slur.getHead(side);
-
-                if (head != null) {
-                    Part headPart = system.getPartOf(head.getStaff());
-
-                    if (slurPart == null) {
-                        slurPart = headPart;
-                        slurPart.addSlur(slur);
-                    } else if (slurPart != headPart) {
-                        logger.warn("Slur crosses parts " + slur);
-                    }
                 }
             }
         }

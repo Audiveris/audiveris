@@ -11,20 +11,25 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.Symbol.Group;
 
 import omr.run.MarkedRun;
 import static omr.run.Orientation.VERTICAL;
 import omr.run.Run;
 import omr.run.RunTable;
+import omr.run.RunTableFactory;
 
-import omr.util.StopWatch;
+import omr.util.ByteUtil;
+
+import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,9 +38,9 @@ import java.util.Map.Entry;
 
 /**
  * Class {@code GlyphFactory} builds a collection of glyphs out of a provided {@link
- * Runtable}.
+ * RunTable}.
  * <p>
- * A instance of this class is dedicated to the one-shot processing of a source.
+ * A instance of this factory class is dedicated to the one-shot processing of a source.
  * It can be used only once.
  * <p>
  * Comments refer to 'sequences', which are synonymous of columns for vertical runs, and of rows
@@ -53,6 +58,12 @@ public class GlyphFactory
     /** Source runs. */
     private final RunTable runTable;
 
+    /** Absolute offset of runTable topLeft corner. */
+    private final Point offset;
+
+    /** Target group for all created glyphs. */
+    private final Group group;
+
     /** Global list of all glyphs created. */
     private final List<Glyph> created = new ArrayList<Glyph>();
 
@@ -69,14 +80,13 @@ public class GlyphFactory
     private int[] lut;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new {@code GlyphFactory} object.
-     *
-     * @param runTable the source table of runs
-     */
-    private GlyphFactory (RunTable runTable)
+    private GlyphFactory (RunTable runTable,
+                          Point offset,
+                          Group group)
     {
         this.runTable = runTable;
+        this.offset = (offset != null) ? offset : new Point(0, 0);
+        this.group = group;
 
         // Allocate & initialize markedTable
         markedTable = new ArrayList<List<MarkedRun>>(runTable.getSize());
@@ -87,38 +97,70 @@ public class GlyphFactory
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // createGlyphs //
-    //--------------//
+    //------------//
+    // buildGlyph //
+    //------------//
+    /**
+     * Build one glyph from a collection of glyph parts.
+     *
+     * @param parts the provided glyph parts
+     * @return the glyph compound
+     */
+    public static Glyph buildGlyph (Collection<? extends Glyph> parts)
+    {
+        final Rectangle box = Glyphs.getBounds(parts);
+        final ByteProcessor buffer = new ByteProcessor(box.width, box.height);
+        ByteUtil.raz(buffer); // buffer.invert();
+
+        for (Glyph part : parts) {
+            part.getRunTable().write(buffer, part.getLeft() - box.x, part.getTop() - box.y);
+        }
+
+        final RunTable runTable = new RunTableFactory(VERTICAL).createTable(buffer);
+
+        return new BasicGlyph(box.x, box.y, runTable);
+    }
+
+    //-------------//
+    // buildGlyphs //
+    //-------------//
     /**
      * Create a collection of glyphs out of the provided RunTable.
      *
-     * @param runTable the table of runs
-     * @param offset   potential offset of runTable WRT absolute origin
+     * @param runTable the source table of runs
+     * @param offset   offset of runTable WRT absolute origin
      * @return the list of glyphs created
      */
-    public static List<Glyph> createGlyphs (RunTable runTable,
-                                            Point offset)
+    public static List<Glyph> buildGlyphs (RunTable runTable,
+                                           Point offset)
     {
-        // Build glyphs with runTable-based coordinates
-        List<Glyph> glyphs = new GlyphFactory(runTable).process();
+        return new GlyphFactory(runTable, offset, null).process();
+    }
 
-        // Translate glyphs to absolute coordinates if an offset was provided
-        if (offset != null) {
-            for (Glyph glyph : glyphs) {
-                glyph.translate(offset);
-            }
-        }
-
-        return glyphs;
+    //-------------//
+    // buildGlyphs //
+    //-------------//
+    /**
+     * Create a collection of glyphs out of the provided RunTable.
+     *
+     * @param runTable the source table of runs
+     * @param offset   offset of runTable WRT absolute origin
+     * @param group    targeted group, if any
+     * @return the list of glyphs created
+     */
+    public static List<Glyph> buildGlyphs (RunTable runTable,
+                                           Point offset,
+                                           Group group)
+    {
+        return new GlyphFactory(runTable, offset, group).process();
     }
 
     /**
-     * Build all the ancestor glyphs from the markedtable.
+     * Build all the ancestor glyphs from the markedTable.
      */
     private void buildAllGlyphs ()
     {
-        logger.info("glyphs: {}", globalMark - merges.size());
+        logger.debug("glyphs: {}", globalMark - merges.size());
 
         // Allocate & initialize glyph bufs
         final List<List<Sequence>> bufs = new ArrayList<List<Sequence>>(lut.length);
@@ -167,7 +209,7 @@ public class GlyphFactory
     private void buildGlyph (int mark,
                              List<Sequence> buf)
     {
-        // Determine glyph bounds
+        // Determine glyph bounds within buf
         final int iSeqMin = buf.get(0).iSeq;
         final int iSeqMax = buf.get(buf.size() - 1).iSeq;
 
@@ -179,24 +221,29 @@ public class GlyphFactory
             stopMax = Math.max(stopMax, seq.runs.get(seq.runs.size() - 1).getStop());
         }
 
-        // Allocate table with proper dimension
+        final int dx = (runTable.getOrientation() == VERTICAL) ? iSeqMin : startMin;
+        final int dy = (runTable.getOrientation() == VERTICAL) ? startMin : iSeqMin;
         final int width = (runTable.getOrientation() == VERTICAL) ? (iSeqMax - iSeqMin + 1)
                 : (stopMax - startMin + 1);
         final int height = (runTable.getOrientation() == VERTICAL) ? (stopMax - startMin + 1)
                 : (iSeqMax - iSeqMin + 1);
+
+        // Allocate table with proper dimension
         RunTable table = new RunTable(runTable.getOrientation(), width, height);
 
         // Populate table with RLE sequences
         for (Sequence seq : buf) {
             for (MarkedRun run : seq.runs) {
-                run.setStart(run.getStart() - startMin); // yMin offset
+                run.setStart(run.getStart() - startMin);
             }
 
-            table.setSequence(seq.iSeq - iSeqMin, seq.runs); // xMin offset
+            table.setSequence(seq.iSeq - iSeqMin, seq.runs);
         }
 
-        ///logger.info("glyph #{} x:{}, y:{} {}", mark, iSeqMin, startMin, table);
-        //TODO: Store created glyph into collection 'created'...
+        // Store created glyph
+        final Glyph glyph = new BasicGlyph(offset.x + dx, offset.y + dy, table);
+        glyph.addGroup(group);
+        created.add(glyph);
     }
 
     /**
@@ -239,8 +286,8 @@ public class GlyphFactory
 
         if (old == null) {
             merges.put(max, min); // Target is max=>min
-        } else {
-            // We currently have max=>old
+        } else // We currently have max=>old
+        {
             if (min > old) { // Target is max=>min---old
                 merge(min, old);
                 merges.put(max, min);
@@ -258,22 +305,23 @@ public class GlyphFactory
      */
     private List<Glyph> process ()
     {
-        StopWatch watch = new StopWatch("GlyphFactory");
+        //        StopWatch watch = new StopWatch("GlyphFactory");
+        //
+        //        try {
+        //            watch.start("scan");
+        scanTable();
+        //
+        //            watch.start("lut");
+        createLut();
+        //
+        //            watch.start("glyphs");
+        buildAllGlyphs();
 
-        try {
-            watch.start("scan");
-            scanTable();
+        return created;
 
-            watch.start("lut");
-            createLut();
-
-            watch.start("glyphs");
-            buildAllGlyphs();
-
-            return created;
-        } finally {
-            watch.print();
-        }
+        //        } finally {
+        //            watch.print();
+        //        }
     }
 
     /**

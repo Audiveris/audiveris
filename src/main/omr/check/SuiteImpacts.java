@@ -62,8 +62,8 @@ public class SuiteImpacts
      * @param checkable the checkable entity
      * @return the populated SuiteImpacts instance
      */
-    public static <C extends Checkable> SuiteImpacts newInstance (CheckSuite<C> suite,
-                                                                  C checkable)
+    public static <C> SuiteImpacts newInstance (CheckSuite<C> suite,
+                                                C checkable)
     {
         final List<Check<C>> checks = suite.getChecks();
         final int nb = checks.size();

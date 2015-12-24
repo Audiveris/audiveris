@@ -1,18 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<glyph id="258" interline="22" shape="DOT_set">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-7.67816091954023</pitch-position>
-        <section orientation="VERTICAL" id="1467" first-pos="743">
-            <run start="620" length="5"/>
-            <run start="619" length="7"/>
-            <run start="618" length="9"/>
-            <run start="618" length="10"/>
-            <run start="618" length="10"/>
-            <run start="618" length="10"/>
-            <run start="618" length="10"/>
-            <run start="618" length="9"/>
-            <run start="619" length="8"/>
-            <run start="620" length="6"/>
-        </section>
-</glyph>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sample id="258" interline="22" left="743" top="618" shape="DOT_set">
+    <run-table orientation="VERTICAL" width="10" height="10">
+        <sequences>
+            <item>0 2 5</item>
+            <item>0 1 7</item>
+            <item>9</item>
+            <item>10</item>
+            <item>10</item>
+            <item>10</item>
+            <item>10</item>
+            <item>9</item>
+            <item>0 1 8</item>
+            <item>0 2 6</item>
+        </sequences>
+    </run-table>
+</sample>

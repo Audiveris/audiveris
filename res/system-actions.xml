@@ -15,72 +15,73 @@
      
 <actions>
     
-    <action domain="FILE" section="10" class="omr.sheet.ui.SheetActions" method="openImageFile"         button="javax.swing.JButton"/>
-    <action domain="FILE" section="20" class="omr.script.ScriptActions"  method="loadScript"/>
-    <action domain="FILE" section="20" class="omr.script.ScriptActions"  method="storeScript"/>
-    <action domain="FILE" section="20" class="omr.script.ScriptActions"  method="storeScriptAs"/>
-    <action domain="FILE" section="30" class="omr.sheet.ui.SheetActions" method="zoomWidth"             button="javax.swing.JButton"/>
-    <action domain="FILE" section="30" class="omr.sheet.ui.SheetActions" method="zoomHeight"            button="javax.swing.JButton"/>
-    <action domain="FILE" section="40" class="omr.sheet.ui.SheetActions" method="plotScale"/>
-    <action domain="FILE" section="40" class="omr.sheet.ui.SheetActions" method="plotStem"/>
-    <action domain="FILE" section="40" class="omr.sheet.ui.SheetActions" method="plotStaves"/>
-    <action domain="FILE" section="60" class="omr.sheet.ui.SheetActions" method="removeSheet"/>
-    <action domain="FILE" section="65" class="omr.sheet.ui.SheetActions" method="openBook"/>
-    <action domain="FILE" section="65" class="omr.sheet.ui.SheetActions" method="storeBook"/>
-    <action domain="FILE" section="65" class="omr.sheet.ui.SheetActions" method="storeBookAs"/>
-    <action domain="FILE" section="65" class="omr.sheet.ui.SheetActions" method="closeBook"/>
-    <action domain="FILE" section="70" class="omr.ui.GuiActions"         method="exit"/>
+    <action domain="FILE" section="10" class="omr.sheet.ui.BookActions" menu="inputHistory"         button="javax.swing.JButton"/>
+    <action domain="FILE" section="10" class="omr.sheet.ui.BookActions" method="openImageFile"      button="javax.swing.JButton"/>
+    <action domain="FILE" section="20" class="omr.sheet.ui.BookActions" method="loadScript"/>
+    <action domain="FILE" section="20" class="omr.sheet.ui.BookActions" method="storeScript"/>
+    <action domain="FILE" section="20" class="omr.sheet.ui.BookActions" method="storeScriptAs"/>
+    <action domain="FILE" section="65" class="omr.sheet.ui.BookActions" menu="projectHistory"       button="javax.swing.JButton"/>
+    <action domain="FILE" section="65" class="omr.sheet.ui.BookActions" method="openBook"/>
+    <action domain="FILE" section="65" class="omr.sheet.ui.BookActions" method="saveBook"           button="javax.swing.JButton"/>
+    <action domain="FILE" section="65" class="omr.sheet.ui.BookActions" method="saveBookAs"/>
+    <action domain="FILE" section="65" class="omr.sheet.ui.BookActions" method="closeBook"/>
+    <action domain="FILE" section="70" class="omr.ui.GuiActions"        method="exit"/>
 
-    <action domain="SHEET" section="10" class="omr.score.ui.ScoreActions" method="buildSheet"           button="javax.swing.JButton"/>
-    <action domain="SHEET" section="30" class="omr.score.ui.ScoreActions" method="printSheet"           button="javax.swing.JButton"/>
-    <action domain="SHEET" section="30" class="omr.score.ui.ScoreActions" method="printSheetAs"/>
-    <action domain="SHEET" section="40" class="omr.score.ui.ScoreActions" method="cleanSheet"/>
-    <action domain="SHEET" section="40" class="omr.score.ui.ScoreActions" method="exportSheet"          button="javax.swing.JButton"/>
-    <action domain="SHEET" section="40" class="omr.score.ui.ScoreActions" method="exportSheetAs"/>
-
-    <action domain="BOOK" section="10" class="omr.score.ui.ScoreActions" method="buildBook"         />
-<!--    <action domain="BOOK" section="10" class="omr.score.ui.ScoreActions" method="toggleRebuild"    item="javax.swing.JCheckBoxMenuItem" />-->
-    <action domain="BOOK" section="20" class="omr.score.ui.ScoreActions" method="defineParameters"     button="javax.swing.JButton"/>
-    <action domain="BOOK" section="30" class="omr.score.ui.ScoreActions" method="printBook"  />
-    <action domain="BOOK" section="30" class="omr.score.ui.ScoreActions" method="printBookAs"/>
-    <action domain="BOOK" section="40" class="omr.score.ui.ScoreActions" method="cleanBook"/>
-    <action domain="BOOK" section="40" class="omr.score.ui.ScoreActions" method="exportBook"/>
-    <action domain="BOOK" section="40" class="omr.score.ui.ScoreActions" method="exportBookAs"/>
-<!--    
-    <action domain="MIDI" section="20"  class="omr.score.midi.MidiActions" method="playMidi"                                              button="javax.swing.JButton"/>
-    <action domain="MIDI" section="30"  class="omr.score.midi.MidiActions" method="writeMidi" />
-    <action domain="MIDI" section="30"  class="omr.score.midi.MidiActions" method="writeMidiAs" />
--->
-    <action domain="VIEW" section="10"  class="omr.score.ui.PaintingParameters"               method="switchLayers"  button="javax.swing.JButton"/>
-    <action domain="VIEW" section="10"  class="omr.score.ui.PaintingParameters"               method="toggleAnnotations" item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleSlots"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleVoices"   item="javax.swing.JCheckBoxMenuItem" button="javax.swing.JToggleButton" />
-    <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleMarks"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleLetters"  item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleAttachments" item="javax.swing.JCheckBoxMenuItem"/>
-<!--    <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleTranslations" item="javax.swing.JCheckBoxMenuItem"/>-->
-    <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleSentences" item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleSections" item="javax.swing.JCheckBoxMenuItem" button="javax.swing.JToggleButton" />
-    <action domain="VIEW" section="50"  class="omr.ui.GuiActions"                             method="toggleBoards"   item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="50"  class="omr.ui.GuiActions"                             method="toggleLog"      item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="50"  class="omr.ui.GuiActions"                             method="toggleErrors"   item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="50"  class="omr.ui.GuiActions"                             method="clearLog" button="javax.swing.JButton"/>
-
-    <action domain="TOOL" section="10"  class="omr.score.ui.ScoreActions" method="togglePersist"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="TOOL" section="10"  class="omr.sheet.ui.SheetActions" method="recordGlyphs" />
-    <action domain="TOOL" section="10"  class="omr.ui.GuiActions"         method="verifyTrainingMaterial" />
-    <action domain="TOOL" section="10"  class="omr.ui.GuiActions"         method="launchTrainer" />
-<!--    <action domain="TOOL" section="20"  class="omr.ui.GuiActions" method="defineShapeColors" />-->
-    <action domain="TOOL" section="40"  class="omr.ui.GuiActions" method="showMemory" />
-    <action domain="TOOL" section="40"  class="omr.ui.GuiActions" method="defineOptions" />
-
-    <action domain="PLUGIN" section="10" class="omr.plugin.PluginManager" method="invokeDefaultPlugin" button="javax.swing.JButton" />
-
-    <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="browseBook"/>
+    <action domain="BOOK" section="10" class="omr.sheet.ui.BookActions" method="buildBook"/>
+    <action domain="BOOK" section="10" class="omr.sheet.ui.BookActions" method="buildScores"        button="javax.swing.JButton"/>
+    <action domain="BOOK" section="20" class="omr.sheet.ui.BookActions" method="defineParameters"   button="javax.swing.JButton"/>
+    <action domain="BOOK" section="25" class="omr.sheet.ui.BookActions" method="swapSheets"/>
+    <action domain="BOOK" section="30" class="omr.sheet.ui.BookActions" method="printBook"          button="javax.swing.JButton"/>
+    <action domain="BOOK" section="30" class="omr.sheet.ui.BookActions" method="printBookAs"/>
+    <action domain="BOOK" section="40" class="omr.sheet.ui.BookActions" method="exportBook"         button="javax.swing.JButton"/>
+    <action domain="BOOK" section="40" class="omr.sheet.ui.BookActions" method="exportBookAs"/>
     
-    <action domain="HELP" section="20"  class="omr.ui.GuiActions" method="showManual" />
-    <action domain="HELP" section="20"  class="omr.ui.GuiActions" method="visitWebSite" />
-    <action domain="HELP" section="40"  class="omr.ui.GuiActions" method="showAbout" />
+    <action domain="SHEET" section="10" class="omr.sheet.ui.BookActions" method="buildSheet"/>
+    <action domain="SHEET" section="15" class="omr.sheet.ui.BookActions" method="resetSheet"/>
+    <action domain="SHEET" section="15" class="omr.sheet.ui.BookActions" method="invalidateSheet"/>
+    <action domain="SHEET" section="20" class="omr.sheet.ui.BookActions" method="plotScale"/>
+    <action domain="SHEET" section="20" class="omr.sheet.ui.BookActions" method="plotStem"/>
+    <action domain="SHEET" section="20" class="omr.sheet.ui.BookActions" method="plotStaves"/>
+    <action domain="SHEET" section="25" class="omr.sheet.ui.BookActions" method="displayPicture"/>
+    <action domain="SHEET" section="25" class="omr.sheet.ui.BookActions" method="displayData"/>
+    <action domain="SHEET" section="25" class="omr.sheet.ui.BookActions" method="displayNoStaff"/>
+    <action domain="SHEET" section="30" class="omr.sheet.ui.BookActions" method="printSheetAs"/>
+    <action domain="SHEET" section="40" class="omr.sheet.ui.BookActions" method="exportSheetAs"/>
+
+<!--    STEP menu is generated automatically -->
+
+    <action domain="VIEW" section="10" class="omr.sheet.ui.BookActions"        method="zoomWidth"                                                  button="javax.swing.JButton"/>
+    <action domain="VIEW" section="10" class="omr.sheet.ui.BookActions"        method="zoomHeight"                                                 button="javax.swing.JButton"/>
+    <action domain="VIEW" section="15" class="omr.score.ui.PaintingParameters" method="switchLayers"                                               button="javax.swing.JButton"/>
+    <action domain="VIEW" section="15" class="omr.score.ui.PaintingParameters" method="toggleAnnotations"   item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="20" class="omr.score.ui.PaintingParameters" method="toggleSlots"         item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="20" class="omr.score.ui.PaintingParameters" method="toggleVoices"        item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton" />
+    <action domain="VIEW" section="20" class="omr.score.ui.PaintingParameters" method="toggleMarks"         item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="25" class="omr.ui.ViewParameters"           method="toggleInvalidSheets" item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="30" class="omr.ui.ViewParameters"           method="toggleStaffLines"    item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="30" class="omr.ui.ViewParameters"           method="toggleLines"         item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="30" class="omr.ui.ViewParameters"           method="toggleLetters"       item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="30" class="omr.ui.ViewParameters"           method="toggleAttachments"   item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="30" class="omr.ui.ViewParameters"           method="toggleSentences"     item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="30" class="omr.ui.ViewParameters"           method="toggleSections"      item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton" />
+    <action domain="VIEW" section="50" class="omr.ui.GuiActions"               method="toggleBoards"        item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="50" class="omr.ui.GuiActions"               method="toggleLog"           item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="50" class="omr.ui.GuiActions"               method="toggleErrors"        item="javax.swing.JCheckBoxMenuItem"/>
+
+    <action domain="TOOL" section="10" class="omr.sheet.ui.BookActions" method="togglePersist" item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="TOOL" section="10" class="omr.sheet.ui.BookActions" method="recordGlyphs" />
+    <action domain="TOOL" section="10" class="omr.ui.GuiActions"        method="verifyTrainingMaterial" />
+    <action domain="TOOL" section="10" class="omr.ui.GuiActions"        method="launchTrainer" />
+<!--    <action domain="TOOL" section="20"  class="omr.ui.GuiActions" method="defineShapeColors" />-->
+    <action domain="TOOL" section="40" class="omr.ui.GuiActions"        method="showMemory" />
+    <action domain="TOOL" section="40" class="omr.ui.GuiActions"        method="defineOptions" />
+
+    <action domain="PLUGIN" section="10" class="omr.sheet.ui.BookActions" method="invokeDefaultPlugin" button="javax.swing.JButton" />
+
+    <action domain="DEBUG" section="30" class="omr.sheet.ui.BookActions" method="browseBook"/>
+    
+    <action domain="HELP" section="20" class="omr.ui.GuiActions" method="showManual" />
+    <action domain="HELP" section="20" class="omr.ui.GuiActions" method="visitWebSite" />
+    <action domain="HELP" section="40" class="omr.ui.GuiActions" method="showAbout" />
 
 </actions>

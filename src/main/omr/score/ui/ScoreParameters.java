@@ -23,10 +23,9 @@ import omr.score.MidiAbstractions;
 
 import omr.script.ParametersTask;
 import omr.script.ParametersTask.PartData;
-import omr.script.ScriptActions;
 
 import omr.sheet.Book;
-import omr.sheet.Sheet;
+import omr.sheet.SheetStub;
 
 import omr.step.Step;
 
@@ -69,13 +68,14 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import omr.sheet.ui.BookActions;
 
 /**
  * Class {@code ScoreParameters} is a dialog that allows the user to easily manage the
  * most frequent parameters.
  * <p>
  * <div style="float: right;">
- * <img src="doc-files/ScoreParameters.png" />
+ * <img src="doc-files/ScoreParameters.png">
  * </div>
  *
  * <p>
@@ -102,9 +102,9 @@ import javax.swing.event.ListSelectionListener;
  * <p>
  * A panel is a vertical collection of panes, each pane being introduced by a check box and a label.
  * Initially the box is unchecked and the pane content is disabled.
- * <br/>Manually checking the box represents a selection and indicates the intention to modify the
+ * <br>Manually checking the box represents a selection and indicates the intention to modify the
  * pane content (and thus enables the pane fields).
- * <br/>Unchecking the box reverts the content to the value it had prior to the selection.
+ * <br>Un-checking the box reverts the content to the value it had prior to the selection.
  *
  * <p>
  * The selected modifications are actually performed (and this may launch some costly re-processing)
@@ -140,12 +140,12 @@ public class ScoreParameters
     /**
      * Create a ScoreParameters object.
      *
-     * @param sheet the current sheet, or null
+     * @param stub the current sheet stub, or null
      */
-    public ScoreParameters (Sheet sheet)
+    public ScoreParameters (SheetStub stub)
     {
-        if (sheet != null) {
-            this.book = sheet.getBook();
+        if (stub != null) {
+            this.book = stub.getBook();
         } else {
             book = null;
         }
@@ -211,14 +211,14 @@ public class ScoreParameters
 
             // Sheets panels?
             if (book.isMultiSheet()) {
-                for (Sheet sh : book.getSheets()) {
+                for (SheetStub s : book.getStubs()) {
                     MyPanel panel = new MyPanel(
                             "Page settings",
-                            createTextPane(null, sh, scoreTextPane, sh.getLanguageParam()),
-                            new FilterPane(null, sh, scoreFilterPane, sh.getFilterParam()));
-                    component.addTab("P#" + sh.getNumber(), null, panel, panel.getName());
+                            createTextPane(null, s, scoreTextPane, s.getLanguageParam()),
+                            new FilterPane(null, s, scoreFilterPane, s.getFilterParam()));
+                    component.addTab("P#" + s.getNumber(), null, panel, panel.getName());
 
-                    if (sh == sheet) {
+                    if (s == stub) {
                         pagePanel = panel;
                     }
                 }
@@ -240,10 +240,10 @@ public class ScoreParameters
     /**
      * Check the values and commit them if all are OK.
      *
-     * @param sheet the related sheet
+     * @param stub the related sheet
      * @return true if committed, false otherwise
      */
-    public boolean commit (Sheet sheet)
+    public boolean commit (SheetStub stub)
     {
         if (dataIsValid()) {
             try {
@@ -257,8 +257,8 @@ public class ScoreParameters
                 }
 
                 // Launch the prepared task (for score & pages)
-                if (sheet != null) {
-                    task.launch(sheet);
+                if (stub != null) {
+                    task.launch(stub.getSheet());
                 }
             } catch (Exception ex) {
                 logger.warn("Could not run ParametersTask", ex);
@@ -312,18 +312,18 @@ public class ScoreParameters
      * no OCR is available.
      *
      * @param book
-     * @param sheet
+     * @param stub
      * @param parent
      * @return A usable TextPane instance, or null otherwise
      */
     private TextPane createTextPane (Book book,
-                                     Sheet sheet,
+                                     SheetStub stub,
                                      TextPane parent,
                                      Param<String> backup)
     {
         // Caution: The language pane needs Tesseract up & running
         try {
-            return new TextPane(book, sheet, parent, backup);
+            return new TextPane(book, stub, parent, backup);
         } catch (UnavailableOcrException ex) {
             logger.info("No language pane for lack of OCR");
         } catch (Throwable ex) {
@@ -422,8 +422,8 @@ public class ScoreParameters
                     "30dlu",
                     "35dlu");
             PanelBuilder builder = new PanelBuilder(layout, this);
-            builder.setDefaultDialogBorder();
 
+            ///builder.setDefaultDialogBorder();
             CellConstraints cst = new CellConstraints();
             int r = 1;
 
@@ -520,8 +520,8 @@ public class ScoreParameters
         /** Related book, if any. */
         protected final Book book;
 
-        /** Related sheet, if any. */
-        protected final Sheet sheet;
+        /** Related sheet stub, if any. */
+        protected final SheetStub stub;
 
         /** Box for selecting specific vs inherited data. */
         private final JCheckBox box;
@@ -532,7 +532,7 @@ public class ScoreParameters
         //~ Constructors ---------------------------------------------------------------------------
         public Pane (String title,
                      Book book,
-                     Sheet sheet,
+                     SheetStub stub,
                      Pane parent,
                      Param<E> backup)
         {
@@ -545,7 +545,7 @@ public class ScoreParameters
             this.backup = backup;
             this.title = title;
             this.book = book;
-            this.sheet = sheet;
+            this.stub = stub;
 
             box = new JCheckBox();
             box.addActionListener(this);
@@ -682,7 +682,7 @@ public class ScoreParameters
     // DnDPane //
     //---------//
     /**
-     * Which step should we trigger on Drag n' Drop?.
+     * Which step should we trigger on Drag 'n Drop?.
      * Scope can be: default.
      */
     private class DnDPane
@@ -776,11 +776,11 @@ public class ScoreParameters
 
         //~ Constructors ---------------------------------------------------------------------------
         public FilterPane (Book book,
-                           final Sheet sheet,
+                           final SheetStub stub,
                            FilterPane parent,
                            Param<FilterDescriptor> backup)
         {
-            super("Binarization", book, sheet, parent, backup);
+            super("Binarization", book, stub, parent, backup);
 
             // ComboBox for filter kind
             kindCombo.setToolTipText("Specific filter on image pixels");
@@ -849,7 +849,7 @@ public class ScoreParameters
         @Override
         public boolean isValid ()
         {
-            task.setFilter(read(), sheet);
+            task.setFilter(read(), stub);
 
             return true;
         }
@@ -1222,7 +1222,7 @@ public class ScoreParameters
                     "Script",
                     "Prompt for save",
                     "Should we prompt for saving the script on score closing",
-                    ScriptActions.defaultPrompt);
+                    BookActions.defaultPrompt);
         }
     }
 
@@ -1380,11 +1380,11 @@ public class ScoreParameters
 
         //~ Constructors ---------------------------------------------------------------------------
         public TextPane (Book book,
-                         Sheet sheet,
+                         SheetStub stub,
                          TextPane parent,
                          Param<String> backup)
         {
-            super("Language", book, sheet, parent, backup);
+            super("Language", book, stub, parent, backup);
 
             langList.setLayoutOrientation(JList.VERTICAL);
             langList.setToolTipText("Dominant languages for textual items");
@@ -1411,7 +1411,7 @@ public class ScoreParameters
         @Override
         public boolean isValid ()
         {
-            task.setLanguage(read(), sheet);
+            task.setLanguage(read(), stub);
 
             return true;
         }

@@ -16,9 +16,9 @@ import omr.OMR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.BasicNest;
-import omr.glyph.GlyphNest;
+import omr.glyph.GlyphIndex;
 import omr.glyph.SymbolsModel;
+import omr.glyph.dynamic.FilamentIndex;
 import omr.glyph.ui.SymbolsController;
 import omr.glyph.ui.SymbolsEditor;
 
@@ -28,18 +28,15 @@ import omr.image.ImageFormatException;
 import omr.lag.LagManager;
 import omr.lag.Lags;
 
-import omr.math.Population;
-
 import omr.score.Page;
 import omr.score.Score;
 import omr.score.ScoreExporter;
 import omr.score.ui.BookPdfOutput;
 
 import omr.script.ExportTask;
-import omr.script.PrintTask;
 
 import omr.selection.LocationEvent;
-import omr.selection.PixelLevelEvent;
+import omr.selection.PixelEvent;
 import omr.selection.SelectionService;
 
 import omr.sheet.ui.BinarizationBoard;
@@ -47,9 +44,9 @@ import omr.sheet.ui.PictureView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.SheetTab;
-import omr.sheet.ui.SheetsController;
+import omr.sheet.ui.StubsController;
 
-import omr.sig.InterManager;
+import omr.sig.InterIndex;
 
 import omr.step.ProcessingCancellationException;
 import omr.step.Step;
@@ -59,6 +56,7 @@ import omr.step.ui.StepMonitoring;
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
 import omr.ui.util.ItemRenderer;
+import omr.ui.util.WeakItemRenderer;
 
 import omr.util.Dumping;
 import omr.util.FileUtil;
@@ -73,8 +71,12 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -85,11 +87,14 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
@@ -112,22 +117,20 @@ public class BasicSheet
 
     /** Events that can be published on sheet location service. */
     private static final Class<?>[] allowedEvents = new Class<?>[]{
-        LocationEvent.class, PixelLevelEvent.class
+        LocationEvent.class, PixelEvent.class
     };
+
+    /** Un/marshalling context for use with JAXB. */
+    private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
     //
-    /** Index of sheet, counted from 1, in the image file. */
+    /** Sheet 1-based number within book. (it duplicates stub number for clarity in XML) */
     @XmlAttribute(name = "number")
-    private final int number;
-
-    /** All steps already done on this sheet. */
-    @XmlList
-    @XmlElement(name = "steps")
-    private final EnumSet<Step> doneSteps = EnumSet.noneOf(Step.class);
+    private int number;
 
     /** The related picture. */
     @XmlElement(name = "picture")
@@ -145,12 +148,24 @@ public class BasicSheet
     @XmlElement(name = "page")
     private final List<Page> pages = new ArrayList<Page>();
 
+    /** Inter index for all systems in this sheet. */
+    @XmlElement(name = "inter-index")
+    private InterIndex interIndex;
+
+    /** Global glyph index. */
+    @XmlElement(name = "glyph-index")
+    private GlyphIndex glyphIndex;
+
     // Transient data
     //---------------
     //
     /** Containing book. */
     @Navigable(false)
     private Book book;
+
+    /** Corresponding sheet stub. */
+    @Navigable(false)
+    private SheetStub stub;
 
     /** Staves. */
     private StaffManager staffManager;
@@ -161,18 +176,6 @@ public class BasicSheet
     /** Dictionary of sheet lags. */
     private LagManager lagManager;
 
-    /** Inter manager for all systems in this sheet. */
-    private InterManager interManager;
-
-    /** Param for pixel filter. */
-    private LiveParam<FilterDescriptor> filterContext;
-
-    /** Param for text language. */
-    private LiveParam<String> textContext;
-
-    /** Has sheet been modified, WRT its project data. */
-    private boolean modified = false;
-
     //-- UI ----------------------------------------------------------------------------------------
     //
     /** Selections for this sheet. (SheetLocation, PixelLevel) */
@@ -180,9 +183,6 @@ public class BasicSheet
 
     /** Registered item renderers, if any. */
     private Set<ItemRenderer> itemRenderers;
-
-    /** Related assembly instance, if any. */
-    private SheetAssembly assembly;
 
     /** Related errors editor, if any. */
     private ErrorsEditor errorsEditor;
@@ -195,14 +195,8 @@ public class BasicSheet
 
     //-- resettable members ------------------------------------------------------------------------
     //
-    /** The step being performed on this sheet. */
-    private Step currentStep;
-
-    /** Global glyph nest. */
-    private GlyphNest nest;
-
-    /** Global measure of beam gaps within groups. */
-    private Population beamGaps;
+    /** Global filaments index. */
+    private FilamentIndex filamentIndex;
 
     /** Delta measurements. */
     private SheetDiff sheetDelta;
@@ -210,22 +204,24 @@ public class BasicSheet
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code Sheet} instance within a book.
+     * NOTA: JAXB does NOT call this code, but calls {@link #afterUnmarshal(Unmarshaller, Object)}
+     * if such method is defined.
      *
-     * @param book   the containing book instance
-     * @param number number (counted from 1) of sheet in book
-     * @param image  the already loaded image, if any
+     * @param stub  the related sheet stub
+     * @param image the already loaded image, if any
      * @throws omr.step.StepException
      */
-    public BasicSheet (Book book,
-                       int number,
+    public BasicSheet (SheetStub stub,
                        BufferedImage image)
             throws StepException
     {
-        Objects.requireNonNull(book, "Cannot create a sheet in a null book");
+        Objects.requireNonNull(stub, "Cannot create a sheet in a null stub");
 
-        this.number = number;
+        createNest();
 
-        initTransients(book);
+        initTransients(stub);
+
+        interIndex = new InterIndex(this);
 
         if (image != null) {
             setImage(image);
@@ -237,17 +233,6 @@ public class BasicSheet
      */
     private BasicSheet ()
     {
-        number = 0;
-        book = null;
-        lagManager = null;
-        staffManager = null;
-        interManager = null;
-        filterContext = null;
-        textContext = null;
-        locationService = null;
-        itemRenderers = null;
-        assembly = null;
-        errorsEditor = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -258,8 +243,9 @@ public class BasicSheet
     public boolean addItemRenderer (ItemRenderer renderer)
     {
         if (OMR.getGui() != null) {
-            ///return itemRenderers.add(new WeakItemRenderer(renderer));
-            return itemRenderers.add(renderer);
+            return itemRenderers.add(new WeakItemRenderer(renderer));
+
+            ///return itemRenderers.add(renderer);
         }
 
         return false;
@@ -274,31 +260,68 @@ public class BasicSheet
         pages.add(page);
     }
 
+    //-------------//
+    // afterReload //
+    //-------------//
+    @Override
+    public void afterReload (SheetStub stub)
+    {
+        try {
+            // Complete sheet initialization
+            initTransients(stub);
+
+            // Make sure hLag & vLag are available and their sections dispatched to relevant systems
+            if (stub.isDone(Step.GRID)) {
+                systemManager.dispatchHorizontalSections();
+                systemManager.dispatchVerticalSections();
+            }
+
+            for (SystemInfo system : getSystems()) {
+                // Forward reload request down system hierarchy
+                system.afterReload();
+            }
+
+            // Finally, complete inters index, now that all sigs have been populated
+            interIndex.initTransients(this);
+        } catch (Exception ex) {
+            logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+        }
+    }
+
     //-------//
     // close //
     //-------//
     @Override
-    public void close (boolean bookIsClosing)
+    public void close ()
     {
-        logger.debug("Closing sheet {} bookIsClosing:{}", this, bookIsClosing);
+        stub.close();
+    }
 
-        // Close the related page
-        book.removeSheet(this);
+    //-------------------//
+    // createPictureView //
+    //-------------------//
+    /**
+     * Create and display the picture view.
+     */
+    public void createPictureView ()
+    {
+        locationService.subscribeStrongly(LocationEvent.class, picture);
 
-        // Close related UI assembly if any
-        if (assembly != null) {
-            SheetsController.getInstance().removeAssembly(this);
-            assembly.close();
-        }
+        // Display sheet picture
+        PictureView pictureView = new PictureView(this);
+        stub.getAssembly().addViewTab(
+                SheetTab.PICTURE_TAB,
+                pictureView,
+                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+    }
 
-        // If no sheet is left, force book closing
-        if (!bookIsClosing) {
-            if (!book.getSheets().isEmpty()) {
-                logger.info("{}Sheet closed", getLogPrefix());
-            } else {
-                book.close();
-            }
-        }
+    //-------------//
+    // createSheet //
+    //-------------//
+    @Override
+    public Sheet createSheet ()
+    {
+        return this;
     }
 
     //--------------//
@@ -311,28 +334,61 @@ public class BasicSheet
             book.deleteExport(); // Simply delete the single-sheet book!
         } else {
             // path/to/scores/Book
-            Path bookPath = BookManager.getActualPath(
-                    book.getExportPath(),
-                    BookManager.getDefaultExportPath(book));
+            Path bookPathSansExt = BookManager.getActualPath(
+                    book.getExportPathSansExt(),
+                    BookManager.getDefaultExportPathSansExt(book));
 
             // Determine the output path (sans extension) for the provided sheet
-            final Path sheetPathSansExt = getSheetPath(bookPath);
+            final Path sheetPathSansExt = getSheetPathSansExt(bookPathSansExt);
 
-            // Multi-sheet book: <bookname>/sheet#<N>.mvt<M>.mxl
-            // Multi-sheet book: <bookname>/sheet#<N>.mxl
-            // Multi-sheet book: <bookname>/sheet#<N>/... (perhaps some day: 1 directory per sheet)
+            // Multi-sheet book: <bookname>-sheet#<N>.mvt<M>.mxl
+            // Multi-sheet book: <bookname>-sheet#<N>.mxl
             final Path folder = sheetPathSansExt.getParent();
-            final Path bookName = folder.getFileName(); // bookname
-            final Path sheetName = sheetPathSansExt.getFileName(); // sheet#N
+            final Path sheetName = sheetPathSansExt.getFileName(); // book-sheet#N
 
-            final String dirGlob = "glob:**/" + bookName + "/" + sheetName + "{/**,}";
-            final String filGlob = "glob:**/" + bookName + "/" + sheetName + "{/**,.*}";
+            final String dirGlob = "glob:**/" + sheetName + "{/**,}";
+            final String filGlob = "glob:**/" + sheetName + "{/**,.*}";
             final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
 
             if (!paths.isEmpty()) {
-                BookManager.deletePaths(bookName + "/" + sheetName + " deletion", paths);
+                BookManager.deletePaths(sheetName + " deletion", paths);
             }
         }
+    }
+
+    //----------------//
+    // displayDataTab //
+    //----------------//
+    @Override
+    public void displayDataTab ()
+    {
+        symbolsEditor = new SymbolsEditor(this, getSymbolsController());
+    }
+
+    //-----------------//
+    // displayMainTabs //
+    //-----------------//
+    @Override
+    public void displayMainTabs ()
+    {
+        if (stub.isDone(Step.GRID)) {
+            // Display DATA tab
+            displayDataTab();
+        } else {
+            // Display BINARY tab
+            createPictureView();
+        }
+
+        StubsController.getInstance().markTab(this, Color.BLACK);
+    }
+
+    //-----------//
+    // swapSheet //
+    //-----------//
+    @Override
+    public void swapSheet ()
+    {
+        stub.swapSheet();
     }
 
     //--------//
@@ -346,7 +402,7 @@ public class BasicSheet
             return true;
         }
 
-        modified = true;
+        stub.setModified(true);
 
         SortedSet<Step> mySteps = new TreeSet();
 
@@ -357,7 +413,7 @@ public class BasicSheet
             }
         }
 
-        logger.debug("Sheet#{} scheduling {}", number, mySteps);
+        logger.debug("Sheet#{} scheduling {}", stub.getNumber(), mySteps);
 
         StopWatch watch = new StopWatch("doStep " + target);
 
@@ -372,7 +428,7 @@ public class BasicSheet
 
             if (OMR.getGui() != null) {
                 // Update sheet tab color
-                SheetsController.getInstance().markTab(this, Color.BLACK);
+                StubsController.getInstance().markTab(this, Color.BLACK);
             }
 
             return true; // Normal exit
@@ -381,7 +437,7 @@ public class BasicSheet
         } catch (ProcessingCancellationException pce) {
             throw pce;
         } catch (Exception ex) {
-            logger.warn(getLogPrefix() + " Error in performing " + mySteps, ex);
+            logger.warn(getLogPrefix() + "Error in performing " + mySteps + " " + ex, ex);
         } finally {
             StepMonitoring.notifyStop();
 
@@ -436,16 +492,16 @@ public class BasicSheet
         }
 
         // path/to/scores/Book
-        Path bookPath = BookManager.getActualPath(
-                book.getExportPath(),
-                BookManager.getDefaultExportPath(book));
+        Path bookPathSansExt = BookManager.getActualPath(
+                book.getExportPathSansExt(),
+                BookManager.getDefaultExportPathSansExt(book));
 
         // Determine the output path (sans extension) for the provided sheet
-        final Path sheetPathSansExt = getSheetPath(bookPath);
+        final Path sheetPathSansExt = getSheetPathSansExt(bookPathSansExt);
 
         try {
-            if (book.isMultiSheet() && !Files.exists(bookPath)) {
-                Files.createDirectories(bookPath);
+            if (book.isMultiSheet() && !Files.exists(bookPathSansExt)) {
+                Files.createDirectories(bookPathSansExt);
             }
 
             final String rootName = sheetPathSansExt.getFileName().toString();
@@ -454,7 +510,7 @@ public class BasicSheet
             final boolean sig = BookManager.useSignature();
 
             if (pages.size() > 1) {
-                // Export the sheet multiple pages as separate scores in folder 'pathSansExt'
+                // Export the sheet multiple pages as separate scores in folder 'sheetPathSansExt'
                 Files.createDirectories(sheetPathSansExt);
 
                 for (Page page : pages) {
@@ -471,6 +527,7 @@ public class BasicSheet
             } else {
                 // Export the sheet single page as a score
                 final Score score = new Score();
+                score.setBook(book);
                 score.setId(1);
                 score.addPage(pages.get(0));
 
@@ -479,11 +536,11 @@ public class BasicSheet
             }
 
             // Remember the book path in the book itself
-            book.setExportPath(bookPath);
-            BookManager.setDefaultExportFolder(bookPath.getParent().toString());
+            book.setExportPathSansExt(bookPathSansExt);
+            BookManager.setDefaultExportFolder(bookPathSansExt.getParent().toString());
 
             if (!book.isMultiSheet()) {
-                book.getScript().addTask(new ExportTask(bookPath.getParent().toFile()));
+                book.getScript().addTask(new ExportTask(bookPathSansExt.toFile(), null));
             }
         } catch (Exception ex) {
             logger.warn("Error exporting " + this + ", " + ex, ex);
@@ -496,16 +553,7 @@ public class BasicSheet
     @Override
     public SheetAssembly getAssembly ()
     {
-        return assembly;
-    }
-
-    //-------------//
-    // getBeamGaps //
-    //-------------//
-    @Override
-    public Population getBeamGaps ()
-    {
-        return beamGaps;
+        return stub.getAssembly();
     }
 
     //---------//
@@ -523,7 +571,7 @@ public class BasicSheet
     @Override
     public Step getCurrentStep ()
     {
-        return currentStep;
+        return stub.getCurrentStep();
     }
 
     //-----------------//
@@ -535,26 +583,39 @@ public class BasicSheet
         return errorsEditor;
     }
 
+    //------------------//
+    // getFilamentIndex //
+    //------------------//
+    @Override
+    public FilamentIndex getFilamentIndex ()
+    {
+        if (filamentIndex == null) {
+            filamentIndex = new FilamentIndex(this);
+        }
+
+        return filamentIndex;
+    }
+
     //----------------//
     // getFilterParam //
     //----------------//
     @Override
     public LiveParam<FilterDescriptor> getFilterParam ()
     {
-        return filterContext;
+        return stub.getFilterParam();
     }
 
     //--------------//
-    // getGlyphNest //
+    // getGlyphIndex //
     //--------------//
     @Override
-    public GlyphNest getGlyphNest ()
+    public GlyphIndex getGlyphIndex ()
     {
-        if (nest == null) {
+        if (glyphIndex == null) {
             createNest();
         }
 
-        return nest;
+        return glyphIndex;
     }
 
     //-----------//
@@ -572,20 +633,28 @@ public class BasicSheet
     @Override
     public String getId ()
     {
-        if (book.isMultiSheet()) {
-            return book.getRadix() + "#" + number;
-        } else {
-            return book.getRadix();
+        if (stub != null) {
+            return stub.getId();
         }
+
+        return null;
     }
 
-    //-----------------//
-    // getInterManager //
-    //-----------------//
+    //---------------//
+    // getInterIndex //
+    //---------------//
     @Override
-    public InterManager getInterManager ()
+    public InterIndex getInterIndex ()
     {
-        return interManager;
+        return interIndex;
+    }
+
+    //------------------//
+    // getSheetFileName //
+    //------------------//
+    public static String getSheetFileName (int number)
+    {
+        return Sheet.INTERNALS_RADIX + number + ".xml";
     }
 
     //--------------//
@@ -612,7 +681,7 @@ public class BasicSheet
     @Override
     public LiveParam<String> getLanguageParam ()
     {
-        return textContext;
+        return stub.getLanguageParam();
     }
 
     //-------------//
@@ -638,15 +707,7 @@ public class BasicSheet
     @Override
     public Step getLatestStep ()
     {
-        Step latest = null;
-
-        for (Step step : Step.values()) {
-            if (isDone(step)) {
-                latest = step;
-            }
-        }
-
-        return latest;
+        return stub.getLatestStep();
     }
 
     //--------------------//
@@ -664,15 +725,7 @@ public class BasicSheet
     @Override
     public String getLogPrefix ()
     {
-        if (BookManager.isMultiBook()) {
-            return "[" + getId() + "] ";
-        } else {
-            if (book.isMultiSheet()) {
-                return "[#" + getNumber() + "] ";
-            } else {
-                return "";
-            }
-        }
+        return stub.getLogPrefix();
     }
 
     //-----------//
@@ -681,7 +734,7 @@ public class BasicSheet
     @Override
     public int getNumber ()
     {
-        return number;
+        return stub.getNumber();
     }
 
     //----------//
@@ -693,15 +746,6 @@ public class BasicSheet
         return pages;
     }
 
-    //---------//
-    // getPath //
-    //---------//
-    @Override
-    public Path getPath ()
-    {
-        return book.getRootPath().resolve(INTERNALS_RADIX + number);
-    }
-
     //------------//
     // getPicture //
     //------------//
@@ -709,12 +753,12 @@ public class BasicSheet
     public Picture getPicture ()
     {
         if (picture == null) {
-            BufferedImage img = book.loadSheetImage(number);
+            BufferedImage img = book.loadSheetImage(getNumber());
 
             try {
                 setImage(img);
             } catch (StepException ex) {
-                logger.warn("Error setting image id " + number, ex);
+                logger.warn("Error setting image id " + getNumber(), ex);
             }
         }
 
@@ -728,6 +772,15 @@ public class BasicSheet
     public Scale getScale ()
     {
         return scale;
+    }
+
+    //----------//
+    // getSheet //
+    //----------//
+    @Override
+    public Sheet getSheet ()
+    {
+        return this;
     }
 
     //---------------//
@@ -757,6 +810,15 @@ public class BasicSheet
         return staffManager;
     }
 
+    //---------//
+    // getStub //
+    //---------//
+    @Override
+    public SheetStub getStub ()
+    {
+        return stub;
+    }
+
     //----------------------//
     // getSymbolsController //
     //----------------------//
@@ -764,10 +826,98 @@ public class BasicSheet
     public SymbolsController getSymbolsController ()
     {
         if (symbolsController == null) {
-            createSymbolsControllerAndEditor();
+            createSymbolsController();
         }
 
         return symbolsController;
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    @Override
+    public final void setImage (BufferedImage image)
+            throws StepException
+    {
+        // Reset most of members
+        reset(Step.LOAD);
+
+        try {
+            picture = new Picture(this, image, locationService);
+
+            if (OMR.getGui() != null) {
+                createPictureView();
+            }
+
+            done(Step.LOAD);
+        } catch (ImageFormatException ex) {
+            String msg = "Unsupported image format in file " + getBook().getInputPath() + "\n"
+                         + ex.getMessage();
+
+            if (OMR.getGui() != null) {
+                OMR.getGui().displayWarning(msg);
+            } else {
+                logger.warn(msg);
+            }
+
+            throw new StepException(ex);
+        } catch (Throwable ex) {
+            logger.warn("Error loading image", ex);
+        }
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the provided XML stream to allocate the corresponding sheet.
+     *
+     * @param in the input stream that contains the sheet in XML format.
+     *           The stream is not closed by this method
+     *
+     * @return the allocated sheet.
+     * @exception JAXBException raised when unmarshalling goes wrong
+     */
+    public static Sheet unmarshal (InputStream in)
+            throws JAXBException
+    {
+        StopWatch watch = new StopWatch("Sheet unmarshal");
+
+        Unmarshaller um = getJaxbContext().createUnmarshaller();
+
+        ///um.setListener(new Jaxb.UnmarshalLogger());
+        BasicSheet sheet = (BasicSheet) um.unmarshal(in);
+
+        //
+        //        book.initTransients(null, projectPath, fileSystem);
+        //
+        //        for (SheetStub stub : book.getValidStubs()) {
+        //            watch.start("stub#" + stub.getNumber());
+        //
+        //            //                BasicStub basicStub = (BasicStub) stub;
+        //            //
+        //            //                ///basicSheet.initTransients(book);
+        //            //                if (stub.hasPicture()) {
+        //            //                    Picture picture = stub.getPicture();
+        //            //                    picture.initTransients(stub);
+        //            //
+        //            //                    if (OMR.getGui() != null) {
+        //            //                        if (picture.hasTable(Picture.TableKey.BINARY)) {
+        //            //                            basicSheet.createPictureView(SheetTab.BINARY_TAB);
+        //            //                            StubsController.getInstance().markTab(stub, Color.BLACK);
+        //            //                        } else {
+        //            //                            basicSheet.createPictureView(SheetTab.PICTURE_TAB);
+        //            //                        }
+        //            //                    }
+        //            //                }
+        //        }
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
+
+        logger.debug("Sheet unmarshalled");
+
+        return sheet;
     }
 
     //------------------//
@@ -776,6 +926,10 @@ public class BasicSheet
     @Override
     public SymbolsEditor getSymbolsEditor ()
     {
+        if (symbolsEditor == null) {
+            symbolsEditor = new SymbolsEditor(this, getSymbolsController());
+        }
+
         return symbolsEditor;
     }
 
@@ -815,13 +969,31 @@ public class BasicSheet
         return picture != null;
     }
 
+    //----------//
+    // hasSheet //
+    //----------//
+    @Override
+    public boolean hasSheet ()
+    {
+        return true;
+    }
+
+    //------------//
+    // invalidate //
+    //------------//
+    @Override
+    public void invalidate ()
+    {
+        stub.invalidate();
+    }
+
     //--------//
     // isDone //
     //--------//
     @Override
     public boolean isDone (Step step)
     {
-        return doneSteps.contains(step);
+        return stub.isDone(step);
     }
 
     //------------//
@@ -830,47 +1002,37 @@ public class BasicSheet
     @Override
     public boolean isModified ()
     {
-        return modified;
+        return stub.isModified();
+    }
+
+    //---------//
+    // isValid //
+    //---------//
+    @Override
+    public boolean isValid ()
+    {
+        return stub.isValid();
     }
 
     //-------//
     // print //
     //-------//
     @Override
-    public void print ()
+    public void print (Path sheetPrintPath)
     {
-        // path/to/prints/Book
-        Path bookPath = BookManager.getActualPath(
-                book.getPrintPath(),
-                BookManager.getDefaultPrintPath(book));
-
-        // Determine the output path (sans extension) for the provided sheet
-        final Path sheetPathSansExt = getSheetPath(bookPath);
-        final String rootName = sheetPathSansExt.getFileName().toString();
-        final Path pdfPath = sheetPathSansExt.resolveSibling(rootName + ".pdf");
-
         // Actually write the PDF
         try {
-            // Prompt for overwrite?
-            if (!BookManager.confirmed(pdfPath)) {
-                return;
+            Path parent = sheetPrintPath.getParent();
+            if (!Files.exists(parent)) {
+                Files.createDirectories(parent);
             }
 
-            if (book.isMultiSheet() && !Files.exists(bookPath)) {
-                Files.createDirectories(bookPath);
-            }
+            new BookPdfOutput(book, sheetPrintPath.toFile()).write(this);
+            logger.info("Sheet printed to {}", sheetPrintPath);
 
-            new BookPdfOutput(book, pdfPath.toFile()).write(this);
-            logger.info("Sheet printed to {}", pdfPath);
-
-            book.setPrintPath(bookPath);
-            BookManager.setDefaultPrintFolder(bookPath.getParent().toString());
-
-            if (!book.isMultiSheet()) {
-                book.getScript().addTask(new PrintTask(bookPath.getParent().toFile()));
-            }
+            BookManager.setDefaultPrintFolder(parent.toString());
         } catch (Exception ex) {
-            logger.warn("Cannot write PDF to " + pdfPath, ex);
+            logger.warn("Cannot print sheet to " + sheetPrintPath + " " + ex, ex);
         }
     }
 
@@ -887,56 +1049,31 @@ public class BasicSheet
         }
     }
 
-    //-------------//
-    // setBeamGaps //
-    //-------------//
+    //-------//
+    // reset //
+    //-------//
     @Override
-    public void setBeamGaps (Population beamGaps)
+    public void reset ()
     {
-        this.beamGaps = beamGaps;
+        stub.reset();
     }
 
-    //----------//
-    // setImage //
-    //----------//
+    //----------------//
+    // setCurrentStep //
+    //----------------//
     @Override
-    public final void setImage (BufferedImage image)
-            throws StepException
+    public void setCurrentStep (Step step)
     {
-        // Reset most of members
-        reset(Step.LOAD);
-
-        try {
-            picture = new Picture(this, image, locationService);
-
-            if (OMR.getGui() != null) {
-                createPictureView(SheetTab.PICTURE_TAB);
-            }
-
-            done(Step.LOAD);
-        } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " + getBook().getInputPath() + "\n"
-                         + ex.getMessage();
-
-            if (OMR.getGui() != null) {
-                OMR.getGui().displayWarning(msg);
-            } else {
-                logger.warn(msg);
-            }
-
-            throw new StepException(ex);
-        } catch (Throwable ex) {
-            logger.warn("Error loading image", ex);
-        }
+        stub.setCurrentStep(step);
     }
 
     //-------------//
     // setModified //
     //-------------//
     @Override
-    public void setModified (boolean modified)
+    public void setModified (boolean val)
     {
-        this.modified = modified;
+        stub.setModified(val);
     }
 
     //----------//
@@ -969,18 +1106,46 @@ public class BasicSheet
     // store //
     //-------//
     @Override
-    public void store ()
+    public void store (Path sheetFolder,
+                       Path oldSheetFolder)
     {
         // Picture internals, if any
         if (picture != null) {
             try {
                 // Make sure the folder exists for sheet internals
-                Files.createDirectories(getPath());
-                picture.store();
+                Files.createDirectories(sheetFolder);
+
+                // Save picture tables
+                picture.store(sheetFolder, oldSheetFolder);
             } catch (IOException ex) {
                 logger.warn("IOException on storing " + this, ex);
             }
         }
+
+        // Sheet structure (sheet#n.xml)
+        try {
+            Path structurePath = sheetFolder.resolve(getSheetFileName(getNumber()));
+            Files.deleteIfExists(structurePath);
+
+            OutputStream os = Files.newOutputStream(structurePath, StandardOpenOption.CREATE);
+            Marshaller m = getJaxbContext().createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            m.marshal(this, os);
+            os.close();
+            stub.setModified(false);
+            logger.info("Stored {}", structurePath);
+        } catch (Exception ex) {
+            logger.warn("Error in saving sheet structure " + ex, ex);
+        }
+    }
+
+    //------------//
+    // storeSheet //
+    //------------//
+    @Override
+    public void storeSheet ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //----------//
@@ -1001,88 +1166,37 @@ public class BasicSheet
         return doStep(Step.last(), null);
     }
 
-    //-------------------//
-    // createPictureView //
-    //-------------------//
-    /**
-     * (package private) Create and display the picture view.
-     *
-     * @param sheetTab the name to be used for picture tab (Picture or Binary)
-     */
-    void createPictureView (SheetTab sheetTab)
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
     {
-        locationService.subscribeStrongly(LocationEvent.class, picture);
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(BasicSheet.class);
+        }
 
-        // Display sheet picture if not batch mode
-        PictureView pictureView = new PictureView(this);
-        assembly.addViewTab(
-                sheetTab,
-                pictureView,
-                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+        return jaxbContext;
     }
 
-    //    //----------//
-    //    // addError //
-    //    //----------//
+    //
+    //    //----------------//
+    //    // afterUnmarshal //
+    //    //----------------//
     //    /**
-    //     * Register an error in the sheet ErrorsWindow
-    //     *
-    //     * @param container the immediate container for the error location
-    //     * @param glyph     the related glyph if any
-    //     * @param text      the error message
+    //     * Called after all the properties (except IDREF) are unmarshalled
+    //     * for this object, but before this object is set to the parent object.
+    //     * All non-persistent members are null.
     //     */
-    //    public void addError (OldSystemNode container,
-    //                          Glyph glyph,
-    //                          String text)
+    //    @PostConstruct // Don't remove this method, invoked by JAXB through reflection
+    //
+    //    private void afterUnmarshal (Unmarshaller um,
+    //                                 Object parent)
     //    {
-    //        if (OMR.getGui() != null) {
-    //            getErrorsEditor().addError(container, glyph, text);
-    //        }
+    //        initTransients((SheetStub) parent);
     //    }
     //
-    //----------------//
-    // initTransients //
-    //----------------//
-    /**
-     * (package private) method to initialize needed transient members.
-     * (which by definition have not been set by the un-marshaling).
-     *
-     * @param book the containing book
-     */
-    final void initTransients (Book book)
-    {
-        this.book = book;
-
-        for (Page page : pages) {
-            page.initTransients(this);
-        }
-
-        if (systemManager == null) {
-            systemManager = new SystemManager(this);
-        } else {
-            systemManager.initTransients(this);
-        }
-
-        staffManager = new StaffManager(this);
-
-        lagManager = new LagManager(this);
-
-        filterContext = new LiveParam<FilterDescriptor>(book.getFilterParam());
-        textContext = new LiveParam<String>(book.getLanguageParam());
-
-        // Update UI information if so needed
-        if (OMR.getGui() != null) {
-            locationService = new SelectionService("sheet", allowedEvents);
-            errorsEditor = new ErrorsEditor(this);
-            itemRenderers = new HashSet<ItemRenderer>();
-            SheetsController.getInstance().addAssembly(assembly = new SheetAssembly(this));
-            addItemRenderer(staffManager);
-        }
-
-        createNest();
-        interManager = new InterManager(this);
-    }
-
     //------------//
     // createNest //
     //------------//
@@ -1090,24 +1204,21 @@ public class BasicSheet
     {
         // Beware: Glyph nest must subscribe to location before any lag,
         // to allow cleaning up of glyph data, before publication by a lag
-        nest = new BasicNest("gNest", this);
+        glyphIndex = new GlyphIndex();
 
-        if (OMR.getGui() != null) {
-            nest.setServices(locationService);
-        }
+        //
+        //        if (OMR.getGui() != null) {
+        //            nest.setEntityService(new GlyphService(nest, locationService));
+        //        }
     }
 
-    //----------------------------------//
-    // createSymbolsControllerAndEditor //
-    //----------------------------------//
-    private void createSymbolsControllerAndEditor ()
+    //-------------------------//
+    // createSymbolsController //
+    //-------------------------//
+    private void createSymbolsController ()
     {
         SymbolsModel model = new SymbolsModel(this);
         symbolsController = new SymbolsController(model);
-
-        if (OMR.getGui() != null) {
-            symbolsEditor = new SymbolsEditor(this, symbolsController);
-        }
     }
 
     //-----------//
@@ -1148,7 +1259,7 @@ public class BasicSheet
             final long duration = stopTime - startTime;
             logger.debug("{}{} completed in {} ms", getLogPrefix(), step, duration);
         } catch (Throwable ex) {
-            logger.warn("doOneStep error in " + step, ex);
+            logger.warn("doOneStep error in " + step + " " + ex, ex);
             throw ex;
         } finally {
             // Make sure we reset the sheet "current" step, always.
@@ -1167,34 +1278,129 @@ public class BasicSheet
      */
     private final void done (Step step)
     {
-        doneSteps.add(step);
+        ((BasicStub) stub).done(step);
     }
 
-    //--------------//
-    // getSheetPath //
-    //--------------//
+    //---------------------//
+    // getSheetPathSansExt //
+    //---------------------//
     /**
      * Report the path (sans extension) to which the sheet will be written.
      * <ul>
      * <li>If this sheet is the only one in the containing book, we use:<br/>
      * &lt;book-name&gt;</li>
      * <li>If the book contains several sheets, we use:<br/>
-     * &lt;book-name&gt;/sheet#&lt;N&gt;</li>
+     * &lt;book-name&gt;-sheet#&lt;N&gt;</li>
      * </ul>
      *
-     * @param bookPath the non-null bookPath
-     * @return the sheet path
+     * @param bookPathSansExt the non-null bookPath (without extension)
+     * @return the sheet path (without extension)
      */
-    private Path getSheetPath (Path bookPath)
+    private Path getSheetPathSansExt (Path bookPathSansExt)
     {
         // Determine the output path (sans extension) for the provided sheet
         // path/to/scores/Book            (for a single-sheet book)
-        // path/to/scores/Book/sheet#N    (for a multi-sheet book)
+        // path/to/scores/Book-sheet#N    (for a multi-sheet book)
         if (!book.isMultiSheet()) {
-            return bookPath;
+            return bookPathSansExt;
         } else {
-            return bookPath.resolve(OMR.SHEET_PREFIX + (book.getOffset() + number));
+            final Integer offset = book.getOffset();
+            final int globalNumber = getNumber() + ((offset != null) ? offset : 0);
+
+            return Paths.get(bookPathSansExt + OMR.SHEET_SUFFIX + globalNumber);
         }
+    }
+
+    //    //----------//
+    //    // addError //
+    //    //----------//
+    //    /**
+    //     * Register an error in the sheet ErrorsWindow
+    //     *
+    //     * @param container the immediate container for the error location
+    //     * @param glyph     the related glyph if any
+    //     * @param text      the error message
+    //     */
+    //    public void addError (OldSystemNode container,
+    //                          Glyph glyph,
+    //                          String text)
+    //    {
+    //        if (OMR.getGui() != null) {
+    //            getErrorsEditor().addError(container, glyph, text);
+    //        }
+    //    }
+    //
+    //----------------//
+    // initTransients //
+    //----------------//
+    /**
+     * Initialize needed transient members.
+     * (which by definition have not been set by the unmarshalling).
+     *
+     * @param stub the related stub
+     */
+    private void initTransients (SheetStub stub)
+    {
+        logger.debug("BasicSheet#{} initTransients", stub.getNumber());
+
+        this.stub = stub;
+        this.number = stub.getNumber();
+
+        book = stub.getBook();
+
+        // Update UI information if so needed
+        if (OMR.getGui() != null) {
+            locationService = new SelectionService("locationService", allowedEvents);
+            errorsEditor = new ErrorsEditor(this);
+            itemRenderers = new HashSet<ItemRenderer>();
+            addItemRenderer(staffManager);
+        }
+
+        if (picture != null) {
+            picture.initTransients(this);
+        }
+
+        if (glyphIndex != null) {
+            ((GlyphIndex) glyphIndex).initTransients(this);
+        }
+
+        for (Page page : pages) {
+            page.initTransients(this);
+        }
+
+        if (systemManager == null) {
+            systemManager = new SystemManager(this);
+        } else {
+            systemManager.initTransients(this);
+        }
+
+        // systemManager
+        List<SystemInfo> systems = new ArrayList<SystemInfo>();
+
+        for (Page page : pages) {
+            for (SystemInfo system : page.getSystems()) {
+                system.initTransients(this, page);
+                systems.add(system);
+
+                List<Staff> systemStaves = new ArrayList<Staff>();
+
+                for (Part part : system.getParts()) {
+                    part.setSystem(system);
+
+                    for (Staff staff : part.getStaves()) {
+                        systemStaves.add(staff);
+                    }
+                }
+
+                system.setStaves(systemStaves);
+            }
+        }
+
+        systemManager.setSystems(systems);
+
+        staffManager = new StaffManager(this);
+
+        lagManager = new LagManager(this);
     }
 
     //-------//
@@ -1210,8 +1416,7 @@ public class BasicSheet
         switch (step) {
         case LOAD:
             picture = null;
-            doneSteps.clear();
-            currentStep = null;
+            stub.setCurrentStep(null);
 
         // Fall-through!
         case BINARY:
@@ -1220,15 +1425,14 @@ public class BasicSheet
 
         // Fall-through!
         case GRID:
-
-            if (nest != null) {
-                if (OMR.getGui() != null) {
-                    nest.cutServices(locationService);
-                }
-
-                createNest();
-            }
-
+            //
+            //            if (nest != null) {
+            ////                if (OMR.getGui() != null) {
+            ////                    nest.cutServices(locationService);
+            ////                }
+            ////
+            //                createNest();
+            //            }
             skew = null;
 
             lagManager.setLag(Lags.HLAG, null);
@@ -1248,19 +1452,6 @@ public class BasicSheet
 
         default:
         }
-    }
-
-    //----------------//
-    // setCurrentStep //
-    //----------------//
-    /**
-     * This records the starting and stopping of a step.
-     *
-     * @param step the starting step, or null when step is over
-     */
-    private void setCurrentStep (Step step)
-    {
-        currentStep = step;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -373,7 +373,7 @@ public class LinearEvaluator
      *
      * @param samples a collection of samples (category + pattern)
      */
-    public void train (Collection<Sample> samples)
+    public void train (Collection<LinearSample> samples)
     {
         // Check size consistencies.
         if ((samples == null) || samples.isEmpty()) {
@@ -388,7 +388,7 @@ public class LinearEvaluator
         }
 
         // Accumulate data from samples into categories descriptors
-        for (Sample sample : samples) {
+        for (LinearSample sample : samples) {
             Category category = categories.get(sample.category);
 
             if (category == null) {
@@ -512,14 +512,14 @@ public class LinearEvaluator
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //--------//
-    // Sample //
-    //--------//
+    //--------------//
+    // LinearSample //
+    //--------------//
     /**
      * Meant to host one sample for training, representing pattern
      * values for a given category.
      */
-    public static class Sample
+    public static class LinearSample
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -530,8 +530,8 @@ public class LinearEvaluator
         public final double[] pattern;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Sample (String category,
-                       double[] pattern)
+        public LinearSample (String category,
+                             double[] pattern)
         {
             this.category = category;
             this.pattern = pattern;

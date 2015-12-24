@@ -13,8 +13,10 @@ package omr;
 
 import omr.script.ExportTask;
 import omr.script.PrintTask;
+import omr.script.SaveTask;
 
 import omr.sheet.Book;
+import omr.sheet.SheetStub;
 
 import omr.step.ProcessingCancellationException;
 import omr.step.Step;
@@ -55,49 +57,57 @@ import java.util.concurrent.Callable;
  * <dl>
  *
  * <dt><b>-batch</b></dt>
- * <dd>Runs with no graphic user interface</dd>
- *
- * <dt><b>-bench</b></dt>
- * <dd>Outputs bench data (to default directory)</dd>
- *
- *
- * <dt><b>-benchDir DIR</b></dt>
- * <dd>Outputs bench data to provided directory</dd>
+ * <dd>Runs with no graphical user interface</dd>
  *
  * <dt><b>-export</b></dt>
- * <dd>Outputs MusicXML data (to default directory)</dd>
+ * <dd>Exports MusicXML</dd>
+ *
+ * <dt><b>-exportAs FILE</b></dt>
+ * <dd>Exports MusicXML to specific file</dd>
  *
  * <dt><b>-exportDir DIR</b></dt>
- * <dd>Outputs MusicXML data to provided directory</dd>
+ * <dd>Exports MusicXML to specific folder (ignored if -exportAs is used)</dd>
  *
  * <dt><b>-help</b></dt>
- * <dd>Displays help about application then stops</dd>
+ * <dd>Displays general help then stops</dd>
  *
  * <dt><b>-input FILE</b></dt>
- * <dd>Reads the provided input image file</dd>
+ * <dd>Loads the provided input file (image)</dd>
  *
  * <dt><b>-option KEY=VALUE</b></dt>
  * <dd>Defines an application constant (that could also be set via the pull-down menu
  * "Tools|Options" in the GUI)</dd>
  *
  * <dt><b>-print</b></dt>
- * <dd>Prints out score (to default directory)</dd>
+ * <dd>Prints out book</dd>
+ *
+ * <dt><b>-printAs FILE</b></dt>
+ * <dd>Prints out book to specific file</dd>
  *
  * <dt><b>-printDir DIR</b></dt>
- * <dd>Prints out score to provided directory</dd>
+ * <dd>Prints out book to specific folder (ignored if -printAs is used)</dd>
  *
  * <dt><b>-project FILE</b></dt>
- * <dd>Reads the provided project file</dd>
+ * <dd>Loads the provided project file</dd>
+ *
+ * <dt><b>-save</b></dt>
+ * <dd>Saves project</dd>
+ *
+ * <dt><b>-saveAs FILE</b></dt>
+ * <dd>Saves project to specific file</dd>
+ *
+ * <dt><b>-saveDir DIR</b></dt>
+ * <dd>Saves project to specific folder (ignored if -saveAs is used)</dd>
  *
  * <dt><b>-script FILE</b></dt>
  * <dd>Runs the provided script file</dd>
  *
  * <dt><b>-sheets N...</b></dt>
- * <dd>Defines specific sheets (counted from 1) to process in input file</dd>
+ * <dd>Selects specific sheets (1-based)</dd>
  *
  * <dt><b>-step STEP</b></dt>
- * <dd>Defines a specific transcription target step. This step will be performed on each input
- * referenced from the command line</dd>
+ * <dd>Defines a specific transcription step (to be performed on each input referenced from the
+ * command line</dd>
  * </dl>
  *
  * @author Hervé Bitteur
@@ -133,21 +143,51 @@ public class CLI
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // getBenchFolder //
-    //----------------//
+    //-------------//
+    // getCliTasks //
+    //-------------//
     /**
-     * Report the bench folder if present on the CLI
+     * Prepare the collection of CLI tasks (inputs, projects, scripts).
      *
-     * @return the CLI bench folder, or null
+     * @return the collection of tasks
      */
-    public Path getBenchFolder ()
+    public List<Callable<Void>> getCliTasks ()
     {
-        if (params.benchFolder == null) {
+        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+
+        // Inputs
+        for (File input : params.inputFiles) {
+            tasks.add(new InputTask(input.toPath()));
+        }
+
+        // Projects
+        for (File project : params.projectFiles) {
+            tasks.add(new ProjectTask(project.toPath()));
+        }
+
+        // Scripts
+        for (File script : params.scriptFiles) {
+            tasks.add(new ScriptTask(script.toPath()));
+        }
+
+        return tasks;
+    }
+
+    //-------------//
+    // getExportAs //
+    //-------------//
+    /**
+     * Report the target export file if present on the CLI
+     *
+     * @return the CLI export file, or null
+     */
+    public Path getExportAs ()
+    {
+        if (params.exportAs == null) {
             return null;
         }
 
-        return params.benchFolder.toPath();
+        return params.exportAs.toPath();
     }
 
     //-----------------//
@@ -165,182 +205,6 @@ public class CLI
         }
 
         return params.exportFolder.toPath();
-    }
-
-    //----------------//
-    // getInputsTasks //
-    //----------------//
-    /**
-     * Prepare the processing of input image files listed on command line.
-     * On each input file, we apply the actions specified if any via -step, -print, -export.
-     *
-     * @return the collection of proper callable instances
-     */
-    public List<Callable<Void>> getInputsTasks ()
-    {
-        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
-
-        // Launch desired step on each book
-        for (final File input : params.inputFiles) {
-            final Path path = input.toPath();
-
-            tasks.add(
-                    new Callable<Void>()
-                    {
-                        @Override
-                        public Void call ()
-                        throws Exception
-                        {
-                            final Step target = params.step;
-                            final SortedSet<Integer> sheetIds = params.getSheetIds();
-
-                            if (target != null) {
-                                logger.info(
-                                        "Launching {} on {} {}",
-                                        target,
-                                        input,
-                                        (!sheetIds.isEmpty()) ? ("sheets " + sheetIds) : "");
-                            }
-
-                            if (Files.exists(path)) {
-                                final Book book = OMR.getEngine().loadInput(path);
-
-                                try {
-                                    // Create book sheets and perform desired steps if any
-                                    book.doStep(target, sheetIds);
-
-                                    // Book print output?
-                                    if (params.print || (params.printFolder != null)) {
-                                        logger.debug("Print output");
-                                        new PrintTask(params.printFolder).core(
-                                                book.getSheets().get(0));
-                                    }
-
-                                    // Book export output?
-                                    if (params.export || (params.exportFolder != null)) {
-                                        logger.debug("Export output");
-                                        new ExportTask(params.exportFolder).core(
-                                                book.getSheets().get(0));
-                                    }
-                                } catch (ProcessingCancellationException pce) {
-                                    logger.warn("Cancelled " + book, pce);
-                                    throw pce;
-                                } catch (Throwable ex) {
-                                    logger.warn("Exception occurred", ex);
-                                    throw ex;
-                                } finally {
-                                    // Close (when in batch mode only)
-                                    if ((OMR.getGui() == null) /* &&
-                                     * constants.closeBookOnEnd.isSet() */) {
-                                        book.close();
-                                    }
-                                }
-
-                                return null;
-                            } else {
-                                String msg = "Could not find file " + path;
-                                logger.warn(msg);
-                                throw new RuntimeException(msg);
-                            }
-                        }
-
-                        @Override
-                        public String toString ()
-                        {
-                            return "Input " + path;
-                        }
-                    });
-        }
-
-        return tasks;
-    }
-
-    //------------------//
-    // getProjectsTasks //
-    //------------------//
-    /**
-     * Prepare the processing of project files listed on command line.
-     * ??? On each project file, we apply the actions specified if any via -step, -print, -export.
-     *
-     * @return the collection of proper callable instances
-     */
-    public List<Callable<Void>> getProjectsTasks ()
-    {
-        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
-
-        // Launch desired step on each book
-        for (final File project : params.projectFiles) {
-            final Path path = project.toPath();
-
-            tasks.add(
-                    new Callable<Void>()
-                    {
-                        @Override
-                        public Void call ()
-                        throws Exception
-                        {
-//                            final Step target = params.step;
-//                            final SortedSet<Integer> sheetIds = params.getSheetIds();
-//
-//                            if (target != null) {
-//                                logger.info(
-//                                        "Launching {} on {} {}",
-//                                        target,
-//                                        project,
-//                                        (!sheetIds.isEmpty()) ? ("sheets " + sheetIds) : "");
-//                            }
-//
-                            if (Files.exists(path)) {
-                                final Book book = OMR.getEngine().loadProject(path);
-//
-//                                try {
-//                                    // Create book sheets and perform desired steps if any
-//                                    book.doStep(target, sheetIds);
-//
-//                                    // Book print output?
-//                                    if (params.print || (params.printFolder != null)) {
-//                                        logger.debug("Print output");
-//                                        new PrintTask(params.printFolder).core(
-//                                                book.getSheets().get(0));
-//                                    }
-//
-//                                    // Book export output?
-//                                    if (params.export || (params.exportFolder != null)) {
-//                                        logger.debug("Export output");
-//                                        new ExportTask(params.exportFolder).core(
-//                                                book.getSheets().get(0));
-//                                    }
-//                                } catch (ProcessingCancellationException pce) {
-//                                    logger.warn("Cancelled " + book, pce);
-//                                    throw pce;
-//                                } catch (Throwable ex) {
-//                                    logger.warn("Exception occurred", ex);
-//                                    throw ex;
-//                                } finally {
-//                                    // Close (when in batch mode only)
-//                                    if ((OMR.getGui() == null) /* &&
-//                                     * constants.closeBookOnEnd.isSet() */) {
-//                                        book.close();
-//                                    }
-//                                }
-
-                                return null;
-                            } else {
-                                String msg = "Could not find file " + path;
-                                logger.warn(msg);
-                                throw new RuntimeException(msg);
-                            }
-                        }
-
-                        @Override
-                        public String toString ()
-                        {
-                            return "Project " + path;
-                        }
-                    });
-        }
-
-        return tasks;
     }
 
     //------------//
@@ -389,6 +253,23 @@ public class CLI
         return params;
     }
 
+    //------------//
+    // getPrintAs //
+    //------------//
+    /**
+     * Report the target print file if present on the CLI
+     *
+     * @return the CLI print file, or null
+     */
+    public Path getPrintAs ()
+    {
+        if (params.printAs == null) {
+            return null;
+        }
+
+        return params.printAs.toPath();
+    }
+
     //----------------//
     // getPrintFolder //
     //----------------//
@@ -406,52 +287,58 @@ public class CLI
         return params.printFolder.toPath();
     }
 
-    //-----------------//
-    // getScriptsTasks //
-    //-----------------//
+    //-----------//
+    // getSaveAs //
+    //-----------//
     /**
-     * Prepare the processing of scripts listed on command line
+     * Report the target save file if present on the CLI
      *
-     * @return the collection of proper script callables
+     * @return the CLI save file, or null
      */
-    public List<Callable<Void>> getScriptsTasks ()
+    public Path getSaveAs ()
     {
-        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
-
-        // Launch desired scripts in parallel
-        for (final File scriptFile : params.scriptFiles) {
-            tasks.add(
-                    new Callable<Void>()
-                    {
-                        @Override
-                        public Void call ()
-                        throws Exception
-                        {
-                            OMR.getEngine().loadScript(scriptFile.toPath());
-
-                            //                            ScriptManager.getInstance().loadAndRun(
-                            //                                    scriptFile,
-                            //                                    constants.closeBookOnEnd.isSet());
-                            //
-                            return null;
-                        }
-
-                        @Override
-                        public String toString ()
-                        {
-                            return "Script " + scriptFile;
-                        }
-                    });
+        if (params.saveAs == null) {
+            return null;
         }
 
-        return tasks;
+        return params.saveAs.toPath();
+    }
+
+    //---------------//
+    // getSaveFolder //
+    //---------------//
+    /**
+     * Report the save folder if present on the CLI
+     *
+     * @return the CLI save path, or null
+     */
+    public Path getSaveFolder ()
+    {
+        if (params.saveFolder == null) {
+            return null;
+        }
+
+        return params.saveFolder.toPath();
+    }
+
+    //-------------//
+    // isBatchMode //
+    //-------------//
+    /**
+     * Report whether we are running in batch (that is with no UI).
+     *
+     * @return true for batch mode
+     */
+    public boolean isBatchMode ()
+    {
+        return params.batchMode;
     }
 
     //------------------//
     // printCommandLine //
     //------------------//
     /**
-     * Printout the command line with its actual parameters.
+     * Print out the command line with its actual parameters.
      */
     public void printCommandLine ()
     {
@@ -469,7 +356,7 @@ public class CLI
     // printUsage //
     //------------//
     /**
-     * Printout the general syntax for the command line.
+     * Print out the general syntax for the command line.
      */
     public void printUsage ()
     {
@@ -487,10 +374,10 @@ public class CLI
         buf.append(writer.toString());
 
         // Print all steps
-        buf.append("\nSteps are in order (non case-sensitive):");
+        buf.append("\nSheet steps are in order:");
 
         for (Step step : Step.values()) {
-            buf.append(String.format("%n   %-16s : %s", step.toString(), step.getDescription()));
+            buf.append(String.format("%n   %-10s : %s", step.toString(), step.getDescription()));
         }
 
         buf.append("\n");
@@ -558,7 +445,7 @@ public class CLI
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Help mode. */
-        @Option(name = "-help", help = true, usage = "Displays help about application then stops")
+        @Option(name = "-help", help = true, usage = "Displays general help then stops")
         boolean helpMode;
 
         /** Batch mode. */
@@ -566,7 +453,7 @@ public class CLI
         boolean batchMode;
 
         /** Specific step. */
-        @Option(name = "-step", usage = "Defines a specific transcription target step")
+        @Option(name = "-step", usage = "Defines a specific processing step")
         Step step;
 
         /** The map of application options. */
@@ -578,40 +465,55 @@ public class CLI
         final List<File> scriptFiles = new ArrayList<File>();
 
         /** The list of input image file names to load. */
-        @Option(name = "-input", usage = "Reads the provided input image file", metaVar = "<input-file>")
+        @Option(name = "-input", usage = "Loads the provided input file", metaVar = "<input-file>")
         final List<File> inputFiles = new ArrayList<File>();
 
         /** The list of project file names to load. */
-        @Option(name = "-project", usage = "Reads the provided project file", metaVar = "<project-file>")
+        @Option(name = "-project", usage = "Loads the provided project file", metaVar = "<project-file>")
         final List<File> projectFiles = new ArrayList<File>();
 
         /** The set of sheet IDs to load. */
-        @Option(name = "-sheets", usage = "Defines specific sheets (counted from 1) to process", handler = IntArrayOptionHandler.class)
-        private final List<Integer> sheets = new ArrayList<Integer>();
-
-        /** Should bench data be produced?. */
-        @Option(name = "-bench", usage = "Outputs bench data (to default directory)")
-        boolean bench;
-
-        /** Target directory for bench data. */
-        @Option(name = "-benchDir", usage = "Outputs bench data to provided directory", metaVar = "<bench-folder>")
-        File benchFolder;
+        @Option(name = "-sheets", usage = "Selects specific sheets (1-based)", handler = IntArrayOptionHandler.class)
+        private ArrayList<Integer> sheets;
 
         /** Should MusicXML data be produced?. */
-        @Option(name = "-export", usage = "Outputs MusicXML data (to default directory)")
+        @Option(name = "-export", usage = "Exports MusicXML")
         boolean export;
 
+        /** Full target file for MusicXML data. */
+        @Option(name = "-exportAs", usage = "Exports MusicXML to specific file", metaVar = "<export-file>")
+        File exportAs;
+
         /** Target directory for MusicXML data. */
-        @Option(name = "-exportDir", usage = "Outputs MusicXML data to provided directory", metaVar = "<export-folder>")
+        @Option(name = "-exportDir", usage = "Exports MusicXML to specific folder"
+                                             + " (ignored if -exportAs is used)", metaVar = "<export-folder>")
         File exportFolder;
 
         /** Should book be printed?. */
-        @Option(name = "-print", usage = "Prints out score (to default directory)")
+        @Option(name = "-print", usage = "Prints out book")
         boolean print;
 
+        /** Full target file for print. */
+        @Option(name = "-printAs", usage = "Prints out book to specific file", metaVar = "<print-file>")
+        File printAs;
+
         /** Target directory for print. */
-        @Option(name = "-printDir", usage = "Prints out score to provided directory", metaVar = "<print-folder>")
+        @Option(name = "-printDir", usage = "Prints out book to specific folder"
+                                            + " (ignored if -printAs is used)", metaVar = "<print-folder>")
         File printFolder;
+
+        /** Should book be saved?. */
+        @Option(name = "-save", usage = "Saves project")
+        boolean save;
+
+        /** Full target file for save. */
+        @Option(name = "-saveAs", usage = "Saves project to specific file", metaVar = "<project-file>")
+        File saveAs;
+
+        /** Target directory for save. */
+        @Option(name = "-saveDir", usage = "Saves project to specific folder"
+                                           + " (ignored if -saveAs is used)", metaVar = "<project-folder>")
+        File saveFolder;
 
         //~ Constructors ---------------------------------------------------------------------------
         private Parameters ()
@@ -623,12 +525,17 @@ public class CLI
         // getSheetIds //
         //-------------//
         /**
-         * Report the set of sheet ids if present on the CLI
+         * Report the set of sheet IDs if present on the CLI.
+         * Null means all sheets are taken.
          *
-         * @return the CLI sheet IDs, perhaps empty but not null
+         * @return the CLI sheet IDs, perhaps null
          */
         public SortedSet<Integer> getSheetIds ()
         {
+            if (sheets == null) {
+                return null;
+            }
+
             return new TreeSet(sheets);
         }
     }
@@ -686,4 +593,267 @@ public class CLI
             return 1;
         }
     }
+
+    //---------//
+    // CliTask //
+    //---------//
+    /**
+     * Define a CLI task on a book (input, project or script).
+     */
+    private abstract static class CliTask
+            implements Callable<Void>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Source file path. */
+        public final Path path;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public CliTask (Path path)
+        {
+            this.path = path;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public Void call ()
+                throws Exception
+        {
+            // Check source does exist
+            if (!Files.exists(path)) {
+                String msg = "Could not find file " + path;
+                logger.warn(msg);
+                throw new RuntimeException(msg);
+            }
+
+            // Obtain the book instance
+            final Book book = loadBook(path);
+
+            // Process the book instance
+            processBook(book);
+
+            return null;
+        }
+
+        /** Getting the book instance.
+         *
+         * @param path path to source
+         * @return the loaded book
+         */
+        protected abstract Book loadBook (Path path);
+
+        /** Processing the book instance.
+         *
+         * @param book the book to process
+         */
+        protected void processBook (Book book)
+        {
+            // Void by default
+        }
+    }
+
+    //------------//
+    // ScriptTask //
+    //------------//
+    /**
+     * Processing a script file.
+     */
+    private static class ScriptTask
+            extends CliTask
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public ScriptTask (Path path)
+        {
+            super(path);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            return "Script " + path;
+        }
+
+        @Override
+        protected Book loadBook (Path path)
+        {
+            return OMR.getEngine().loadScript(path);
+        }
+    }
+
+    //----------------//
+    // ProcessingTask //
+    //----------------//
+    /**
+     * Processing common to both input (images) and projects.
+     */
+    private abstract class ProcessingTask
+            extends CliTask
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public ProcessingTask (Path path)
+        {
+            super(path);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected void processBook (Book book)
+        {
+            try {
+                // Specific sheets to process?
+                final SortedSet<Integer> sheetIds = params.getSheetIds();
+
+                // Make sure stubs are available
+                if (book.getStubs().isEmpty()) {
+                    book.createStubs(sheetIds);
+                }
+
+                // Specific step to reach?
+                final Step targetStep = params.step;
+
+                if (targetStep != null) {
+                    logger.info(
+                            "Launching {} on {} {}",
+                            targetStep,
+                            path,
+                            (sheetIds != null) ? ("sheets " + sheetIds) : "");
+
+                    for (SheetStub stub : book.getValidStubs()) {
+                        if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
+                            stub.ensureStep(targetStep);
+                        }
+                    }
+                }
+
+                // Book print?
+                if (params.print || (params.printAs != null) || (params.printFolder != null)) {
+                    logger.debug("Print output");
+                    new PrintTask(params.printAs, params.printFolder).core(
+                            book.getFirstValidStub().getSheet());
+                }
+
+                // Book export?
+                if (params.export || (params.exportAs != null) || (params.exportFolder != null)) {
+                    logger.debug("Export output");
+                    new ExportTask(params.exportAs, params.exportFolder).core(
+                            book.getFirstValidStub().getSheet());
+                }
+
+                // Book save?
+                if (params.save || (params.saveAs != null) || (params.saveFolder != null)) {
+                    logger.debug("Save book");
+                    new SaveTask(params.saveAs, params.saveFolder).core(
+                            book.getFirstValidStub().getSheet());
+                }
+            } catch (ProcessingCancellationException pce) {
+                logger.warn("Cancelled " + book, pce);
+                throw pce;
+            } catch (Throwable ex) {
+                logger.warn("Exception occurred " + ex, ex);
+                throw ex;
+            } finally {
+                // Close (when in batch mode only)
+                if (OMR.getGui() == null) {
+                    book.close();
+                }
+            }
+        }
+    }
+
+    //-----------//
+    // InputTask //
+    //-----------//
+    /**
+     * CLI task to process an input (image) file.
+     */
+    private class InputTask
+            extends ProcessingTask
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public InputTask (Path path)
+        {
+            super(path);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            return "Input " + path;
+        }
+
+        @Override
+        protected Book loadBook (Path path)
+        {
+            return OMR.getEngine().loadInput(path);
+        }
+    }
+
+    //-------------//
+    // ProjectTask //
+    //-------------//
+    /**
+     * CLI task to process a project file.
+     */
+    private class ProjectTask
+            extends ProcessingTask
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public ProjectTask (Path path)
+        {
+            super(path);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            return "Project " + path;
+        }
+
+        @Override
+        protected Book loadBook (Path path)
+        {
+            return OMR.getEngine().loadProject(path);
+        }
+    }
 }
+//
+//        /** Should bench data be produced?. */
+//        @Option(name = "-bench", usage = "Outputs bench data")
+//        boolean bench;
+//
+//        /** Target directory for bench data. */
+//        @Option(name = "-benchDir", usage = "Outputs bench data to specific folder", metaVar = "<bench-folder>")
+//        File benchFolder;
+/*
+ *
+ * <dt><b>-bench</b></dt>
+ * <dd>Outputs bench data</dd>
+ *
+ * <dt><b>-benchDir DIR</b></dt>
+ * <dd>Outputs bench data to specific folder</dd>
+ */
+
+//    //----------------//
+//    // getBenchFolder //
+//    //----------------//
+//    /**
+//     * Report the bench folder if present on the CLI
+//     *
+//     * @return the CLI bench folder, or null
+//     */
+//    public Path getBenchFolder ()
+//    {
+//        if (params.benchFolder == null) {
+//            return null;
+//        }
+//
+//        return params.benchFolder.toPath();
+//    }
+//

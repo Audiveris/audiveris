@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import omr.sheet.SheetStub;
 
 /**
  * Class {@code DeltaStep} computes the delta value as a kind of recognition level on a
@@ -58,8 +59,8 @@ public class DeltaStep
         int count = 0;
         double globalRatio = 0;
 
-        for (Sheet sh : book.getSheets()) {
-            SheetDiff sheetDelta = new SheetDiff(sh);
+        for (SheetStub stub : book.getStubs()) {
+            SheetDiff sheetDelta = new SheetDiff(stub.getSheet());
             double ratio = sheetDelta.computeDiff();
             globalRatio += ratio;
             count++;

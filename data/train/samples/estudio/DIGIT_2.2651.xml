@@ -1,87 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph id="2651" interline="22" shape="DIGIT_2">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-16.159749991885427</pitch-position>
-    <section first-pos="954" orientation="VERTICAL" id="2505">
-        <run length="2" start="815"/>
-    </section>
-    <section first-pos="955" orientation="VERTICAL" id="2508">
-        <run length="6" start="796"/>
-    </section>
-    <section first-pos="955" orientation="VERTICAL" id="2509">
-        <run length="4" start="813"/>
-        <run length="5" start="812"/>
-        <run length="5" start="812"/>
-    </section>
-    <section first-pos="956" orientation="VERTICAL" id="2512">
-        <run length="8" start="795"/>
-        <run length="9" start="794"/>
-        <run length="10" start="793"/>
-    </section>
-    <section first-pos="958" orientation="VERTICAL" id="2515">
-        <run length="6" start="811"/>
-    </section>
-    <section first-pos="959" orientation="VERTICAL" id="2519">
-        <run length="3" start="793"/>
-    </section>
-    <section first-pos="959" orientation="VERTICAL" id="2520">
-        <run length="5" start="798"/>
-    </section>
-    <section first-pos="959" orientation="VERTICAL" id="2521">
-        <run length="9" start="809"/>
-        <run length="9" start="808"/>
-    </section>
-    <section first-pos="960" orientation="VERTICAL" id="2524">
-        <run length="2" start="793"/>
-        <run length="2" start="793"/>
-        <run length="2" start="793"/>
-    </section>
-    <section first-pos="961" orientation="VERTICAL" id="2528">
-        <run length="4" start="807"/>
-        <run length="5" start="806"/>
-        <run length="5" start="805"/>
-    </section>
-    <section first-pos="961" orientation="VERTICAL" id="2529">
-        <run length="4" start="813"/>
-        <run length="4" start="813"/>
-        <run length="4" start="813"/>
-        <run length="4" start="813"/>
-        <run length="4" start="813"/>
-        <run length="4" start="813"/>
-    </section>
-    <section first-pos="963" orientation="VERTICAL" id="2532">
-        <run length="3" start="793"/>
-        <run length="3" start="793"/>
-    </section>
-    <section first-pos="964" orientation="VERTICAL" id="2536">
-        <run length="6" start="803"/>
-    </section>
-    <section first-pos="965" orientation="VERTICAL" id="2542">
-        <run length="6" start="793"/>
-    </section>
-    <section first-pos="965" orientation="VERTICAL" id="2543">
-        <run length="8" start="800"/>
-    </section>
-    <section first-pos="966" orientation="VERTICAL" id="2547">
-        <run length="13" start="794"/>
-        <run length="12" start="794"/>
-        <run length="10" start="795"/>
-    </section>
-    <section first-pos="967" orientation="VERTICAL" id="2551">
-        <run length="6" start="812"/>
-    </section>
-    <section first-pos="968" orientation="VERTICAL" id="2554">
-        <run length="8" start="810"/>
-        <run length="7" start="810"/>
-    </section>
-    <section first-pos="969" orientation="VERTICAL" id="2557">
-        <run length="8" start="796"/>
-    </section>
-    <section first-pos="970" orientation="VERTICAL" id="2560">
-        <run length="4" start="798"/>
-    </section>
-    <section first-pos="970" orientation="VERTICAL" id="2561">
-        <run length="1" start="811"/>
-    </section>
-</glyph>
+<sample id="2651" interline="22" left="954" top="793" shape="DIGIT_2">
+    <run-table orientation="VERTICAL" width="17" height="25">
+        <sequences>
+            <item>0 22 2</item>
+            <item>0 3 6 11 4</item>
+            <item>0 2 8 9 5</item>
+            <item>0 1 9 9 5</item>
+            <item>10 8 6</item>
+            <item>3 2 5 6 9</item>
+            <item>2 13 9</item>
+            <item>2 12 4 2 4</item>
+            <item>2 11 5 2 4</item>
+            <item>3 9 5 3 4</item>
+            <item>3 7 6 4 4</item>
+            <item>6 1 8 5 4</item>
+            <item>0 1 13 6 4</item>
+            <item>0 1 12 6 6</item>
+            <item>0 2 10 5 8</item>
+            <item>0 3 8 6 7</item>
+            <item>0 5 4 9 1</item>
+        </sequences>
+    </run-table>
+</sample>

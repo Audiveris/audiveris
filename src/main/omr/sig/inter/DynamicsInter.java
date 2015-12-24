@@ -11,18 +11,21 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code DynamicsInter} represents a dynamics indication (such as mf).
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "dynamics")
 public class DynamicsInter
         extends AbstractInter
         implements StringSymbolInter
@@ -97,6 +100,13 @@ public class DynamicsInter
                           double grade)
     {
         super(glyph, null, shape, grade);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private DynamicsInter ()
+    {
     }
 
     //~ Methods ------------------------------------------------------------------------------------

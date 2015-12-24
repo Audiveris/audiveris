@@ -17,24 +17,32 @@ import static omr.glyph.Shape.*;
 import omr.sheet.Staff;
 import static omr.sig.inter.AbstractNoteInter.Step.*;
 
+import omr.util.Entities;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code KeyInter} represents a key signature on a staff.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "key")
 public class KeyInter
         extends AbstractInter
         implements InterEnsemble
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(KeyInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            KeyInter.class);
 
     /** Standard (in G clef) pitch positions for the members of the sharp keys. */
     private static final int[] sharpPitches = new int[]{
@@ -70,40 +78,43 @@ public class KeyInter
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sequence of key components. */
+    @XmlElement(name = "key-alter")
     private final List<KeyAlterInter> alters;
 
     /** Numerical value for signature. */
+    @XmlAttribute
     private final int fifths;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new KeyInter object.
      *
-     * @param box    the bounding box
+     * @param bounds the bounding bounds
      * @param grade  the interpretation quality
      * @param fifths signature value (negative for flats, positive for sharps)
      * @param alters sequence of alteration inters
      */
-    public KeyInter (Rectangle box,
+    public KeyInter (Rectangle bounds,
                      double grade,
                      int fifths,
                      List<KeyAlterInter> alters)
     {
-        super(null, box, null, grade);
+        super(null, bounds, null, grade);
         this.alters = alters;
         this.fifths = fifths;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private KeyInter ()
     {
-        visitor.visit(this);
+        super(null, null, null, null);
+        this.alters = null;
+        this.fifths = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getAlterFor //
     //-------------//
@@ -181,6 +192,15 @@ public class KeyInter
         return sum / k;
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
     //-------------//
     // getAlterFor //
     //-------------//
@@ -203,6 +223,30 @@ public class KeyInter
         return 0;
     }
 
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        if (bounds == null) {
+            bounds = Entities.getBounds(getMembers());
+        }
+
+        return bounds;
+    }
+
+    //-----------//
+    // getFifths //
+    //-----------//
+    /**
+     * @return the signature
+     */
+    public int getFifths ()
+    {
+        return fifths;
+    }
+
     //------------//
     // getMembers //
     //------------//
@@ -212,17 +256,6 @@ public class KeyInter
         return alters;
     }
 
-    //--------------//
-    // getFifths //
-    //--------------//
-    /**
-     * @return the signature
-     */
-    public int getFifths ()
-    {
-        return fifths;
-    }
-
     //-----------//
     // replicate //
     //-----------//
@@ -230,7 +263,7 @@ public class KeyInter
      * Replicate this key in a target staff.
      *
      * @param targetStaff the target staff
-     * @return the replicated key, whose box may need an update
+     * @return the replicated key, whose bounds may need an update
      */
     public KeyInter replicate (Staff targetStaff)
     {
@@ -247,6 +280,18 @@ public class KeyInter
     public String shapeString ()
     {
         return "KEY_SIG:" + fifths;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(" fifths:").append(fifths);
+
+        return sb.toString();
     }
 
     //-------------//

@@ -27,6 +27,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlValue;
 
 /**
  * Class {@code NeuralNetwork} implements a back-propagation neural
@@ -69,14 +70,12 @@ public class NeuralNetwork
     private final int outputSize;
 
     /** Labels of input cells. */
-    @XmlElementWrapper(name = "input-labels")
-    @XmlElement(name = "input")
-    private final String[] inputLabels;
+    @XmlElement(name = "input-labels")
+    private final StringArray inputLabels;
 
     /** Labels of output cells. */
-    @XmlElementWrapper(name = "output-labels")
-    @XmlElement(name = "output")
-    private final String[] outputLabels;
+    @XmlElement(name = "output-labels")
+    private final StringArray outputLabels;
 
     /** Weights to hidden layer. */
     @XmlElementWrapper(name = "hidden-weights")
@@ -136,7 +135,7 @@ public class NeuralNetwork
         outputWeights = createMatrix(outputSize, hiddenSize + 1, amplitude);
 
         // Labels for input, if any
-        this.inputLabels = inputLabels;
+        this.inputLabels = new StringArray(inputLabels);
 
         if ((inputLabels != null) && (inputLabels.length != inputSize)) {
             throw new IllegalArgumentException(
@@ -144,7 +143,7 @@ public class NeuralNetwork
         }
 
         // Labels for output, if any
-        this.outputLabels = outputLabels;
+        this.outputLabels = new StringArray(outputLabels);
 
         if ((outputLabels != null) && (outputLabels.length != outputSize)) {
             throw new IllegalArgumentException(
@@ -270,7 +269,7 @@ public class NeuralNetwork
      */
     public String[] getInputLabels ()
     {
-        return inputLabels;
+        return inputLabels.strings;
     }
 
     //--------------//
@@ -296,7 +295,7 @@ public class NeuralNetwork
      */
     public String[] getOutputLabels ()
     {
-        return outputLabels;
+        return outputLabels.strings;
     }
 
     //---------------//
@@ -886,5 +885,25 @@ public class NeuralNetwork
             this.hiddenWeights = cloneMatrix(hiddenWeights);
             this.outputWeights = cloneMatrix(outputWeights);
         }
+    }
+
+    //-------------//
+    // StringArray //
+    //-------------//
+    private static class StringArray
+    {
+
+        @XmlValue
+        String[] strings;
+
+        public StringArray ()
+        {
+        }
+
+        public StringArray (String[] strings)
+        {
+            this.strings = strings;
+        }
+
     }
 }

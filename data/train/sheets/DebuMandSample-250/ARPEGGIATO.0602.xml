@@ -1,109 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="ARPEGGIATO" interline="18" id="602">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>5.1891891891891895</pitch-position>
-    <section orientation="VERTICAL" first-pos="637" id="1196">
-        <run start="2102" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="637" id="1197">
-        <run start="2121" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="637" id="1198">
-        <run start="2140" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="637" id="1199">
-        <run start="2159" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="637" id="1200">
-        <run start="2178" length="3"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="638" id="1202">
-        <run start="2099" length="9"/>
-        <run start="2098" length="11"/>
-        <run start="2097" length="13"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="638" id="1203">
-        <run start="2118" length="9"/>
-        <run start="2117" length="10"/>
-        <run start="2115" length="12"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="638" id="1204">
-        <run start="2137" length="8"/>
-        <run start="2136" length="10"/>
-        <run start="2134" length="14"/>
-        <run start="2132" length="18"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="638" id="1205">
-        <run start="2156" length="8"/>
-        <run start="2155" length="10"/>
-        <run start="2153" length="14"/>
-        <run start="2151" length="18"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="638" id="1206">
-        <run start="2175" length="8"/>
-        <run start="2174" length="10"/>
-        <run start="2173" length="13"/>
-        <run start="2170" length="17"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="640" id="1207">
-        <run start="2128" length="1"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="641" id="1212">
-        <run start="2088" length="5"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="641" id="1213">
-        <run start="2094" length="18"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="641" id="1214">
-        <run start="2113" length="18"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="642" id="1215">
-        <run start="2088" length="19"/>
-        <run start="2089" length="18"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="642" id="1216">
-        <run start="2108" length="80"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="643" id="1218">
-        <run start="2108" length="18"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="643" id="1219">
-        <run start="2127" length="62"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="644" id="1220">
-        <run start="2091" length="13"/>
-        <run start="2092" length="11"/>
-        <run start="2094" length="7"/>
-        <run start="2095" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="644" id="1221">
-        <run start="2110" length="13"/>
-        <run start="2111" length="11"/>
-        <run start="2112" length="8"/>
-        <run start="2114" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="644" id="1222">
-        <run start="2129" length="13"/>
-        <run start="2130" length="11"/>
-        <run start="2131" length="8"/>
-        <run start="2133" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="644" id="1223">
-        <run start="2148" length="13"/>
-        <run start="2149" length="11"/>
-        <run start="2150" length="8"/>
-        <run start="2152" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="644" id="1224">
-        <run start="2167" length="13"/>
-        <run start="2168" length="11"/>
-        <run start="2169" length="8"/>
-        <run start="2171" length="4"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="644" id="1225">
-        <run start="2186" length="4"/>
-        <run start="2187" length="3"/>
-        <run start="2189" length="1"/>
-    </section>
-</glyph>
+<sample id="602" interline="18" left="637" top="2088" shape="ARPEGGIATO">
+    <run-table orientation="VERTICAL" width="11" height="102">
+        <sequences>
+            <item>0 14 3 16 3 16 3 16 3 16 3</item>
+            <item>0 11 9 10 9 10 8 11 8 11 8</item>
+            <item>0 10 11 8 10 9 10 9 10 9 10</item>
+            <item>0 9 13 5 12 1 1 5 14 5 14 6 13</item>
+            <item>5 1 18 1 18 1 18 1 18 1 17</item>
+            <item>19 1 80</item>
+            <item>0 1 18 1 18 1 62</item>
+            <item>0 3 13 6 13 6 13 6 13 6 13 6 4</item>
+            <item>0 4 11 8 11 8 11 8 11 8 11 8 3</item>
+            <item>0 6 7 11 8 11 8 11 8 11 8 12 1</item>
+            <item>0 7 4 15 4 15 4 15 4 15 4</item>
+        </sequences>
+    </run-table>
+</sample>

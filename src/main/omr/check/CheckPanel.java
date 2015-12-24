@@ -47,7 +47,7 @@ import javax.swing.KeyStroke;
  *
  * @author Hervé Bitteur
  */
-public class CheckPanel<C extends Checkable>
+public class CheckPanel<C>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -215,7 +215,7 @@ public class CheckPanel<C extends Checkable>
 
         final int checkNb = suite.getChecks().size();
         PanelBuilder b = new PanelBuilder(createLayout(checkNb), component);
-        b.setDefaultDialogBorder();
+        ///b.setDefaultDialogBorder();
 
         CellConstraints c = new CellConstraints();
 

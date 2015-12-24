@@ -23,20 +23,15 @@ import omr.score.Score;
 
 import omr.script.ScriptManager;
 
-import omr.util.NameSet;
-import omr.util.StopWatch;
+import omr.util.PathHistory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -95,45 +90,45 @@ import java.util.List;
  * <blockquote>
  * <pre>
  * Mozart_S40/
- * Mozart_S40/book-1/sheet#1.mxl
- * Mozart_S40/book-2/sheet#2.mxl
+ * Mozart_S40/book-1-sheet#1.mxl
+ * Mozart_S40/book-2-sheet#2.mxl
  * [...]
- * Mozart_S40/book-33/sheet#33.mvt1.mxl
- * Mozart_S40/book-33/sheet#33.mvt2.mxl
+ * Mozart_S40/book-33-sheet#33.mvt1.mxl
+ * Mozart_S40/book-33-sheet#33.mvt2.mxl
  * [...]
- * Mozart_S40/book-49/sheet#49.mxl
+ * Mozart_S40/book-49-sheet#49.mxl
  * </pre>
  * </blockquote>
  * Intermediate items, with book chunks of 5 sheets, could be structured as follows:
  * <blockquote>
  * <pre>
  * Mozart_S40/
- * Mozart_S40/book-1-5/sheet#1.mxl
- * Mozart_S40/book-1-5/sheet#2.mxl
- * Mozart_S40/book-1-5/sheet#3.mxl
- * Mozart_S40/book-1-5/sheet#4.mxl
- * Mozart_S40/book-1-5/sheet#5.mxl
+ * Mozart_S40/book-1-5-sheet#1.mxl
+ * Mozart_S40/book-1-5-sheet#2.mxl
+ * Mozart_S40/book-1-5-sheet#3.mxl
+ * Mozart_S40/book-1-5-sheet#4.mxl
+ * Mozart_S40/book-1-5-sheet#5.mxl
  *
- * Mozart_S40/book-6-10/sheet#6.mxl
- * Mozart_S40/book-6-10/sheet#7.mxl
+ * Mozart_S40/book-6-10-sheet#6.mxl
+ * Mozart_S40/book-6-10-sheet#7.mxl
  * [...]
- * Mozart_S40/book-26-30/sheet#30.mxl
+ * Mozart_S40/book-26-30-sheet#30.mxl
  *
- * Mozart_S40/book-31-35/sheet#31.mxl
- * Mozart_S40/book-31-35/sheet#32.mxl
- * Mozart_S40/book-31-35/sheet#33.mvt1.mxl
- * Mozart_S40/book-31-35/sheet#33.mvt2.mxl
- * Mozart_S40/book-31-35/sheet#34.mxl
- * Mozart_S40/book-31-35/sheet#35.mxl
+ * Mozart_S40/book-31-35-sheet#31.mxl
+ * Mozart_S40/book-31-35-sheet#32.mxl
+ * Mozart_S40/book-31-35-sheet#33.mvt1.mxl
+ * Mozart_S40/book-31-35-sheet#33.mvt2.mxl
+ * Mozart_S40/book-31-35-sheet#34.mxl
+ * Mozart_S40/book-31-35-sheet#35.mxl
  *
- * Mozart_S40/book-36-40/sheet#36.mxl
+ * Mozart_S40/book-36-40-sheet#36.mxl
  * [...]
- * Mozart_S40/book-41-45/sheet#45.mxl
+ * Mozart_S40/book-41-45-sheet#45.mxl
  *
- * Mozart_S40/book-46-49/sheet#46.mxl
- * Mozart_S40/book-46-49/sheet#47.mxl
- * Mozart_S40/book-46-49/sheet#48.mxl
- * Mozart_S40/book-46-49/sheet#49.mxl
+ * Mozart_S40/book-46-49-sheet#46.mxl
+ * Mozart_S40/book-46-49-sheet#47.mxl
+ * Mozart_S40/book-46-49-sheet#48.mxl
+ * Mozart_S40/book-46-49-sheet#49.mxl
  * </pre>
  * </blockquote>
  * <p>
@@ -158,8 +153,11 @@ public class BookManager
     /** All book instances. */
     final List<Book> books = new ArrayList<Book>();
 
-    /** Image file history. (filled only when images (books) are successfully loaded) */
-    private NameSet history;
+    /** Input file history. (filled only when images (books) are successfully loaded) */
+    private PathHistory inputHistory;
+
+    /** Project file history. (filled only when projects are successfully loaded or saved) */
+    private PathHistory projectHistory;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -170,22 +168,6 @@ public class BookManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // confirmed //
-    //-----------//
-    /**
-     * Check whether we have user confirmation to overwrite the target path.
-     * This is a no-op is there is no Gui or if target does not already exist.
-     *
-     * @param target the path to be checked
-     * @return false if explicitly not confirmed, true otherwise
-     */
-    public static boolean confirmed (Path target)
-    {
-        return ((OMR.getGui() == null) || !Files.exists(target))
-               || OMR.getGui().displayConfirmation("Overwrite " + target + "?");
-    }
-
     //-------------//
     // deletePaths //
     //-------------//
@@ -270,15 +252,6 @@ public class BookManager
         }
     }
 
-    //-------------//
-    // getAllBooks //
-    //-------------//
-    @Override
-    public List<Book> getAllBooks ()
-    {
-        return Collections.unmodifiableList(books);
-    }
-
     //------------------------//
     // getDefaultDewarpFolder //
     //------------------------//
@@ -305,31 +278,36 @@ public class BookManager
         return constants.defaultExportFolder.getValue();
     }
 
-    //----------------------//
-    // getDefaultExportPath //
-    //----------------------//
+    //-----------------------------//
+    // getDefaultExportPathSansExt //
+    //-----------------------------//
     /**
-     * Report the path to which the book would be written by default.
+     * Report the file path (without extension) to which the book should be written.
      *
      * @param book the book to export
-     * @return the default book path for export
+     * @return the default book path (without extension) for export
      */
-    public static Path getDefaultExportPath (Book book)
+    public static Path getDefaultExportPathSansExt (Book book)
     {
-        if (book.getExportPath() != null) {
-            return book.getExportPath();
+        if (book.getExportPathSansExt() != null) {
+            return book.getExportPathSansExt();
         }
 
-        Path mainPath = Main.getCli().getExportFolder();
+        // File?
+        final Path file = Main.getCli().getExportAs();
 
-        if (mainPath != null) {
-            if (Files.isDirectory(mainPath)) {
-                return mainPath.resolve(book.getRadix());
-            } else {
-                return mainPath;
-            }
+        if (file != null) {
+            return ExportPattern.getPathSansExt(file);
         }
 
+        // Folder?
+        final Path folder = Main.getCli().getExportFolder();
+
+        if (folder != null) {
+            return folder.resolve(book.getRadix());
+        }
+
+        // Default
         return Paths.get(getDefaultExportFolder(), book.getRadix());
     }
 
@@ -350,7 +328,7 @@ public class BookManager
     // getDefaultPrintPath //
     //---------------------//
     /**
-     * Report the path to which the book PDF data would be written by default.
+     * Report the file path to which the book should be printed.
      *
      * @param book the book to export
      * @return the default book path for print
@@ -361,17 +339,24 @@ public class BookManager
             return book.getPrintPath();
         }
 
-        final Path mainPath = Main.getCli().getPrintFolder();
+        // File?
+        final Path file = Main.getCli().getPrintAs();
 
-        if (mainPath != null) {
-            if (Files.isDirectory(mainPath)) {
-                return mainPath.resolve(book.getRadix());
-            } else {
-                return mainPath;
-            }
+        if (file != null) {
+            return file;
         }
 
-        return Paths.get(constants.defaultPrintFolder.getValue(), book.getRadix());
+        // Folder?
+        final Path folder = Main.getCli().getPrintFolder();
+
+        if (folder != null) {
+            return folder.resolve(book.getRadix() + OMR.PDF_EXTENSION);
+        }
+
+        // Default
+        return Paths.get(
+                constants.defaultPrintFolder.getValue(),
+                book.getRadix() + OMR.PDF_EXTENSION);
     }
 
     //-------------------------//
@@ -391,10 +376,10 @@ public class BookManager
     // getDefaultProjectPath //
     //-----------------------//
     /**
-     * Report the path to which the book project should be stored by default.
+     * Report the file path to which the book should be saved.
      *
      * @param book the book to store
-     * @return the default book path for export
+     * @return the default book path for save
      */
     public static Path getDefaultProjectPath (Book book)
     {
@@ -403,37 +388,44 @@ public class BookManager
             return book.getProjectPath();
         }
 
-        //
-        //        Path mainPath = Main.getCli().getProjectFolder();
-        //
-        //        if (mainPath != null) {
-        //            if (Files.isDirectory(mainPath)) {
-        //                return mainPath.resolve(book.getRadix());
-        //            } else {
-        //                return mainPath;
-        //            }
-        //        }
-        //
         // Define target based on global folder and book name
-        return Paths.get(getDefaultProjectFolder(), book.getRadix() + OMR.PROJECT_EXTENSION);
+        return Paths.get(getDefaultProjectFolder(), book.getRadix());
     }
 
     //--------------------//
     // getExportExtension //
     //--------------------//
     /**
-     * Report the extension to use for exported score, depending on the use (or not) of
-     * compression.
+     * Report the extension to use for book export, depending on the use (or not)
+     * of opus and of compression.
      *
      * @return the file extension to use.
      */
     public static String getExportExtension ()
     {
-        if (useCompression()) {
-            return OMR.COMPRESSED_SCORE_EXTENSION;
-        } else {
-            return OMR.SCORE_EXTENSION;
+        return useOpus() ? OMR.OPUS_EXTENSION
+                : (useCompression() ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION);
+    }
+
+    //-----------------//
+    // getInputHistory //
+    //-----------------//
+    /**
+     * Get access to the list of previous inputs.
+     *
+     * @return the history set of input files
+     */
+    public PathHistory getInputHistory ()
+    {
+        if (inputHistory == null) {
+            inputHistory = new PathHistory(
+                    "Input History",
+                    constants.inputHistory,
+                    constants.defaultInputFolder,
+                    constants.historySize.getValue());
         }
+
+        return inputHistory;
     }
 
     //-------------//
@@ -453,6 +445,36 @@ public class BookManager
         return INSTANCE;
     }
 
+    //-------------------//
+    // getProjectHistory //
+    //-------------------//
+    /**
+     * Get access to the list of previous projects.
+     *
+     * @return the history set of project files
+     */
+    public PathHistory getProjectHistory ()
+    {
+        if (projectHistory == null) {
+            projectHistory = new PathHistory(
+                    "Project History",
+                    constants.projectHistory,
+                    constants.defaultProjectFolder,
+                    constants.historySize.getValue());
+        }
+
+        return projectHistory;
+    }
+
+    //------------//
+    // initialize //
+    //------------//
+    @Override
+    public void initialize ()
+    {
+        // void
+    }
+
     //-------------//
     // isMultiBook //
     //-------------//
@@ -466,6 +488,63 @@ public class BookManager
         return getInstance().books.size() > 1;
     }
 
+    //-----------//
+    // loadInput //
+    //-----------//
+    @Override
+    public Book loadInput (Path path)
+    {
+        final Book book = new BasicBook(path);
+        addBook(book);
+
+        getInputHistory().add(path); // Insert in input history
+
+        return book;
+    }
+
+    //-------------//
+    // loadProject //
+    //-------------//
+    @Override
+    public Book loadProject (Path projectPath)
+    {
+        Book book = BasicBook.loadProject(projectPath);
+
+        if (book != null) {
+            addBook(book);
+
+            getProjectHistory().add(projectPath); // Insert in project history
+        }
+
+        return book;
+    }
+
+    //------------//
+    // loadScript //
+    //------------//
+    @Override
+    public Book loadScript (Path path)
+    {
+        return ScriptManager.getInstance().loadAndRun(path.toFile(), false);
+    }
+
+    //------------//
+    // removeBook //
+    //------------//
+    /**
+     * Remove the provided book from the collection of Book instances.
+     *
+     * @param book the book to remove
+     * @return true if actually removed
+     */
+    @Override
+    public synchronized boolean removeBook (Book book)
+    {
+        logger.debug("removeBook {}", book);
+
+        return books.remove(book);
+    }
+
     //------------------------//
     // setDefaultExportFolder //
     //------------------------//
@@ -475,24 +554,28 @@ public class BookManager
     }
 
     //-----------------------//
-    // setDefaultInputFolder //
-    //-----------------------//
-    /**
-     * Remember the folder where images should be found.
-     *
-     * @param value the latest image folder
-     */
-    public static void setDefaultInputFolder (String value)
-    {
-        constants.defaultInputFolder.setValue(value);
-    }
-
-    //-----------------------//
     // setDefaultPrintFolder //
     //-----------------------//
     public static void setDefaultPrintFolder (String value)
     {
         constants.defaultPrintFolder.setValue(value);
+    }
+
+    //-------------------------//
+    // setDefaultProjectFolder //
+    //-------------------------//
+    public static void setDefaultProjectFolder (String value)
+    {
+        constants.defaultProjectFolder.setValue(value);
+    }
+
+    //-----------//
+    // terminate //
+    //-----------//
+    @Override
+    public void terminate ()
+    {
+        // void
     }
 
     //----------------//
@@ -524,139 +607,13 @@ public class BookManager
         return constants.defaultSigned.isSet();
     }
 
-    //------------//
-    // getHistory //
-    //------------//
-    /**
-     * Get access to the list of previously handled images.
-     *
-     * @return the history set of image files
-     */
-    public NameSet getHistory ()
-    {
-        if (history == null) {
-            history = new NameSet(
-                    "Images History",
-                    constants.imagesHistory,
-                    constants.historySize.getValue());
-        }
-
-        return history;
-    }
-
-    //------------//
-    // initialize //
-    //------------//
-    @Override
-    public void initialize ()
-    {
-        // void
-    }
-
-    //-----------//
-    // loadInput //
-    //-----------//
-    @Override
-    public Book loadInput (Path path)
-    {
-        final Book book = new BasicBook(path);
-        addBook(book);
-
-        return book;
-    }
-
     //-------------//
-    // loadProject //
+    // getAllBooks //
     //-------------//
     @Override
-    public Book loadProject (Path projectPath)
+    public List<Book> getAllBooks ()
     {
-        try {
-            logger.info("Loading project {} ...", projectPath);
-
-            StopWatch watch = new StopWatch("loadProject " + projectPath);
-            watch.start("book");
-
-            // Open project file system
-            FileSystem fileSystem = FileSystems.newFileSystem(projectPath, null);
-
-            // Load book internals
-            Path bookPath = fileSystem.getPath(Book.BOOK_INTERNALS);
-            InputStream is = Files.newInputStream(bookPath, StandardOpenOption.READ);
-
-            Book book = BasicBook.unmarshal(is, projectPath, fileSystem);
-            is.close();
-
-            ///watch.print();
-//            // Debug: dump what we've got
-//            if (false) {
-//                Dumping dumper = new Dumping();
-//                dumper.dump(book);
-//
-//                for (Sheet sheet : book.getSheets()) {
-//                    dumper.dump(sheet, "Dump of sheet #" + sheet.getNumber(), 1);
-//
-//                    if (sheet.hasPicture()) {
-//                        Picture picture = sheet.getPicture();
-//                        dumper.dump(picture, 2);
-//                    }
-//
-//                    List<SystemInfo> systems = sheet.getSystems();
-//                    if (systems != null) {
-//                        for (SystemInfo system : systems) {
-//                            dumper.dump(system, 3);
-//                        }
-//                    }
-//                    break;
-//                }
-//            }
-//
-            if (book != null) {
-                addBook(book);
-                logger.info("{} loaded.", book);
-            }
-
-            return book;
-        } catch (Throwable ex) {
-            logger.warn("Error loading project " + projectPath + " " + ex, ex);
-
-            return null;
-        }
-    }
-
-    //------------//
-    // loadScript //
-    //------------//
-    @Override
-    public Book loadScript (Path path)
-    {
-        return ScriptManager.getInstance().loadAndRun(path.toFile(), false);
-    }
-
-    //------------//
-    // removeBook //
-    //------------//
-    /**
-     * Remove the provided book from the collection of Book instances.
-     *
-     * @param book the book to remove
-     * @return true if actually removed
-     */
-    @Override
-    public synchronized boolean removeBook (Book book)
-    {
-        logger.debug("removeBook {}", book);
-
-        return books.remove(book);
-    }
-
-    //-----------//
-    // terminate //
-    //-----------//
-    @Override
-    public void terminate ()
-    {
-        // void
+        return Collections.unmodifiableList(books);
     }
 
     //---------//
@@ -733,9 +690,13 @@ public class BookManager
                 true,
                 "Should we inject ProxyMusic signature in the exported scores?");
 
-        private final Constant.String imagesHistory = new Constant.String(
+        private final Constant.String inputHistory = new Constant.String(
                 "",
                 "History of books most recently loaded");
+
+        private final Constant.String projectHistory = new Constant.String(
+                "",
+                "History of projects most recently loaded or saved");
 
         private final Constant.Integer historySize = new Constant.Integer(
                 "count",

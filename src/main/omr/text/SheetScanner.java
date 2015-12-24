@@ -16,16 +16,17 @@ import omr.OMR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
+import omr.glyph.GlyphFactory;
 
 import omr.image.ImageUtil;
 import omr.image.ShapeDescriptor;
 import omr.image.Template;
 
-import omr.lag.JunctionAllPolicy;
-import omr.lag.Section;
-import omr.lag.SectionFactory;
 import static omr.run.Orientation.VERTICAL;
+
+import omr.run.RunTable;
+import omr.run.RunTableFactory;
 
 import omr.sheet.PageCleaner;
 import omr.sheet.Picture;
@@ -125,7 +126,7 @@ public class SheetScanner
             BufferedImage image = getCleanImage(); // This also sets buffer member
 
             // Proper text params
-            final LiveParam<String> textParam = sheet.getLanguageParam();
+            final LiveParam<String> textParam = sheet.getStub().getLanguageParam();
             final String language = textParam.getTarget();
             logger.debug("scanSheet lan:{} on {}", language, sheet);
             textParam.setActual(language);
@@ -287,9 +288,8 @@ public class SheetScanner
             buffer.threshold(127);
 
             // Build all glyphs out of buffer and erase those that intersect a staff core area
-            SectionFactory factory = new SectionFactory(VERTICAL, JunctionAllPolicy.INSTANCE);
-            List<Section> sections = factory.createSections(buffer, null);
-            List<Glyph> glyphs = sheet.getGlyphNest().retrieveGlyphs(sections, null, false);
+            RunTable table = new RunTableFactory(VERTICAL).createTable(buffer);
+            List<Glyph> glyphs = GlyphFactory.buildGlyphs(table, null);
             eraseBorderGlyphs(glyphs, cores);
         }
 
@@ -320,7 +320,7 @@ public class SheetScanner
          * <p>
          * (We also tried to remove too small glyphs, but this led to poor recognition by OCR)
          *
-         * @param glyphs all the glyphs in image
+         * @param glyphs all the glyph instances in image
          * @param cores  all staves cores
          */
         private void eraseBorderGlyphs (List<Glyph> glyphs,
@@ -343,9 +343,7 @@ public class SheetScanner
 
                 for (Area core : cores) {
                     if (core.intersects(glyphBox)) {
-                        for (Section section : glyph.getMembers()) {
-                            g.fill(section.getPolygon());
-                        }
+                        glyph.getRunTable().render(g, glyph.getTopLeft());
 
                         break;
                     }

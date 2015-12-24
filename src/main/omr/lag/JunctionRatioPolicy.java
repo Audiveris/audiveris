@@ -52,8 +52,7 @@ public class JunctionRatioPolicy
     }
 
     /**
-     * Creates a policy based on ratio of run length versus mean length
-     * of section runs.
+     * Creates a policy based on ratio of run length versus mean length of section runs.
      *
      * @param maxLengthRatio maximum difference ratio to continue the
      *                       current section
@@ -69,9 +68,8 @@ public class JunctionRatioPolicy
     // consistentRun //
     //---------------//
     /**
-     * Check whether the Run is consistent with the provided Section,
-     * according to this junction policy, based on run length and mean
-     * section run length.
+     * Check whether the Run is consistent with the provided Section, according to this
+     * junction policy, based on run length and mean section run length.
      *
      * @param run     the Run candidate
      * @param section the potentially hosting Section
@@ -84,7 +82,7 @@ public class JunctionRatioPolicy
         // Check is based on ratio of lengths
         final double ratio = (double) run.getLength() / section.getMeanRunLength();
 
-        return (ratio <= maxLengthRatio) && (ratio >= minLengthRatio);
+        return (minLengthRatio <= ratio) && (ratio <= maxLengthRatio);
     }
 
     //----------//
@@ -108,6 +106,6 @@ public class JunctionRatioPolicy
 
         private final Constant.Ratio maxLengthRatio = new Constant.Ratio(
                 1.25,
-                "Maximum ratio in length for a run to be combined with" + " an existing section");
+                "Maximum ratio in length for a run to be combined with an existing section");
     }
 }

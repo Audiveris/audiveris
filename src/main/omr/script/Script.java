@@ -14,7 +14,7 @@ package omr.script;
 import omr.OMR;
 
 import omr.sheet.Book;
-import omr.sheet.Sheet;
+import omr.sheet.SheetStub;
 
 import omr.step.ProcessingCancellationException;
 
@@ -59,14 +59,18 @@ public class Script
     private Book book;
 
     /** Full path to the Book image file. */
-    @XmlAttribute(name = "file")
-    private final String filePath;
+    @XmlAttribute(name = "input")
+    private final String inputPath;
+
+    /** Full path to the Book project file. */
+    @XmlAttribute(name = "project")
+    private final String projectPath;
 
     /** Sheet offset of the book WRT full work. */
     @XmlAttribute(name = "offset")
-    private int offset;
+    private Integer offset;
 
-    /** Collection of 1-based sheet ids explicitly included, if any. */
+    /** Collection of 1-based sheet IDs explicitly included, if any. */
     @XmlList
     @XmlElement(name = "sheets")
     private SortedSet<Integer> sheetIds;
@@ -77,11 +81,13 @@ public class Script
         @XmlElement(name = "barline", type = BarlineTask.class),
         @XmlElement(name = "delete", type = DeleteTask.class),
         @XmlElement(name = "export", type = ExportTask.class),
+        @XmlElement(name = "save", type = SaveTask.class),
         @XmlElement(name = "insert", type = InsertTask.class),
+        @XmlElement(name = "invalidate", type = InvalidateTask.class),
         @XmlElement(name = "parameters", type = ParametersTask.class),
         @XmlElement(name = "print", type = PrintTask.class),
         @XmlElement(name = "rational", type = RationalTask.class),
-        @XmlElement(name = "remove", type = RemoveTask.class),
+        @XmlElement(name = "reset", type = ResetTask.class),
         @XmlElement(name = "segment", type = SegmentTask.class),
         @XmlElement(name = "slur", type = SlurTask.class),
         @XmlElement(name = "book-step", type = BookStepTask.class),
@@ -103,21 +109,23 @@ public class Script
     {
         this.book = book;
 
-        filePath = book.getInputPath().toString();
+        inputPath = book.getInputPath().toString();
+        projectPath = book.getProjectPath().toString();
         offset = book.getOffset();
 
         // Store sheet ids
         sheetIds = new TreeSet<Integer>();
 
-        for (Sheet sheet : book.getSheets()) {
-            sheetIds.add(sheet.getNumber());
+        for (SheetStub stub : book.getStubs()) {
+            sheetIds.add(stub.getNumber());
         }
     }
 
-    /** No-arg constructor for JAXB. */
+    /** No-arg constructor meant for JAXB. */
     private Script ()
     {
-        filePath = null;
+        inputPath = null;
+        projectPath = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -171,7 +179,7 @@ public class Script
     /**
      * @return the offset
      */
-    public int getOffset ()
+    public Integer getOffset ()
     {
         return offset;
     }
@@ -202,40 +210,42 @@ public class Script
 
         // Make book concrete (with its sheets)
         if (book == null) {
-            if (filePath == null) {
+            if (inputPath != null) {
+                book = OMR.getEngine().loadInput(Paths.get(inputPath));
+                book.setOffset(offset);
+                book.createStubs(sheetIds); // This loads all specified sheets indices
+            } else if (projectPath != null) {
+                book = OMR.getEngine().loadProject(Paths.get(projectPath));
+            } else {
                 logger.warn("No book defined in script");
 
                 return;
             }
-
-            book = OMR.getEngine().loadInput(Paths.get(filePath));
-            book.setOffset(offset);
-            book.createSheets(sheetIds); // This loads all specified sheets indices
         }
 
         // Run the tasks in sequence
         try {
             for (ScriptTask task : tasks) {
-                final Sheet sheet;
+                final SheetStub stub;
 
                 if (task instanceof SheetTask) {
                     Integer sheetIndex = ((SheetTask) task).getSheetIndex();
-                    sheet = book.getSheet(sheetIndex);
+                    stub = book.getStub(sheetIndex);
 
-                    if (sheet == null) {
+                    if (stub == null) {
                         logger.warn("Script error. No sheet for index {}", sheetIndex);
 
                         continue;
                     }
                 } else {
-                    sheet = book.getSheets().get(0);
+                    stub = book.getFirstValidStub();
                 }
 
-                logger.debug("Running {} on {}", task, sheet);
+                logger.debug("Running {} on {}", task, stub);
 
                 try {
                     // Run the task synchronously (prolog/core/epilog)
-                    task.run(sheet);
+                    task.run(stub.getSheet());
                 } catch (ProcessingCancellationException pce) {
                     throw pce;
                 } catch (Exception ex) {
@@ -258,7 +268,7 @@ public class Script
     /**
      * @param offset the offset to set
      */
-    public void setOffset (int offset)
+    public void setOffset (Integer offset)
     {
         this.offset = offset;
     }
@@ -276,8 +286,10 @@ public class Script
             sb.append(" modified");
         }
 
-        if (filePath != null) {
-            sb.append(" ").append(filePath);
+        if (inputPath != null) {
+            sb.append(" ").append(inputPath);
+        } else if (projectPath != null) {
+            sb.append(" ").append(projectPath);
         } else if (book != null) {
             sb.append(" ").append(book.getRadix());
         }

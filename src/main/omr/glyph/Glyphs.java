@@ -11,20 +11,9 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.glyph.facets.BasicAlignment;
-import omr.glyph.facets.Glyph;
+import omr.image.Table;
 
-import omr.lag.BasicRoi;
-import omr.lag.Roi;
-import omr.lag.Section;
-
-import omr.math.Histogram;
-import omr.math.PointsCollector;
-
-import omr.run.Orientation;
-
-import omr.sheet.Scale;
-
+import omr.util.IdUtil;
 import omr.util.Predicate;
 
 import org.jgrapht.graph.SimpleGraph;
@@ -41,17 +30,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
- * Class {@code Glyphs} is a collection of static convenient methods,
- * providing features related to a collection of glyph instances.
+ * Class {@code Glyphs} gathers static methods operating on a collection of glyphs.
  *
  * @author Hervé Bitteur
  */
@@ -61,7 +46,98 @@ public abstract class Glyphs
 
     private static final Logger logger = LoggerFactory.getLogger(Glyphs.class);
 
+    /** To compare glyphs according to their id.
+     * This comparator, which requires that all handled glyphs have an ID, can be used for a set.
+     */
+    public static final Comparator<Glyph> byId = new Comparator<Glyph>()
+    {
+        @Override
+        public int compare (Glyph g1,
+                            Glyph g2)
+        {
+            return IdUtil.compare(g1.getId(), g2.getId());
+        }
+    };
+
+    /** To compare glyphs according to their left abscissa. */
+    public static final Comparator<Glyph> byAbscissa = new Comparator<Glyph>()
+    {
+        @Override
+        public int compare (Glyph g1,
+                            Glyph g2)
+        {
+            if (g1 == g2) {
+                return 0;
+            }
+
+            return Integer.compare(g1.getLeft(), g2.getLeft());
+        }
+    };
+
+    /** To compare glyphs according to their left abscissa (then top ordinate, then id).
+     * This comparator, which requires that all handled glyphs have an ID, can be used for a set.
+     */
+    public static final Comparator<Glyph> byFullAbscissa = new Comparator<Glyph>()
+    {
+        @Override
+        public int compare (Glyph g1,
+                            Glyph g2)
+        {
+            if (g1 == g2) {
+                return 0;
+            }
+
+            // Abscissa
+            int dx = g1.getLeft() - g2.getLeft();
+
+            if (dx != 0) {
+                return dx;
+            }
+
+            // Ordinate
+            int dy = g1.getTop() - g2.getTop();
+
+            if (dy != 0) {
+                return dy;
+            }
+
+            // Finally, use id ...
+            return IdUtil.compare(g1.getId(), g2.getId());
+        }
+    };
+
+    /** To compare glyphs according to their top ordinate. */
+    public static final Comparator<Glyph> byOrdinate = new Comparator<Glyph>()
+    {
+        @Override
+        public int compare (Glyph g1,
+                            Glyph g2)
+        {
+            if (g1 == g2) {
+                return 0;
+            }
+
+            return Integer.compare(g1.getTop(), g2.getTop());
+        }
+    };
+
+    /** To compare glyphs according to their decreasing bottom ordinate. */
+    public static final Comparator<Glyph> byReverseBottom = new Comparator<Glyph>()
+    {
+        @Override
+        public int compare (Glyph g1,
+                            Glyph g2)
+        {
+            if (g1 == g2) {
+                return 0;
+            }
+
+            return Integer.compare(g2.getTop() + g2.getHeight(), g1.getTop() + g1.getHeight());
+        }
+    };
+
     //~ Constructors -------------------------------------------------------------------------------
+    // Class is not meant to be instantiated.
     private Glyphs ()
     {
     }
@@ -82,7 +158,7 @@ public abstract class Glyphs
     {
         final int gapInt = (int) Math.ceil(maxGap);
         final List<Glyph> sortedGlyphs = new ArrayList<Glyph>(glyphs);
-        Collections.sort(sortedGlyphs, Glyph.byAbscissa);
+        Collections.sort(sortedGlyphs, byAbscissa);
 
         /** Graph of glyph instances, linked by their distance. */
         SimpleGraph<Glyph, GlyphLink> graph = new SimpleGraph<Glyph, GlyphLink>(GlyphLink.class);
@@ -128,26 +204,31 @@ public abstract class Glyphs
         return graph;
     }
 
-    //-----------------//
-    // byReverseLength //
-    //-----------------//
+    //-----------------------//
+    // containedActualGlyphs //
+    //-----------------------//
     /**
-     * For comparing glyph instances on decreasing length.
+     * Look up in a collection of weak glyph instances for <b>all</b> actual glyph
+     * instances contained in a provided rectangle.
      *
-     * @param orientation the desired orientation reference
-     * @return the comparator
+     * @param collection the collection of weak glyph instances to be browsed
+     * @param rect       the coordinates rectangle
+     * @return the actual glyph instances found, which may be an empty list
      */
-    public static Comparator<Glyph> byReverseLength (final Orientation orientation)
+    public static Set<Glyph> containedActualGlyphs (Collection<? extends WeakGlyph> collection,
+                                                    Rectangle rect)
     {
-        return new Comparator<Glyph>()
-        {
-            @Override
-            public int compare (Glyph s1,
-                                Glyph s2)
-            {
-                return s2.getLength(orientation) - s1.getLength(orientation);
+        Set<Glyph> set = new LinkedHashSet<Glyph>();
+
+        for (WeakGlyph weak : collection) {
+            final Glyph glyph = weak.get();
+
+            if ((glyph != null) && rect.contains(glyph.getBounds())) {
+                set.add(glyph);
             }
-        };
+        }
+
+        return set;
     }
 
     //-----------------//
@@ -204,7 +285,7 @@ public abstract class Glyphs
     // containingGlyph //
     //-----------------//
     /**
-     * Look up in a collection of glyph instances for the first glyph
+     * Look up in a collection of glyph instances for the <b>first</b> glyph
      * instance which contains the provided point.
      *
      * @param collection the collection of glyph instances to be browsed
@@ -215,13 +296,8 @@ public abstract class Glyphs
                                          Point point)
     {
         for (Glyph glyph : collection) {
-            if (glyph.getBounds().contains(point)) {
-                // Look more precisely
-                for (Section section : glyph.getMembers()) {
-                    if (section.getPolygon().contains(point)) {
-                        return glyph;
-                    }
-                }
+            if (glyph.contains(point)) {
+                return glyph;
             }
         }
 
@@ -245,13 +321,8 @@ public abstract class Glyphs
         Set<Glyph> set = new LinkedHashSet<Glyph>();
 
         for (Glyph glyph : collection) {
-            if (glyph.getBounds().contains(point)) {
-                // Look more precisely
-                for (Section section : glyph.getMembers()) {
-                    if (section.getPolygon().contains(point)) {
-                        set.add(glyph);
-                    }
-                }
+            if (glyph.contains(point)) {
+                set.add(glyph);
             }
         }
 
@@ -279,10 +350,10 @@ public abstract class Glyphs
     // containsId //
     //------------//
     public static boolean containsId (Collection<Glyph> glyphs,
-                                      int id)
+                                      String id)
     {
         for (Glyph glyph : glyphs) {
-            if (glyph.getId() == id) {
+            if (glyph.getId().equals(id)) {
                 return true;
             }
         }
@@ -294,8 +365,7 @@ public abstract class Glyphs
     // firstOf //
     //---------//
     /**
-     * Report the first glyph, if any, for which the provided predicate
-     * holds true.
+     * Report the first glyph, if any, for which the provided predicate holds true.
      *
      * @param glyphs    the glyph collection to check
      * @param predicate the glyph predicate
@@ -317,13 +387,12 @@ public abstract class Glyphs
     // getBounds //
     //-----------//
     /**
-     * Return the display bounding box of a collection of glyph
-     * instances.
+     * Return the bounding box of a collection of glyph instances.
      *
      * @param glyphs the provided collection of glyph instances
      * @return the bounding contour
      */
-    public static Rectangle getBounds (Collection<Glyph> glyphs)
+    public static Rectangle getBounds (Collection<? extends Glyph> glyphs)
     {
         Rectangle box = null;
 
@@ -338,162 +407,145 @@ public abstract class Glyphs
         return box;
     }
 
-    //--------------//
-    // getHistogram //
-    //--------------//
+    //-----//
+    // ids //
+    //-----//
     /**
-     * Get the pixel histogram for a collection of glyph instances,
-     * in the specified orientation.
+     * Build a string with just the IDs of the glyph collection,
+     * introduced by the provided label.
      *
-     * @param orientation specific orientation desired for the histogram
-     * @param glyphs      the provided collection of glyph instances
-     * @return the histogram of projected pixels
+     * @param label  the string that introduces the list of IDs
+     * @param glyphs the collection of glyph instances
+     * @return the string built
      */
-    public static Histogram<Integer> getHistogram (Orientation orientation,
-                                                   Collection<Glyph> glyphs)
+    public static String ids (String label,
+                              Collection<? extends Glyph> glyphs)
     {
-        Histogram<Integer> histo = new Histogram<Integer>();
-
-        if (!glyphs.isEmpty()) {
-            Rectangle box = Glyphs.getBounds(glyphs);
-            Roi roi = new BasicRoi(box);
-            histo = roi.getSectionHistogram(orientation, Glyphs.sectionsOf(glyphs));
+        if (glyphs == null) {
+            return "";
         }
 
-        return histo;
+        StringBuilder sb = new StringBuilder();
+        sb.append(label).append("[");
+
+        for (Glyph glyph : glyphs) {
+            sb.append("#").append(glyph.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
     }
 
-    //----------------//
-    // getThicknessAt //
-    //----------------//
+    //-----//
+    // ids //
+    //-----//
     /**
-     * Report the resulting thickness of the collection of sticks at
-     * the provided coordinate.
+     * Build a string with just the IDs of the glyph array, introduced
+     * by the provided label.
      *
-     * @param coord       the desired coordinate
-     * @param orientation the desired orientation reference
-     * @param glyphs      glyph instances contributing to the resulting
-     *                    thickness
-     * @return the thickness measured, expressed in number of pixels.
+     * @param label  the string that introduces the list of IDs
+     * @param glyphs the array of glyph instances
+     * @return the string built
      */
-    public static double getThicknessAt (double coord,
-                                         Orientation orientation,
-                                         Glyph... glyphs)
+    public static String ids (String label,
+                              Glyph... glyphs)
     {
-        return getThicknessAt(coord, orientation, null, glyphs);
+        return ids(label, Arrays.asList(glyphs));
     }
 
-    //----------------//
-    // getThicknessAt //
-    //----------------//
+    //-----//
+    // ids //
+    //-----//
     /**
-     * Report the resulting thickness of the collection of sticks at
-     * the provided coordinate.
+     * Build a string with just the IDs of the glyph collection,
+     * introduced by the label "glyphs".
      *
-     * @param coord       the desired coordinate
-     * @param orientation the desired orientation reference
-     * @param section     section contributing to the resulting thickness
-     * @param glyphs      glyph instances contributing to the resulting thickness
-     * @return the thickness measured, expressed in number of pixels.
+     * @param glyphs the collection of glyph instances
+     * @return the string built
      */
-    public static double getThicknessAt (double coord,
-                                         Orientation orientation,
-                                         Section section,
-                                         Glyph... glyphs)
+    public static String ids (Collection<? extends Glyph> glyphs)
     {
-        if (glyphs.length == 0) {
-            if (section == null) {
-                return 0;
-            } else {
-                return section.getMeanThickness(orientation);
-            }
-        }
-
-        // Retrieve global bounds
-        Rectangle absBox = null;
-
-        if (section != null) {
-            absBox = section.getBounds();
-        }
-
-        for (Glyph g : glyphs) {
-            if (absBox == null) {
-                absBox = g.getBounds();
-            } else {
-                absBox.add(g.getBounds());
-            }
-        }
-
-        Rectangle oBox = orientation.oriented(absBox);
-        int intCoord = (int) Math.floor(coord);
-
-        if ((intCoord < oBox.x) || (intCoord >= (oBox.x + oBox.width))) {
-            return 0;
-        }
-
-        // Use a large-enough collector
-        final Rectangle oRoi = new Rectangle(intCoord, oBox.y, 0, oBox.height);
-        final Scale scale = new Scale(glyphs[0].getInterline());
-        final int probeHalfWidth = scale.toPixels(BasicAlignment.getProbeWidth()) / 2;
-        oRoi.grow(probeHalfWidth, 0);
-
-        PointsCollector collector = new PointsCollector(orientation.absolute(oRoi));
-
-        // Collect sections contribution
-        for (Glyph g : glyphs) {
-            for (Section sct : g.getMembers()) {
-                sct.cumulate(collector);
-            }
-        }
-
-        // Contributing section, if any
-        if (section != null) {
-            section.cumulate(collector);
-        }
-
-        // Case of no pixels found
-        if (collector.getSize() == 0) {
-            return 0;
-        }
-
-        // Analyze range of Y values
-        int minVal = Integer.MAX_VALUE;
-        int maxVal = Integer.MIN_VALUE;
-        int[] vals = (orientation == Orientation.HORIZONTAL) ? collector.getYValues()
-                : collector.getXValues();
-
-        for (int i = 0, iBreak = collector.getSize(); i < iBreak; i++) {
-            int val = vals[i];
-            minVal = Math.min(minVal, val);
-            maxVal = Math.max(maxVal, val);
-        }
-
-        return maxVal - minVal + 1;
+        return ids("glyphs", glyphs);
     }
 
-    //----------//
-    // glyphsOf //
-    //----------//
+    //-----//
+    // ids //
+    //-----//
     /**
-     * Report the set of glyph instances that are pointed back by the
-     * provided collection of sections.
+     * Build a string with just the IDs of the glyph array, introduced
+     * by the label "glyphs".
      *
-     * @param sections the provided sections
-     * @return the set of active containing glyph instances
+     * @param glyphs the array of glyph instances
+     * @return the string built
      */
-    public static Set<Glyph> glyphsOf (Collection<Section> sections)
+    public static String ids (Glyph... glyphs)
     {
-        Set<Glyph> glyphs = new LinkedHashSet<Glyph>();
+        return ids("glyphs", glyphs);
+    }
 
-        for (Section section : sections) {
-            Glyph glyph = section.getGlyph();
+    //-----------//
+    // intersect //
+    //-----------//
+    /**
+     * Report whether the two provided glyphs intersect.
+     *
+     * @param one a glyph
+     * @param two another glyph
+     * @param fat true for touch detection
+     * @return true if overlap, false otherwise
+     */
+    public static boolean intersect (Glyph one,
+                                     Glyph two,
+                                     boolean fat)
+    {
+        // Very rough test
+        final Rectangle oneBox = one.getBounds();
+        final Rectangle twoBox = two.getBounds();
 
-            if (glyph != null) {
-                glyphs.add(glyph);
+        if (fat) {
+            oneBox.grow(1, 1);
+            twoBox.grow(1, 1);
+        }
+
+        Rectangle clip = twoBox.intersection(oneBox);
+
+        if (clip.isEmpty()) {
+            return false;
+        }
+
+        // More precise test
+        Table.UnsignedByte table = new Table.UnsignedByte(clip.width, clip.height);
+        one.fillTable(table, clip.getLocation(), fat);
+
+        return two.intersects(table, clip.getLocation());
+    }
+
+    //-------------------------//
+    // intersectedActualGlyphs //
+    //-------------------------//
+    /**
+     * Look up in a collection of weak glyph instances for <b>all</b> actual glyph
+     * instances intersected by a provided rectangle.
+     *
+     * @param collection the collection of weak glyph instances to be browsed
+     * @param rect       the coordinates rectangle
+     * @return the actual glyph instances found, which may be an empty list
+     */
+    public static Set<Glyph> intersectedActualGlyphs (Collection<? extends WeakGlyph> collection,
+                                                      Rectangle rect)
+    {
+        Set<Glyph> set = new LinkedHashSet<Glyph>();
+
+        for (WeakGlyph weak : collection) {
+            final Glyph glyph = weak.get();
+
+            if ((glyph != null) && rect.intersects(glyph.getBounds())) {
+                set.add(glyph);
             }
         }
 
-        return glyphs;
+        return set;
     }
 
     //-------------------//
@@ -576,8 +628,7 @@ public abstract class Glyphs
     // purge //
     //-------//
     /**
-     * Purge a collection of glyph instances of those which match the
-     * given predicate.
+     * Purge a collection of glyph instances of those which match the given predicate.
      *
      * @param glyphs    the glyph collection to purge
      * @param predicate the predicate to detect glyph instances to purge
@@ -596,166 +647,6 @@ public abstract class Glyphs
                 it.remove();
             }
         }
-    }
-
-    //------------//
-    // sectionsOf //
-    //------------//
-    /**
-     * Report the set of sections contained by the provided collection
-     * of glyph instances.
-     *
-     * @param glyphs the provided glyph instances
-     * @return the set of all member sections
-     */
-    public static Set<Section> sectionsOf (Collection<Glyph> glyphs)
-    {
-        Set<Section> sections = new TreeSet<Section>();
-
-        for (Glyph glyph : glyphs) {
-            sections.addAll(glyph.getMembers());
-        }
-
-        return sections;
-    }
-
-    //----------//
-    // shapesOf //
-    //----------//
-    /**
-     * Report the set of shapes that appear in at least one of the
-     * provided glyph instances.
-     *
-     * @param glyphs the provided collection of glyph instances
-     * @return the shapes assigned among these glyph instances
-     */
-    public static Set<Shape> shapesOf (Collection<Glyph> glyphs)
-    {
-        EnumSet<Shape> shapes = EnumSet.noneOf(Shape.class);
-
-        if (glyphs != null) {
-            for (Glyph glyph : glyphs) {
-                if (glyph.getShape() != null) {
-                    shapes.add(glyph.getShape());
-                }
-            }
-        }
-
-        return shapes;
-    }
-
-    //-----------//
-    // sortedSet //
-    //-----------//
-    /**
-     * Build a mutable set with the provided glyph instances.
-     *
-     * @param glyphs the provided glyph instances
-     * @return a mutable sorted set composed of these glyphs
-     */
-    public static SortedSet<Glyph> sortedSet (Glyph... glyphs)
-    {
-        SortedSet<Glyph> set = new TreeSet<Glyph>(Glyph.byAbscissa);
-
-        if (glyphs.length > 0) {
-            set.addAll(Arrays.asList(glyphs));
-        }
-
-        return set;
-    }
-
-    //-----------//
-    // sortedSet //
-    //-----------//
-    /**
-     * Build a mutable set with the provided glyph instances.
-     *
-     * @param glyphs the provided glyph instances
-     * @return a mutable sorted set composed of these glyph instances
-     */
-    public static SortedSet<Glyph> sortedSet (Collection<Glyph> glyphs)
-    {
-        SortedSet<Glyph> set = new TreeSet<Glyph>(Glyph.byAbscissa);
-        set.addAll(glyphs);
-
-        return set;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Build a string with just the ids of the glyph collection,
-     * introduced by the provided label.
-     *
-     * @param label  the string that introduces the list of IDs
-     * @param glyphs the collection of glyph instances
-     * @return the string built
-     */
-    public static String toString (String label,
-                                   Collection<? extends Glyph> glyphs)
-    {
-        if (glyphs == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(label).append("[");
-
-        for (Glyph glyph : glyphs) {
-            sb.append("#").append(glyph.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Build a string with just the ids of the glyph array, introduced
-     * by the provided label.
-     *
-     * @param label  the string that introduces the list of IDs
-     * @param glyphs the array of glyph instances
-     * @return the string built
-     */
-    public static String toString (String label,
-                                   Glyph... glyphs)
-    {
-        return toString(label, Arrays.asList(glyphs));
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Build a string with just the ids of the glyph collection,
-     * introduced by the label "glyphs".
-     *
-     * @param glyphs the collection of glyph instances
-     * @return the string built
-     */
-    public static String toString (Collection<? extends Glyph> glyphs)
-    {
-        return toString("glyphs", glyphs);
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Build a string with just the ids of the glyph array, introduced
-     * by the label "glyphs".
-     *
-     * @param glyphs the array of glyph instances
-     * @return the string built
-     */
-    public static String toString (Glyph... glyphs)
-    {
-        return toString("glyphs", glyphs);
     }
 
     //----------//
@@ -779,24 +670,58 @@ public abstract class Glyphs
 
         return total;
     }
-
-    //~ Inner Interfaces ---------------------------------------------------------------------------
-    //-------------//
-    // LinkAdapter //
-    //-------------//
-    /**
-     * Adapter used by buildLinks() method, to provide the maximum acceptable distance.
-     */
-    public static interface LinkAdapter
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        /**
-         * Report the maximum acceptable distance around the provided glyph.
-         *
-         * @param glyph the glyph at hand
-         * @return the maximum distance to create a link
-         */
-        double getAcceptableDistance (Glyph glyph);
-    }
 }
+//    //-------------//
+//    // LinkAdapter //
+//    //-------------//
+//    /**
+//     * Adapter used by buildLinks() method, to provide the maximum acceptable distance.
+//     */
+//    public static interface LinkAdapter
+//    {
+//        //~ Methods --------------------------------------------------------------------------------
+//
+//        /**
+//         * Report the maximum acceptable distance around the provided glyph.
+//         *
+//         * @param glyph the glyph at hand
+//         * @return the maximum distance to create a link
+//         */
+//        double getAcceptableDistance (Glyph glyph);
+//    }
+//
+//    //--------------//
+//    // asciiDrawing //
+//    //--------------//
+//    /**
+//     * Report a basic representation of the glyph, using ascii chars.
+//     *
+//     * @param glyph the glyph at hand
+//     * @return an ASCII representation
+//     */
+//    public static String asciiDrawing (Glyph glyph)
+//    {
+//        StringBuilder sb = new StringBuilder();
+//
+//        sb.append(String.format("%s%n", glyph));
+//
+//        // Determine the bounding box
+//        Rectangle box = glyph.getBounds();
+//
+//        if (box == null) {
+//            return sb.toString(); // Safer
+//        }
+//
+//        // Allocate the drawing table
+//        char[][] table = BasicSection.allocateTable(box);
+//
+//        // Register each section in turn
+//        for (Section section : glyph.getMembers()) {
+//            section.fillTable(table, box);
+//        }
+//
+//        // Draw the result
+//        sb.append(BasicSection.drawingOfTable(table, box));
+//
+//        return sb.toString();
+//    }

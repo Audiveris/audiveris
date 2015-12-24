@@ -1,8 +1,8 @@
-//------------------------------------------------------------------------------------------------//
-//                                                                                                //
-//                                        B a s i c B o o k                                       //
-//                                                                                                //
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//                                                                                                                    //
+//                                                  B a s i c B o o k                                                 //
+//                                                                                                                    //
+//--------------------------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
@@ -12,6 +12,9 @@
 package omr.sheet;
 
 import omr.OMR;
+
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
 
 import omr.image.FilterDescriptor;
 import omr.image.ImageLoading;
@@ -29,11 +32,9 @@ import omr.script.BookStepTask;
 import omr.script.ExportTask;
 import omr.script.PrintTask;
 import omr.script.Script;
-
+import static omr.sheet.Sheet.INTERNALS_RADIX;
 import omr.sheet.ui.BookBrowser;
-import omr.sheet.ui.SheetActions;
-import omr.sheet.ui.SheetTab;
-import omr.sheet.ui.SheetsController;
+import omr.sheet.ui.StubsController;
 
 import omr.step.ProcessingCancellationException;
 import omr.step.Step;
@@ -45,6 +46,7 @@ import omr.text.Language;
 
 import omr.util.FileUtil;
 import omr.util.Jaxb;
+import omr.util.Memory;
 import omr.util.OmrExecutors;
 import omr.util.Param;
 import omr.util.StopWatch;
@@ -52,9 +54,7 @@ import omr.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -64,7 +64,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,6 +76,7 @@ import java.util.concurrent.Future;
 import java.util.zip.ZipOutputStream;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -101,10 +101,12 @@ public class BasicBook
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(
             Book.class);
 
-    /** Un/marshaling context for use with JAXB. */
+    /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -117,64 +119,55 @@ public class BasicBook
     private final List<Book> subBooks;
 
     /** Input path of the related image(s) file, if any. */
-    @XmlAttribute(name = "image-path")
+    @XmlAttribute(name = "path")
     @XmlJavaTypeAdapter(Jaxb.PathAdapter.class)
-    private final Path imagePath;
+    private final Path path;
 
-    /** Sheet offset of image file with respect to full work. */
+    /** Sheet offset of image file with respect to full work, if any. */
     @XmlAttribute(name = "offset")
-    private int offset;
+    private Integer offset;
 
-    /** Sequence of sheets from image file. */
+    /** Sequence of all sheets stubs got from image file. */
     @XmlElement(name = "sheet")
-    private final List<Sheet> sheets = new ArrayList<Sheet>();
+    private final List<SheetStub> stubs = new ArrayList<SheetStub>();
 
     /** Logical scores for this book. */
-    ///@XmlElement(name = "scores")
+    @XmlElement(name = "score")
     private final List<Score> scores = new ArrayList<Score>();
 
     // Transient data
     //---------------
     //
-    /** Path (with .omr extension) where the project is kept. */
+    /** The related file radix (file name without extension). */
+    private String radix;
+
+    /** File path where the project is kept. */
     private Path projectPath;
 
-    /** Book (zipped) file system. */
-    private FileSystem fileSystem;
+    /** File path where the book is printed. */
+    private Path printPath;
 
-    /** Where all book internals are stored on disk. */
-    private volatile Path rootPath;
+    /** File path where the script is stored. */
+    private Path scriptPath;
+
+    /** The script of user actions on this book. */
+    private Script script;
+
+    /** File path (without extension) where the MusicXML output is stored. */
+    private Path exportPathSansExt;
+
+    /** Handling of binarization filter parameter. */
+    private final Param<FilterDescriptor> filterParam = new Param<FilterDescriptor>(
+            FilterDescriptor.defaultFilter);
+
+    /** Handling of dominant language(s) parameter. */
+    private final Param<String> languageParam = new Param<String>(Language.defaultSpecification);
 
     /** Browser on this book. */
     private BookBrowser bookBrowser;
 
     /** Flag to indicate this book is being closed. */
     private volatile boolean closing;
-
-    /** Abstract path (sans extension) where the MusicXML output is to be stored. */
-    private Path exportPath;
-
-    /** Handling of binarization filter parameter. */
-    private final Param<FilterDescriptor> filterParam = new Param<FilterDescriptor>(
-            FilterDescriptor.defaultFilter);
-
-    /** Dedicated image loader. */
-    private ImageLoading.Loader loader;
-
-    /** Where the book PDF data is to be stored. */
-    private Path printPath;
-
-    /** The related file radix (name w/o extension). */
-    private String radix;
-
-    /** The script of user actions on this book. */
-    private Script script;
-
-    /** Where the script is to be stored. */
-    private File scriptFile;
-
-    /** Handling of dominant language(s) parameter. */
-    private final Param<String> languageParam = new Param<String>(Language.defaultSpecification);
 
     /** Set if the book itself has been modified. */
     private boolean modified = false;
@@ -183,16 +176,16 @@ public class BasicBook
     /**
      * Create a Book with a path to an input images file.
      *
-     * @param imagePath the input image path (which may contain several images)
+     * @param path the input image path (which may contain several images)
      */
-    public BasicBook (Path imagePath)
+    public BasicBook (Path path)
     {
-        Objects.requireNonNull(imagePath, "Trying to create a Book with null imagePath");
+        Objects.requireNonNull(path, "Trying to create a Book with null path");
 
-        this.imagePath = imagePath;
+        this.path = path;
         subBooks = null;
 
-        initTransients(FileUtil.getNameSansExtension(imagePath), null, null);
+        initTransients(FileUtil.getNameSansExtension(path), null);
     }
 
     /**
@@ -206,10 +199,10 @@ public class BasicBook
     {
         Objects.requireNonNull(radix, "Trying to create a meta Book with null radix");
 
-        imagePath = null;
+        path = null;
         subBooks = new ArrayList<Book>();
 
-        initTransients(radix, null, null);
+        initTransients(radix, null);
     }
 
     /**
@@ -217,11 +210,30 @@ public class BasicBook
      */
     public BasicBook ()
     {
-        imagePath = null;
+        path = null;
         subBooks = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // closeFileSystem //
+    //-----------------//
+    /**
+     * Close the provided (project) file system.
+     *
+     * @param fileSystem the project file system
+     */
+    public static void closeFileSystem (FileSystem fileSystem)
+    {
+        try {
+            fileSystem.close();
+
+            logger.info("Project file system closed.");
+        } catch (Exception ex) {
+            logger.warn("Could not close project file system " + ex, ex);
+        }
+    }
+
     //-------------//
     // buildScores //
     //-------------//
@@ -231,20 +243,52 @@ public class BasicBook
         scores.clear();
 
         // Current score
-        Score score = null;
+        Score currentScore = null;
 
         // Group all sheets pages into scores
-        for (Sheet sheet : sheets) {
+        for (SheetStub stub : getValidStubs()) {
+            Sheet sheet = stub.getSheet();
+
             for (Page page : sheet.getPages()) {
                 if (page.isMovementStart()) {
-                    scores.add(score = new Score());
-                } else if (score == null) {
-                    scores.add(score = new Score());
+                    scores.add(currentScore = new Score());
+                    currentScore.setBook(this);
+                    currentScore.setId(scores.size());
+                } else if (currentScore == null) {
+                    scores.add(currentScore = new Score());
+                    currentScore.setBook(this);
+                    currentScore.setId(scores.size());
                 }
 
-                score.addPage(page);
+                currentScore.addPage(page);
             }
         }
+
+        for (Score score : scores) {
+            // Merges pages into their containing movement score (connecting the parts across pages)
+            // TODO: this may need the addition of dummy parts in some pages
+            new ScoreReduction(score).reduce();
+
+            for (Page page : score.getPages()) {
+                //                // - Retrieve the actual duration of every measure
+                //                page.accept(new DurationRetriever());
+                //
+                //                // - Check all voices timing, assign forward items if needed.
+                //                // - Detect special measures and assign proper measure ids
+                //                // If needed, we can trigger a reprocessing of this page
+                //                page.accept(new MeasureFixer());
+                //
+                // Check whether time signatures are consistent accross all pages in score
+                // TODO: to be implemented
+                //
+                // Connect slurs across pages
+                page.getFirstSystem().connectPageInitialSlurs(score);
+            }
+        }
+
+        setModified(true);
+
+        logger.info("Scores built: {}", scores.size());
     }
 
     //-------//
@@ -255,18 +299,23 @@ public class BasicBook
     {
         setClosing(true);
 
-        // Close the book file system
-        if (fileSystem != null) {
-            try {
-                fileSystem.close();
-            } catch (IOException ex) {
-                logger.warn("Error closing file system of " + this, ex);
-            }
-        }
-
-        // Close contained sheets (and pages)
-        for (Sheet sheet : new ArrayList<Sheet>(sheets)) {
-            sheet.close(true);
+        // Close contained stubs/sheets
+        if (OMR.getGui() != null) {
+            SwingUtilities.invokeLater(
+                    new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    for (SheetStub stub : new ArrayList<SheetStub>(stubs)) {
+                        // Close stub UI, if any
+                        if (stub.getAssembly() != null) {
+                            StubsController.getInstance().deleteAssembly(stub);
+                            stub.getAssembly().close();
+                        }
+                    }
+                }
+            });
         }
 
         // Close browser if any
@@ -276,68 +325,65 @@ public class BasicBook
 
         // Remove from OMR instances
         OMR.getEngine().removeBook(this);
+
+        // Time for some cleanup...
+        Memory.gc();
+
         logger.info("{} closed.", this);
     }
 
-    //--------------//
-    // createSheets //
-    //--------------//
+    //-------------//
+    // createStubs //
+    //-------------//
     @Override
-    public void createSheets (SortedSet<Integer> sheetNumbers)
+    public void createStubs (SortedSet<Integer> sheetNumbers)
     {
-        StopWatch watch = new StopWatch("createSheets");
-        watch.start("getLoader");
-        loader = ImageLoading.getLoader(imagePath);
+        ImageLoading.Loader loader = ImageLoading.getLoader(path);
 
         if (loader != null) {
-            Sheet firstSheet = null;
+            final int imageCount = loader.getImageCount();
+            loader.dispose();
 
             if (sheetNumbers == null) {
                 sheetNumbers = new TreeSet<Integer>();
             }
 
             if (sheetNumbers.isEmpty()) {
-                for (int i = 1; i <= loader.getImageCount(); i++) {
+                for (int i = 1; i <= imageCount; i++) {
                     sheetNumbers.add(i);
                 }
             }
 
             for (int num : sheetNumbers) {
-                Sheet sheet = null;
-
-                try {
-                    watch.start("sheet#" + num);
-                    sheet = new BasicSheet(this, num, null);
-                    sheets.add(sheet);
-
-                    if (firstSheet == null) {
-                        firstSheet = sheet;
-
-                        // Let the UI focus on first sheet
-                        if (OMR.getGui() != null) {
-                            SheetsController.getInstance().showAssembly(firstSheet);
-                        }
-                    }
-                } catch (StepException ex) {
-                    // Remove sheet from book, if already included
-                    if ((sheet != null) && sheets.remove(sheet)) {
-                        logger.info("Sheet #{} removed", num);
-                    }
-                }
+                stubs.add(new BasicStub(this, num));
             }
-
-            // Remember (even across runs) the parent directory
-            BookManager.setDefaultInputFolder(imagePath.getParent().toString());
-
-            // Insert in sheet history
-            BookManager.getInstance().getHistory().add(getInputPath().toString());
 
             if (OMR.getGui() != null) {
-                SheetActions.HistoryMenu.getInstance().setEnabled(true);
+                SwingUtilities.invokeLater(
+                        new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        final StubsController controller = StubsController.getInstance();
+
+                        // Allocate one tab per stub
+                        for (SheetStub stub : stubs) {
+                            controller.addAssembly(stub.getAssembly());
+                        }
+
+                        controller.adjustDisplayedStubs(BasicBook.this);
+
+                        // Focus on first valid stub, if any
+                        SheetStub validStub = getFirstValidStub();
+
+                        if (validStub != null) {
+                            controller.showAssembly(validStub);
+                        }
+                    }
+                });
             }
         }
-
-        watch.print();
     }
 
     //--------------//
@@ -347,19 +393,18 @@ public class BasicBook
     public void deleteExport ()
     {
         // Determine the output path for the provided book: path/to/scores/Book
-        Path bookPath = BookManager.getActualPath(
-                getExportPath(),
-                BookManager.getDefaultExportPath(this));
+        Path bookPathSansExt = BookManager.getActualPath(
+                getExportPathSansExt(),
+                BookManager.getDefaultExportPathSansExt(this));
 
         // One-sheet book: <bookname>.mxl
         // One-sheet book: <bookname>.mvt<M>.mxl
         // One-sheet book: <bookname>/... (perhaps some day: 1 directory per book)
         //
-        // Multi-sheet book: <bookname>/sheet#<N>.mxl
-        // Multi-sheet book: <bookname>/sheet#<N>.mvt<M>.mxl
-        // Multi-sheet book: <bookname>/sheet#<N>/... (perhaps some day: 1 directory per sheet)
-        final Path folder = isMultiSheet() ? bookPath : bookPath.getParent();
-        final Path bookName = bookPath.getFileName(); // bookname
+        // Multi-sheet book: <bookname>-sheet#<N>.mxl
+        // Multi-sheet book: <bookname>-sheet#<N>.mvt<M>.mxl
+        final Path folder = isMultiSheet() ? bookPathSansExt : bookPathSansExt.getParent();
+        final Path bookName = bookPathSansExt.getFileName(); // bookname
 
         final String dirGlob = "glob:**/" + bookName + "{/**,}";
         final String filGlob = "glob:**/" + bookName + "{/**,.*}";
@@ -372,6 +417,24 @@ public class BasicBook
         }
     }
 
+    //------------------//
+    // displayAllSheets //
+    //------------------//
+    @Override
+    public void displayAllSheets ()
+    {
+        SwingUtilities.invokeLater(
+                new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                final StubsController controller = StubsController.getInstance();
+                controller.displayAllStubs(BasicBook.this);
+            }
+        });
+    }
+
     //--------//
     // doStep //
     //--------//
@@ -382,10 +445,10 @@ public class BasicBook
         logger.debug("doStep {} on {}", target, this);
 
         try {
-            if (getSheets().isEmpty()) {
-                // Create book sheets if not yet done
+            if (stubs.isEmpty()) {
+                // Create book stubs if not yet done
                 // This will usually trigger the early step on first sheet in synchronous mode
-                createSheets(sheetIds);
+                createStubs(sheetIds);
             }
 
             if (target == null) {
@@ -395,8 +458,8 @@ public class BasicBook
             // Find the least advanced step performed across all book sheets
             Step least = Step.last();
 
-            for (Sheet sheet : getSheets()) {
-                Step latest = sheet.getLatestStep();
+            for (SheetStub stub : getStubs()) {
+                Step latest = stub.getLatestStep();
 
                 if (latest == null) {
                     // This sheet has not been processed at all
@@ -429,20 +492,20 @@ public class BasicBook
                         // Process all sheets in parallel
                         List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
-                        for (final Sheet sheet : new ArrayList<Sheet>(getSheets())) {
-                            if (!sheet.isDone(target)) {
+                        for (final SheetStub stub : new ArrayList<SheetStub>(stubs)) {
+                            if (!stub.isDone(target)) {
                                 tasks.add(
                                         new Callable<Void>()
-                                        {
-                                            @Override
-                                            public Void call ()
+                                {
+                                    @Override
+                                    public Void call ()
                                             throws StepException
-                                            {
-                                                sheet.doStep(target, null);
+                                    {
+                                        stub.getSheet().doStep(target, null);
 
-                                                return null;
-                                            }
-                                        });
+                                        return null;
+                                    }
+                                });
                             }
                         }
 
@@ -466,9 +529,9 @@ public class BasicBook
                         }
                     } else {
                         // Process one sheet after the other
-                        for (Sheet sheet : new ArrayList<Sheet>(getSheets())) {
-                            if (!sheet.isDone(target)) {
-                                if (!sheet.doStep(target, null)) {
+                        for (SheetStub stub : new ArrayList<SheetStub>(stubs)) {
+                            if (!stub.isDone(target)) {
+                                if (!stub.getSheet().doStep(target, null)) {
                                     failure = true;
                                 }
                             }
@@ -478,7 +541,7 @@ public class BasicBook
                     return !failure;
                 } else {
                     // Process the single sheet
-                    return getSheets().get(0).doStep(target, null);
+                    return stubs.get(0).getSheet().doStep(target, null);
                 }
             } finally {
                 notifyStop();
@@ -504,76 +567,49 @@ public class BasicBook
     @Override
     public void export ()
     {
-        // Make sure all sheets have been transcribed
-        for (Sheet sheet : getSheets()) {
-            sheet.ensureStep(Step.PAGE);
-        }
-
-        // Group book pages into scores
-        buildScores();
-
-        for (Score score : scores) {
-            // Merges pages into their containing movement score (connecting the parts across pages)
-            // TODO: this may need the addition of dummy parts in some pages
-            new ScoreReduction(score).reduce();
-
-            for (Page page : score.getPages()) {
-                //                // - Retrieve the actual duration of every measure
-                //                page.accept(new DurationRetriever());
-                //
-                //                // - Check all voices timing, assign forward items if needed.
-                //                // - Detect special measures and assign proper measure ids
-                //                // If needed, we can trigger a reprocessing of this page
-                //                page.accept(new MeasureFixer());
-                //
-                // Check whether time signatures are consistent accross all pages in score
-                // TODO: to be implemented
-                //
-                // Connect slurs across pages
-                page.getFirstSystem().connectPageInitialSlurs(score);
-            }
-        }
-
         // path/to/scores/Book
-        Path bookPath = BookManager.getActualPath(
-                getExportPath(),
-                BookManager.getDefaultExportPath(this));
+        Path bookPathSansExt = BookManager.getActualPath(
+                getExportPathSansExt(),
+                BookManager.getDefaultExportPathSansExt(this));
 
         final boolean compressed = BookManager.useCompression();
         final String ext = compressed ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION;
         final boolean sig = BookManager.useSignature();
 
         // Export each movement score
-        String bookName = bookPath.getFileName().toString();
+        String bookName = bookPathSansExt.getFileName().toString();
         final boolean multiMovements = scores.size() > 1;
 
         if (BookManager.useOpus()) {
-            // Export the book as one opus
-            final Path opusPath = bookPath.resolveSibling(bookName + OMR.OPUS_EXTENSION);
+            // Export the book as one opus file
+            final Path opusPath = bookPathSansExt.resolveSibling(bookName + OMR.OPUS_EXTENSION);
 
             try {
-                if (!BookManager.confirmed(opusPath)) {
-                    return;
-                }
-
+                makeReadyForExport();
                 new OpusExporter(this).export(opusPath, bookName, sig);
-                BookManager.setDefaultExportFolder(bookPath.getParent().toString());
+                BookManager.setDefaultExportFolder(bookPathSansExt.getParent().toString());
             } catch (Exception ex) {
                 logger.warn("Could not export opus " + opusPath, ex);
             }
         } else {
+            // Check all target file(s) can be (over)written
             for (Score score : scores) {
                 final String scoreName = (!multiMovements) ? bookName
                         : (bookName + OMR.MOVEMENT_EXTENSION + score.getId());
-                final Path scorePath = bookPath.resolveSibling(scoreName + ext);
+                final Path scorePath = bookPathSansExt.resolveSibling(scoreName + ext);
+            }
+
+            // Do export the book as one or several movement files
+            makeReadyForExport();
+
+            for (Score score : scores) {
+                final String scoreName = (!multiMovements) ? bookName
+                        : (bookName + OMR.MOVEMENT_EXTENSION + score.getId());
+                final Path scorePath = bookPathSansExt.resolveSibling(scoreName + ext);
 
                 try {
-                    if (!BookManager.confirmed(scorePath)) {
-                        return;
-                    }
-
                     new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
-                    BookManager.setDefaultExportFolder(bookPath.getParent().toString());
+                    BookManager.setDefaultExportFolder(bookPathSansExt.getParent().toString());
                 } catch (Exception ex) {
                     logger.warn("Could not export score " + scoreName, ex);
                 }
@@ -581,7 +617,7 @@ public class BasicBook
         }
 
         // Save task into book script
-        getScript().addTask(new ExportTask(bookPath.getParent().toFile()));
+        getScript().addTask(new ExportTask(bookPathSansExt.toFile(), null));
     }
 
     //-----------------//
@@ -598,41 +634,13 @@ public class BasicBook
         return bookBrowser.getFrame();
     }
 
-    //
-    //    //----------------------//
-    //    // getDefaultExportPath //
-    //    //----------------------//
-    //    /**
-    //     * Report the path to which the book would be written by default.
-    //     *
-    //     * @return the default book path for export
-    //     */
-    //    public Path getDefaultExportPath ()
-    //    {
-    //        if (getExportPath() != null) {
-    //            return getExportPath();
-    //        }
-    //
-    //        Path mainPath = Main.getExportFolder();
-    //
-    //        if (mainPath != null) {
-    //            if (Files.isDirectory(mainPath)) {
-    //                return mainPath.resolve(getRadix());
-    //            } else {
-    //                return mainPath;
-    //            }
-    //        }
-    //
-    //        return Paths.get(BookManager.getDefaultExportFolder(), getRadix());
-    //    }
-    //
-    //---------------//
-    // getExportPath //
-    //---------------//
+    //----------------------//
+    // getExportPathSansExt //
+    //----------------------//
     @Override
-    public Path getExportPath ()
+    public Path getExportPathSansExt ()
     {
-        return exportPath;
+        return exportPathSansExt;
     }
 
     //----------------//
@@ -644,13 +652,28 @@ public class BasicBook
         return filterParam;
     }
 
+    //-------------------//
+    // getFirstValidStub //
+    //-------------------//
+    @Override
+    public SheetStub getFirstValidStub ()
+    {
+        for (SheetStub stub : stubs) {
+            if (stub.isValid()) {
+                return stub;
+            }
+        }
+
+        return null; // No valid stub found!
+    }
+
     //--------------//
     // getInputPath //
     //--------------//
     @Override
     public Path getInputPath ()
     {
-        return imagePath;
+        return path;
     }
 
     //------------------//
@@ -679,7 +702,7 @@ public class BasicBook
     // getOffset //
     //-----------//
     @Override
-    public int getOffset ()
+    public Integer getOffset ()
     {
         return offset;
     }
@@ -711,53 +734,6 @@ public class BasicBook
         return radix;
     }
 
-    //-------------//
-    // getRootPath //
-    //-------------//
-    @Override
-    public Path getRootPath ()
-    {
-        if (rootPath == null) {
-            if (fileSystem == null) {
-                if (projectPath == null) {
-                    throw new IllegalStateException("projectPath is null");
-                }
-
-                try {
-                    if (Files.exists(projectPath)) {
-                        logger.debug("Project {} found, to be deleted ", projectPath);
-                    } else {
-                        logger.debug("Project file not found, creating {}", projectPath);
-                    }
-
-                    Files.deleteIfExists(projectPath);
-                } catch (IOException ex) {
-                    logger.warn("Error deleting project: " + projectPath, ex);
-                }
-
-                try {
-                    // Make sure the containing folder exists
-                    Files.createDirectories(projectPath.getParent());
-
-                    ZipOutputStream zos = new ZipOutputStream(
-                            new FileOutputStream(projectPath.toFile()));
-                    zos.close();
-                    fileSystem = FileSystems.newFileSystem(projectPath, null);
-                } catch (FileNotFoundException ex) {
-                    logger.warn("File not found: " + projectPath, ex);
-                } catch (IOException ex) {
-                    logger.warn("Error creating project:" + projectPath, ex);
-                }
-            }
-
-            if (fileSystem != null) {
-                rootPath = fileSystem.getPath("/");
-            }
-        }
-
-        return rootPath;
-    }
-
     //-----------//
     // getScores //
     //-----------//
@@ -781,93 +757,70 @@ public class BasicBook
     }
 
     //---------------//
-    // getScriptFile //
+    // getScriptPath //
     //---------------//
     @Override
-    public File getScriptFile ()
+    public Path getScriptPath ()
     {
-        return scriptFile;
+        return scriptPath;
+    }
+
+    //---------//
+    // getStub //
+    //---------//
+    @Override
+    public SheetStub getStub (int sheetId)
+    {
+        return stubs.get(sheetId - 1);
     }
 
     //-----------//
-    // unmarshal //
+    // getStubs //
     //-----------//
-    /**
-     * Un-marshal the provided XML stream to allocate the corresponding book.
-     *
-     * @param in          the input stream that contains the book in XML format.
-     *                    The stream is not closed by this method
-     * @param projectPath path to book project
-     * @param fileSystem  file system for book project
-     *
-     * @return the allocated book.
-     * @exception JAXBException raised when un-marshaling goes wrong
-     */
-    public static Book unmarshal (InputStream in,
-                                  Path projectPath,
-                                  FileSystem fileSystem)
-            throws JAXBException
+    @Override
+    public List<SheetStub> getStubs ()
     {
-        StopWatch watch = new StopWatch("Book unmarshal");
+        return Collections.unmodifiableList(stubs);
+    }
 
-        Unmarshaller um = getJaxbContext().createUnmarshaller();
+    //---------------//
+    // getValidStubs //
+    //---------------//
+    @Override
+    public List<SheetStub> getValidStubs ()
+    {
+        List<SheetStub> valids = new ArrayList<SheetStub>();
 
-        BasicBook book = (BasicBook) um.unmarshal(in);
-
-        book.initTransients(null, projectPath, fileSystem);
-
-        for (Sheet sheet : book.sheets) {
-            watch.start("sheet#" + sheet.getNumber());
-
-            BasicSheet basicSheet = (BasicSheet) sheet;
-            basicSheet.initTransients(book);
-
-            if (sheet.hasPicture()) {
-                Picture picture = sheet.getPicture();
-                picture.initTransients(sheet);
-
-                if (OMR.getGui() != null) {
-                    if (picture.hasTable(Picture.TableKey.BINARY)) {
-                        basicSheet.createPictureView(SheetTab.BINARY_TAB);
-                        SheetsController.getInstance().markTab(sheet, Color.BLACK);
-                    } else {
-                        basicSheet.createPictureView(SheetTab.PICTURE_TAB);
-                    }
-                }
+        for (SheetStub stub : stubs) {
+            if (stub.isValid()) {
+                valids.add(stub);
             }
         }
 
-        ///watch.print();
-        logger.debug("Book unmarshalled");
-
-        return book;
+        return valids;
     }
 
-    //----------//
-    // getSheet //
-    //----------//
+    //-------------------//
+    // hideInvalidSheets //
+    //-------------------//
     @Override
-    public Sheet getSheet (int sheetId)
+    public void hideInvalidSheets ()
     {
-        return sheets.get(sheetId - 1);
-    }
+        SwingUtilities.invokeLater(
+                new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                final StubsController controller = StubsController.getInstance();
 
-    //-----------//
-    // getSheets //
-    //-----------//
-    @Override
-    public List<Sheet> getSheets ()
-    {
-        return Collections.unmodifiableList(sheets);
-    }
-
-    //---------------//
-    // hasFileSystem //
-    //---------------//
-    @Override
-    public boolean hasFileSystem ()
-    {
-        return fileSystem != null;
+                for (SheetStub stub : stubs) {
+                    if (!stub.isValid()) {
+                        controller.removeAssembly(stub);
+                    }
+                }
+            }
+        });
     }
 
     //-------------//
@@ -898,8 +851,8 @@ public class BasicBook
             return true; // The book itself is modified
         }
 
-        for (Sheet sheet : sheets) {
-            if (sheet.isModified()) {
+        for (SheetStub stub : stubs) {
+            if (stub.isModified()) {
                 return true; // This sheet is modified
             }
         }
@@ -913,8 +866,78 @@ public class BasicBook
     @Override
     public boolean isMultiSheet ()
     {
-        return sheets.size() > 1;
+        return stubs.size() > 1;
+    }
 
+    //-------------//
+    // loadProject //
+    //-------------//
+    /**
+     * Load a book out of a provided project file.
+     *
+     * @param projectPath path to the (zipped) project file
+     * @return the loaded book if successful
+     */
+    public static Book loadProject (Path projectPath)
+    {
+        try {
+            logger.info("Loading project {} ...", projectPath);
+
+            StopWatch watch = new StopWatch("loadProject " + projectPath);
+            watch.start("book");
+
+            // Open project file
+            Path rootPath = openProjectFile(projectPath);
+
+            // Load book internals (just the stubs)
+            Path bookPath = rootPath.resolve(Book.BOOK_INTERNALS);
+            InputStream is = Files.newInputStream(bookPath, StandardOpenOption.READ);
+
+            Unmarshaller um = getJaxbContext().createUnmarshaller();
+            final BasicBook book = (BasicBook) um.unmarshal(is);
+            book.initTransients(null, projectPath);
+            is.close();
+            rootPath.getFileSystem().close(); // Close project file
+
+            if (OMR.getGui() != null) {
+                SwingUtilities.invokeLater(
+                        new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        final StubsController controller = StubsController.getInstance();
+
+                        // Prepare stub assemblies
+                        for (SheetStub stub : book.getValidStubs()) {
+                            controller.addAssembly(stub.getAssembly());
+                        }
+
+                        controller.adjustDisplayedStubs(book);
+
+                        // Show first (valid) sheet, if any
+                        SheetStub firstValidStub = book.getFirstValidStub();
+
+                        if (firstValidStub != null) {
+                            if (firstValidStub != controller.getSelectedStub()) {
+                                firstValidStub.getSheet().displayMainTabs();
+                                StubsController.getInstance().showAssembly(firstValidStub);
+                            }
+                        } else {
+                            logger.info("No valid sheet in {}", book);
+                        }
+                    }
+                });
+            }
+
+            watch.print();
+
+            return book;
+        } catch (Exception ex) {
+            logger.warn("Error loading project " + projectPath + " " + ex, ex);
+
+            return null;
+        }
     }
 
     //----------------//
@@ -924,23 +947,16 @@ public class BasicBook
     public BufferedImage loadSheetImage (int id)
     {
         try {
+            final ImageLoading.Loader loader = ImageLoading.getLoader(path);
+
             if (loader == null) {
-                loader = ImageLoading.getLoader(imagePath);
-
-                if (loader == null) {
-                    logger.warn("Cannot find a loader for {}", imagePath);
-
-                    return null;
-                }
+                return null;
             }
 
             BufferedImage img = loader.getImage(id);
             logger.debug("{} loaded sheet#{} {}x{}", this, id, img.getWidth(), img.getHeight());
 
-            if (loader.allImagesLoaded()) {
-                loader.dispose();
-                logger.debug("{} all images loaded, loader disposed.", this);
-            }
+            loader.dispose();
 
             return img;
         } catch (IOException ex) {
@@ -950,50 +966,98 @@ public class BasicBook
         }
     }
 
+    //-----------------//
+    // openProjectFile //
+    //-----------------//
+    /**
+     * Open the project file (supposed to already exist at location provided by
+     * '{@code projectPath}' parameter) for reading or writing.
+     * <p>
+     * When IO operations are finished, the project file must be closed via
+     * {@link #closeFileSystem(java.nio.file.FileSystem)}
+     *
+     * @param projectPath project path name
+     * @return the root path of the (zipped) project file system
+     */
+    public static Path openProjectFile (Path projectPath)
+    {
+        if (projectPath == null) {
+            throw new IllegalStateException("projectPath is null");
+        }
+
+        try {
+            logger.debug("Project file system opened");
+
+            FileSystem fileSystem = FileSystems.newFileSystem(projectPath, null);
+
+            return fileSystem.getPath(fileSystem.getSeparator());
+        } catch (FileNotFoundException ex) {
+            logger.warn("File not found: " + projectPath, ex);
+        } catch (IOException ex) {
+            logger.warn("Error reading project:" + projectPath, ex);
+        }
+
+        return null;
+    }
+
+    //-----------------//
+    // openProjectFile //
+    //-----------------//
+    /**
+     * Open the project file (supposed to already exist at location provided by
+     * '{@code projectPath}' member) for reading or writing.
+     * <p>
+     * When IO operations are finished, the project file must be closed via
+     * {@link #closeFileSystem(java.nio.file.FileSystem)}
+     *
+     * @return the root path of the (zipped) project file system
+     */
+    public Path openProjectFile ()
+    {
+        return openProjectFile(projectPath);
+    }
+
+    //-----------------//
+    // openSheetFolder //
+    //-----------------//
+    @Override
+    public Path openSheetFolder (int number)
+    {
+        Path root = openProjectFile();
+
+        return root.resolve(INTERNALS_RADIX + number);
+    }
+
     //-------//
     // print //
     //-------//
     @Override
     public void print ()
     {
-        // Make sure all sheets have been transcribed
-        for (Sheet sheet : getSheets()) {
-            sheet.ensureStep(Step.PAGE);
-        }
-
-        // path/to/prints/Book
-        Path bookPath = BookManager.getActualPath(
+        // Path to print file
+        final Path pdfPath = BookManager.getActualPath(
                 getPrintPath(),
                 BookManager.getDefaultPrintPath(this));
 
-        final String rootName = bookPath.getFileName().toString();
-        final Path pdfPath = bookPath.resolveSibling(rootName + ".pdf");
-
-        // Actually write the PDF
         try {
-            // Prompt for overwrite?
-            if (!BookManager.confirmed(pdfPath)) {
-                return;
-            }
-
             new BookPdfOutput(this, pdfPath.toFile()).write(null);
             logger.info("Book printed to {}", pdfPath);
 
-            setPrintPath(bookPath);
-            BookManager.setDefaultPrintFolder(bookPath.getParent().toString());
-            getScript().addTask(new PrintTask(bookPath.getParent().toFile()));
+            setPrintPath(pdfPath);
+            BookManager.setDefaultPrintFolder(pdfPath.getParent().toString());
+            getScript().addTask(new PrintTask(pdfPath.toFile(), null));
         } catch (Exception ex) {
             logger.warn("Cannot write PDF to " + pdfPath, ex);
         }
     }
 
-    //-------------//
-    // removeSheet //
-    //-------------//
+    //------------//
+    // removeStub //
+    //------------//
     @Override
-    public boolean removeSheet (Sheet sheet)
+    public boolean removeStub (SheetStub stub)
     {
-        return sheets.remove(sheet);
+        return stubs.remove(stub);
     }
 
     //------------//
@@ -1005,13 +1069,13 @@ public class BasicBook
         this.closing = closing;
     }
 
-    //---------------//
-    // setExportPath //
-    //---------------//
+    //----------------------//
+    // setExportPathSansExt //
+    //----------------------//
     @Override
-    public void setExportPath (Path exportPath)
+    public void setExportPathSansExt (Path exportPathSansExt)
     {
-        this.exportPath = exportPath;
+        this.exportPathSansExt = exportPathSansExt;
     }
 
     //-------------//
@@ -1020,14 +1084,27 @@ public class BasicBook
     @Override
     public void setModified (boolean val)
     {
+        ///logger.info("{} setModified {}", this, val);
         this.modified = val;
+
+        if (OMR.getGui() != null) {
+            SwingUtilities.invokeLater(
+                    new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    StubsController.getInstance().refresh();
+                }
+            });
+        }
     }
 
     //-----------//
     // setOffset //
     //-----------//
     @Override
-    public void setOffset (int offset)
+    public void setOffset (Integer offset)
     {
         this.offset = offset;
 
@@ -1047,12 +1124,12 @@ public class BasicBook
     }
 
     //---------------//
-    // setScriptFile //
+    // setScriptPath //
     //---------------//
     @Override
-    public void setScriptFile (File scriptFile)
+    public void setScriptPath (Path scriptPath)
     {
-        this.scriptFile = scriptFile;
+        this.scriptPath = scriptPath;
     }
 
     //-------//
@@ -1061,78 +1138,98 @@ public class BasicBook
     @Override
     public void store (Path projectPath)
     {
-        // If the provided projectPath does not match book current projectPath, then we have to
-        // switch from old to new one.
-        if ((this.projectPath != null) && !this.projectPath.equals(projectPath)) {
-            logger.debug("Switching from {} to {}", this.projectPath, projectPath);
-
-            try {
-                if (fileSystem != null) {
-                    fileSystem.close();
-                    Files.copy(this.projectPath, projectPath, StandardCopyOption.REPLACE_EXISTING);
-                }
-
-                fileSystem = FileSystems.newFileSystem(projectPath, null);
-                rootPath = fileSystem.getPath("/");
-            } catch (IOException ex) {
-                logger.warn("Error switching to " + projectPath + " ex: " + ex, ex);
-
-                return;
-            }
-        }
-
-        // Are we changing the project name?
-        if (!BookManager.getDefaultProjectPath(this).equals(projectPath)) {
-            // Update book radix
-            radix = FileUtil.getNameSansExtension(projectPath);
-
-            if (OMR.getGui() != null) {
-                // Update UI first sheet tab
-                SheetsController.getInstance().updateFirstSheetTitle(this);
-            }
-        }
-
-        // Now store the project to the chosen target
-        this.projectPath = projectPath;
+        Memory.gc(); // Launch garbage collection, to save on weak glyph references ...
 
         try {
-            StopWatch watch = new StopWatch("store");
-            Path root = getRootPath();
+            final Path root;
+            checkRadixChange(projectPath);
 
-            {
-                // Book itself
-                watch.start("book");
-
-                Path bookPath = root.resolve(Book.BOOK_INTERNALS);
-                Files.deleteIfExists(bookPath);
-
-                OutputStream os = Files.newOutputStream(bookPath, StandardOpenOption.CREATE);
-                Marshaller m = getJaxbContext().createMarshaller();
-                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-                m.marshal(this, os);
-                os.close();
-                logger.info("Stored {}", bookPath);
-            }
-
-            // Contained sheets internals
-            for (Sheet sheet : sheets) {
-                if (sheet.isModified()) {
-                    watch.start(sheet.toString());
-                    sheet.store();
+            if ((this.projectPath == null)
+                || this.projectPath.toAbsolutePath().equals(projectPath.toAbsolutePath())) {
+                if (this.projectPath == null) {
+                    root = createProjectFile(projectPath);
+                } else {
+                    root = openProjectFile(projectPath);
                 }
+
+                storeBookXml(root); // Book itself (book.xml)
+
+                // Contained sheets
+                for (SheetStub stub : stubs) {
+                    if (stub.isModified()) {
+                        final Path sheetPath = root.resolve(INTERNALS_RADIX + stub.getNumber());
+                        stub.getSheet().store(sheetPath, null);
+                    }
+                }
+            } else {
+                // (Store as): Switch from old to new project file
+                root = createProjectFile(projectPath);
+
+                storeBookXml(root); // Book itself (book.xml)
+
+                // Contained sheets
+                final Path oldRoot = openProjectFile(this.projectPath);
+
+                for (SheetStub stub : stubs) {
+                    final Path oldSheetPath = oldRoot.resolve(INTERNALS_RADIX + stub.getNumber());
+                    final Path sheetPath = root.resolve(INTERNALS_RADIX + stub.getNumber());
+
+                    if (stub.isModified()) {
+                        stub.getSheet().store(sheetPath, oldSheetPath);
+                    } else if (Files.exists(oldSheetPath)) {
+                        FileUtil.copyTree(oldSheetPath, sheetPath);
+                    }
+                }
+
+                oldRoot.getFileSystem().close(); // Close old project file
             }
 
-            // Flag book & sheets as no longer modified
-            for (Sheet sheet : sheets) {
-                sheet.setModified(false);
-            }
+            root.getFileSystem().close();
+            this.projectPath = projectPath;
 
-            setModified(false);
+            BookManager.getInstance().getProjectHistory().add(projectPath); // Insert in history
+            BookManager.setDefaultProjectFolder(projectPath.getParent().toString());
 
-            watch.print();
-            logger.info("{} stored into {}", this, this.projectPath);
+            logger.info("{} stored into {}", this, projectPath);
         } catch (Throwable ex) {
-            logger.warn("Error storing " + this + " ex:" + ex, ex);
+            logger.warn("Error storing " + this + " to " + projectPath + " ex:" + ex, ex);
+        }
+    }
+
+    //-------//
+    // store //
+    //-------//
+    @Override
+    public void store ()
+    {
+        if (projectPath == null) {
+            logger.warn("Projectpath not defined");
+        } else {
+            store(projectPath);
+        }
+    }
+
+    //---------------//
+    // swapAllSheets //
+    //---------------//
+    @Override
+    public void swapAllSheets ()
+    {
+        if (isModified()) {
+            logger.info("{} storing", this);
+            store();
+        }
+
+        SheetStub currentStub = null;
+
+        if (OMR.getGui() != null) {
+            currentStub = StubsController.getCurrentStub();
+        }
+
+        for (SheetStub stub : stubs) {
+            if (stub != currentStub) {
+                stub.swapSheet();
+            }
         }
     }
 
@@ -1145,7 +1242,7 @@ public class BasicBook
         StringBuilder sb = new StringBuilder("Book{");
         sb.append(radix);
 
-        if (offset > 0) {
+        if ((offset != null) && (offset > 0)) {
             sb.append(" offset:").append(offset);
         }
 
@@ -1163,6 +1260,52 @@ public class BasicBook
         return doStep(Step.last(), sheetIds);
     }
 
+    //-------------------//
+    // createProjectFile //
+    //-------------------//
+    /**
+     * Create a new project file system dedicated to this book at the location provided
+     * by '{@code projectpath}' member.
+     * If such file already exists, it is deleted beforehand.
+     * <p>
+     * When IO operations are finished, the project file must be closed via
+     * {@link #closeFileSystem(java.nio.file.FileSystem)}
+     *
+     * @return the root path of the (zipped) project file system
+     */
+    private static Path createProjectFile (Path projectPath)
+    {
+        if (projectPath == null) {
+            throw new IllegalStateException("projectPath is null");
+        }
+
+        try {
+            if (Files.exists(projectPath)) {
+                logger.debug("Project {} found, to be deleted ", projectPath);
+            } else {
+                logger.debug("Project file not found, creating {}", projectPath);
+            }
+
+            Files.deleteIfExists(projectPath);
+        } catch (IOException ex) {
+            logger.warn("Error deleting project: " + projectPath, ex);
+        }
+
+        try {
+            // Make sure the containing folder exists
+            Files.createDirectories(projectPath.getParent());
+
+            //TODO: Is this write really mandatory to make it a zip file?
+            ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(projectPath.toFile()));
+            zos.close();
+        } catch (IOException ex) {
+            logger.warn("Error creating project:" + projectPath, ex);
+        }
+
+        // Finally open the project file just created
+        return openProjectFile(projectPath);
+    }
+
     //----------------//
     // getJaxbContext //
     //----------------//
@@ -1177,12 +1320,49 @@ public class BasicBook
         return jaxbContext;
     }
 
+    //------------------//
+    // checkRadixChange //
+    //------------------//
+    /**
+     * If the (new) project name does not match current one, update the book radix
+     * (and the title of first displayed sheet if any).
+     *
+     * @param projectPath new project target path
+     */
+    private void checkRadixChange (Path projectPath)
+    {
+        // Are we changing the target name WRT the default name?
+        final String newRadix = FileUtil.avoidExtensions(
+                projectPath.getFileName(),
+                OMR.PROJECT_EXTENSION).toString();
+
+        if (!newRadix.equals(radix)) {
+            // Update book radix
+            radix = newRadix;
+
+            // We are really changing the radix, so nullify all other paths
+            exportPathSansExt = printPath = scriptPath = null;
+
+            if (OMR.getGui() != null) {
+                // Update UI first sheet tab
+                SwingUtilities.invokeLater(
+                        new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        StubsController.getInstance().updateFirstSheetTitle(BasicBook.this);
+                    }
+                });
+            }
+        }
+    }
+
     //----------------//
     // initTransients //
     //----------------//
     private void initTransients (String radix,
-                                 Path projectPath,
-                                 FileSystem fileSystem)
+                                 Path projectPath)
     {
         if (radix != null) {
             this.radix = radix;
@@ -1195,10 +1375,47 @@ public class BasicBook
                 this.radix = FileUtil.getNameSansExtension(projectPath);
             }
         }
+    }
 
-        if (fileSystem != null) {
-            this.fileSystem = fileSystem;
+    //--------------------//
+    // makeReadyForExport //
+    //--------------------//
+    private void makeReadyForExport ()
+    {
+        // Make sure all sheets have been transcribed
+        for (SheetStub stub : getValidStubs()) {
+            stub.ensureStep(Step.PAGE);
         }
+
+        // Group book pages into scores, if not already done
+        if (scores.isEmpty()) {
+            buildScores();
+        }
+    }
+
+    //--------------//
+    // storeBookXml //
+    //--------------//
+    /**
+     * Store the book internals into book.xml file.
+     *
+     * @param root root pat of project file system
+     * @throws IOException
+     * @throws JAXBException
+     */
+    private void storeBookXml (Path root)
+            throws IOException, JAXBException
+    {
+        Path bookPath = root.resolve(Book.BOOK_INTERNALS);
+        Files.deleteIfExists(bookPath);
+
+        OutputStream os = Files.newOutputStream(bookPath, StandardOpenOption.CREATE);
+        Marshaller m = getJaxbContext().createMarshaller();
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        m.marshal(this, os);
+        os.close();
+        setModified(false);
+        logger.info("Stored {}", bookPath);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -1224,5 +1441,18 @@ public class BasicBook
         {
             return s;
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch for book operations?");
     }
 }

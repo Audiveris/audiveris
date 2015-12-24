@@ -15,7 +15,6 @@ import omr.OMR;
 import omr.WellKnowns;
 
 import omr.sheet.Book;
-import omr.sheet.Sheet;
 
 import omr.step.Step;
 
@@ -34,6 +33,7 @@ import java.util.List;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import omr.sheet.SheetStub;
 
 /**
  * Class {@code Plugin} describes a plugin instance, encapsulating the relationship
@@ -161,15 +161,15 @@ public class Plugin
     public Void runPlugin (Book book)
     {
         // Make sure all sheets have been transcribed
-        for (Sheet sheet : book.getSheets()) {
-            sheet.ensureStep(Step.PAGE);
+        for (SheetStub stub : book.getStubs()) {
+            stub.ensureStep(Step.PAGE);
         }
 
         // Make sure we have the export file
         ///TODO: Stepping.ensureBookStep(Steps.valueOf(Steps.EXPORT_BOOK), book);
-        final Path exportPath = book.getExportPath();
+        final Path exportPathSansExt = book.getExportPathSansExt();
 
-        if (exportPath == null) {
+        if (exportPathSansExt == null) {
             logger.warn("Could not get export path");
 
             return null;
@@ -179,12 +179,12 @@ public class Plugin
         List<String> args;
 
         try {
-            logger.debug("{} doInBackground on {}", Plugin.this, exportPath);
+            logger.debug("{} doInBackground on {}", Plugin.this, exportPathSansExt);
 
             Invocable inv = (Invocable) engine;
             Object obj = inv.invokeFunction(
                     "pluginCli",
-                    exportPath + OMR.COMPRESSED_SCORE_EXTENSION);
+                    exportPathSansExt + OMR.COMPRESSED_SCORE_EXTENSION);
 
             if (obj instanceof List) {
                 args = (List<String>) obj; // Unchecked by compiler

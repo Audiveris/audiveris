@@ -35,19 +35,9 @@ public abstract class DynamicMenu
     /** The concrete UI menu. */
     private JMenu menu;
 
-    /** Specific menu listener */
-    private MenuListener listener = new MenuListener()
+    /** Specific menu listener. */
+    private MenuListener menuListener = new AbstractMenuListener()
     {
-        @Override
-        public void menuCanceled (MenuEvent e)
-        {
-        }
-
-        @Override
-        public void menuDeselected (MenuEvent e)
-        {
-        }
-
         @Override
         public void menuSelected (MenuEvent e)
         {
@@ -74,7 +64,7 @@ public abstract class DynamicMenu
             menu.setText(menuLabel);
 
             // Listener to menu selection, to modify content on-the-fly
-            menu.addMenuListener(listener);
+            menu.addMenuListener(menuListener);
         } catch (Exception ex) {
             logger.error("Could not instantiate " + menuClass, ex);
             menu = null;
@@ -95,7 +85,7 @@ public abstract class DynamicMenu
             menu.setAction(action);
 
             // Listener to menu selection, to modify content on-the-fly
-            menu.addMenuListener(listener);
+            menu.addMenuListener(menuListener);
         } catch (Exception ex) {
             logger.error("Could not instantiate " + menuClass, ex);
             menu = null;

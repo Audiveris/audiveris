@@ -14,15 +14,16 @@ package omr.sheet.beam;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Symbol.Group;
 
 import omr.image.AreaMask;
 
 import omr.math.AreaUtil;
 import omr.math.GeoOrder;
 import omr.math.GeoUtil;
-import omr.math.Line;
 import omr.math.LineUtil;
 import omr.math.Population;
 
@@ -38,7 +39,7 @@ import omr.sig.SIGraph;
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractBeamInter.Impacts;
 import omr.sig.inter.BeamHookInter;
-import omr.sig.inter.FullBeamInter;
+import omr.sig.inter.BeamInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SmallBeamInter;
 import omr.sig.relation.Exclusion;
@@ -49,6 +50,7 @@ import omr.util.Corner;
 import omr.util.Dumping;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
+import omr.util.IdUtil;
 import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.VerticalSide;
@@ -70,6 +72,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class {@code BeamsBuilder} is in charge, at system level, of retrieving the possible
@@ -129,21 +132,21 @@ public class BeamsBuilder
     /** Input image. */
     private ByteProcessor pixelFilter;
 
-    /** Population of observed vertical gaps between grouped beams. */
-    private final Population vGaps;
+    /** Population of observed vertical distance between grouped beams. */
+    private final Population distances;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamsBuilder object.
      *
-     * @param system the dedicated system
-     * @param vGaps  (output) population of vertical beam gaps within groups
+     * @param system    the dedicated system
+     * @param distances (output) population of vertical beam distances within groups
      */
     public BeamsBuilder (SystemInfo system,
-                         Population vGaps)
+                         Population distances)
     {
         this.system = system;
-        this.vGaps = vGaps;
+        this.distances = distances;
 
         sig = system.getSig();
         sheet = system.getSheet();
@@ -181,8 +184,8 @@ public class BeamsBuilder
         buildHooks();
 
         // Measure vertical gap
-        if (vGaps.getCardinality() > 0) {
-            logger.debug("S#{} beam gaps {}", system.getId(), vGaps);
+        if (distances.getCardinality() > 0) {
+            logger.debug("S#{} beam gaps {}", system.getId(), distances);
         }
     }
 
@@ -242,7 +245,7 @@ public class BeamsBuilder
      * @param beam the base beam
      * @param side which vertical side to browse
      */
-    private void browseHooks (FullBeamInter beam,
+    private void browseHooks (BeamInter beam,
                               VerticalSide side)
     {
         // Look for a parallel beam just above or below
@@ -254,7 +257,7 @@ public class BeamsBuilder
                 new Point2D.Double(median.getX1(), median.getY1() + dy),
                 new Point2D.Double(median.getX2(), median.getY2() + dy),
                 height);
-        List<Glyph> glyphs = sig.intersectedGlyphs(sortedBeamSpots, true, luArea);
+        Set<Glyph> glyphs = Glyphs.intersectedGlyphs(sortedBeamSpots, luArea);
 
         for (Glyph glyph : glyphs) {
             String failure = checkHookGlyph(beam, side, glyph);
@@ -276,9 +279,9 @@ public class BeamsBuilder
      */
     private void buildHooks ()
     {
-        for (Inter inter : sig.inters(FullBeamInter.class)) {
+        for (Inter inter : sig.inters(BeamInter.class)) {
             for (VerticalSide side : VerticalSide.values()) {
-                browseHooks((FullBeamInter) inter, side);
+                browseHooks((BeamInter) inter, side);
             }
         }
     }
@@ -299,7 +302,7 @@ public class BeamsBuilder
                                    List<Inter> beams)
     {
         final Rectangle box = glyph.getBounds();
-        final Line glyphLine = glyph.getLine();
+        final Line2D glyphLine = glyph.getLine();
 
         if (glyph.isVip()) {
             logger.info("VIP checkBeamGlyph {} cue:{}", glyph, isCue);
@@ -319,7 +322,7 @@ public class BeamsBuilder
 
         // Maximum slope
         try {
-            if (Math.abs(glyphLine.getSlope()) > params.maxBeamSlope) {
+            if (Math.abs(LineUtil.getSlope(glyphLine)) > params.maxBeamSlope) {
                 return "too steep";
             }
         } catch (Exception ignored) {
@@ -393,7 +396,7 @@ public class BeamsBuilder
      * @param glyph the candidate hook
      * @return the failure message if any, null otherwise
      */
-    private String checkHookGlyph (FullBeamInter beam,
+    private String checkHookGlyph (BeamInter beam,
                                    VerticalSide side,
                                    Glyph glyph)
     {
@@ -440,7 +443,7 @@ public class BeamsBuilder
             BeamHookInter hook = new BeamHookInter(impacts, median, height);
 
             if (glyph.isVip()) {
-                hook.setVip();
+                hook.setVip(true);
             }
 
             sig.addVertex(hook);
@@ -448,7 +451,7 @@ public class BeamsBuilder
             assignedSpots.add(glyph);
 
             // Measure vertical distance between hook and base beam
-            measureVerticalGap(beam, hook);
+            measureVerticalDistance(beam, hook);
 
             return null; // Meaning: no failure
         } else {
@@ -461,7 +464,7 @@ public class BeamsBuilder
     //--------------------//
     /**
      * Compute the grade details for the provided BeamItem, targeting
-     * a FullBeamInter.
+     * a BeamInter.
      *
      * @param item     the isolated beam item
      * @param above    true to check above beam item
@@ -616,7 +619,7 @@ public class BeamsBuilder
                         hook = new BeamHookInter(impacts, item.median, item.height);
 
                         if (line.isVip()) {
-                            hook.setVip();
+                            hook.setVip(true);
                         }
 
                         sig.addVertex(hook);
@@ -631,13 +634,13 @@ public class BeamsBuilder
                             idx == (lines.size() - 1), // Check below only for last item
                             meanDist);
 
-                    if ((impacts != null) && (impacts.getGrade() >= FullBeamInter.getMinGrade())) {
+                    if ((impacts != null) && (impacts.getGrade() >= BeamInter.getMinGrade())) {
                         success = true;
 
-                        FullBeamInter beam = new FullBeamInter(impacts, item.median, item.height);
+                        BeamInter beam = new BeamInter(impacts, item.median, item.height);
 
                         if (line.isVip()) {
-                            beam.setVip();
+                            beam.setVip(true);
                         }
 
                         sig.addVertex(beam);
@@ -708,7 +711,7 @@ public class BeamsBuilder
                     SmallBeamInter beam = new SmallBeamInter(impacts, item.median, item.height);
 
                     if (item.isVip()) {
-                        beam.setVip();
+                        beam.setVip(true);
                     }
 
                     sig.addVertex(beam);
@@ -732,7 +735,7 @@ public class BeamsBuilder
     private void extendBeams ()
     {
         // All stem seeds for this system, sorted by abscissa
-        sortedSystemSeeds = system.lookupShapedGlyphs(Shape.VERTICAL_SEED);
+        sortedSystemSeeds = system.lookupGroupedGlyphs(Group.VERTICAL_SEED);
 
         // The beam & hook inters for this system, NOT sorted by abscissa.
         // We may add to this list, but not remove elements (they are simply logically 'deleted').
@@ -850,8 +853,8 @@ public class BeamsBuilder
 
                 // Side-effect: measure the actual vertical gap between such parallel beams
                 // (avoiding a given pair to be counted 4 times...)
-                if ((side == LEFT) && (beam.getId() < other.getId())) {
-                    measureVerticalGap(beam, other);
+                if ((side == LEFT) && (IdUtil.compare(beam.getId(), other.getId()) < 0)) {
+                    measureVerticalDistance(beam, other);
                 }
 
                 // Check the other beam can really extend the current beam
@@ -927,7 +930,7 @@ public class BeamsBuilder
             }
         }
 
-        FullBeamInter newBeam = mergeOf(beam, other);
+        BeamInter newBeam = mergeOf(beam, other);
 
         if (newBeam == null) {
             return false;
@@ -937,7 +940,7 @@ public class BeamsBuilder
         rawSystemBeams.add(newBeam);
 
         if (beam.isVip() || other.isVip()) {
-            newBeam.setVip();
+            newBeam.setVip(true);
         }
 
         beam.delete();
@@ -1013,16 +1016,16 @@ public class BeamsBuilder
         BeamItem newItem = new BeamItem(newMedian, height);
 
         if (beam.isVip()) {
-            newItem.setVip();
+            newItem.setVip(true);
         }
 
         Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact);
 
-        if ((impacts != null) && (impacts.getGrade() >= FullBeamInter.getMinGrade())) {
-            FullBeamInter newBeam = new FullBeamInter(impacts, newMedian, height);
+        if ((impacts != null) && (impacts.getGrade() >= BeamInter.getMinGrade())) {
+            BeamInter newBeam = new BeamInter(impacts, newMedian, height);
 
             if (beam.isVip()) {
-                newBeam.setVip();
+                newBeam.setVip(true);
             }
 
             sig.addVertex(newBeam);
@@ -1062,7 +1065,9 @@ public class BeamsBuilder
         final int dx = (maxDx == null) ? params.maxExtensionToSpot
                 : Math.min(params.maxExtensionToSpot, maxDx);
         final Area luArea = sideAreaOf("O", beam, side, 0, dx, 0);
-        final List<Glyph> spots = sig.intersectedGlyphs(sortedBeamSpots, true, luArea);
+        final List<Glyph> spots = new ArrayList<Glyph>(
+                Glyphs.intersectedGlyphs(sortedBeamSpots, luArea));
+        Collections.sort(spots, Glyphs.byAbscissa);
 
         if (beam.getGlyph() != null) {
             spots.remove(beam.getGlyph()); // Safer
@@ -1108,7 +1113,9 @@ public class BeamsBuilder
                 : Math.min(params.maxExtensionToStem, maxDx);
         final int dy = params.maxStemBeamGapY;
         final Area luArea = sideAreaOf("|", beam, side, dy, dx, 0);
-        List<Glyph> seeds = sig.intersectedGlyphs(sortedSystemSeeds, true, luArea);
+        List<Glyph> seeds = new ArrayList<Glyph>(
+                Glyphs.intersectedGlyphs(sortedSystemSeeds, luArea));
+        Collections.sort(seeds, Glyphs.byAbscissa);
 
         // We should remove seeds already 'embraced' by the beam
         // It's easier to proceed and simply check for concrete extension.
@@ -1146,9 +1153,7 @@ public class BeamsBuilder
         final List<Glyph> spots = new ArrayList<Glyph>();
 
         for (Glyph glyph : system.getGlyphs()) {
-            final Shape shape = glyph.getShape();
-
-            if (shape == Shape.BEAM_SPOT) {
+            if (glyph.hasGroup(Group.BEAM_SPOT)) {
                 spots.add(glyph);
             }
         }
@@ -1177,9 +1182,15 @@ public class BeamsBuilder
                     @Override
                     public boolean check (Inter inter)
                     {
-                        return !inter.isDeleted()
-                               && (inter.getShape() == Shape.NOTEHEAD_BLACK_SMALL)
-                               && (inter.getContextualGrade() >= Inter.minContextualGrade);
+                        if (inter.isDeleted() || (inter.getShape() != Shape.NOTEHEAD_BLACK_SMALL)) {
+                            return false;
+                        }
+
+                        if (inter.getContextualGrade() == null) {
+                            sig.computeContextualGrade(inter, false);
+                        }
+
+                        return inter.getContextualGrade() >= Inter.minContextualGrade;
                     }
                 });
 
@@ -1310,20 +1321,20 @@ public class BeamsBuilder
         return null;
     }
 
-    //--------------------//
-    // measureVerticalGap //
-    //--------------------//
+    //-------------------------//
+    // measureVerticalDistance //
+    //-------------------------//
     /**
-     * Measure the actual vertical gap between the two provided beams.
+     * Measure vertical distance (center to center) between the two provided beams.
      * (These beams are very likely to be in a single group)
      *
      * @param one a beam
      * @param two another beam
      */
-    private void measureVerticalGap (AbstractBeamInter one,
-                                     AbstractBeamInter two)
+    private void measureVerticalDistance (AbstractBeamInter one,
+                                          AbstractBeamInter two)
     {
-        if (vGaps != null) {
+        if (distances != null) {
             Line2D m1 = one.getMedian();
             Line2D m2 = two.getMedian();
 
@@ -1332,11 +1343,11 @@ public class BeamsBuilder
             double minRight = Math.min(m1.getX2(), m2.getX2());
             double x = (maxLeft + minRight) / 2;
 
-            // Measure actual vertical gap at this abscissa
+            // Measure actual vertical distance at this abscissa
             double y1 = LineUtil.yAtX(m1, x);
             double y2 = LineUtil.yAtX(m2, x);
-            double gap = Math.max(0, Math.abs(y2 - y1) - ((one.getHeight() + two.getHeight()) / 2));
-            vGaps.includeValue(gap);
+            double distance = Math.abs(y2 - y1);
+            distances.includeValue(distance);
         }
     }
 
@@ -1351,8 +1362,8 @@ public class BeamsBuilder
      * @param two another beam
      * @return the resulting beam, or null if failed
      */
-    private FullBeamInter mergeOf (AbstractBeamInter one,
-                                   AbstractBeamInter two)
+    private BeamInter mergeOf (AbstractBeamInter one,
+                               AbstractBeamInter two)
     {
         final Line2D oneMedian = one.getMedian();
         final Line2D twoMedian = two.getMedian();
@@ -1379,13 +1390,13 @@ public class BeamsBuilder
         BeamItem newItem = new BeamItem(median, height);
 
         if (one.isVip() || two.isVip()) {
-            newItem.setVip();
+            newItem.setVip(true);
         }
 
         Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact);
 
-        if ((impacts != null) && (impacts.getGrade() >= FullBeamInter.getMinGrade())) {
-            return new FullBeamInter(impacts, median, height);
+        if ((impacts != null) && (impacts.getGrade() >= BeamInter.getMinGrade())) {
+            return new BeamInter(impacts, median, height);
         } else {
             return null;
         }
@@ -1554,7 +1565,7 @@ public class BeamsBuilder
             minHookWidthHigh = scale.toPixelsDouble(constants.minHookWidthHigh);
             maxHookWidth = scale.toPixelsDouble(constants.maxHookWidth);
 
-            typicalHeight = scale.getMainBeam() * ratio;
+            typicalHeight = scale.getBeamThicknessMain() * ratio;
             minHeightLow = typicalHeight * constants.minHeightRatioLow.getValue();
             maxHeightHigh = typicalHeight * constants.maxHeightRatioHigh.getValue();
 
@@ -1708,6 +1719,100 @@ public class BeamsBuilder
                 "Ratio applied for cue beams height");
     }
 
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final int maxSideBeamDx;
+
+        final int minBeamsGapX;
+
+        final int maxBeamsGapX;
+
+        final int maxBeamsGapY;
+
+        final int beamsXMargin;
+
+        final int maxStemBeamGapX;
+
+        final int maxStemBeamGapY;
+
+        final int maxExtensionToStem;
+
+        final int maxExtensionToSpot;
+
+        final int beltMarginDx;
+
+        final int beltMarginDy;
+
+        final double maxBeamSlope;
+
+        final double maxBorderSlopeGap;
+
+        final double maxBeamSlopeGap;
+
+        final double maxDistanceToBorder;
+
+        final double maxBeltBlackRatio;
+
+        final double minCoreBlackRatio;
+
+        final double minExtBlackRatio;
+
+        final int cueXMargin;
+
+        final int cueYMargin;
+
+        final int cueBoxDx;
+
+        final int cueBoxDy;
+
+        final double cueBeamRatio;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            maxSideBeamDx = scale.toPixels(constants.maxSideBeamDx);
+            minBeamsGapX = scale.toPixels(constants.minBeamsGapX);
+            maxBeamsGapX = scale.toPixels(constants.maxBeamsGapX);
+            maxBeamsGapY = scale.toPixels(constants.maxBeamsGapY);
+            beamsXMargin = scale.toPixels(constants.beamsXMargin);
+            maxStemBeamGapX = scale.toPixels(constants.maxStemBeamGapX);
+            maxStemBeamGapY = scale.toPixels(constants.maxStemBeamGapY);
+            maxExtensionToStem = scale.toPixels(constants.maxExtensionToStem);
+            maxExtensionToSpot = scale.toPixels(constants.maxExtensionToSpot);
+            beltMarginDx = scale.toPixels(constants.beltMarginDx);
+            beltMarginDy = scale.toPixels(constants.beltMarginDy);
+            maxBeamSlope = constants.maxBeamSlope.getValue();
+            maxBorderSlopeGap = constants.maxBorderSlopeGap.getValue();
+            maxBeamSlopeGap = constants.maxBeamSlopeGap.getValue();
+            maxDistanceToBorder = scale.toPixelsDouble(constants.maxDistanceToBorder);
+            maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
+            minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
+            minExtBlackRatio = constants.minExtBlackRatio.getValue();
+            cueXMargin = scale.toPixels(constants.cueXMargin);
+            cueYMargin = scale.toPixels(constants.cueYMargin);
+            cueBoxDx = scale.toPixels(constants.cueBoxDx);
+            cueBoxDy = scale.toPixels(constants.cueBoxDy);
+            cueBeamRatio = constants.cueBeamRatio.getValue();
+
+            if (logger.isDebugEnabled()) {
+                new Dumping().dump(this);
+            }
+        }
+    }
+
     //--------------//
     // CueAggregate //
     //--------------//
@@ -1842,7 +1947,7 @@ public class BeamsBuilder
                 }
             }
 
-            double beam = params.cueBeamRatio * sheet.getScale().getMainBeam();
+            double beam = params.cueBeamRatio * sheet.getScale().getBeamThicknessMain();
 
             return new SpotsBuilder(sheet).buildSpots(buf, box.getLocation(), beam, id);
         }
@@ -1907,7 +2012,7 @@ public class BeamsBuilder
             List<Inter> beams = new ArrayList<Inter>();
 
             for (Glyph glyph : glyphs) {
-                glyph.setShape(Shape.BEAM_SPOT);
+                glyph.addGroup(Group.BEAM_SPOT);
 
                 List<Inter> glyphBeams = new ArrayList<Inter>();
                 final String failure = checkBeamGlyph(glyph, true, glyphBeams);
@@ -1932,100 +2037,6 @@ public class BeamsBuilder
                     final Inter stem = stems.get(i);
                     connectStemToBeams(stem, beams, head);
                 }
-            }
-        }
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final int maxSideBeamDx;
-
-        final int minBeamsGapX;
-
-        final int maxBeamsGapX;
-
-        final int maxBeamsGapY;
-
-        final int beamsXMargin;
-
-        final int maxStemBeamGapX;
-
-        final int maxStemBeamGapY;
-
-        final int maxExtensionToStem;
-
-        final int maxExtensionToSpot;
-
-        final int beltMarginDx;
-
-        final int beltMarginDy;
-
-        final double maxBeamSlope;
-
-        final double maxBorderSlopeGap;
-
-        final double maxBeamSlopeGap;
-
-        final double maxDistanceToBorder;
-
-        final double maxBeltBlackRatio;
-
-        final double minCoreBlackRatio;
-
-        final double minExtBlackRatio;
-
-        final int cueXMargin;
-
-        final int cueYMargin;
-
-        final int cueBoxDx;
-
-        final int cueBoxDy;
-
-        final double cueBeamRatio;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
-        {
-            maxSideBeamDx = scale.toPixels(constants.maxSideBeamDx);
-            minBeamsGapX = scale.toPixels(constants.minBeamsGapX);
-            maxBeamsGapX = scale.toPixels(constants.maxBeamsGapX);
-            maxBeamsGapY = scale.toPixels(constants.maxBeamsGapY);
-            beamsXMargin = scale.toPixels(constants.beamsXMargin);
-            maxStemBeamGapX = scale.toPixels(constants.maxStemBeamGapX);
-            maxStemBeamGapY = scale.toPixels(constants.maxStemBeamGapY);
-            maxExtensionToStem = scale.toPixels(constants.maxExtensionToStem);
-            maxExtensionToSpot = scale.toPixels(constants.maxExtensionToSpot);
-            beltMarginDx = scale.toPixels(constants.beltMarginDx);
-            beltMarginDy = scale.toPixels(constants.beltMarginDy);
-            maxBeamSlope = constants.maxBeamSlope.getValue();
-            maxBorderSlopeGap = constants.maxBorderSlopeGap.getValue();
-            maxBeamSlopeGap = constants.maxBeamSlopeGap.getValue();
-            maxDistanceToBorder = scale.toPixelsDouble(constants.maxDistanceToBorder);
-            maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
-            minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
-            minExtBlackRatio = constants.minExtBlackRatio.getValue();
-            cueXMargin = scale.toPixels(constants.cueXMargin);
-            cueYMargin = scale.toPixels(constants.cueYMargin);
-            cueBoxDx = scale.toPixels(constants.cueBoxDx);
-            cueBoxDy = scale.toPixels(constants.cueBoxDy);
-            cueBeamRatio = constants.cueBeamRatio.getValue();
-
-            if (logger.isDebugEnabled()) {
-                new Dumping().dump(this);
             }
         }
     }

@@ -1,27 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="TENUTO" interline="15" id="14">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-6.098360655737705</pitch-position>
-    <section orientation="VERTICAL" first-pos="431" id="29">
-        <run start="19" length="2"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="3"/>
-        <run start="19" length="2"/>
-    </section>
-</glyph>
+<sample id="14" interline="15" left="431" top="19" shape="TENUTO">
+    <run-table orientation="VERTICAL" width="19" height="3">
+        <sequences>
+            <item>2</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>3</item>
+            <item>2</item>
+        </sequences>
+    </run-table>
+</sample>

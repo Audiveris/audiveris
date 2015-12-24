@@ -11,9 +11,20 @@
 // </editor-fold>
 package omr.run;
 
+import omr.image.ChamferDistance;
 import omr.image.PixelSource;
 import static omr.image.PixelSource.BACKGROUND;
+import omr.image.Table;
 
+import omr.math.PointsCollector;
+
+import omr.moments.ARTMoments;
+import omr.moments.BasicARTExtractor;
+import omr.moments.GeometricMoments;
+import omr.moments.QuantizedARTMoments;
+import static omr.run.Orientation.HORIZONTAL;
+
+import omr.util.ByteUtil;
 import omr.util.Predicate;
 
 import ij.process.ByteProcessor;
@@ -31,6 +42,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -97,6 +109,11 @@ public class RunTable
     /** Hosted event service for UI events related to this table (Runs), if any. */
     @XmlTransient
     private RunService runService;
+
+    // Transient
+    //
+    /** Total weight. */
+    private Integer weight;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -263,6 +280,103 @@ public class RunTable
         return true;
     }
 
+    //-------------------//
+    // computeArtMoments //
+    //-------------------//
+    /**
+     * Compute the Angular Radial Transform moments for this runTable
+     *
+     * @param left abscissa of topLeft corner (TOTO: useful?)
+     * @param top  ordinate of topLeft corner (TODO: useful?)
+     * @return the ART moments
+     */
+    public ARTMoments computeArtMoments (int left,
+                                         int top)
+    {
+        // Retrieve glyph foreground points
+        final PointsCollector collector = new PointsCollector(null, getWeight());
+        cumulate(collector, new Point(left, top));
+
+        ///ARTMoments artMoments = new BasicARTMoments();
+        ARTMoments artMoments = new QuantizedARTMoments();
+
+        BasicARTExtractor extractor = new BasicARTExtractor();
+        extractor.setDescriptor(artMoments);
+        extractor.extract(collector.getXValues(), collector.getYValues(), collector.getSize());
+
+        return artMoments;
+    }
+
+    //-----------------//
+    // computeCentroid //
+    //-----------------//
+    public Point computeCentroid (int left,
+                                  int top)
+    {
+        // Retrieve glyph foreground points
+        getWeight(); // Make sure weight has been computed
+
+        if (weight == 0) {
+            return null;
+        }
+
+        final PointsCollector collector = new PointsCollector(null, weight);
+        cumulate(collector, new Point(left, top));
+
+        int[] xx = collector.getXValues();
+        int[] yy = collector.getYValues();
+        double x = 0;
+        double y = 0;
+
+        for (int i = weight - 1; i >= 0; i--) {
+            x += xx[i];
+            y += yy[i];
+        }
+
+        return new Point((int) Math.rint(x / weight), (int) Math.rint(y / weight));
+    }
+
+    //-------------------------//
+    // computeGeometricMoments //
+    //-------------------------//
+    /**
+     * Compute the geometric moments for this runTable
+     *
+     * @param left      abscissa of topLeft corner
+     * @param top       ordinate of topLeft corner
+     * @param interline scaling information
+     * @return the geometric moments
+     */
+    public GeometricMoments computeGeometricMoments (int left,
+                                                     int top,
+                                                     int interline)
+    {
+        // Retrieve glyph foreground points
+        final PointsCollector collector = new PointsCollector(null, getWeight());
+        cumulate(collector, new Point(left, top));
+
+        // Then compute the geometric moments with this collector
+        return new GeometricMoments(
+                collector.getXValues(),
+                collector.getYValues(),
+                collector.getSize(),
+                interline);
+    }
+
+    //----------//
+    // contains //
+    //----------//
+    /**
+     * Report whether this table contains the provided relative point.
+     *
+     * @param relPoint provided point, relative to runTable top left corner
+     * @return true if a run contains this point
+     */
+    public boolean contains (Point relPoint)
+    {
+        return null != getRunAt(relPoint.x, relPoint.y);
+    }
+
     //------//
     // copy //
     //------//
@@ -286,6 +400,70 @@ public class RunTable
         }
 
         return clone;
+    }
+
+    //----------//
+    // cumulate //
+    //----------//
+    /**
+     * Cumulate all points that compose the runs of the table, into the provided
+     * <b>absolute</b> collector, which may exhibit a roi also with absolute coordinates.
+     *
+     * @param collector (output) the absolute points collector to populate
+     * @param offset    offset to be added to run coordinates, or null
+     */
+    public void cumulate (PointsCollector collector,
+                          Point offset)
+    {
+        final Rectangle roi = collector.getRoi();
+
+        if (roi == null) {
+            for (int p = 0, iBreak = getSize(); p < iBreak; p++) {
+                for (Iterator<Run> it = iterator(p); it.hasNext();) {
+                    Run run = it.next();
+                    int start = run.getStart();
+
+                    for (int ic = run.getLength() - 1; ic >= 0; ic--) {
+                        if (orientation == HORIZONTAL) {
+                            collector.include(start + ic, p);
+                        } else {
+                            collector.include(p, start + ic);
+                        }
+                    }
+                }
+            }
+        } else {
+            // Take only the pixels contained by the absolute roi
+            Rectangle oRoi = orientation.oriented(roi);
+            final int pMin = oRoi.y;
+            final int pMax = -1 + Math.min(getSize(), oRoi.y + oRoi.height);
+            final int cMin = oRoi.x;
+            final int cMax = (oRoi.x + oRoi.width) - 1;
+
+            for (int p = pMin; p <= pMax; p++) {
+                for (Iterator<Run> it = iterator(p); it.hasNext();) {
+                    final Run run = it.next();
+                    final int roiStart = Math.max(run.getStart(), cMin);
+                    final int roiStop = Math.min(run.getStop(), cMax);
+                    final int length = roiStop - roiStart + 1;
+
+                    if (length > 0) {
+                        for (int c = roiStart; c <= roiStop; c++) {
+                            if (orientation == HORIZONTAL) {
+                                collector.include(c, p);
+                            } else {
+                                collector.include(p, c);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Translation if needed
+        if (offset != null) {
+            collector.translate(offset.x, offset.y);
+        }
     }
 
     //--------//
@@ -351,6 +529,181 @@ public class RunTable
         }
     }
 
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj == null) {
+            return false;
+        }
+
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+
+        final RunTable other = (RunTable) obj;
+
+        if (this.width != other.width) {
+            return false;
+        }
+
+        if (this.height != other.height) {
+            return false;
+        }
+
+        if (this.orientation != other.orientation) {
+            return false;
+        }
+
+        return Arrays.deepEquals(this.sequences, other.sequences);
+    }
+
+    //-----------//
+    // fillTable //
+    //-----------//
+    /**
+     * Populate the provided table with run pixels.
+     *
+     * @param table       (output) the table to fill
+     * @param tableOrigin top-left corner of table
+     * @param offset      offset to be added to runTable coordinates, or null
+     * @param fat         true to set adjacent pixels
+     */
+    public void fillTable (Table.UnsignedByte table,
+                           Point tableOrigin,
+                           Point offset,
+                           boolean fat)
+    {
+        table.fill(255); // All white
+
+        if (tableOrigin == null) {
+            tableOrigin = new Point(0, 0);
+        }
+
+        if (offset == null) {
+            offset = new Point(0, 0);
+        }
+
+        final int dx = tableOrigin.x - offset.x;
+        final int dy = tableOrigin.y - offset.y;
+
+        final int tableHeight = table.getHeight();
+        final int tableWidth = table.getWidth();
+
+        // Take only the pixels contained by the absolute roi
+        if (orientation == HORIZONTAL) {
+            final int pMin = Math.max(0, dy);
+            final int pMax = -1 + Math.min(getSize(), dy + tableHeight);
+            final int cMin = Math.max(0, dx);
+            final int cMax = -1 + Math.min(width, dx + tableWidth);
+
+            for (int p = pMin; p <= pMax; p++) {
+                for (Iterator<Run> it = iterator(p); it.hasNext();) {
+                    final Run run = it.next();
+                    final int roiStart = Math.max(run.getStart(), cMin);
+                    final int roiStop = Math.min(run.getStop(), cMax);
+                    final int length = roiStop - roiStart + 1;
+
+                    if (length > 0) {
+                        final int y = p - dy;
+
+                        for (int c = roiStart; c <= roiStop; c++) {
+                            table.setValue(c - dx, y, 0);
+                        }
+
+                        if (fat) {
+                            final int y1 = y - 1;
+
+                            if (y1 >= 0) {
+                                for (int c = roiStart; c <= roiStop; c++) {
+                                    table.setValue(c - dx, y1, 0);
+                                }
+                            }
+
+                            final int y2 = y + 1;
+
+                            if (y2 < tableHeight) {
+                                for (int c = roiStart; c <= roiStop; c++) {
+                                    table.setValue(c - dx, y2, 0);
+                                }
+                            }
+
+                            final int x1 = roiStart - cMin - 1;
+
+                            if (x1 >= 0) {
+                                table.setValue(x1, y, 0);
+                            }
+
+                            final int x2 = roiStop - cMin + 1;
+
+                            if (x2 < tableWidth) {
+                                table.setValue(x2, y, 0);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            final int pMin = Math.max(0, dx);
+            final int pMax = -1 + Math.min(getSize(), dx + tableWidth);
+            final int cMin = Math.max(0, dy);
+            final int cMax = -1 + Math.min(height, dy + tableHeight);
+
+            for (int p = pMin; p <= pMax; p++) {
+                for (Iterator<Run> it = iterator(p); it.hasNext();) {
+                    final Run run = it.next();
+                    final int roiStart = Math.max(run.getStart(), cMin);
+                    final int roiStop = Math.min(run.getStop(), cMax);
+                    final int length = roiStop - roiStart + 1;
+
+                    if (length > 0) {
+                        final int x = p - dx;
+
+                        for (int c = roiStart; c <= roiStop; c++) {
+                            table.setValue(x, c - dy, 0);
+                        }
+
+                        if (fat) {
+                            final int x1 = x - 1;
+
+                            if (x1 >= 0) {
+                                for (int c = roiStart; c <= roiStop; c++) {
+                                    table.setValue(x1, c - dy, 0);
+                                }
+                            }
+
+                            final int x2 = x + 1;
+
+                            if (x2 < tableWidth) {
+                                for (int c = roiStart; c <= roiStop; c++) {
+                                    table.setValue(x2, c - dy, 0);
+                                }
+                            }
+
+                            final int y1 = roiStart - cMin - 1;
+
+                            if (y1 >= 0) {
+                                table.setValue(x, y1, 0);
+                            }
+
+                            final int y2 = roiStop - cMin + 1;
+
+                            if (y2 < tableHeight) {
+                                table.setValue(x, y2, 0);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     //-----//
     // get //
     //-----//
@@ -385,38 +738,22 @@ public class RunTable
      */
     public ByteProcessor getBuffer ()
     {
-        // Prepare output buffer
-        ByteProcessor buffer = new ByteProcessor(width, height);
-        buffer.invert();
+        // Determine the bounding box
+        final ByteProcessor buffer = new ByteProcessor(width, height);
+        ByteUtil.raz(buffer); // buffer.invert();
 
-        switch (orientation) {
-        case HORIZONTAL:
+        for (int iSeq = 0, size = getSize(); iSeq < size; iSeq++) {
+            for (Itr it = new Itr(iSeq); it.hasNext();) {
+                final Run run = it.next();
 
-            for (int row = 0, size = getSize(); row < size; row++) {
-                for (Itr it = new Itr(row); it.hasNext();) {
-                    Run run = it.next();
-
-                    for (int c = run.getStart(); c <= run.getStop(); c++) {
-                        buffer.set(c, row, 0);
+                for (int coord = run.getStart(), stop = run.getStop(); coord <= stop; coord++) {
+                    if (orientation == HORIZONTAL) {
+                        buffer.set(coord, iSeq, 0);
+                    } else {
+                        buffer.set(iSeq, coord, 0);
                     }
                 }
             }
-
-            break;
-
-        case VERTICAL:
-
-            for (int row = 0, size = getSize(); row < size; row++) {
-                for (Itr it = new Itr(row); it.hasNext();) {
-                    Run run = it.next();
-
-                    for (int col = run.getStart(); col <= run.getStop(); col++) {
-                        buffer.set(row, col, 0);
-                    }
-                }
-            }
-
-            break;
         }
 
         return buffer;
@@ -437,7 +774,7 @@ public class RunTable
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, width, height);
         g.setColor(Color.BLACK);
-        render(g);
+        render(g, new Point(0, 0));
         g.dispose();
 
         return img;
@@ -489,30 +826,31 @@ public class RunTable
     // getRunAt //
     //----------//
     /**
-     * Report the run found at given coordinates, if any.
+     * Report the run found at given <b>relative</b> coordinates, if any.
      *
-     * @param x absolute abscissa
-     * @param y absolute ordinate
+     * @param x abscissa, relative to runTable left
+     * @param y ordinate, relative to runTable top
      * @return the run found, or null otherwise
      */
     public final Run getRunAt (int x,
                                int y)
     {
-        Point oPt = orientation.oriented(new Point(x, y));
+        final int iSeq = (orientation == HORIZONTAL) ? y : x;
 
-        // Protection
-        if ((oPt.y < 0) || (oPt.y >= sequences.length)) {
+        if ((iSeq < 0) || (iSeq >= sequences.length)) {
             return null;
         }
 
-        for (Itr it = new Itr(oPt.y); it.hasNext();) {
+        final int coord = (orientation == HORIZONTAL) ? x : y;
+
+        for (Itr it = new Itr(iSeq); it.hasNext();) {
             Run run = it.next();
 
-            if (run.getStart() > oPt.x) {
+            if (run.getStart() > coord) {
                 return null;
             }
 
-            if (run.getStop() >= oPt.x) {
+            if (run.getStop() >= coord) {
                 return run;
             }
         }
@@ -566,6 +904,29 @@ public class RunTable
         return total;
     }
 
+    //-----------//
+    // getWeight //
+    //-----------//
+    /**
+     * Report the number of foreground pixels.
+     *
+     * @return the table weight
+     */
+    public int getWeight ()
+    {
+        if (weight == null) {
+            weight = 0;
+
+            for (int iSeq = 0, iBreak = getSize(); iSeq < iBreak; iSeq++) {
+                for (Iterator<Run> it = iterator(iSeq); it.hasNext();) {
+                    weight += it.next().getLength();
+                }
+            }
+        }
+
+        return weight;
+    }
+
     //----------//
     // getWidth //
     //----------//
@@ -578,6 +939,21 @@ public class RunTable
     public int getWidth ()
     {
         return width;
+    }
+
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = (71 * hash) + Objects.hashCode(this.orientation);
+        hash = (71 * hash) + this.width;
+        hash = (71 * hash) + this.height;
+        hash = (71 * hash) + Objects.hashCode(getWeight());
+
+        return hash;
     }
 
     //---------//
@@ -617,6 +993,117 @@ public class RunTable
         }
     }
 
+    //------------//
+    // intersects //
+    //------------//
+    /**
+     * Report whether this runTable has at least one pixel in common with the provided
+     * table.
+     *
+     * @param table       the provided table
+     * @param tableOrigin coordinates of table top-left corner
+     * @param offset      offset to be added to run coordinates
+     * @return true if non-null intersection found
+     */
+    public boolean intersects (Table.UnsignedByte table,
+                               Point tableOrigin,
+                               Point offset)
+    {
+        if (tableOrigin == null) {
+            tableOrigin = new Point(0, 0);
+        }
+
+        if (offset == null) {
+            offset = new Point(0, 0);
+        }
+
+        final int dx = tableOrigin.x - offset.x;
+        final int dy = tableOrigin.y - offset.y;
+
+        if (orientation == HORIZONTAL) {
+            final int pMin = Math.max(0, dy);
+            final int pMax = -1 + Math.min(getSize(), dy + table.getHeight());
+            final int cMin = Math.max(0, dx);
+            final int cMax = -1 + Math.min(width, dx + table.getWidth());
+
+            for (int p = pMin; p <= pMax; p++) {
+                for (Iterator<Run> it = iterator(p); it.hasNext();) {
+                    final Run run = it.next();
+                    final int roiStart = Math.max(run.getStart(), cMin);
+                    final int roiStop = Math.min(run.getStop(), cMax);
+                    final int length = roiStop - roiStart + 1;
+
+                    if (length > 0) {
+                        for (int c = roiStart; c <= roiStop; c++) {
+                            if (table.getValue(c - dx, p - dy) == 0) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            final int pMin = Math.max(0, dx);
+            final int pMax = -1 + Math.min(getSize(), dx + table.getWidth());
+            final int cMin = Math.max(0, dy);
+            final int cMax = -1 + Math.min(height, dy + table.getHeight());
+
+            for (int p = pMin; p <= pMax; p++) {
+                for (Iterator<Run> it = iterator(p); it.hasNext();) {
+                    final Run run = it.next();
+                    final int roiStart = Math.max(run.getStart(), cMin);
+                    final int roiStop = Math.min(run.getStop(), cMax);
+                    final int length = roiStop - roiStart + 1;
+
+                    if (length > 0) {
+                        for (int c = roiStart; c <= roiStop; c++) {
+                            if (table.getValue(p - dx, c - dy) == 0) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    //-------------//
+    // isIdentical //
+    //-------------//
+    /**
+     * (package private) Field by field comparison (meant for unitary tests)
+     *
+     * @param that the other RunTable to compare with
+     * @return true if identical
+     */
+    public boolean isIdentical (RunTable that)
+    {
+        // Check null entities
+        if (that == null) {
+            return false;
+        }
+
+        if ((this.orientation == that.orientation)
+            && (this.width == that.width)
+            && (this.height == that.height)) {
+            // Check run sequences, row by row
+            for (int row = 0, size = getSize(); row < size; row++) {
+                short[] thisSeq = getSequence(row);
+                short[] thatSeq = that.getSequence(row);
+
+                if (!Arrays.equals(thisSeq, thatSeq)) {
+                    return false;
+                }
+            }
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     //-----------------//
     // isSequenceEmpty //
     //-----------------//
@@ -643,38 +1130,6 @@ public class RunTable
     public Iterator<Run> iterator (int index)
     {
         return new Itr(index);
-    }
-
-    //-----------//
-    // lookupRun //
-    //-----------//
-    /**
-     * Given an absolute point, retrieve the containing run if any.
-     *
-     * @param point coordinates of the given point
-     * @return the run found, or null otherwise
-     */
-    public Run lookupRun (Point point)
-    {
-        Point oPt = orientation.oriented(point);
-
-        if ((oPt.y < 0) || (oPt.y >= getSize())) {
-            return null;
-        }
-
-        for (Itr it = new Itr(oPt.y); it.hasNext();) {
-            Run run = it.next();
-
-            if (run.getStart() > oPt.x) {
-                return null;
-            }
-
-            if (run.getStop() >= oPt.x) {
-                return run;
-            }
-        }
-
-        return null;
     }
 
     //-------//
@@ -770,43 +1225,83 @@ public class RunTable
     /**
      * Render the table runs onto the clip area of the provided graphics environment.
      *
-     * @param g target environment
+     * @param g      target environment
+     * @param offset absolute offset of runTable topLeft corner
      */
-    public void render (Graphics2D g)
+    public void render (Graphics2D g,
+                        Point offset)
     {
+        Objects.requireNonNull(offset, "Cannot render a RunTable at a null offset");
+
         // Potential clipping area (perhaps null)
-        Rectangle clip = g.getClipBounds();
+        final Rectangle clip = g.getClipBounds();
+        final Rectangle bounds = new Rectangle(offset.x, offset.y, width, height);
 
-        switch (getOrientation()) {
-        case HORIZONTAL: {
-            int minSeq = (clip != null) ? Math.max(clip.y, 0) : 0;
-            int maxSeq = (clip != null) ? (Math.min((clip.y + clip.height), height) - 1) : (height
-                                                                                            - 1);
+        if ((clip != null) && !clip.intersects(bounds)) {
+            return;
+        }
+
+        if (orientation == HORIZONTAL) {
+            final int minSeq = (clip != null) ? Math.max(clip.y - offset.y, 0) : 0;
+            final int maxSeq = (clip != null)
+                    ? (Math.min(((clip.y + clip.height) - offset.y), height) - 1)
+                    : (height - 1);
 
             for (int iSeq = minSeq; iSeq <= maxSeq; iSeq++) {
                 for (Itr it = new Itr(iSeq); it.hasNext();) {
-                    Run run = it.next();
-                    g.fillRect(run.getStart(), iSeq, run.getLength(), 1);
+                    final Run run = it.next();
+                    g.fillRect(offset.x + run.getStart(), offset.y + iSeq, run.getLength(), 1);
                 }
             }
-        }
-
-        break;
-
-        case VERTICAL: {
-            int minSeq = (clip != null) ? Math.max(clip.x, 0) : 0;
-            int maxSeq = (clip != null) ? (Math.min((clip.x + clip.width), width) - 1) : (width
-                                                                                          - 1);
+        } else {
+            final int minSeq = (clip != null) ? Math.max(clip.x - offset.x, 0) : 0;
+            final int maxSeq = (clip != null)
+                    ? (Math.min((clip.x + clip.width) - offset.x, width) - 1) : (width
+                                                                                 - 1);
 
             for (int iSeq = minSeq; iSeq <= maxSeq; iSeq++) {
                 for (Itr it = new Itr(iSeq); it.hasNext();) {
-                    Run run = it.next();
-                    g.fillRect(iSeq, run.getStart(), 1, run.getLength());
+                    final Run run = it.next();
+                    g.fillRect(offset.x + iSeq, offset.y + run.getStart(), 1, run.getLength());
                 }
             }
         }
+    }
 
-        break;
+    public void render (Table table,
+                        int val,
+                        Point offset)
+    {
+        Objects.requireNonNull(offset, "Cannot render a RunTable at a null offset");
+
+        if (orientation == HORIZONTAL) {
+            final int maxSeq = height - 1;
+
+            for (int iSeq = 0; iSeq <= maxSeq; iSeq++) {
+                for (Itr it = new Itr(iSeq); it.hasNext();) {
+                    final Run run = it.next();
+                    final int y = offset.y + iSeq;
+
+                    ///g.fillRect(offset.x + run.getStart(), offset.y + iSeq, run.getLength(), 1);
+                    for (int x = offset.x + run.getStart(); x <= (offset.x + run.getStop()); x++) {
+                        table.setValue(x, y, ChamferDistance.VALUE_UNKNOWN);
+                    }
+                }
+            }
+        } else {
+            final int maxSeq = width - 1;
+
+            for (int iSeq = 0; iSeq <= maxSeq; iSeq++) {
+                for (Itr it = new Itr(iSeq); it.hasNext();) {
+                    final Run run = it.next();
+                    final int x = offset.x + iSeq;
+
+                    ///g.fillRect(offset.x + iSeq, offset.y + run.getStart(), 1, run.getLength());
+                    for (int y = offset.y + run.getStart(); y <= (offset.y + run.getStop()); y++) {
+                        table.setValue(x, y, val);
+                    }
+                }
+            }
         }
     }
 
@@ -859,6 +1354,130 @@ public class RunTable
         return sb.toString();
     }
 
+    //------//
+    // trim //
+    //------//
+    /**
+     * Trim this run table, to come up with the smallest bounding box.
+     *
+     * @param offset (output) resulting offset WRT initial run table
+     *
+     * @return the resulting trimmed table
+     */
+    public RunTable trim (Point offset)
+    {
+        // Determine smallest bounding box
+        int iSeqMin = 0;
+        int iSeqMax = getSize();
+
+        for (int iSeq = 0, size = getSize(); iSeq < size; iSeq++) {
+            if (!isSequenceEmpty(iSeq)) {
+                iSeqMin = iSeq;
+
+                break;
+            }
+        }
+
+        for (int iSeq = getSize() - 1; iSeq >= 0; iSeq--) {
+            if (!isSequenceEmpty(iSeq)) {
+                iSeqMax = iSeq;
+
+                break;
+            }
+        }
+
+        final boolean isVertical = orientation == Orientation.VERTICAL;
+        int coordMin = isVertical ? height : width;
+        int coordMax = 0;
+
+        for (int iSeq = iSeqMin; iSeq <= iSeqMax; iSeq++) {
+            for (Iterator<Run> it = iterator(iSeq); it.hasNext();) {
+                final Run run = it.next();
+                coordMin = Math.min(coordMin, run.getStart());
+                coordMax = Math.max(coordMax, run.getStop());
+            }
+        }
+
+        final int newWidth = isVertical ? (iSeqMax - iSeqMin + 1) : (coordMax - coordMin + 1);
+        final int newHeight = isVertical ? (coordMax - coordMin + 1) : (iSeqMax - iSeqMin + 1);
+
+        if ((newWidth == width) && (newHeight == height)) {
+            offset.x = offset.y = 0;
+
+            return this; // No modification
+        }
+
+        // Generate a shrunk table
+        RunTable newTable = new RunTable(orientation, newWidth, newHeight);
+        int i = -1; // Sequence index in newTable
+
+        for (int iSeq = iSeqMin; iSeq <= iSeqMax; iSeq++) {
+            short[] seq = getSequence(iSeq);
+            i++;
+
+            if (seq != null) {
+                final short[] rle;
+
+                if (coordMin == 0) {
+                    // Simply copy the rle
+                    rle = new short[seq.length];
+                    System.arraycopy(seq, 0, rle, 0, seq.length);
+                } else {
+                    int backLg = seq[1] & 0xFFFF; // backLg >= coordMin by definition of coordMin
+
+                    if (backLg > coordMin) {
+                        // Shorten the background length
+                        rle = new short[seq.length];
+                        System.arraycopy(seq, 0, rle, 0, seq.length);
+                        rle[1] = (short) (backLg - coordMin);
+                    } else {
+                        // backLg == coordMin, hence skip the initial 0B pair of cells
+                        rle = new short[seq.length - 2];
+                        System.arraycopy(seq, 2, rle, 0, seq.length - 2);
+                    }
+                }
+
+                newTable.sequences[i] = rle;
+            }
+        }
+
+        offset.x = isVertical ? iSeqMin : coordMin;
+        offset.y = isVertical ? coordMin : iSeqMin;
+
+        return newTable;
+    }
+
+    //-------//
+    // write //
+    //-------//
+    /**
+     * Write the table at proper offset in provided buffer
+     *
+     * @param buffer  the buffer to be written to
+     * @param xOffset relative buffer abscissa for runTable topLeft corner
+     * @param yOffset relative buffer ordinate for runTable topLeft corner
+     */
+    public void write (ByteProcessor buffer,
+                       int xOffset,
+                       int yOffset)
+    {
+        final boolean isVertical = orientation == Orientation.VERTICAL;
+
+        for (int iSeq = 0, size = getSize(); iSeq < size; iSeq++) {
+            for (Iterator<Run> it = iterator(iSeq); it.hasNext();) {
+                final Run run = it.next();
+
+                for (int coord = run.getStart(), stop = run.getStop(); coord <= stop; coord++) {
+                    if (isVertical) {
+                        buffer.set(xOffset + iSeq, yOffset + coord, 0);
+                    } else {
+                        buffer.set(xOffset + coord, yOffset + iSeq, 0);
+                    }
+                }
+            }
+        }
+    }
+
     //--------//
     // encode //
     //--------//
@@ -879,7 +1498,7 @@ public class RunTable
         int start = list.get(0).getStart();
         int cursor = 0;
         int length = 0;
-        boolean injectBack = false;
+        boolean injectBackground = false;
 
         if (start != 0) {
             // Insert an empty foreground length
@@ -887,13 +1506,13 @@ public class RunTable
             seq = new short[size];
             seq[0] = 0;
             cursor = 1;
-            injectBack = true;
+            injectBackground = true;
         } else {
             seq = new short[size];
         }
 
         for (Run run : list) {
-            if (injectBack) {
+            if (injectBackground) {
                 // Inject background
                 seq[cursor++] = (short) (run.getStart() - length);
                 length = run.getStart();
@@ -903,7 +1522,7 @@ public class RunTable
             seq[cursor++] = (short) run.getLength();
             length += run.getLength();
 
-            injectBack = true;
+            injectBackground = true;
         }
 
         return seq;
@@ -921,41 +1540,6 @@ public class RunTable
     final short[] getSequence (int index)
     {
         return sequences[index];
-    }
-
-    //-------------//
-    // isIdentical //
-    //-------------//
-    /**
-     * (package private) Field by field comparison (meant for unitary tests)
-     *
-     * @param that the other RunTable to compare with
-     * @return true if identical
-     */
-    boolean isIdentical (RunTable that)
-    {
-        // Check null entities
-        if (that == null) {
-            return false;
-        }
-
-        if ((this.orientation == that.orientation)
-            && (this.width == that.width)
-            && (this.height == that.height)) {
-            // Check run sequences, row by row
-            for (int row = 0, size = getSize(); row < size; row++) {
-                short[] thisSeq = getSequence(row);
-                short[] thatSeq = that.getSequence(row);
-
-                if (!Arrays.equals(thisSeq, thatSeq)) {
-                    return false;
-                }
-            }
-
-            return true;
-        } else {
-            return false;
-        }
     }
 
     //-------------//
@@ -1181,7 +1765,7 @@ public class RunTable
     // ShortVector //
     //-------------//
     /**
-     * Temporary structure for (un)marshaling purpose.
+     * Temporary structure for (un)marshalling purpose.
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     private static class ShortVector

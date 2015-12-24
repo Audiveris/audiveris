@@ -11,12 +11,15 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 /**
  * Interface {@code Exclusion} is a relation that indicates exclusion between two
  * possible interpretations.
  *
  * @author Hervé Bitteur
  */
+@XmlJavaTypeAdapter(BasicExclusion.Adapter.class)
 public interface Exclusion
         extends Relation
 {

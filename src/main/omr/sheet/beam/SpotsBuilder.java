@@ -16,21 +16,17 @@ import omr.OMR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
+import omr.glyph.GlyphFactory;
+import omr.glyph.Symbol.Group;
 
 import omr.image.ImageUtil;
 import omr.image.MorphoProcessor;
 import omr.image.StructureElement;
 
 import omr.lag.BasicLag;
-import omr.lag.JunctionRatioPolicy;
 import omr.lag.Lag;
 import omr.lag.Lags;
-import omr.lag.Section;
-import omr.lag.SectionFactory;
 
 import omr.run.Orientation;
 import omr.run.RunTable;
@@ -49,6 +45,7 @@ import omr.sheet.ui.SheetTab;
 
 import omr.ui.BoardsPane;
 
+import omr.util.Navigable;
 import omr.util.StopWatch;
 
 import ij.process.ByteProcessor;
@@ -82,6 +79,7 @@ public class SpotsBuilder
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
+    @Navigable(false)
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -120,7 +118,7 @@ public class SpotsBuilder
             // Retrieve major spots
             watch.start("buildSpots");
 
-            int beam = sheet.getScale().getMainBeam();
+            int beam = sheet.getScale().getBeamThicknessMain();
             List<Glyph> spots = buildSpots(buffer, null, beam, null);
 
             // Dispatch spots per system(s)
@@ -217,19 +215,8 @@ public class SpotsBuilder
         RunTableFactory runFactory = new RunTableFactory(SPOT_ORIENTATION);
         RunTable spotTable = runFactory.createTable(buffer);
 
-        // Sections
-        SectionFactory sectionsBuilder = new SectionFactory(spotLag, new JunctionRatioPolicy());
-        List<Section> sections = sectionsBuilder.createSections(spotTable);
-
-        if (offset != null) {
-            for (Section section : sections) {
-                section.translate(offset);
-            }
-        }
-
         // Glyphs
-        GlyphNest nest = sheet.getGlyphNest();
-        List<Glyph> glyphs = nest.retrieveGlyphs(sections, GlyphLayer.SPOT, true);
+        List<Glyph> glyphs = GlyphFactory.buildGlyphs(spotTable, offset);
 
         return glyphs;
     }
@@ -259,8 +246,8 @@ public class SpotsBuilder
             for (SystemInfo system : relevants) {
                 // Check glyph is within system abscissa boundaries
                 if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
-                    glyph.setShape(Shape.BEAM_SPOT);
-                    system.registerGlyph(glyph);
+                    glyph.addGroup(Group.BEAM_SPOT);
+                    system.registerStandaloneGlyph(glyph);
                     created = true;
                 }
             }
@@ -336,7 +323,6 @@ public class SpotsBuilder
     //--------------//
     /**
      * To ease (future) HEADS step, save the runs of the properly binarized buffer.
-     * The result is stored into sheet instance.
      *
      * @param buffer the buffer copy to binarize
      */

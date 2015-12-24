@@ -11,10 +11,9 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.BasicGlyph;
+import omr.glyph.Glyph;
+import omr.glyph.Symbol;
 
 import omr.lag.Section;
 
@@ -30,14 +29,13 @@ import omr.sheet.rhythm.Measure;
 import omr.sheet.rhythm.MeasureStack;
 
 import omr.sig.SIGraph;
-
-import omr.text.TextBuilder;
-import omr.text.TextLine;
+import omr.sig.SigValue.InterSet;
+import omr.sig.inter.Inter;
+import omr.sig.inter.SentenceInter;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
+import omr.util.Jaxb;
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -55,13 +53,15 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.concurrent.ConcurrentSkipListSet;
 
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlList;
+import javax.xml.bind.annotation.XmlType;
 
 /**
  * Class {@code SystemInfo} gathers information from the original picture about a
@@ -75,6 +75,10 @@ import javax.xml.bind.annotation.XmlElement;
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
+@XmlType(propOrder = {
+    /** Sig must be the last member to marshal. */
+    "id", "indented", "stacks", "parts", "standaloneGlyphs", "sig"}
+)
 public class SystemInfo
         implements Comparable<SystemInfo>
 {
@@ -103,33 +107,46 @@ public class SystemInfo
     @XmlAttribute(name = "id")
     private final int id;
 
+    /** Indentation flag. */
+    @XmlElement(name = "indented")
+    private Jaxb.True indented;
+
+    /** Measure stacks in this system. */
+    ///@XmlElementWrapper(name = "stacks")
+    @XmlElement(name = "stack")
+    private final List<MeasureStack> stacks = new ArrayList<MeasureStack>();
+
     /** Real parts in this system (no dummy parts included). */
     @XmlElement(name = "part")
     private final List<Part> parts = new ArrayList<Part>();
 
-    /** Real staves of this system (no dummy staves included). */
-//    ///@XmlElementWrapper(name = "staves")
-//    @XmlElement(name = "staff")
-    private List<Staff> staves = new ArrayList<Staff>();
+    /** Collection of standalone glyphs in this system.
+     * This should be limited to glyphs not referenced elsewhere, to avoid garbage collection.
+     */
+    @XmlList
+    @XmlIDREF
+    @XmlElement(name = "standalone-glyph-refs")
+    private final LinkedHashSet<BasicGlyph> standaloneGlyphs = new LinkedHashSet<BasicGlyph>();
+
+    /**
+     * Symbol Interpretation Graph for this system.
+     * Nota: sig must be marshalled AFTER parts hierarchy to separate IDs and IDREFs handling.
+     */
+    @XmlElement(name = "sig")
+    private SIGraph sig;
 
     // Transient data
     //---------------
     //
     /** Containing sheet. */
     @Navigable(false)
-    private final Sheet sheet;
+    private Sheet sheet;
 
-    /** Symbol Interpretation Graph for this system. */
-    private final SIGraph sig;
+    /** Real staves of this system (no dummy staves included). */
+    private List<Staff> staves = new ArrayList<Staff>();
 
     /** Assigned page, if any. */
     private Page page;
-
-    /** Dedicated text builder */
-    private final TextBuilder textBuilder;
-
-    /** Measure stacks in this system. */
-    private final List<MeasureStack> stacks = new ArrayList<MeasureStack>();
 
     /** PartGroups in this system */
     private final List<PartGroup> partGroups = new ArrayList<PartGroup>();
@@ -137,19 +154,11 @@ public class SystemInfo
     /** Horizontal sections. */
     private final List<Section> hSections = new ArrayList<Section>();
 
-    private final List<Section> ledgerSections = new ArrayList<Section>();
-
     /** Vertical sections. */
     private final List<Section> vSections = new ArrayList<Section>();
 
-    /** Collection of (active?) glyphs in this system */
-    private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>(Glyph.byAbscissa);
-
-    /** Unmodifiable view of the glyphs collection */
-    private final SortedSet<Glyph> glyphsView = Collections.unmodifiableSortedSet(glyphs);
-
-    /** Set of text lines. */
-    private final Set<TextLine> textLines = new LinkedHashSet<TextLine>();
+    /** Unmodifiable view of the standalone glyphs collection. */
+    private final Set<BasicGlyph> glyphsView = Collections.unmodifiableSet(standaloneGlyphs);
 
     /** Area that encloses all items related to this system. */
     private Area area;
@@ -175,8 +184,8 @@ public class SystemInfo
     /** Width of the system. */
     private int width = -1;
 
-    /** Indentation flag. */
-    private boolean indented;
+    /** Very temporary set, used only during SIG marshalling. */
+    private InterSet interSet;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -196,7 +205,6 @@ public class SystemInfo
         setStaves(staves);
 
         sig = new SIGraph(this);
-        textBuilder = new TextBuilder(this);
     }
 
     /**
@@ -205,9 +213,6 @@ public class SystemInfo
     private SystemInfo ()
     {
         this.id = 0;
-        this.sheet = null;
-        this.sig = null;
-        this.textBuilder = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -224,29 +229,40 @@ public class SystemInfo
         parts.add(partInfo);
     }
 
-    //-----------------------//
-    // addToGlyphsCollection //
-    //-----------------------//
-    /**
-     * This is a private entry meant for SystemGlyphsBuilder only.
-     * The standard entry is {@link #registerGlyph}
-     *
-     * @param glyph the glyph to add to the system glyph collection
-     */
-    public void addToGlyphsCollection (Glyph glyph)
+    //-------------//
+    // afterReload //
+    //-------------//
+    public void afterReload ()
     {
-        glyphs.add(glyph);
+        try {
+            // Populate system sig
+            sig.afterReload(this);
+
+            for (Part part : parts) {
+                part.afterReload();
+            }
+
+            for (MeasureStack stack : stacks) {
+                stack.afterReload(this);
+            }
+
+            for (Inter inter : sig.inters(SentenceInter.class)) {
+                ((SentenceInter) inter).assignStaff(this);
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+        }
     }
 
-    //-------------//
-    // clearGlyphs //
-    //-------------//
+    //-----------------------//
+    // clearStandaloneGlyphs //
+    //-----------------------//
     /**
-     * Empty the system glyph collection.
+     * Clear the collection of standalone glyphs, when they are no longer useful.
      */
-    public void clearGlyphs ()
+    public void clearStandaloneGlyphs ()
     {
-        glyphs.clear();
+        standaloneGlyphs.clear();
     }
 
     //-----------//
@@ -315,6 +331,10 @@ public class SystemInfo
      */
     public Area getArea ()
     {
+        if (area == null) {
+            sheet.getSystemManager().computeSystemArea(this);
+        }
+
         return area;
     }
 
@@ -353,7 +373,7 @@ public class SystemInfo
      */
     public Rectangle getBounds ()
     {
-        if (area != null) {
+        if (getArea() != null) {
             return area.getBounds();
         } else {
             return null;
@@ -468,12 +488,11 @@ public class SystemInfo
     // getGlyphs //
     //-----------//
     /**
-     * Report the unmodifiable collection of glyphs within the system
-     * area.
+     * Report the unmodifiable collection of glyphs within the system area.
      *
      * @return the unmodifiable collection of glyphs
      */
-    public SortedSet<Glyph> getGlyphs ()
+    public Set<BasicGlyph> getGlyphs ()
     {
         return glyphsView;
     }
@@ -514,6 +533,17 @@ public class SystemInfo
         return getPage().getSystems().indexOf(this);
     }
 
+    //-------------//
+    // getInterSet //
+    //-------------//
+    /**
+     * @return the interSet
+     */
+    public InterSet getInterSet ()
+    {
+        return interSet;
+    }
+
     //---------------------//
     // getLastMeasureStack //
     //---------------------//
@@ -542,19 +572,6 @@ public class SystemInfo
     public Staff getLastStaff ()
     {
         return staves.get(staves.size() - 1);
-    }
-
-    //-------------------//
-    // getLedgerSections //
-    //-------------------//
-    /**
-     * Report the (unmodifiable) collection of ledger sections in system related area.
-     *
-     * @return the area ledger sections
-     */
-    public List<Section> getLedgerSections ()
-    {
-        return Collections.unmodifiableList(ledgerSections);
     }
 
     //---------//
@@ -640,20 +657,6 @@ public class SystemInfo
     public Collection<Section> getMutableHorizontalSections ()
     {
         return hSections;
-    }
-
-    //--------------------------//
-    // getMutableLedgerSections //
-    //--------------------------//
-    /**
-     * Report the (modifiable) collection of horizontal ledger sections
-     * in the system related area.
-     *
-     * @return the ledger sections
-     */
-    public Collection<Section> getMutableLedgerSections ()
-    {
-        return ledgerSections;
     }
 
     //----------------------------//
@@ -1071,7 +1074,7 @@ public class SystemInfo
      * if any in system.
      *
      * @param point
-     * @return proper sublist of staves
+     * @return proper sublist of staves (top down)
      */
     public List<Staff> getStavesAround (Point2D point)
     {
@@ -1089,11 +1092,8 @@ public class SystemInfo
             if (first > 0) {
                 first--;
             }
-        } else {
-            // Point is below staff, add staff below if any
-            if (last < (staves.size() - 1)) {
-                last++;
-            }
+        } else if (last < (staves.size() - 1)) {
+            last++;
         }
 
         return staves.subList(first, last + 1);
@@ -1112,27 +1112,6 @@ public class SystemInfo
     public List<Staff> getStavesOf (Point2D point)
     {
         return StaffManager.getStavesOf(point, staves, null);
-    }
-
-    //----------------//
-    // getTextBuilder //
-    //----------------//
-    public TextBuilder getTextBuilder ()
-    {
-        return textBuilder;
-    }
-
-    //--------------//
-    // getTextLines //
-    //--------------//
-    /**
-     * Report the various text lines retrieved in this system.
-     *
-     * @return the (perhaps empty) collection of text lines found
-     */
-    public Set<TextLine> getTextLines ()
-    {
-        return textLines;
     }
 
     //--------//
@@ -1183,7 +1162,7 @@ public class SystemInfo
      */
     public boolean isIndented ()
     {
-        return indented;
+        return indented != null;
     }
 
     //-----------------------//
@@ -1202,6 +1181,28 @@ public class SystemInfo
 
         for (Glyph glyph : getGlyphs()) {
             if (rect.contains(glyph.getBounds())) {
+                found.add(glyph);
+            }
+        }
+
+        return found;
+    }
+
+    //--------------------//
+    // lookupGroupedGlyphs //
+    //--------------------//
+    /**
+     * Look up in system glyphs for those whose group is the desired one.
+     *
+     * @param group the desired group
+     * @return the glyphs found
+     */
+    public List<Glyph> lookupGroupedGlyphs (Symbol.Group group)
+    {
+        List<Glyph> found = new ArrayList<Glyph>();
+
+        for (Glyph glyph : getGlyphs()) {
+            if (glyph.hasGroup(group)) {
                 found.add(glyph);
             }
         }
@@ -1235,101 +1236,31 @@ public class SystemInfo
         return found;
     }
 
-    //--------------------//
-    // lookupShapedGlyphs //
-    //--------------------//
+    //-------------------------//
+    // registerStandaloneGlyph //
+    //-------------------------//
     /**
-     * Look up in system glyphs for those whose shape is the desired one.
+     * Register a brand new standalone glyph in proper system (and sheet index).
      *
-     * @param shape the desired shape
-     * @return the glyphs found
+     * @param glyph the brand new standalone glyph
      */
-    public List<Glyph> lookupShapedGlyphs (Shape shape)
+    public void registerStandaloneGlyph (Glyph glyph)
     {
-        List<Glyph> found = new ArrayList<Glyph>();
-
-        for (Glyph glyph : getGlyphs()) {
-            if (glyph.getShape() == shape) {
-                found.add(glyph);
-            }
-        }
-
-        return found;
+        sheet.getGlyphIndex().register(glyph);
+        standaloneGlyphs.add((BasicGlyph) glyph);
     }
 
-    //---------------//
-    // registerGlyph //
-    //---------------//
+    //-----------------------//
+    // removeStandaloneGlyph //
+    //-----------------------//
     /**
-     * Register a brand new glyph in proper system (and nest).
-     * <p>
-     * <b>Note</b>: The caller must use the returned glyph since it may be
-     * different from the provided glyph (this happens when an original glyph
-     * with same signature existed before this one)
-     *
-     * @param glyph the brand new glyph
-     * @return the original glyph as inserted in the glyph nest.
-     *         Use the returned entity instead of the provided one.
-     */
-    public Glyph registerGlyph (Glyph glyph)
-    {
-        glyph = sheet.getGlyphNest().registerGlyph(glyph);
-        glyphs.add(glyph);
-
-        return glyph;
-    }
-
-    //----------------------------//
-    // removeFromGlyphsCollection //
-    //----------------------------//
-    /**
-     * Meant for access by SystemGlyphsBuilder only,
-     * since standard entry is {@link #removeGlyph}.
-     *
-     * @param glyph the glyph to remove
-     * @return true if the glyph was registered
-     */
-    public boolean removeFromGlyphsCollection (Glyph glyph)
-    {
-        return glyphs.remove(glyph);
-    }
-
-    //-------------//
-    // removeGlyph //
-    //-------------//
-    /**
-     * Remove a glyph from the containing system glyph list, and make
-     * it inactive by cutting the link from its member sections.
+     * Remove a glyph from the containing system collection of standalone glyphs.
      *
      * @param glyph the glyph to remove
      */
-    public void removeGlyph (Glyph glyph)
+    public void removeStandaloneGlyph (Glyph glyph)
     {
-        glyphs.remove(glyph);
-
-        // Cut link from its member sections, if pointing to this glyph
-        glyph.cutSections();
-    }
-
-    //----------------//
-    // retrieveGlyphs //
-    //----------------//
-    /**
-     * In a given system area, browse through all sections not assigned
-     * to known glyphs, and build new glyphs out of connected sections.
-     */
-    public void retrieveGlyphs ()
-    {
-        // Consider all unknown vertical & horizontal sections
-        List<Section> allSections = new ArrayList<Section>();
-        allSections.addAll(getVerticalSections());
-        allSections.addAll(getHorizontalSections());
-
-        final GlyphNest nest = sheet.getGlyphNest();
-        List<Glyph> newGlyphs = nest.retrieveGlyphs(allSections, GlyphLayer.DEFAULT, false);
-
-        // Record them into the system
-        glyphs.addAll(newGlyphs);
+        standaloneGlyphs.remove((BasicGlyph) glyph);
     }
 
     //---------//
@@ -1361,7 +1292,18 @@ public class SystemInfo
      */
     public void setIndented (boolean indented)
     {
-        this.indented = indented;
+        this.indented = indented ? Jaxb.TRUE : null;
+    }
+
+    //-------------//
+    // setInterSet //
+    //-------------//
+    /**
+     * @param interSet the interSet to set
+     */
+    public void setInterSet (InterSet interSet)
+    {
+        this.interSet = interSet;
     }
 
     //---------//
@@ -1370,33 +1312,6 @@ public class SystemInfo
     public void setPage (Page page)
     {
         this.page = page;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Convenient method, to build a string with just the IDs of the system collection.
-     *
-     * @param systems the collection of systems
-     * @return the string built
-     */
-    public static String toString (Collection<SystemInfo> systems)
-    {
-        if (systems == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(" systems[");
-
-        for (SystemInfo system : systems) {
-            sb.append("#").append(system.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
     }
 
     //-----------//
@@ -1443,6 +1358,33 @@ public class SystemInfo
         deltaY = (int) Math.rint(
                 lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
         bottom = (int) Math.rint(botLeft.getY());
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the IDs of the system collection.
+     *
+     * @param systems the collection of systems
+     * @return the string built
+     */
+    public static String toString (Collection<SystemInfo> systems)
+    {
+        if (systems == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(" systems[");
+
+        for (SystemInfo system : systems) {
+            sb.append("#").append(system.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
     }
 
     //
@@ -1522,5 +1464,25 @@ public class SystemInfo
         final int commonBottom = Math.min(this.bottom, that.bottom);
 
         return commonBottom > commonTop;
+    }
+
+    //----------------//
+    // initTransients //
+    //----------------//
+    void initTransients (BasicSheet sheet,
+                         Page page)
+    {
+        this.sheet = sheet;
+        this.page = page;
+    }
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
+    {
+        logger.debug("SystemInfo.beforeMarshal for {}", this);
+        setInterSet(new InterSet());
     }
 }

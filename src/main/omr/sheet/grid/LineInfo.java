@@ -11,23 +11,26 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.lag.Section;
+import omr.glyph.Glyph;
 
-import omr.math.GeoPath;
-import omr.math.Line;
+import omr.math.NaturalSpline;
+
+import omr.sheet.StaffLine;
 
 import omr.util.HorizontalSide;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
-import java.util.Collection;
+
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Interface {@code LineInfo} describes the handling of one staff line.
  *
  * @author Hervé Bitteur
  */
+@XmlJavaTypeAdapter(StaffLine.Adapter.class)
 public interface LineInfo
 {
     //~ Methods ------------------------------------------------------------------------------------
@@ -35,7 +38,7 @@ public interface LineInfo
     /**
      * Report the absolute contour rectangle
      *
-     * @return the contour box (with minimum height of 1)
+     * @return a copy of the contour box (with minimum height of 1)
      */
     Rectangle getBounds ();
 
@@ -48,44 +51,39 @@ public interface LineInfo
     Point2D getEndPoint (HorizontalSide side);
 
     /**
-     * Report the id of this line
+     * Selector for the underlying glyph
      *
-     * @return the line id (debugging info)
+     * @return the underlying glyph
      */
-    int getId ();
+    Glyph getGlyph ();
 
     /**
-     * Report the lag sections that compose the staff line
+     * Selector for the underlying spline.
      *
-     * @return a collection of the line sections
+     * @return the underlying spline
      */
-    Collection<Section> getSections ();
+    NaturalSpline getSpline ();
 
     /**
-     * Paint the computed line on the provided environment.
+     * Report the mean line thickness.
      *
-     * @param g the graphics context
+     * @return the line thickness
      */
-    void render (Graphics2D g);
+    double getThickness ();
 
     /**
-     * Report the line path
+     * Paint the computed line on the provided graphic environment.
      *
-     * @return the path
+     * @param g          the graphics context
+     * @param showPoints true to show the defining points
+     * @param pointWidth width for any displayed defining point
      */
-    GeoPath toPath ();
+    void renderLine (Graphics2D g,
+                     boolean showPoints,
+                     double pointWidth);
 
     /**
-     * Retrieve the precise intersection with a rather vertical line.
-     *
-     * @param vertical the rather vertical line
-     * @return the precise intersection
-     */
-    Point2D verticalIntersection (Line vertical);
-
-    /**
-     * Retrieve the staff line ordinate at given abscissa x, using int
-     * values
+     * Retrieve the staff line ordinate at given abscissa x, using int values
      *
      * @param x the given abscissa
      * @return the corresponding y value
@@ -93,8 +91,7 @@ public interface LineInfo
     int yAt (int x);
 
     /**
-     * Retrieve the staff line ordinate at given abscissa x, using
-     * double values
+     * Retrieve the staff line ordinate at given abscissa x, using double values
      *
      * @param x the given abscissa
      * @return the corresponding y value

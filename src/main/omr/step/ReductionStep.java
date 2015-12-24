@@ -42,6 +42,6 @@ public class ReductionStep
                           Void context)
             throws StepException
     {
-        new SigReducer(system).reduce(true);
+        new SigReducer(system, true).reduceFoundations();
     }
 }

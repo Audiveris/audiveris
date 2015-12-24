@@ -1,72 +1,57 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="FERMATA" interline="18" id="1378">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-8.64864864864865</pitch-position>
-    <section orientation="VERTICAL" first-pos="587" id="1122">
-        <run start="860" length="6"/>
-        <run start="857" length="9"/>
-        <run start="854" length="9"/>
-        <run start="852" length="9"/>
-        <run start="851" length="8"/>
-        <run start="849" length="8"/>
-        <run start="848" length="8"/>
-        <run start="847" length="8"/>
-        <run start="846" length="8"/>
-        <run start="845" length="8"/>
-        <run start="844" length="8"/>
-        <run start="843" length="8"/>
-        <run start="842" length="9"/>
-        <run start="841" length="9"/>
-        <run start="841" length="9"/>
-        <run start="840" length="9"/>
-        <run start="840" length="9"/>
-        <run start="839" length="10"/>
-        <run start="839" length="9"/>
-        <run start="838" length="10"/>
-        <run start="838" length="10"/>
-        <run start="838" length="10"/>
-        <run start="838" length="10"/>
-        <run start="838" length="10"/>
-        <run start="838" length="10"/>
-        <run start="838" length="10"/>
-        <run start="838" length="10"/>
-        <run start="838" length="10"/>
-        <run start="838" length="10"/>
-        <run start="838" length="10"/>
-        <run start="838" length="10"/>
-        <run start="839" length="9"/>
-        <run start="839" length="10"/>
-        <run start="840" length="9"/>
-        <run start="840" length="9"/>
-        <run start="841" length="9"/>
-        <run start="841" length="9"/>
-        <run start="842" length="9"/>
-        <run start="843" length="8"/>
-        <run start="844" length="8"/>
-        <run start="845" length="8"/>
-        <run start="846" length="8"/>
-        <run start="847" length="8"/>
-        <run start="848" length="8"/>
-        <run start="849" length="8"/>
-        <run start="851" length="8"/>
-        <run start="853" length="8"/>
-        <run start="855" length="9"/>
-        <run start="857" length="9"/>
-        <run start="860" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="606" id="1166">
-        <run start="861" length="3"/>
-        <run start="859" length="7"/>
-        <run start="858" length="9"/>
-        <run start="857" length="11"/>
-        <run start="857" length="11"/>
-        <run start="857" length="11"/>
-        <run start="857" length="11"/>
-        <run start="857" length="11"/>
-        <run start="857" length="11"/>
-        <run start="858" length="9"/>
-        <run start="859" length="7"/>
-        <run start="861" length="3"/>
-    </section>
-</glyph>
+<sample id="1378" interline="18" left="587" top="838" shape="FERMATA">
+    <run-table orientation="VERTICAL" width="50" height="30">
+        <sequences>
+            <item>0 22 6</item>
+            <item>0 19 9</item>
+            <item>0 16 9</item>
+            <item>0 14 9</item>
+            <item>0 13 8</item>
+            <item>0 11 8</item>
+            <item>0 10 8</item>
+            <item>0 9 8</item>
+            <item>0 8 8</item>
+            <item>0 7 8</item>
+            <item>0 6 8</item>
+            <item>0 5 8</item>
+            <item>0 4 9</item>
+            <item>0 3 9</item>
+            <item>0 3 9</item>
+            <item>0 2 9</item>
+            <item>0 2 9</item>
+            <item>0 1 10</item>
+            <item>0 1 9</item>
+            <item>10 13 3</item>
+            <item>10 11 7</item>
+            <item>10 10 9</item>
+            <item>10 9 11</item>
+            <item>10 9 11</item>
+            <item>10 9 11</item>
+            <item>10 9 11</item>
+            <item>10 9 11</item>
+            <item>10 9 11</item>
+            <item>10 10 9</item>
+            <item>10 11 7</item>
+            <item>10 13 3</item>
+            <item>0 1 9</item>
+            <item>0 1 10</item>
+            <item>0 2 9</item>
+            <item>0 2 9</item>
+            <item>0 3 9</item>
+            <item>0 3 9</item>
+            <item>0 4 9</item>
+            <item>0 5 8</item>
+            <item>0 6 8</item>
+            <item>0 7 8</item>
+            <item>0 8 8</item>
+            <item>0 9 8</item>
+            <item>0 10 8</item>
+            <item>0 11 8</item>
+            <item>0 13 8</item>
+            <item>0 15 8</item>
+            <item>0 17 9</item>
+            <item>0 19 9</item>
+            <item>0 22 6</item>
+        </sequences>
+    </run-table>
+</sample>

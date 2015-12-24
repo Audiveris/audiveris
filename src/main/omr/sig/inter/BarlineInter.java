@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.sig.GradeImpacts;
 
@@ -21,7 +21,11 @@ import omr.util.HorizontalSide;
 import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.util.Collection;
-import java.util.EnumSet;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code BarlineInter} represents an interpretation of bar line (thin or thick
@@ -29,13 +33,16 @@ import java.util.EnumSet;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "barline")
 public class BarlineInter
         extends AbstractVerticalInter
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Does this bar line define a staff side?. */
-    private final EnumSet<HorizontalSide> staffEnd = EnumSet.noneOf(HorizontalSide.class);
+    @XmlElement(name = "staff-end")
+    private HorizontalSide staffEnd;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -54,6 +61,14 @@ public class BarlineInter
                          double width)
     {
         super(glyph, shape, impacts, median, width);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private BarlineInter ()
+    {
+        super(null, null, null, null, 0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -76,11 +91,11 @@ public class BarlineInter
     @Override
     public void delete ()
     {
-        super.delete();
-
         if (staff != null) {
             staff.removeBar(this);
         }
+
+        super.delete();
     }
 
     //-------------------//
@@ -92,7 +107,7 @@ public class BarlineInter
      *
      * @param bars  the collection of bars to browse
      * @param point the reference point
-     * @return the abscissa-wise closest bar-line
+     * @return the abscissa-wise closest barline
      */
     public static BarlineInter getClosestBarline (Collection<BarlineInter> bars,
                                                   Point point)
@@ -141,7 +156,7 @@ public class BarlineInter
     //------------//
     public boolean isStaffEnd (HorizontalSide side)
     {
-        return staffEnd.contains(side);
+        return staffEnd == side;
     }
 
     //-------------//
@@ -149,6 +164,6 @@ public class BarlineInter
     //-------------//
     public void setStaffEnd (HorizontalSide side)
     {
-        staffEnd.add(side);
+        staffEnd = side;
     }
 }

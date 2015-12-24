@@ -11,14 +11,9 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.OMR;
-
-import omr.glyph.facets.Glyph;
-
-import omr.score.ui.ScoreActions;
+import omr.classifier.Evaluation;
 
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 
 import omr.step.Step;
 
@@ -27,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Class {@code GlyphsModel} is a common model for synchronous glyph and section handling.
@@ -45,7 +39,7 @@ public class GlyphsModel
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph nest */
-    protected final GlyphNest nest;
+    protected final GlyphIndex nest;
 
     /** Related Sheet */
     protected final Sheet sheet;
@@ -65,7 +59,7 @@ public class GlyphsModel
      * @param step  the step after which update should be perform (can be null)
      */
     public GlyphsModel (Sheet sheet,
-                        GlyphNest nest,
+                        GlyphIndex nest,
                         Step step)
     {
         // Null sheet is allowed (for GlyphVerifier use)
@@ -99,19 +93,20 @@ public class GlyphsModel
                               boolean compound,
                               double grade)
     {
-        if (compound) {
-            // Build & insert one compound
-            Glyph glyph = nest.buildGlyph(glyphs, true);
-
-            assignGlyph(glyph, shape, grade);
-        } else {
-            // Assign each glyph individually
-            for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
-                if (glyph.getShape() != Shape.NOISE) {
-                    assignGlyph(glyph, shape, grade);
-                }
-            }
-        }
+        throw new RuntimeException("HB. Not implemented yet");
+//        if (compound) {
+//            // Build & insert one compound
+//            Glyph glyph = nest.buildGlyph(glyphs, true);
+//
+//            assignGlyph(glyph, shape, grade);
+//        } else {
+//            // Assign each glyph individually
+//            for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
+//                if (glyph.getShape() != Shape.NOISE) {
+//                    assignGlyph(glyph, shape, grade);
+//                }
+//            }
+//        }
     }
 
     //----------------//
@@ -148,9 +143,9 @@ public class GlyphsModel
      * @param id the glyph id
      * @return the glyph found, or null if not
      */
-    public Glyph getGlyphById (int id)
+    public Glyph getGlyphById (String id)
     {
-        return nest.getGlyph(id);
+        return nest.getEntity(id);
     }
 
     //----------------//
@@ -168,14 +163,14 @@ public class GlyphsModel
     }
 
     //---------//
-    // getGlyphNest //
+    // getGlyphIndex //
     //---------//
     /**
      * Report the underlying glyph nest.
      *
      * @return the related glyph nest
      */
-    public GlyphNest getNest ()
+    public GlyphIndex getNest ()
     {
         return nest;
     }
@@ -230,53 +225,56 @@ public class GlyphsModel
      * Assign a Shape to a glyph, inserting the glyph to its containing
      * system and nest if it is still transient.
      *
-     * @param glyph the glyph to be assigned
-     * @param shape the assigned shape, which may be null
-     * @param grade the grade about shape
+     * @param glyph     the glyph to be assigned
+     * @param interline global sheet interline
+     * @param shape     the assigned shape, which may be null
+     * @param grade     the grade about shape
      * @return the assigned glyph (perhaps an original glyph)
      */
     protected Glyph assignGlyph (Glyph glyph,
+                                 int interline,
                                  Shape shape,
                                  double grade)
     {
-        if (glyph == null) {
-            return null;
-        }
-
-        if (shape != null) {
-            List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(glyph);
-
-            //            if (system != null) {
-            //                glyph = system.registerGlyph(glyph); // System then nest
-            //            } else {
-            //                // Insert in nest directly, which assigns an id to the glyph
-            glyph = nest.registerGlyph(glyph);
-
-            //            }
-            boolean isTransient = glyph.isTransient();
-            logger.debug(
-                    "Assign {}{} to {}",
-                    isTransient ? "compound " : "",
-                    glyph.idString(),
-                    shape);
-
-            // Remember the latest shape assigned
-            setLatestShape(shape);
-        }
-
-        // Do the assignment of the shape to the glyph
-        glyph.setShape(shape);
-
-        // Should we persist the assigned glyph?
-        if ((shape != null)
-            && (grade == Evaluation.MANUAL)
-            && (OMR.getGui() != null)
-            && ScoreActions.getInstance().isManualPersisted()) {
-            // Record the glyph description to disk
-            GlyphRepository.getInstance().recordOneGlyph(glyph, sheet);
-        }
-
-        return glyph;
+        throw new RuntimeException("HB. Not implemented yet");
+//        if (glyph == null) {
+//            return null;
+//        }
+//
+//        if (shape != null) {
+//            List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(glyph);
+//
+//            //            if (system != null) {
+//            //                glyph = system.register(glyph); // System then nest
+//            //            } else {
+//            //                // Insert in nest directly, which assigns an id to the glyph
+//            glyph = nest.register(glyph);
+//
+//            //            }
+//            boolean isTransient = glyph.isTransient();
+//            logger.debug(
+//                    "Assign {}{} to {}",
+//                    isTransient ? "compound " : "",
+//                    glyph.idString(),
+//                    shape);
+//
+//            // Remember the latest shape assigned
+//            setLatestShape(shape);
+//        }
+//
+//        // Do the assignment of the shape to the glyph
+//        glyph.setShape(shape);
+//
+//        // Should we persist the assigned glyph?
+//        if ((shape != null)
+//            && (grade == Evaluation.MANUAL)
+//            && (OMR.getGui() != null)
+//            && ScoreActions.getInstance().isManualPersisted()) {
+//            // Record the glyph description to disk
+//            SampleRepository.getInstance().recordOneGlyph(glyph, sheet);
+//        }
+//
+//        return glyph;
     }
 
     //---------------//
@@ -290,7 +288,7 @@ public class GlyphsModel
     protected void deassignGlyph (Glyph glyph)
     {
         // Assign the null shape to the glyph
-        assignGlyph(glyph, null, Evaluation.ALGORITHM);
+        assignGlyph(glyph, sheet.getInterline(), null, Evaluation.ALGORITHM);
     }
 
     //-------------//
@@ -314,7 +312,7 @@ public class GlyphsModel
         //
         //        // Special case for ledger glyph
         //        if (glyph.getShape() == Shape.LEDGER) {
-        //            StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
+        //            StaffInfo staff = system.getStaffAt(glyph.getCenter());
         //
         //            ///staff.removeLedger(glyph);
         //            //TODO: handle a LedgerInter instead!

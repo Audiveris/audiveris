@@ -11,11 +11,7 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.glyph.facets.Glyph;
-
-import omr.graph.Vertex;
-
-import omr.lag.ui.SectionView;
+import omr.glyph.dynamic.SectionCompound;
 
 import omr.math.Barycenter;
 import omr.math.Line;
@@ -25,17 +21,19 @@ import omr.run.Orientation;
 import omr.run.Oriented;
 import omr.run.Run;
 
-import omr.util.Vip;
+import omr.util.Entity;
+import omr.util.IdUtil;
 
 import ij.process.ByteProcessor;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.PathIterator;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -54,28 +52,28 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * It by no means implies that the section dimension is longer in the direction along the runs than
  * in the direction across.
  * To enforce this, the {@link #getLength(Orientation)} requires that an explicit orientation be
- * provided, just like for {@link Glyph} instances.
+ * provided.
  *
  * @author Hervé Bitteur
  */
 @XmlJavaTypeAdapter(BasicSection.Adapter.class)
 public interface Section
-        extends Vertex<Lag, Section>, Comparable<Section>, Oriented, SectionView, Vip
+        extends Entity, Oriented
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** A section comparator, using section id */
+    /** A section comparator, using section id. */
     public static final Comparator<Section> idComparator = new Comparator<Section>()
     {
         @Override
         public int compare (Section s1,
                             Section s2)
         {
-            return Integer.signum(s1.getId() - s2.getId());
+            return IdUtil.compare(s1.getId(), s2.getId());
         }
     };
 
-    /** For comparing Section instances on their decreasing weight */
+    /** For comparing Section instances on their decreasing weight. */
     public static final Comparator<Section> reverseWeightComparator = new Comparator<Section>()
     {
         @Override
@@ -86,7 +84,7 @@ public interface Section
         }
     };
 
-    /** For comparing Section instances on their start value */
+    /** For comparing Section instances on their start value. */
     public static final Comparator<Section> startComparator = new Comparator<Section>()
     {
         @Override
@@ -97,7 +95,7 @@ public interface Section
         }
     };
 
-    /** For comparing Section instances on their pos value */
+    /** For comparing Section instances on their pos value. */
     public static final Comparator<Section> posComparator = new Comparator<Section>()
     {
         @Override
@@ -108,7 +106,7 @@ public interface Section
         }
     };
 
-    /** For comparing Section instances on their absolute abscissa */
+    /** For comparing Section instances on their absolute abscissa. */
     public static final Comparator<Section> byAbscissa = new Comparator<Section>()
     {
         @Override
@@ -119,14 +117,40 @@ public interface Section
         }
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Register the adjacency of a section from the other orientation.
-     *
-     * @param otherSection the other section to remember
-     */
-    public void addOppositeSection (Section otherSection);
+    /** For comparing Section instances on their absolute abscissa, ordinate, id. */
+    public static final Comparator<Section> byFullAbscissa = new Comparator<Section>()
+    {
+        @Override
+        public int compare (Section s1,
+                            Section s2)
+        {
+            if (s1 == s2) {
+                return 0;
+            }
 
+            final Point ref = s1.getBounds().getLocation();
+            final Point otherRef = s2.getBounds().getLocation();
+
+            // Are x values different?
+            final int dx = ref.x - otherRef.x;
+
+            if (dx != 0) {
+                return dx;
+            }
+
+            // Vertically aligned, so use ordinates
+            final int dy = ref.y - otherRef.y;
+
+            if (dy != 0) {
+                return dy;
+            }
+
+            // Finally, use id. Note this should return zero since different sections cannot overlap
+            return IdUtil.compare(s1.getId(), s2.getId());
+        }
+    };
+
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Extend a section with the given run.
      * This new run is assumed to be contiguous to the current last run of the
@@ -177,13 +201,13 @@ public interface Section
     public void drawAscii ();
 
     /**
-     * Build an image with the pixels of this section.
+     * Fill a buffer with the pixels of this section.
      *
-     * @param im  the image to populate with this section
-     * @param box absolute bounding box (used as image coordinates reference)
+     * @param buffer the buffer to populate with this section
+     * @param offset absolute image offset
      */
-    public void fillImage (ByteProcessor im,
-                           Rectangle box);
+    public void fillBuffer (ByteProcessor buffer,
+                            Point offset);
 
     /**
      * Draws the section, into the provided table.
@@ -218,7 +242,7 @@ public interface Section
     public double getAspect (Orientation orientation);
 
     /**
-     * Return a COPY of the absolute bounding box.
+     * Return a (COPY of) the absolute bounding box.
      *
      * @return the absolute bounding box
      */
@@ -234,23 +258,11 @@ public interface Section
     public Point getCentroid ();
 
     /**
-     * Return the adjacency ratio on the incoming junctions.
-     * This is computed as the ratio to the length of the first run, of the
-     * sum of run overlapping lengths of the incoming junctions. In other
-     * words, this is a measure of how much the section at hand is
-     * overlapped with runs.
+     * Report the compound the section belongs to, if any.
      *
-     * <ul> <li> An isolated section/vertex, such as the one related to a
-     * barline, will exhibit a very low adjacency ratio. </li>
-     *
-     * <li> On the contrary, a section which is just a piece of a larger glyph,
-     * such as a treble clef or a brace, will have a higher adjacency. </li>
-     * </ul>
-     *
-     * @return the percentage of overlapped run length
-     * @see #getLastAdjacency
+     * @return the compound, which may be null
      */
-    public double getFirstAdjacency ();
+    public SectionCompound getCompound ();
 
     /**
      * Return the position (x for vertical runs, y for horizontal runs)
@@ -268,20 +280,11 @@ public interface Section
     public Run getFirstRun ();
 
     /**
-     * Report the glyph the section belongs to, if any.
+     * Report the containing lag
      *
-     * @return the glyph, which may be null
+     * @return the containing lag
      */
-    public Glyph getGlyph ();
-
-    /**
-     * Return the adjacency ratio at the end of the section at hand.
-     * See getFirstAdjacency for explanation of the role of adjacency.
-     *
-     * @return the percentage of overlapped run length
-     * @see #getFirstAdjacency
-     */
-    public double getLastAdjacency ();
+    public Lag getLag ();
 
     /**
      * Return the position of the last run of the section.
@@ -336,13 +339,6 @@ public interface Section
      * @return the average thickness of the section
      */
     public double getMeanThickness (Orientation orientation);
-
-    /**
-     * A read-only access to adjacent sections from opposite orientation
-     *
-     * @return the set of adjacent sections of the opposite orientation
-     */
-    public Set<Section> getOppositeSections ();
 
     /**
      * Return the section bounding rectangle, using the runs
@@ -433,20 +429,35 @@ public interface Section
     public int getWeight ();
 
     /**
-     * Return the next sibling section, both linked by source of
-     * last incoming edge.
+     * Check whether this section intersects the provided absolute rectangle.
      *
-     * @return the next sibling or null
+     * @param rectangle absolute rectangle
+     * @return true if intersection is not empty
      */
-    public Section inNextSibling ();
+    public boolean intersects (Rectangle rectangle);
 
     /**
-     * Return the previous sibling section, both linked by source of
-     * first incoming edge.
+     * Check whether this section intersects the provided shape.
      *
-     * @return the previous sibling or null
+     * @param shape the shape to intersect
+     * @return true if intersection is not empty
      */
-    public Section inPreviousSibling ();
+    public boolean intersects (java.awt.Shape shape);
+
+    /**
+     * Check whether this section intersects that other section.
+     *
+     * @param that the other section
+     * @return true if intersection is not empty
+     */
+    public boolean intersects (Section that);
+
+    /**
+     * Checks whether the section is already a member of a compound.
+     *
+     * @return the result of the test
+     */
+    public boolean isCompoundMember ();
 
     /**
      * Report whether this section is "fat", according to the current
@@ -455,13 +466,6 @@ public interface Section
      * @return the fat flag, if any
      */
     public Boolean isFat ();
-
-    /**
-     * Checks whether the section is already a member of a glyph.
-     *
-     * @return the result of the test
-     */
-    public boolean isGlyphMember ();
 
     /**
      * Report whether this section has been "processed".
@@ -478,33 +482,45 @@ public interface Section
     public boolean isVertical ();
 
     /**
-     * Return the next sibling section, both linked by target of
-     * the last outgoing edge.
-     *
-     * @return the next sibling or null
-     */
-    public Section outNextSibling ();
-
-    /**
-     * Return the previous sibling section, both linked by target of
-     * the first outgoing edge.
-     *
-     * @return the previous sibling or null
-     */
-    public Section outPreviousSibling ();
-
-    /**
-     * Add a run at the beginning rather than at the end of the
-     * section.
+     * Add a run at the beginning rather than at the end of the section.
      *
      * @param run the new first run
      */
     public void prepend (Run run);
 
     /**
+     * Render the section
+     *
+     * @param g             the graphics context
+     * @param drawBorders   should section borders be drawn
+     * @param specificColor specific color
+     * @return true if actually rendered, i.e. is displayed
+     */
+    public boolean render (Graphics g,
+                           boolean drawBorders,
+                           Color specificColor);
+
+    /**
+     * Render the section using the provided graphics object, while
+     * showing that the section has been selected.
+     *
+     * @param g the graphics environment (which may be applying transformation such as scale)
+     * @return true if the section is concerned by the clipping rectangle, which means if (part of)
+     *         the section has been drawn
+     */
+    public boolean renderSelected (Graphics g);
+
+    /**
      * Nullify the fat sticky attribute.
      */
     public void resetFat ();
+
+    /**
+     * Assign the containing compound, if any.
+     *
+     * @param compound the containing compound, perhaps null
+     */
+    public void setCompound (SectionCompound compound);
 
     /**
      * Record the current "fatness" value of this section.
@@ -522,11 +538,11 @@ public interface Section
     public void setFirstPos (int firstPos);
 
     /**
-     * Assign the containing glyph, if any.
+     * Assign the containing lag
      *
-     * @param glyph the containing glyph, perhaps null
+     * @param lag the containing lag
      */
-    public void setGlyph (Glyph glyph);
+    public void setLag (Lag lag);
 
     /**
      * Set a flag to be used at caller's will.
@@ -536,42 +552,32 @@ public interface Section
     public void setProcessed (boolean processed);
 
     /**
-     * Apply an absolute translation vector to this section.
-     *
-     * @param vector the translation vector
-     */
-    public void translate (Point vector);
-
-    /**
-     * Check whether this section intersects the provided absolute rectangle.
-     *
-     * @param rectangle absolute rectangle
-     * @return true if intersection is not empty
-     */
-    boolean intersects (Rectangle rectangle);
-
-    /**
-     * Check whether this section intersects the provided shape.
-     *
-     * @param shape the shape to intersect
-     * @return true if intersection is not empty
-     */
-    boolean intersects (java.awt.Shape shape);
-
-    /**
-     * Check whether this section intersects that other section.
-     *
-     * @param that the other section
-     * @return true if intersection is not empty
-     */
-    boolean intersects (Section that);
-
-    /**
      * Check whether this section touches that other section
      *
      * @param that the other section
      * @return true if there is contact between the two sections
      *         (vertically or horizontally, but not in diagonal)
      */
-    boolean touches (Section that);
+    public boolean touches (Section that);
+
+    /**
+     * Apply an absolute translation vector to this section.
+     *
+     * @param vector the translation vector
+     */
+    public void translate (Point vector);
 }
+//    /**
+//     * Register the adjacency of a section from the other orientation.
+//     *
+//     * @param otherSection the other section to remember
+//     */
+//    public void addOppositeSection (Section otherSection);
+//
+//
+//    /**
+//     * A read-only access to adjacent sections from opposite orientation
+//     *
+//     * @return the set of adjacent sections of the opposite orientation
+//     */
+//    public Set<Section> getOppositeSections ();

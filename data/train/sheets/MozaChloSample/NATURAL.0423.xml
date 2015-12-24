@@ -1,30 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="NATURAL" interline="18" id="423">
-    <stem-number>0</stem-number>
-    <with-ledger>false</with-ledger>
-    <pitch-position>-6.666666666666667</pitch-position>
-    <section orientation="VERTICAL" first-pos="1075" id="1949">
-        <run start="513" length="32"/>
-        <run start="513" length="32"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1077" id="1953">
-        <run start="525" length="6"/>
-        <run start="525" length="5"/>
-        <run start="525" length="5"/>
-        <run start="524" length="6"/>
-        <run start="524" length="6"/>
-        <run start="524" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1077" id="1954">
-        <run start="539" length="5"/>
-        <run start="538" length="6"/>
-        <run start="538" length="6"/>
-        <run start="538" length="6"/>
-        <run start="538" length="5"/>
-        <run start="537" length="6"/>
-    </section>
-    <section orientation="VERTICAL" first-pos="1083" id="1978">
-        <run start="523" length="32"/>
-        <run start="524" length="30"/>
-    </section>
-</glyph>
+<sample id="423" interline="18" left="1075" top="513" shape="NATURAL">
+    <run-table orientation="VERTICAL" width="10" height="42">
+        <sequences>
+            <item>32</item>
+            <item>32</item>
+            <item>0 12 6 8 5</item>
+            <item>0 12 5 8 6</item>
+            <item>0 12 5 8 6</item>
+            <item>0 11 6 8 6</item>
+            <item>0 11 6 8 5</item>
+            <item>0 11 6 7 6</item>
+            <item>0 10 32</item>
+            <item>0 11 30</item>
+        </sequences>
+    </run-table>
+</sample>

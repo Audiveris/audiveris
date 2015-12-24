@@ -17,13 +17,16 @@ import omr.sig.GradeImpacts;
 
 import java.awt.geom.Line2D;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code BeamHookInter} represents a beam hook interpretation.
  *
- * @see FullBeamInter
+ * @see BeamInter
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "beam-hook")
 public class BeamHookInter
         extends AbstractBeamInter
 {
@@ -41,6 +44,11 @@ public class BeamHookInter
                           double height)
     {
         super(Shape.BEAM_HOOK, impacts, median, height);
+    }
+
+    private BeamHookInter ()
+    {
+        super(null, null, null, 0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

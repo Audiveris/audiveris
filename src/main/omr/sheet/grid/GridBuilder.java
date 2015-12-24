@@ -16,11 +16,11 @@ import omr.OMR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
+import omr.glyph.dynamic.FilamentBoard;
 
 import omr.run.RunTable;
 
-import omr.sheet.Picture;
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetTab;
 
@@ -107,10 +107,15 @@ public class GridBuilder
 
             // Display
             if (OMR.getGui() != null) {
-                displayEditor();
+                sheet.getSymbolsEditor();
 
                 // Inter board
                 sheet.getAssembly().addBoard(SheetTab.DATA_TAB, new InterBoard(sheet));
+
+                // Filament board
+                sheet.getAssembly().addBoard(
+                        SheetTab.DATA_TAB,
+                        new FilamentBoard(sheet.getFilamentIndex().getEntityService(), true));
             }
 
             // Retrieve the horizontal staff lines filaments with long sections
@@ -186,12 +191,11 @@ public class GridBuilder
 
         try {
             // We already have all foreground pixels as vertical runs
-            RunTable wholeVertTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
 
             // hLag creation
             watch.start("buildHorizontalLag");
 
-            RunTable longVertTable = linesRetriever.buildHorizontalLag(wholeVertTable);
+            RunTable longVertTable = linesRetriever.buildHorizontalLag();
 
             // vLag creation
             watch.start("buildVerticalLag");
@@ -201,14 +205,6 @@ public class GridBuilder
                 watch.print();
             }
         }
-    }
-
-    //---------------//
-    // displayEditor //
-    //---------------//
-    private void displayEditor ()
-    {
-        sheet.getSymbolsController();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

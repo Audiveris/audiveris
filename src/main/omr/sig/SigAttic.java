@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sig;
 
-import omr.sig.inter.ChordInter;
+import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.Inter;
 import omr.sig.relation.Relation;
 
@@ -64,8 +64,8 @@ public class SigAttic
         Set<Inter> vertices = new HashSet<Inter>(seeds);
 
         for (Inter inter : seeds) {
-            if (inter instanceof ChordInter) {
-                vertices.addAll(((ChordInter) inter).getNotes());
+            if (inter instanceof AbstractChordInter) {
+                vertices.addAll(((AbstractChordInter) inter).getNotes());
             }
         }
 
@@ -84,10 +84,8 @@ public class SigAttic
                     if (sig.containsVertex(target)) {
                         sig.addEdge(inter, target, rel);
                     }
-                } else {
-                    if (sig.containsVertex(source)) {
-                        sig.addEdge(source, inter, rel);
-                    }
+                } else if (sig.containsVertex(source)) {
+                    sig.addEdge(source, inter, rel);
                 }
             }
         }
@@ -108,30 +106,17 @@ public class SigAttic
                       Collection<Inter> seeds)
     {
         // Save needed vertices
-        if (true) {
-            Set<Inter> vertices = new HashSet<Inter>(seeds);
+        Set<Inter> vertices = new HashSet<Inter>(seeds);
 
-            for (Inter seed : seeds) {
-                if (seed instanceof ChordInter) {
-                    // Include chord notes as well
-                    vertices.addAll(((ChordInter) seed).getNotes());
-                }
+        for (Inter seed : seeds) {
+            if (seed instanceof AbstractChordInter) {
+                // Include chord notes as well
+                vertices.addAll(((AbstractChordInter) seed).getNotes());
             }
+        }
 
-            for (Inter vertex : vertices) {
-                addVertex(vertex);
-            }
-        } else {
-            for (Inter seed : seeds) {
-                addVertex(seed);
-
-                if (seed instanceof ChordInter) {
-                    // Include chord notes as well
-                    for (Inter note : ((ChordInter) seed).getNotes()) {
-                        addVertex(note);
-                    }
-                }
-            }
+        for (Inter vertex : vertices) {
+            addVertex(vertex);
         }
 
         // Save involved relations as edges (including linked vertices)

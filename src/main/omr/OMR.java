@@ -19,11 +19,11 @@ import org.jdesktop.application.SingleFrameApplication;
 /**
  * Class {@code OMR} gathers definitions and dependencies for an OMR application.
  * <p>
- * <img alt="OMR diagram" src="doc-files/Omr.png" />
+ * <img alt="OMR diagram" src="doc-files/Omr.png">
  *
  * @author Hervé Bitteur
  */
-public class OMR
+public abstract class OMR
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -48,8 +48,11 @@ public class OMR
     /** The extension used for score output files: {@value}. */
     public static final String SCORE_EXTENSION = ".xml";
 
-    /** The prefix used for sheet output files in a multi-sheet book: {@value}. */
-    public static final String SHEET_PREFIX = "sheet#";
+    /** The extension used for script files: {@value}. */
+    public static final String SCRIPT_EXTENSION = ".script.xml";
+
+    /** The suffix used for sheet output files in a multi-sheet book: {@value}. */
+    public static final String SHEET_SUFFIX = "-sheet#";
 
     /** OMR engine. */
     private static OmrEngine engine;

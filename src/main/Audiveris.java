@@ -32,7 +32,7 @@ public final class Audiveris
     /**
      * The main entry point, which just calls {@link omr.Main#main}.
      *
-     * @param args These args are simply passed to Main
+     * @param args These arguments are simply passed to Main
      */
     public static void main (final String[] args)
     {

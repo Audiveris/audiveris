@@ -13,6 +13,8 @@ package omr.sig;
 
 import omr.sig.inter.Inter;
 
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+
 /**
  * Class {@code AbstractImpacts} is an abstract implementation of {@link GradeImpacts}
  * interface.
@@ -22,8 +24,16 @@ import omr.sig.inter.Inter;
 public abstract class AbstractImpacts
         implements GradeImpacts
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
+    /**
+     * Creates a new {@code AbstractImpacts} object.
+     */
+    public AbstractImpacts ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // getIntrinsicRatio //
     //-------------------//
@@ -73,5 +83,29 @@ public abstract class AbstractImpacts
         }
 
         return getIntrinsicRatio() * Math.pow(global, 1 / totalWeight);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Adapter //
+    //---------//
+    public static class Adapter
+            extends XmlAdapter<AbstractImpacts, GradeImpacts>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public AbstractImpacts marshal (GradeImpacts itf)
+                throws Exception
+        {
+            return (AbstractImpacts) itf;
+        }
+
+        @Override
+        public GradeImpacts unmarshal (AbstractImpacts abs)
+                throws Exception
+        {
+            return abs;
+        }
     }
 }

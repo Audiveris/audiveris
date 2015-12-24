@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sheet.ledger;
 
+import omr.lag.Section;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -19,6 +21,8 @@ import omr.step.Step;
 import omr.step.StepException;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class {@code LedgersStep} implements <b>LEDGERS</b> step, which retrieves all
@@ -27,7 +31,7 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class LedgersStep
-        extends AbstractSystemStep<Void>
+        extends AbstractSystemStep<LedgersStep.Context>
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -47,7 +51,7 @@ public class LedgersStep
                            Sheet sheet)
     {
         // Add ledger checkboard
-        new LedgersBuilder(sheet.getSystems().get(0)).addCheckBoard();
+        new LedgersBuilder(sheet.getSystems().get(0), null).addCheckBoard();
     }
 
     //----------//
@@ -55,10 +59,11 @@ public class LedgersStep
     //----------//
     @Override
     public void doSystem (SystemInfo system,
-                          Void context)
+                          Context context)
             throws StepException
     {
-        new LedgersBuilder(system).buildLedgers();
+        final List<Section> sections = context.sectionMap.get(system);
+        new LedgersBuilder(system, sections).buildLedgers();
     }
 
     //----------//
@@ -67,17 +72,32 @@ public class LedgersStep
     /**
      * {@inheritDoc}
      * <p>
-     * Retrieve horizontal sticks for ledger candidates.
-     * <p>
-     * These candidate sticks are dispatched to their relevant system(s)
+     * Retrieve horizontal sticks for ledger candidates, mapped by related system(s)
+     *
+     * @return the context (map of sections per system)
      */
     @Override
-    protected Void doProlog (Collection<SystemInfo> systems,
-                             Sheet sheet)
+    protected Context doProlog (Collection<SystemInfo> systems,
+                                Sheet sheet)
             throws StepException
     {
-        new LedgersFilter(sheet).process();
+        return new Context(new LedgersFilter(sheet).process());
+    }
 
-        return null;
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Context //
+    //---------//
+    protected static class Context
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        public final Map<SystemInfo, List<Section>> sectionMap;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Context (Map<SystemInfo, List<Section>> sectionMap)
+        {
+            this.sectionMap = sectionMap;
+        }
     }
 }

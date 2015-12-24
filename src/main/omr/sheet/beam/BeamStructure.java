@@ -14,9 +14,11 @@ package omr.sheet.beam;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
 
+import omr.lag.JunctionRatioPolicy;
 import omr.lag.Section;
+import omr.lag.SectionFactory;
 
 import omr.math.Barycenter;
 import omr.math.BasicLine;
@@ -24,6 +26,7 @@ import omr.math.GeoUtil;
 import omr.math.LineUtil;
 
 import omr.run.Orientation;
+import static omr.run.Orientation.VERTICAL;
 import omr.run.Run;
 
 import omr.sheet.beam.BeamsBuilder.ItemParameters;
@@ -78,6 +81,9 @@ public class BeamStructure
     //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph. */
     private final Glyph glyph;
+
+    /** Sections built out of glyph. */
+    private List<Section> glyphSections;
 
     /** Glyph centroid. */
     private final Point center;
@@ -227,7 +233,7 @@ public class BeamStructure
             retrieveItems(line);
 
             if (glyph.isVip()) {
-                line.setVip();
+                line.setVip(true);
             }
 
             lines.add(line);
@@ -273,7 +279,7 @@ public class BeamStructure
     }
 
     //----------//
-    // getGlyph //
+    // getCompound //
     //----------//
     /**
      * @return the glyph
@@ -328,9 +334,9 @@ public class BeamStructure
     // setVip //
     //--------//
     @Override
-    public void setVip ()
+    public void setVip (boolean vip)
     {
-        vip = true;
+        this.vip = vip;
     }
 
     //------------//
@@ -550,7 +556,7 @@ public class BeamStructure
         // All sections are vertical, retrieve their border (top or bottom)
         List<SectionBorder> sectionBorders = new ArrayList<SectionBorder>();
 
-        for (Section section : glyph.getMembers()) {
+        for (Section section : getGlyphSections()) {
             final Rectangle sectionBox = section.getBounds();
 
             // Discard too narrow sections
@@ -613,6 +619,28 @@ public class BeamStructure
         }
 
         return borderLines;
+    }
+
+    //------------------//
+    // getGlyphSections //
+    //------------------//
+    private List<Section> getGlyphSections ()
+    {
+        if (glyphSections == null) {
+            // Sections
+            SectionFactory factory = new SectionFactory(VERTICAL, JunctionRatioPolicy.DEFAULT);
+            List<Section> sections = factory.createSections(glyph.getRunTable());
+
+            final Point offset = glyph.getTopLeft();
+
+            for (Section section : sections) {
+                section.translate(offset);
+            }
+
+            glyphSections = sections;
+        }
+
+        return glyphSections;
     }
 
     //-------------//
@@ -698,7 +726,7 @@ public class BeamStructure
         Integer stop = null; // Current abscissa end of item being built
 
         // Sections are ordered by starting abscissa
-        for (Section section : glyph.getMembers()) {
+        for (Section section : getGlyphSections()) {
             Rectangle sctBox = section.getBounds();
             Point sctCenter = GeoUtil.centerOf(sctBox);
             int y = (int) Math.rint(LineUtil.yAtX(median, sctCenter.x));

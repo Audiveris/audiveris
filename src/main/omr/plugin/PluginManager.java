@@ -16,22 +16,17 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.sheet.Book;
-import omr.sheet.ui.SheetDependent;
-import omr.sheet.ui.SheetsController;
+import omr.sheet.ui.StubsController;
 
+import omr.ui.util.AbstractMenuListener;
 import omr.ui.util.SeparableMenu;
 
 import omr.util.FileUtil;
 import omr.util.Param;
 
-import org.jdesktop.application.Action;
-import org.jdesktop.application.Task;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileFilter;
 import java.nio.file.Files;
@@ -43,7 +38,6 @@ import java.util.TreeMap;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
 
 /**
  * Class {@code PluginManager} handles the collection of registered plugins.
@@ -58,7 +52,6 @@ import javax.swing.event.MenuListener;
  * @author Hervé Bitteur
  */
 public class PluginManager
-        extends SheetDependent
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -233,33 +226,6 @@ public class PluginManager
         return map.keySet();
     }
 
-    //--------------//
-    // invokeEditor //
-    //--------------//
-    /**
-     * Action to invoke the default score editor
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = SHEET_IDLE)
-    public Task<Void, Void> invokeDefaultPlugin (ActionEvent e)
-    {
-        if (defaultPlugin == null) {
-            logger.warn("No default plugin defined");
-
-            return null;
-        }
-
-        // Current score export file
-        final Book book = SheetsController.getCurrentBook();
-
-        if (book == null) {
-            return null;
-        } else {
-            return defaultPlugin.getTask(book);
-        }
-    }
-
     //-------------------//
     // findDefaultPlugin //
     //-------------------//
@@ -283,7 +249,9 @@ public class PluginManager
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.String defaultPlugin = new Constant.String("", "Name of default plugin");
+        private final Constant.String defaultPlugin = new Constant.String(
+                "",
+                "Name of default plugin");
     }
 
     //---------//
@@ -323,24 +291,14 @@ public class PluginManager
      * This is meant to enable menu items only when a sheet is selected.
      */
     private class MyMenuListener
-            implements MenuListener
+            extends AbstractMenuListener
     {
         //~ Methods --------------------------------------------------------------------------------
 
         @Override
-        public void menuCanceled (MenuEvent e)
-        {
-        }
-
-        @Override
-        public void menuDeselected (MenuEvent e)
-        {
-        }
-
-        @Override
         public void menuSelected (MenuEvent e)
         {
-            boolean enabled = SheetsController.getCurrentSheet() != null;
+            boolean enabled = StubsController.getCurrentStub() != null;
 
             for (int i = 0; i < menu.getItemCount(); i++) {
                 JMenuItem menuItem = menu.getItem(i);

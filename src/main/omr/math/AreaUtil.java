@@ -174,16 +174,14 @@ public abstract class AreaUtil
     // verticalRibbon //
     //----------------//
     /**
-     * Create a ribbon mostly vertical, where top and bottom are
-     * short and horizontal and left and right sides are long and
-     * rather vertical.
+     * Create a ribbon mostly vertical, where top and bottom are short and horizontal
+     * and left and right sides are long and rather vertical.
      * This is most useful for barlines.
      * <p>
-     * Nota: the defining points are meant to be the extrema points
-     * <b>inside</b> the ribbon.
+     * Nota: the defining points are meant to be the extrema points <b>inside</b> the ribbon.
      *
-     * @param median the defining vertical line (either a straight BasicLine
-     *               or a more wavy NaturalSpline)
+     * @param median the defining vertical line (either a straight BasicLine or a more wavy
+     *               NaturalSpline)
      * @param width  ribbon width
      * @return the created area
      */

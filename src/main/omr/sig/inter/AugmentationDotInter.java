@@ -11,20 +11,24 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
+import omr.sheet.Part;
 import omr.sheet.rhythm.Voice;
 
 import omr.sig.relation.AugmentationRelation;
 import omr.sig.relation.DoubleDotRelation;
 import omr.sig.relation.Relation;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code AugmentationDotInter} represent an augmentation dot for a note or a rest.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "augmentation-dot")
 public class AugmentationDotInter
         extends AbstractInter
 {
@@ -42,7 +46,32 @@ public class AugmentationDotInter
         super(glyph, null, Shape.AUGMENTATION_DOT, grade);
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private AugmentationDotInter ()
+    {
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // getPart //
+    //---------//
+    @Override
+    public Part getPart ()
+    {
+        if (part == null) {
+            for (Relation rel : sig.getRelations(
+                    this,
+                    AugmentationRelation.class,
+                    DoubleDotRelation.class)) {
+                return part = sig.getOppositeInter(this, rel).getPart();
+            }
+        }
+
+        return part;
+    }
+
     //--------------------------//
     // getSecondAugmentationDot //
     //--------------------------//

@@ -19,10 +19,7 @@ import omr.sheet.SystemInfo;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.BarlineInter;
-import omr.sig.inter.RepeatDotInter;
 import omr.sig.relation.BarGroupRelation;
-import omr.sig.relation.Relation;
-import omr.sig.relation.RepeatDotBarRelation;
 
 import omr.util.HorizontalSide;
 import omr.util.Navigable;
@@ -39,7 +36,7 @@ import java.util.TreeMap;
 
 /**
  * Class {@code MeasuresBuilder} is in charge, at system level, of building all measures
- * from the bar-lines found.
+ * from the barlines found.
  *
  * @author Hervé Bitteur
  */
@@ -76,7 +73,7 @@ public class MeasuresBuilder
     // buildMeasures //
     //---------------//
     /**
-     * Based on bar-lines found, allocate all measures in the system.
+     * Based on barlines found, allocate all measures in the system.
      * <p>
      * Parts and physical BarlineInter's have been identified within the system.
      * Each staff has its BarlineInter's attached.
@@ -91,12 +88,12 @@ public class MeasuresBuilder
      * Grouping strategy:<ul>
      * <li>A group of 2 physical bar lines, whatever their thickness, gives a single logical bar
      * line.</li>
-     * <li>A group of 3 or 4 physical bar-lines (thin | thick | thin) or (thin | thick | thick |
-     * thin) gives two logical bar-lines (thin | thick) and (thick | thin).</li>
+     * <li>A group of 3 or 4 physical barlines (thin | thick | thin) or (thin | thick | thick |
+     * thin) gives two logical barlines (thin | thick) and (thick | thin).</li>
      * <li>In the case of 3 verticals, the middle one is "shared" between the two logicals.</li>
      * <li>In the case of 4 verticals, no line is shared between the two logicals.</li>
      * </ul>
-     * TODO: should we handle the degraded case of staff with no bar-line at all?
+     * TODO: should we handle the degraded case of staff with no barline at all?
      */
     public void buildMeasures ()
     {
@@ -116,28 +113,29 @@ public class MeasuresBuilder
             buildPartMeasures(part, staffMap);
         }
     }
-
-    //-----------//
-    // addDotsTo //
-    //-----------//
-    /**
-     * Include the repeat dots, if any, linked to one side of this logical bar.
-     *
-     * @param staffBar the logical staff bar to populate with repeat dots
-     */
-    private void addDotsTo (StaffBarline staffBar)
-    {
-        // There cannot be dots on both sides, so let's browse both sides
-        for (BarlineInter bar : staffBar.getBars()) {
-            for (Relation rel : sig.getRelations(bar, RepeatDotBarRelation.class)) {
-                staffBar.addInter((RepeatDotInter) sig.getOppositeInter(bar, rel));
-            }
-        }
-    }
-
+//
+//    //-----------//
+//    // addDotsTo //
+//    //-----------//
+//    /**
+//     * Include the repeat dots, if any, linked to one side of this logical bar.
+//     *
+//     * @param staffBar the logical staff bar to populate with repeat dots
+//     */
+//    private void addDotsTo (StaffBarline staffBar)
+//    {
+//        // There cannot be dots on both sides, so let's browse both sides
+//        for (BarlineInter bar : staffBar.getBars()) {
+//            for (Relation rel : sig.getRelations(bar, RepeatDotBarRelation.class)) {
+//                staffBar.addInter((RepeatDotInter) sig.getOppositeInter(bar, rel));
+//            }
+//        }
+//    }
+//
     //-------------------//
     // buildPartMeasures //
     //-------------------//
+
     /**
      * Here, we build the sequence of PartBarlines in parallel with the StaffBarline
      * sequence of each staff within part.
@@ -203,13 +201,14 @@ public class MeasuresBuilder
                         staffBar.addInter(group.get(i));
                     }
 
-                    addDotsTo(staffBar);
+                    //TODO: Dots will appear only in SYMBOLS step!!!!
+                    ///addDotsTo(staffBar);
                 }
 
                 if (measure == null) {
                     part.setStartingBarline(partBar);
                 } else {
-                    measure.setBarline(partBar);
+                    measure.setRightBarline(partBar);
                 }
 
                 if (topGroup.size() > 2) {
@@ -227,7 +226,8 @@ public class MeasuresBuilder
                             staffBar.addInter(group.get(i));
                         }
 
-                        addDotsTo(staffBar);
+                        //TODO: Dots will appear only in SYMBOLS step!!!!
+                        ///addDotsTo(staffBar);
                     }
 
                     leftBarPending = partBar;
@@ -247,9 +247,9 @@ public class MeasuresBuilder
     // getBarGroups //
     //--------------//
     /**
-     * Build the sequence of grouped bar-lines.
+     * Build the sequence of grouped barlines.
      *
-     * @param bars the sequence of bar-lines
+     * @param bars the sequence of barlines
      * @return the sequence of groups
      */
     private List<List<BarlineInter>> getBarGroups (List<BarlineInter> bars)

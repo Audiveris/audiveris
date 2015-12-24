@@ -11,14 +11,20 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code FermataDotInter} represents a dot in a fermata symbol.
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "fermata-dot")
 public class FermataDotInter
         extends AbstractInter
 {
@@ -34,5 +40,12 @@ public class FermataDotInter
                             double grade)
     {
         super(glyph, null, Shape.FERMATA_DOT, grade);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private FermataDotInter ()
+    {
     }
 }

@@ -73,10 +73,10 @@ public interface Symbol
     /**
      * Report the symbol mass center.
      *
-     * @param area the contour box of the entity (symbol or glyph)
+     * @param box the contour box of the entity (symbol or glyph)
      * @return the mass center
      */
-    Point getCentroid (Rectangle area);
+    Point getCentroid (Rectangle box);
 
     /**
      * Report the bounding dimension of this symbol for the provided font.

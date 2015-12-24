@@ -14,18 +14,17 @@ package omr.sig.inter;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
+import omr.glyph.BasicGlyph;
+import omr.glyph.GlyphIndex;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.image.Anchored.Anchor;
 import omr.image.ShapeDescriptor;
 import omr.image.Template;
+import omr.image.TemplateFactory;
+import omr.image.TemplateFactory.Catalog;
 
-import omr.lag.JunctionRatioPolicy;
-import omr.lag.Section;
-import omr.lag.SectionFactory;
+import omr.math.PointUtil;
 import static omr.run.Orientation.VERTICAL;
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
@@ -40,6 +39,9 @@ import omr.sig.GradeImpacts;
 import omr.sig.relation.AccidHeadRelation;
 import omr.sig.relation.Relation;
 
+import omr.util.ByteUtil;
+import omr.util.Jaxb;
+
 import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
@@ -51,6 +53,11 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.ListIterator;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 /**
  * Class {@code AbstractHeadInter} is the base class for notes heads, that is
  * all notes, including whole and breve, but not rests.
@@ -59,49 +66,51 @@ import java.util.ListIterator;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public abstract class AbstractHeadInter
         extends AbstractNoteInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractHeadInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            AbstractHeadInter.class);
 
     private static final Constants constants = new Constants();
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Shape template descriptor. */
-    protected final ShapeDescriptor descriptor;
-
     /** Absolute location of head template pivot. */
+    @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.PointAdapter.class)
     protected final Point pivot;
 
     /** Relative pivot position WRT head. */
+    @XmlElement
     protected final Anchor anchor;
+
+    /** Shape template descriptor. */
+    protected ShapeDescriptor descriptor;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AbstractTemplateNoteInter} object.
      *
-     * @param descriptor the shape template descriptor
-     * @param pivot      the template pivot
-     * @param anchor     relative pivot configuration
-     * @param box        the object bounds
-     * @param shape      the underlying shape
-     * @param impacts    the grade details
-     * @param staff      the related staff
-     * @param pitch      the note pitch
+     * @param pivot   the template pivot
+     * @param anchor  relative pivot configuration
+     * @param bounds  the object bounds
+     * @param shape   the underlying shape
+     * @param impacts the grade details
+     * @param staff   the related staff
+     * @param pitch   the note pitch
      */
-    public AbstractHeadInter (ShapeDescriptor descriptor,
-                              Point pivot,
+    public AbstractHeadInter (Point pivot,
                               Anchor anchor,
-                              Rectangle box,
+                              Rectangle bounds,
                               Shape shape,
                               GradeImpacts impacts,
                               Staff staff,
                               double pitch)
     {
-        super(null, box, shape, impacts, staff, pitch);
-        this.descriptor = descriptor;
+        super(null, bounds, shape, impacts, staff, pitch);
         this.pivot = pivot;
         this.anchor = anchor;
     }
@@ -164,7 +173,7 @@ public abstract class AbstractHeadInter
             Slot slot = it.previous();
 
             // Inspect all notes of all chords
-            for (ChordInter chord : slot.getChords()) {
+            for (AbstractChordInter chord : slot.getChords()) {
                 if (chord.isRest() || (chord.getMeasure() != measure)) {
                     continue;
                 }
@@ -198,9 +207,9 @@ public abstract class AbstractHeadInter
     // getChord //
     //----------//
     @Override
-    public ChordInter getChord ()
+    public AbstractChordInter getChord ()
     {
-        return (ChordInter) getEnsemble();
+        return (AbstractChordInter) getEnsemble();
     }
 
     //---------------//
@@ -215,8 +224,27 @@ public abstract class AbstractHeadInter
     //---------------//
     // getDescriptor //
     //---------------//
+    public ShapeDescriptor getDescriptor (int interline)
+    {
+        if (descriptor == null) {
+            final Catalog catalog = TemplateFactory.getInstance().getCatalog(interline);
+            descriptor = catalog.getDescriptor(shape);
+        }
+
+        return descriptor;
+    }
+
+    //---------------//
+    // getDescriptor //
+    //---------------//
     public ShapeDescriptor getDescriptor ()
     {
+        if (descriptor == null) {
+            final int interline = sig.getSystem().getSheet().getInterline();
+
+            return getDescriptor(interline);
+        }
+
         return descriptor;
     }
 
@@ -261,18 +289,20 @@ public abstract class AbstractHeadInter
             }
 
             // Check horizontal distance
-            Rectangle common = box.intersection(thatNote.box);
+            Rectangle thisBounds = this.getBounds();
+            Rectangle thatBounds = thatNote.getBounds();
+            Rectangle common = thisBounds.intersection(thatBounds);
 
             if (common.width <= 0) {
                 return false;
             }
 
-            int thisArea = box.width * box.height;
-            int thatArea = thatNote.box.width * thatNote.box.height;
+            int thisArea = thisBounds.width * thisBounds.height;
+            int thatArea = thatBounds.width * thatBounds.height;
             int minArea = Math.min(thisArea, thatArea);
             int commonArea = common.width * common.height;
             double areaRatio = (double) commonArea / minArea;
-            boolean res = (common.width > (constants.maxOverlapDxRatio.getValue() * box.width))
+            boolean res = (common.width > (constants.maxOverlapDxRatio.getValue() * thisBounds.width))
                           && (areaRatio > constants.maxOverlapAreaRatio.getValue());
 
             //logger.info("*** {}% {} {} vs {}", (int) Math.rint(frac * 100), res, this, that);
@@ -299,47 +329,45 @@ public abstract class AbstractHeadInter
     /**
      * Use descriptor to build an underlying glyph.
      *
-     * @param image the image to read pixels from
-     * @param nest  the nest to hold the created glyph
+     * @param image     the image to read pixels from
+     * @param interline scaling info
+     * @param nest      the nest to hold the created glyph
      */
     public void retrieveGlyph (ByteProcessor image,
-                               GlyphNest nest)
+                               int interline,
+                               GlyphIndex nest)
     {
-        final Template tpl = descriptor.getTemplate();
-        final Rectangle descBox = descriptor.getBounds(getBounds());
-        final Point boxLocation = descBox.getLocation();
-        final List<Point> fores = tpl.getForegroundPixels(descBox, image);
+        final Template tpl = getDescriptor(interline).getTemplate();
+        final Rectangle interBox = getBounds();
+        final Rectangle descBox = getDescriptor().getBounds(interBox);
 
-        ByteProcessor buf = new ByteProcessor(descBox.width, descBox.height);
-        buf.invert();
+        // Foreground points (coordinates WRT descBox)
+        final List<Point> fores = tpl.getForegroundPixels(descBox, image);
+        final Rectangle foreBox = PointUtil.boundsOf(fores);
+
+        final ByteProcessor buf = new ByteProcessor(foreBox.width, foreBox.height);
+        ByteUtil.raz(buf);
 
         for (Point p : fores) {
-            buf.set(p.x, p.y, 0);
+            buf.set(p.x - foreBox.x, p.y - foreBox.y, 0);
         }
 
         // Runs
         RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
 
-        // Sections
-        SectionFactory sectionFactory = new SectionFactory(VERTICAL, new JunctionRatioPolicy());
-        List<Section> sections = sectionFactory.createSections(runTable);
-
-        // Translate sections to absolute coordinates
-        for (Section section : sections) {
-            section.translate(boxLocation);
-        }
-
-        glyph = nest.buildGlyph(sections, GlyphLayer.DEFAULT, true, Glyph.Linking.NO_LINK);
+        // Glyph
+        glyph = new BasicGlyph(descBox.x + foreBox.x, descBox.y + foreBox.y, runTable);
+        nest.register(glyph);
     }
 
     //--------//
     // shrink //
     //--------//
     /**
-     * Shrink a bit a bounding box when checking for note overlap.
+     * Shrink a bit a bounding bounds when checking for note overlap.
      *
-     * @param box the bounding box
-     * @return the shrunk box
+     * @param box the bounding bounds
+     * @return the shrunk bounds
      */
     public static Rectangle2D shrink (Rectangle box)
     {

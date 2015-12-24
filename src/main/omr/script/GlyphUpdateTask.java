@@ -11,17 +11,13 @@
 // </editor-fold>
 package omr.script;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
+import omr.glyph.Glyph;
 import omr.glyph.SectionSets;
-import omr.glyph.facets.Glyph;
-
-import omr.lag.Section;
 
 import omr.sheet.Sheet;
 
 import java.util.Collection;
-import java.util.TreeSet;
+import java.util.LinkedHashSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -85,13 +81,14 @@ public abstract class GlyphUpdateTask
     @Override
     protected void retrieveGlyphs ()
     {
-        glyphs = new TreeSet<Glyph>(Glyph.byAbscissa);
-
-        GlyphNest nest = sheet.getGlyphNest();
-
-        for (Collection<Section> set : sectionSets.getSets(sheet)) {
-            Glyph glyph = nest.buildGlyph(set, GlyphLayer.DEFAULT, true, Glyph.Linking.NO_LINK);
-            glyphs.add(glyph);
-        }
+        glyphs = new LinkedHashSet<Glyph>();
+        throw new RuntimeException("HB To be implemented");
+//
+//        GlyphIndex nest = sheet.getGlyphNest();
+//
+//        for (Collection<Section> set : sectionSets.getSets(sheet)) {
+//            Glyph glyph = nest.buildGlyph(set, GlyphLayer.DEFAULT, true, false);
+//            glyphs.add(glyph);
+//        }
     }
 }

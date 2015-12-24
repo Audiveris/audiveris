@@ -14,8 +14,8 @@ package omr.sig.inter;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.sheet.Staff;
 
@@ -24,11 +24,15 @@ import omr.util.VerticalSide;
 import java.awt.Point;
 import java.awt.Rectangle;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code TimeNumberInter} represents a top or bottom number in a time signature.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "time-number")
 public class TimeNumberInter
         extends AbstractNumberInter
 {
@@ -38,6 +42,7 @@ public class TimeNumberInter
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Top or bottom. */
+    @XmlAttribute
     protected final VerticalSide side;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -63,20 +68,29 @@ public class TimeNumberInter
     /**
      * Creates a new TimeNumberInter object.
      *
-     * @param box   bounding box of the number
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @param value number value
-     * @param side  top or bottom
+     * @param bounds bounding box of the number
+     * @param shape  precise shape
+     * @param grade  evaluation value
+     * @param value  number value
+     * @param side   top or bottom
      */
-    public TimeNumberInter (Rectangle box,
+    public TimeNumberInter (Rectangle bounds,
                             Shape shape,
                             double grade,
                             int value,
                             VerticalSide side)
     {
-        super(box, shape, grade, value);
+        super(bounds, shape, grade, value);
         this.side = side;
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private TimeNumberInter ()
+    {
+        super((Glyph) null, null, 0, 0);
+        this.side = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -113,7 +127,10 @@ public class TimeNumberInter
             return null;
         }
 
-        return new TimeNumberInter(glyph, shape, grade, value, side);
+        TimeNumberInter inter = new TimeNumberInter(glyph, shape, grade, value, side);
+        inter.setStaff(staff);
+
+        return inter;
     }
 
     //---------//

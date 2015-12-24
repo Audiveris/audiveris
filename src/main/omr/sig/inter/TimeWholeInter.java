@@ -11,9 +11,9 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
-import omr.glyph.facets.Glyph;
 
 import omr.score.TimeRational;
 import omr.score.TimeValue;
@@ -27,12 +27,15 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code TimeWholeInter} is a time signature defined by a single symbol (either
  * COMMON or CUT or predefined combos).
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "time-whole")
 public class TimeWholeInter
         extends TimeInter
 {
@@ -50,6 +53,14 @@ public class TimeWholeInter
                            double grade)
     {
         super(glyph, shape, grade);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private TimeWholeInter ()
+    {
+        super(null, null, 0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

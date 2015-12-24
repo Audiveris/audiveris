@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.glyph.facets.Glyph;
-
+import omr.classifier.GlyphClassifier;
+import omr.classifier.Classifier;
 import omr.score.TimeRational;
 
 import omr.sheet.Sheet;
@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,9 +40,6 @@ public class SymbolsModel
     private static final Logger logger = LoggerFactory.getLogger(SymbolsModel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Standard evaluator */
-    private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsModel object.
@@ -52,7 +48,7 @@ public class SymbolsModel
      */
     public SymbolsModel (Sheet sheet)
     {
-        super(sheet, sheet.getGlyphNest(), Step.SYMBOLS);
+        super(sheet, sheet.getGlyphIndex(), Step.SYMBOLS);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -202,29 +198,29 @@ public class SymbolsModel
     @Override
     public void deassignGlyph (Glyph glyph)
     {
-        // Safer
-        if (glyph.getShape() == null) {
-            return;
-        }
-
-        // Processing depends on shape at hand
-        switch (glyph.getShape()) {
-        case STEM:
-            logger.debug("Deassigning a Stem as glyph {}", glyph.getId());
-            cancelStems(Collections.singletonList(glyph));
-
-            break;
-
-        case NOISE:
-            logger.info("Skipping Noise as glyph {}", glyph.getId());
-
-            break;
-
-        default:
-            super.deassignGlyph(glyph);
-
-            break;
-        }
+//        // Safer
+//        if (glyph.getShape() == null) {
+//            return;
+//        }
+//
+//        // Processing depends on shape at hand
+//        switch (glyph.getShape()) {
+//        case STEM:
+//            logger.debug("Deassigning a Stem as glyph {}", glyph.getId());
+//            cancelStems(Collections.singletonList(glyph));
+//
+//            break;
+//
+//        case NOISE:
+//            logger.info("Skipping Noise as glyph {}", glyph.getId());
+//
+//            break;
+//
+//        default:
+//            super.deassignGlyph(glyph);
+//
+//            break;
+//        }
     }
 
     //---------------//
@@ -268,16 +264,9 @@ public class SymbolsModel
     //-------------//
     // assignGlyph //
     //-------------//
-    /**
-     * Assign a Shape to a glyph, inserting the glyph to its containing
-     * system and lag if it is still transient
-     *
-     * @param glyph the glyph to be assigned
-     * @param shape the assigned shape, which may be null
-     * @param grade the grade about shape
-     */
     @Override
     protected Glyph assignGlyph (Glyph glyph,
+                                 int interline,
                                  Shape shape,
                                  double grade)
     {
@@ -287,8 +276,10 @@ public class SymbolsModel
 
         // Test on glyph weight (noise-like)
         // To prevent to assign a non-noise shape to a noise glyph
-        if ((shape == Shape.NOISE) || evaluator.isBigEnough(glyph)) {
-            return super.assignGlyph(glyph, shape, grade);
+        /** Standard evaluator */
+        final Classifier evaluator = GlyphClassifier.getInstance();
+        if ((shape == Shape.NOISE) || evaluator.isBigEnough(glyph, interline)) {
+            return super.assignGlyph(glyph, interline, shape, grade);
         }
 
         return glyph;

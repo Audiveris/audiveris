@@ -11,11 +11,12 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.classifier.Evaluation;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
 import static omr.glyph.Shape.*;
 import static omr.glyph.ShapeSet.*;
-import omr.glyph.facets.Glyph;
 
 import omr.sheet.Scale;
 import omr.sheet.Staff;
@@ -349,7 +350,7 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Must be on right side of system header
-                return Math.abs(glyph.getLocation().x) > system.getFirstStaff().getHeaderStop();
+                return Math.abs(glyph.getCenter().x) > system.getFirstStaff().getHeaderStop();
             }
         };
 
@@ -400,7 +401,10 @@ public class ShapeChecker
                         ? constants.maxTitleHeight.getValue()
                         : constants.maxLyricsHeight.getValue();
 
-                if (glyph.getNormalizedHeight() >= maxHeight) {
+                int interline = system.getSheet().getInterline();
+                double normedHeight = (double) glyph.getHeight() / interline;
+
+                if (normedHeight >= maxHeight) {
                     eval.failure = new Evaluation.Failure("tooHigh");
 
                     return false;
@@ -429,7 +433,10 @@ public class ShapeChecker
                 }
 
                 // Total height for a complete time sig is staff height
-                if (glyph.getNormalizedHeight() > 4.5) {
+                int interline = system.getSheet().getInterline();
+                double normedHeight = (double) glyph.getHeight() / interline;
+
+                if (normedHeight > 4.5) {
                     eval.failure = new Evaluation.Failure("tooHigh");
 
                     return false;
@@ -475,7 +482,7 @@ public class ShapeChecker
                                           double[] features)
                     {
                         // A note / rest / dynamic cannot be too far from a staff
-                        Point center = glyph.getAreaCenter();
+                        Point center = glyph.getCenter();
                         Staff staff = system.getClosestStaff(center);
 
                         // Staff may be null when we are modifying system boundaries
@@ -542,7 +549,7 @@ public class ShapeChecker
                 }
 
                 // Pedal marks cannot intersect the staff
-                Staff staff = system.getClosestStaff(glyph.getAreaCenter());
+                Staff staff = system.getClosestStaff(glyph.getCenter());
 
                 return staff.gapTo(glyph.getBounds()) > 0;
             }
@@ -568,7 +575,7 @@ public class ShapeChecker
                 //                    if (Language.getOcr()
                 //                                .isAvailable()) {
                 //                        if (glyph.isTransient()) {
-                //                            glyph = system.registerGlyph(glyph);
+                //                            glyph = system.registerStandaloneGlyph(glyph);
                 //                        }
                 //
                 //                        BasicContent textInfo = glyph.getTextInfo();
@@ -665,7 +672,7 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Check that these markers are just above first staff
-                Point point = glyph.getAreaCenter();
+                Point point = glyph.getCenter();
                 Staff staff = system.getClosestStaff(point);
 
                 if (staff != system.getFirstStaff()) {

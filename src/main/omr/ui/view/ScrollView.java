@@ -94,8 +94,7 @@ public class ScrollView
     // fitHeight //
     //-----------//
     /**
-     * Define the zoom ratio so that the full height of the model can be
-     * visible.
+     * Define the zoom ratio so that the full height of the model can be visible.
      * We force the zoom ratio to stand within the range of the slider.
      */
     public void fitHeight ()
@@ -104,7 +103,7 @@ public class ScrollView
         Dimension dim = view.getModelSize();
         logger.debug("fitHeight vr={} dim={}", vr, dim);
 
-        setZoomRatio((double) (vr.height) / (double) dim.height);
+        setZoomRatio(vr.height / (double) dim.height);
     }
 
     //----------//
@@ -120,22 +119,18 @@ public class ScrollView
         Dimension dim = view.getModelSize();
         logger.debug("fitWhole vr={} dim={}", vr, dim);
 
-        setZoomRatio(
-                Math.min(
-                        (double) (vr.width) / (double) dim.width,
-                        (double) (vr.height) / (double) dim.height));
+        setZoomRatio(Math.min(vr.width / (double) dim.width, vr.height / (double) dim.height));
     }
 
     //----------//
     // fitWidth //
     //----------//
     /**
-     * Define the zoom ratio so that the full width of the model can be
-     * visible.
+     * Define the zoom ratio so that the full width of the model can be visible.
      * We force the zoom ratio to stand within the range of the slider.
      *
-     * @return true if we have been able to fit the display width, false
-     *         otherwise which happens when the display width is zero
+     * @return true if we have been able to fit the display width, false otherwise which happens
+     *         when the display width is zero
      */
     public boolean fitWidth ()
     {
@@ -144,7 +139,7 @@ public class ScrollView
         logger.debug("fitWidth vr={} dim={}", vr, dim);
 
         if ((vr.width > 0) && (dim.width > 0)) {
-            setZoomRatio((double) (vr.width) / (double) dim.width);
+            setZoomRatio(vr.width / (double) dim.width);
 
             return true;
         } else {

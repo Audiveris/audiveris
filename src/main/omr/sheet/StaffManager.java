@@ -18,19 +18,16 @@ import omr.math.GeoPath;
 import omr.math.NaturalSpline;
 import omr.math.ReversePathIterator;
 
-import omr.sheet.grid.FilamentLine;
+import omr.sheet.grid.LineInfo;
 
 import omr.ui.Colors;
 import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.VerticalSide;
-
 import static omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
@@ -167,7 +164,7 @@ public class StaffManager
 
         {
             // Top limit
-            NaturalSpline spline = (NaturalSpline) staff.getFirstLine().getFilament().getLine();
+            NaturalSpline spline = staff.getFirstLine().getSpline();
             Point2D tl = spline.getFirstPoint();
             path.moveTo(tl.getX() - hMargin, tl.getY() - vMargin);
 
@@ -180,7 +177,7 @@ public class StaffManager
 
         {
             // Bottom limit
-            NaturalSpline spline = (NaturalSpline) staff.getLastLine().getFilament().getLine();
+            NaturalSpline spline = staff.getLastLine().getSpline();
             Point2D br = spline.getLastPoint();
             path.lineTo(br.getX() + hMargin, br.getY() + vMargin);
 
@@ -371,20 +368,20 @@ public class StaffManager
 
         // Point on left
         Staff leftStaff = staffList.get(0);
-        FilamentLine leftLine = (side == TOP) ? leftStaff.getFirstLine() : leftStaff.getLastLine();
-        NaturalSpline leftSpline = (NaturalSpline) leftLine.getFilament().getLine();
+        LineInfo leftLine = (side == TOP) ? leftStaff.getFirstLine() : leftStaff.getLastLine();
+        NaturalSpline leftSpline = leftLine.getSpline();
         globalLine.moveTo(0, leftSpline.getFirstPoint().getY());
 
         // Proper line of each staff
         for (Staff staff : staffList) {
-            FilamentLine fLine = (side == TOP) ? staff.getFirstLine() : staff.getLastLine();
-            globalLine.append(fLine.getFilament().getLine().toPath(), true);
+            LineInfo fLine = (side == TOP) ? staff.getFirstLine() : staff.getLastLine();
+            globalLine.append(fLine.getSpline(), true);
         }
 
         // Point on right
         Staff rightStaff = staffList.get(staffList.size() - 1);
-        FilamentLine rightLine = (side == TOP) ? rightStaff.getFirstLine() : rightStaff.getLastLine();
-        NaturalSpline rightSpline = (NaturalSpline) rightLine.getFilament().getLine();
+        LineInfo rightLine = (side == TOP) ? rightStaff.getFirstLine() : rightStaff.getLastLine();
+        NaturalSpline rightSpline = rightLine.getSpline();
         globalLine.lineTo(sheet.getWidth(), rightSpline.getLastPoint().getY());
 
         final int verticalMargin = sheet.getScale().toPixels(constants.verticalAreaMargin);

@@ -17,11 +17,14 @@ import omr.sig.GradeImpacts;
 
 import java.awt.geom.Line2D;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code SmallBeamInter} represents a small (cue) beam.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "small-beam")
 public class SmallBeamInter
         extends AbstractBeamInter
 {
@@ -39,5 +42,13 @@ public class SmallBeamInter
                            double height)
     {
         super(Shape.BEAM_SMALL, impacts, median, height);
+    }
+
+    /**
+     * Creates a new {@code SmallBeamInter} object.
+     */
+    public SmallBeamInter ()
+    {
+        super(null, null, null, 0);
     }
 }

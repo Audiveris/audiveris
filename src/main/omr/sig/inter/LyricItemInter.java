@@ -13,7 +13,6 @@ package omr.sig.inter;
 
 import omr.constant.ConstantSet;
 
-import omr.sheet.Part;
 import omr.sheet.Scale;
 import omr.sheet.rhythm.Measure;
 
@@ -21,10 +20,17 @@ import omr.sig.relation.ChordSyllableRelation;
 
 import omr.text.TextWord;
 
-import omr.util.HorizontalSide;
+import static omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import omr.sheet.Part;
+import omr.sheet.Staff;
+import omr.sheet.SystemInfo;
 
 /**
  * Class {@code LyricItemInter} is specific subclass of Text, meant for one
@@ -32,6 +38,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "lyric-item")
 public class LyricItemInter
         extends WordInter
 {
@@ -87,9 +94,11 @@ public class LyricItemInter
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Lyrics kind. */
+    @XmlAttribute(name = "kind")
     private ItemKind itemKind;
 
     /** Characteristics of the lyrics syllable, if any. */
+    @XmlElement(name = "syllabic")
     private SyllabicType syllabicType;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -135,23 +144,14 @@ public class LyricItemInter
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // isSeparator //
-    //-------------//
     /**
-     * Predicate to detect a separator.
-     *
-     * @param str the character to check
-     *
-     * @return true if this is a separator
+     * No-arg constructor meant for JAXB.
      */
-    public static boolean isSeparator (String str)
+    private LyricItemInter ()
     {
-        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING)
-               || str.equals(HYPHEN_STRING);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // defineSyllabicType //
     //--------------------//
@@ -164,12 +164,10 @@ public class LyricItemInter
             } else {
                 syllabicType = SyllabicType.END;
             }
+        } else if ((nextItem != null) && (nextItem.itemKind == ItemKind.Hyphen)) {
+            syllabicType = SyllabicType.BEGIN;
         } else {
-            if ((nextItem != null) && (nextItem.itemKind == ItemKind.Hyphen)) {
-                syllabicType = SyllabicType.BEGIN;
-            } else {
-                syllabicType = SyllabicType.SINGLE;
-            }
+            syllabicType = SyllabicType.SINGLE;
         }
     }
 
@@ -197,6 +195,22 @@ public class LyricItemInter
         return syllabicType;
     }
 
+    //-------------//
+    // isSeparator //
+    //-------------//
+    /**
+     * Predicate to detect a separator.
+     *
+     * @param str the character to check
+     *
+     * @return true if this is a separator
+     */
+    public static boolean isSeparator (String str)
+    {
+        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING)
+               || str.equals(HYPHEN_STRING);
+    }
+
     //------------//
     // mapToChord //
     //------------//
@@ -209,27 +223,30 @@ public class LyricItemInter
 
         // Left is too far on left, middle is too far on right, we use width/4 (???)
         int centerX = getLocation().x + (getBounds().width / 4);
+        SystemInfo system = getSig().getSystem();
+        Staff staffAbove = system.getStaffAtOrAbove(location);
+        setStaff(staffAbove);
 
-        Part part = getLyricLine().getPart();
+        Part part = staffAbove.getPart();
         int maxDx = part.getSystem().getSheet().getScale().toPixels(constants.maxItemDx);
 
         for (Measure measure : part.getMeasures()) {
             // Select only possible measures
-            if ((measure.getAbscissa(HorizontalSide.LEFT, staff) - maxDx) > centerX) {
+            if ((measure.getAbscissa(LEFT, staff) - maxDx) > centerX) {
                 break;
             }
 
-            if ((measure.getAbscissa(HorizontalSide.RIGHT, staff) + maxDx) < centerX) {
+            if ((measure.getAbscissa(RIGHT, staff) + maxDx) < centerX) {
                 continue;
             }
 
             // Look for best aligned head-chord in proper staff
             int bestDx = Integer.MAX_VALUE;
-            ChordInter bestChord = null;
+            AbstractChordInter bestChord = null;
 
-            for (ChordInter chord : measure.getChordsAbove(getLocation())) {
+            for (AbstractChordInter chord : measure.getHeadChordsAbove(getLocation())) {
                 if (chord instanceof HeadChordInter
-                    && (chord.getStaff() == getLyricLine().getStaff())) {
+                    && (chord.getBottomStaff() == staffAbove)) {
                     int dx = Math.abs(chord.getHeadLocation().x - centerX);
 
                     if (bestDx > dx) {
@@ -300,6 +317,6 @@ public class LyricItemInter
 
         private final Scale.Fraction maxItemDx = new Scale.Fraction(
                 4,
-                "Maximum horizontal distance between a note and its lyrics item");
+                "Maximum horizontal distance between a note and its lyric item");
     }
 }

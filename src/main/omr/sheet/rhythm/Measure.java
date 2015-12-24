@@ -18,15 +18,22 @@ import omr.math.Rational;
 import omr.sheet.Part;
 import omr.sheet.PartBarline;
 import omr.sheet.Staff;
-import omr.sheet.grid.FilamentLine;
+import omr.sheet.beam.BeamGroup;
+import omr.sheet.grid.LineInfo;
 
-import omr.sig.inter.ChordInter;
+import omr.sig.SIGraph;
+import omr.sig.inter.AbstractChordInter;
+import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.ClefInter;
+import omr.sig.inter.FlagInter;
+import omr.sig.inter.HeadChordInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.KeyInter;
 import omr.sig.inter.RestChordInter;
 import omr.sig.inter.RestInter;
+import omr.sig.inter.SmallChordInter;
 import omr.sig.inter.TimeInter;
+import omr.sig.inter.TupletInter;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
@@ -36,14 +43,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code Measure} represents a measure in a system part, it vertically embraces
@@ -53,52 +74,81 @@ import java.util.TreeSet;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "measure")
 public class Measure
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(Measure.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Measure.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
+    /** Left barline, if any. */
+    @XmlElement(name = "left-barline")
+    private PartBarline leftBarline;
+
+    /** Mid barline, if any. */
+    @XmlElement(name = "mid-barline")
+    private PartBarline midBarline;
+
+    /** Right barline, if any. */
+    @XmlElement(name = "right-barline")
+    private PartBarline rightBarline;
+
+    /** Groups of beams in this measure. */
+    @XmlElement(name = "beam-group")
+    private final Set<BeamGroup> beamGroups = new LinkedHashSet<BeamGroup>();
+
+    /** Head chords, populated once for all by CHORDS step. */
+    @XmlElement(name = "head-chord")
+    private final Set<HeadChordInter> headChords = new LinkedHashSet<HeadChordInter>();
+
+    /** Grace chords, populated in CHORDS step. */
+    @XmlElement(name = "small-chord")
+    private final Set<SmallChordInter> graceChords = new LinkedHashSet<SmallChordInter>();
+
+    /** Rest chords, populated by SYMBOLS step & adjusted by RHYTHMS step. */
+    @XmlElement(name = "rest-chord")
+    private final Set<RestChordInter> restChords = new LinkedHashSet<RestChordInter>();
+
+    /** Voices within this measure, sorted by voice id, populated by RHYTHMS step. */
+    @XmlElement(name = "voice")
+    private final List<Voice> voices = new ArrayList<Voice>();
+
+    // Transient data
+    //---------------
+    //
     /** To flag a dummy measure. */
     private boolean dummy;
 
     /** The containing part. */
     @Navigable(false)
-    private final Part part;
+    private Part part;
 
     /** The containing measure stack. */
     private MeasureStack stack;
 
-    /** Left bar-line, if any. */
-    private PartBarline leftBarline;
-
-    /** Inside bar-line, if any. */
-    private PartBarline insideBarline;
-
-    /** Right bar-line, if any. */
-    private PartBarline barline;
-
-    /** Voices within this measure, sorted by increasing voice id. */
-    private final List<Voice> voices = new ArrayList<Voice>();
-
     /** Possibly several Clefs per staff. (Abscissa-ordered) */
     private final TreeSet<ClefInter> clefs = new TreeSet<ClefInter>(Inter.byFullAbscissa);
 
-    /** Possibly one Key signature per staff. Keys may vary between staves of the same part */
+    /** Possibly one Key signature per staff, since keys may differ between staves.
+     * Implemented as a map: (staff index in part) -> Key sig
+     */
     private final Map<Integer, KeyInter> keys = new TreeMap<Integer, KeyInter>();
 
     /** Potential one Time signature per staff. */
-    private final List<TimeInter> timeSigs = new ArrayList<TimeInter>();
+    private final Set<TimeInter> timeSigs = new LinkedHashSet<TimeInter>();
 
-    /** Possibly several Chords per staff. */
-    private final List<ChordInter> chords = new ArrayList<ChordInter>();
+    /** Only whole rest-based chords (handled outside time slots). (subset of restChords) */
+    private final Set<AbstractChordInter> wholeRestChords = new LinkedHashSet<AbstractChordInter>();
 
-    /**
-     * Chords of just whole rest (thus handled outside time slots).
-     * These chords are also contained in 'chords' container, like plain ones
-     */
-    private final List<ChordInter> wholeChords = new ArrayList<ChordInter>();
+    /** FRAT inters (other than Rest chords) for this measure. */
+    private final Set<Inter> otherRhythms = new LinkedHashSet<Inter>(); // FAT actually
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -111,7 +161,54 @@ public class Measure
         this.part = part;
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private Measure ()
+    {
+        this.part = null;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+    //
+    //    //--------------------//
+    //    // getCurrentDuration //
+    //    //--------------------//
+    //    private String getCurrentDuration ()
+    //    {
+    //        Rational measureDuration = Rational.ZERO;
+    //
+    //        for (Slot slot : slots) {
+    //            if (slot.getStartTime() != null) {
+    //                for (AbstractChordInter chord : slot.getChords()) {
+    //                    Rational chordEnd = slot.getStartTime().plus(chord.getDuration());
+    //
+    //                    if (chordEnd.compareTo(measureDuration) > 0) {
+    //                        measureDuration = chordEnd;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        if (measureDuration.equals(Rational.ZERO) && !wholeRestChords.isEmpty()) {
+    //            return "W";
+    //        }
+    //
+    //        return String.format("%-5s", measureDuration.toString());
+    //    }
+    //--------------//
+    // addBeamGroup //
+    //--------------//
+    /**
+     * Add a beam group to this measure.
+     *
+     * @param group a beam group to add
+     */
+    public void addBeamGroup (BeamGroup group)
+    {
+        beamGroups.add(group);
+    }
+
     //-------------------//
     // addDummyWholeRest //
     //-------------------//
@@ -131,7 +228,7 @@ public class Measure
         chord.addMember(whole);
         addInter(chord);
 
-        voices.add(Voice.createWholeVoice(chord, this));
+        addVoice(Voice.createWholeVoice(chord, this));
 
         return whole;
     }
@@ -141,12 +238,20 @@ public class Measure
     //----------//
     public void addInter (Inter inter)
     {
-        if (inter instanceof ChordInter) {
-            ChordInter chord = (ChordInter) inter;
-            chords.add(chord);
+        if (inter instanceof AbstractChordInter) {
+            AbstractChordInter chord = (AbstractChordInter) inter;
+            chord.setMeasure(this);
 
-            if (chord.isWholeRest()) {
-                wholeChords.add(chord);
+            if (chord instanceof HeadChordInter) {
+                headChords.add((HeadChordInter) chord);
+            } else if (chord instanceof RestChordInter) {
+                restChords.add((RestChordInter) chord);
+
+                if (chord.getMembers().get(0).getShape() == Shape.WHOLE_REST) {
+                    wholeRestChords.add(chord);
+                }
+            } else if (chord instanceof SmallChordInter) {
+                graceChords.add((SmallChordInter) chord);
             }
         } else if (inter instanceof ClefInter) {
             clefs.add((ClefInter) inter);
@@ -156,6 +261,12 @@ public class Measure
             keys.put(staves.indexOf(key.getStaff()), key);
         } else if (inter instanceof TimeInter) {
             timeSigs.add((TimeInter) inter);
+        } else if (inter instanceof FlagInter
+                   || inter instanceof AugmentationDotInter
+                   || inter instanceof TupletInter) {
+            otherRhythms.add(inter);
+        } else {
+            logger.error("Attempt to use addInter() with {}", inter);
         }
     }
 
@@ -165,6 +276,103 @@ public class Measure
     public void addVoice (Voice voice)
     {
         voices.add(voice);
+    }
+
+    //-------------//
+    // afterReload //
+    //-------------//
+    public void afterReload ()
+    {
+        try {
+            final SIGraph sig = part.getSystem().getSig();
+
+            // Clefs, keys, timeSigs to fill measure
+            List<Inter> measureInters = filter(
+                    sig.inters(new Class[]{ClefInter.class, KeyInter.class, TimeInter.class}));
+
+            for (Inter inter : measureInters) {
+                addInter(inter);
+            }
+
+            // BeamGroups
+            for (BeamGroup beamGroup : beamGroups) {
+                beamGroup.afterReload(this);
+            }
+
+            // Voices
+            for (Voice voice : voices) {
+                voice.afterReload(this);
+            }
+
+            // Chords
+            for (AbstractChordInter chord : headChords) {
+                chord.afterReload(this);
+            }
+
+            for (AbstractChordInter chord : graceChords) {
+                chord.afterReload(this);
+            }
+
+            for (AbstractChordInter chord : restChords) {
+                chord.afterReload(this);
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+        }
+    }
+
+    //------------//
+    // clearFrats //
+    //------------//
+    public void clearFrats ()
+    {
+        restChords.clear();
+        wholeRestChords.clear();
+        otherRhythms.clear();
+    }
+
+    //--------//
+    // filter //
+    //--------//
+    public List<Inter> filter (Collection<Inter> inters)
+    {
+        final int left = getLeft();
+        final int right = getRight();
+        final List<Inter> kept = new ArrayList<Inter>();
+
+        for (Inter inter : inters) {
+            Point center = inter.getCenter();
+
+            // Rough abscissa limits
+            if ((center.x < left) || (center.x > right)) {
+                continue;
+            }
+
+            // Check part
+            Staff staff = inter.getStaff();
+
+            if (staff != null) {
+                if (staff.getPart().getMeasureAt(center) != this) {
+                    continue;
+                }
+            } else {
+                logger.warn("Inter with no staff {}", inter);
+
+                List<Staff> stavesAround = part.getSystem().getStavesAround(center); // 1 or 2 staves
+                staff = stavesAround.get(0);
+
+                if (!part.getStaves().contains(staff)) {
+                    continue;
+                }
+            }
+
+            // Precise abscissa limits
+            if ((getAbscissa(LEFT, staff) <= center.x) && (center.x <= getAbscissa(RIGHT, staff))) {
+                kept.add(inter);
+            }
+        }
+
+        return kept;
     }
 
     //-------------//
@@ -180,6 +388,8 @@ public class Measure
     public int getAbscissa (HorizontalSide side,
                             Staff staff)
     {
+        Objects.requireNonNull(staff, "Null staff for Measure.getAbscissa()");
+
         switch (side) {
         case LEFT:
 
@@ -197,8 +407,8 @@ public class Measure
         case RIGHT:
 
             // Measure (right) bar?
-            if (barline != null) {
-                return barline.getRightX(part, staff);
+            if (rightBarline != null) {
+                return rightBarline.getRightX(part, staff);
             }
 
             // Use end of staff
@@ -206,14 +416,32 @@ public class Measure
         }
     }
 
+    //--------------//
+    // getAllChords //
+    //--------------//
+    /**
+     * Report the collection of all chords (head chords, rest chords, small chords)
+     *
+     * @return the set of all chords in this measure
+     */
+    public Set<AbstractChordInter> getAllChords ()
+    {
+        final Set<AbstractChordInter> allChords = new HashSet<AbstractChordInter>();
+        allChords.addAll(headChords);
+        allChords.addAll(restChords);
+        allChords.addAll(graceChords);
+
+        return allChords;
+    }
+
     //------------//
     // getBarline //
     //------------//
     /**
-     * Report the bar-line, if any, on desired side of the measure.
+     * Report the barline, if any, on desired side of the measure.
      *
      * @param side desired side
-     * @return the bar-line found, or null
+     * @return the barline found, or null
      */
     public PartBarline getBarline (HorizontalSide side)
     {
@@ -229,7 +457,7 @@ public class Measure
             Measure prevMeasure = getSibling(LEFT);
 
             if (prevMeasure != null) {
-                return prevMeasure.getBarline();
+                return prevMeasure.getRightBarline();
             }
 
             // Part starting bar?
@@ -237,75 +465,33 @@ public class Measure
                 return part.getStartingBarline();
             }
 
-            return null; // No bar-line found on LEFT
+            return null; // No barline found on LEFT
 
         default:
         case RIGHT:
 
             // Measure (right) bar?
-            if (barline != null) {
-                return barline;
+            if (rightBarline != null) {
+                return rightBarline;
             }
 
-            return null; // No bar-line found on RIGHT
+            return null; // No barline found on RIGHT
         }
     }
 
-    //------------//
-    // getBarline //
-    //------------//
+    //---------------//
+    // getBeamGroups //
+    //---------------//
     /**
-     * Report the ending bar line.
+     * Report the collection of beam groups.
      *
-     * @return the ending bar line
+     * @return the set of beam groups
      */
-    public PartBarline getBarline ()
+    public Set<BeamGroup> getBeamGroups ()
     {
-        return barline;
+        return beamGroups;
     }
 
-    //----------------//
-    // getChordsAbove //
-    //----------------//
-    /**
-     * Report the collection of chords whose head is located in the staff above the
-     * provided point.
-     *
-     * @param point the provided point
-     * @return the (perhaps empty) collection of chords
-     */
-    public Collection<ChordInter> getChordsAbove (Point point)
-    {
-        Staff desiredStaff = stack.getSystem().getStaffAtOrAbove(point);
-        Collection<ChordInter> found = new ArrayList<ChordInter>();
-
-        for (ChordInter chord : chords) {
-            if (chord.getStaff() == desiredStaff) {
-                Point head = chord.getHeadLocation();
-
-                if ((head != null) && (head.y < point.y)) {
-                    found.add(chord);
-                }
-            }
-        }
-
-        return found;
-    }
-
-    //
-    //    //-----------//
-    //    // getChords //
-    //    //-----------//
-    //    /**
-    //     * Report the collection of chords.
-    //     *
-    //     * @return the list of chords
-    //     */
-    //    public List<ChordInter> getChords ()
-    //    {
-    //        return chords;
-    //    }
-    //
     //---------------//
     // getClefBefore //
     //---------------//
@@ -376,6 +562,42 @@ public class Measure
         }
 
         return null;
+    }
+
+    //---------------//
+    // getHeadChords //
+    //---------------//
+    public Set<HeadChordInter> getHeadChords ()
+    {
+        return Collections.unmodifiableSet(headChords);
+    }
+
+    //--------------------//
+    // getHeadChordsAbove //
+    //--------------------//
+    /**
+     * Report the collection of head-chords whose head is located in the staff above the
+     * provided point.
+     *
+     * @param point the provided point
+     * @return the (perhaps empty) collection of head chords
+     */
+    public Collection<HeadChordInter> getHeadChordsAbove (Point point)
+    {
+        Staff desiredStaff = stack.getSystem().getStaffAtOrAbove(point);
+        Collection<HeadChordInter> found = new ArrayList<HeadChordInter>();
+
+        for (HeadChordInter chord : headChords) {
+            if (chord.getBottomStaff() == desiredStaff) {
+                Point head = chord.getHeadLocation();
+
+                if ((head != null) && (head.y < point.y)) {
+                    found.add(chord);
+                }
+            }
+        }
+
+        return found;
     }
 
     //
@@ -508,9 +730,7 @@ public class Measure
     public ClefInter getMeasureClefBefore (Point point,
                                            Staff staff)
     {
-        if (staff == null) {
-            throw new IllegalArgumentException("Staff is null");
-        }
+        Objects.requireNonNull(staff, "Staff is null");
 
         // Look in this measure, with same staff, going backwards
         for (Iterator<ClefInter> it = clefs.descendingIterator(); it.hasNext();) {
@@ -578,6 +798,50 @@ public class Measure
         return null;
     }
 
+    //---------------//
+    // getRestChords //
+    //---------------//
+    public Set<RestChordInter> getRestChords ()
+    {
+        return Collections.unmodifiableSet(restChords);
+    }
+
+    //
+    //    //---------------//
+    //    // getRestChords //
+    //    //---------------//
+    //    /**
+    //     * @return the restChords
+    //     */
+    //    public Set<AbstractChordInter> getRestChords ()
+    //    {
+    //        return restChords;
+    //    }
+    //
+    //    //------------//
+    //    // getRhythms //
+    //    //------------//
+    //    /**
+    //     * @return the rhythms
+    //     */
+    //    public Set<Inter> getRhythms ()
+    //    {
+    //        return rhythms;
+    //    }
+    //
+    //-----------------//
+    // getRightBarline //
+    //-----------------//
+    /**
+     * Report the ending barline.
+     *
+     * @return the ending barline
+     */
+    public PartBarline getRightBarline ()
+    {
+        return rightBarline;
+    }
+
     //------------//
     // getSibling //
     //------------//
@@ -640,8 +904,8 @@ public class Measure
             }
             // No bar, use start of staff
              {
-                List<FilamentLine> lines = staff.getLines();
-                FilamentLine midLine = lines.get(lines.size() / 2);
+                List<LineInfo> lines = staff.getLines();
+                LineInfo midLine = lines.get(lines.size() / 2);
                 int x = staff.getAbscissa(LEFT);
 
                 return new Point(x, midLine.yAt(x));
@@ -651,13 +915,13 @@ public class Measure
         case RIGHT:
 
             // Measure (right) bar?
-            if (barline != null) {
-                return barline.getBarline(part, staff).getRightBar().getCenter();
+            if (rightBarline != null) {
+                return rightBarline.getBarline(part, staff).getRightBar().getCenter();
             }
             // No bar, use end of staff
              {
-                List<FilamentLine> lines = staff.getLines();
-                FilamentLine midLine = lines.get(lines.size() / 2);
+                List<LineInfo> lines = staff.getLines();
+                LineInfo midLine = lines.get(lines.size() / 2);
                 int x = staff.getAbscissa(RIGHT);
 
                 return new Point(x, midLine.yAt(x));
@@ -676,6 +940,23 @@ public class Measure
         return stack;
     }
 
+    //-------------------//
+    // getStandardChords //
+    //-------------------//
+    /**
+     * Report the collection of standard chords (head chords, rest chords, NO small chords)
+     *
+     * @return the set of all standard chords in this measure
+     */
+    public Set<AbstractChordInter> getStandardChords ()
+    {
+        final Set<AbstractChordInter> stdChords = new HashSet<AbstractChordInter>();
+        stdChords.addAll(headChords);
+        stdChords.addAll(restChords);
+
+        return stdChords;
+    }
+
     //------------------//
     // getTimeSignature //
     //------------------//
@@ -687,7 +968,7 @@ public class Measure
     public TimeInter getTimeSignature ()
     {
         if (!timeSigs.isEmpty()) {
-            return timeSigs.get(0);
+            return timeSigs.iterator().next();
         }
 
         return null; // Not found
@@ -713,23 +994,52 @@ public class Measure
         return null; // Not found
     }
 
+    //------------//
+    // getTuplets //
+    //------------//
+    public Set<TupletInter> getTuplets ()
+    {
+        Set<TupletInter> tuplets = new LinkedHashSet<TupletInter>();
+
+        for (Inter inter : otherRhythms) {
+            if (inter instanceof TupletInter) {
+                tuplets.add((TupletInter) inter);
+            }
+        }
+
+        return tuplets;
+    }
+
+    //---------------//
+    // getVoiceCount //
+    //---------------//
+    /**
+     * Report the number of voices in this measure.
+     *
+     * @return the number of voices computed
+     */
+    public int getVoiceCount ()
+    {
+        return voices.size();
+    }
+
     //-----------//
     // getVoices //
     //-----------//
     public List<Voice> getVoices ()
     {
-        return voices;
+        return Collections.unmodifiableList(voices);
     }
 
-    //----------------//
-    // getWholeChords //
-    //----------------//
+    //--------------------//
+    // getWholeRestChords //
+    //--------------------//
     /**
-     * @return the wholeChords
+     * @return the wholeRestChords
      */
-    public List<ChordInter> getWholeChords ()
+    public Set<AbstractChordInter> getWholeRestChords ()
     {
-        return wholeChords;
+        return wholeRestChords;
     }
 
     //----------//
@@ -809,14 +1119,14 @@ public class Measure
     // isMeasureRest //
     //---------------//
     /**
-     * Check whether the provided chord is a measure rest.
+     * Check whether the provided rest chord is a measure rest.
      *
-     * @param chord the provided chord
-     * @return true if chord is actually a measure rest, false otherwise
+     * @param restChord the provided rest chord
+     * @return true if rest chord is actually a measure rest, false otherwise
      */
-    public boolean isMeasureRest (ChordInter chord)
+    public boolean isMeasureRest (RestChordInter restChord)
     {
-        Inter noteInter = chord.getMembers().get(0);
+        Inter noteInter = restChord.getMembers().get(0);
         Shape shape = noteInter.getShape();
 
         if (!shape.isWholeRest()) {
@@ -838,9 +1148,43 @@ public class Measure
         }
 
         // Check other chords in same staff-measure?
-        List<Inter> staffChords = filterByStaff(chords, chord.getStaff());
+        Set<Inter> staffChords = filterByStaff(getStandardChords(), restChord.getTopStaff());
 
         return staffChords.size() == 1;
+    }
+
+    //------------//
+    // lookupRest //
+    //------------//
+    /**
+     * Look up for a potential rest interleaved between the given stemmed chords
+     *
+     * @param left  the chord on the left of the area
+     * @param right the chord on the right of the area
+     * @return the rest found, or null otherwise
+     */
+    public RestInter lookupRest (AbstractChordInter left,
+                                 AbstractChordInter right)
+    {
+        // Define the area limited by the left and right chords with their stems
+        // and check for intersection with a rest note
+        Polygon polygon = new Polygon();
+        polygon.addPoint(left.getHeadLocation().x, left.getHeadLocation().y);
+        polygon.addPoint(left.getTailLocation().x, left.getTailLocation().y);
+        polygon.addPoint(right.getTailLocation().x, right.getTailLocation().y);
+        polygon.addPoint(right.getHeadLocation().x, right.getHeadLocation().y);
+
+        for (RestChordInter restChord : restChords) {
+            for (Inter inter : restChord.getMembers()) {
+                Rectangle box = inter.getBounds();
+
+                if (polygon.intersects(box.x, box.y, box.width, box.height)) {
+                    return (RestInter) inter;
+                }
+            }
+        }
+
+        return null;
     }
 
     //----------------//
@@ -856,16 +1200,41 @@ public class Measure
         clefs.addAll(right.clefs);
         keys.putAll(right.keys);
         timeSigs.addAll(right.timeSigs);
-        chords.addAll(right.chords);
-        ///beamGroups.addAll(right.beamGroups);
+        restChords.addAll(right.restChords);
+        headChords.addAll(right.headChords);
+        voices.addAll(right.voices); // (left) voices are empty
+        beamGroups.addAll(right.beamGroups);
 
-        ///        slots.addAll(right.slots);
-        ///beamGroups.addAll(right.beamGroups);
-        wholeChords.addAll(right.wholeChords);
-        voices.addAll(right.voices);
+        midBarline = rightBarline;
+        setRightBarline(right.rightBarline);
+    }
 
-        insideBarline = barline;
-        setBarline(right.barline);
+    //-------------//
+    // removeInter //
+    //-------------//
+    /**
+     * This method is meant for (adjustable) FRAT data only.
+     *
+     *
+     * @param inter an instance of flag, rest chord, augDot or tuplet
+     */
+    public void removeInter (Inter inter)
+    {
+        if (inter instanceof RestChordInter) {
+            RestChordInter restChord = (RestChordInter) inter;
+            restChords.remove(restChord);
+            wholeRestChords.remove(restChord); // Just in case
+        } else if (inter instanceof FlagInter
+                   || inter instanceof AugmentationDotInter
+                   || inter instanceof TupletInter) {
+            otherRhythms.remove(inter);
+        } else if (inter instanceof HeadChordInter) {
+            headChords.remove((HeadChordInter) inter);
+        } else if (inter instanceof SmallChordInter) {
+            graceChords.remove((SmallChordInter) inter);
+        } else {
+            logger.error("Attempt to use removeInter() with {}", inter);
+        }
     }
 
     //-----------//
@@ -884,17 +1253,22 @@ public class Measure
         return replicate;
     }
 
-    //------------//
-    // setBarline //
-    //------------//
-    /**
-     * Assign the (right) bar-line that ends this measure
-     *
-     * @param barline the right bar-line
-     */
-    public void setBarline (PartBarline barline)
+    //-------------//
+    // resetRhythm //
+    //-------------//
+    public void resetRhythm ()
     {
-        this.barline = barline;
+        voices.clear();
+
+        // Reset voice of every beam group
+        for (BeamGroup group : beamGroups) {
+            group.resetTiming();
+        }
+
+        // Forward reset to every chord handled
+        for (AbstractChordInter chord : getStandardChords()) {
+            chord.resetTiming();
+        }
     }
 
     //----------//
@@ -911,6 +1285,19 @@ public class Measure
     public void setLeftBarline (PartBarline leftBarline)
     {
         this.leftBarline = leftBarline;
+    }
+
+    //------------//
+    // setBarline //
+    //------------//
+    /**
+     * Assign the (right) barline that ends this measure
+     *
+     * @param rightBarline the right barline
+     */
+    public void setRightBarline (PartBarline rightBarline)
+    {
+        this.rightBarline = rightBarline;
     }
 
     //----------//
@@ -967,6 +1354,20 @@ public class Measure
         return "{Measure#" + stack.getPageId() + "P" + part.getId() + "}";
     }
 
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled for this object,
+     * but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        part = (Part) parent;
+    }
+
     //---------------//
     // filterByStaff //
     //---------------//
@@ -977,10 +1378,10 @@ public class Measure
      * @param staff  the imposed staff
      * @return the inters that related to staff
      */
-    private List<Inter> filterByStaff (List<? extends Inter> inters,
-                                       Staff staff)
+    private Set<Inter> filterByStaff (Set<? extends Inter> inters,
+                                      Staff staff)
     {
-        List<Inter> found = new ArrayList<Inter>();
+        Set<Inter> found = new HashSet<Inter>();
 
         for (Inter inter : inters) {
             if (inter.getStaff() == staff) {
@@ -991,198 +1392,190 @@ public class Measure
         return found;
     }
 
-    //
-    //    //--------------------//
-    //    // getCurrentDuration //
-    //    //--------------------//
-    //    private String getCurrentDuration ()
-    //    {
-    //        Rational measureDuration = Rational.ZERO;
-    //
-    //        for (Slot slot : slots) {
-    //            if (slot.getStartTime() != null) {
-    //                for (ChordInter chord : slot.getChords()) {
-    //                    Rational chordEnd = slot.getStartTime().plus(chord.getDuration());
-    //
-    //                    if (chordEnd.compareTo(measureDuration) > 0) {
-    //                        measureDuration = chordEnd;
-    //                    }
-    //                }
-    //            }
-    //        }
-    //
-    //        if (measureDuration.equals(Rational.ZERO) && !wholeChords.isEmpty()) {
-    //            return "W";
-    //        }
-    //
-    //        return String.format("%-5s", measureDuration.toString());
-    //    }
-    //    //----------//
-    //    // addGroup //
-    //    //----------//
-    //    /**
-    //     * Add a beam group to this measure.
-    //     *
-    //     * @param group a beam group to add
-    //     */
-    //    public void addGroup (BeamGroup group)
-    //    {
-    //        beamGroups.add(group);
-    //    }
-    //
-    //
-    //    //---------------//
-    //    // getBeamGroups //
-    //    //---------------//
-    //    /**
-    //     * Report the collection of beam groups.
-    //     *
-    //     * @return the list of beam groups
-    //     */
-    //    public List<BeamGroup> getBeamGroups ()
-    //    {
-    //        return beamGroups;
-    //    }
-    //
-    //
-    //    //------------//
-    //    // printVoices//
-    //    //------------//
-    //    /**
-    //     * Print the voices of this measure on standard output.
-    //     *
-    //     * @param title a potential title for this printout, or null
-    //     */
-    //    public void printVoices (String title)
-    //    {
-    //        StringBuilder sb = new StringBuilder();
-    //
-    //        // Title
-    //        if (title != null) {
-    //            sb.append(title);
-    //        }
-    //
-    //        // Measure
-    //        sb.append(this);
-    //
-    //        // Slot headers
-    //        if (!slots.isEmpty()) {
-    //            sb.append("\n    ");
-    //
-    //            for (Slot slot : slots) {
-    //                if (slot.getStartTime() != null) {
-    //                    sb.append("|").append(String.format("%-7s", slot.getStartTime()));
-    //                }
-    //            }
-    //
-    //            sb.append("|").append(getCurrentDuration());
-    //        }
-    //
-    //        for (Voice voice : voices) {
-    //            sb.append("\n").append(voice.toStrip());
-    //        }
-    //
-    //        logger.info(sb.toString());
-    //    }
-    //
-    //
-    //    //------------//
-    //    // isImplicit //
-    //    //------------//
-    //    /**
-    //     * Report whether this measure is implicit (pickup or repeat last half).
-    //     *
-    //     * @return true if measure is pickup or secondHalf
-    //     */
-    //    public boolean isImplicit ()
-    //    {
-    //        return (special == Special.PICKUP) || (special == Special.SECOND_HALF);
-    //    }
-    //
-    //
-    //    //------------//
-    //    // lookupRest //
-    //    //------------//
-    //    /**
-    //     * Look up for a potential rest interleaved between the given stemmed chords
-    //     *
-    //     * @param left  the chord on the left of the area
-    //     * @param right the chord on the right of the area
-    //     * @return the rest found, or null otherwise
-    //     */
-    //    public RestInter lookupRest (ChordInter left,
-    //                                 ChordInter right)
-    //    {
-    //        // Define the area limited by the left and right chords with their stems
-    //        // and check for intersection with a rest note
-    //        Polygon polygon = new Polygon();
-    //        polygon.addPoint(left.getHeadLocation().x, left.getHeadLocation().y);
-    //        polygon.addPoint(left.getTailLocation().x, left.getTailLocation().y);
-    //        polygon.addPoint(right.getTailLocation().x, right.getTailLocation().y);
-    //        polygon.addPoint(right.getHeadLocation().x, right.getHeadLocation().y);
-    //
-    //        for (ChordInter chord : chords) {
-    //            // Not interested in the bounding chords
-    //            if ((chord == left) || (chord == right)) {
-    //                continue;
-    //            }
-    //
-    //            for (Inter inter : chord.getMembers()) {
-    //                AbstractNoteInter note = (AbstractNoteInter) inter;
-    //
-    //                // Interested in rest notes only
-    //                if (note instanceof RestInter) {
-    //                    Rectangle box = note.getBounds();
-    //
-    //                    if (polygon.intersects(box.x, box.y, box.width, box.height)) {
-    //                        return (RestInter) note;
-    //                    }
-    //                }
-    //            }
-    //        }
-    //
-    //        return null;
-    //    }
-    //
-    //
-    //    //----------------//
-    //    // getClosestSlot //
-    //    //----------------//
-    //    /**
-    //     * Report the time slot which has the closest abscissa to a provided point.
-    //     *
-    //     * @param point the reference point
-    //     * @return the abscissa-wise closest slot
-    //     */
-    //    public Slot getClosestSlot (Point point)
-    //    {
-    //        Slot bestSlot = null;
-    //        int bestDx = Integer.MAX_VALUE;
-    //
-    //        for (Slot slot : getSlots()) {
-    //            int dx = Math.abs(slot.getDskX() - point.x);
-    //
-    //            if (dx < bestDx) {
-    //                bestDx = dx;
-    //                bestSlot = slot;
-    //            }
-    //        }
-    //
-    //        return bestSlot;
-    //    }
-    //
-    //
-    //    //----------//
-    //    // getSlots //
-    //    //----------//
-    //    /**
-    //     * Report the ordered collection of slots.
-    //     *
-    //     * @return the collection of slots
-    //     */
-    //    public List<Slot> getSlots ()
-    //    {
-    //        return slots;
-    //    }
-    //
+    //---------//
+    // getLeft //
+    //---------//
+    private int getLeft ()
+    {
+        int left = Integer.MAX_VALUE;
+
+        for (Staff staff : getPart().getStaves()) {
+            left = Math.min(left, getAbscissa(LEFT, staff));
+        }
+
+        return left;
+    }
+
+    //-----------//
+    // getPageId //
+    //-----------//
+    /**
+     * Report the measure ID within page (in fact the related stack ID).
+     * <p>
+     * NOTA: @XmlAttribute annotation forces this information to be written in project file
+     * (although it is not used when unmarshalling)
+     *
+     * @return the page ID of containing stack
+     */
+    @XmlAttribute(name = "id")
+    @SuppressWarnings("unused")
+    private String getPageId ()
+    {
+        return stack.getPageId();
+    }
+
+    //----------//
+    // getRight //
+    //----------//
+    private int getRight ()
+    {
+        int right = 0;
+
+        for (Staff staff : getPart().getStaves()) {
+            right = Math.max(right, getAbscissa(RIGHT, staff));
+        }
+
+        return right;
+    }
 }
+//
+//    //------------//
+//    // printVoices//
+//    //------------//
+//    /**
+//     * Print the voices of this measure on standard output.
+//     *
+//     * @param title a potential title for this printout, or null
+//     */
+//    public void printVoices (String title)
+//    {
+//        StringBuilder sb = new StringBuilder();
+//
+//        // Title
+//        if (title != null) {
+//            sb.append(title);
+//        }
+//
+//        // Measure
+//        sb.append(this);
+//
+//        // Slot headers
+//        if (!slots.isEmpty()) {
+//            sb.append("\n    ");
+//
+//            for (Slot slot : slots) {
+//                if (slot.getStartTime() != null) {
+//                    sb.append("|").append(String.format("%-7s", slot.getStartTime()));
+//                }
+//            }
+//
+//            sb.append("|").append(getCurrentDuration());
+//        }
+//
+//        for (Voice voice : voices) {
+//            sb.append("\n").append(voice.toStrip());
+//        }
+//
+//        logger.info(sb.toString());
+//    }
+//
+//
+//    //------------//
+//    // isImplicit //
+//    //------------//
+//    /**
+//     * Report whether this measure is implicit (pickup or repeat last half).
+//     *
+//     * @return true if measure is pickup or secondHalf
+//     */
+//    public boolean isImplicit ()
+//    {
+//        return (special == Special.PICKUP) || (special == Special.SECOND_HALF);
+//    }
+//
+//
+//    //------------//
+//    // lookupRest //
+//    //------------//
+//    /**
+//     * Look up for a potential rest interleaved between the given stemmed chords
+//     *
+//     * @param left  the chord on the left of the area
+//     * @param right the chord on the right of the area
+//     * @return the rest found, or null otherwise
+//     */
+//    public RestInter lookupRest (AbstractChordInter left,
+//                                 AbstractChordInter right)
+//    {
+//        // Define the area limited by the left and right chords with their stems
+//        // and check for intersection with a rest note
+//        Polygon polygon = new Polygon();
+//        polygon.addPoint(left.getHeadLocation().x, left.getHeadLocation().y);
+//        polygon.addPoint(left.getTailLocation().x, left.getTailLocation().y);
+//        polygon.addPoint(right.getTailLocation().x, right.getTailLocation().y);
+//        polygon.addPoint(right.getHeadLocation().x, right.getHeadLocation().y);
+//
+//        for (AbstractChordInter chord : chords) {
+//            // Not interested in the bounding chords
+//            if ((chord == left) || (chord == right)) {
+//                continue;
+//            }
+//
+//            for (Inter inter : chord.getMembers()) {
+//                AbstractNoteInter note = (AbstractNoteInter) inter;
+//
+//                // Interested in rest notes only
+//                if (note instanceof RestInter) {
+//                    Rectangle box = note.getBounds();
+//
+//                    if (polygon.intersects(box.x, box.y, box.width, box.height)) {
+//                        return (RestInter) note;
+//                    }
+//                }
+//            }
+//        }
+//
+//        return null;
+//    }
+//
+//
+//    //----------------//
+//    // getClosestSlot //
+//    //----------------//
+//    /**
+//     * Report the time slot which has the closest abscissa to a provided point.
+//     *
+//     * @param point the reference point
+//     * @return the abscissa-wise closest slot
+//     */
+//    public Slot getClosestSlot (Point point)
+//    {
+//        Slot bestSlot = null;
+//        int bestDx = Integer.MAX_VALUE;
+//
+//        for (Slot slot : getSlots()) {
+//            int dx = Math.abs(slot.getDskX() - point.x);
+//
+//            if (dx < bestDx) {
+//                bestDx = dx;
+//                bestSlot = slot;
+//            }
+//        }
+//
+//        return bestSlot;
+//    }
+//
+//
+//    //----------//
+//    // getSlots //
+//    //----------//
+//    /**
+//     * Report the ordered collection of slots.
+//     *
+//     * @return the collection of slots
+//     */
+//    public List<Slot> getSlots ()
+//    {
+//        return slots;
+//    }
+//

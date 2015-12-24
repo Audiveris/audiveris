@@ -11,25 +11,26 @@
 // </editor-fold>
 package omr.sheet.header;
 
+import omr.classifier.Classifier;
+import omr.classifier.Evaluation;
+import omr.classifier.GlyphClassifier;
+
 import omr.constant.ConstantSet;
 
-import omr.glyph.Evaluation;
-import omr.glyph.GlyphClassifier;
+import omr.glyph.Glyph;
 import omr.glyph.GlyphCluster;
-import omr.glyph.GlyphLayer;
+import omr.glyph.GlyphFactory;
 import omr.glyph.GlyphLink;
-import omr.glyph.GlyphNest;
+import omr.glyph.GlyphIndex;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
-import static omr.glyph.Shape.*;
-import omr.glyph.ShapeEvaluator;
-import omr.glyph.facets.Glyph;
 
-import omr.lag.JunctionAllPolicy;
-import omr.lag.Section;
-import omr.lag.SectionFactory;
+import static omr.glyph.Shape.*;
 import static omr.run.Orientation.VERTICAL;
+
+import omr.run.RunTable;
+import omr.run.RunTableFactory;
 
 import omr.sheet.Picture;
 import omr.sheet.Scale;
@@ -122,7 +123,7 @@ public class ClefBuilder
     private final Parameters params;
 
     /** Shape classifier to use. */
-    private final ShapeEvaluator evaluator = GlyphClassifier.getInstance();
+    private final Classifier evaluator = GlyphClassifier.getInstance();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -161,7 +162,7 @@ public class ClefBuilder
         List<Glyph> parts = getParts();
 
         ClefAdapter adapter = new ClefAdapter(parts);
-        new GlyphCluster(adapter).decompose();
+        new GlyphCluster(adapter, null).decompose();
         logger.debug(
                 "Staff#{} clef parts:{} trials:{}",
                 staff.getId(),
@@ -173,7 +174,7 @@ public class ClefBuilder
             List<Inter> inters = new ArrayList<Inter>();
 
             for (Entry<ClefKind, ClefInter> entry : adapter.bestMap.entrySet()) {
-                ///sheet.getGlyphNest().registerGlyph(adapter.bestGlyph);
+                ///sheet.getGlyphIndex().registerStandaloneGlyph(adapter.bestGlyph);
                 ClefInter inter = entry.getValue();
                 inter.increase(0.2); //TODO boost these StaffHeader clefs
                 inters.add(inter);
@@ -192,7 +193,7 @@ public class ClefBuilder
                 inter.setBounds(clefBox);
                 inter.setStaff(staff);
 
-                int gid = inter.getGlyph().getId();
+                String gid = inter.getGlyph().getId();
                 sig.addVertex(inter);
                 logger.debug("Staff#{} {} g#{} {}", staff.getId(), inter, gid, clefBox);
 
@@ -238,13 +239,15 @@ public class ClefBuilder
      */
     private List<Glyph> getParts ()
     {
+        final int interline = scale.getInterline();
+
         // Rectangular ROI (within sheet image)
         int areaTop = Math.max(
                 0,
-                staff.getFirstLine().yAt(range.browseStart) - (3 * scale.getInterline()));
+                staff.getFirstLine().yAt(range.browseStart) - (3 * interline));
         int areaBottom = Math.min(
                 sheet.getHeight() - 1,
-                staff.getLastLine().yAt(range.browseStart) + (3 * scale.getInterline()));
+                staff.getLastLine().yAt(range.browseStart) + (3 * interline));
         Rectangle rect = new Rectangle(
                 range.browseStart,
                 areaTop,
@@ -259,16 +262,23 @@ public class ClefBuilder
         buf.copyBits(source, -rect.x, -rect.y, Blitter.COPY);
 
         // Extract parts
-        SectionFactory sectionFactory = new SectionFactory(VERTICAL, JunctionAllPolicy.INSTANCE);
-        List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
-        List<Glyph> parts = sheet.getGlyphNest().retrieveGlyphs(
-                sections,
-                GlyphLayer.SYMBOL,
-                true);
-
+        //        SectionFactory sectionFactory = new SectionFactory(VERTICAL, JunctionAllPolicy.INSTANCE);
+        //        List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
+        //        List<Glyph> parts = sheet.getGlyphIndex().retrieveGlyphs(
+        //                sections,
+        //                GlyphLayer.SYMBOL,
+        //                true);
+        RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
+        List<Glyph> parts = GlyphFactory.buildGlyphs(runTable, rect.getLocation());
+        //
+        //        // debug: register parts glyphs
+        //        for (Glyph glyph : parts) {
+        //            sheet.getGlyphIndex().register(glyph);
+        //        }
+        //
         // Keep only interesting parts
         purgeParts(parts, rect);
-        logger.debug("Clef sections: {} parts: {}", sections.size(), parts.size());
+        logger.debug("Clef parts: {}", parts.size());
 
         return parts;
     }
@@ -326,7 +336,9 @@ public class ClefBuilder
             Collections.sort(clefs, Inter.byReverseBestGrade);
 
             // Pickup the first one as header clef
-            staff.getHeader().clef = (ClefInter) clefs.get(0);
+            ClefInter bestClef = (ClefInter) clefs.get(0);
+            bestClef.setGlyph(sheet.getGlyphIndex().registerOriginal(bestClef.getGlyph()));
+            staff.getHeader().clef = bestClef;
 
             // Delete the other candidates
             for (Inter other : clefs.subList(1, clefs.size())) {
@@ -401,126 +413,6 @@ public class ClefBuilder
         }
     }
 
-    //------------//
-    // Parameters //
-    //------------//
-    private static class Parameters
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final int maxClefEnd;
-
-        final int beltMargin;
-
-        final int xCoreMargin;
-
-        final int yCoreMargin;
-
-        final int minPartWeight;
-
-        final double maxPartGap;
-
-        final double maxGlyphHeight;
-
-        final int minGlyphWeight;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
-        {
-            maxClefEnd = scale.toPixels(constants.maxClefEnd);
-            beltMargin = scale.toPixels(constants.beltMargin);
-            xCoreMargin = scale.toPixels(constants.xCoreMargin);
-            yCoreMargin = scale.toPixels(constants.yCoreMargin);
-            minPartWeight = scale.toPixels(constants.minPartWeight);
-            maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
-            maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
-            minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
-        }
-    }
-
-    //-------------//
-    // ClefAdapter //
-    //-------------//
-    /**
-     * Handles the integration between glyph clustering class and clef environment.
-     * <p>
-     * For each clef kind, we keep the best result found if any.
-     */
-    private class ClefAdapter
-            implements GlyphCluster.Adapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Graph of the connected glyphs, with their distance edges if any. */
-        private final SimpleGraph<Glyph, GlyphLink> graph;
-
-        /** Best inter per clef kind. */
-        private Map<ClefKind, ClefInter> bestMap = new EnumMap<ClefKind, ClefInter>(ClefKind.class);
-
-        // For debug only
-        private int trials = 0;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public ClefAdapter (List<Glyph> parts)
-        {
-            graph = Glyphs.buildLinks(parts, params.maxPartGap);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void evaluateGlyph (Glyph glyph)
-        {
-            trials++;
-
-            // TODO: use some checking, such as pitch position?
-            Evaluation[] evals = evaluator.getNaturalEvaluations(glyph);
-
-            for (Shape shape : clefShapes) {
-                Evaluation eval = evals[shape.ordinal()];
-                double grade = Inter.intrinsicRatio * eval.grade;
-
-                if (grade >= Grades.clefMinGrade) {
-                    ClefKind kind = ClefInter.kindOf(glyph, shape, staff);
-                    ClefInter bestInter = bestMap.get(kind);
-
-                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
-                        bestMap.put(kind, ClefInter.create(glyph, shape, grade, staff));
-                    }
-                }
-            }
-        }
-
-        @Override
-        public List<Glyph> getNeighbors (Glyph part)
-        {
-            return Graphs.neighborListOf(graph, part);
-        }
-
-        @Override
-        public GlyphNest getNest ()
-        {
-            return sheet.getGlyphNest();
-        }
-
-        @Override
-        public List<Glyph> getParts ()
-        {
-            return new ArrayList<Glyph>(graph.vertexSet());
-        }
-
-        @Override
-        public boolean isSizeAcceptable (Rectangle box)
-        {
-            return box.height <= params.maxGlyphHeight;
-        }
-
-        @Override
-        public boolean isWeightAcceptable (int weight)
-        {
-            return weight >= params.minGlyphWeight;
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -560,5 +452,125 @@ public class ClefBuilder
         private final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
                 0.3,
                 "Minimum weight for clef glyph");
+    }
+
+    //-------------//
+    // ClefAdapter //
+    //-------------//
+    /**
+     * Handles the integration between glyph clustering class and clef environment.
+     * <p>
+     * For each clef kind, we keep the best result found if any.
+     */
+    private class ClefAdapter
+            implements GlyphCluster.Adapter
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Graph of the connected glyphs, with their distance edges if any. */
+        private final SimpleGraph<Glyph, GlyphLink> graph;
+
+        /** Best inter per clef kind. */
+        private Map<ClefKind, ClefInter> bestMap = new EnumMap<ClefKind, ClefInter>(ClefKind.class);
+
+        // For debug only
+        private int trials = 0;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ClefAdapter (List<Glyph> parts)
+        {
+            graph = Glyphs.buildLinks(parts, params.maxPartGap);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void evaluateGlyph (Glyph glyph)
+        {
+            trials++;
+
+            // TODO: use some checking, such as pitch position?
+            Evaluation[] evals = evaluator.getNaturalEvaluations(glyph, sheet.getInterline());
+
+            for (Shape shape : clefShapes) {
+                Evaluation eval = evals[shape.ordinal()];
+                double grade = Inter.intrinsicRatio * eval.grade;
+
+                if (grade >= Grades.clefMinGrade) {
+                    ClefKind kind = ClefInter.kindOf(glyph, shape, staff);
+                    ClefInter bestInter = bestMap.get(kind);
+
+                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
+                        bestMap.put(kind, ClefInter.create(glyph, shape, grade, staff));
+                    }
+                }
+            }
+        }
+
+        @Override
+        public List<Glyph> getNeighbors (Glyph part)
+        {
+            return Graphs.neighborListOf(graph, part);
+        }
+
+        @Override
+        public GlyphIndex getNest ()
+        {
+            return sheet.getGlyphIndex();
+        }
+
+        @Override
+        public List<Glyph> getParts ()
+        {
+            return new ArrayList<Glyph>(graph.vertexSet());
+        }
+
+        @Override
+        public boolean isSizeAcceptable (Rectangle box)
+        {
+            return box.height <= params.maxGlyphHeight;
+        }
+
+        @Override
+        public boolean isWeightAcceptable (int weight)
+        {
+            return weight >= params.minGlyphWeight;
+        }
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final int maxClefEnd;
+
+        final int beltMargin;
+
+        final int xCoreMargin;
+
+        final int yCoreMargin;
+
+        final int minPartWeight;
+
+        final double maxPartGap;
+
+        final double maxGlyphHeight;
+
+        final int minGlyphWeight;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Parameters (Scale scale)
+        {
+            maxClefEnd = scale.toPixels(constants.maxClefEnd);
+            beltMargin = scale.toPixels(constants.beltMargin);
+            xCoreMargin = scale.toPixels(constants.xCoreMargin);
+            yCoreMargin = scale.toPixels(constants.yCoreMargin);
+            minPartWeight = scale.toPixels(constants.minPartWeight);
+            maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
+            maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
+            minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
+        }
     }
 }

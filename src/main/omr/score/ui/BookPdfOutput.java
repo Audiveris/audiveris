@@ -13,6 +13,7 @@ package omr.score.ui;
 
 import omr.sheet.Book;
 import omr.sheet.Sheet;
+import omr.sheet.SheetStub;
 import omr.sheet.ui.SheetResultPainter;
 
 import com.itextpdf.text.Document;
@@ -79,12 +80,13 @@ public class BookPdfOutput
         PdfWriter writer = null;
 
         try {
-            final List<Sheet> sheets = (sheet != null) ? Arrays.asList(sheet) : book.getSheets();
+            final List<SheetStub> stubs = (sheet != null) ? Arrays.asList(sheet.getStub())
+                    : book.getValidStubs();
             fos = new FileOutputStream(file);
 
-            for (Sheet sh : sheets) {
-                final int width = sh.getWidth();
-                final int height = sh.getHeight();
+            for (SheetStub stub : stubs) {
+                final int width = stub.getSheet().getWidth();
+                final int height = stub.getSheet().getHeight();
 
                 if (document == null) {
                     document = new Document(new Rectangle(width, height));
@@ -108,7 +110,7 @@ public class BookPdfOutput
 
                 // Painting
                 SheetResultPainter painter = new SheetResultPainter(
-                        sh,
+                        stub.getSheet(),
                         g2,
                         false, // No voice painting
                         true, // Paint staff lines

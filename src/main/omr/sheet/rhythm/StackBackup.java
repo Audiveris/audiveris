@@ -12,7 +12,7 @@
 package omr.sheet.rhythm;
 
 import omr.sig.SigBackup;
-import omr.sig.inter.ChordInter;
+import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.InterEnsemble;
 import omr.sig.inter.RestChordInter;
@@ -78,7 +78,7 @@ public class StackBackup
             kept.freeze();
         }
 
-        for (ChordInter chord : stack.getChords()) {
+        for (AbstractChordInter chord : stack.getStandardChords()) {
             chord.freeze();
         }
     }
@@ -102,9 +102,15 @@ public class StackBackup
         for (Inter inter : seeds) {
             stack.removeInter(inter);
             inter.delete();
+
+            if (inter instanceof AbstractChordInter) {
+                for (Inter member : ((AbstractChordInter) inter).getNotes()) {
+                    member.delete();
+                }
+            }
         }
 
-        // Restore just the partition
+        // Restore just the configuration content
         attic.restore(sig, config.getInters());
 
         for (Inter inter : config.getInters()) {
@@ -119,7 +125,7 @@ public class StackBackup
         countChordDots();
 
         // Link tuplets
-        List<TupletInter> toDelete = new TupletsBuilder(stack).linkTuplets();
+        Set<TupletInter> toDelete = new TupletsBuilder(stack).linkTuplets();
 
         if (!toDelete.isEmpty()) {
             config.getInters().removeAll(toDelete);
@@ -149,10 +155,8 @@ public class StackBackup
     //----------------//
     private void countChordDots ()
     {
-        List<ChordInter> chords = stack.getChords();
-
         // Determine augmentation dots for each chord
-        for (ChordInter chord : chords) {
+        for (AbstractChordInter chord : stack.getStandardChords()) {
             chord.countDots();
         }
     }

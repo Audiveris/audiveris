@@ -28,9 +28,10 @@ import omr.sheet.ui.SheetResultPainter;
 import omr.sheet.ui.SheetTab;
 
 import omr.ui.BoardsPane;
-import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 
+import omr.util.ByteUtil;
+import omr.util.Navigable;
 import omr.util.StopWatch;
 import omr.util.WeakPropertyChangeListener;
 
@@ -43,10 +44,12 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import omr.sheet.ui.ImageView;
 
 /**
  * Class {@code SheetDiff} measures the difference between input data (the input sheet
@@ -83,6 +86,7 @@ public class SheetDiff
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Image of output entities. */
@@ -129,7 +133,7 @@ public class SheetDiff
         watch.start("xor");
 
         final ByteProcessor xor = new ByteProcessor(width, height);
-        xor.invert();
+        ByteUtil.raz(xor); // xor.invert();
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
@@ -258,6 +262,7 @@ public class SheetDiff
     {
         final Color veryLight = new Color(222, 222, 200);
         final RunTable input = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+        final Point offset = new Point(0, 0);
         final BufferedImage img = new BufferedImage(
                 sheet.getWidth(),
                 sheet.getHeight(),
@@ -274,7 +279,7 @@ public class SheetDiff
 
         switch (kind) {
         case NEGATIVES:
-            input.render(gbi);
+            input.render(gbi, offset);
             gbi.setComposite(AlphaComposite.DstOut);
             outputPainter.process();
 
@@ -282,7 +287,7 @@ public class SheetDiff
 
         case POSITIVES:
             gbi.setColor(veryLight); // Could be totally white...
-            input.render(gbi);
+            input.render(gbi, offset);
             gbi.setComposite(AlphaComposite.SrcIn);
             gbi.setColor(Color.BLACK);
             outputPainter.process();
@@ -292,7 +297,7 @@ public class SheetDiff
         case FALSE_POSITIVES:
             outputPainter.process();
             gbi.setComposite(AlphaComposite.DstOut);
-            input.render(gbi);
+            input.render(gbi, offset);
 
             break;
 
@@ -415,16 +420,15 @@ public class SheetDiff
     // MyView //
     //--------//
     private class MyView
-            extends RubberPanel
+            extends ImageView
             implements PropertyChangeListener
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final BufferedImage img;
 
         //~ Constructors ---------------------------------------------------------------------------
+
         public MyView (ByteProcessor filtered)
         {
+            super(filtered.getBufferedImage());
             setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
 
             // Inject dependency of pixel location
@@ -434,7 +438,6 @@ public class SheetDiff
             PaintingParameters.getInstance()
                     .addPropertyChangeListener(new WeakPropertyChangeListener(this));
 
-            img = filtered.getBufferedImage();
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -445,15 +448,6 @@ public class SheetDiff
         public void propertyChange (PropertyChangeEvent evt)
         {
             repaint();
-        }
-
-        //--------//
-        // render //
-        //--------//
-        @Override
-        public void render (Graphics2D g)
-        {
-            g.drawImage(img, null, 0, 0);
         }
     }
 }

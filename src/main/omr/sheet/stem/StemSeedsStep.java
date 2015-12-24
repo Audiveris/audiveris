@@ -79,7 +79,8 @@ public class StemSeedsStep
                              Sheet sheet)
             throws StepException
     {
-        StemScale stemScale = new StemScaler(sheet).retrieveStem();
+        // Retrieve typical stem width on global sheet
+        StemScale stemScale = new StemScaler(sheet).retrieveStemWidth();
 
         logger.info("{}{}", sheet.getLogPrefix(), stemScale);
         sheet.getScale().setStemScale(stemScale);

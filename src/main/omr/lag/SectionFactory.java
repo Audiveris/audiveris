@@ -84,7 +84,7 @@ public class SectionFactory
     }
 
     /**
-     * Create an instance of SectionFactory, with no target lag.
+     * Create an instance of SectionFactory with no lag.
      *
      * @param orientation    desired orientation for sections
      * @param junctionPolicy the policy to detect junctions
@@ -174,7 +174,7 @@ public class SectionFactory
      *
      * @param runTable the table of runs
      * @param offset   optional offset for runTable top left corner
-     * @param include  if true, include the content of runsTable into the lag
+     * @param include  if true, include the content of runTable into the lag
      * @return the list of created sections
      */
     public List<Section> createSections (RunTable runTable,
@@ -305,20 +305,30 @@ public class SectionFactory
         //---------------//
         // createSection //
         //---------------//
+        /**
+         * Create a section.
+         *
+         * @param firstPos the starting position of the section
+         * @param firstRun the very first run of the section
+         * @return the created section
+         */
         private Section createSection (int firstPos,
                                        Run firstRun)
         {
-            final Section section;
+            if (firstRun == null) {
+                throw new IllegalArgumentException("null first run");
+            }
+
+            final Section section = new BasicSection(orientation);
 
             if (lag != null) {
-                // Section gets an id from lag
-                section = lag.createSection(firstPos, firstRun);
+                lag.register(section); // Section gets an id from lag
             } else {
-                section = new BasicSection(orientation);
-                section.setId(++localId);
-                section.setFirstPos(firstPos);
-                section.append(firstRun);
+                section.setId("" + ++localId); // Use a local id
             }
+
+            section.setFirstPos(firstPos);
+            section.append(firstRun);
 
             created.add(section);
 
@@ -392,7 +402,8 @@ public class SectionFactory
                     // Create a new section, linked by a junction
                     Section sct = createSection(col, run);
                     nextActives.add(sct);
-                    prevSection.addTarget(sct);
+
+                    ///prevSection.addTarget(sct);
                 }
 
                 break;
@@ -404,7 +415,7 @@ public class SectionFactory
                 nextActives.add(newSection);
 
                 for (Section section : overlappingSections) {
-                    section.addTarget(newSection);
+                    ///section.addTarget(newSection);
                 }
             }
         }

@@ -11,15 +11,17 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.Evaluation;
+import omr.classifier.Classifier;
+
+import static omr.classifier.Classifier.Condition.ALLOWED;
+import static omr.classifier.Classifier.Condition.CHECKED;
+
+import omr.classifier.Evaluation;
+
+import omr.glyph.Glyph;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
-import omr.glyph.ShapeEvaluator;
 import omr.glyph.ShapeSet;
-import omr.glyph.facets.Glyph;
-
-import omr.selection.GlyphEvent;
-import omr.selection.SelectionHint;
 
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
@@ -29,10 +31,14 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
+import java.util.EnumSet;
+import java.util.List;
+
 import static javax.swing.Action.NAME;
 import static javax.swing.Action.SHORT_DESCRIPTION;
+
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
@@ -56,7 +62,7 @@ public class SymbolMenu
     // Links to partnering entities
     private final ShapeFocusBoard shapeFocus;
 
-    private final ShapeEvaluator evaluator;
+    private final Classifier evaluator;
 
     // To handle proposed compound shape
     private Glyph proposedGlyph;
@@ -84,7 +90,7 @@ public class SymbolMenu
      * @param shapeFocus        the current shape focus
      */
     public SymbolMenu (final SymbolsController symbolsController,
-                       ShapeEvaluator evaluator,
+                       Classifier evaluator,
                        ShapeFocusBoard shapeFocus)
     {
         super(symbolsController.getModel().getSheet(), "Glyphs ...");
@@ -99,7 +105,7 @@ public class SymbolMenu
     // updateMenu //
     //------------//
     @Override
-    public int updateMenu (Set<Glyph> glyphs)
+    public int updateMenu (Collection<Glyph> glyphs)
     {
         // Analyze the context
         knownNb = 0;
@@ -108,14 +114,14 @@ public class SymbolMenu
 
         if (glyphs != null) {
             for (Glyph glyph : glyphs) {
-//                if (glyph.isKnown()) {
-//                    knownNb++;
-//
-//                    if (glyph.getShape() == Shape.STEM) {
-//                        stemNb++;
-//                    }
-//                }
-//
+                //                if (glyph.isKnown()) {
+                //                    knownNb++;
+                //
+                //                    if (glyph.getShape() == Shape.STEM) {
+                //                        stemNb++;
+                //                    }
+                //                }
+                //
                 if (glyph.isVirtual()) {
                     virtualNb++;
                 }
@@ -134,8 +140,8 @@ public class SymbolMenu
     protected void initMenu ()
     {
         // Copy & Paste actions
-        register(0, new PasteAction());
-        register(0, new CopyAction());
+        //        register(0, new PasteAction());
+        //        register(0, new CopyAction());
 
         // Deassign selected glyph(s)
         register(0, new DeassignAction());
@@ -164,8 +170,7 @@ public class SymbolMenu
         // Display score counterpart
         ///register(0, new TranslationAction());
         // Display all glyphs of the same shape
-        register(0, new ShapeAction());
-
+        ///register(0, new ShapeAction());
         // Display all glyphs similar to the current glyph
         register(0, new SimilarAction());
 
@@ -257,7 +262,7 @@ public class SymbolMenu
         {
             JMenuItem source = (JMenuItem) e.getSource();
             controller.asyncAssignGlyphs(
-                    nest.getSelectedGlyphSet(),
+                    nest.getSelectedGlyphList(),
                     Shape.valueOf(source.getText()),
                     compound);
         }
@@ -311,61 +316,62 @@ public class SymbolMenu
         }
     }
 
-    //------------//
-    // CopyAction //
-    //------------//
-    /**
-     * Copy the shape of the selected glyph shape (in order to replicate
-     * the assignment to another glyph later).
-     */
-    protected class CopyAction
-            extends DynAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public CopyAction ()
-        {
-            super(10);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            Glyph glyph = nest.getSelectedGlyph();
-
-            if (glyph != null) {
-                Shape shape = glyph.getShape();
-
-                if (shape != null) {
-                    controller.setLatestShapeAssigned(shape);
-                }
-            }
-        }
-
-        @Override
-        public void update ()
-        {
-            Glyph glyph = nest.getSelectedGlyph();
-
-            if (glyph != null) {
-                Shape shape = glyph.getShape();
-
-                if (shape != null) {
-                    setEnabled(true);
-                    putValue(NAME, "Copy " + shape);
-                    putValue(SHORT_DESCRIPTION, "Copy this shape");
-
-                    return;
-                }
-            }
-
-            setEnabled(false);
-            putValue(NAME, "Copy");
-            putValue(SHORT_DESCRIPTION, "No shape to copy");
-        }
-    }
-
+    //
+    //    //------------//
+    //    // CopyAction //
+    //    //------------//
+    //    /**
+    //     * Copy the shape of the selected glyph shape (in order to replicate
+    //     * the assignment to another glyph later).
+    //     */
+    //    protected class CopyAction
+    //            extends DynAction
+    //    {
+    //        //~ Constructors ---------------------------------------------------------------------------
+    //
+    //        public CopyAction ()
+    //        {
+    //            super(10);
+    //        }
+    //
+    //        //~ Methods --------------------------------------------------------------------------------
+    //        @Override
+    //        public void actionPerformed (ActionEvent e)
+    //        {
+    //            Glyph glyph = nest.getSelectedGlyph();
+    //
+    //            if (glyph != null) {
+    //                Shape shape = glyph.getShape();
+    //
+    //                if (shape != null) {
+    //                    controller.setLatestShapeAssigned(shape);
+    //                }
+    //            }
+    //        }
+    //
+    //        @Override
+    //        public void update ()
+    //        {
+    //            Glyph glyph = nest.getSelectedGlyph();
+    //
+    //            if (glyph != null) {
+    //                Shape shape = glyph.getShape();
+    //
+    //                if (shape != null) {
+    //                    setEnabled(true);
+    //                    putValue(NAME, "Copy " + shape);
+    //                    putValue(SHORT_DESCRIPTION, "Copy this shape");
+    //
+    //                    return;
+    //                }
+    //            }
+    //
+    //            setEnabled(false);
+    //            putValue(NAME, "Copy");
+    //            putValue(SHORT_DESCRIPTION, "No shape to copy");
+    //        }
+    //    }
+    //
     //----------------//
     // DeassignAction //
     //----------------//
@@ -390,20 +396,21 @@ public class SymbolMenu
             Glyph glyph = nest.getSelectedGlyph();
 
             // Actually deassign the whole set
-            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
+            List<Glyph> glyphs = nest.getSelectedGlyphList();
 
             if (noVirtuals) {
                 controller.asyncDeassignGlyphs(glyphs);
 
-                // Update focus on current glyph, if reused in a compound
-                if (glyph != null) {
-                    Glyph newGlyph = glyph.getFirstSection().getGlyph();
-
-                    if (glyph != newGlyph) {
-                        nest.getGlyphService().publish(
-                                new GlyphEvent(this, SelectionHint.GLYPH_INIT, null, newGlyph));
-                    }
-                }
+                //
+                //                // Update focus on current glyph, if reused in a compound
+                //                if (glyph != null) {
+                //                    Glyph newGlyph = glyph.getFirstSection().getCompound();
+                //
+                //                    if (glyph != newGlyph) {
+                //                        nest.getEntityService().publish(
+                //                                new GlyphEvent(this, SelectionHint.GLYPH_INIT, null, newGlyph));
+                //                    }
+                //                }
             } else {
                 controller.asyncDeleteVirtualGlyphs(glyphs);
             }
@@ -474,7 +481,7 @@ public class SymbolMenu
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            for (Glyph glyph : nest.getSelectedGlyphSet()) {
+            for (Glyph glyph : nest.getSelectedGlyphList()) {
                 logger.info(glyph.dumpOf());
             }
         }
@@ -502,55 +509,56 @@ public class SymbolMenu
         }
     }
 
-    //-------------//
-    // PasteAction //
-    //-------------//
-    /**
-     * Paste the latest shape to the glyph(s) at end.
-     */
-    protected class PasteAction
-            extends DynAction
-    {
-        //~ Static fields/initializers -------------------------------------------------------------
-
-        private static final String PREFIX = "Paste ";
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public PasteAction ()
-        {
-            super(10);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            JMenuItem source = (JMenuItem) e.getSource();
-            Shape shape = Shape.valueOf(source.getText().substring(PREFIX.length()));
-            Glyph glyph = nest.getSelectedGlyph();
-
-            if (glyph != null) {
-                controller.asyncAssignGlyphs(Collections.singleton(glyph), shape, false);
-            }
-        }
-
-        @Override
-        public void update ()
-        {
-            Shape latest = controller.getLatestShapeAssigned();
-
-            if ((glyphNb > 0) && (latest != null) && noVirtuals) {
-                setEnabled(true);
-                putValue(NAME, PREFIX + latest.toString());
-                putValue(SHORT_DESCRIPTION, "Assign latest shape");
-            } else {
-                setEnabled(false);
-                putValue(NAME, PREFIX);
-                putValue(SHORT_DESCRIPTION, "No shape to assign again");
-            }
-        }
-    }
-
+    //
+    //    //-------------//
+    //    // PasteAction //
+    //    //-------------//
+    //    /**
+    //     * Paste the latest shape to the glyph(s) at end.
+    //     */
+    //    protected class PasteAction
+    //            extends DynAction
+    //    {
+    //        //~ Static fields/initializers -------------------------------------------------------------
+    //
+    //        private static final String PREFIX = "Paste ";
+    //
+    //        //~ Constructors ---------------------------------------------------------------------------
+    //        public PasteAction ()
+    //        {
+    //            super(10);
+    //        }
+    //
+    //        //~ Methods --------------------------------------------------------------------------------
+    //        @Override
+    //        public void actionPerformed (ActionEvent e)
+    //        {
+    //            JMenuItem source = (JMenuItem) e.getSource();
+    //            Shape shape = Shape.valueOf(source.getText().substring(PREFIX.length()));
+    //            Glyph glyph = nest.getSelectedGlyph();
+    //
+    //            if (glyph != null) {
+    //                controller.asyncAssignGlyphs(Collections.singleton(glyph), shape, false);
+    //            }
+    //        }
+    //
+    //        @Override
+    //        public void update ()
+    //        {
+    //            Shape latest = controller.getLatestShapeAssigned();
+    //
+    //            if ((glyphNb > 0) && (latest != null) && noVirtuals) {
+    //                setEnabled(true);
+    //                putValue(NAME, PREFIX + latest.toString());
+    //                putValue(SHORT_DESCRIPTION, "Assign latest shape");
+    //            } else {
+    //                setEnabled(false);
+    //                putValue(NAME, PREFIX);
+    //                putValue(SHORT_DESCRIPTION, "No shape to assign again");
+    //            }
+    //        }
+    //    }
+    //
     //----------------//
     // DumpTextAction //
     //----------------//
@@ -572,7 +580,7 @@ public class SymbolMenu
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            for (Glyph glyph : nest.getSelectedGlyphSet()) {
+            for (Glyph glyph : nest.getSelectedGlyphList()) {
                 logger.info(glyph.dumpOf());
             }
         }
@@ -633,15 +641,22 @@ public class SymbolMenu
             // Proposed compound?
             Glyph glyph = nest.getSelectedGlyph();
 
-            if ((glyphNb > 0) && (glyph != null) && (glyph.getId() == 0)) {
+            if ((glyphNb > 0) && (glyph != null) && (glyph.getId() == null)) {
                 SystemManager systemManager = sheet.getSystemManager();
 
                 for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
-                    Evaluation vote = evaluator.vote(glyph, system, Grades.symbolMinGrade);
+                    ///Evaluation vote = evaluator.vote(glyph, system, Grades.symbolMinGrade);
+                    Evaluation[] evals = evaluator.evaluate(
+                            glyph,
+                            system,
+                            1,
+                            Grades.symbolMinGrade,
+                            EnumSet.of(ALLOWED, CHECKED),
+                            null);
 
-                    if (vote != null) {
+                    if (evals.length > 0) {
                         proposedGlyph = glyph;
-                        proposedShape = vote.shape;
+                        proposedShape = evals[0].shape;
                         setEnabled(true);
                         putValue(NAME, "Build compound as " + proposedShape);
                         putValue(SHORT_DESCRIPTION, "Accept the proposed compound");
@@ -660,54 +675,55 @@ public class SymbolMenu
         }
     }
 
-    //-------------//
-    // ShapeAction //
-    //-------------//
-    /**
-     * Set the focus on all glyphs with the same shape.
-     */
-    private class ShapeAction
-            extends DynAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public ShapeAction ()
-        {
-            super(70);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
-
-            if ((glyphs != null) && (glyphs.size() == 1)) {
-                Glyph glyph = glyphs.iterator().next();
-
-                if (glyph.getShape() != null) {
-                    shapeFocus.setCurrentShape(glyph.getShape());
-                }
-            }
-        }
-
-        @Override
-        public void update ()
-        {
-            Glyph glyph = nest.getSelectedGlyph();
-
-            if ((glyph != null) && (glyph.getShape() != null)) {
-                setEnabled(true);
-                putValue(NAME, "Show all " + glyph.getShape() + "'s");
-                putValue(SHORT_DESCRIPTION, "Display all glyphs of this shape");
-            } else {
-                setEnabled(false);
-                putValue(NAME, "Show all");
-                putValue(SHORT_DESCRIPTION, "No shape defined");
-            }
-        }
-    }
-
+    //
+    //    //-------------//
+    //    // ShapeAction //
+    //    //-------------//
+    //    /**
+    //     * Set the focus on all glyphs with the same shape.
+    //     */
+    //    private class ShapeAction
+    //            extends DynAction
+    //    {
+    //        //~ Constructors ---------------------------------------------------------------------------
+    //
+    //        public ShapeAction ()
+    //        {
+    //            super(70);
+    //        }
+    //
+    //        //~ Methods --------------------------------------------------------------------------------
+    //        @Override
+    //        public void actionPerformed (ActionEvent e)
+    //        {
+    //            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
+    //
+    //            if ((glyphs != null) && (glyphs.size() == 1)) {
+    //                Glyph glyph = glyphs.iterator().next();
+    //
+    //                if (glyph.getShape() != null) {
+    //                    shapeFocus.setCurrentShape(glyph.getShape());
+    //                }
+    //            }
+    //        }
+    //
+    //        @Override
+    //        public void update ()
+    //        {
+    //            Glyph glyph = nest.getSelectedGlyph();
+    //
+    //            if ((glyph != null) && (glyph.getShape() != null)) {
+    //                setEnabled(true);
+    //                putValue(NAME, "Show all " + glyph.getShape() + "'s");
+    //                putValue(SHORT_DESCRIPTION, "Display all glyphs of this shape");
+    //            } else {
+    //                setEnabled(false);
+    //                putValue(NAME, "Show all");
+    //                putValue(SHORT_DESCRIPTION, "No shape defined");
+    //            }
+    //        }
+    //    }
+    //
     //---------------//
     // SimilarAction //
     //---------------//
@@ -728,7 +744,7 @@ public class SymbolMenu
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
+            List<Glyph> glyphs = nest.getSelectedGlyphList();
 
             if ((glyphs != null) && (glyphs.size() == 1)) {
                 Glyph glyph = glyphs.iterator().next();
@@ -777,7 +793,7 @@ public class SymbolMenu
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
+            List<Glyph> glyphs = nest.getSelectedGlyphList();
             ((SymbolsController) controller).asyncSegment(glyphs);
         }
 
@@ -795,56 +811,56 @@ public class SymbolMenu
             }
         }
     }
-//
-//    //-------------------//
-//    // TranslationAction //
-//    //-------------------//
-//    /**
-//     * Display the score entity that translates this glyph.
-//     */
-//    private class TranslationAction
-//            extends DynAction
-//    {
-//        //~ Constructors ---------------------------------------------------------------------------
-//
-//        public TranslationAction ()
-//        {
-//            super(40);
-//        }
-//
-//        //~ Methods --------------------------------------------------------------------------------
-//        @Override
-//        public void actionPerformed (ActionEvent e)
-//        {
-//            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
-//            ((SymbolsController) controller).showTranslations(glyphs);
-//        }
-//
-//        @Override
-//        public void update ()
-//        {
-//            if (glyphNb > 0) {
-//                for (Glyph glyph : nest.getSelectedGlyphSet()) {
-//                    if (glyph.isTranslated()) {
-//                        setEnabled(true);
-//
-//                        StringBuilder sb = new StringBuilder();
-//                        sb.append("Show translations");
-//                        putValue(NAME, sb.toString());
-//                        putValue(SHORT_DESCRIPTION, "Show translations related to the glyph(s)");
-//
-//                        return;
-//                    }
-//                }
-//            }
-//
-//            // No translation to show
-//            setEnabled(false);
-//            putValue(NAME, "Translations");
-//            putValue(SHORT_DESCRIPTION, "No translation");
-//        }
-//    }
 
+    //
+    //    //-------------------//
+    //    // TranslationAction //
+    //    //-------------------//
+    //    /**
+    //     * Display the score entity that translates this glyph.
+    //     */
+    //    private class TranslationAction
+    //            extends DynAction
+    //    {
+    //        //~ Constructors ---------------------------------------------------------------------------
+    //
+    //        public TranslationAction ()
+    //        {
+    //            super(40);
+    //        }
+    //
+    //        //~ Methods --------------------------------------------------------------------------------
+    //        @Override
+    //        public void actionPerformed (ActionEvent e)
+    //        {
+    //            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
+    //            ((SymbolsController) controller).showTranslations(glyphs);
+    //        }
+    //
+    //        @Override
+    //        public void update ()
+    //        {
+    //            if (glyphNb > 0) {
+    //                for (Glyph glyph : nest.getSelectedGlyphSet()) {
+    //                    if (glyph.isTranslated()) {
+    //                        setEnabled(true);
+    //
+    //                        StringBuilder sb = new StringBuilder();
+    //                        sb.append("Show translations");
+    //                        putValue(NAME, sb.toString());
+    //                        putValue(SHORT_DESCRIPTION, "Show translations related to the glyph(s)");
+    //
+    //                        return;
+    //                    }
+    //                }
+    //            }
+    //
+    //            // No translation to show
+    //            setEnabled(false);
+    //            putValue(NAME, "Translations");
+    //            putValue(SHORT_DESCRIPTION, "No translation");
+    //        }
+    //    }
     //----------------//
     // TrimSlurAction //
     //----------------//
@@ -865,7 +881,7 @@ public class SymbolMenu
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
+            List<Glyph> glyphs = nest.getSelectedGlyphList();
             ((SymbolsController) controller).asyncTrimSlurs(glyphs);
         }
 

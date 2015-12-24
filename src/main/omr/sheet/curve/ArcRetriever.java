@@ -24,8 +24,10 @@ import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
+
 import static omr.sheet.curve.Skeleton.*;
-import omr.sheet.grid.FilamentLine;
+
+import omr.sheet.grid.LineInfo;
 
 import omr.util.Dumping;
 import omr.util.Navigable;
@@ -34,13 +36,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
+
 import java.util.Collections;
 import java.util.List;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 /**
  * Class {@code ArcRetriever} retrieves all arcs and store the interesting ones in
@@ -337,7 +345,7 @@ public class ArcRetriever
 
         Point p0 = points.get(0);
         Staff staff = sheet.getStaffManager().getClosestStaff(p0);
-        FilamentLine line = staff.getClosestLine(p0);
+        LineInfo line = staff.getClosestLine(p0);
         double maxDist = 0;
         double maxDy = Double.MIN_VALUE;
         double minDy = Double.MAX_VALUE;

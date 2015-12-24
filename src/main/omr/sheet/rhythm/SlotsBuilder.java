@@ -21,12 +21,17 @@ import omr.sheet.Staff;
 import omr.sheet.beam.BeamGroup;
 import static omr.sheet.rhythm.SlotsBuilder.Rel.*;
 
+import omr.sig.SIGraph;
 import omr.sig.inter.AbstractBeamInter;
+import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractNoteInter;
-import omr.sig.inter.ChordInter;
+import omr.sig.inter.HeadChordInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.Inters;
 import omr.sig.inter.RestChordInter;
+import omr.sig.inter.StemInter;
+import omr.sig.relation.Relation;
+import omr.sig.relation.StemAlignmentRelation;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -37,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -143,18 +149,18 @@ public class SlotsBuilder
     private final Parameters params;
 
     /** Inter-chord relationships for the current measure stack. */
-    private SimpleDirectedGraph<ChordInter, Link> graph = new SimpleDirectedGraph<ChordInter, Link>(
+    private SimpleDirectedGraph<AbstractChordInter, Link> graph = new SimpleDirectedGraph<AbstractChordInter, Link>(
             Link.class);
 
-    /** Earliest term for each staff in stack. */
+    /** Current earliest term for each staff in stack. */
     private final Map<Staff, Rational> stackTerms = new LinkedHashMap<Staff, Rational>();
 
     /** Comparator based on inter-chord relationships, then on startTime when known. */
-    private final Comparator<ChordInter> byRel = new Comparator<ChordInter>()
+    private final Comparator<AbstractChordInter> byRel = new Comparator<AbstractChordInter>()
     {
         @Override
-        public int compare (ChordInter c1,
-                            ChordInter c2)
+        public int compare (AbstractChordInter c1,
+                            AbstractChordInter c2)
         {
             if (c1 == c2) {
                 return 0;
@@ -238,8 +244,8 @@ public class SlotsBuilder
      * @param ch2 another chord
      * @return true if adjacent
      */
-    private boolean areAdjacent (ChordInter ch1,
-                                 ChordInter ch2)
+    private boolean areAdjacent (AbstractChordInter ch1,
+                                 AbstractChordInter ch2)
     {
         // Adjacency cannot occur if at least 1 rest-chord is involved.
         if (ch1.isRest() || ch2.isRest()) {
@@ -307,11 +313,13 @@ public class SlotsBuilder
      */
     private void buildRelationships ()
     {
-        // Sort measure chords by abscissa
-        Collections.sort(stack.getChords(), Inter.byAbscissa);
+        // Sort measure standard chords by abscissa
+        List<AbstractChordInter> stdChords = new ArrayList<AbstractChordInter>(
+                stack.getStandardChords());
+        Collections.sort(stdChords, Inter.byAbscissa);
 
         // Populate graph with chords
-        for (ChordInter chord : stack.getChords()) {
+        for (AbstractChordInter chord : stdChords) {
             graph.addVertex(chord);
         }
 
@@ -321,11 +329,14 @@ public class SlotsBuilder
         // Mirror-based relationships
         inspectMirrors();
 
+        // RootStem-based relationships
+        inspectRootStems();
+
         // Finally, default location-based relationships
-        inspectLocations();
+        inspectLocations(stdChords);
 
         if (logger.isDebugEnabled()) {
-            dumpRelationships();
+            dumpRelationships(stdChords);
         }
     }
 
@@ -344,30 +355,41 @@ public class SlotsBuilder
 
         // The 'actives' collection gathers the chords that are not terminated at the
         // time slot being considered. Initially, it contains just the whole chords.
-        List<ChordInter> actives = new ArrayList<ChordInter>(stack.getWholeRestChords());
-        Collections.sort(actives, ChordInter.byAbscissa);
+        List<AbstractChordInter> actives = new ArrayList<AbstractChordInter>(
+                stack.getWholeRestChords());
+        Collections.sort(actives, AbstractChordInter.byAbscissa);
 
         // Create voices for whole chords
         handleWholeVoices(actives);
 
         // List of chords assignable, but not yet assigned to a slot
-        List<ChordInter> pendings = getPendingChords();
+        List<AbstractChordInter> pendings = getPendingChords();
 
         // Assign chords to time slots, until no chord is left pending
         while (!pendings.isEmpty()) {
             dump("actives", actives);
 
             // Earliest end time among all active chords
-            Rational term = computeNextTerm(actives);
+            // It must be later than time of previous slot if any
+            Rational term = computeNextTerm(actives, pendings);
+            Slot lastSlot = stack.getLastSlot();
+
+            if ((lastSlot != null) && (term.compareTo(lastSlot.getStartTime()) <= 0)) {
+                if (failFast) {
+                    logger.info("Stack#{} suspicious {}", stack.getIdValue(), lastSlot);
+
+                    return false;
+                }
+            }
 
             // Which chords end here, and is their voice available or not for the slot?
             // (if a beam group continues, its voice remains locked)
-            List<ChordInter> freeEndings = new ArrayList<ChordInter>();
-            List<ChordInter> endings = new ArrayList<ChordInter>();
+            List<AbstractChordInter> freeEndings = new ArrayList<AbstractChordInter>();
+            List<AbstractChordInter> endings = new ArrayList<AbstractChordInter>();
             detectEndings(actives, term, endings, freeEndings);
 
             // Do we have pending chords that start at this slot?
-            List<ChordInter> incomings = retrieveIncomingChords(pendings, term);
+            List<AbstractChordInter> incomings = retrieveIncomingChords(pendings, term);
 
             if (!incomings.isEmpty()) {
                 // Allocate the slot with the incoming chords
@@ -426,10 +448,10 @@ public class SlotsBuilder
     //        // We are too close, find out the guilty chord
     //        logger.debug("Too close slot {}", slot);
     //
-    //        for (ChordInter prevChord : prevSlot.getChords()) {
+    //        for (AbstractChordInter prevChord : prevSlot.getChords()) {
     //            Rectangle prevRect = prevChord.getBounds();
     //
-    //            for (ChordInter nextChord : slot.getChords()) {
+    //            for (AbstractChordInter nextChord : slot.getChords()) {
     //                Rectangle nextRect = nextChord.getBounds();
     //
     //                if (GeoUtil.yOverlap(prevRect, nextRect) > 0) {
@@ -461,25 +483,48 @@ public class SlotsBuilder
      * We compute the earliest term for each staff based on the active chords.
      * We pickup the earliest among all staves.
      *
-     * @param actives chords still active
+     * @param actives  chords still active
+     * @param pendings chords still not assigned
      */
-    private Rational computeNextTerm (Collection<ChordInter> actives)
+    private Rational computeNextTerm (Collection<AbstractChordInter> actives,
+                                      List<AbstractChordInter> pendings)
     {
         Rational nextTerm = Rational.MAX_VALUE;
         stackTerms.clear();
 
-        for (ChordInter chord : actives) {
+        // Check for pending chords that could lower a staff term
+        for (AbstractChordInter chord : pendings) {
+            Rational startTime = chord.getStartTime();
+
+            if (startTime != null) {
+                for (Staff staff : chord.getStaves()) {
+                    Rational staffTerm = stackTerms.get(staff);
+
+                    if ((staffTerm == null) || (startTime.compareTo(staffTerm) < 0)) {
+                        stackTerms.put(staff, startTime);
+
+                        if (startTime.compareTo(nextTerm) < 0) {
+                            nextTerm = startTime;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (AbstractChordInter chord : actives) {
             // Skip the "whole" chords, since they don't expire before measure end
             if (!chord.isWholeRest()) {
                 Rational endTime = chord.getEndTime();
-                Staff staff = chord.getStaff();
-                Rational staffTerm = stackTerms.get(staff);
 
-                if ((staffTerm == null) || (endTime.compareTo(staffTerm) < 0)) {
-                    stackTerms.put(staff, endTime);
+                for (Staff staff : chord.getStaves()) {
+                    Rational staffTerm = stackTerms.get(staff);
 
-                    if (endTime.compareTo(nextTerm) < 0) {
-                        nextTerm = endTime;
+                    if ((staffTerm == null) || (endTime.compareTo(staffTerm) < 0)) {
+                        stackTerms.put(staff, endTime);
+
+                        if (endTime.compareTo(nextTerm) < 0) {
+                            nextTerm = endTime;
+                        }
                     }
                 }
             }
@@ -506,12 +551,12 @@ public class SlotsBuilder
      * @param endings     (output) expiring chords that do not release their voice
      * @param freeEndings (output) expiring chords that release their voice
      */
-    private void detectEndings (List<ChordInter> actives,
+    private void detectEndings (List<AbstractChordInter> actives,
                                 Rational term,
-                                List<ChordInter> endings,
-                                List<ChordInter> freeEndings)
+                                List<AbstractChordInter> endings,
+                                List<AbstractChordInter> freeEndings)
     {
-        for (ChordInter chord : actives) {
+        for (AbstractChordInter chord : actives) {
             // Look for chords that finish at the slot at hand
             if (!chord.isWholeRest() && (chord.getEndTime().compareTo(term) <= 0)) {
                 // Make sure voice is really available
@@ -543,7 +588,7 @@ public class SlotsBuilder
      * @param chords the provided chords
      */
     private void dump (String label,
-                       Collection<ChordInter> chords)
+                       Collection<AbstractChordInter> chords)
     {
         if (logger.isDebugEnabled()) {
             logger.debug("{}{}", label, Inters.ids(chords));
@@ -555,34 +600,37 @@ public class SlotsBuilder
     //-------------------//
     /**
      * Print out the matrix of chord relationships for the stack.
+     *
+     * @param stdChords standard chords, sorted by abscissa
      */
-    private void dumpRelationships ()
+    private void dumpRelationships (List<AbstractChordInter> stdChords)
     {
         // List BeamGroups
         if (logger.isDebugEnabled()) {
-            for (BeamGroup group : stack.getBeamGroups()) {
-                logger.info("  {}", group);
+            for (Measure measure : stack.getMeasures()) {
+                for (BeamGroup group : measure.getBeamGroups()) {
+                    logger.info("  {}", group);
+                }
             }
         }
 
         // List chords relationships
         StringBuilder sb = new StringBuilder("    ");
-        List<ChordInter> chords = stack.getChords();
-        int length = chords.size();
+        int length = stdChords.size();
 
         for (int ix = 0; ix < length; ix++) {
-            sb.append(String.format(" %4d", chords.get(ix).getId()));
+            sb.append(String.format(" %4s", stdChords.get(ix).getId()));
         }
 
         for (int iy = 0; iy < length; iy++) {
-            ChordInter chy = chords.get(iy);
+            AbstractChordInter chy = stdChords.get(iy);
             sb.append("\n");
-            sb.append(String.format("%4d", chy.getId()));
+            sb.append(String.format("%4s", chy.getId()));
 
             for (int ix = 0; ix < length; ix++) {
                 sb.append("  ");
 
-                ChordInter chx = chords.get(ix);
+                AbstractChordInter chx = stdChords.get(ix);
 
                 Rel rel = getRel(chy, chx);
 
@@ -610,12 +658,12 @@ public class SlotsBuilder
      * @return the set of chords candidates which are flagged as either EQUAL or CLOSE to the
      *         provided chord
      */
-    private Set<ChordInter> getClosure (ChordInter chord)
+    private Set<AbstractChordInter> getClosure (AbstractChordInter chord)
     {
-        Set<ChordInter> closes = new LinkedHashSet<ChordInter>();
+        Set<AbstractChordInter> closes = new LinkedHashSet<AbstractChordInter>();
         closes.add(chord);
 
-        for (ChordInter ch : stack.getChords()) {
+        for (AbstractChordInter ch : stack.getStandardChords()) {
             Rel rel1 = getRel(chord, ch);
             Rel rel2 = getRel(ch, chord);
 
@@ -633,17 +681,19 @@ public class SlotsBuilder
     /**
      * Report all chords in stack that are to be assigned a time slot.
      *
-     * @return all stack chords, except the whole ones
+     * @return all stack chords, except the whole ones, sorted by relationship
      */
-    private List<ChordInter> getPendingChords ()
+    private List<AbstractChordInter> getPendingChords ()
     {
-        List<ChordInter> pendings = new ArrayList<ChordInter>();
+        List<AbstractChordInter> pendings = new ArrayList<AbstractChordInter>();
 
-        for (ChordInter chord : stack.getChords()) {
+        for (AbstractChordInter chord : stack.getStandardChords()) {
             if (!chord.isWholeRest()) {
                 pendings.add(chord);
             }
         }
+
+        Collections.sort(pendings, byRel);
 
         return pendings;
     }
@@ -659,8 +709,8 @@ public class SlotsBuilder
      * @param to   target chord
      * @return the relationship from source to target, if any
      */
-    private Rel getRel (ChordInter from,
-                        ChordInter to)
+    private Rel getRel (AbstractChordInter from,
+                        AbstractChordInter to)
     {
         Link link = graph.getEdge(from, to);
 
@@ -679,13 +729,14 @@ public class SlotsBuilder
      *
      * @param wholes the whole chords
      */
-    private void handleWholeVoices (List<ChordInter> wholes)
+    private void handleWholeVoices (List<AbstractChordInter> wholes)
     {
-        for (ChordInter chord : wholes) {
+        for (AbstractChordInter chord : wholes) {
             chord.setStartTime(Rational.ZERO);
 
             Voice voice = Voice.createWholeVoice(chord, chord.getMeasure());
-            stack.getVoices().add(voice);
+            Measure measure = stack.getMeasureAt(chord.getPart());
+            measure.addVoice(voice);
         }
     }
 
@@ -701,8 +752,8 @@ public class SlotsBuilder
      * @param ch2 second provided chord
      * @return true if there is a common note
      */
-    private boolean haveCommonHead (ChordInter ch1,
-                                    ChordInter ch2)
+    private boolean haveCommonHead (AbstractChordInter ch1,
+                                    AbstractChordInter ch2)
     {
         if (ch1.getMirror() == ch2) {
             return true;
@@ -728,22 +779,25 @@ public class SlotsBuilder
      */
     private void inspectBeams ()
     {
-        for (BeamGroup group : stack.getBeamGroups()) {
-            Set<ChordInter> chordSet = new HashSet<ChordInter>();
+        for (Measure measure : stack.getMeasures()) {
+            for (BeamGroup group : measure.getBeamGroups()) {
+                Set<AbstractChordInter> chordSet = new HashSet<AbstractChordInter>();
 
-            for (AbstractBeamInter beam : group.getBeams()) {
-                chordSet.addAll(beam.getChords());
-            }
+                for (AbstractBeamInter beam : group.getBeams()) {
+                    chordSet.addAll(beam.getChords());
+                }
 
-            final List<ChordInter> groupChords = new ArrayList<ChordInter>(chordSet);
-            Collections.sort(groupChords, ChordInter.byAbscissa);
+                final List<AbstractChordInter> groupChords = new ArrayList<AbstractChordInter>(
+                        chordSet);
+                Collections.sort(groupChords, AbstractChordInter.byAbscissa);
 
-            for (int i = 0; i < groupChords.size(); i++) {
-                ChordInter ch1 = groupChords.get(i);
+                for (int i = 0; i < groupChords.size(); i++) {
+                    AbstractChordInter ch1 = groupChords.get(i);
 
-                for (ChordInter ch2 : groupChords.subList(i + 1, groupChords.size())) {
-                    setRel(ch1, ch2, BEFORE);
-                    setRel(ch2, ch1, AFTER);
+                    for (AbstractChordInter ch2 : groupChords.subList(i + 1, groupChords.size())) {
+                        setRel(ch1, ch2, BEFORE);
+                        setRel(ch2, ch1, AFTER);
+                    }
                 }
             }
         }
@@ -754,14 +808,15 @@ public class SlotsBuilder
     //------------------//
     /**
      * Derive the missing inter-chord relationships from chords relative locations.
+     *
+     * @param stdChords standard chords, sorted by abscissa
      */
-    private void inspectLocations ()
+    private void inspectLocations (List<AbstractChordInter> stdChords)
     {
-        final List<ChordInter> measureChords = stack.getChords();
         final List<ChordPair> adjacencies = new ArrayList<ChordPair>();
 
-        for (int i = 0; i < measureChords.size(); i++) {
-            ChordInter ch1 = measureChords.get(i);
+        for (int i = 0; i < stdChords.size(); i++) {
+            AbstractChordInter ch1 = stdChords.get(i);
 
             if (ch1.isWholeRest()) {
                 continue;
@@ -769,7 +824,7 @@ public class SlotsBuilder
 
             Rectangle box1 = ch1.getBounds();
 
-            for (ChordInter ch2 : measureChords.subList(i + 1, measureChords.size())) {
+            for (AbstractChordInter ch2 : stdChords.subList(i + 1, stdChords.size())) {
                 if (ch1.isVip() && ch2.isVip()) {
                     logger.info("VIP inspectLocations {} vs {}", ch1, ch2);
                 }
@@ -788,14 +843,12 @@ public class SlotsBuilder
                         setRel(ch1, ch2, EQUAL);
                         setRel(ch2, ch1, EQUAL);
                         adjacencies.add(new ChordPair(ch1, ch2));
+                    } else if (ch1.getCenter().x <= ch2.getCenter().x) {
+                        setRel(ch1, ch2, BEFORE);
+                        setRel(ch2, ch1, AFTER);
                     } else {
-                        if (ch1.getCenter().x <= ch2.getCenter().x) {
-                            setRel(ch1, ch2, BEFORE);
-                            setRel(ch2, ch1, AFTER);
-                        } else {
-                            setRel(ch2, ch1, BEFORE);
-                            setRel(ch1, ch2, AFTER);
-                        }
+                        setRel(ch2, ch1, BEFORE);
+                        setRel(ch1, ch2, AFTER);
                     }
                 } else {
                     // Boxes do not overlap vertically
@@ -804,14 +857,12 @@ public class SlotsBuilder
                     if (dx <= params.maxSlotDx) {
                         setRel(ch1, ch2, CLOSE);
                         setRel(ch2, ch1, CLOSE);
+                    } else if (ch1.getCenter().x <= ch2.getCenter().x) {
+                        setRel(ch1, ch2, BEFORE);
+                        setRel(ch2, ch1, AFTER);
                     } else {
-                        if (ch1.getCenter().x <= ch2.getCenter().x) {
-                            setRel(ch1, ch2, BEFORE);
-                            setRel(ch2, ch1, AFTER);
-                        } else {
-                            setRel(ch2, ch1, BEFORE);
-                            setRel(ch1, ch2, AFTER);
-                        }
+                        setRel(ch2, ch1, BEFORE);
+                        setRel(ch1, ch2, AFTER);
                     }
                 }
             }
@@ -823,11 +874,11 @@ public class SlotsBuilder
 
             for (ChordPair pair : adjacencies) {
                 // Since ch1 ~ ch2, all neighbors of ch1 ~ neighbors of ch2
-                Set<ChordInter> n1 = getClosure(pair.one);
-                Set<ChordInter> n2 = getClosure(pair.two);
+                Set<AbstractChordInter> n1 = getClosure(pair.one);
+                Set<AbstractChordInter> n2 = getClosure(pair.two);
 
-                for (ChordInter ch1 : n1) {
-                    for (ChordInter ch2 : n2) {
+                for (AbstractChordInter ch1 : n1) {
+                    for (AbstractChordInter ch2 : n2) {
                         if (ch1 != ch2) {
                             if (getRel(ch1, ch2) != EQUAL) {
                                 setRel(ch1, ch2, CLOSE);
@@ -851,16 +902,17 @@ public class SlotsBuilder
      */
     private void inspectMirrors ()
     {
-        final List<ChordInter> stackChords = stack.getChords();
+        final List<HeadChordInter> headChords = new ArrayList<HeadChordInter>(
+                stack.getHeadChords());
 
-        for (int i = 0; i < stackChords.size(); i++) {
-            ChordInter ch1 = stackChords.get(i);
+        for (int i = 0; i < headChords.size(); i++) {
+            HeadChordInter ch1 = headChords.get(i);
 
             if (ch1.isWholeRest()) {
                 continue;
             }
 
-            for (ChordInter ch2 : stackChords.subList(i + 1, stackChords.size())) {
+            for (HeadChordInter ch2 : headChords.subList(i + 1, headChords.size())) {
                 if (ch2.isWholeRest() || (getRel(ch1, ch2) != null)) {
                     continue;
                 }
@@ -878,23 +930,78 @@ public class SlotsBuilder
         }
     }
 
+    //------------------//
+    // inspectRootStems //
+    //------------------//
+    /**
+     * Derive some inter-chords relationships from chords whose stems were portions of
+     * the same root stem instance.
+     */
+    private void inspectRootStems ()
+    {
+        final SIGraph sig = stack.getSystem().getSig();
+
+        final List<HeadChordInter> headChords = new ArrayList<HeadChordInter>(
+                stack.getHeadChords());
+
+        for (int i = 0; i < headChords.size(); i++) {
+            HeadChordInter ch1 = headChords.get(i);
+            StemInter stem1 = ch1.getStem();
+
+            if (stem1 == null) {
+                continue;
+            }
+
+            Set<Relation> aligns = sig.getRelations(stem1, StemAlignmentRelation.class);
+
+            if (aligns.isEmpty()) {
+                continue;
+            }
+
+            Set<Inter> alignedStems = new HashSet<Inter>();
+
+            for (Relation rel : aligns) {
+                Inter inter = sig.getOppositeInter(stem1, rel);
+                alignedStems.add(inter);
+            }
+
+            for (HeadChordInter ch2 : headChords.subList(i + 1, headChords.size())) {
+                StemInter stem2 = ch2.getStem();
+
+                if (stem2 == null) {
+                    continue;
+                }
+
+                if (alignedStems.contains(stem2)) {
+                    // Propagate existing ch1 relationships and ch2 relationships
+                    propagateRelationships(ch1, ch2);
+
+                    // Record relationship
+                    setRel(ch1, ch2, EQUAL);
+                    setRel(ch2, ch1, EQUAL);
+                }
+            }
+        }
+    }
+
     //------------------------//
     // propagateRelationships //
     //------------------------//
     /**
-     * Since the chords in the provided pair are mirrored, they share identical
-     * relationships with the other chords in stack
+     * Since the chords in the provided pair are mirrored or share the same root stem,
+     * they share identical relationships with the other chords in stack.
      *
-     * @param pair array of exactly 2 chords
+     * @param pair array of exactly 2 head chords
      */
-    private void propagateRelationships (ChordInter... pair)
+    private void propagateRelationships (HeadChordInter... pair)
     {
-        final List<ChordInter> stackChords = stack.getChords();
+        Set<AbstractChordInter> stdChords = stack.getStandardChords();
+        stdChords.removeAll(Arrays.asList(pair));
 
-        for (ChordInter ch : stackChords) {
+        for (AbstractChordInter ch : stdChords) {
             for (int i = 0; i < 2; i++) {
-                ChordInter one = pair[i];
-                ChordInter two = pair[(i + 1) % 2];
+                HeadChordInter one = pair[i];
+                HeadChordInter two = pair[(i + 1) % 2];
 
                 Rel rel;
                 rel = getRel(ch, one);
@@ -934,17 +1041,17 @@ public class SlotsBuilder
         //            firsts.addAll(stack.getWholeRestChords());
         //        }
         //
-        //        Collections.sort(firsts, ChordInter.byOrdinate);
+        //        Collections.sort(firsts, AbstractChordInter.byOrdinate);
         //
         //        // Rename voices accordingly
         //        for (int i = 0; i < firsts.size(); i++) {
-        //            ChordInter chord = firsts.get(i);
+        //            AbstractChordInter chord = firsts.get(i);
         //            Voice voice = chord.getVoice();
         //            stack.swapVoiceId(voice, i + 1);
         //        }
 
         // Sort voices vertically in stack
-        List<Voice> voices = stack.getVoices();
+        List<Voice> voices = new ArrayList<Voice>(stack.getVoices());
         Collections.sort(voices, Voice.byOrdinate);
 
         // Assign each voice ID according to its relative vertical position
@@ -963,32 +1070,41 @@ public class SlotsBuilder
      * @param term     time considered for next slot
      * @return the collection of chords for next slot
      */
-    private List<ChordInter> retrieveIncomingChords (List<ChordInter> pendings,
-                                                     Rational term)
+    private List<AbstractChordInter> retrieveIncomingChords (List<AbstractChordInter> pendings,
+                                                             Rational term)
     {
-        Collections.sort(pendings, byRel);
         dump("pendings", pendings);
 
-        List<ChordInter> incomings = new ArrayList<ChordInter>();
-        ChordInter firstChord = pendings.get(0);
+        List<AbstractChordInter> incomings = new ArrayList<AbstractChordInter>();
+        AbstractChordInter firstChord = pendings.get(0);
 
-        for (ChordInter chord : pendings) {
+        PendingLoop:
+        for (AbstractChordInter chord : pendings) {
             // Here all chords should be >= firstChord
             // Chords < firstChord indicate a startTime inconsistent with slot ordering !!!!!!!
             // Chords = firstChord are taken as incomings
             // Chords > firstChord are left for following time slots
             if (byRel.compare(chord, firstChord) <= 0) {
-                // Check that this is compatible with staff term
-                Staff staff = chord.getStaff();
-                Rational staffTerm = stackTerms.get(staff);
+                // Check that this chord is compatible with each staff term
+                for (Staff staff : chord.getStaves()) {
+                    Rational staffTerm = stackTerms.get(staff);
 
-                if ((staffTerm == null) || (staffTerm.compareTo(term) <= 0)) {
-                    incomings.add(chord);
+                    if ((staffTerm != null) && (staffTerm.compareTo(term) > 0)) {
+                        continue PendingLoop;
+                    }
                 }
 
-                // TODO: use a break condition based on sufficient x gap from firstChord
-                //            } else {
-                //                break;
+                // If chord already has a voice assigned,
+                // check time with end of previous chord in same voice
+                if (chord.getVoice() != null) {
+                    AbstractChordInter lastChord = chord.getVoice().getLastChord();
+
+                    if ((lastChord != null) && (lastChord.getEndTime().compareTo(term) > 0)) {
+                        continue;
+                    }
+                }
+
+                incomings.add(chord);
             }
         }
 
@@ -1003,12 +1119,12 @@ public class SlotsBuilder
     /**
      * Store the relationship between a source and a target chord
      *
-     * @param from     source chord
-     * @param totarget chord
-     * @param rel      the relationship value
+     * @param from source chord
+     * @param to   target chord
+     * @param rel  the relationship value
      */
-    private void setRel (ChordInter from,
-                         ChordInter to,
+    private void setRel (AbstractChordInter from,
+                         AbstractChordInter to,
                          Rel rel)
     {
         Link link = graph.getEdge(from, to);
@@ -1072,13 +1188,13 @@ public class SlotsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final ChordInter one;
+        final AbstractChordInter one;
 
-        final ChordInter two;
+        final AbstractChordInter two;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public ChordPair (ChordInter one,
-                          ChordInter two)
+        public ChordPair (AbstractChordInter one,
+                          AbstractChordInter two)
         {
             this.one = one;
             this.two = two;

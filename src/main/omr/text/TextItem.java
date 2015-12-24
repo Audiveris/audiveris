@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code TextItem} is an abstract basis for any Ocr entity.
+ * Class {@code TextItem} is an abstract basis for any OCR entity.
  *
  * @author Hervé Bitteur
  */

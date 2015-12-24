@@ -38,15 +38,23 @@ import java.util.Map;
 
 /**
  * Class {@code PageRhythm} handles rhythm data on a sheet page.
+ * <p>
+ * Rhythm is governed by time signatures found in staff header, discovered later down the staff, or
+ * even inferred from measures content.
+ * <p>
+ * When the RHYTHM step is launched, we already have valid information which is no longer called
+ * into question: head-chords and beams.
+ * Additional information comes from some of the symbols candidates discovered during the SYMBOLS
+ * step, collectively referred to by the "FRAT" acronym:
  * <ul>
- * <li>Key sig changes.</li>
- * <li>Tuplets for head & rest chords.</li>
- * <li>Augmentation dots.</li>
- * <li>Flags.</li>
- * <li>Chords organized by time slots & voices.</li>
- * <li>Inference and possible adjustment of time signatures.</li>
- * <li>Measures assignment & numbering.</li>
+ * <li><b>F</b>: Flags.</li>
+ * <li><b>R</b>: Rest chords.</li>
+ * <li><b>A</b>: Augmentation dots.</li>
+ * <li><b>T</b>: Tuplets for head & rest chords.</li>
  * </ul>
+ * <p>
+ * These FRAT symbols provide the adjustment variables used when checking the precise rhythm content
+ * of each measure.
  * To do so, processing is done system per system <b>sequentially</b> because of impact of potential
  * key-sig changes on the following systems. Hence, parallelism is NOT provided for this step.
  * Consistently, within a system, processing is done measure stack after measure stack.
@@ -55,6 +63,8 @@ import java.util.Map;
  * We check whether the page starts with a time-sig indication. If not, we'll need two passes, the
  * first pass to determine expected duration and the second pass to determine time signature and
  * more precise fit.
+ * <p>
+ * TODO: Key sig changes are still to be implemented.
  *
  * @author Hervé Bitteur
  */
@@ -65,18 +75,16 @@ public class PageRhythm
     private static final Logger logger = LoggerFactory.getLogger(PageRhythm.class);
 
     /** Adjustable rhythm classes. (FRAT: Flag, RestChord, AugmentationDot, Tuplet) */
-    public static final Class<?>[] rhythmClasses = new Class<?>[]{
-        FlagInter.class, // (standard) Flags
-        RestChordInter.class, // Chords (rests only)
-        AugmentationDotInter.class, // Augmentation dots
-        TupletInter.class // Tuplet signs
+    public static final Class<?>[] FRAT_CLASSES = new Class<?>[]{
+        FlagInter.class, RestChordInter.class,
+        AugmentationDotInter.class, TupletInter.class
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Dedicated page. */
+    /** The page being processed.. */
     private final Page page;
 
-    /** Sequence of Ranges found in page. */
+    /** Sequence of time-sig ranges found in page. */
     private final List<Range> ranges = new ArrayList<Range>();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -96,19 +104,21 @@ public class PageRhythm
     //---------//
     public void process ()
     {
-        // Reduce symbols while saving optional rhythm data for each system
-        Map<SystemInfo, SystemBackup> optionalsMap = new LinkedHashMap<SystemInfo, SystemBackup>();
+        // Reduce symbols while saving poor FRAT data for each system
+        // 'poorsMap' is the collection of poor FRAT data discarded via SIG reduction.
+        // It is put aside to be used later as modification options...
+        Map<SystemInfo, SystemBackup> poorsMap = new LinkedHashMap<SystemInfo, SystemBackup>();
 
         for (SystemInfo system : page.getSystems()) {
-            SystemBackup optionals = new SystemBackup(system);
-            new SigReducer(system).reduceSymbols(optionals, rhythmClasses);
-            optionalsMap.put(system, optionals);
+            SystemBackup systemPoorFrats = new SystemBackup(system);
+            new SigReducer(system, false).reduceRhythms(systemPoorFrats, FRAT_CLASSES);
+            poorsMap.put(system, systemPoorFrats);
         }
 
         // Populate all stacks in page with potential time signatures, and derive ranges.
         populateTimeSignatures();
 
-        // Check typical duration for each range
+        // Check typical duration for each range (w/o any poor FRAT)
         retrieveDurations();
 
         // For each range, adjust TS if needed, then process each contained measure
@@ -119,8 +129,8 @@ public class PageRhythm
 
         for (SystemInfo system : page.getSystems()) {
             // Select relevant rhythm inters at system level
-            List<Inter> systemInters = system.getSig().inters(StackTuner.rhythmClasses);
-            SystemBackup optionals = optionalsMap.get(system);
+            List<Inter> systemGoodFrats = system.getSig().inters(FRAT_CLASSES); // Good Frats
+            SystemBackup systemPoorFrats = poorsMap.get(system); // Poor Frats
 
             // Process stack after stack
             for (MeasureStack stack : system.getMeasureStacks()) {
@@ -141,7 +151,10 @@ public class PageRhythm
 
                 try {
                     logger.debug("\n--- Processing {} expDur: {} ---", stack, range.duration);
-                    new StackTuner(stack, true).process(systemInters, optionals, range.duration);
+                    new StackTuner(stack, true).process(
+                            systemGoodFrats,
+                            systemPoorFrats,
+                            range.duration);
                 } catch (Exception ex) {
                     logger.warn("Error on stack " + stack + " " + ex, ex);
                 }
@@ -154,7 +167,7 @@ public class PageRhythm
                 }
             }
 
-            // Refine voices ids (and thus colors) across all measures of the system
+            // Refine voices IDs (and thus colors) across all measures of the system
             new SystemVoiceFixer(system).refine();
         }
     }
@@ -221,14 +234,14 @@ public class PageRhythm
         Range range = it.next();
 
         for (SystemInfo system : page.getSystems()) {
-            // Select relevant rhythm inters at system level
-            List<Inter> systemInters = system.getSig().inters(StackTuner.rhythmClasses);
+            // Select good FRAT inters at system level
+            List<Inter> systemGoodFrats = system.getSig().inters(FRAT_CLASSES);
 
             // Process stack after stack
             for (MeasureStack stack : system.getMeasureStacks()) {
                 try {
                     logger.debug("\n--- Raw processing {} ---", stack);
-                    new StackTuner(stack, false).process(systemInters, null, null);
+                    new StackTuner(stack, false).process(systemGoodFrats, null, null);
                 } catch (Exception ex) {
                     logger.warn("Error on stack " + stack + " " + ex, ex);
                 }

@@ -333,10 +333,10 @@ public enum Shape
     // Bars --------------------------------------------------------------------
     //
     THIN_BARLINE("Thin bar line"),
-    THIN_CONNECTION("Connection between thin barlines"),
+    THIN_CONNECTOR("Connector between thin barlines"),
     THICK_BARLINE("Thick bar line"),
-    THICK_CONNECTION("Connection between thick barlines"),
-    BRACKET_CONNECTION("Connection between bracket items"),
+    THICK_CONNECTOR("Connector between thick barlines"),
+    BRACKET_CONNECTOR("Connector between bracket items"),
     DOUBLE_BARLINE("Double thin bar line"),
     FINAL_BARLINE("Thin / Thick bar line"),
     REVERSE_FINAL_BARLINE("Thick / Thin bar line"),
@@ -356,9 +356,7 @@ public enum Shape
     BRACKET("Bracket"),
     REPEAT_DOT_PAIR("Pair of repeat dots"),
     NOISE("Too small stuff", new Color(0xcccccc)),
-    STAFF_LINE("Staff Line", new Color(0xffffcc)),
     LEDGER("Ledger", new Color(0xaaaaaa)),
-    LEDGER_CANDIDATE("Ledger candidate", new Color(0xaaffaa)),
     ENDING_HORIZONTAL("Horizontal part of ending"),
     ENDING_VERTICAL("Vertical part of ending"),
     SEGMENT("Wedge or ending segment"),
@@ -367,7 +365,6 @@ public enum Shape
     // Stems
     //
     STEM("Stem", new Color(0xccff66)),
-    VERTICAL_SEED("Vertical seed", new Color(0xccffcc)),
 
     //
     // Key signatures ----------------------------------------------------------
@@ -387,9 +384,7 @@ public enum Shape
     NON_DRAGGABLE("Non draggable shape"),
     GLYPH_PART("Part of a larger glyph"),
     CUSTOM_TIME("Time signature defined by user"),
-    NO_LEGAL_TIME("No Legal Time Shape"),
-    BEAM_SPOT("Beam-oriented spot", new Color(0xaaaaaa)),
-    NOTE_SPOT("Note-oriented spot", new Color(0xbbbbbb));
+    NO_LEGAL_TIME("No Legal Time Shape");
 
     //
     // =============================================================================================

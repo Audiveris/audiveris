@@ -11,22 +11,17 @@
 // </editor-fold>
 package omr.sheet.curve;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
-import omr.glyph.facets.Glyph;
-import static omr.glyph.facets.GlyphComposition.Linking.NO_LINK;
-import omr.glyph.ui.AttachmentHolder;
-import omr.glyph.ui.BasicAttachmentHolder;
-
-import omr.lag.JunctionAllPolicy;
-import omr.lag.Section;
-import omr.lag.SectionFactory;
+import omr.glyph.BasicGlyph;
+import omr.glyph.Glyph;
 import static omr.run.Orientation.VERTICAL;
 import omr.run.Run;
 import omr.run.RunTable;
 
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
+
+import omr.ui.util.AttachmentHolder;
+import omr.ui.util.BasicAttachmentHolder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,28 +121,6 @@ public abstract class Curve
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------------//
-    // getAbscissaComparator //
-    //-----------------------//
-    /**
-     * Report a comparator on abscissa
-     *
-     * @param reverse which side is concerned
-     * @return the comparator ready for use
-     */
-    public static Comparator<Curve> getAbscissaComparator (final boolean reverse)
-    {
-        return new Comparator<Curve>()
-        {
-            @Override
-            public int compare (Curve a1,
-                                Curve a2)
-            {
-                return Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
-            }
-        };
-    }
-
     //---------------//
     // addAttachment //
     //---------------//
@@ -175,6 +148,28 @@ public abstract class Curve
         for (Arc part : parts) {
             part.setAssigned(true);
         }
+    }
+
+    //-----------------------//
+    // getAbscissaComparator //
+    //-----------------------//
+    /**
+     * Report a comparator on abscissa
+     *
+     * @param reverse which side is concerned
+     * @return the comparator ready for use
+     */
+    public static Comparator<Curve> getAbscissaComparator (final boolean reverse)
+    {
+        return new Comparator<Curve>()
+        {
+            @Override
+            public int compare (Curve a1,
+                                Curve a2)
+            {
+                return Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
+            }
+        };
     }
 
     //--------------//
@@ -212,6 +207,28 @@ public abstract class Curve
         }
 
         return pts;
+    }
+
+    //-----------//
+    // getPartAt //
+    //-----------//
+    /**
+     * Report the part that contains the provided point.
+     *
+     * @param point the provided point
+     * @return the part arc that contains the point, or null
+     */
+    public Arc getPartAt (Point point)
+    {
+        for (Arc arc : parts) {
+            for (Point p : arc.getPoints()) {
+                if (p.equals(point)) {
+                    return arc;
+                }
+            }
+        }
+
+        return null;
     }
 
     //------------//
@@ -358,50 +375,6 @@ public abstract class Curve
         return parts;
     }
 
-    //
-    //    //----------//
-    //    // pointsOf //
-    //    //----------//
-    //    /**
-    //     * Report the list of points, prepended or appended by the provided additional arc.
-    //     *
-    //     * @param additionalArc the arc to add to curve
-    //     * @param reverse       desired side
-    //     * @return the sequence of points (points and inner junctions)
-    //     */
-    //    public List<Point> pointsOf (Arc additionalArc,
-    //                                 boolean reverse)
-    //    {
-    //        return pointsOf(getAllArcs(additionalArc, reverse));
-    //    }
-    //
-    //    //----------//
-    //    // pointsOf //
-    //    //----------//
-    //    /**
-    //     * Report the sequence of arc points, including intermediate junction points, from
-    //     * the provided list of arcs.
-    //     *
-    //     * @param arcs source arcs
-    //     * @return the sequence of all defining points, including inner junctions but excluding
-    //     *         outer
-    //     *         junctions
-    //     */
-    //    public List<Point> pointsOf (List<Arc> arcs)
-    //    {
-    //        List<Point> allPoints = new ArrayList<Point>();
-    //
-    //        for (int i = 0, na = arcs.size(); i < na; i++) {
-    //            Arc arc = arcs.get(i);
-    //            allPoints.addAll(arc.getPoints());
-    //
-    //            if ((i < (na - 1)) && (arc.getJunction(false) != null)) {
-    //                allPoints.add(arc.getJunction(false));
-    //            }
-    //        }
-    //
-    //        return allPoints;
-    //    }
     //-------------------//
     // removeAttachments //
     //-------------------//
@@ -450,15 +423,15 @@ public abstract class Curve
         RunTable sheetTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
 
         // Allocate a curve run table with proper dimension
-        Rectangle box = getBounds();
-        box.grow(0, (int) Math.ceil(maxRunDistance));
+        Rectangle fatBox = getBounds();
+        fatBox.grow(0, (int) Math.ceil(maxRunDistance)); // Slight extension above & below
 
-        if (box.y < 0) {
-            box.height += box.y;
-            box.y = 0;
+        if (fatBox.y < 0) {
+            fatBox.height += fatBox.y;
+            fatBox.y = 0;
         }
 
-        RunTable curveTable = new RunTable(VERTICAL, box.width, box.height);
+        RunTable curveTable = new RunTable(VERTICAL, fatBox.width, fatBox.height);
 
         // Populate the curve run table
         for (int index = 0; index < points.size(); index++) {
@@ -468,18 +441,13 @@ public abstract class Curve
             if (isCloseToCurve(point.x, run.getStart(), maxRunDistance, index)
                 && ((run.getLength() <= 1)
                     || isCloseToCurve(point.x, run.getStop(), maxRunDistance, index))) {
-                curveTable.addRun(point.x - box.x, run.getStart() - box.y, run.getLength());
+                curveTable.addRun(point.x - fatBox.x, run.getStart() - fatBox.y, run.getLength());
             }
         }
 
-        // Build sections (TODO: to be removed ASAP)
-        SectionFactory factory = new SectionFactory(VERTICAL, JunctionAllPolicy.INSTANCE);
-        List<Section> sections = factory.createSections(curveTable, box.getLocation(), false);
-
-        // Build glyph
-        if (!sections.isEmpty()) {
-            GlyphNest nest = sheet.getGlyphNest();
-            Glyph curveGlyph = nest.buildGlyph(sections, GlyphLayer.DEFAULT, true, NO_LINK);
+        // Build glyph (TODO: table a bit too high, should be trimmed?)
+        if (curveTable.getSize() > 0) {
+            Glyph curveGlyph = new BasicGlyph(fatBox.x, fatBox.y, curveTable);
             setGlyph(curveGlyph);
             logger.debug("{} -> {}", this, curveGlyph);
 

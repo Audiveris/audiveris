@@ -85,6 +85,8 @@ public class RunBoard
                 runTable.getRunService(),
                 eventClasses,
                 false,
+                false,
+                false,
                 expanded);
         defineLayout();
     }
@@ -130,11 +132,10 @@ public class RunBoard
     //--------------//
     private void defineLayout ()
     {
-        FormLayout layout = Panel.makeFormLayout(1, 3);
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
-        builder.setDefaultDialogBorder();
+        final FormLayout layout = Panel.makeFormLayout(1, 3);
+        final PanelBuilder builder = new PanelBuilder(layout, getBody());
+        final CellConstraints cst = new CellConstraints();
 
-        CellConstraints cst = new CellConstraints();
         int r = 1; // --------------------------------
 
         builder.add(rStart.getLabel(), cst.xy(1, r));

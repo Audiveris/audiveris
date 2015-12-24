@@ -121,8 +121,12 @@ public class Population
      */
     public double getVariance ()
     {
-        if (n < 2) {
-            throw new RuntimeException("Not enough cumulated values : " + n);
+        if (n == 0) {
+            throw new RuntimeException("Population is empty");
+        }
+
+        if (n == 1) {
+            return 0;
         }
 
         return Math.max(0d, (s2 - ((s * s) / n)) / (n - 1)); // Unbiased

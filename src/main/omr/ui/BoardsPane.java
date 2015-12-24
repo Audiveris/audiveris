@@ -128,6 +128,10 @@ public class BoardsPane
         board.setParent(this);
         Collections.sort(this.boards);
         update();
+
+        if (board.isSelected()) {
+            board.connect();
+        }
     }
 
     //---------//
@@ -143,8 +147,6 @@ public class BoardsPane
         for (Board board : boards) {
             if (board.isSelected()) {
                 board.connect();
-            } else {
-                board.disconnect();
             }
         }
     }
@@ -159,7 +161,9 @@ public class BoardsPane
     {
         ///logger.info("-BoardPane " + name + " disconnect");
         for (Board board : boards) {
-            board.disconnect();
+            if (board.isSelected()) {
+                board.disconnect();
+            }
         }
     }
 
@@ -199,6 +203,10 @@ public class BoardsPane
      */
     public void removeBoard (Board board)
     {
+        if (board.isSelected()) {
+            board.disconnect();
+        }
+
         boards.remove(board);
         update();
     }
@@ -257,8 +265,6 @@ public class BoardsPane
      */
     void update ()
     {
-        connect();
-
         int count = component.getComponentCount();
         Component comp = component.getComponent(count - 1);
         component.remove(comp);
@@ -295,8 +301,8 @@ public class BoardsPane
         panel.setNoInsets();
 
         PanelBuilder builder = new PanelBuilder(layout, panel);
-        builder.setDefaultDialogBorder();
 
+        ///builder.setDefaultDialogBorder();
         CellConstraints cst = new CellConstraints();
 
         // Now add the desired components, using provided order
@@ -334,7 +340,7 @@ public class BoardsPane
     // MyMouseAdapter //
     //----------------//
     /**
-     * Subclassed to offer mouse interaction.
+     * Sub-classed to offer mouse interaction.
      */
     private class MyMouseAdapter
             extends MouseAdapter

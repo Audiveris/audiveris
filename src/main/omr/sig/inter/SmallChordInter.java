@@ -11,13 +11,16 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
- * Class {@code SmallChordInter} is a ChordInter composed of small heads.
+ * Class {@code SmallChordInter} is a AbstractChordInter composed of small heads.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "small-chord")
 public class SmallChordInter
-        extends ChordInter
+        extends AbstractChordInter
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -29,6 +32,13 @@ public class SmallChordInter
     public SmallChordInter (double grade)
     {
         super(grade);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private SmallChordInter ()
+    {
     }
 
     //~ Methods ------------------------------------------------------------------------------------

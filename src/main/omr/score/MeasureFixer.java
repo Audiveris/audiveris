@@ -33,7 +33,7 @@ import java.util.List;
  * <li>Detect implicit measures (as pickup measures)</li>
  * <li>Detect first half repeat measures</li>
  * <li>Detect implicit measures (as second half repeats)</li>
- * <li>Detect inside bar-lines (empty measures) </li>
+ * <li>Detect inside barlines (empty measures) </li>
  * <li>Detect cautionary measures (CKT changes at end of staff)</li>
  * <li>Assign final page-based measure IDs</li>
  * </ul>
@@ -89,7 +89,7 @@ public class MeasureFixer
         page.computeMeasureCount();
 
         // Remember the delta of measure ids in this page
-        page.setDeltaMeasureId(page.getLastSystem().getLastMeasureStack().getIdValue());
+        page.setMeasureDeltaId(page.getLastSystem().getLastMeasureStack().getIdValue());
     }
 
     //---------------//
@@ -194,7 +194,7 @@ public class MeasureFixer
 
         // Check for a suitable repeat barline in between
         Measure prevMeasure = prevStack.getFirstMeasure();
-        PartBarline barline = prevMeasure.getBarline();
+        PartBarline barline = prevMeasure.getRightBarline();
 
         if ((barline == null) || !barline.isRightRepeat()) {
             return false;
@@ -238,7 +238,7 @@ public class MeasureFixer
             if (isEmpty()) {
                 logger.debug("empty");
 
-                // This whole stack is empty (no notes/rests)
+                // This whole stack is empty (no notes/rests, hence no voices)
                 // We will merge with the following stack, if any
                 if (idx < idxMax) {
                     setId(
@@ -246,7 +246,7 @@ public class MeasureFixer
                                     : ((prevSystemLastId != null)
                                             ? (prevSystemLastId + 1) : 1));
                 } else {
-                    // This is jyst a cautionary stack at right end of system
+                    // This is just a cautionary stack at right end of system
                     logger.debug("cautionary");
                     stack.setCautionary();
 

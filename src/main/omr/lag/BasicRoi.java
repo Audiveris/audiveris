@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.glyph.Glyphs;
-import omr.glyph.facets.Glyph;
-
 import omr.math.Histogram;
 
 import omr.run.Orientation;
@@ -21,10 +18,7 @@ import omr.run.Run;
 import omr.run.RunTable;
 
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Class {@code BasicRoi} implements an Roi
@@ -59,16 +53,6 @@ public class BasicRoi
     public Rectangle getAbsoluteContour ()
     {
         return new Rectangle(absContour);
-    }
-
-    //-------------------//
-    // getGlyphHistogram //
-    //-------------------//
-    @Override
-    public Histogram<Integer> getGlyphHistogram (Orientation projection,
-                                                 Collection<Glyph> glyphs)
-    {
-        return getSectionHistogram(projection, Glyphs.sectionsOf(glyphs));
     }
 
     //-----------------//
@@ -113,32 +97,6 @@ public class BasicRoi
         return histo;
     }
 
-    //---------------------//
-    // getSectionHistogram //
-    //---------------------//
-    @Override
-    public Histogram<Integer> getSectionHistogram (Orientation projection,
-                                                   Collection<Section> sections)
-    {
-        // Split the sections into 2 populations along & across wrt projection
-        List<Section> along = new ArrayList<Section>();
-        List<Section> across = new ArrayList<Section>();
-
-        for (Section section : sections) {
-            if (section.isVertical() == projection.isVertical()) {
-                along.add(section);
-            } else {
-                across.add(section);
-            }
-        }
-
-        final Histogram<Integer> histo = new Histogram<Integer>();
-        populate(histo, projection, along, true);
-        populate(histo, projection.opposite(), across, false);
-
-        return histo;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -146,57 +104,5 @@ public class BasicRoi
     public String toString ()
     {
         return "Roi " + getAbsoluteContour();
-    }
-
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Populate an histo with a collection of sections
-     *
-     * @param histo              the histo to populate
-     * @param sectionOrientation orientation of the sections
-     * @param sections           the collections of (parallel) sections
-     * @param alongTheRuns       true if sections are parallel to projection
-     */
-    private void populate (Histogram<Integer> histo,
-                           Orientation sectionOrientation,
-                           List<Section> sections,
-                           boolean alongTheRuns)
-    {
-        final Rectangle oriContour = sectionOrientation.oriented(absContour);
-        final int minPos = oriContour.y;
-        final int maxPos = (oriContour.y + oriContour.height) - 1;
-        final int minCoord = oriContour.x;
-        final int maxCoord = (oriContour.x + oriContour.width) - 1;
-
-        for (Section section : sections) {
-            int pos = section.getFirstPos() - 1;
-
-            for (Run run : section.getRuns()) {
-                pos++;
-
-                // Clipping on pos
-                if ((pos < minPos) || (pos > maxPos)) {
-                    continue;
-                }
-
-                final int cMin = Math.max(minCoord, run.getStart());
-                final int cMax = Math.min(maxCoord, run.getStop());
-
-                // Clipping on coord
-                if (cMin <= cMax) {
-                    if (alongTheRuns) {
-                        // Along the runs
-                        histo.increaseCount(pos, cMax - cMin + 1);
-                    } else {
-                        // Across the runs
-                        for (int i = cMin; i <= cMax; i++) {
-                            histo.increaseCount(i, 1);
-                        }
-                    }
-                }
-            }
-        }
     }
 }

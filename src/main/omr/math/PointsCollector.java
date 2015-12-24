@@ -22,22 +22,21 @@ public class PointsCollector
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The absolute region of interest, if any */
+    /** The absolute region of interest, if any. */
     private Rectangle roi;
 
-    /** The current number of points in this collector */
+    /** The current number of points in this collector. */
     private int size;
 
-    /** The abscissae */
+    /** The abscissae. */
     private int[] xx;
 
-    /** The ordinates */
+    /** The ordinates. */
     private int[] yy;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new PointsCollector object, with absolute roi area
-     * taken as capacity.
+     * Creates a new PointsCollector object, with absolute roi area taken as capacity.
      *
      * @param roi the absolute roi to be used by the collector
      */
@@ -163,10 +162,28 @@ public class PointsCollector
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("{").append(getClass().getSimpleName()).append(" size:").append(size);
+        sb.append(getClass().getSimpleName()).append("{").append(" size:").append(size);
 
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Apply a (dx,dy) translation on coordinates arrays
+     *
+     * @param dx translation in abscissa
+     * @param dy translation in ordinate
+     */
+    public void translate (int dx,
+                           int dy)
+    {
+        for (int i = size - 1; i >= 0; i--) {
+            xx[i] += dx;
+            yy[i] += dy;
+        }
     }
 }

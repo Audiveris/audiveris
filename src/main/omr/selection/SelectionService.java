@@ -42,20 +42,20 @@ public class SelectionService
     private final String name;
 
     /** Allowed events. */
-    private final Class[] allowedEvents;
+    private final Class[] eventsAllowed;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SelectionService object.
      *
      * @param name          a name for this service (meant for debug)
-     * @param allowedEvents classes of events that can be published here
+     * @param eventsAllowed classes of events that can be published here
      */
     public SelectionService (String name,
-                             Class[] allowedEvents)
+                             Class[] eventsAllowed)
     {
         this.name = name;
-        this.allowedEvents = allowedEvents;
+        this.eventsAllowed = eventsAllowed;
 
         // This cache is needed to be able to retrieve the last publication of any event class
         setDefaultCacheSizePerClassOrTopic(1);
@@ -69,7 +69,7 @@ public class SelectionService
     {
         logger.info("{} subscribers:", this);
 
-        for (Class<?> eventClass : allowedEvents) {
+        for (Class<?> eventClass : eventsAllowed) {
             List<?> subscribers = getSubscribers(eventClass);
 
             if (!subscribers.isEmpty()) {
@@ -127,10 +127,10 @@ public class SelectionService
     @Override
     public void publish (Object event)
     {
-        logger.debug("{} published: {}", this, event);
+        logger.debug("{}: published {}", this, event);
 
         // Check whether the event may be published on this service
-        if (!constants.checkPublishedEvents.isSet() || contains(allowedEvents, event.getClass())) {
+        if (!constants.checkPublishedEvents.isSet() || isAllowed(event.getClass())) {
             super.publish(event);
         } else {
             logger.error("Unexpected event {} published on {}", event, name);
@@ -141,28 +141,29 @@ public class SelectionService
     // subscribeStrongly //
     //-------------------//
     /**
-     * Overridden to check that the subscription corresponds to a
-     * declared class.
+     * {@inheritDoc}.
+     * <p>
+     * Overridden to check that the subscription corresponds to an allowed class.
      *
-     * @param type the observed class
-     * @param es   the subscriber
-     * @return I don't know
+     * @param classe the observed class
+     * @param es     the subscriber
+     * @return true if the subscriber was subscribed successfully, false otherwise
      */
     @Override
-    public boolean subscribeStrongly (Class type,
+    public boolean subscribeStrongly (Class classe,
                                       EventSubscriber es)
     {
-        if (contains(allowedEvents, type)) {
+        if (isAllowed(classe)) {
             logger.debug(
-                    "{} subscribe {} subscriber:{}@{}",
+                    "{}: subscription on {} by {}@{}",
                     this,
-                    type.getName(),
+                    classe.getSimpleName(),
                     es,
                     Integer.toHexString(es.hashCode()));
 
-            return super.subscribeStrongly(type, es);
+            return super.subscribeStrongly(classe, es);
         } else {
-            logger.error("event class {} not available on {}", type, name);
+            logger.error("Event {} not available on {} service", classe, name);
 
             return false;
         }
@@ -189,23 +190,28 @@ public class SelectionService
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{");
-        sb.append(name);
-        sb.append("}");
+        return name;
 
-        return sb.toString();
+        //        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        //        sb.append("{");
+        //        sb.append(name);
+        //        sb.append("}");
+        //
+        //        return sb.toString();
     }
 
+    //-------------//
+    // unsubscribe //
+    //-------------//
     @Override
-    public boolean unsubscribe (Class cl,
+    public boolean unsubscribe (Class classe,
                                 EventSubscriber eh)
     {
-        boolean res = super.unsubscribe(cl, eh);
+        boolean res = super.unsubscribe(classe, eh);
         logger.debug(
-                "{} unsubscribe {} subscriber:{}@{} res:{}",
+                "{}: unsubscription on {} by {}@{} res:{}",
                 this,
-                cl.getName(),
+                classe.getSimpleName(),
                 eh,
                 Integer.toHexString(eh.hashCode()),
                 res);
@@ -213,14 +219,21 @@ public class SelectionService
         return res;
     }
 
-    //----------//
-    // contains //
-    //----------//
-    private boolean contains (Class<?>[] classes,
-                              Class<?> classe)
+    //------------------//
+    // getEventsAllowed //
+    //------------------//
+    protected Class[] getEventsAllowed ()
     {
-        for (Class<?> cl : classes) {
-            if (cl == classe) {
+        return eventsAllowed;
+    }
+
+    //-----------//
+    // isAllowed //
+    //-----------//
+    private boolean isAllowed (Class<?> classe)
+    {
+        for (Class<?> cl : eventsAllowed) {
+            if (cl.isAssignableFrom(classe)) {
                 return true;
             }
         }

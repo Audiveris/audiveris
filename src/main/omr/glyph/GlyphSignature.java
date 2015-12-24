@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.glyph.facets.Glyph;
-
 import omr.moments.GeometricMoments;
 
 /**
@@ -38,12 +36,14 @@ public class GlyphSignature
     /**
      * Creates a new GlyphSignature object.
      *
-     * @param glyph the glyph to compute signature upon
+     * @param glyph     the glyph to compute signature upon
+     * @param interline global sheet interline
      */
-    public GlyphSignature (Glyph glyph)
+    public GlyphSignature (Glyph glyph,
+                           int interline)
     {
         weight = glyph.getWeight();
-        moments = new GeometricMoments(glyph.getGeometricMoments());
+        moments = new GeometricMoments(glyph.getGeometricMoments(interline));
     }
 
     //----------------//

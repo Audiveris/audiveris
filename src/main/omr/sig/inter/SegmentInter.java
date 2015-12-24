@@ -18,11 +18,14 @@ import omr.sheet.curve.SegmentInfo;
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code SegmentInter} represents a line segment (used in wedge or ending).
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "segment")
 public class SegmentInter
         extends AbstractInter
 {

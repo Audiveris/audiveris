@@ -20,10 +20,14 @@ import omr.sheet.Scale;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
-import omr.sheet.grid.FilamentLine;
+
+import static omr.sheet.curve.ArcShape.STAFF_ARC;
+
+import omr.sheet.grid.LineInfo;
 
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;
+import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SlurInter;
@@ -47,18 +51,26 @@ import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.toRadians;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 /**
  * Class {@code SlursBuilder} builds all slur curves from a sheet skeleton.
@@ -140,6 +152,9 @@ public class SlursBuilder
 
             // Handle slurs collision on same head (TODO: not yet fully implemented!!!!!!!!!!!!!!!)
             handleCollisions();
+
+            // Handle tie collisions on same chord
+            handleTieCollisions();
 
             logger.info("{}Slurs: {}", sheet.getLogPrefix(), pageSlurs.size());
             logger.debug("Slur maxClumpSize: {}", maxClumpSize);
@@ -532,6 +547,7 @@ public class SlursBuilder
             slur.retrieveGlyph(sheet, params.maxRunDistance);
 
             if (slur.getGlyph() != null) {
+                sheet.getGlyphIndex().register(slur.getGlyph());
                 inters.add(new SlurInter(slur, impacts));
             }
         }
@@ -588,7 +604,6 @@ public class SlursBuilder
 
         for (Curve seq : clump) {
             SlurInfo slur = (SlurInfo) seq;
-            Point end = slur.getEnd(reverse);
             GradeImpacts impacts = computeImpacts(slur, false);
 
             if (impacts != null) {
@@ -712,9 +727,85 @@ public class SlursBuilder
                                 if ((slur != s) && (slur.isTie() == s.isTie())) {
                                     logger.info("{} collision {} & {} @ {}", side, slur, s, head);
 
-                                    // TODO: handle collision
+                                    // TODO: handle collision ???
                                 }
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //---------------------//
+    // handleTieCollisions //
+    //---------------------//
+    /**
+     * Check and resolve collisions of ties on a chord.
+     * <p>
+     * A significant problem is that heads & stems are rather reliable, whereas slurs are not.
+     */
+    private void handleTieCollisions ()
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            final SIGraph sig = system.getSig();
+            final List<Inter> chords = sig.inters(AbstractChordInter.class);
+
+            for (Inter cInter : chords) {
+                final AbstractChordInter chord = (AbstractChordInter) cInter;
+
+                if (chord.isVip()) {
+                    logger.info("VIP handleTieCollisions on {}", chord);
+                }
+
+                for (HorizontalSide side : HorizontalSide.values()) {
+                    // Count ties for this chord on selected slur side
+                    final Set<SlurInter> ties = new HashSet<SlurInter>();
+
+                    for (Inter nInter : chord.getNotes()) {
+                        for (Relation rel : sig.getRelations(nInter, SlurHeadRelation.class)) {
+                            final SlurHeadRelation shRel = (SlurHeadRelation) rel;
+
+                            if (shRel.getSide() == side) {
+                                SlurInter slur = (SlurInter) sig.getOppositeInter(nInter, rel);
+
+                                if (slur.isTie()) {
+                                    ties.add(slur);
+                                }
+                            }
+                        }
+                    }
+
+                    if (ties.size() > 1) {
+                        HorizontalSide oppSide = side.opposite();
+                        Map<AbstractChordInter, List<SlurInter>> origins;
+                        origins = new HashMap<AbstractChordInter, List<SlurInter>>();
+
+                        // Check whether the ties are linked to different chords
+                        for (SlurInter tie : ties) {
+                            for (Relation rel : sig.getRelations(tie, SlurHeadRelation.class)) {
+                                if (((SlurHeadRelation) rel).getSide() == oppSide) {
+                                    Inter head = sig.getOppositeInter(tie, rel);
+                                    AbstractChordInter ch = (AbstractChordInter) head.getEnsemble();
+
+                                    if (ch != null) {
+                                        List<SlurInter> list = origins.get(ch);
+
+                                        if (list == null) {
+                                            origins.put(ch, list = new ArrayList<SlurInter>());
+                                        }
+
+                                        list.add(tie);
+                                    }
+                                }
+                            }
+                        }
+
+                        logger.debug("origins: {}", origins);
+
+                        if (origins.keySet().size() > 1) {
+                            logger.debug("{} with {} ties on {} side", chord, ties.size(), oppSide);
+                            new ChordSplitter(chord, side, origins).process();
                         }
                     }
                 }
@@ -821,7 +912,7 @@ public class SlursBuilder
 
             // Vertical distance from slur end to closest staff line
             Staff staff = sheet.getStaffManager().getClosestStaff(end);
-            FilamentLine line = staff.getClosestLine(end);
+            LineInfo line = staff.getClosestLine(end);
             double toLine = line.yAt(end.x) - end.y;
 
             if (abs(toLine) > params.maxStaffLineDy) {
@@ -833,12 +924,18 @@ public class SlursBuilder
             double incidence = 0;
 
             if (model instanceof CircleModel) {
-                CircleModel circleModel = (CircleModel) model;
-                double radius = circleModel.getCircle().getRadius();
+                // Do not accept slur ending as a STAFF_ARC
+                Arc endPart = slur.getPartAt(end);
 
-                if (radius <= params.minStraightEndRadius) {
+                if ((endPart != null) && (endPart.getShape() == STAFF_ARC)) {
+                    logger.debug("{} ending as staff line", slur);
+                    toDelete.add(inter);
+
                     continue;
                 }
+
+                CircleModel circleModel = (CircleModel) model;
+                double radius = circleModel.getCircle().getRadius();
 
                 if (Double.isInfinite(radius)) {
                     List<Point> pts = slur.getSidePoints(reverse);
@@ -918,10 +1015,6 @@ public class SlursBuilder
                 "degree",
                 5,
                 "Maximum incidence angle (in degrees) for staff tangency");
-
-        private final Scale.Fraction minStraightEndRadius = new Scale.Fraction(
-                9,
-                "Minimum circle radius for a straight slur end");
 
         private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
                 0.5,
@@ -1030,8 +1123,6 @@ public class SlursBuilder
 
         final double maxIncidence;
 
-        final double minStraightEndRadius;
-
         final double maxSlurDistance;
 
         final double maxExtDistance;
@@ -1083,7 +1174,6 @@ public class SlursBuilder
             maxArcsDistance = scale.toPixelsDouble(constants.maxArcsDistance);
             minSeedCircleRadius = scale.toPixelsDouble(constants.minSeedCircleRadius);
             minCircleRadius = scale.toPixelsDouble(constants.minCircleRadius);
-            minStraightEndRadius = scale.toPixelsDouble(constants.minStraightEndRadius);
             minSlurWidthLow = scale.toPixelsDouble(constants.minSlurWidthLow);
             minSlurWidthHigh = scale.toPixelsDouble(constants.minSlurWidthHigh);
             minSlurHeightLow = scale.toPixelsDouble(constants.minSlurHeightLow);

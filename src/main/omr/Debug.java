@@ -11,18 +11,19 @@
 // </editor-fold>
 package omr;
 
-import omr.glyph.GlyphRepository;
+import omr.classifier.Sample;
+import omr.classifier.SampleRepository;
+import omr.classifier.ShapeDescription;
+
 import omr.glyph.Shape;
-import omr.glyph.ShapeDescription;
 import omr.glyph.ShapeSet;
-import omr.glyph.facets.Glyph;
 
 import omr.image.TemplateFactory;
 
 import omr.sheet.Picture;
-import omr.sheet.Sheet;
-import omr.sheet.ui.SheetDependent;
-import omr.sheet.ui.SheetsController;
+import omr.sheet.SheetStub;
+import omr.sheet.ui.StubDependent;
+import omr.sheet.ui.StubsController;
 
 import org.jdesktop.application.Action;
 
@@ -44,7 +45,7 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class Debug
-        extends SheetDependent
+        extends StubDependent
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -62,10 +63,10 @@ public class Debug
     @Action
     public void checkSources (ActionEvent e)
     {
-        Sheet sheet = SheetsController.getCurrentSheet();
+        SheetStub stub = StubsController.getCurrentStub();
 
-        if (sheet != null) {
-            Picture picture = sheet.getPicture();
+        if (stub != null && stub.hasSheet()) {
+            Picture picture = stub.getSheet().getPicture();
 
             if (picture != null) {
                 picture.checkSources();
@@ -181,22 +182,22 @@ public class Debug
         out.println();
         out.println("@data");
 
-        GlyphRepository repository = GlyphRepository.getInstance();
+        SampleRepository repository = SampleRepository.getInstance();
         List<String> gNames = repository.getWholeBase(null);
         logger.info("Glyphs: {}", gNames.size());
 
         for (String gName : gNames) {
-            Glyph glyph = repository.getGlyph(gName, null);
+            Sample sample = repository.getSample(gName, null);
 
-            if (glyph != null) {
-                double[] ins = ShapeDescription.features(glyph);
+            if (sample != null) {
+                double[] ins = ShapeDescription.features(sample, sample.getInterline());
 
                 for (double in : ins) {
                     out.print((float) in);
                     out.print(",");
                 }
 
-                out.println(glyph.getShape().getPhysicalShape());
+                out.println(sample.getShape().getPhysicalShape());
             }
         }
 

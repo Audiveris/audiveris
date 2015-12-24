@@ -238,13 +238,23 @@ public class NeuralNetworkTest
         double maxError = 0.02;
         int epochs = 500000;
 
+        String[] iLabels = new String[inputSize];
+        for (int i = 0; i < inputSize; i++) {
+            iLabels[i] = "in-" + i;
+        }
+
+        String[] oLabels = new String[outputSize];
+        for (int i = 0; i < outputSize; i++) {
+            oLabels[i] = "out-" + i;
+        }
+
         return new NeuralNetwork(
                 inputSize,
                 hiddenSize,
                 outputSize,
                 amplitude,
-                null,
-                null,
+                iLabels,
+                oLabels,
                 learningRate,
                 momentum,
                 maxError,

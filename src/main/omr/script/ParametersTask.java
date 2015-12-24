@@ -11,13 +11,11 @@
 // </editor-fold>
 package omr.script;
 
-import omr.image.AdaptiveDescriptor;
 import omr.image.FilterDescriptor;
-import omr.image.GlobalDescriptor;
 
 import omr.sheet.Book;
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
+import omr.sheet.SheetStub;
 
 import omr.step.Step;
 
@@ -31,6 +29,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
+import omr.image.AdaptiveDescriptor;
+import omr.image.GlobalDescriptor;
 
 /**
  * Class {@code ParametersTask} handles global parameters as the
@@ -146,19 +146,19 @@ public class ParametersTask
         //        }
         // Sheets
         for (SheetParameters params : sheets) {
-            Sheet sh = book.getSheet(params.index);
+            SheetStub stub = book.getStub(params.index);
             sb.append(" {page:").append(params.index);
 
             // Page Binarization
             if (params.filterDescriptor != null) {
-                if (sh.getFilterParam().setSpecific(params.filterDescriptor)) {
+                if (stub.getFilterParam().setSpecific(params.filterDescriptor)) {
                     sb.append(" filter:").append(params.filterDescriptor);
                 }
             }
 
             // Page Language
             if (params.language != null) {
-                if (sh.getLanguageParam().setSpecific(params.language)) {
+                if (stub.getLanguageParam().setSpecific(params.language)) {
                     sb.append(" language:").append(params.language);
                 }
             }
@@ -184,32 +184,32 @@ public class ParametersTask
     {
         Step latestStep = sheet.getLatestStep();
 
-        for (Sheet sh : sheet.getBook().getSheets()) {
+        for (SheetStub stub : sheet.getBook().getStubs()) {
             Step from = null;
 
             // Language
             if (latestStep.compareTo(Step.TEXTS) >= 0) {
-                LiveParam<String> param = sh.getLanguageParam();
+                LiveParam<String> param = stub.getLanguageParam();
 
                 if (param.needsUpdate()) {
-                    logger.debug("Page {} needs TEXT with {}", sh.getId(), param.getTarget());
-
-                    // Convert the text items as much as possible
-                    for (SystemInfo system : sh.getSystems()) {
-                        system.getTextBuilder().switchLanguageTexts();
-                    }
-
-                    // Reprocess this page from SYMBOLS step
-                    from = Step.SYMBOLS; // TODO !!!!!!!!!!!!
+                    //                    logger.debug("Page {} needs TEXT with {}", stub.getId(), param.getTarget());
+                    //
+                    //                    // Convert the text items as much as possible
+                    //                    for (SystemInfo system : stub.getSystems()) {
+                    //                        system.getTextBuilder().switchLanguageTexts();
+                    //                    }
+                    //
+                    //                    // Reprocess this page from SYMBOLS step
+                    //                    from = Step.SYMBOLS; // TODO !!!!!!!!!!!!
                 }
             }
 
             // Binarization
             if (latestStep.compareTo(Step.BINARY) >= 0) {
-                LiveParam<FilterDescriptor> param = sh.getFilterParam();
+                LiveParam<FilterDescriptor> param = stub.getFilterParam();
 
                 if (param.needsUpdate()) {
-                    logger.debug("Page {} needs BINARY with {}", sh.getId(), param.getTarget());
+                    logger.debug("Page {} needs BINARY with {}", stub.getId(), param.getTarget());
                     //  Reprocess this page from BINARY step
                     from = Step.BINARY;
                 }
@@ -233,13 +233,13 @@ public class ParametersTask
      * Set binarization filter at proper scope level.
      *
      * @param filterDescriptor the filter to use for pixels binarization
-     * @param sheet            not null for sheet setting
+     * @param stub             not null for sheet setting
      */
     public void setFilter (FilterDescriptor filterDescriptor,
-                           Sheet sheet)
+                           SheetStub stub)
     {
-        if (sheet != null) {
-            getParams(sheet).filterDescriptor = filterDescriptor;
+        if (stub != null) {
+            getParams(stub).filterDescriptor = filterDescriptor;
         } else {
             this.filterDescriptor = filterDescriptor;
         }
@@ -252,13 +252,13 @@ public class ParametersTask
      * Set language at proper scope level.
      *
      * @param language the language code to set
-     * @param sheet    not null for sheet setting
+     * @param stub     not null for sheet setting
      */
     public void setLanguage (String language,
-                             Sheet sheet)
+                             SheetStub stub)
     {
-        if (sheet != null) {
-            getParams(sheet).language = language;
+        if (stub != null) {
+            getParams(stub).language = language;
         } else {
             this.language = language;
         }
@@ -309,14 +309,14 @@ public class ParametersTask
     // getParams //
     //-----------//
     /**
-     * [May create and] report the parameters for the provided sheet.
+     * [May create and] report the parameters for the provided sheet stub.
      *
-     * @param sheet the provided sheet
+     * @param stub the provided sheet stub
      * @return the page parameters
      */
-    private SheetParameters getParams (Sheet sheet)
+    private SheetParameters getParams (SheetStub stub)
     {
-        int index = sheet.getNumber();
+        int index = stub.getNumber();
 
         for (SheetParameters params : sheets) {
             if (params.index == index) {

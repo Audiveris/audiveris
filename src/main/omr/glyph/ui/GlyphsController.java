@@ -11,16 +11,17 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.Evaluation;
-import omr.glyph.GlyphNest;
+import omr.classifier.Evaluation;
+
+import omr.glyph.Glyph;
+import omr.glyph.GlyphIndex;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
 
 import omr.script.AssignTask;
 import omr.script.DeleteTask;
 
-import omr.selection.GlyphEvent;
+import omr.selection.EntityListEvent;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
 
@@ -31,6 +32,7 @@ import org.jdesktop.application.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
@@ -84,7 +86,7 @@ public class GlyphsController
     // asyncAssignGlyphs //
     //-------------------//
     /**
-     * Asynchronouly assign a shape to the selected collection of glyphs
+     * Asynchronously assign a shape to the selected collection of glyphs
      * and record this action in the script.
      *
      * @param glyphs   the collection of glyphs to be assigned
@@ -107,14 +109,15 @@ public class GlyphsController
         }
 
         return null;
-//
-//        if (ShapeSet.Barlines.contains(shape) || Glyphs.containsBarline(glyphs)) {
-//            // Special case for barlines assignment or deassignment
-//            return new BarlineTask(sheet, shape, compound, glyphs).launch(sheet);
-//        } else {
-//            // Normal symbol processing
-//            return new AssignTask(sheet, shape, compound, glyphs).launch(sheet);
-//        }
+
+        //
+        //        if (ShapeSet.Barlines.contains(shape) || Glyphs.containsBarline(glyphs)) {
+        //            // Special case for barlines assignment or deassignment
+        //            return new BarlineTask(sheet, shape, compound, glyphs).launch(sheet);
+        //        } else {
+        //            // Normal symbol processing
+        //            return new AssignTask(sheet, shape, compound, glyphs).launch(sheet);
+        //        }
     }
 
     //---------------------//
@@ -149,7 +152,7 @@ public class GlyphsController
      * @param id the glyph id
      * @return the glyph found, or null if not
      */
-    public Glyph getGlyphById (int id)
+    public Glyph getGlyphById (String id)
     {
         return model.getGlyphById(id);
     }
@@ -197,14 +200,14 @@ public class GlyphsController
     }
 
     //---------//
-    // getNest //
+    // getIndex //
     //---------//
     /**
      * Report the underlying glyph nest.
      *
      * @return the related glyph nest
      */
-    public GlyphNest getNest ()
+    public GlyphIndex getNest ()
     {
         return model.getNest();
     }
@@ -243,12 +246,14 @@ public class GlyphsController
             // Persistent?
             model.assignGlyphs(glyphs, context.getAssignedShape(), compound, Evaluation.MANUAL);
 
-            // Publish modifications (about new glyph)
-            Glyph firstGlyph = glyphs.iterator().next();
+            logger.warn("HB. Not implemented");
 
-            if (firstGlyph != null) {
-                publish(firstGlyph.getMembers().first().getGlyph());
-            }
+            //            // Publish modifications (about new glyph)
+            //            Glyph firstGlyph = glyphs.iterator().next();
+            //
+            //            if (firstGlyph != null) {
+            //                publish(firstGlyph.getMembers().first().getCompound());
+            //            }
         } else { // Deassignment
             model.deassignGlyphs(glyphs);
 
@@ -282,8 +287,12 @@ public class GlyphsController
     {
         // Update immediately the glyph info as displayed
         if (model.getSheet() != null) {
-            getNest().getGlyphService().publish(
-                    new GlyphEvent(this, SelectionHint.GLYPH_MODIFIED, null, glyph));
+            getNest().getEntityService().publish(
+                    new EntityListEvent<Glyph>(
+                            this,
+                            SelectionHint.GLYPH_MODIFIED,
+                            null,
+                            Arrays.asList(glyph)));
         }
     }
 }

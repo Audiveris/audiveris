@@ -31,7 +31,7 @@ import omr.sheet.rhythm.Voice;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractNoteInter;
-import omr.sig.inter.ChordInter;
+import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.StemInter;
 import omr.sig.relation.AccidHeadRelation;
@@ -45,12 +45,15 @@ import omr.sig.ui.SigPainter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
+
 import static omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static omr.ui.symbol.Alignment.TOP_LEFT;
+
 import omr.ui.symbol.OmrFont;
 import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
@@ -242,12 +245,14 @@ public class SheetResultPainter
      */
     public void highlightSlot (Slot slot)
     {
+        sigPainter = getSigPainter();
+
         final SIGraph sig = slot.getMeasureStack().getSystem().getSig();
         final Color oldColor = g.getColor();
         g.setColor(Colors.SLOT_CURRENT);
 
         // Draw the slot components
-        for (ChordInter chord : slot.getChords()) {
+        for (AbstractChordInter chord : slot.getChords()) {
             // Paint chord stem & flags if any
             StemInter stem = chord.getStem();
 

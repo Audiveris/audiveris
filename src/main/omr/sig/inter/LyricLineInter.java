@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sig.inter;
 
-import omr.sheet.Part;
-
 import omr.text.FontInfo;
 import omr.text.TextLine;
 import omr.text.TextRole;
@@ -25,6 +23,12 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+import omr.sheet.Part;
+import omr.sheet.Staff;
+import omr.sheet.SystemInfo;
+
 /**
  * Class {@code LyricLineInter} gathers one line of lyrics.
  * A lyric line is composed of instances of LyricItem, which can be Syllables, Hyphens, Extensions
@@ -32,6 +36,7 @@ import java.util.List;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "lyric-line")
 public class LyricLineInter
         extends SentenceInter
 {
@@ -41,23 +46,31 @@ public class LyricLineInter
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The line number. */
+    @XmlAttribute
     private int number;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LyricLine object.
      *
-     * @param box      the bounding box
+     * @param bounds   the bounding box
      * @param grade    the interpretation quality
      * @param meanFont the font averaged on whole text line
      * @param words    the sequence of words (LyricItemInter's actually)
      */
-    private LyricLineInter (Rectangle box,
+    private LyricLineInter (Rectangle bounds,
                             double grade,
                             FontInfo meanFont,
                             List<WordInter> words)
     {
-        super(box, grade, meanFont, TextRole.Lyrics, words);
+        super(bounds, grade, meanFont, TextRole.Lyrics, words);
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private LyricLineInter ()
+    {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -101,7 +114,9 @@ public class LyricLineInter
         LyricLineInter nextLine = null;
 
         // Check existence of similar line in following system part (within the same page)
-        Part nextPart = getPart().getFollowingInPage();
+        SystemInfo system = sig.getSystem();
+        Staff staffAbove = system.getStaffAtOrAbove(this.getFirstWord().getLocation());
+        Part nextPart = staffAbove.getPart().getFollowingInPage();
 
         if (nextPart != null) {
             // Retrieve the same lyrics line in the next (system) part
@@ -137,7 +152,9 @@ public class LyricLineInter
     public LyricLineInter getPrecedingLine ()
     {
         // Check existence of similar line in preceding system part
-        Part prevPart = getPart().getPrecedingInPage();
+        SystemInfo system = sig.getSystem();
+        Staff staffAbove = system.getStaffAtOrAbove(this.getFirstWord().getLocation());
+        Part prevPart = staffAbove.getPart().getPrecedingInPage();
 
         if ((prevPart != null) && (prevPart.getLyrics().size() >= number)) {
             return (LyricLineInter) prevPart.getLyrics().get(number - 1);

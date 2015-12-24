@@ -411,6 +411,153 @@ made subject to such option by the copyright holder.
     <target name="-extend-manifest-codebase-override" depends="-check-manifest-codebase,-extend-manifest-codebase-override-warning" if="manifest.codebase.override">
         <property name="manifest.codebase.attribute" value="${manifest.custom.codebase}"/>
     </target>
+
+    <target name="-check-manifest-application-library-allowable-codebase">
+        <condition property="manifest.application.library.allowable.codebase.copy" value="${jnlp.dest.dir}">
+            <and>
+                <isset property="jnlp.codebase.type"/>
+                <equals arg1="${jnlp.codebase.type}" arg2="local"/>
+                <or>
+                    <not><isset property="manifest.custom.application.library.allowable.codebase"/></not>
+                    <equals arg1="${manifest.custom.application.library.allowable.codebase}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.application.library.allowable.codebase.copy" value="${jnlp.codebase.user}">
+            <and>
+                <isset property="jnlp.codebase.type"/>
+                <equals arg1="${jnlp.codebase.type}" arg2="user"/>
+                <isset property="jnlp.codebase.user"/>
+                <not><equals arg1="${jnlp.codebase.type}" arg2=""/></not>
+                <or>
+                    <not><isset property="manifest.custom.application.library.allowable.codebase"/></not>
+                    <equals arg1="${manifest.custom.application.library.allowable.codebase}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.application.library.allowable.codebase.web">
+            <and>
+                <isset property="jnlp.codebase.type"/>
+                <equals arg1="${jnlp.codebase.type}" arg2="web"/>
+                <or>
+                    <not><isset property="manifest.custom.application.library.allowable.codebase"/></not>
+                    <equals arg1="${manifest.custom.application.library.allowable.codebase}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.application.library.allowable.codebase.other">
+            <and>
+                <not><isset property="manifest.application.library.allowable.codebase.copy"/></not>
+                <not><isset property="manifest.application.library.allowable.codebase.web"/></not>
+                <or>
+                    <not><isset property="manifest.custom.application.library.allowable.codebase"/></not>
+                    <equals arg1="${manifest.custom.application.library.allowable.codebase}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.application.library.allowable.codebase.override">
+            <and>
+                <isset property="manifest.custom.application.library.allowable.codebase"/>
+                <not><equals arg1="${manifest.custom.application.library.allowable.codebase}" arg2=""/></not>
+            </and>
+        </condition>
+        <condition property="manifest.application.library.allowable.codebase.override.warning">
+            <and>
+                <isset property="manifest.application.library.allowable.codebase.override"/>
+                <equals arg1="${manifest.custom.application.library.allowable.codebase}" arg2="*"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-extend-manifest-application-library-allowable-codebase-copy" depends="-check-manifest-application-library-allowable-codebase" if="manifest.application.library.allowable.codebase.copy">
+        <property name="manifest.application.library.allowable.codebase.attribute" value="${manifest.application.library.allowable.codebase.copy}"/>
+    </target>
+    <target name="-extend-manifest-application-library-allowable-codebase-web" depends="-check-manifest-application-library-allowable-codebase" if="manifest.application.library.allowable.codebase.web">
+        <property name="manifest.application.library.allowable.codebase.attribute" value="*"/>
+        <echo message="Warning: Setting Application-Library-Allowable-Codebase manifest attribute to '*' due to current JNLP Codebase setting. Set manifest.custom.application.library.allowable.codebase property to override the non-secure value '*'." level="warning"/>
+    </target>
+    <target name="-extend-manifest-application-library-allowable-codebase-other" depends="-check-manifest-application-library-allowable-codebase" if="manifest.application.library.allowable.codebase.other">
+        <property name="manifest.application.library.allowable.codebase.attribute" value="*"/>
+        <echo message="Warning: Setting Application-Library-Allowable-Codebase manifest attribute to '*' due to current JNLP Codebase setting. Set manifest.custom.application.library.allowable.codebase property to override the non-secure value '*'." level="warning"/>
+    </target>
+    <target name="-extend-manifest-application-library-allowable-codebase-override-warning" depends="-check-manifest-application-library-allowable-codebase" if="manifest.application.library.allowable.codebase.override.warning">
+        <echo message="Warning: Application-Library-Allowable-Codebase manifest attribute should be used to restrict JAR repurposing. Preferably set manifest.custom.application.library.allowable.codebase to more specific value than the non-secure '*'" level="warning"/>
+    </target>
+    <target name="-extend-manifest-application-library-allowable-codebase-override" depends="-check-manifest-application-library-allowable-codebase,-extend-manifest-application-library-allowable-codebase-override-warning" if="manifest.application.library.allowable.codebase.override">
+        <property name="manifest.application.library.allowable.codebase.attribute" value="${manifest.custom.application.library.allowable.codebase}"/>
+    </target>
+    <target name="-check-manifest-caller-allowable-codebase">
+        <condition property="manifest.caller.allowable.codebase.copy" value="${jnlp.dest.dir}">
+            <and>
+                <isset property="jnlp.codebase.type"/>
+                <equals arg1="${jnlp.codebase.type}" arg2="local"/>
+                <or>
+                    <not><isset property="manifest.custom.caller.allowable.codebase"/></not>
+                    <equals arg1="${manifest.custom.caller.allowable.codebase}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.caller.allowable.codebase.copy" value="${jnlp.codebase.user}">
+            <and>
+                <isset property="jnlp.codebase.type"/>
+                <equals arg1="${jnlp.codebase.type}" arg2="user"/>
+                <isset property="jnlp.codebase.user"/>
+                <not><equals arg1="${jnlp.codebase.type}" arg2=""/></not>
+                <or>
+                    <not><isset property="manifest.custom.caller.allowable.codebase"/></not>
+                    <equals arg1="${manifest.custom.caller.allowable.codebase}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.caller.allowable.codebase.web">
+            <and>
+                <isset property="jnlp.codebase.type"/>
+                <equals arg1="${jnlp.codebase.type}" arg2="web"/>
+                <or>
+                    <not><isset property="manifest.custom.caller.allowable.codebase"/></not>
+                    <equals arg1="${manifest.custom.caller.allowable.codebase}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.caller.allowable.codebase.other">
+            <and>
+                <not><isset property="manifest.caller.allowable.codebase.copy"/></not>
+                <not><isset property="manifest.caller.allowable.codebase.web"/></not>
+                <or>
+                    <not><isset property="manifest.custom.caller.allowable.codebase"/></not>
+                    <equals arg1="${manifest.custom.caller.allowable.codebase}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.caller.allowable.codebase.override">
+            <and>
+                <isset property="manifest.custom.caller.allowable.codebase"/>
+                <not><equals arg1="${manifest.custom.caller.allowable.codebase}" arg2=""/></not>
+            </and>
+        </condition>
+        <condition property="manifest.caller.allowable.codebase.override.warning">
+            <and>
+                <isset property="manifest.caller.allowable.codebase.override"/>
+                <equals arg1="${manifest.custom.caller.allowable.codebase}" arg2="*"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-extend-manifest-caller-allowable-codebase-copy" depends="-check-manifest-caller-allowable-codebase" if="manifest.caller.allowable.codebase.copy">
+        <property name="manifest.caller.allowable.codebase.attribute" value="${manifest.caller.allowable.codebase.copy}"/>
+    </target>
+    <target name="-extend-manifest-caller-allowable-codebase-web" depends="-check-manifest-caller-allowable-codebase" if="manifest.caller.allowable.codebase.web">
+        <property name="manifest.caller.allowable.codebase.attribute" value="*"/>
+        <echo message="Warning: Setting Caller-Allowable-Codebase manifest attribute to '*' due to current JNLP Codebase setting. Set manifest.custom.caller.allowable.codebase property to override the non-secure value '*'." level="warning"/>
+    </target>
+    <target name="-extend-manifest-caller-allowable-codebase-other" depends="-check-manifest-caller-allowable-codebase" if="manifest.caller.allowable.codebase.other">
+        <property name="manifest.caller.allowable.codebase.attribute" value="*"/>
+        <echo message="Warning: Setting Caller-Allowable-Codebase manifest attribute to '*' due to current JNLP Codebase setting. Set manifest.custom.caller.allowable.codebase property to override the non-secure value '*'." level="warning"/>
+    </target>
+    <target name="-extend-manifest-caller-allowable-codebase-override-warning" depends="-check-manifest-caller-allowable-codebase" if="manifest.caller.allowable.codebase.override.warning">
+        <echo message="Warning: Caller-Allowable-Codebase manifest attribute should be used to restrict JavaScript access. Preferably set manifest.custom.caller.allowable.codebase to more specific value than the non-secure '*'" level="warning"/>
+    </target>
+    <target name="-extend-manifest-caller-allowable-codebase-override" depends="-check-manifest-caller-allowable-codebase,-extend-manifest-caller-allowable-codebase-override-warning" if="manifest.caller.allowable.codebase.override">
+        <property name="manifest.caller.allowable.codebase.attribute" value="${manifest.custom.caller.allowable.codebase}"/>
+    </target>
     <target name="-check-manifest-permissions">
         <condition property="manifest.permissions.all">
             <and>
@@ -460,10 +607,15 @@ made subject to such option by the copyright holder.
     <target name="-add-manifest-security" depends="-init-macrodef-extend-manifest,
                     -extend-manifest-codebase-copy,-extend-manifest-codebase-web,-extend-manifest-codebase-other,-extend-manifest-codebase-override,
                     -extend-manifest-permissions-sandbox,-extend-manifest-permissions-all,-extend-manifest-permissions-override,
-                    -extend-manifest-application-name">
+                    -extend-manifest-application-name, -extend-manifest-application-library-allowable-codebase-copy, -extend-manifest-application-library-allowable-codebase-web,
+                    -extend-manifest-application-library-allowable-codebase-other, -extend-manifest-application-library-allowable-codebase-override,
+                    -extend-manifest-caller-allowable-codebase-copy, -extend-manifest-caller-allowable-codebase-web, -extend-manifest-caller-allowable-codebase-other,
+                    -extend-manifest-caller-allowable-codebase-override">
         <jnlp:extend-manifest>
             <customize>
                 <attribute name="Codebase" value="${manifest.codebase.attribute}"/>
+                <attribute name="Application-Library-Allowable-Codebase" value="${manifest.application.library.allowable.codebase.attribute}"/>
+                <attribute name="Caller-Allowable-Codebase" value="${manifest.caller.allowable.codebase.attribute}"/>
                 <attribute name="Permissions" value="${manifest.permissions.attribute}"/>
                 <attribute name="Application-Name" value="${manifest.application.name.attribute}"/>
             </customize>

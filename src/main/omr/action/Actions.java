@@ -44,7 +44,7 @@ public class Actions
 
     private static final Logger logger = LoggerFactory.getLogger(Actions.class);
 
-    /** Context for JAXB un-marshaling. */
+    /** Context for JAXB unmarshalling. */
     private static volatile JAXBContext jaxbContext;
 
     /** The collection of all actions loaded so far. */
@@ -61,16 +61,13 @@ public class Actions
         //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Domain of file actions */
-        /** Domain of file actions */
         FILE,
-        /** Domain of individual steps */
-        STEP,
+        /** Domain of book actions */
+        BOOK,
         /** Domain of sheet actions */
         SHEET,
-        /** Domain of book actions (sub-menu) */
-        BOOK(false),
-        /** Domain of MIDI features */
-        MIDI,
+        /** Domain of individual steps */
+        STEP,
         /** Domain of various view features */
         VIEW,
         /** Domain of utilities */
@@ -79,30 +76,16 @@ public class Actions
         PLUGIN,
         /** Domain of help information */
         HELP;
-        //~ Instance fields ------------------------------------------------------------------------
-
-        public final boolean isTop;
 
         //~ Constructors ---------------------------------------------------------------------------
         Domain ()
         {
-            this(true);
-        }
-
-        /**
-         * Defines a unique domain for a menu
-         *
-         * @param isTop indicates a top-level menu (rather than a sub-menu)
-         */
-        Domain (boolean isTop)
-        {
-            this.isTop = isTop;
         }
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
-    /** Collection of descriptors loaded by un-marshaling one file. */
+    /** Collection of descriptors loaded by unmarshalling one file. */
     @XmlElement(name = "action")
     private List<ActionDescriptor> descriptors = new ArrayList<ActionDescriptor>();
 
@@ -183,7 +166,7 @@ public class Actions
     // loadActionDescriptors //
     //-----------------------//
     /**
-     * Un-marshal the provided XML stream to allocate the corresponding collection of
+     * Unmarshal the provided XML stream to allocate the corresponding collection of
      * action descriptors.
      *
      * @param in the input stream that contains the collection of action

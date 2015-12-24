@@ -38,7 +38,7 @@ import javax.swing.TransferHandler.TransferSupport;
 
 /**
  * Class {@code FileDropHandler} handles the dropping of files onto the
- * Audiveris GUI
+ * main application window.
  *
  * @author Hervé Bitteur
  */
@@ -51,7 +51,7 @@ public class FileDropHandler
 
     private static final Logger logger = LoggerFactory.getLogger(FileDropHandler.class);
 
-    /** Default parameter. */
+    /** Default step to be run on dropped image. */
     public static final Param<Step> defaultStep = new Default();
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -105,8 +105,12 @@ public class FileDropHandler
 
             /* Loop through the files */
             for (File file : fileList) {
-                if (file.getName().endsWith(ScriptManager.SCRIPT_EXTENSION)) {
+                final String fileName = file.getName();
+
+                if (fileName.endsWith(OMR.SCRIPT_EXTENSION)) {
                     new DropScriptTask(file).execute();
+                } else if (fileName.endsWith(OMR.PROJECT_EXTENSION)) {
+                    new DropProjectTask(file).execute();
                 } else {
                     new DropImageTask(file, defaultStep.getTarget()).execute();
                 }
@@ -195,6 +199,33 @@ public class FileDropHandler
 
             final Book book = OMR.getEngine().loadInput(file.toPath());
             book.doStep(target, null);
+
+            return null;
+        }
+    }
+
+    //-----------------//
+    // DropProjectTask //
+    //-----------------//
+    private static class DropProjectTask
+            extends BasicTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final File file;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public DropProjectTask (File file)
+        {
+            this.file = file;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws Exception
+        {
+            OMR.getEngine().loadProject(file.toPath());
 
             return null;
         }

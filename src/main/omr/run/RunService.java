@@ -38,11 +38,11 @@ public class RunService
 
     private static final Logger logger = LoggerFactory.getLogger(RunService.class);
 
-    /** Events that can be published on the run service. */
+    /** Events allowed to be published on this run service. */
     public static final Class<?>[] eventsWritten = new Class<?>[]{RunEvent.class};
 
     /** Events observed on location service. */
-    public static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class};
+    public static final Class<?>[] locEventsRead = new Class<?>[]{LocationEvent.class};
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying run table. */
@@ -58,7 +58,7 @@ public class RunService
     public RunService (String name,
                        RunTable table)
     {
-        super(name, eventsWritten);
+        super(name + "Service", eventsWritten);
         this.table = table;
     }
 
@@ -73,7 +73,7 @@ public class RunService
      */
     public void cutLocationService (SelectionService locationService)
     {
-        for (Class<?> eventClass : eventsRead) {
+        for (Class<?> eventClass : locEventsRead) {
             locationService.unsubscribe(eventClass, this);
         }
     }
@@ -98,8 +98,7 @@ public class RunService
             logger.debug("RunsTable {}: {}", getName(), locationEvent);
 
             if (locationEvent instanceof LocationEvent) {
-                // Location => Run
-                handleEvent(locationEvent);
+                handleEvent(locationEvent); // Location => Run
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -116,7 +115,7 @@ public class RunService
      */
     public void setLocationService (SelectionService locationService)
     {
-        for (Class<?> eventClass : eventsRead) {
+        for (Class<?> eventClass : locEventsRead) {
             locationService.subscribeStrongly(eventClass, this);
         }
     }

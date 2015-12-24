@@ -19,19 +19,15 @@ import omr.util.Predicate;
 
 import ij.process.ByteProcessor;
 
-import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.Assert;
 
 import static org.junit.Assert.*;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.awt.Dimension;
 import java.awt.Point;
 import java.util.Arrays;
-import org.junit.Assert;
 
 /**
  *
@@ -52,26 +48,6 @@ public class RunTableTest
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @BeforeClass
-    public static void setUpClass ()
-    {
-    }
-
-    @AfterClass
-    public static void tearDownClass ()
-    {
-    }
-
-    @Before
-    public void setUp ()
-    {
-    }
-
-    @After
-    public void tearDown ()
-    {
-    }
-
     /**
      * Test of copy method, of class RunTable.
      */
@@ -106,22 +82,6 @@ public class RunTableTest
         }
     }
 
-    //
-    //    /**
-    //     * Test of cutLocationService method, of class RunTable.
-    //     */
-    //    @Test
-    //    public void testCutLocationService ()
-    //    {
-    //        System.out.println("\n+++ cutLocationService");
-    //
-    //        SelectionService locationService = null;
-    //        RunTable instance = null;
-    //        instance.cutLocationService(locationService);
-    //        // TODO review the generated test code and remove the default call to fail.
-    //        fail("The test case is a prototype.");
-    //    }
-    //
     /**
      * Test of dumpOf method, of class RunTable.
      */
@@ -184,23 +144,6 @@ public class RunTableTest
         assertEquals(expResult, result.toString());
     }
 
-    //
-    //    /**
-    //     * Test of getBufferedImage method, of class RunTable.
-    //     */
-    //    @Test
-    //    public void testGetBufferedImage ()
-    //    {
-    //        System.out.println("\n+++ getBufferedImage");
-    //
-    //        RunTable instance = null;
-    //        BufferedImage expResult = null;
-    //        BufferedImage result = instance.getBufferedImage();
-    //        assertEquals(expResult, result);
-    //        // TODO review the generated test code and remove the default call to fail.
-    //        fail("The test case is a prototype.");
-    //    }
-    //
     /**
      * Test of getDimension method, of class RunTable.
      */
@@ -265,23 +208,6 @@ public class RunTableTest
         assertEquals(expResult.toString(), result.toString());
     }
 
-    //
-    //    /**
-    //     * Test of getRunService method, of class RunTable.
-    //     */
-    //    @Test
-    //    public void testGetRunService ()
-    //    {
-    //        System.out.println("\n+++ getRunService");
-    //
-    //        RunTable instance = null;
-    //        SelectionService expResult = null;
-    //        SelectionService result = instance.getRunService();
-    //        assertEquals(expResult, result);
-    //        // TODO review the generated test code and remove the default call to fail.
-    //        fail("The test case is a prototype.");
-    //    }
-    //
     /**
      * Test of getSequence method, of class RunTable.
      */
@@ -355,6 +281,7 @@ public class RunTableTest
         System.out.println("\n+++ include");
 
         RunTable instance = createHorizontalInstance();
+        System.out.println("initial:\n" + instance.dumpOf());
 
         ByteProcessor buffer = instance.getBuffer();
         buffer.invert();
@@ -362,11 +289,11 @@ public class RunTableTest
         GlobalFilter filter = new GlobalFilter(buffer, 127);
         RunTableFactory factory = new RunTableFactory(HORIZONTAL);
         RunTable that = factory.createTable(filter.filteredImage());
-        System.out.println("inverted" + that.dumpOf());
+        System.out.println("inverted:\n" + that.dumpOf());
         that.dumpSequences();
 
         instance.include(that);
-        System.out.println("full" + instance.dumpOf());
+        System.out.println("full:\n" + instance.dumpOf());
         instance.dumpSequences();
         assertEquals(5, instance.getTotalRunCount());
     }
@@ -391,41 +318,6 @@ public class RunTableTest
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of lookupRun method, of class RunTable.
-     */
-    @Test
-    public void testLookupRun ()
-    {
-        System.out.println("\n+++ lookupRun");
-
-        RunTable instance = createHorizontalInstance();
-        Point point = new Point(6, 0);
-        Run expResult = new Run(5, 3);
-        Run result = instance.lookupRun(point);
-        assertEquals(expResult.toString(), result.toString());
-
-        point = new Point(7, 1);
-        result = instance.lookupRun(point);
-        assertEquals(null, result);
-    }
-
-    //
-    //    /**
-    //     * Test of onEvent method, of class RunTable.
-    //     */
-    //    @Test
-    //    public void testOnEvent ()
-    //    {
-    //        System.out.println("\n+++ onEvent");
-    //
-    //        LocationEvent locationEvent = null;
-    //        RunTable instance = null;
-    //        instance.onEvent(locationEvent);
-    //        // TODO review the generated test code and remove the default call to fail.
-    //        fail("The test case is a prototype.");
-    //    }
-    //
     /**
      * Test of purge method, of class RunTable.
      */
@@ -531,37 +423,6 @@ public class RunTableTest
         System.out.println("table after:" + instance.dumpOf());
     }
 
-    //
-    //    /**
-    //     * Test of render method, of class RunTable.
-    //     */
-    //    @Test
-    //    public void testRender ()
-    //    {
-    //        System.out.println("\n+++ render");
-    //
-    //        Graphics2D g = null;
-    //        RunTable instance = null;
-    //        instance.render(g);
-    //        // TODO review the generated test code and remove the default call to fail.
-    //        fail("The test case is a prototype.");
-    //    }
-    //
-    //    /**
-    //     * Test of setLocationService method, of class RunTable.
-    //     */
-    //    @Test
-    //    public void testSetLocationService ()
-    //    {
-    //        System.out.println("\n+++ setLocationService");
-    //
-    //        SelectionService locationService = null;
-    //        RunTable instance = null;
-    //        instance.setLocationService(locationService);
-    //        // TODO review the generated test code and remove the default call to fail.
-    //        fail("The test case is a prototype.");
-    //    }
-    //
     /**
      * Test of setSequence method, of class RunTable.
      */
@@ -587,9 +448,56 @@ public class RunTableTest
         System.out.println("\n+++ toString");
 
         RunTable instance = createHorizontalInstance();
-        String expResult = "RunTable{hori HORIZONTAL 10x5}";
+        String expResult = "RunTable{HORIZONTAL 10x5}";
         String result = instance.toString();
         assertEquals(expResult, result);
+    }
+
+    //-------------------------------//
+    // createLargeHorizontalInstance //
+    //-------------------------------//
+    private RunTable createLargeHorizontalInstance ()
+    {
+        RunTable instance = new RunTable(HORIZONTAL, dim.width + 5, dim.height + 3);
+
+        int i = 2;
+        instance.addRun(i, new Run(1, 2));
+        instance.addRun(i, new Run(5, 3));
+
+        i++;
+        instance.addRun(i, new Run(4, 2));
+
+        i++;
+        i++;
+        instance.addRun(i, new Run(4, 1));
+        instance.addRun(i, new Run(8, 2));
+
+        i++;
+        instance.addRun(i, new Run(2, 2));
+        instance.addRun(i, new Run(6, 4));
+
+        return instance;
+    }
+
+    /**
+     * Test of trim method, of class RunTable.
+     */
+    @Test
+    public void testTrim ()
+    {
+        System.out.println("\n+++ trim");
+
+        RunTable instance = createLargeHorizontalInstance();
+        System.out.println("beforeTrim:\n" + instance.dumpOf());
+
+        Point expOffset = new Point(1, 2);
+        Point offset = new Point();
+        RunTable trimmed = instance.trim(offset);
+        System.out.println("afterTrim:\n" + trimmed.dumpOf());
+
+        assertEquals(expOffset, offset);
+        assertEquals(9, trimmed.getWidth());
+        assertEquals(5, trimmed.getHeight());
     }
 
     //--------------------------//
@@ -604,10 +512,7 @@ public class RunTableTest
 
         instance.addRun(1, new Run(0, 1));
         instance.addRun(1, new Run(4, 2));
-//
-//        instance.addRun(2, new Run(3, 1));
-//        instance.addRun(2, new Run(5, 4));
-//
+
         instance.addRun(3, new Run(0, 2));
         instance.addRun(3, new Run(4, 1));
         instance.addRun(3, new Run(8, 2));

@@ -16,6 +16,8 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
+
 import omr.image.FilterDescriptor;
 import omr.image.GaussianGrayFilter;
 import omr.image.ImageFormatException;
@@ -23,15 +25,16 @@ import omr.image.ImageUtil;
 import omr.image.MedianGrayFilter;
 import omr.image.PixelFilter;
 import omr.image.PixelSource;
-
-import omr.lag.Lags;
-
+import static omr.run.Orientation.VERTICAL;
 import omr.run.RunTable;
+import omr.run.RunTableFactory;
 
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
-import omr.selection.PixelLevelEvent;
+import omr.selection.PixelEvent;
 import omr.selection.SelectionService;
+
+import omr.sheet.grid.LineInfo;
 
 import omr.util.Navigable;
 import omr.util.StopWatch;
@@ -44,18 +47,21 @@ import org.bushe.swing.event.EventSubscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.media.jai.JAI;
 import javax.xml.bind.JAXBContext;
@@ -87,8 +93,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * TODO: When an alpha channel is involved, perform the alpha multiplication if the components are
  * not yet premultiplied.
  *
- * <h4>Overview of transforms:<br/>
- * <img src="../image/doc-files/transforms.png"/>
+ * <h4>Overview of transforms:<br>
+ * <img src="../image/doc-files/transforms.png">
  * </h4>
  *
  * @author Hervé Bitteur
@@ -133,6 +139,7 @@ public class Picture
         //~ Enumeration constant initializers ------------------------------------------------------
 
         BINARY,
+        NO_STAFF,
         HEAD_SPOTS;
     }
 
@@ -151,13 +158,13 @@ public class Picture
 
     /** Map of all handled run tables. */
     @XmlElement(name = "tables")
-    private final ConcurrentHashMap<TableKey, RunTableHolder> tables = new ConcurrentHashMap<TableKey, RunTableHolder>();
+    private final ConcurrentSkipListMap<TableKey, RunTableHolder> tables = new ConcurrentSkipListMap<TableKey, RunTableHolder>();
 
     // Transient data
     //---------------
     //
-    /** Map of all handled sources. (TODO: should this be persistent?) */
-    private final ConcurrentHashMap<SourceKey, WeakReference<ByteProcessor>> sources = new ConcurrentHashMap<SourceKey, WeakReference<ByteProcessor>>();
+    /** Map of all handled sources. */
+    private final ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>> sources = new ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>>();
 
     /** Related sheet. */
     @Navigable(false)
@@ -173,17 +180,6 @@ public class Picture
     private BufferedImage initialImage;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    public Picture ()
-    {
-        this.sheet = null;
-        this.width = 0;
-        this.height = 0;
-        this.levelService = null;
-    }
-
     /**
      * Build a picture instance from a given original image.
      *
@@ -211,6 +207,17 @@ public class Picture
         logger.debug("InitialImage {}", image);
     }
 
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private Picture ()
+    {
+        this.sheet = null;
+        this.width = 0;
+        this.height = 0;
+        this.levelService = null;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     // For debug only
     public void checkSources ()
@@ -233,20 +240,21 @@ public class Picture
         sources.remove(key);
     }
 
-    //--------------//
-    // disposeTable //
-    //--------------//
-    public void disposeTable (TableKey key)
-    {
-        RunTableHolder tableHolder = tables.get(key);
-
-        if (tableHolder != null) {
-            tableHolder.store();
-            tableHolder.setData(null);
-            logger.debug("{} table disposed.", key);
-        }
-    }
-
+    //
+    //    //--------------//
+    //    // disposeTable //
+    //    //--------------//
+    //    public void disposeTable (TableKey key)
+    //    {
+    //        RunTableHolder tableHolder = tables.get(key);
+    //
+    //        if (tableHolder != null) {
+    //            tableHolder.store();
+    //            tableHolder.setData(null);
+    //            logger.debug("{} table disposed.", key);
+    //        }
+    //    }
+    //
     //---------------//
     // dumpRectangle //
     //---------------//
@@ -433,19 +441,6 @@ public class Picture
         }
     }
 
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name for this Observer.
-     *
-     * @return Observer name
-     */
-    public String getName ()
-    {
-        return "Picture";
-    }
-
     //-----------//
     // getSource //
     //-----------//
@@ -498,12 +493,8 @@ public class Picture
                 break;
 
             case NO_STAFF:
-                // Built from complementary horizontal & vertical lags
-                src = Lags.buildBuffer(
-                        width,
-                        height,
-                        sheet.getLagManager().getLag(Lags.HLAG),
-                        sheet.getLagManager().getLag(Lags.VLAG));
+                // Built by erasing StaffLines glyphs from binary source
+                src = buildNoStaffBuffer();
 
                 break;
             }
@@ -549,20 +540,6 @@ public class Picture
     public int getWidth ()
     {
         return width;
-    }
-
-    //----------//
-    // hasTable //
-    //----------//
-    /**
-     * Report whether the desired table is known
-     *
-     * @param key key of desired table
-     * @return true if we have a tableHolder, false otherwise
-     */
-    public boolean hasTable (TableKey key)
-    {
-        return tables.get(key) != null;
     }
 
     //----------------//
@@ -632,7 +609,7 @@ public class Picture
                 }
             }
 
-            levelService.publish(new PixelLevelEvent(this, event.hint, event.movement, level));
+            levelService.publish(new PixelEvent(this, event.hint, event.movement, level));
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
@@ -657,6 +634,41 @@ public class Picture
     public static void setDefaultExtractionDirectory (String dir)
     {
         constants.defaultExtractionDirectory.setValue(dir);
+    }
+
+    //-------------------//
+    // buildNoStaffTable //
+    //-------------------//
+    public RunTable buildNoStaffTable ()
+    {
+        return new RunTableFactory(VERTICAL).createTable(getSource(SourceKey.NO_STAFF));
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name for this Observer.
+     *
+     * @return Observer name
+     */
+    public String getName ()
+    {
+        return "Picture";
+    }
+
+    //----------//
+    // hasTable //
+    //----------//
+    /**
+     * Report whether the desired table is known
+     *
+     * @param key key of desired table
+     * @return true if we have a tableHolder, false otherwise
+     */
+    public boolean hasTable (TableKey key)
+    {
+        return tables.get(key) != null;
     }
 
     //----------//
@@ -684,33 +696,42 @@ public class Picture
     //-------//
     // store //
     //-------//
-    public void store ()
+    public void store (Path sheetPath,
+                       Path oldSheetPath)
     {
         // Each handled table
         for (Entry<TableKey, RunTableHolder> entry : tables.entrySet()) {
-            RunTableHolder holder = entry.getValue();
+            final TableKey key = entry.getKey();
+            final RunTableHolder holder = entry.getValue();
+            final Path tablepath = sheetPath.resolve(key + ".xml");
 
             if (!holder.hasData()) {
-                continue; // Since data has not been loaded (and thus not modified)
-            }
+                if (oldSheetPath != null) {
+                    try {
+                        // Copy from old project file to new
+                        Path oldTablePath = oldSheetPath.resolve(key + ".xml");
+                        Files.copy(oldTablePath, tablepath);
+                        logger.info("Copied {}", tablepath);
+                    } catch (IOException ex) {
+                        logger.warn("Error in picture.store " + ex, ex);
+                    }
+                }
+            } else {
+                try {
+                    // Too conservative. TODO: Has data been modified WRT file ???
+                    Files.deleteIfExists(tablepath);
 
-            TableKey key = entry.getKey();
-            Path tablepath = sheet.getPath().resolve(key + ".xml");
+                    OutputStream os = Files.newOutputStream(tablepath, StandardOpenOption.CREATE);
+                    Marshaller m = JAXBContext.newInstance(RunTable.class).createMarshaller();
+                    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-            try {
-                // Too conservative. TODO: Has data been modified WRT file ???
-                Files.deleteIfExists(tablepath);
-
-                OutputStream os = Files.newOutputStream(tablepath, StandardOpenOption.CREATE);
-                Marshaller m = JAXBContext.newInstance(RunTable.class).createMarshaller();
-                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
-                RunTable table = holder.getData();
-                m.marshal(table, os);
-                os.close();
-                logger.info("Stored {}", tablepath);
-            } catch (Exception ex) {
-                logger.warn("Error in picture.store", ex);
+                    RunTable table = holder.getData();
+                    m.marshal(table, os);
+                    os.close();
+                    logger.info("Stored {}", tablepath);
+                } catch (Exception ex) {
+                    logger.warn("Error in picture.store " + ex, ex);
+                }
             }
         }
     }
@@ -729,7 +750,7 @@ public class Picture
     //----------------//
     /**
      * (package private) method to initialize needed transient members.
-     * (which by definition have not been set by the un-marshaling).
+     * (which by definition have not been set by the unmarshalling).
      *
      * @param sheet the containing sheet
      */
@@ -787,13 +808,44 @@ public class Picture
     //-----------//
     private ByteProcessor binarized (ByteProcessor src)
     {
-        FilterDescriptor desc = sheet.getFilterParam().getTarget();
+        FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
         logger.info("{}{} {}", sheet.getLogPrefix(), "Binarization", desc);
-        sheet.getFilterParam().setActual(desc);
+        sheet.getStub().getFilterParam().setActual(desc);
 
         PixelFilter filter = desc.getFilter(src);
 
         return filter.filteredImage();
+    }
+
+    //--------------------//
+    // buildNoStaffBuffer //
+    //--------------------//
+    private ByteProcessor buildNoStaffBuffer ()
+    {
+        ByteProcessor src = getSource(SourceKey.BINARY);
+        ByteProcessor buf = (ByteProcessor) src.duplicate();
+        BufferedImage img = buf.getBufferedImage();
+        Graphics2D g = img.createGraphics();
+        g.setColor(Color.WHITE);
+
+        for (SystemInfo system : sheet.getSystems()) {
+            for (Staff staff : system.getStaves()) {
+                for (LineInfo li : staff.getLines()) {
+                    StaffLine line = (StaffLine) li;
+                    Glyph glyph = line.getGlyph();
+
+                    if (glyph == null) {
+                        logger.warn("glyph is null for line " + line + " staff:" + staff);
+                    } else if (glyph.getRunTable() == null) {
+                        logger.warn("glyph runtable is null");
+                    }
+
+                    glyph.getRunTable().render(g, glyph.getTopLeft());
+                }
+            }
+        }
+
+        return new ByteProcessor(img);
     }
 
     //------------//
@@ -882,10 +934,6 @@ public class Picture
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public RunTableHolder ()
-        {
-        }
-
         public RunTableHolder (Sheet sheet,
                                Class classe,
                                String pathString)
@@ -893,13 +941,17 @@ public class Picture
             super(sheet, classe, pathString);
         }
 
+        private RunTableHolder ()
+        {
+        }
+
         //~ Methods --------------------------------------------------------------------------------
         //----------------//
         // afterUnmarshal //
         //----------------//
         /**
-         * Called after all the properties (except IDREF) are un-marshaled for this object,
-         * but before this object is set to the parent object.
+         * Called after all the properties (except IDREF) are unmarshalled for this
+         * object, but before this object is set to the parent object.
          */
         @SuppressWarnings("unused")
         private void afterUnmarshal (Unmarshaller um,

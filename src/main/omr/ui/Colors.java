@@ -56,7 +56,7 @@ public class Colors
     /** Glyph area (for XORMode, no longer used) */
     public static final Color GLYPH_AREA_XOR = Color.darkGray;
 
-    /** Current glyph */
+    /** Current glyph. */
     public static final Color GLYPH_CURRENT = new Color(255, 0, 255, alpha);
 
     /** Horizontal stuff */
@@ -123,7 +123,10 @@ public class Colors
     public static final Color WARP_POINT = Color.red;
 
     /** Color for busy sheet tab */
-    public static final Color SHEET_BUSY = Color.orange; //new Color(200, 128, 0);
+    public static final Color SHEET_BUSY = Color.orange;
+
+    /** Color for invalid sheet tab */
+    public static final Color SHEET_INVALID = Color.PINK;
 
     /** Color for zero distance (on foreground target) */
     public static final Color DISTANCE_TARGET = Color.PINK;

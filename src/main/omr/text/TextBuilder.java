@@ -14,9 +14,10 @@ package omr.text;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
+import omr.glyph.GlyphIndex;
+import omr.glyph.dynamic.CompoundFactory;
+import omr.glyph.dynamic.SectionCompound;
 
 import omr.lag.BasicLag;
 import omr.lag.JunctionRatioPolicy;
@@ -41,7 +42,6 @@ import omr.sig.inter.ChordNameInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.LyricLineInter;
 import omr.sig.inter.SentenceInter;
-import omr.sig.inter.WordInter;
 
 import static omr.text.TextRole.PartName;
 
@@ -71,6 +71,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -121,6 +122,9 @@ public class TextBuilder
 
     /** Scale-dependent parameters. */
     private final Parameters params;
+
+    /** Set of text lines. */
+    private final Set<TextLine> textLines = new LinkedHashSet<TextLine>();
 
     //~ Constructors -------------------------------------------------------------------------------
     //
@@ -321,7 +325,6 @@ public class TextBuilder
      */
     public void dumpTextLines (String title)
     {
-        Set<TextLine> textLines = system.getTextLines();
         logger.info("{} {} lines: {}", title, sheet.getLogPrefix(), textLines.size());
 
         for (TextLine line : textLines) {
@@ -433,42 +436,42 @@ public class TextBuilder
 
         return new TextLine(words);
     }
-//
-//    //----------------//
-//    // purgeTextLines //
-//    //----------------//
-//    /**
-//     * Remove words whose glyphs no longer point back to them,
-//     * and finally remove text lines which have no word left.
-//     * <p>
-//     * TODO: is this still useful?
-//     */
-//    public void purgeTextLines ()
-//    {
-//        for (Iterator<TextLine> itLine = system.getTextLines().iterator(); itLine.hasNext();) {
-//            TextLine line = itLine.next();
-//            List<TextWord> toRemove = new ArrayList<TextWord>();
-//
-//            for (TextWord word : line.getWords()) {
-//                Glyph glyph = word.getGlyph();
-//
-//                if ((glyph == null) || (glyph.getTextWord() != word)) {
-//                    logger.debug("{} purging old {}", sheet.getLogPrefix(), word);
-//                    toRemove.add(word);
-//                }
-//            }
-//
-//            if (!toRemove.isEmpty()) {
-//                line.removeWords(toRemove);
-//            }
-//
-//            if (line.getWords().isEmpty()) {
-//                logger.debug("{} purging empty {}", sheet.getLogPrefix(), line);
-//                itLine.remove();
-//            }
-//        }
-//    }
 
+    //
+    //    //----------------//
+    //    // purgeTextLines //
+    //    //----------------//
+    //    /**
+    //     * Remove words whose glyphs no longer point back to them,
+    //     * and finally remove text lines which have no word left.
+    //     * <p>
+    //     * TODO: is this still useful?
+    //     */
+    //    public void purgeTextLines ()
+    //    {
+    //        for (Iterator<TextLine> itLine = system.getTextLines().iterator(); itLine.hasNext();) {
+    //            TextLine line = itLine.next();
+    //            List<TextWord> toRemove = new ArrayList<TextWord>();
+    //
+    //            for (TextWord word : line.getWords()) {
+    //                Glyph glyph = word.getCompound();
+    //
+    //                if ((glyph == null) || (glyph.getTextWord() != word)) {
+    //                    logger.debug("{} purging old {}", sheet.getLogPrefix(), word);
+    //                    toRemove.add(word);
+    //                }
+    //            }
+    //
+    //            if (!toRemove.isEmpty()) {
+    //                line.removeWords(toRemove);
+    //            }
+    //
+    //            if (line.getWords().isEmpty()) {
+    //                logger.debug("{} purging empty {}", sheet.getLogPrefix(), line);
+    //                itLine.remove();
+    //            }
+    //        }
+    //    }
     //----------------//
     // recomposeLines //
     //----------------//
@@ -565,14 +568,20 @@ public class TextBuilder
         List<TextLine> systemLines = new ArrayList<TextLine>();
 
         // We pick up the words that are contained by system area
-        // Beware a text located between two systems must be copied to each system!
-        Area area = system.getArea();
+        // Beware: a text located between two systems must be copied to each system!
+        final Area area = system.getArea();
+        final Rectangle areaBounds = area.getBounds();
 
         for (TextLine sheetLine : sheetLines) {
+            if (!areaBounds.intersects(sheetLine.getBounds())) {
+                continue;
+            }
             TextLine line = new TextLine();
 
             for (TextWord sheetWord : sheetLine.getWords()) {
-                if (area.contains(sheetWord.getBounds())) {
+                final Rectangle wordBox = sheetWord.getBounds();
+
+                if (area.contains(wordBox)) {
                     TextWord word = sheetWord.copy();
                     line.appendWord(word);
                 }
@@ -593,7 +602,7 @@ public class TextBuilder
 
         List<Section> allSections = getSections(buffer, systemLines);
         watch.start("mapGlyphs");
-        mapGlyphs(systemLines, allSections, sheet.getLanguageParam().getActual());
+        mapGlyphs(systemLines, allSections, sheet.getStub().getLanguageParam().getActual());
 
         // Allocate corresponding inters based on role (Sentences or LyricLines of LyricItems)
         watch.start("createInters");
@@ -627,7 +636,7 @@ public class TextBuilder
     {
         return getOcr().recognize(
                 sheet.getScale().getInterline(),
-                glyph.getImage().getBufferedImage(),
+                glyph.getBuffer().getBufferedImage(),
                 glyph.getBounds().getLocation(),
                 language,
                 OCR.LayoutMode.SINGLE_BLOCK,
@@ -648,7 +657,7 @@ public class TextBuilder
     public SortedSet<Section> retrieveSections (List<TextChar> chars,
                                                 Collection<Section> allSections)
     {
-        SortedSet<Section> set = new TreeSet<Section>();
+        SortedSet<Section> set = new TreeSet<Section>(Section.byFullAbscissa);
 
         for (TextChar charDesc : chars) {
             Rectangle charBox = charDesc.getBounds();
@@ -690,39 +699,39 @@ public class TextBuilder
             List<TextWord> subWords = null; // Results of split
             final int maxCharGap = getMaxCharGap(word); // Max gap depends on word font size
 
-//            final Glyph wordGlyph = word.getGlyph();
-//            if (wordGlyph != null) {
-//                if (!wordGlyph.getTextValue().equals(word.getInternalValue())) {
-//                    // A manual text modification has occurred
-//                    // Check for a separator in the new manual value
-//                    if (!word.getChars().isEmpty()) {
-//                        logger.debug("Manual modif for {}", wordGlyph.idString());
-//                        subWords = getSubWords(
-//                                word,
-//                                line,
-//                                new WordScanner.ManualScanner(
-//                                        wordGlyph.getTextValue(),
-//                                        line.isLyrics(),
-//                                        maxCharGap,
-//                                        word.getChars()));
-//
-//                        // If no subdivision was made, allocate a new TextWord
-//                        // just to match the new manual value
-//                        if (subWords.isEmpty()) {
-//                            TextWord newWord = new TextWord(
-//                                    word.getBaseline(),
-//                                    wordGlyph.getTextValue(),
-//                                    word.getFontInfo(),
-//                                    word.getConfidence(),
-//                                    word.getChars(),
-//                                    line);
-//                            newWord.setGlyph(wordGlyph);
-//                            subWords.add(newWord);
-//                            wordGlyph.setTextWord(wordGlyph.getOcrLanguage(), newWord);
-//                        }
-//                    }
-//                }
-//            } else {
+            //            final Glyph wordGlyph = word.getCompound();
+            //            if (wordGlyph != null) {
+            //                if (!wordGlyph.getTextValue().equals(word.getInternalValue())) {
+            //                    // A manual text modification has occurred
+            //                    // Check for a separator in the new manual value
+            //                    if (!word.getChars().isEmpty()) {
+            //                        logger.debug("Manual modif for {}", wordGlyph.idString());
+            //                        subWords = getSubWords(
+            //                                word,
+            //                                line,
+            //                                new WordScanner.ManualScanner(
+            //                                        wordGlyph.getTextValue(),
+            //                                        line.isLyrics(),
+            //                                        maxCharGap,
+            //                                        word.getChars()));
+            //
+            //                        // If no subdivision was made, allocate a new TextWord
+            //                        // just to match the new manual value
+            //                        if (subWords.isEmpty()) {
+            //                            TextWord newWord = new TextWord(
+            //                                    word.getBaseline(),
+            //                                    wordGlyph.getTextValue(),
+            //                                    word.getFontInfo(),
+            //                                    word.getConfidence(),
+            //                                    word.getChars(),
+            //                                    line);
+            //                            newWord.setCompound(wordGlyph);
+            //                            subWords.add(newWord);
+            //                            wordGlyph.setTextWord(wordGlyph.getOcrLanguage(), newWord);
+            //                        }
+            //                    }
+            //                }
+            //            } else {
             subWords = getSubWords(
                     word,
                     line,
@@ -731,8 +740,8 @@ public class TextBuilder
                             line.isLyrics(),
                             maxCharGap,
                             word.getChars()));
-//            }
 
+            //            }
             if ((subWords != null) && !subWords.isEmpty()) {
                 toRemove.add(word);
                 toAdd.addAll(subWords);
@@ -755,63 +764,63 @@ public class TextBuilder
      */
     public void switchLanguageTexts ()
     {
-//        final GlyphNest nest = sheet.getGlyphNest();
-//        final LiveParam<String> textParam = sheet.getLanguageParam();
-//        final String language = textParam.getTarget();
-//
-//        logger.debug("switchLanguageTexts lan:{}", language);
-//
-//        textParam.setActual(language);
-//
-//        for (TextLine oldLine : new ArrayList<TextLine>(system.getTextLines())) {
-//            // Launch OCR on the whole line image
-//            List<Glyph> glyphs = oldLine.getWordGlyphs();
-//            Glyph compound = (glyphs.size() == 1) ? glyphs.get(0)
-//                    : system.registerGlyph(nest.buildGlyph(glyphs, false));
-//
-//            List<TextLine> lines = retrieveOcrLine(compound, language);
-//
-//            if ((lines == null) || (lines.size() != 1)) {
-//                logger.debug("{} No valid replacement for {}", sheet.getLogPrefix(), oldLine);
-//            } else {
-//                TextLine newLine = lines.get(0);
-//                recutStandardWords(newLine);
-//
-//                if (logger.isDebugEnabled()) {
-//                    logger.debug("refreshing {} by {}", oldLine, newLine);
-//                    oldLine.dump();
-//                    newLine.dump();
-//                }
-//
-//                List<TextWord> toRemove = new ArrayList<TextWord>();
-//                List<TextWord> toAdd = new ArrayList<TextWord>();
-//
-//                for (TextWord oldWord : oldLine.getWords()) {
-//                    TextWord newWord = findNewWord(oldWord, newLine);
-//
-//                    if (newWord != null) {
-//                        if (newWord.getConfidence() >= oldWord.getConfidence()) {
-//                            newWord.setGlyph(oldWord.getGlyph());
-//                            newWord.getGlyph().setTextWord(language, newWord);
-//                            toRemove.add(oldWord);
-//                            toAdd.add(newWord);
-//                        }
-//                    } else {
-//                        logger.debug(
-//                                "{} no word for {} in {}",
-//                                sheet.getLogPrefix(),
-//                                oldWord,
-//                                newLine);
-//                    }
-//                }
-//
-//                // Update words in place
-//                if (!toAdd.isEmpty()) {
-//                    oldLine.addWords(toAdd);
-//                    oldLine.removeWords(toRemove);
-//                }
-//            }
-//        }
+        //        final GlyphIndex nest = sheet.getGlyphIndex();
+        //        final LiveParam<String> textParam = sheet.getLanguageParam();
+        //        final String language = textParam.getTarget();
+        //
+        //        logger.debug("switchLanguageTexts lan:{}", language);
+        //
+        //        textParam.setActual(language);
+        //
+        //        for (TextLine oldLine : new ArrayList<TextLine>(system.getTextLines())) {
+        //            // Launch OCR on the whole line image
+        //            List<Glyph> glyphs = oldLine.getWordGlyphs();
+        //            Glyph compound = (glyphs.size() == 1) ? glyphs.get(0)
+        //                    : system.registerStandaloneGlyph(nest.buildGlyph(glyphs, false));
+        //
+        //            List<TextLine> lines = retrieveOcrLine(compound, language);
+        //
+        //            if ((lines == null) || (lines.size() != 1)) {
+        //                logger.debug("{} No valid replacement for {}", sheet.getLogPrefix(), oldLine);
+        //            } else {
+        //                TextLine newLine = lines.get(0);
+        //                recutStandardWords(newLine);
+        //
+        //                if (logger.isDebugEnabled()) {
+        //                    logger.debug("refreshing {} by {}", oldLine, newLine);
+        //                    oldLine.dump();
+        //                    newLine.dump();
+        //                }
+        //
+        //                List<TextWord> toRemove = new ArrayList<TextWord>();
+        //                List<TextWord> toAdd = new ArrayList<TextWord>();
+        //
+        //                for (TextWord oldWord : oldLine.getWords()) {
+        //                    TextWord newWord = findNewWord(oldWord, newLine);
+        //
+        //                    if (newWord != null) {
+        //                        if (newWord.getConfidence() >= oldWord.getConfidence()) {
+        //                            newWord.setCompound(oldWord.getCompound());
+        //                            newWord.getCompound().setTextWord(language, newWord);
+        //                            toRemove.add(oldWord);
+        //                            toAdd.add(newWord);
+        //                        }
+        //                    } else {
+        //                        logger.debug(
+        //                                "{} no word for {} in {}",
+        //                                sheet.getLogPrefix(),
+        //                                oldWord,
+        //                                newLine);
+        //                    }
+        //                }
+        //
+        //                // Update words in place
+        //                if (!toAdd.isEmpty()) {
+        //                    oldLine.addWords(toAdd);
+        //                    oldLine.removeWords(toRemove);
+        //                }
+        //            }
+        //        }
     }
 
     //-----------//
@@ -891,7 +900,7 @@ public class TextBuilder
     {
         final SIGraph sig = system.getSig();
 
-        for (TextLine line : system.getTextLines()) {
+        for (TextLine line : textLines) {
             final TextRole role = line.getRole();
             final SentenceInter sentence = (role == TextRole.Lyrics) ? LyricLineInter.create(line)
                     : ((role == TextRole.ChordName)
@@ -899,25 +908,9 @@ public class TextBuilder
                             : SentenceInter.create(line));
 
             // Related staff (can still be modified later)
-            final Point loc = sentence.getLocation();
-            Staff staff = null;
+            sentence.assignStaff(system);
 
-            if (role != TextRole.ChordName) {
-                staff = system.getStaffAtOrAbove(loc);
-            }
-
-            if (staff == null) {
-                staff = system.getStaffAtOrBelow(loc);
-            }
-
-            if (staff != null) {
-                sentence.setStaff(staff);
-
-                for (Inter wInter : sentence.getMembers()) {
-                    WordInter wordInter = (WordInter) wInter;
-                    wordInter.setStaff(staff);
-                }
-
+            if (sentence.getStaff() != null) {
                 // For PartName. TODO: Perhaps later in transcription?
                 assignSentence(sentence);
 
@@ -927,6 +920,10 @@ public class TextBuilder
                 }
 
                 sig.addVertex(sentence);
+
+                if (sentence instanceof LyricLineInter) {
+                    sentence.getStaff().getPart().addLyric((LyricLineInter) sentence);
+                }
             }
         }
     }
@@ -1141,7 +1138,9 @@ public class TextBuilder
     {
         logger.debug("mapGlyphs");
 
-        GlyphNest nest = system.getSheet().getGlyphNest();
+        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+
+        final int interline = sheet.getInterline();
 
         // To make sure that the same section is not assigned to several words
         for (Section section : allSections) {
@@ -1162,14 +1161,18 @@ public class TextBuilder
                 SortedSet<Section> wordSections = retrieveSections(word.getChars(), allSections);
 
                 if (!wordSections.isEmpty()) {
-                    Glyph wordGlyph = system.registerGlyph(
-                            nest.buildGlyph(wordSections, GlyphLayer.DEFAULT, true, Glyph.Linking.LINK));
+                    SectionCompound compound = CompoundFactory.buildCompound(
+                            wordSections,
+                            SectionCompound.class,
+                            interline);
+                    Glyph wordGlyph = compound.toGlyph(null);
+                    glyphIndex.register(wordGlyph);
 
                     // Link TextWord -> Glyph
                     word.setGlyph(wordGlyph);
 
                     if (word.isVip()) {
-                        line.setVip();
+                        line.setVip(true);
                     }
 
                     if (word.isVip()) {
@@ -1186,7 +1189,7 @@ public class TextBuilder
             // Purge words if any
             line.removeWords(toRemove);
 
-            system.getTextLines().add(line);
+            textLines.add(line);
         }
     }
 

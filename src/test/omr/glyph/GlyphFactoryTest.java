@@ -68,7 +68,7 @@ public class GlyphFactoryTest
 
         RunTable runTable = createHorizontalInstance();
         Point offset = null;
-        GlyphFactory.createGlyphs(runTable, offset);
+        GlyphFactory.buildGlyphs(runTable, offset);
     }
 
     //--------------------------//

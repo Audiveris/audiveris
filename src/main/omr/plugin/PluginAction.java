@@ -12,7 +12,7 @@
 package omr.plugin;
 
 import omr.sheet.Book;
-import omr.sheet.ui.SheetsController;
+import omr.sheet.ui.StubsController;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +58,7 @@ class PluginAction
     @Override
     public void actionPerformed (ActionEvent e)
     {
-        final Book book = SheetsController.getCurrentBook();
+        final Book book = StubsController.getCurrentBook();
 
         if (book != null) {
             plugin.getTask(book).execute();

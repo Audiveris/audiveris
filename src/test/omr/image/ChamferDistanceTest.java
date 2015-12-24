@@ -17,8 +17,6 @@ import ij.process.ByteProcessor;
 
 import org.junit.Test;
 
-import java.awt.Dimension;
-
 /**
  *
  * @author Hervé Bitteur

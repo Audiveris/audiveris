@@ -11,11 +11,14 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code BarGroupRelation} groups 2 bar lines.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "bar-group")
 public class BarGroupRelation
         extends AbstractRelation
 {
@@ -33,6 +36,12 @@ public class BarGroupRelation
     public BarGroupRelation (double xGap)
     {
         this.xGap = xGap;
+    }
+
+    // For JAXB
+    private BarGroupRelation ()
+    {
+        this.xGap = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------

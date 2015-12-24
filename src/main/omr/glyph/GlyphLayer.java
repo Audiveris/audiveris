@@ -30,7 +30,7 @@ public enum GlyphLayer
     /** Virtual glyph instances from Drag and Drop. */
     DROP("D", "Virtual glyphs from Drag n' Drop"),
 
-    /** Glyph instances un-marshaled from XML file. */
+    /** Glyph instances unmarshalled from XML file. */
     XML("X", "Sample glyphs unmarshalled from XML file");
 
     /** Simple key to refer to the layer. */

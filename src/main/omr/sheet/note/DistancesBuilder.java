@@ -16,16 +16,13 @@ import omr.OMR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
+import omr.glyph.Symbol.Group;
 
 import omr.image.ChamferDistance;
 import omr.image.DistanceTable;
 
-import omr.lag.Section;
-
 import omr.run.Orientation;
-import omr.run.Run;
 
 import omr.selection.AnchoredTemplateEvent;
 import omr.selection.SelectionService;
@@ -34,7 +31,7 @@ import omr.sheet.Picture;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
-import omr.sheet.grid.FilamentLine;
+import omr.sheet.grid.LineInfo;
 import omr.sheet.ui.DistanceBoard;
 import omr.sheet.ui.ScrollImageView;
 import omr.sheet.ui.SheetTab;
@@ -44,7 +41,9 @@ import omr.sheet.ui.TemplateView;
 import omr.sig.inter.LedgerInter;
 
 import omr.ui.BoardsPane;
-import static omr.util.HorizontalSide.*;
+
+import static omr.util.HorizontalSide.LEFT;
+import static omr.util.HorizontalSide.RIGHT;
 
 import ij.process.ByteProcessor;
 
@@ -55,7 +54,6 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.SortedMap;
-import java.util.SortedSet;
 
 /**
  * Class {@code DistancesBuilder} provides the distance table to be used for notes
@@ -106,7 +104,7 @@ public class DistancesBuilder
         // Display distances image in a template view?
         if ((OMR.getGui() != null) && constants.displayTemplates.isSet()) {
             SelectionService templateService = new SelectionService(
-                    "Templates",
+                    "templateService",
                     new Class[]{AnchoredTemplateEvent.class});
             BufferedImage img = table.getImage(sheet.getScale().getInterline() / 2);
             TemplateBoard templateBoard = new TemplateBoard(sheet, table, templateService);
@@ -125,29 +123,7 @@ public class DistancesBuilder
     //------------//
     private void paintGlyph (Glyph glyph)
     {
-        for (Section section : glyph.getMembers()) {
-            if (section.isVertical()) {
-                int x = section.getFirstPos();
-
-                for (Run run : section.getRuns()) {
-                    for (int y = run.getStart(); y <= run.getStop(); y++) {
-                        table.setValue(x, y, ChamferDistance.VALUE_UNKNOWN);
-                    }
-
-                    x += 1;
-                }
-            } else {
-                int y = section.getFirstPos();
-
-                for (Run run : section.getRuns()) {
-                    for (int x = run.getStart(); x <= run.getStop(); x++) {
-                        table.setValue(x, y, ChamferDistance.VALUE_UNKNOWN);
-                    }
-
-                    y += 1;
-                }
-            }
-        }
+        glyph.getRunTable().render(table, ChamferDistance.VALUE_UNKNOWN, glyph.getTopLeft());
     }
 
     //------------//
@@ -163,13 +139,13 @@ public class DistancesBuilder
         for (SystemInfo system : sheet.getSystems()) {
             for (Staff staff : system.getStaves()) {
                 // "Erase" staff lines
-                for (FilamentLine line : staff.getLines()) {
-                    // Paint the filament glyph
-                    Glyph filament = line.getFilament();
-                    paintGlyph(filament);
+                for (LineInfo line : staff.getLines()) {
+                    // Paint the line glyph
+                    Glyph glyph = line.getGlyph();
+                    paintGlyph(glyph);
 
                     // Also paint this line even at crossings with vertical objects
-                    double halfLine = 0.5 * filament.getMeanThickness(Orientation.HORIZONTAL);
+                    double halfLine = 0.5 * glyph.getMeanThickness(Orientation.HORIZONTAL);
                     Point2D leftPt = line.getEndPoint(LEFT);
                     Point2D rightPt = line.getEndPoint(RIGHT);
                     int xMin = (int) Math.floor(leftPt.getX());
@@ -187,9 +163,9 @@ public class DistancesBuilder
                 }
 
                 // "Erase" ledgers
-                SortedMap<Integer, SortedSet<LedgerInter>> ledgerMap = staff.getLedgerMap();
+                SortedMap<Integer, List<LedgerInter>> ledgerMap = staff.getLedgerMap();
 
-                for (SortedSet<LedgerInter> ledgers : ledgerMap.values()) {
+                for (List<LedgerInter> ledgers : ledgerMap.values()) {
                     for (LedgerInter ledger : ledgers) {
                         paintGlyph(ledger.getGlyph());
                     }
@@ -197,7 +173,7 @@ public class DistancesBuilder
             }
 
             // "Erase" stem seeds
-            List<Glyph> systemSeeds = system.lookupShapedGlyphs(Shape.VERTICAL_SEED);
+            List<Glyph> systemSeeds = system.lookupGroupedGlyphs(Group.VERTICAL_SEED);
 
             for (Glyph seed : systemSeeds) {
                 paintGlyph(seed);

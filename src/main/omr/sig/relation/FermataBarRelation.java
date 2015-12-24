@@ -16,7 +16,7 @@ import omr.constant.ConstantSet;
 
 /**
  * Class {@code FermataBarRelation} represents the relation between a fermata and
- * a bar-line.
+ * a barline.
  *
  * @author Hervé Bitteur
  */

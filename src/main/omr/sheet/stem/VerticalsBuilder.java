@@ -14,23 +14,24 @@ package omr.sheet.stem;
 import omr.check.Check;
 import omr.check.CheckBoard;
 import omr.check.CheckSuite;
-import omr.check.Checkable;
 import omr.check.Failure;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.Shape;
-import omr.glyph.facets.BasicGlyph;
-import omr.glyph.facets.Glyph;
+import omr.glyph.Glyph;
+import omr.glyph.GlyphIndex;
+import omr.glyph.NearLine;
+import omr.glyph.Symbol.Group;
+import omr.glyph.dynamic.FilamentFactory;
+import omr.glyph.dynamic.StraightFilament;
 
 import omr.lag.Section;
 
 import omr.math.LineUtil;
 import static omr.run.Orientation.*;
 
-import omr.selection.GlyphEvent;
+import omr.selection.EntityListEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
@@ -40,15 +41,11 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
-import omr.sheet.SystemManager;
-import omr.sheet.grid.FilamentsFactory;
 import omr.sheet.ui.SheetTab;
 
 import omr.sig.GradeImpacts;
 
 import omr.step.StepException;
-
-import omr.util.Predicate;
 
 import ij.process.ByteProcessor;
 
@@ -80,7 +77,7 @@ public class VerticalsBuilder
     private static final Logger logger = LoggerFactory.getLogger(VerticalsBuilder.class);
 
     /** Events this entity is interested in */
-    private static final Class<?>[] eventClasses = new Class<?>[]{GlyphEvent.class};
+    private static final Class<?>[] eventClasses = new Class<?>[]{EntityListEvent.class};
 
     /** Global seed grade is too low. */
     private static final Failure TOO_LIMITED = new Failure("Stem-TooLimited");
@@ -92,7 +89,7 @@ public class VerticalsBuilder
     private static final Failure TOO_HIGH_ADJACENCY = new Failure("Stem-TooHighAdjacency");
 
     /** Seed is located in header at beginning of staff. */
-    private static final Failure IN_DMZ = new Failure("Stem-InDMZ");
+    private static final Failure IN_HEADER = new Failure("Stem-InHeader");
 
     /** Core of seed contains too many white pixels. */
     private static final Failure TOO_HOLLOW = new Failure("Stem-TooHollow");
@@ -146,7 +143,7 @@ public class VerticalsBuilder
     {
         sheet.getAssembly().addBoard(
                 SheetTab.DATA_TAB,
-                new VertCheckBoard(sheet, sheet.getGlyphNest().getGlyphService(), eventClasses));
+                new VertCheckBoard(sheet, sheet.getGlyphIndex().getEntityService(), eventClasses));
     }
 
     //----------------//
@@ -161,7 +158,7 @@ public class VerticalsBuilder
             throws StepException
     {
         // Retrieve candidates
-        List<Glyph> candidates = retrieveCandidates();
+        List<StraightFilament> candidates = retrieveCandidates();
 
         // Apply seed checks
         checkVerticals(candidates);
@@ -176,9 +173,9 @@ public class VerticalsBuilder
      * @param stick the stem candidate
      * @return the resulting impacts
      */
-    public GradeImpacts checkStem (Glyph stick)
+    public GradeImpacts checkStem (NearLine stick)
     {
-        return suite.getImpacts(new GlyphContext(stick));
+        return suite.getImpacts(new StickContext(stick));
     }
 
     //------------//
@@ -215,42 +212,41 @@ public class VerticalsBuilder
     // checkVerticals //
     //----------------//
     /**
-     * This method checks for compliant vertical entities (stems) within a collection of
-     * vertical sticks, and in the context of a system.
+     * This method checks for stem seed glyphs within a collection of vertical filaments
+     * in a system.
      *
-     * @param sticks the provided collection of vertical sticks
+     * @param sticks the provided collection of vertical filaments
      */
-    private void checkVerticals (Collection<Glyph> sticks)
+    private void checkVerticals (Collection<StraightFilament> sticks)
     {
+        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
         int seedNb = 0;
-        logger.debug("Searching verticals on {} sticks", sticks.size());
+        logger.debug("S#{} searching verticals on {} sticks", system.getId(), sticks.size());
 
-        for (Glyph stick : sticks) {
-            stick = system.registerGlyph(stick);
-
+        for (StraightFilament stick : sticks) {
+            //            stick = system.registerStandaloneGlyph(stick);
+            //
             if (stick.isVip()) {
                 logger.info("VIP checkVerticals for {} in system#{}", stick, system.getId());
             }
 
             // Check seed is not in header
-            Point center = stick.getAreaCenter();
+            Point center = stick.getCenter();
             Staff staff = system.getClosestStaff(center);
 
             if (center.x < staff.getHeaderStop()) {
-                stick.addFailure(IN_DMZ);
-
                 continue;
             }
 
             // Run the suite of checks
-            double res = suite.pass(new GlyphContext(stick), null);
+            double res = suite.pass(new StickContext(stick), null);
 
             ///logger.debug("suite=> {} for {}", res, stick);
             if (res >= suite.getMinThreshold()) {
-                stick.setShape(Shape.VERTICAL_SEED);
+                final Glyph glyph = glyphIndex.registerOriginal(stick.toGlyph(null));
+                glyph.addGroup(Group.VERTICAL_SEED); // Needed
+                system.registerStandaloneGlyph(glyph);
                 seedNb++;
-            } else {
-                stick.addFailure(TOO_LIMITED);
             }
         }
 
@@ -368,28 +364,29 @@ public class VerticalsBuilder
     /**
      * Retrieve all system sticks that could be seed candidates.
      *
-     * @return the collection of sticks found in the system
+     * @return the collection of suitable sticks found in the system
      */
-    private List<Glyph> retrieveCandidates ()
+    private List<StraightFilament> retrieveCandidates ()
     {
         // Select suitable sections
         // Since we are looking for major seeds, we'll use only vertical sections
         List<Section> sections = new ArrayList<Section>();
-        Predicate<Section> predicate = new MySectionPredicate();
 
         for (Section section : system.getVerticalSections()) {
-            if (predicate.check(section)) {
+            // Check section is within system left and right boundaries
+            Point center = section.getAreaCenter();
+
+            if ((center.x > system.getLeft()) && (center.x < system.getRight())) {
                 sections.add(section);
             }
         }
 
         // Use filament factory with straight lines as default
-        final FilamentsFactory factory = new FilamentsFactory(
+        final FilamentFactory<StraightFilament> factory = new FilamentFactory<StraightFilament>(
                 scale,
-                sheet.getGlyphNest(),
-                GlyphLayer.DEFAULT,
+                sheet.getFilamentIndex(),
                 VERTICAL,
-                BasicGlyph.class);
+                StraightFilament.class);
 
         // Adjust factory parameters
         factory.setMaxThickness(sheet.getScale().getMaxStem());
@@ -413,7 +410,7 @@ public class VerticalsBuilder
      * Check stick length of black parts.
      */
     private class BlackCheck
-            extends Check<GlyphContext>
+            extends Check<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -431,7 +428,7 @@ public class VerticalsBuilder
         //~ Methods --------------------------------------------------------------------------------
         // Retrieve the length data
         @Override
-        protected double getValue (GlyphContext context)
+        protected double getValue (StickContext context)
         {
             return scale.pixelsToFrac(context.black);
         }
@@ -446,7 +443,7 @@ public class VerticalsBuilder
      * As a side-effect, additional data is stored in context: white, black and gap fields.
      */
     private class CleanCheck
-            extends Check<GlyphContext>
+            extends Check<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -463,9 +460,9 @@ public class VerticalsBuilder
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        protected double getValue (GlyphContext context)
+        protected double getValue (StickContext context)
         {
-            final Glyph stick = context.stick;
+            final NearLine stick = context.stick;
             final int dx = scale.toPixels(constants.beltMarginDx);
             final Point2D start = stick.getStartPoint(VERTICAL);
             final Point2D stop = stick.getStopPoint(VERTICAL);
@@ -673,7 +670,7 @@ public class VerticalsBuilder
      * Check largest gap in stick.
      */
     private class GapCheck
-            extends Check<GlyphContext>
+            extends Check<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -691,82 +688,9 @@ public class VerticalsBuilder
         //~ Methods --------------------------------------------------------------------------------
         // Retrieve the length data
         @Override
-        protected double getValue (GlyphContext context)
+        protected double getValue (StickContext context)
         {
             return scale.pixelsToFrac(context.gap);
-        }
-    }
-
-    //--------------//
-    // GlyphContext //
-    //--------------//
-    private static class GlyphContext
-            implements Checkable
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** The stick being checked. */
-        Glyph stick;
-
-        /** Length of largest gap found. */
-        int gap;
-
-        /** Total length of black portions of stem. */
-        int black;
-
-        /** Total length of white portions of stem. */
-        int white;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public GlyphContext (Glyph stick)
-        {
-            this.stick = stick;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void addFailure (Failure failure)
-        {
-            stick.addFailure(failure);
-        }
-
-        @Override
-        public boolean isVip ()
-        {
-            return stick.isVip();
-        }
-
-        @Override
-        public void setVip ()
-        {
-            stick.setVip();
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "stick#" + stick.getId();
-        }
-    }
-
-    //--------------------//
-    // MySectionPredicate //
-    //--------------------//
-    /**
-     * Predicate to filter relevant sections for seed candidates.
-     */
-    private class MySectionPredicate
-            implements Predicate<Section>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public boolean check (Section section)
-        {
-            // Check section is within system left and right boundaries
-            Point center = section.getAreaCenter();
-
-            return (center.x > system.getLeft()) && (center.x < system.getRight());
         }
     }
 
@@ -777,7 +701,7 @@ public class VerticalsBuilder
      * The whole suite of checks meant for vertical seed candidates.
      */
     private class SeedCheckSuite
-            extends CheckSuite<GlyphContext>
+            extends CheckSuite<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -818,7 +742,7 @@ public class VerticalsBuilder
      * (taking global sheet slope into account)
      */
     private class SlopeCheck
-            extends Check<GlyphContext>
+            extends Check<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -836,9 +760,9 @@ public class VerticalsBuilder
         //~ Methods --------------------------------------------------------------------------------
         // Retrieve the difference between stick slope and global slope
         @Override
-        protected double getValue (GlyphContext context)
+        protected double getValue (StickContext context)
         {
-            final Glyph stick = context.stick;
+            final NearLine stick = context.stick;
             Point2D start = stick.getStartPoint(VERTICAL);
             Point2D stop = stick.getStopPoint(VERTICAL);
 
@@ -849,6 +773,39 @@ public class VerticalsBuilder
         }
     }
 
+    //--------------//
+    // StickContext //
+    //--------------//
+    private static class StickContext
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** The stick being checked. */
+        NearLine stick;
+
+        /** Length of largest gap found. */
+        int gap;
+
+        /** Total length of black portions of stem. */
+        int black;
+
+        /** Total length of white portions of stem. */
+        int white;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public StickContext (NearLine stick)
+        {
+            this.stick = stick;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            return "stick#" + stick.getId();
+        }
+    }
+
     //---------------//
     // StraightCheck //
     //---------------//
@@ -856,7 +813,7 @@ public class VerticalsBuilder
      * Check if stick is straight.
      */
     private class StraightCheck
-            extends Check<GlyphContext>
+            extends Check<StickContext>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -873,9 +830,9 @@ public class VerticalsBuilder
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        protected double getValue (GlyphContext context)
+        protected double getValue (StickContext context)
         {
-            final Glyph stick = context.stick;
+            final NearLine stick = context.stick;
 
             return scale.pixelsToFrac(stick.getMeanDistance());
         }
@@ -889,7 +846,7 @@ public class VerticalsBuilder
      * interactive seed check suite on the current glyph.
      */
     private static class VertCheckBoard
-            extends CheckBoard<GlyphContext>
+            extends CheckBoard<StickContext>
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -914,28 +871,27 @@ public class VerticalsBuilder
                     return;
                 }
 
-                if (event instanceof GlyphEvent) {
-                    GlyphEvent glyphEvent = (GlyphEvent) event;
-                    Glyph glyph = glyphEvent.getData();
-
-                    if (glyph instanceof Glyph) {
-                        // Make sure this is a rather vertical stick
-                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
-                            // Apply the check suite
-                            SystemManager systemManager = sheet.getSystemManager();
-
-                            for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
-                                applySuite(
-                                        new VerticalsBuilder(system).getSuite(),
-                                        new GlyphContext(glyph));
-
-                                return;
-                            }
-                        }
-                    }
-
-                    tellObject(null);
-                }
+                //                if (event instanceof EntityListEvent) {
+                //                    EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
+                //                    final Glyph glyph = listEvent.getEntity();
+                //
+                //                    if (glyph != null) {
+                //                        // Make sure this is a rather vertical stick
+                //                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
+                //                            // Apply the check suite
+                //                            SystemManager systemManager = sheet.getSystemManager();
+                //
+                //                            for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                //                                applySuite(new VerticalsBuilder(system).getSuite(),
+                //                                        new StickContext(glyph));
+                //
+                //                                return;
+                //                            }
+                //                        }
+                //                    }
+                //
+                //                    tellObject(null);
+                //                }
             } catch (Exception ex) {
                 logger.warn(getClass().getName() + " onEvent error", ex);
             }

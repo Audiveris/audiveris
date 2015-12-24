@@ -13,8 +13,6 @@ package omr.sheet.stem;
 
 import omr.sheet.SystemInfo;
 
-import omr.sig.SigReducer;
-
 import omr.step.AbstractSystemStep;
 import omr.step.StepException;
 
@@ -51,7 +49,10 @@ public class StemsStep
                           Void context)
             throws StepException
     {
-        new StemsBuilder(system).linkStems(); // -> Stems links to heads & beams
-        new SigReducer(system).contextualize();
+        // -> Stems links to heads & beams
+        new StemsBuilder(system).linkStems();
+
+        // Compute all contextual grades (for better UI)
+        system.getSig().contextualize();
     }
 }

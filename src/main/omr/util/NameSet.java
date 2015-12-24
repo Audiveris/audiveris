@@ -13,7 +13,7 @@ package omr.util;
 
 import omr.constant.Constant;
 
-import omr.ui.util.DynamicMenu;
+import omr.ui.util.AbstractMenuListener;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -25,6 +25,8 @@ import java.util.List;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
 /**
  * Class {@code NameSet} encapsulates the handling of a list of names,
@@ -47,33 +49,33 @@ public class NameSet
     private static final String SEPARATOR = ";";
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Global name for this set */
+    /** Global name for this set. */
     private final String setName;
 
-    /** Backing constant */
+    /** Backing constant. */
     private final Constant.String constant;
 
-    /** List of names in this set */
+    /** List of names in this set. */
     private final List<String> names = new ArrayList<String>();
 
-    /** Max number of names in this set */
-    private final int maxNameNb;
+    /** Max number of names in this set. */
+    private final int maxNameCount;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new set of names, with some customizing parameters.
      *
-     * @param setName   Global name for this set
-     * @param constant  the backing constant string
-     * @param maxNameNb Maximum number of elements in this name set
+     * @param setName      global name for this set
+     * @param constant     the backing constant string
+     * @param maxNameCount maximum number of elements in this name set
      */
     public NameSet (String setName,
                     Constant.String constant,
-                    int maxNameNb)
+                    int maxNameCount)
     {
         this.setName = setName;
         this.constant = constant;
-        this.maxNameNb = maxNameNb;
+        this.maxNameCount = maxNameCount;
 
         // Retrieve the list of names already in the set
         String[] vals = constant.getValue().split(SEPARATOR);
@@ -88,8 +90,8 @@ public class NameSet
     // add //
     //-----//
     /**
-     * Insert a (perhaps new) name at the head of the list. If the name was
-     * already in the list, it is moved to the head.
+     * Insert a (perhaps new) name at the head of the list.
+     * If the name was already in the list, it is moved to the head.
      *
      * @param name Name to be inserted in the set
      */
@@ -106,7 +108,7 @@ public class NameSet
         names.add(0, name);
 
         // Check for maximum length
-        while (names.size() > maxNameNb) {
+        while (names.size() > maxNameCount) {
             names.remove(names.size() - 1);
         }
 
@@ -114,82 +116,52 @@ public class NameSet
         updateConstant();
     }
 
-    //
+    //----------//
+    // feedMenu //
+    //----------//
+    /**
+     * Feed a menu with the dynamic content of this NameSet.
+     *
+     * @param menu         the menu to be fed, if null it is allocated by this method
+     * @param itemListener the listener to be called on item selection
+     * @return the menu properly dynamized
+     */
+    public JMenu feedMenu (JMenu menu,
+                           final ActionListener itemListener)
+    {
+        final JMenu finalMenu = (menu != null) ? menu : new JMenu(setName);
+
+        MenuListener menuListener = new AbstractMenuListener()
+        {
+            @Override
+            public void menuSelected (MenuEvent e)
+            {
+                // Clean up the whole menu
+                finalMenu.removeAll();
+
+                // Rebuild the whole list of menu items on the fly
+                synchronized (NameSet.this) {
+                    for (String f : names) {
+                        JMenuItem menuItem = new JMenuItem(f);
+                        menuItem.addActionListener(itemListener);
+                        finalMenu.add(menuItem);
+                    }
+                }
+            }
+        };
+
+        // Listener to menu selection, to modify content on-the-fly
+        finalMenu.addMenuListener(menuListener);
+
+        return finalMenu;
+    }
+
     //---------//
     // isEmpty //
     //---------//
     public synchronized boolean isEmpty ()
     {
         return names.isEmpty();
-    }
-
-    //------//
-    // menu //
-    //------//
-    /**
-     * Return an up-to-date menu that can be used to trigger actions
-     * related to the designated name.
-     *
-     * @param menu     the existing menu to update
-     * @param listener The ActionListener to be triggered. (the selected name
-     *                 can be retrieved by the listener in the ActionEvent, by
-     *                 using the ActionEvent.getActionCommand method)
-     *
-     * @return the JMenu, ready to be inserted in a menu hierarchy.
-     */
-    public JMenu menu (JMenu menu,
-                       ActionListener listener)
-    {
-        // Don't fully destroy the menu, just clean all its items, so that the
-        // modifications are made available to the menu hierarchy.
-        if (menu == null) {
-            menu = new JMenu(setName);
-        } else {
-            menu.removeAll();
-        }
-
-        // Regenerate proper menu items
-        synchronized (this) {
-            for (String f : names) {
-                JMenuItem menuItem = new JMenuItem(f);
-                menuItem.addActionListener(listener);
-                menu.add(menuItem);
-            }
-        }
-
-        return menu;
-    }
-
-    //------//
-    // menu //
-    //------//
-    /**
-     * Create a brand new menu, with the name of the set as default text for
-     * menu text.
-     *
-     * @param listener the listener to be trigerred on item selection
-     * @return the menu ready to be inserted
-     */
-    public JMenu menu (ActionListener listener)
-    {
-        return menu(setName, listener);
-    }
-
-    //------//
-    // menu //
-    //------//
-    /**
-     * Create a brand new menu for name selection, with label provided for the
-     * menu and action listener
-     *
-     * @param label    the text in the menu item
-     * @param listener the listener to be trigerred on item selection
-     * @return the menu ready to be inserted
-     */
-    public JMenu menu (String label,
-                       ActionListener listener)
-    {
-        return new MyMenu(label, listener).getMenu();
     }
 
     //--------//
@@ -235,38 +207,110 @@ public class NameSet
 
         constant.setValue(buf.toString());
     }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //--------//
-    // MyMenu //
-    //--------//
-    private class MyMenu
-            extends DynamicMenu
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private ActionListener listener;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public MyMenu (String label,
-                       ActionListener listener)
-        {
-            super(label, JMenu.class);
-            this.listener = listener;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected void buildItems ()
-        {
-            // Regenerate proper menu items
-            synchronized (NameSet.this) {
-                for (String f : names) {
-                    JMenuItem menuItem = new JMenuItem(f);
-                    menuItem.addActionListener(listener);
-                    getMenu().add(menuItem);
-                }
-            }
-        }
-    }
 }
+//
+//    //~ Inner Classes ------------------------------------------------------------------------------
+//    //--------//
+//    // MyMenu //
+//    //--------//
+//    private class MyMenu
+//            extends DynamicMenu
+//    {
+//        //~ Instance fields ------------------------------------------------------------------------
+//
+//        private final ActionListener itemListener;
+//
+//        //~ Constructors ---------------------------------------------------------------------------
+//        public MyMenu (String label,
+//                       ActionListener itemListener)
+//        {
+//            super(label, JMenu.class);
+//            this.itemListener = itemListener;
+//        }
+//
+//        //~ Methods --------------------------------------------------------------------------------
+//        @Override
+//        protected void buildItems ()
+//        {
+//            // Regenerate proper menu items
+//            synchronized (NameSet.this) {
+//                for (String f : names) {
+//                    JMenuItem menuItem = new JMenuItem(f);
+//                    menuItem.addActionListener(itemListener);
+//                    getMenu().add(menuItem);
+//                }
+//            }
+//        }
+//    }
+//
+//    //------//
+//    // menu //
+//    //------//
+//    /**
+//     * Return an up-to-date menu that can be used to trigger actions
+//     * related to the designated name.
+//     *
+//     * @param menu     the existing menu to update
+//     * @param listener The ActionListener to be triggered. (the selected name
+//     *                 can be retrieved by the listener in the ActionEvent, by
+//     *                 using the ActionEvent.getActionCommand method)
+//     *
+//     * @return the JMenu, ready to be inserted in a menu hierarchy.
+//     */
+//    public JMenuItem menu (JMenuItem menu,
+//                           ActionListener listener)
+//    {
+//        // Don't fully destroy the menu, just clean all its items, so that the
+//        // modifications are made available to the menu hierarchy.
+//        if (menu == null) {
+//            menu = new JMenu(setName);
+//        } else {
+//            menu.removeAll();
+//        }
+//
+//        // Regenerate proper menu items
+//        synchronized (this) {
+//            for (String f : names) {
+//                JMenuItem menuItem = new JMenuItem(f);
+//                menuItem.addActionListener(listener);
+//                menu.add(menuItem);
+//            }
+//        }
+//
+//        return menu;
+//    }
+//
+//    //------//
+//    // menu //
+//    //------//
+//    /**
+//     * Create a brand new menu, with the name of the set as default text for
+//     * menu text.
+//     *
+//     * @param listener the listener to be triggered on item selection
+//     * @return the menu ready to be inserted
+//     */
+//    public JMenuItem menu (ActionListener listener)
+//    {
+//        return menu(setName, listener);
+//    }
+//
+//    //------//
+//    // menu //
+//    //------//
+//    /**
+//     * Create a brand new menu for name selection, with label provided for the
+//     * menu and action listener
+//     *
+//     * @param label        the text in the menu item
+//     * @param itemListener the listener to be triggered on item selection
+//     * @return the menu ready to be inserted
+//     */
+//    public JMenuItem menu (String label,
+//                           ActionListener itemListener)
+//    {
+//        final String menuLabel = (label != null) ? label : setName;
+//
+//        return new MyMenu(menuLabel, itemListener).getMenu();
+//    }
+//

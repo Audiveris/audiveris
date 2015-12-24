@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code AugmentationRelation} represents the relation between an augmentation
- * dot and the related note or rest instance.
+ * dot and the related note (head or rest) instance.
  *
  * @author Hervé Bitteur
  */
@@ -107,7 +107,7 @@ public class AugmentationRelation
                 "Maximum horizontal gap between dot center & note/rest reference point");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
-                0.75,
+                0.8,
                 "Maximum vertical gap between dot center & note/rest reference point");
 
         private final Constant.Ratio xOutWeight = new Constant.Ratio(
