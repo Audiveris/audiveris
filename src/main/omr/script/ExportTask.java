@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -15,9 +15,7 @@ import omr.sheet.Book;
 import omr.sheet.ExportPattern;
 import omr.sheet.Sheet;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -36,11 +34,11 @@ public class ExportTask
 
     /** The full target file used for export. */
     @XmlAttribute
-    private File file;
+    private Path file;
 
     /** The target folder used for export. */
     @XmlAttribute
-    private File folder;
+    private Path folder;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -50,8 +48,8 @@ public class ExportTask
      * @param file   the full path of export file, or null
      * @param folder the full path of export folder, or null
      */
-    public ExportTask (File file,
-                       File folder)
+    public ExportTask (Path file,
+                       Path folder)
     {
         this.file = file;
         this.folder = folder;
@@ -70,8 +68,8 @@ public class ExportTask
     public void core (Sheet sheet)
     {
         Book book = sheet.getBook();
-        Path exportPath = (file != null) ? file.toPath()
-                : ((folder != null) ? Paths.get(folder.toString(), book.getRadix()) : null);
+        Path exportPath = (file != null) ? file
+                : ((folder != null) ? folder.resolve(book.getRadix()) : null);
         book.setExportPathSansExt(ExportPattern.getPathSansExt(exportPath));
         book.export();
     }

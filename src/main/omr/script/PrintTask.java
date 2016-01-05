@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -16,7 +16,6 @@ import omr.OMR;
 import omr.sheet.Book;
 import omr.sheet.Sheet;
 
-import java.io.File;
 import java.nio.file.Path;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -36,11 +35,11 @@ public class PrintTask
 
     /** The full target file used for print. */
     @XmlAttribute(name = "file")
-    private File file;
+    private Path file;
 
     /** The target folder used for print. */
     @XmlAttribute(name = "folder")
-    private File folder;
+    private Path folder;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -50,8 +49,8 @@ public class PrintTask
      * @param file   the full path of the PDF file, or null
      * @param folder the full path of the PDF file folder, or null
      */
-    public PrintTask (File file,
-                      File folder)
+    public PrintTask (Path file,
+                      Path folder)
     {
         this.file = file;
         this.folder = folder;
@@ -70,9 +69,9 @@ public class PrintTask
     public void core (Sheet sheet)
     {
         Book book = sheet.getBook();
-        Path bookPath = (file != null) ? file.toPath()
-                : ((folder != null)
-                        ? new File(folder, book.getRadix() + OMR.PDF_EXTENSION).toPath() : null);
+        Path bookPath = (file != null) ? file
+                : ((folder != null) ? folder.resolve(book.getRadix() + OMR.PDF_EXTENSION)
+                        : null);
         book.setPrintPath(bookPath);
         book.print();
     }

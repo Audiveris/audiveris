@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -19,7 +19,7 @@ import omr.run.RunTable;
 import java.awt.Rectangle;
 
 /**
- * Interface {@code Roi} defines aan absolute rectangular region of interest, on which
+ * Interface {@code Roi} defines an absolute rectangular region of interest, on which
  * histograms can be computed vertically and horizontally.
  *
  * @author Hervé Bitteur

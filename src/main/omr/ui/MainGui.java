@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -15,8 +15,8 @@ import omr.Main;
 import omr.OMR;
 import omr.WellKnowns;
 
-import omr.action.ActionManager;
-import omr.action.Actions;
+import omr.ui.action.ActionManager;
+import omr.ui.action.Actions;
 
 import omr.constant.Constant;
 import omr.constant.ConstantManager;

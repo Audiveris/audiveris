@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -14,7 +14,9 @@ package omr.sig.inter;
 import omr.glyph.BasicGlyph;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
+
 import static omr.run.Orientation.VERTICAL;
+
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -29,13 +31,14 @@ import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.StemPortion;
+
 import static omr.sig.relation.StemPortion.STEM_BOTTOM;
 import static omr.sig.relation.StemPortion.STEM_TOP;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
-import omr.util.Jaxb;
 
 import ij.process.ByteProcessor;
 
@@ -48,7 +51,6 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code StemInter} represents Stem interpretations.
@@ -63,12 +65,10 @@ public class StemInter
 
     /** Top point. */
     @XmlElement
-    @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
     private final Point2D top;
 
     /** Bottom point. */
     @XmlElement
-    @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
     private final Point2D bottom;
 
     //~ Constructors -------------------------------------------------------------------------------

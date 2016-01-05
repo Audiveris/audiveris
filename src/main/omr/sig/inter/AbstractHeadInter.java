@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -25,7 +25,9 @@ import omr.image.TemplateFactory;
 import omr.image.TemplateFactory.Catalog;
 
 import omr.math.PointUtil;
+
 import static omr.run.Orientation.VERTICAL;
+
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -40,7 +42,6 @@ import omr.sig.relation.AccidHeadRelation;
 import omr.sig.relation.Relation;
 
 import omr.util.ByteUtil;
-import omr.util.Jaxb;
 
 import ij.process.ByteProcessor;
 
@@ -56,7 +57,6 @@ import java.util.ListIterator;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code AbstractHeadInter} is the base class for notes heads, that is
@@ -80,7 +80,6 @@ public abstract class AbstractHeadInter
     //~ Instance fields ----------------------------------------------------------------------------
     /** Absolute location of head template pivot. */
     @XmlElement
-    @XmlJavaTypeAdapter(Jaxb.PointAdapter.class)
     protected final Point pivot;
 
     /** Relative pivot position WRT head. */

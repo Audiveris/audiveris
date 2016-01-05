@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -204,8 +204,6 @@ public class BasicSheet
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code Sheet} instance within a book.
-     * NOTA: JAXB does NOT call this code, but calls {@link #afterUnmarshal(Unmarshaller, Object)}
-     * if such method is defined.
      *
      * @param stub  the related sheet stub
      * @param image the already loaded image, if any
@@ -540,7 +538,7 @@ public class BasicSheet
             BookManager.setDefaultExportFolder(bookPathSansExt.getParent().toString());
 
             if (!book.isMultiSheet()) {
-                book.getScript().addTask(new ExportTask(bookPathSansExt.toFile(), null));
+                book.getScript().addTask(new ExportTask(bookPathSansExt, null));
             }
         } catch (Exception ex) {
             logger.warn("Error exporting " + this + ", " + ex, ex);
@@ -839,9 +837,6 @@ public class BasicSheet
     public final void setImage (BufferedImage image)
             throws StepException
     {
-        // Reset most of members
-        reset(Step.LOAD);
-
         try {
             picture = new Picture(this, image, locationService);
 
@@ -1126,6 +1121,7 @@ public class BasicSheet
         try {
             Path structurePath = sheetFolder.resolve(getSheetFileName(getNumber()));
             Files.deleteIfExists(structurePath);
+            Files.createDirectories(sheetFolder);
 
             OutputStream os = Files.newOutputStream(structurePath, StandardOpenOption.CREATE);
             Marshaller m = getJaxbContext().createMarshaller();

@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -17,7 +17,6 @@ import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;
 
 import omr.util.HorizontalSide;
-import omr.util.Jaxb;
 
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
@@ -26,7 +25,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code WedgeInter} represents a wedge (crescendo or diminuendo).
@@ -50,12 +48,10 @@ public class WedgeInter
     //
     /** Top line. */
     @XmlElement
-    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private final Line2D l1;
 
     /** Bottom line. */
     @XmlElement
-    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private final Line2D l2;
 
     //~ Constructors -------------------------------------------------------------------------------

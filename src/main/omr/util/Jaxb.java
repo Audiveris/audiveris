@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -95,70 +95,6 @@ public abstract class Jaxb
         }
     }
 
-    //-------------//
-    // CubicFacade //
-    //-------------//
-    @XmlRootElement
-    public static class CubicFacade
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        @XmlAttribute
-        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
-        public double x1;
-
-        @XmlAttribute
-        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
-        public double y1;
-
-        @XmlAttribute
-        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
-        public double ctrlx1;
-
-        @XmlAttribute
-        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
-        public double ctrly1;
-
-        @XmlAttribute
-        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
-        public double ctrlx2;
-
-        @XmlAttribute
-        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
-        public double ctrly2;
-
-        @XmlAttribute
-        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
-        public double x2;
-
-        @XmlAttribute
-        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
-        public double y2;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public CubicFacade ()
-        {
-        }
-
-        public CubicFacade (CubicCurve2D curve)
-        {
-            this.x1 = curve.getX1();
-            this.y1 = curve.getY1();
-            this.ctrlx1 = curve.getCtrlX1();
-            this.ctrly1 = curve.getCtrlY1();
-            this.ctrlx2 = curve.getCtrlX2();
-            this.ctrly2 = curve.getCtrlY2();
-            this.x2 = curve.getX2();
-            this.y2 = curve.getY2();
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public CubicCurve2D getCurve ()
-        {
-            return new CubicCurve2D.Double(x1, y1, ctrlx1, ctrly1, ctrlx2, ctrly2, x2, y2);
-        }
-    }
-
     //----------------//
     // Double1Adapter //
     //----------------//
@@ -244,39 +180,6 @@ public abstract class Jaxb
         }
     }
 
-    //--------------//
-    // Line2DFacade //
-    //--------------//
-    @XmlRootElement
-    public static class Line2DFacade
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        @XmlElement
-        public Point2DFacade p1;
-
-        @XmlElement
-        public Point2DFacade p2;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Line2DFacade ()
-        {
-        }
-
-        public Line2DFacade (Line2D line)
-        {
-            Objects.requireNonNull(line, "Cannot create Line2DFacade with a null line");
-            p1 = new Point2DFacade(line.getP1());
-            p2 = new Point2DFacade(line.getP2());
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public Line2D getLine ()
-        {
-            return new Line2D.Double(p1.x, p1.y, p2.x, p2.y);
-        }
-    }
-
     //---------------//
     // MarshalLogger //
     //---------------//
@@ -310,12 +213,20 @@ public abstract class Jaxb
         public String marshal (Path path)
                 throws Exception
         {
+            if (path == null) {
+                return null;
+            }
+
             return path.toString();
         }
 
         @Override
         public Path unmarshal (String str)
         {
+            if (str == null) {
+                return null;
+            }
+
             return Paths.get(str);
         }
     }
@@ -340,40 +251,6 @@ public abstract class Jaxb
                 throws Exception
         {
             return facade.getPoint();
-        }
-    }
-
-    //---------------//
-    // Point2DFacade //
-    //---------------//
-    @XmlRootElement
-    public static class Point2DFacade
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        @XmlAttribute
-        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
-        public double x;
-
-        @XmlAttribute
-        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
-        public double y;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Point2DFacade ()
-        {
-        }
-
-        public Point2DFacade (Point2D point)
-        {
-            this.x = point.getX();
-            this.y = point.getY();
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public Point2D getPoint ()
-        {
-            return new Point2D.Double(x, y);
         }
     }
 
@@ -412,38 +289,6 @@ public abstract class Jaxb
         }
     }
 
-    //-------------//
-    // PointFacade //
-    //-------------//
-    @XmlRootElement
-    public static class PointFacade
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        @XmlAttribute
-        public int x;
-
-        @XmlAttribute
-        public int y;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public PointFacade ()
-        {
-        }
-
-        public PointFacade (Point point)
-        {
-            this.x = point.x;
-            this.y = point.y;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public Point getPoint ()
-        {
-            return new Point(x, y);
-        }
-    }
-
     //------------------//
     // RectangleAdapter //
     //------------------//
@@ -464,46 +309,6 @@ public abstract class Jaxb
                 throws Exception
         {
             return facade.getRectangle();
-        }
-    }
-
-    //-----------------//
-    // RectangleFacade //
-    //-----------------//
-    @XmlRootElement
-    public static class RectangleFacade
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        @XmlAttribute
-        public int x;
-
-        @XmlAttribute
-        public int y;
-
-        @XmlAttribute
-        public int width;
-
-        @XmlAttribute
-        public int height;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public RectangleFacade ()
-        {
-        }
-
-        public RectangleFacade (Rectangle rect)
-        {
-            x = rect.x;
-            y = rect.y;
-            width = rect.width;
-            height = rect.height;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public Rectangle getRectangle ()
-        {
-            return new Rectangle(x, y, width, height);
         }
     }
 
@@ -564,6 +369,209 @@ public abstract class Jaxb
                                      Object parent)
         {
             logger.info("GL beforeUnmarshal parent: {} for class {}", parent, target.getClass());
+        }
+    }
+
+    //-------------//
+    // CubicFacade //
+    //-------------//
+    @XmlRootElement
+    private static class CubicFacade
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlAttribute
+        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
+        public double x1;
+
+        @XmlAttribute
+        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
+        public double y1;
+
+        @XmlAttribute
+        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
+        public double ctrlx1;
+
+        @XmlAttribute
+        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
+        public double ctrly1;
+
+        @XmlAttribute
+        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
+        public double ctrlx2;
+
+        @XmlAttribute
+        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
+        public double ctrly2;
+
+        @XmlAttribute
+        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
+        public double x2;
+
+        @XmlAttribute
+        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
+        public double y2;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public CubicFacade ()
+        {
+        }
+
+        public CubicFacade (CubicCurve2D curve)
+        {
+            this.x1 = curve.getX1();
+            this.y1 = curve.getY1();
+            this.ctrlx1 = curve.getCtrlX1();
+            this.ctrly1 = curve.getCtrlY1();
+            this.ctrlx2 = curve.getCtrlX2();
+            this.ctrly2 = curve.getCtrlY2();
+            this.x2 = curve.getX2();
+            this.y2 = curve.getY2();
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public CubicCurve2D getCurve ()
+        {
+            return new CubicCurve2D.Double(x1, y1, ctrlx1, ctrly1, ctrlx2, ctrly2, x2, y2);
+        }
+    }
+
+    //--------------//
+    // Line2DFacade //
+    //--------------//
+    @XmlRootElement
+    private static class Line2DFacade
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlElement
+        public Point2DFacade p1;
+
+        @XmlElement
+        public Point2DFacade p2;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Line2DFacade ()
+        {
+        }
+
+        public Line2DFacade (Line2D line)
+        {
+            Objects.requireNonNull(line, "Cannot create Line2DFacade with a null line");
+            p1 = new Point2DFacade(line.getP1());
+            p2 = new Point2DFacade(line.getP2());
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public Line2D getLine ()
+        {
+            return new Line2D.Double(p1.x, p1.y, p2.x, p2.y);
+        }
+    }
+
+    //---------------//
+    // Point2DFacade //
+    //---------------//
+    @XmlRootElement
+    private static class Point2DFacade
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlAttribute
+        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
+        public double x;
+
+        @XmlAttribute
+        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
+        public double y;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Point2DFacade ()
+        {
+        }
+
+        public Point2DFacade (Point2D point)
+        {
+            this.x = point.getX();
+            this.y = point.getY();
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public Point2D getPoint ()
+        {
+            return new Point2D.Double(x, y);
+        }
+    }
+
+    //-------------//
+    // PointFacade //
+    //-------------//
+    @XmlRootElement
+    private static class PointFacade
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlAttribute
+        public int x;
+
+        @XmlAttribute
+        public int y;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public PointFacade ()
+        {
+        }
+
+        public PointFacade (Point point)
+        {
+            this.x = point.x;
+            this.y = point.y;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public Point getPoint ()
+        {
+            return new Point(x, y);
+        }
+    }
+
+    //-----------------//
+    // RectangleFacade //
+    //-----------------//
+    @XmlRootElement
+    private static class RectangleFacade
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlAttribute
+        public int x;
+
+        @XmlAttribute
+        public int y;
+
+        @XmlAttribute
+        public int width;
+
+        @XmlAttribute
+        public int height;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public RectangleFacade ()
+        {
+        }
+
+        public RectangleFacade (Rectangle rect)
+        {
+            x = rect.x;
+            y = rect.y;
+            width = rect.width;
+            height = rect.height;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public Rectangle getRectangle ()
+        {
+            return new Rectangle(x, y, width, height);
         }
     }
 }

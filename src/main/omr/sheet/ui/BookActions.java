@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -26,6 +26,7 @@ import omr.score.ui.ScoreParameters;
 
 import omr.script.InvalidateTask;
 import omr.script.ResetTask;
+import omr.script.SaveTask;
 import omr.script.Script;
 import omr.script.ScriptManager;
 
@@ -41,7 +42,6 @@ import omr.sheet.Staff;
 import omr.sheet.StaffManager;
 import omr.sheet.grid.StaffProjector;
 import omr.sheet.stem.StemScaler;
-
 import static omr.sheet.ui.StubDependent.BOOK_IDLE;
 import static omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static omr.sheet.ui.StubDependent.STUB_IDLE;
@@ -1106,7 +1106,7 @@ public class BookActions
         // Ask user confirmation for overwriting if file already exists
         final Path projectPath = BookManager.getDefaultProjectPath(book);
 
-        if ((book.getProjectPath() != null) || confirmed(projectPath)) {
+        if ((book.getProjectPath() != null) && confirmed(projectPath)) {
             return new StoreBookTask(book, projectPath);
         } else {
             return saveBookAs(e);
@@ -1338,7 +1338,7 @@ public class BookActions
                         && (e.getSource() == optionPane)
                         && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
                         Object obj = optionPane.getValue();
-                        int value = ((Integer) obj).intValue();
+                        int value = (Integer) obj;
                         apply.set(value == JOptionPane.OK_OPTION);
 
                         // Exit only if user gives up or enters correct data
@@ -1639,7 +1639,7 @@ public class BookActions
 
                 book.buildScores();
             } catch (Exception ex) {
-                logger.warn("Could not build book, " + ex, ex);
+                logger.warn("Could not build score(s) of book, " + ex, ex);
             }
 
             return null;
@@ -1946,6 +1946,7 @@ public class BookActions
         {
             book.store(projectPath);
             BookActions.getInstance().setBookModified(false);
+            book.getScript().addTask(new SaveTask(projectPath, null));
 
             return null;
         }
@@ -1995,7 +1996,7 @@ public class BookActions
                 logger.warn("Cannot find script file " + path + ", " + ex, ex);
             } catch (JAXBException ex) {
                 logger.warn("Cannot marshal script, " + ex, ex);
-            } catch (Throwable ex) {
+            } catch (IOException ex) {
                 logger.warn("Error storing script, " + ex, ex);
             } finally {
                 if (fos != null) {

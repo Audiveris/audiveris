@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -12,6 +12,11 @@
 package omr.classifier;
 
 import omr.WellKnowns;
+
+import omr.glyph.Glyph;
+import omr.glyph.Shape;
+import omr.glyph.SymbolGlyphDescriptor;
+import omr.glyph.SymbolSample;
 
 import omr.sheet.Sheet;
 
@@ -48,10 +53,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import omr.glyph.Glyph;
-import omr.glyph.Shape;
-import omr.glyph.SymbolGlyphDescriptor;
-import omr.glyph.SymbolSample;
 
 /**
  * Class {@code SampleRepository} handles the store of known samples,
@@ -415,7 +416,10 @@ public class SampleRepository
                 Sample sample = new Sample(
                         glyph.getLeft(),
                         glyph.getTop(),
-                        glyph.getRunTable(), sheet.getInterline(), glyph.getId(), recordableShape);
+                        glyph.getRunTable(),
+                        sheet.getInterline(),
+                        glyph.getId(),
+                        recordableShape);
 
                 if (recordSample(sample, sheetDir) > 0) {
                     logger.info(
@@ -597,15 +601,14 @@ public class SampleRepository
                     : WellKnowns.TRAIN_FOLDER.resolve(gName);
 
             final Path target = coreFolder.resolve(gName);
-            target.getParent().toFile().mkdirs();
-
-            logger.debug("Storing {} as core", target);
 
             try {
+                Files.createDirectories(target.getParent());
+                logger.debug("Storing {} as core", target);
+
                 if (isIcon) {
                     Files.createFile(target);
                 } else {
-                    ///FileUtil.copy(source, target);
                     Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
                 }
 

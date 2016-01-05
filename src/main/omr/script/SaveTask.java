@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -16,7 +16,6 @@ import omr.OMR;
 import omr.sheet.Book;
 import omr.sheet.Sheet;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -34,11 +33,11 @@ public class SaveTask
 
     /** The full target file. */
     @XmlAttribute(name = "file")
-    private File file;
+    private Path file;
 
     /** Just the target folder. */
     @XmlAttribute(name = "folder")
-    private File folder;
+    private Path folder;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -48,8 +47,8 @@ public class SaveTask
      * @param file   the full target file, or null
      * @param folder just the target folder, or null
      */
-    public SaveTask (File file,
-                     File folder)
+    public SaveTask (Path file,
+                     Path folder)
     {
         this.file = file;
         this.folder = folder;
@@ -68,7 +67,7 @@ public class SaveTask
     public void core (Sheet sheet)
     {
         Book book = sheet.getBook();
-        Path projectPath = (file != null) ? file.toPath()
+        Path projectPath = (file != null) ? file
                 : ((folder != null)
                         ? Paths.get(
                                 folder.toString(),

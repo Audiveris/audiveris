@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -50,7 +50,7 @@ public interface LUT
                       double y);
 
     /**
-     * Report the LUT radius (LUT implements (-radius,+radius).
+     * Report the LUT radius, since LUT implements (-radius,+radius).
      *
      * @return the defined radius
      */

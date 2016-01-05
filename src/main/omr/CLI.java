@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -34,7 +34,6 @@ import org.kohsuke.args4j.spi.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -156,18 +155,18 @@ public class CLI
         List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
         // Inputs
-        for (File input : params.inputFiles) {
-            tasks.add(new InputTask(input.toPath()));
+        for (Path input : params.inputFiles) {
+            tasks.add(new InputTask(input));
         }
 
         // Projects
-        for (File project : params.projectFiles) {
-            tasks.add(new ProjectTask(project.toPath()));
+        for (Path project : params.projectFiles) {
+            tasks.add(new ProjectTask(project));
         }
 
         // Scripts
-        for (File script : params.scriptFiles) {
-            tasks.add(new ScriptTask(script.toPath()));
+        for (Path script : params.scriptFiles) {
+            tasks.add(new ScriptTask(script));
         }
 
         return tasks;
@@ -183,11 +182,7 @@ public class CLI
      */
     public Path getExportAs ()
     {
-        if (params.exportAs == null) {
-            return null;
-        }
-
-        return params.exportAs.toPath();
+        return params.exportAs;
     }
 
     //-----------------//
@@ -200,11 +195,7 @@ public class CLI
      */
     public Path getExportFolder ()
     {
-        if (params.exportFolder == null) {
-            return null;
-        }
-
-        return params.exportFolder.toPath();
+        return params.exportFolder;
     }
 
     //------------//
@@ -263,11 +254,7 @@ public class CLI
      */
     public Path getPrintAs ()
     {
-        if (params.printAs == null) {
-            return null;
-        }
-
-        return params.printAs.toPath();
+        return params.printAs;
     }
 
     //----------------//
@@ -280,11 +267,7 @@ public class CLI
      */
     public Path getPrintFolder ()
     {
-        if (params.printFolder == null) {
-            return null;
-        }
-
-        return params.printFolder.toPath();
+        return params.printFolder;
     }
 
     //-----------//
@@ -297,11 +280,7 @@ public class CLI
      */
     public Path getSaveAs ()
     {
-        if (params.saveAs == null) {
-            return null;
-        }
-
-        return params.saveAs.toPath();
+        return params.saveAs;
     }
 
     //---------------//
@@ -314,11 +293,7 @@ public class CLI
      */
     public Path getSaveFolder ()
     {
-        if (params.saveFolder == null) {
-            return null;
-        }
-
-        return params.saveFolder.toPath();
+        return params.saveFolder;
     }
 
     //-------------//
@@ -462,15 +437,15 @@ public class CLI
 
         /** The list of script files to execute. */
         @Option(name = "-script", usage = "Runs the provided script file", metaVar = "<script-file>")
-        final List<File> scriptFiles = new ArrayList<File>();
+        final List<Path> scriptFiles = new ArrayList<Path>();
 
         /** The list of input image file names to load. */
         @Option(name = "-input", usage = "Loads the provided input file", metaVar = "<input-file>")
-        final List<File> inputFiles = new ArrayList<File>();
+        final List<Path> inputFiles = new ArrayList<Path>();
 
         /** The list of project file names to load. */
         @Option(name = "-project", usage = "Loads the provided project file", metaVar = "<project-file>")
-        final List<File> projectFiles = new ArrayList<File>();
+        final List<Path> projectFiles = new ArrayList<Path>();
 
         /** The set of sheet IDs to load. */
         @Option(name = "-sheets", usage = "Selects specific sheets (1-based)", handler = IntArrayOptionHandler.class)
@@ -482,12 +457,12 @@ public class CLI
 
         /** Full target file for MusicXML data. */
         @Option(name = "-exportAs", usage = "Exports MusicXML to specific file", metaVar = "<export-file>")
-        File exportAs;
+        Path exportAs;
 
         /** Target directory for MusicXML data. */
         @Option(name = "-exportDir", usage = "Exports MusicXML to specific folder"
                                              + " (ignored if -exportAs is used)", metaVar = "<export-folder>")
-        File exportFolder;
+        Path exportFolder;
 
         /** Should book be printed?. */
         @Option(name = "-print", usage = "Prints out book")
@@ -495,12 +470,12 @@ public class CLI
 
         /** Full target file for print. */
         @Option(name = "-printAs", usage = "Prints out book to specific file", metaVar = "<print-file>")
-        File printAs;
+        Path printAs;
 
         /** Target directory for print. */
         @Option(name = "-printDir", usage = "Prints out book to specific folder"
                                             + " (ignored if -printAs is used)", metaVar = "<print-folder>")
-        File printFolder;
+        Path printFolder;
 
         /** Should book be saved?. */
         @Option(name = "-save", usage = "Saves project")
@@ -508,12 +483,12 @@ public class CLI
 
         /** Full target file for save. */
         @Option(name = "-saveAs", usage = "Saves project to specific file", metaVar = "<project-file>")
-        File saveAs;
+        Path saveAs;
 
         /** Target directory for save. */
         @Option(name = "-saveDir", usage = "Saves project to specific folder"
                                            + " (ignored if -saveAs is used)", metaVar = "<project-folder>")
-        File saveFolder;
+        Path saveFolder;
 
         //~ Constructors ---------------------------------------------------------------------------
         private Parameters ()
@@ -652,18 +627,18 @@ public class CLI
         }
     }
 
-    //------------//
-    // ScriptTask //
-    //------------//
+    //-----------//
+    // InputTask //
+    //-----------//
     /**
-     * Processing a script file.
+     * CLI task to process an input (image) file.
      */
-    private static class ScriptTask
-            extends CliTask
+    private class InputTask
+            extends ProcessingTask
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public ScriptTask (Path path)
+        public InputTask (Path path)
         {
             super(path);
         }
@@ -672,13 +647,13 @@ public class CLI
         @Override
         public String toString ()
         {
-            return "Script " + path;
+            return "Input " + path;
         }
 
         @Override
         protected Book loadBook (Path path)
         {
-            return OMR.getEngine().loadScript(path);
+            return OMR.getEngine().loadInput(path);
         }
     }
 
@@ -763,36 +738,6 @@ public class CLI
         }
     }
 
-    //-----------//
-    // InputTask //
-    //-----------//
-    /**
-     * CLI task to process an input (image) file.
-     */
-    private class InputTask
-            extends ProcessingTask
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public InputTask (Path path)
-        {
-            super(path);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            return "Input " + path;
-        }
-
-        @Override
-        protected Book loadBook (Path path)
-        {
-            return OMR.getEngine().loadInput(path);
-        }
-    }
-
     //-------------//
     // ProjectTask //
     //-------------//
@@ -822,6 +767,36 @@ public class CLI
             return OMR.getEngine().loadProject(path);
         }
     }
+
+    //------------//
+    // ScriptTask //
+    //------------//
+    /**
+     * Processing a script file.
+     */
+    private static class ScriptTask
+            extends CliTask
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public ScriptTask (Path path)
+        {
+            super(path);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            return "Script " + path;
+        }
+
+        @Override
+        protected Book loadBook (Path path)
+        {
+            return OMR.getEngine().loadScript(path);
+        }
+    }
 }
 //
 //        /** Should bench data be produced?. */
@@ -830,7 +805,7 @@ public class CLI
 //
 //        /** Target directory for bench data. */
 //        @Option(name = "-benchDir", usage = "Outputs bench data to specific folder", metaVar = "<bench-folder>")
-//        File benchFolder;
+//        Path benchFolder;
 /*
  *
  * <dt><b>-bench</b></dt>

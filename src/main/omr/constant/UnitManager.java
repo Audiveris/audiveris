@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -36,6 +36,11 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * To help {@link UnitTreeTable} display the whole tree of UnitNodes, UnitManager can pre-load all
  * the classes known to contain a ConstantSet. This list is kept up-to-date and stored as a
  * property.
+ * <p>
+ * Since the persistency of a Constant uses its fully qualified name (i.e. the path to the enclosing
+ * class, plus the name of the constant element in the ConstantSet), the determination of the fully
+ * qualified name is deferred until the value of the Constant is actually retrieved.
+ * This is implemented through the use of a DirtySet.
  *
  * @author Hervé Bitteur
  */
@@ -68,7 +73,7 @@ public class UnitManager
     private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<String>();
 
     /**
-     * Lists of all units known as containing a constantset.
+     * Lists of all units known as containing a ConstantSet.
      * This is kept up-to-date and saved as a property.
      */
     private Constant.String units;
@@ -101,9 +106,8 @@ public class UnitManager
     // addSet //
     //--------//
     /**
-     * Add a ConstantSet, which means perhaps adding a UnitNode if not
-     * already allocated and setting its ConstantSet reference to the
-     * provided ConstantSet.
+     * Add a ConstantSet, which means perhaps adding a UnitNode if not already allocated
+     * and setting its ConstantSet reference to the provided ConstantSet.
      *
      * @param set the ConstantSet to add to the hierarchy
      */
@@ -468,10 +472,9 @@ public class UnitManager
     // updateParents //
     //---------------//
     /**
-     * Update the chain of parents of a Unit, by walking up all the
-     * package names found in the fully qualified Unit name,
-     * creating PackageNodes when needed, or adding a new child to an
-     * existing PackageNode.
+     * Update the chain of parents of a Unit, by walking up all the package names found
+     * in the fully qualified Unit name, creating PackageNodes when needed, or adding a
+     * new child to an existing PackageNode.
      *
      * @param unit the Unit whose chain of parents is to be updated
      */

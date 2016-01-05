@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -15,13 +15,10 @@ import omr.sheet.Scale;
 
 import omr.sig.inter.Inter;
 
-import omr.util.Jaxb;
-
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code AbstractStemConnection} is the basis for connections to a stem.
@@ -35,7 +32,6 @@ public abstract class AbstractStemConnection
 
     /** Logical extension point. */
     @XmlElement(name = "extension-point")
-    @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
     protected Point2D extensionPoint;
 
     //~ Methods ------------------------------------------------------------------------------------

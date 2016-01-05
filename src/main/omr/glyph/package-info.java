@@ -1,3 +1,6 @@
+/**
+ * Package for handling glyphs, seen as assemblies of pixels.
+ */
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(value = Jaxb.PointAdapter.class, type = Point.class),
     @XmlJavaTypeAdapter(value = Jaxb.Point2DAdapter.class, type = Point2D.class),

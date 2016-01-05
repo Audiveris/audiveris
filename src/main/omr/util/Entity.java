@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -16,7 +16,7 @@ import java.awt.Rectangle;
 
 /**
  * Interface {@code Entity} describes an entity with an assigned ID, and with
- * minimal geographic features (bounding box and point containment).
+ * minimal geometric features (bounding box and point containment).
  *
  * @author Hervé Bitteur
  */
@@ -34,7 +34,7 @@ public interface Entity
     boolean contains (Point point);
 
     /**
-     * Report detail for this entity.
+     * Report details about this entity.
      *
      * @return a string dump
      */

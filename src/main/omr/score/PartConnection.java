@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -375,37 +375,37 @@ public class PartConnection
 
         /** Create a related result instance consistent with this type
          *
-         * @return
+         * @return the result
          */
         Result createResult ();
 
         /** Report the abbreviation, if any, that relates to this part
          *
-         * @return
+         * @return the abbreviation if any
          */
         String getAbbreviation ();
 
         /** Index of the input: System # for Part, Page # for LogicalPart
          *
-         * @return
+         * @return the input index
          */
         int getInputIndex ();
 
         /** Report the name of the part, if any
          *
-         * @return
+         * @return the part name if any
          */
         String getName ();
 
         /** Report the number of staves in the part
          *
-         * @return
+         * @return the number of staves
          */
         int getStaffCount ();
 
         /** Report the underlying object
          *
-         * @return
+         * @return the object
          */
         Object getUnderlyingObject ();
     }
@@ -431,31 +431,31 @@ public class PartConnection
 
         /** Report the candidate object used to build this result
          *
-         * @return
+         * @return the candidate
          */
         Candidate getCandidate ();
 
         /** Report the part id
          *
-         * @return
+         * @return the part ID
          */
         int getId ();
 
         /** Report the part name
          *
-         * @return
+         * @return the part name
          */
         String getName ();
 
         /** Report the number of staves in that part
          *
-         * @return
+         * @return the number of staves in part
          */
         int getStaffCount ();
 
         /** Report the actual underlying instance
          *
-         * @return
+         * @return the underlying object
          */
         Object getUnderlyingObject ();
 

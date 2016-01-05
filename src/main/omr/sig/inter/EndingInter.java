@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -16,14 +16,11 @@ import omr.glyph.Shape;
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;
 
-import omr.util.Jaxb;
-
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code EndingInter} represents an ending.
@@ -38,17 +35,14 @@ public class EndingInter
 
     /** Mandatory left leg. */
     @XmlElement(name = "left-leg")
-    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private final Line2D leftLeg;
 
     /** Horizontal line. */
     @XmlElement
-    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private final Line2D line;
 
     /** Optional right leg, if any. */
     @XmlElement(name = "right-leg")
-    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private final Line2D rightLeg;
 
     private final SegmentInter segment;

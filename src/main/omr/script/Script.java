@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -21,7 +21,7 @@ import omr.step.ProcessingCancellationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -38,8 +38,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code Script} handles a complete script applied to a book.
  * <p>
- * A script is a sequence of {@link ScriptTask} instances tasks that are recorded as the user
- * interacts with the book data.
+ * A script is a sequence of {@link ScriptTask} instances that are recorded as the user interacts
+ * with the book data.
+ * It can also be created manually from scratch.
  * <p>
  * A script can be stored and reloaded/replayed.
  *
@@ -60,11 +61,11 @@ public class Script
 
     /** Full path to the Book image file. */
     @XmlAttribute(name = "input")
-    private final String inputPath;
+    private final Path inputPath;
 
     /** Full path to the Book project file. */
     @XmlAttribute(name = "project")
-    private final String projectPath;
+    private final Path projectPath;
 
     /** Sheet offset of the book WRT full work. */
     @XmlAttribute(name = "offset")
@@ -82,6 +83,7 @@ public class Script
         @XmlElement(name = "delete", type = DeleteTask.class),
         @XmlElement(name = "export", type = ExportTask.class),
         @XmlElement(name = "save", type = SaveTask.class),
+        @XmlElement(name = "score", type = ScoreTask.class),
         @XmlElement(name = "insert", type = InsertTask.class),
         @XmlElement(name = "invalidate", type = InvalidateTask.class),
         @XmlElement(name = "parameters", type = ParametersTask.class),
@@ -109,8 +111,8 @@ public class Script
     {
         this.book = book;
 
-        inputPath = book.getInputPath().toString();
-        projectPath = book.getProjectPath().toString();
+        inputPath = book.getInputPath();
+        projectPath = book.getProjectPath();
         offset = book.getOffset();
 
         // Store sheet ids
@@ -211,11 +213,11 @@ public class Script
         // Make book concrete (with its sheets)
         if (book == null) {
             if (inputPath != null) {
-                book = OMR.getEngine().loadInput(Paths.get(inputPath));
+                book = OMR.getEngine().loadInput(inputPath);
                 book.setOffset(offset);
                 book.createStubs(sheetIds); // This loads all specified sheets indices
             } else if (projectPath != null) {
-                book = OMR.getEngine().loadProject(Paths.get(projectPath));
+                book = OMR.getEngine().loadProject(projectPath);
             } else {
                 logger.warn("No book defined in script");
 

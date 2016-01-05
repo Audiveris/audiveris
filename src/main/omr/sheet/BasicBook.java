@@ -4,7 +4,7 @@
 //                                                                                                                    //
 //--------------------------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -45,7 +45,6 @@ import static omr.step.ui.StepMonitoring.notifyStop;
 import omr.text.Language;
 
 import omr.util.FileUtil;
-import omr.util.Jaxb;
 import omr.util.Memory;
 import omr.util.OmrExecutors;
 import omr.util.Param;
@@ -87,7 +86,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code BasicBook} is a basic implementation of Book interface.
@@ -120,7 +118,6 @@ public class BasicBook
 
     /** Input path of the related image(s) file, if any. */
     @XmlAttribute(name = "path")
-    @XmlJavaTypeAdapter(Jaxb.PathAdapter.class)
     private final Path path;
 
     /** Sheet offset of image file with respect to full work, if any. */
@@ -617,7 +614,7 @@ public class BasicBook
         }
 
         // Save task into book script
-        getScript().addTask(new ExportTask(bookPathSansExt.toFile(), null));
+        getScript().addTask(new ExportTask(bookPathSansExt, null));
     }
 
     //-----------------//
@@ -1045,7 +1042,7 @@ public class BasicBook
 
             setPrintPath(pdfPath);
             BookManager.setDefaultPrintFolder(pdfPath.getParent().toString());
-            getScript().addTask(new PrintTask(pdfPath.toFile(), null));
+            getScript().addTask(new PrintTask(pdfPath, null));
         } catch (Exception ex) {
             logger.warn("Cannot write PDF to " + pdfPath, ex);
         }
@@ -1143,6 +1140,7 @@ public class BasicBook
         try {
             final Path root;
             checkRadixChange(projectPath);
+            logger.info("{}.store", this);
 
             if ((this.projectPath == null)
                 || this.projectPath.toAbsolutePath().equals(projectPath.toAbsolutePath())) {
