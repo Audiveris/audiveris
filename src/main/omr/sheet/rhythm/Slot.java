@@ -177,7 +177,7 @@ public class Slot
         // Some chords already have their voice assigned
         for (AbstractChordInter ch : incomings) {
             if (ch.getVoice() != null) {
-                // This pseudo-reassign seems needed to populate the voice slotTable (???)
+                // This pseudo-reassign seems needed to populate the voice slotTable (??? TODO: check this)
                 ch.setVoice(ch.getVoice());
             } else {
                 rookies.add(ch);
@@ -583,10 +583,13 @@ public class Slot
     //--------------//
     /**
      * Assign available voices to the chords that have no voice assigned yet.
+     * <p>
+     * A voice cannot migrate from one part to another, but may migrate from one staff to another
+     * under some conditions.
      */
     private void assignVoices ()
     {
-        // Assign remaining non-mapped chords, using first voice available
+        // Assign remaining non-mapped chords, using first voice available in part and
         // with staff continuity whenever possible
         for (AbstractChordInter chord : incomings) {
             // Process only the chords that have no voice assigned yet
@@ -597,7 +600,7 @@ public class Slot
             final Part part = chord.getPart();
             final Measure measure = stack.getMeasureAt(part);
 
-            // Try to reuse an existing voice (within same staff if possible)
+            // Try to reuse an existing voice in same part (and within same staff if possible)
             for (Voice voice : measure.getVoices()) {
                 if (voice.isFree(this)) {
                     // If we have more than one incoming,
@@ -610,14 +613,14 @@ public class Slot
                             continue;
                         }
 
-                        // Check there is no time hole with latest voice chord
-                        // Otherwise there is a rhythm error
-                        // (missing rest/dot on this voice / missing tuplet on other voice)
-                        Rational delta = startTime.minus(latestVoiceChord.getEndTime());
-
-                        if (delta.compareTo(Rational.ZERO) > 0) {
-                            logger.debug("{} {} {} time hole: {}", measure, this, voice, delta);
-                        }
+                        // // Check there is no time hole with latest voice chord
+                        // // Otherwise there is a rhythm error
+                        // // (missing rest/dot on this voice / missing tuplet on other voice)
+                        // Rational delta = startTime.minus(latestVoiceChord.getEndTime());
+                        //
+                        // if (delta.compareTo(Rational.ZERO) > 0) {
+                        //     logger.debug("{} {} {} time hole: {}", measure, this, voice, delta);
+                        // }
                     }
 
                     chord.setVoice(voice);
@@ -626,7 +629,7 @@ public class Slot
                 }
             }
 
-            // No compatible voice found, let's create a new one
+            // No compatible voice found in part, so let's create a new one
             if (chord.getVoice() == null) {
                 logger.debug("{} Slot#{} creating voice for Ch#{}", measure, id, chord.getId());
 

@@ -17,14 +17,12 @@ import omr.math.Rational;
 import omr.score.Mark;
 import omr.score.TimeRational;
 
-import omr.sheet.Part;
 import omr.sheet.beam.BeamGroup;
 import static omr.sheet.rhythm.Voice.Status.BEGIN;
 
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractHeadInter;
-import omr.sig.inter.Inter;
 
 import omr.util.Navigable;
 
@@ -69,55 +67,6 @@ public class Voice
         }
     };
 
-    /** To sort voices by vertical position within their containing measure stack. */
-    public static final Comparator<Voice> byOrdinate = new Comparator<Voice>()
-    {
-        @Override
-        public int compare (Voice v1,
-                            Voice v2)
-        {
-            if (v1.getMeasure().getStack() != v2.getMeasure().getStack()) {
-                throw new IllegalArgumentException("Comparing voices in different stacks");
-            }
-
-            // Check if they are located in different parts
-            Part p1 = v1.getMeasure().getPart();
-            Part p2 = v2.getMeasure().getPart();
-
-            if (p1 != p2) {
-                return Part.byId.compare(p1, p2);
-            }
-
-            // Look for the first time slot with incoming chords for both voices.
-            // If such slot exists, compare the two chords ordinates in that slot.
-            for (Slot slot : v1.getMeasure().getStack().getSlots()) {
-                SlotVoice vc1 = v1.getSlotInfo(slot);
-
-                if ((vc1 == null) || (vc1.status != Status.BEGIN)) {
-                    continue;
-                }
-
-                AbstractChordInter c1 = vc1.chord;
-
-                SlotVoice vc2 = v2.getSlotInfo(slot);
-
-                if ((vc2 == null) || (vc2.status != Status.BEGIN)) {
-                    continue;
-                }
-
-                AbstractChordInter c2 = vc2.chord;
-
-                return Inter.byOrdinate.compare(c1, c2);
-            }
-
-            // No common slot found, use ordinate of first chord for each voice
-            AbstractChordInter c1 = v1.getFirstChord();
-            AbstractChordInter c2 = v2.getFirstChord();
-
-            return Inter.byOrdinate.compare(c1, c2);
-        }
-    };
-
     //~ Enumerations -------------------------------------------------------------------------------
     public static enum Status
     {
@@ -137,15 +86,17 @@ public class Voice
     @XmlAttribute
     private int id;
 
-    /** Whole chord of the voice, if any. */
+    /**
+     * Whole chord of the voice, if any.
+     * If a voice is assigned to a whole/multi rest, then this rest chord is defined as the
+     * wholeChord of this voice, and the slots table is left empty.
+     */
     @XmlIDREF
     @XmlElement(name = "whole-chord")
     private AbstractChordInter wholeChord;
 
     /**
      * Map (SlotId -> SlotVoice) to store chord information for each slot.
-     * If a voice is assigned to a whole/multi rest, then this rest chord is defined as the
-     * wholeChord of this voice, and the whole slot table is left empty.
      * If the voice/slot combination is empty, the voice is free for this slot.
      * Otherwise, the active chord is referenced with a status flag to make a difference between a
      * slot where the chord starts, and the potential following slots for which the chord is still
@@ -157,7 +108,7 @@ public class Voice
     // Transient data
     //---------------
     //
-    /** Containing measure */
+    /** Containing measure. */
     @Navigable(false)
     private Measure measure;
 

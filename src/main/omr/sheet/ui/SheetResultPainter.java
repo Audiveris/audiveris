@@ -30,8 +30,8 @@ import omr.sheet.rhythm.Slot;
 import omr.sheet.rhythm.Voice;
 
 import omr.sig.SIGraph;
-import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.AbstractChordInter;
+import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.StemInter;
 import omr.sig.relation.AccidHeadRelation;
@@ -45,16 +45,18 @@ import omr.sig.ui.SigPainter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
-
 import static omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static omr.ui.symbol.Alignment.TOP_LEFT;
-
 import omr.ui.symbol.OmrFont;
+import omr.ui.util.Panel;
 import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.LEFT;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +72,9 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /**
  * Class {@code SheetResultPainter} paints the items resulting from the processing of a
@@ -122,7 +127,7 @@ public class SheetResultPainter
         /** Orange */
         new Color(255, 200, 0, alpha),
         /** Pink */
-        new Color(255, 175, 175, alpha),
+        new Color(255, 150, 150, alpha),
         /** Green */
         new Color(0, 255, 0, alpha),
         /** Magenta */
@@ -178,6 +183,37 @@ public class SheetResultPainter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------------//
+    // getVoicePanel //
+    //---------------//
+    /**
+     * Build a panel which displays all defined voice ID colors.
+     *
+     * @return the populated voice panel
+     */
+    public static JPanel getVoicePanel ()
+    {
+        final int length = voiceColors.length;
+        final Font font = new Font("SansSerif", Font.BOLD, 22);
+        final Color background = new Color(220, 220, 220);
+        final FormLayout layout = Panel.makeLabelsLayout(1, length, "0dlu", "10dlu");
+        final PanelBuilder builder = new PanelBuilder(layout, new Panel());
+        final CellConstraints cst = new CellConstraints();
+        final int r = 1;
+
+        for (int c = 1; c <= length; c++) {
+            final Color color = new Color(voiceColors[c - 1].getRGB()); // Remove alpha
+            final JLabel label = new JLabel("" + c, JLabel.CENTER);
+            label.setFont(font);
+            label.setOpaque(true);
+            label.setBackground(background);
+            label.setForeground(color);
+            builder.add(label, cst.xy((2 * c) - 1, r));
+        }
+
+        return builder.getPanel();
+    }
+
     //----------//
     // drawSlot //
     //----------//

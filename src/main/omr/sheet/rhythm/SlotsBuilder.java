@@ -228,7 +228,7 @@ public class SlotsBuilder
             return false;
         }
 
-        refineVoices();
+        VoiceFixer.refineStack(stack);
 
         return true;
     }
@@ -1016,47 +1016,6 @@ public class SlotsBuilder
                     setRel(two, ch, rel);
                 }
             }
-        }
-    }
-
-    //--------------//
-    // refineVoices //
-    //--------------//
-    /**
-     * Slight improvements to voices in the current measure stack.
-     * TODO: could be improved, so that from stack to stack voice colors stay in their part
-     * (this is mandatory) and (as much as possible) in the same staff.
-     */
-    private void refineVoices ()
-    {
-        //        // Preserve vertical voice order at beginning of measure
-        //        // Use chords from first time slot + whole chords
-        //        List<ChordInter> firsts = new ArrayList<ChordInter>();
-        //
-        //        if (!stack.getSlots().isEmpty()) {
-        //            firsts.addAll(stack.getSlots().get(0).getChords());
-        //        }
-        //
-        //        if (stack.getWholeRestChords() != null) {
-        //            firsts.addAll(stack.getWholeRestChords());
-        //        }
-        //
-        //        Collections.sort(firsts, AbstractChordInter.byOrdinate);
-        //
-        //        // Rename voices accordingly
-        //        for (int i = 0; i < firsts.size(); i++) {
-        //            AbstractChordInter chord = firsts.get(i);
-        //            Voice voice = chord.getVoice();
-        //            stack.swapVoiceId(voice, i + 1);
-        //        }
-
-        // Sort voices vertically in stack
-        List<Voice> voices = new ArrayList<Voice>(stack.getVoices());
-        Collections.sort(voices, Voice.byOrdinate);
-
-        // Assign each voice ID according to its relative vertical position
-        for (int i = 0; i < voices.size(); i++) {
-            voices.get(i).setId(i + 1);
         }
     }
 

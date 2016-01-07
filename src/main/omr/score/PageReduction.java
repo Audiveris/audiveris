@@ -36,7 +36,7 @@ public class PageReduction
     private static final Logger logger = LoggerFactory.getLogger(PageReduction.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Related page */
+    /** Related page. */
     private final Page page;
 
     //~ Constructors -------------------------------------------------------------------------------

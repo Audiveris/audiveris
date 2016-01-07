@@ -26,7 +26,6 @@ import omr.sheet.rhythm.MeasureStack;
 
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;
-import omr.sig.SIGraph;
 import omr.sig.relation.Relation;
 import omr.sig.relation.SlurHeadRelation;
 
@@ -44,7 +43,6 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -314,10 +312,7 @@ public class SlurInter
      */
     public AbstractHeadInter getHead (HorizontalSide side)
     {
-        final SIGraph sig = getSig();
-        final Set<Relation> rels = sig.getRelations(this, SlurHeadRelation.class);
-
-        for (Relation rel : rels) {
+        for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
             SlurHeadRelation shRel = (SlurHeadRelation) rel;
 
             if (shRel.getSide() == side) {
@@ -369,6 +364,33 @@ public class SlurInter
     public void setTie ()
     {
         tie = Jaxb.TRUE;
+    }
+
+    //------------------//
+    // switchMirrorHead //
+    //------------------//
+    /**
+     * Switch the slur link from head to its mirror on the provided side.
+     *
+     * @param side the desired side
+     */
+    public void switchMirrorHead (HorizontalSide side)
+    {
+        for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
+            SlurHeadRelation shRel = (SlurHeadRelation) rel;
+
+            if (shRel.getSide() == side) {
+                AbstractHeadInter head = (AbstractHeadInter) sig.getOppositeInter(this, rel);
+                AbstractHeadInter mirrorHead = (AbstractHeadInter) head.getMirror();
+
+                if (mirrorHead != null) {
+                    sig.removeEdge(rel);
+                    sig.addEdge(this, mirrorHead, rel);
+                } else {
+                    logger.error("No mirror head for {}", head);
+                }
+            }
+        }
     }
 
     //----------------//

@@ -80,6 +80,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
+import omr.sheet.ui.SheetResultPainter;
 
 /**
  * Class {@code MainGui} is the Java User Interface, the main class for displaying a
@@ -623,9 +624,10 @@ public class MainGui
         // Menu bar
         JMenuBar innerBar = mgr.getMenuBar();
 
-        // Gauges = progress | memory
+        // Gauges = voices | progress | memory
         JPanel gauges = new JPanel();
         gauges.setLayout(new BorderLayout());
+        gauges.add(SheetResultPainter.getVoicePanel(), BorderLayout.WEST);
         gauges.add(StepMonitoring.createMonitor().getComponent(), BorderLayout.CENTER);
         gauges.add(new MemoryMeter().getComponent(), BorderLayout.EAST);
 

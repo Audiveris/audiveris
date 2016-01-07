@@ -168,7 +168,7 @@ public class PageRhythm
             }
 
             // Refine voices IDs (and thus colors) across all measures of the system
-            new SystemVoiceFixer(system).refine();
+            VoiceFixer.refineSystem(system);
         }
     }
 

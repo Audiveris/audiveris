@@ -169,6 +169,27 @@ public class Panel
         return sbc.toString();
     }
 
+    //-------------------//
+    // makeLabelsColumns //
+    //-------------------//
+    public static String makeLabelsColumns (int cols,
+                                            String labelInterval,
+                                            String labelWidth)
+    {
+        // Columns
+        StringBuilder sbc = new StringBuilder();
+
+        for (int i = cols - 1; i >= 0; i--) {
+            sbc.append(labelWidth);
+
+            if (i != 0) {
+                sbc.append(",").append(labelInterval).append(",");
+            }
+        }
+
+        return sbc.toString();
+    }
+
     //----------------//
     // makeFormLayout //
     //----------------//
@@ -209,6 +230,44 @@ public class Panel
     {
         // Columns
         final String colSpec = makeColumns(cols, labelAlignment, labelWidth, fieldWidth);
+
+        // Rows
+        final String fieldInterline = Panel.getFieldInterline();
+        StringBuilder sbr = new StringBuilder();
+
+        for (int i = rows - 1; i >= 0; i--) {
+            sbr.append("pref");
+
+            if (i != 0) {
+                sbr.append(",").append(fieldInterline).append(",");
+            }
+        }
+
+        logger.debug("sbc={}", colSpec);
+        logger.debug("sbr={}", sbr);
+
+        return new FormLayout(colSpec, sbr.toString());
+    }
+
+    //------------------//
+    // makeLabelsLayout //
+    //------------------//
+    /**
+     * A more versatile way to prepare a JGoodies FormLayout for labels.
+     *
+     * @param rows          number of rows
+     * @param cols          number of columns
+     * @param labelInterval horizontal gap between labels
+     * @param labelWidth    width for labels
+     * @return the FormLayout ready to use
+     */
+    public static FormLayout makeLabelsLayout (int rows,
+                                               int cols,
+                                               String labelInterval,
+                                               String labelWidth)
+    {
+        // Columns
+        final String colSpec = makeLabelsColumns(cols, labelInterval, labelWidth);
 
         // Rows
         final String fieldInterline = Panel.getFieldInterline();

@@ -24,7 +24,9 @@ import omr.sig.inter.SlurInter;
 import omr.sig.inter.TimeInter;
 
 import omr.step.PageStep;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 import omr.util.Predicate;
 
@@ -38,13 +40,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlList;
 
 /**
  * Class {@code Part} is the <b>physical</b> gathering of {@link Staff} instances in an
@@ -126,6 +127,11 @@ public class Part
     /** Slurs in this part. */
     @XmlElement(name = "slur")
     private final List<SlurInter> slurs = new ArrayList<SlurInter>();
+
+    /** Voice IDs in this part. */
+    @XmlList
+    @XmlElement(name = "voices")
+    private List<Integer> voiceIds;
 
     // Transient data
     //---------------
@@ -660,21 +666,32 @@ public class Part
     {
         return system;
     }
+//
+//    //-------------//
+//    // getVoiceIds //
+//    //-------------//
+//    public SortedSet<Integer> getVoiceIds ()
+//    {
+//        SortedSet<Integer> found = new TreeSet<Integer>();
+//
+//        for (Measure measure : measures) {
+//            for (Voice voice : measure.getVoices()) {
+//                found.add(voice.getId());
+//            }
+//        }
+//
+//        return found;
+//    }
 
     //-------------//
     // getVoiceIds //
     //-------------//
-    public SortedSet<Integer> getVoiceIds ()
+    /**
+     * @return the voice IDs
+     */
+    public List<Integer> getVoiceIds ()
     {
-        SortedSet<Integer> found = new TreeSet<Integer>();
-
-        for (Measure measure : measures) {
-            for (Voice voice : measure.getVoices()) {
-                found.add(voice.getId());
-            }
-        }
-
-        return found;
+        return voiceIds;
     }
 
     //---------//
@@ -762,20 +779,28 @@ public class Part
     }
 
     //-------------//
+    // setVoiceIds //
+    //-------------//
+    /**
+     * @param voiceIds the voice IDs to set
+     */
+    public void setVoiceIds (List<Integer> voiceIds)
+    {
+        this.voiceIds = voiceIds;
+    }
+
+    //-------------//
     // swapVoiceId //
     //-------------//
     /**
      * Change the ID of voice at provided index for the specified newId
      *
-     * @param index index of voice in part voices
+     * @param index index of voice in part voiceIds
      * @param newId new ID to be used for this voice in all measures of this system part
      */
     public void swapVoiceId (int index,
                              int newId)
     {
-        // Voice IDs currently used in this part
-        List<Integer> voiceIds = new ArrayList<Integer>(getVoiceIds());
-
         for (Measure measure : measures) {
             for (Voice voice : measure.getVoices()) {
                 int voiceIndex = voiceIds.indexOf(voice.getId());

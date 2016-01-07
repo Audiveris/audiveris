@@ -1311,6 +1311,14 @@ public class Measure
         this.stack = stack;
     }
 
+    //------------//
+    // sortVoices //
+    //------------//
+    public void sortVoices ()
+    {
+        Collections.sort(voices, Voice.byId);
+    }
+
     //-------------//
     // swapVoiceId //
     //-------------//
@@ -1320,9 +1328,10 @@ public class Measure
      *
      * @param voice the voice whose id must be changed
      * @param id    the new id
+     * @return the old voice owner of id, if any
      */
-    public void swapVoiceId (Voice voice,
-                             int id)
+    public Voice swapVoiceId (Voice voice,
+                              int id)
     {
         // Existing voice?
         Voice oldOwner = null;
@@ -1343,6 +1352,8 @@ public class Measure
         if (oldOwner != null) {
             oldOwner.setId(oldId);
         }
+
+        return oldOwner;
     }
 
     //----------//

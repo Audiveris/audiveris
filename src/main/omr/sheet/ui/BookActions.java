@@ -334,7 +334,7 @@ public class BookActions
                                 true,
                                 BookManager.getDefaultProjectPath(book));
 
-                        if (!confirmed(projectPath)) {
+                        if ((projectPath == null) || !confirmed(projectPath)) {
                             return false; // No suitable target found
                         }
                     }
