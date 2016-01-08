@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import omr.sheet.rhythm.VoiceFixer;
 
 /**
  * Class {@code PageStep} handles connections between systems in a page.
@@ -72,8 +73,6 @@ public class PageStep
 
                 connectSystemInitialSlurs(system);
 
-                //                system.connectTiedVoices();
-                //
                 // Refine syllables across systems
                 for (Inter inter : sig.inters(LyricLineInter.class)) {
                     LyricLineInter line = (LyricLineInter) inter;
@@ -81,9 +80,9 @@ public class PageStep
                 }
             }
 
-            // Refine voices ids (and thus colors) across all systems of the page
-            ///new PageVoiceFixer(page).refine();
-            //
+            // Refine voices IDs (and thus colors) across all systems of the page
+            VoiceFixer.refinePage(page);
+
             // Merge / renumber measure stacks within the page
             new MeasureFixer().process(page);
         }

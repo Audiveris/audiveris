@@ -33,13 +33,11 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Class {@code VoiceFixer} harmonizes the IDs (and thus colors) for the voices
- * of a stack, a system, a page or a score.
+ * Class {@code VoiceFixer} connects voices and harmonizes their IDs (and thus colors)
+ * within a stack, a system, a page or a score.
  *
  * @author Hervé Bitteur
  */
@@ -115,6 +113,9 @@ public abstract class VoiceFixer
     };
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // refinePage //
+    //------------//
     /**
      * Connect voices within the same logical part across all systems of a page,
      * paying attention to dummy parts that may exist.
@@ -123,50 +124,74 @@ public abstract class VoiceFixer
      */
     public static void refinePage (Page page)
     {
-        // Number of voice IDs for each LogicalPart within this page
-        final Map<LogicalPart, Integer> globalMap = new LinkedHashMap<LogicalPart, Integer>();
-
-        for (SystemInfo system : page.getSystems()) {
-            for (Part part : system.getParts()) {
-                // Voice IDs that start within this part
-                final List<Integer> incomings = part.getVoiceIds();
-
-                // Number of Global IDs already assigned in this part
-                Integer globals = globalMap.get(part.getLogicalPart());
-
-                if ((globals == null) || (globals < incomings.size())) {
-                    globalMap.put(part.getLogicalPart(), incomings.size());
-                }
-            }
-        }
-
-        int voiceOffset = 0; // Offset for voice ids in current part
+        final SystemInfo firstSystem = page.getFirstSystem();
+        int voiceOffset = 0; // Offset for voice IDs in current part
 
         for (LogicalPart logicalPart : page.getLogicalParts()) {
-            logger.info("{} voices:{}", logicalPart, globalMap.get(logicalPart));
+            int logicalVoiceCount = 0;
 
             for (SystemInfo system : page.getSystems()) {
-                for (MeasureStack stack : system.getMeasureStacks()) {
-                    Collections.sort(stack.getVoices(), Voice.byId);
-                }
+                Part part = system.getPartById(logicalPart.getId());
 
-                Part part = system.getPhysicalPart(logicalPart);
-                final List<Integer> partVoices = new ArrayList<Integer>(part.getVoiceIds());
+                if (part != null) {
+                    boolean swapped = false;
 
-                for (int i = 0; i < partVoices.size(); i++) {
-                    final int id = partVoices.get(i);
-                    int newId = voiceOffset + i + 1;
+                    if (system != firstSystem) {
+                        // Check tied voices from previous system
+                        final List<Voice> measureVoices = part.getFirstMeasure().getVoices();
 
-                    if (newId != id) {
-                        part.swapVoiceId(i, newId);
+                        for (Voice voice : measureVoices) {
+                            Integer tiedId = getSystemTiedId(voice);
+
+                            if ((tiedId != null) && (voice.getId() != tiedId)) {
+                                part.swapVoiceId(voice.getId(), tiedId);
+                                swapped = true;
+                            }
+                        }
                     }
+
+                    final List<Integer> partIds = part.getVoiceIds();
+                    final List<Integer> newPartVoices = new ArrayList<Integer>();
+
+                    // Re-number IDs in part
+                    for (int i = 0; i < partIds.size(); i++) {
+                        final int id = partIds.get(i);
+                        int newId = voiceOffset + i + 1;
+                        newPartVoices.add(newId);
+
+                        if (newId != id) {
+                            part.swapVoiceId(i, newId);
+                            swapped = true;
+                        }
+                    }
+
+                    if (swapped) {
+                        for (Measure measure : part.getMeasures()) {
+                            measure.sortVoices();
+                        }
+                    }
+
+                    part.setVoiceIds(newPartVoices);
+                    logicalVoiceCount = Math.max(logicalVoiceCount, newPartVoices.size());
                 }
             }
 
-            voiceOffset += globalMap.get(logicalPart);
+            // Voice IDs used in this logical part
+            final List<Integer> newLogicalVoices = new ArrayList<Integer>();
+
+            for (int i = 0; i < logicalVoiceCount; i++) {
+                newLogicalVoices.add(voiceOffset + i + 1);
+            }
+
+            logicalPart.setVoiceIds(newLogicalVoices);
+            logger.debug("{} voices:{}", logicalPart, newLogicalVoices);
+            voiceOffset += logicalVoiceCount;
         }
     }
 
+    //-------------//
+    // refineScore //
+    //-------------//
     /**
      * Connect voices within the same logical part across all pages of a score.
      *
@@ -176,6 +201,9 @@ public abstract class VoiceFixer
     {
     }
 
+    //-------------//
+    // refineStack //
+    //-------------//
     /**
      * Refine voice IDs within a stack.
      * <p>
@@ -204,6 +232,9 @@ public abstract class VoiceFixer
         }
     }
 
+    //--------------//
+    // refineSystem //
+    //--------------//
     /**
      * Connect voices within the same part across all measures of a system.
      * <p>
@@ -214,96 +245,36 @@ public abstract class VoiceFixer
      */
     public static void refineSystem (SystemInfo system)
     {
-        final SIGraph sig = system.getSig();
-        int count = 0; // Count of voice ids in this system
-
-        // Assigned voice IDs for each part within this system
-        final Map<Part, List<Integer>> systemMap = new LinkedHashMap<Part, List<Integer>>();
         final MeasureStack firstStack = system.getFirstMeasureStack();
+        int count = 0; // Count of voice IDs in this system
 
-        for (MeasureStack stack : system.getMeasureStacks()) {
-            for (Part part : system.getParts()) {
-                // Global IDs already assigned in this part
-                List<Integer> globals = systemMap.get(part);
+        for (Part part : system.getParts()) {
+            // Voice IDs assigned in this part
+            final List<Integer> partIds = new ArrayList<Integer>();
 
-                if (globals == null) {
-                    systemMap.put(part, globals = new ArrayList<Integer>());
-                }
-
-                // Voices that start within this measure
+            for (MeasureStack stack : system.getMeasureStacks()) {
+                // Voices used within this measure
                 final Measure measure = stack.getMeasureAt(part);
-                final List<Voice> incomings = measure.getVoices(); // Sorted by ID (and vertically)
-                final List<Voice> assigned = new ArrayList<Voice>();
-                final List<Voice> swapped = new ArrayList<Voice>();
+                final List<Voice> measureVoices = measure.getVoices(); // Sorted by ID & vertically
 
                 if (stack != firstStack) {
-                    // Look for ties, as they carry voice across measure limits
-                    VoiceLoop:
-                    for (Voice voice : incomings) {
-                        AbstractChordInter firstChord = voice.getFirstChord();
+                    // Check tied voices from previous measure
+                    for (Voice voice : measureVoices) {
+                        Integer tiedId = getMeasureTiedId(voice);
 
-                        // Is there an incoming tie on a head of this chord?
-                        for (Inter n : firstChord.getNotes()) {
-                            if (n instanceof AbstractHeadInter) {
-                                for (Relation r : sig.getRelations(n, SlurHeadRelation.class)) {
-                                    SlurHeadRelation shRel = (SlurHeadRelation) r;
-
-                                    if (shRel.getSide() == RIGHT) {
-                                        SlurInter slur = (SlurInter) sig.getOppositeInter(n, r);
-
-                                        if (slur.isTie()) {
-                                            AbstractHeadInter left = slur.getHead(LEFT);
-
-                                            if (left != null) {
-                                                final Voice leftVoice = left.getVoice();
-                                                logger.debug("{} ties {}", slur, leftVoice);
-                                                swapped.add(
-                                                        measure.swapVoiceId(voice, leftVoice.getId()));
-                                                assigned.add(voice);
-
-                                                continue VoiceLoop;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                        if ((tiedId != null) && (voice.getId() != tiedId)) {
+                            measure.swapVoiceId(voice, tiedId);
                         }
                     }
                 }
 
-                // Connect un-assigned incoming voices to global ones
-                // This simplistic approach uses position in lists
-                for (int i = 0; i < incomings.size(); i++) {
-                    final Voice voice = incomings.get(i);
+                // Connect un-assigned measure voices to part voices
+                for (int i = 0; i < measureVoices.size(); i++) {
+                    final Voice voice = measureVoices.get(i);
+                    int newId = voice.getId();
 
-                    if (assigned.contains(voice)) {
-                        continue;
-                    }
-
-                    if (swapped.contains(voice)) {
-                        if (!globals.contains(voice.getId())) {
-                            // Extend globals list
-                            final int newId = ++count;
-                            globals.add(newId);
-
-                            if (voice.getId() != newId) {
-                                measure.swapVoiceId(voice, newId);
-                            }
-                        }
-
-                        continue;
-                    }
-
-                    if (i < globals.size()) {
-                        final int global = globals.get(i);
-
-                        if (voice.getId() != global) {
-                            measure.swapVoiceId(voice, global);
-                        }
-                    } else {
-                        // Extend globals list
-                        final int newId = ++count;
-                        globals.add(newId);
+                    if (!partIds.contains(newId)) {
+                        partIds.add(newId = ++count); // Extend part list
 
                         if (voice.getId() != newId) {
                             measure.swapVoiceId(voice, newId);
@@ -311,13 +282,98 @@ public abstract class VoiceFixer
                     }
                 }
             }
+
+            // Store voices IDs into their containing part
+            logger.debug("System#{} {} {}", system.getId(), part, partIds);
+            part.setVoiceIds(partIds);
+        }
+    }
+
+    //------------------//
+    // getMeasureTiedId //
+    //------------------//
+    /**
+     * Check whether the provided (measure) voice is tied to a voice in previous measure
+     * and thus must reuse the same ID.
+     *
+     * @param voice the voice to check
+     * @return the imposed ID if any, null otherwise
+     */
+    private static Integer getMeasureTiedId (Voice voice)
+    {
+        final AbstractChordInter firstChord = voice.getFirstChord();
+        final SIGraph sig = firstChord.getSig();
+
+        // Is there an incoming tie on a head of this chord?
+        for (Inter note : firstChord.getNotes()) {
+            if (note instanceof AbstractHeadInter) {
+                for (Relation r : sig.getRelations(note, SlurHeadRelation.class)) {
+                    SlurHeadRelation shRel = (SlurHeadRelation) r;
+
+                    if (shRel.getSide() == RIGHT) {
+                        SlurInter slur = (SlurInter) sig.getOppositeInter(note, r);
+
+                        if (slur.isTie()) {
+                            AbstractHeadInter left = slur.getHead(LEFT);
+
+                            if (left != null) {
+                                final Voice leftVoice = left.getVoice();
+                                logger.debug("{} ties {} to {}", slur, voice, leftVoice);
+
+                                return leftVoice.getId();
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        logger.debug("System#{} idMap: {}", system.getId(), systemMap);
+        return null;
+    }
 
-        // Store voices into their containing part
-        for (Part part : system.getParts()) {
-            part.setVoiceIds(systemMap.get(part));
+    //-----------------//
+    // getSystemTiedId //
+    //-----------------//
+    /**
+     * Check whether the provided (system) voice is tied to a voice in previous system
+     * and thus must reuse the same ID.
+     *
+     * @param voice the voice to check
+     * @return the imposed ID if any, null otherwise
+     */
+    private static Integer getSystemTiedId (Voice voice)
+    {
+        final AbstractChordInter firstChord = voice.getFirstChord();
+        final SIGraph sig = firstChord.getSig();
+
+        // Is there an incoming tie on a head of this chord?
+        for (Inter note : firstChord.getNotes()) {
+            if (note instanceof AbstractHeadInter) {
+                for (Relation r : sig.getRelations(note, SlurHeadRelation.class)) {
+                    SlurHeadRelation shRel = (SlurHeadRelation) r;
+
+                    if (shRel.getSide() == RIGHT) {
+                        SlurInter slur = (SlurInter) sig.getOppositeInter(note, r);
+
+                        if (slur.isTie()) {
+                            SlurInter prevSlur = slur.getExtension(LEFT);
+
+                            if (prevSlur != null) {
+                                AbstractHeadInter left = prevSlur.getHead(LEFT);
+
+                                if (left != null) {
+                                    final Voice leftVoice = left.getVoice();
+                                    logger.debug("{} ties {} over to {}", slur, voice, leftVoice);
+
+                                    return leftVoice.getId();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+
+        return null;
     }
 }

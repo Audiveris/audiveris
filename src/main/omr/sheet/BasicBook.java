@@ -33,6 +33,7 @@ import omr.script.ExportTask;
 import omr.script.PrintTask;
 import omr.script.Script;
 import static omr.sheet.Sheet.INTERNALS_RADIX;
+import omr.sheet.rhythm.VoiceFixer;
 import omr.sheet.ui.BookBrowser;
 import omr.sheet.ui.StubsController;
 
@@ -281,6 +282,9 @@ public class BasicBook
                 // Connect slurs across pages
                 page.getFirstSystem().connectPageInitialSlurs(score);
             }
+
+            // Voices connection
+            VoiceFixer.refineScore(score);
         }
 
         setModified(true);
@@ -877,10 +881,10 @@ public class BasicBook
      */
     public static Book loadProject (Path projectPath)
     {
+        StopWatch watch = new StopWatch("loadProject " + projectPath);
+
         try {
             logger.info("Loading project {} ...", projectPath);
-
-            StopWatch watch = new StopWatch("loadProject " + projectPath);
             watch.start("book");
 
             // Open project file
@@ -927,13 +931,15 @@ public class BasicBook
                 });
             }
 
-            watch.print();
-
             return book;
         } catch (Exception ex) {
             logger.warn("Error loading project " + projectPath + " " + ex, ex);
 
             return null;
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
         }
     }
 
@@ -1451,6 +1457,6 @@ public class BasicBook
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
-                "Should we print out the stop watch for book operations?");
+                "Should we print out the stop watch for book loading?");
     }
 }

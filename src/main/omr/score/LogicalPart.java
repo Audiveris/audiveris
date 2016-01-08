@@ -17,10 +17,13 @@ import omr.constant.ConstantSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlList;
 
 /**
  * Class {@code LogicalPart} describes a part at score or page level.
@@ -42,6 +45,10 @@ public class LogicalPart
             LogicalPart.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /**
      * Distinguished id for this logical part.
      * (the same id is used by the corresponding physical Part in each System)
@@ -64,6 +71,11 @@ public class LogicalPart
     /** Instrument MIDI program, if any. */
     @XmlElement(name = "midi-program")
     private Integer midiProgram;
+
+    /** Voice IDs in this logical part. */
+    @XmlList
+    @XmlElement(name = "voices")
+    private List<Integer> voiceIds;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -205,6 +217,17 @@ public class LogicalPart
         return staffCount;
     }
 
+    //-------------//
+    // getVoiceIds //
+    //-------------//
+    /**
+     * @return the voice IDs
+     */
+    public List<Integer> getVoiceIds ()
+    {
+        return voiceIds;
+    }
+
     //--------------//
     // isMultiStaff //
     //--------------//
@@ -248,6 +271,17 @@ public class LogicalPart
     public void setName (String name)
     {
         this.name = name;
+    }
+
+    //-------------//
+    // setVoiceIds //
+    //-------------//
+    /**
+     * @param voiceIds the voice IDs to set
+     */
+    public void setVoiceIds (List<Integer> voiceIds)
+    {
+        this.voiceIds = voiceIds;
     }
 
     //----------//

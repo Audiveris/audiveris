@@ -30,7 +30,9 @@ import omr.sig.relation.Relation;
 import omr.sig.relation.SlurHeadRelation;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Jaxb;
 import omr.util.Predicate;
 
@@ -40,14 +42,14 @@ import org.slf4j.LoggerFactory;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
 import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -171,9 +173,15 @@ public class SlurInter
     @XmlJavaTypeAdapter(Jaxb.CubicAdapter.class)
     private CubicCurve2D curve;
 
-    /** Extension slur, if any. (at most one per slur) */
-    private final Map<HorizontalSide, SlurInter> extensions = new EnumMap<HorizontalSide, SlurInter>(
-            HorizontalSide.class);
+    /** Extension slur on left, if any (within the same sheet). */
+    @XmlIDREF
+    @XmlElement(name = "left-extension")
+    private SlurInter leftExtension;
+
+    /** Extension slur on right, if any (within the same sheet). */
+    @XmlIDREF
+    @XmlElement(name = "right-extension")
+    private SlurInter rightExtension;
 
     // Transient data
     //---------------
@@ -240,15 +248,15 @@ public class SlurInter
     // connectTo //
     //-----------//
     /**
-     * Make the connection with another slur in the previous system.
+     * Make the connection with another slur in the previous system (within same sheet).
      *
      * @param prevSlur slur at the end of previous system
      */
     public void connectTo (SlurInter prevSlur)
     {
         // Cross-extensions
-        this.extensions.put(LEFT, prevSlur);
-        prevSlur.extensions.put(RIGHT, this);
+        leftExtension = prevSlur;
+        prevSlur.rightExtension = this;
 
         // Tie?
         boolean isATie = haveSameHeight(prevSlur.getHead(LEFT), this.getHead(RIGHT));
@@ -296,9 +304,18 @@ public class SlurInter
     //--------------//
     // getExtension //
     //--------------//
+    /**
+     * Report the connected slur, if any, in the other system on the provided side
+     * (only within the same sheet).
+     *
+     * @param side the desired side
+     * @return the connected slur, if any, in the other system within the same sheet.
+     */
     public SlurInter getExtension (HorizontalSide side)
     {
-        return extensions.get(side);
+        Objects.requireNonNull(side, "No side provided for slur extension");
+
+        return (side == HorizontalSide.LEFT) ? leftExtension : rightExtension;
     }
 
     //---------//

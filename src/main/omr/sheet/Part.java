@@ -283,7 +283,7 @@ public class Part
      * MeasureStack instances that play only with real measures.</li>
      * </ul>
      * <p>
-     * <img alt="Dummy part creation" src="doc-files/DummyPart.png" />
+     * <img alt="Dummy part creation" src="doc-files/DummyPart.png">
      *
      * @param id the id for the desired dummy part
      * @return the created dummy part, ready to be exported
@@ -666,22 +666,6 @@ public class Part
     {
         return system;
     }
-//
-//    //-------------//
-//    // getVoiceIds //
-//    //-------------//
-//    public SortedSet<Integer> getVoiceIds ()
-//    {
-//        SortedSet<Integer> found = new TreeSet<Integer>();
-//
-//        for (Measure measure : measures) {
-//            for (Voice voice : measure.getVoices()) {
-//                found.add(voice.getId());
-//            }
-//        }
-//
-//        return found;
-//    }
 
     //-------------//
     // getVoiceIds //

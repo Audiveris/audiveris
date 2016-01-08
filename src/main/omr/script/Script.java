@@ -111,8 +111,10 @@ public class Script
     {
         this.book = book;
 
-        inputPath = book.getInputPath();
         projectPath = book.getProjectPath();
+
+        inputPath = (projectPath == null) ? book.getInputPath() : null;
+
         offset = book.getOffset();
 
         // Store sheet ids

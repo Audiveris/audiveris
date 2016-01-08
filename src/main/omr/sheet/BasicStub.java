@@ -13,6 +13,9 @@ package omr.sheet;
 
 import omr.OMR;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.image.FilterDescriptor;
 
 import omr.sheet.ui.SheetAssembly;
@@ -59,6 +62,8 @@ public class BasicStub
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(
             BasicStub.class);
 
@@ -88,7 +93,7 @@ public class BasicStub
     private Book book;
 
     /** Full sheet material, if any. */
-    private Sheet sheet;
+    private volatile Sheet sheet;
 
     /** The step being performed on the sheet. */
     private Step currentStep;
@@ -129,19 +134,6 @@ public class BasicStub
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------//
-    // done //
-    //------//
-    /**
-     * Remember that the provided step has been completed on the sheet.
-     *
-     * @param step the provided step
-     */
-    public final void done (Step step)
-    {
-        doneSteps.add(step);
-    }
-
     //-------//
     // close //
     //-------//
@@ -171,6 +163,19 @@ public class BasicStub
         }
 
         return sheet;
+    }
+
+    //------//
+    // done //
+    //------//
+    /**
+     * Remember that the provided step has been completed on the sheet.
+     *
+     * @param step the provided step
+     */
+    public final void done (Step step)
+    {
+        doneSteps.add(step);
     }
 
     //------------//
@@ -292,38 +297,48 @@ public class BasicStub
     public Sheet getSheet ()
     {
         if (sheet == null) {
-            // Actually load the sheet
-            if (!isDone(Step.LOAD)) {
-                // LOAD not yet performed: load from book image file
-                try {
-                    sheet = new BasicSheet(this, null);
-                } catch (StepException ignored) {
-                    logger.info("Could not load sheet for stub {}", this);
-                }
-            } else {
-                // LOAD already performed: load from project file
-                StopWatch watch = new StopWatch("Load Sheet " + this);
+            synchronized (this) {
+                // We have to recheck sheet, which may have just been allocated
+                if (sheet == null) {
+                    // Actually load the sheet
+                    if (!isDone(Step.LOAD)) {
+                        // LOAD not yet performed: load from book image file
+                        try {
+                            sheet = new BasicSheet(this, null);
+                        } catch (StepException ignored) {
+                            logger.info("Could not load sheet for stub {}", this);
+                        }
+                    } else {
+                        // LOAD already performed: load from project file
+                        StopWatch watch = new StopWatch("Load Sheet " + this);
 
-                try {
-                    watch.start("unmarshal");
+                        try {
+                            watch.start("unmarshal");
 
-                    // Open the project file system
-                    Path sheetFile = book.openSheetFolder(number).resolve(
-                            BasicSheet.getSheetFileName(number));
-                    InputStream is = Files.newInputStream(sheetFile, StandardOpenOption.READ);
-                    sheet = BasicSheet.unmarshal(is);
+                            // Open the project file system
+                            Path sheetFile = book.openSheetFolder(number).resolve(
+                                    BasicSheet.getSheetFileName(number));
+                            InputStream is = Files.newInputStream(
+                                    sheetFile,
+                                    StandardOpenOption.READ);
+                            sheet = BasicSheet.unmarshal(is);
 
-                    // Close the stream as well as the project file system
-                    is.close();
-                    sheetFile.getFileSystem().close();
+                            // Close the stream as well as the project file system
+                            is.close();
+                            sheetFile.getFileSystem().close();
 
-                    // Complete sheet reload
-                    watch.start("afterReload");
-                    sheet.afterReload(this);
-                    logger.info("Loaded {}", sheetFile);
-                    watch.print();
-                } catch (Exception ex) {
-                    logger.warn("Error in loading sheet structure " + ex, ex);
+                            // Complete sheet reload
+                            watch.start("afterReload");
+                            sheet.afterReload(this);
+                            logger.info("Loaded {}", sheetFile);
+                        } catch (Exception ex) {
+                            logger.warn("Error in loading sheet structure " + ex, ex);
+                        } finally {
+                            if (constants.printWatch.isSet()) {
+                                watch.print();
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -557,5 +572,18 @@ public class BasicStub
         {
             return s;
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch for sheet loading");
     }
 }

@@ -147,8 +147,8 @@ public class Measure
     /** Only whole rest-based chords (handled outside time slots). (subset of restChords) */
     private final Set<AbstractChordInter> wholeRestChords = new LinkedHashSet<AbstractChordInter>();
 
-    /** FRAT inters (other than Rest chords) for this measure. */
-    private final Set<Inter> otherRhythms = new LinkedHashSet<Inter>(); // FAT actually
+    /** FAT inters (FRATs other than Rest chords) for this measure. */
+    private final Set<Inter> otherRhythms = new LinkedHashSet<Inter>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
