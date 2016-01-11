@@ -24,6 +24,7 @@ import omr.sheet.rhythm.Voice.SlotVoice;
 import static omr.sheet.rhythm.Voice.Status.BEGIN;
 
 import omr.sig.inter.AbstractChordInter;
+import omr.sig.inter.HeadChordInter;
 
 import omr.util.Navigable;
 
@@ -177,7 +178,7 @@ public class Slot
         // Some chords already have their voice assigned
         for (AbstractChordInter ch : incomings) {
             if (ch.getVoice() != null) {
-                // This pseudo-reassign seems needed to populate the voice slotTable (??? TODO: check this)
+                // This pseudo-reassign is needed to populate the voice slotTable
                 ch.setVoice(ch.getVoice());
             } else {
                 rookies.add(ch);
@@ -665,10 +666,16 @@ public class Slot
     //------------//
     // MyDistance //
     //------------//
+    /**
+     * Implementation of a 'distance' between an old chord and a new chord to be
+     * potentially linked in the same voice.
+     */
     private static final class MyDistance
             implements InjectionSolver.Distance
     {
         //~ Static fields/initializers -------------------------------------------------------------
+
+        private static final int NOT_A_REST = 5;
 
         private static final int NEW_IN_STAFF = 10;
 
@@ -696,6 +703,13 @@ public class Slot
         }
 
         //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Distance between newChord (index 'in') and oldChord (index 'ip').
+         *
+         * @param in index in new chords
+         * @param ip index in old chords
+         * @return the assigned 'distance' between these two chords
+         */
         @Override
         public int getDistance (int in,
                                 int ip)
@@ -725,7 +739,9 @@ public class Slot
                 }
             }
 
-            // Same staff
+            // OK, here old chord and new chord are in the same staff
+            //
+            // Penalty for a chord of a beam group that spans several staves
             int ds = 0;
             BeamGroup group = oldChord.getBeamGroup();
 
@@ -733,10 +749,20 @@ public class Slot
                 ds = NEW_IN_STAFF;
             }
 
+            // A rest is a placeholder, hence bonus for rest (implemented by penalty on non-rest)
+            int dr = 0;
+
+            if (oldChord instanceof HeadChordInter) {
+                dr += NOT_A_REST;
+            }
+
+            // Pitch difference
             int dy = Math.abs(newChord.getHeadLocation().y - oldChord.getHeadLocation().y) / scale.getInterline();
+
+            // Stem direction difference
             int dStem = Math.abs(newChord.getStemDir() - oldChord.getStemDir());
 
-            return ds + dy + (2 * dStem);
+            return ds + dr + dy + (2 * dStem); // This is our recipe...
         }
     }
 }
