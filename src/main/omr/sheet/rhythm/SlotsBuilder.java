@@ -228,7 +228,7 @@ public class SlotsBuilder
             return false;
         }
 
-        VoiceFixer.refineStack(stack);
+        Voices.refineStack(stack);
 
         return true;
     }

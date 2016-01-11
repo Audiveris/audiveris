@@ -39,13 +39,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlList;
 
 /**
  * Class {@code Part} is the <b>physical</b> gathering of {@link Staff} instances in an
@@ -127,11 +129,6 @@ public class Part
     /** Slurs in this part. */
     @XmlElement(name = "slur")
     private final List<SlurInter> slurs = new ArrayList<SlurInter>();
-
-    /** Voice IDs in this part. */
-    @XmlList
-    @XmlElement(name = "voices")
-    private List<Integer> voiceIds;
 
     // Transient data
     //---------------
@@ -222,42 +219,50 @@ public class Part
      * with the orphan slurs at the end of the provided preceding part.
      *
      * @param precedingPart the part to connect to, in the preceding system,
-     *                      [TODO: or in the last system of the preceding page]
+     *                      [perhaps the last system of the preceding page]
+     * @return the map (slur -> prevSlur) of connections detected
      */
-    public void connectSlursWith (Part precedingPart)
+    public Map<SlurInter, SlurInter> connectSlursWith (Part precedingPart)
     {
-        if (precedingPart != null) {
-            // Orphans slurs at the beginning of the current system part
-            List<SlurInter> orphans = getSlurs(SlurInter.isBeginningOrphan);
-            Collections.sort(orphans, SlurInter.verticalComparator);
+        Objects.requireNonNull(precedingPart, "Null part to connectSlursWith");
 
-            List<SlurInter> precedingOrphans = precedingPart.getSlurs(SlurInter.isEndingOrphan);
-            Collections.sort(precedingOrphans, SlurInter.verticalComparator);
+        // Links: Slur -> prevSlur
+        Map<SlurInter, SlurInter> links = new LinkedHashMap<SlurInter, SlurInter>();
 
-            // Connect the orphans as much as possible
-            SlurLoop:
-            for (SlurInter slur : orphans) {
-                for (SlurInter prevSlur : precedingOrphans) {
-                    if (slur.canExtend(prevSlur)) {
-                        slur.connectTo(prevSlur);
+        // Orphans slurs at the beginning of the current system part
+        List<SlurInter> orphans = getSlurs(SlurInter.isBeginningOrphan);
+        Collections.sort(orphans, SlurInter.verticalComparator);
 
-                        continue SlurLoop;
-                    }
-                }
+        List<SlurInter> precedingOrphans = precedingPart.getSlurs(SlurInter.isEndingOrphan);
+        Collections.sort(precedingOrphans, SlurInter.verticalComparator);
 
-                // No connection for this orphan
-                logger.info("Could not left-connect slur#" + slur.getId());
-                slur.delete();
-            }
-
-            // Check previous orphans
+        // Connect the orphans as much as possible
+        SlurLoop:
+        for (SlurInter slur : orphans) {
             for (SlurInter prevSlur : precedingOrphans) {
-                if (prevSlur.getExtension(RIGHT) == null) {
-                    logger.info("Could not right-connect slur#" + prevSlur.getId());
-                    prevSlur.delete();
+                if (slur.canExtend(prevSlur)) {
+                    // Cross-extensions
+                    links.put(slur, prevSlur);
+                    slur.checkTie(prevSlur);
+
+                    continue SlurLoop;
                 }
             }
+
+            // No connection for this orphan
+            logger.info("Could not left-connect slur#" + slur.getId());
+            slur.delete();
         }
+
+        // Check previous orphans for non-connected ones
+        precedingOrphans.removeAll(links.values());
+
+        for (SlurInter prevSlur : precedingOrphans) {
+            logger.info("Could not right-connect slur#" + prevSlur.getId());
+            prevSlur.delete();
+        }
+
+        return links;
     }
 
     //-----------------//
@@ -667,17 +672,6 @@ public class Part
         return system;
     }
 
-    //-------------//
-    // getVoiceIds //
-    //-------------//
-    /**
-     * @return the voice IDs
-     */
-    public List<Integer> getVoiceIds ()
-    {
-        return voiceIds;
-    }
-
     //---------//
     // isDummy //
     //---------//
@@ -763,33 +757,20 @@ public class Part
     }
 
     //-------------//
-    // setVoiceIds //
-    //-------------//
-    /**
-     * @param voiceIds the voice IDs to set
-     */
-    public void setVoiceIds (List<Integer> voiceIds)
-    {
-        this.voiceIds = voiceIds;
-    }
-
-    //-------------//
     // swapVoiceId //
     //-------------//
     /**
-     * Change the ID of voice at provided index for the specified newId
+     * Change the ID of voice for the specified newId
      *
-     * @param index index of voice in part voiceIds
+     * @param oldId old voice ID
      * @param newId new ID to be used for this voice in all measures of this system part
      */
-    public void swapVoiceId (int index,
+    public void swapVoiceId (int oldId,
                              int newId)
     {
         for (Measure measure : measures) {
             for (Voice voice : measure.getVoices()) {
-                int voiceIndex = voiceIds.indexOf(voice.getId());
-
-                if (voiceIndex == index) {
+                if (voice.getId() == oldId) {
                     measure.swapVoiceId(voice, newId);
 
                     break;

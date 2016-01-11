@@ -14,16 +14,16 @@ package omr.score;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.sheet.Part;
+import omr.sheet.SystemInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlList;
 
 /**
  * Class {@code LogicalPart} describes a part at score or page level.
@@ -71,11 +71,6 @@ public class LogicalPart
     /** Instrument MIDI program, if any. */
     @XmlElement(name = "midi-program")
     private Integer midiProgram;
-
-    /** Voice IDs in this logical part. */
-    @XmlList
-    @XmlElement(name = "voices")
-    private List<Integer> voiceIds;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -217,17 +212,6 @@ public class LogicalPart
         return staffCount;
     }
 
-    //-------------//
-    // getVoiceIds //
-    //-------------//
-    /**
-     * @return the voice IDs
-     */
-    public List<Integer> getVoiceIds ()
-    {
-        return voiceIds;
-    }
-
     //--------------//
     // isMultiStaff //
     //--------------//
@@ -274,14 +258,26 @@ public class LogicalPart
     }
 
     //-------------//
-    // setVoiceIds //
+    // swapVoiceId //
     //-------------//
     /**
-     * @param voiceIds the voice IDs to set
+     * Change in the provided page, the ID of voice for the specified newId
+     *
+     * @param page  the page to update
+     * @param oldId old ID
+     * @param newId new ID to be used for this voice in all measures of page for this logical part
      */
-    public void setVoiceIds (List<Integer> voiceIds)
+    public void swapVoiceId (Page page,
+                             int oldId,
+                             int newId)
     {
-        this.voiceIds = voiceIds;
+        for (SystemInfo system : page.getSystems()) {
+            Part part = system.getPartById(this.id);
+
+            if (part != null) {
+                part.swapVoiceId(oldId, newId);
+            }
+        }
     }
 
     //----------//

@@ -138,8 +138,7 @@ public class ScoreReduction
                     List<Part> cousins = page2syst.get(pagePart);
 
                     if (cousins == null) {
-                        cousins = new ArrayList<Part>();
-                        page2syst.put(pagePart, cousins);
+                        page2syst.put(pagePart, cousins = new ArrayList<Part>());
                     }
 
                     cousins.add(systPart);

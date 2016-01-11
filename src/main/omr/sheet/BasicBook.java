@@ -32,14 +32,17 @@ import omr.script.BookStepTask;
 import omr.script.ExportTask;
 import omr.script.PrintTask;
 import omr.script.Script;
+
 import static omr.sheet.Sheet.INTERNALS_RADIX;
-import omr.sheet.rhythm.VoiceFixer;
+
+import omr.sheet.rhythm.Voices;
 import omr.sheet.ui.BookBrowser;
 import omr.sheet.ui.StubsController;
 
 import omr.step.ProcessingCancellationException;
 import omr.step.Step;
 import omr.step.StepException;
+
 import static omr.step.ui.StepMonitoring.notifyStart;
 import static omr.step.ui.StepMonitoring.notifyStop;
 
@@ -266,25 +269,25 @@ public class BasicBook
             // Merges pages into their containing movement score (connecting the parts across pages)
             // TODO: this may need the addition of dummy parts in some pages
             new ScoreReduction(score).reduce();
-
-            for (Page page : score.getPages()) {
-                //                // - Retrieve the actual duration of every measure
-                //                page.accept(new DurationRetriever());
-                //
-                //                // - Check all voices timing, assign forward items if needed.
-                //                // - Detect special measures and assign proper measure ids
-                //                // If needed, we can trigger a reprocessing of this page
-                //                page.accept(new MeasureFixer());
-                //
-                // Check whether time signatures are consistent accross all pages in score
-                // TODO: to be implemented
-                //
-                // Connect slurs across pages
-                page.getFirstSystem().connectPageInitialSlurs(score);
-            }
+//
+//            for (Page page : score.getPages()) {
+//                //                // - Retrieve the actual duration of every measure
+//                //                page.accept(new DurationRetriever());
+//                //
+//                //                // - Check all voices timing, assign forward items if needed.
+//                //                // - Detect special measures and assign proper measure ids
+//                //                // If needed, we can trigger a reprocessing of this page
+//                //                page.accept(new MeasureFixer());
+//                //
+//                // Check whether time signatures are consistent accross all pages in score
+//                // TODO: to be implemented
+//                //
+//                // Connect slurs across pages
+//                page.getFirstSystem().connectPageInitialSlurs(score);
+//            }
 
             // Voices connection
-            VoiceFixer.refineScore(score);
+            Voices.refineScore(score);
         }
 
         setModified(true);

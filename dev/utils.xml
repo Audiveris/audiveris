@@ -128,6 +128,10 @@ import"
                      includes="build.xml, dev/**, src/**, config/**, eval/**, symbols/**, data/www/**, data/train/**, nbproject/**, res/**, *.jnlp, installer/build.xml, installer/config/**, installer/dev/**, installer/nbproject/**"
                      excludes="${dist.excludes},data/www/docs/api/**,dev/externals/**,dev/tools/**, nbproject/private/**, installer/nbproject/private/**"/>
         </zip>
+        
+        <!-- Copy to network dir -->
+        <copy file="${backup.dir}/${name}/${DSTAMP}-${machine.name}-src.zip"
+              todir="${network.dir}/${name}"/>
 
     </target>
     

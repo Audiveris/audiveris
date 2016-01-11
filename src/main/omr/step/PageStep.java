@@ -18,16 +18,21 @@ import omr.score.PageReduction;
 import omr.sheet.Part;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.rhythm.Voices;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.Inter;
 import omr.sig.inter.LyricLineInter;
+import omr.sig.inter.SlurInter;
+
+import static omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import omr.sheet.rhythm.VoiceFixer;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Class {@code PageStep} handles connections between systems in a page.
@@ -81,7 +86,7 @@ public class PageStep
             }
 
             // Refine voices IDs (and thus colors) across all systems of the page
-            VoiceFixer.refinePage(page);
+            Voices.refinePage(page);
 
             // Merge / renumber measure stacks within the page
             new MeasureFixer().process(page);
@@ -102,8 +107,18 @@ public class PageStep
         if (prevSystem != null) {
             // Examine every part in sequence
             for (Part part : system.getParts()) {
-                // Ending orphans in preceding system/part (if such part exists)
-                part.connectSlursWith(part.getPrecedingInPage());
+                // Connect to ending orphans in preceding system/part (if such part exists)
+                Part precedingPart = part.getPrecedingInPage();
+
+                if (precedingPart != null) {
+                    // Links: Slur -> prevSlur
+                    Map<SlurInter, SlurInter> links = part.connectSlursWith(precedingPart);
+
+                    for (Entry<SlurInter, SlurInter> entry : links.entrySet()) {
+                        entry.getKey().setExtension(LEFT, entry.getValue());
+                        entry.getValue().setExtension(RIGHT, entry.getKey());
+                    }
+                }
             }
         }
     }

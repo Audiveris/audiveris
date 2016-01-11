@@ -1316,7 +1316,18 @@ public class Measure
     //------------//
     public void sortVoices ()
     {
-        Collections.sort(voices, Voice.byId);
+        Collections.sort(voices, Voices.byOrdinate);
+    }
+
+    //--------------//
+    // renameVoices //
+    //--------------//
+    public void renameVoices ()
+    {
+        for (int i = 0; i < voices.size(); i++) {
+            voices.get(i).setId(i + 1);
+        }
+
     }
 
     //-------------//

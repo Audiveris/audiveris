@@ -18,6 +18,7 @@ import omr.score.Mark;
 import omr.score.TimeRational;
 
 import omr.sheet.beam.BeamGroup;
+
 import static omr.sheet.rhythm.Voice.Status.BEGIN;
 
 import omr.sig.inter.AbstractBeamInter;
@@ -30,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -55,17 +55,6 @@ public class Voice
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Voice.class);
-
-    /** To sort voices by their ID. */
-    public static final Comparator<Voice> byId = new Comparator<Voice>()
-    {
-        @Override
-        public int compare (Voice v1,
-                            Voice v2)
-        {
-            return Integer.compare(v1.id, v2.id);
-        }
-    };
 
     //~ Enumerations -------------------------------------------------------------------------------
     public static enum Status

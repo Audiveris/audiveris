@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                       V o i c e F i x e r                                      //
+//                                           V o i c e s                                          //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -30,24 +30,35 @@ import static omr.util.HorizontalSide.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Class {@code VoiceFixer} connects voices and harmonizes their IDs (and thus colors)
+ * Class {@code Voices} connects voices and harmonizes their IDs (and thus colors)
  * within a stack, a system, a page or a score.
  *
  * @author Hervé Bitteur
  */
-public abstract class VoiceFixer
+public abstract class Voices
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(VoiceFixer.class);
+    private static final Logger logger = LoggerFactory.getLogger(Voices.class);
 
-    /** To sort voices by vertical position within their containing measure stack. */
+    /** To sort voices by their ID. */
+    public static final Comparator<Voice> byId = new Comparator<Voice>()
+    {
+        @Override
+        public int compare (Voice v1,
+                            Voice v2)
+        {
+            return Integer.compare(v1.getId(), v2.getId());
+        }
+    };
+
+    /** To sort voices by vertical position within their containing measure or stack. */
     public static final Comparator<Voice> byOrdinate = new Comparator<Voice>()
     {
         @Override
@@ -117,75 +128,39 @@ public abstract class VoiceFixer
     // refinePage //
     //------------//
     /**
-     * Connect voices within the same logical part across all systems of a page,
-     * paying attention to dummy parts that may exist.
+     * Connect voices within the same logical part across all systems of a page.
      *
      * @param page the page to process
      */
     public static void refinePage (Page page)
     {
         final SystemInfo firstSystem = page.getFirstSystem();
-        int voiceOffset = 0; // Offset for voice IDs in current part
+        final SlurAdapter systemSlurAdapter = new SlurAdapter()
+        {
+            @Override
+            public SlurInter getInitialSlur (SlurInter slur)
+            {
+                return slur.getExtension(LEFT);
+            }
+        };
 
         for (LogicalPart logicalPart : page.getLogicalParts()) {
-            int logicalVoiceCount = 0;
-
             for (SystemInfo system : page.getSystems()) {
                 Part part = system.getPartById(logicalPart.getId());
 
                 if (part != null) {
-                    boolean swapped = false;
-
                     if (system != firstSystem) {
                         // Check tied voices from previous system
-                        final List<Voice> measureVoices = part.getFirstMeasure().getVoices();
-
-                        for (Voice voice : measureVoices) {
-                            Integer tiedId = getSystemTiedId(voice);
+                        for (Voice voice : part.getFirstMeasure().getVoices()) {
+                            Integer tiedId = getTiedId(voice, systemSlurAdapter);
 
                             if ((tiedId != null) && (voice.getId() != tiedId)) {
                                 part.swapVoiceId(voice.getId(), tiedId);
-                                swapped = true;
                             }
                         }
                     }
-
-                    final List<Integer> partIds = part.getVoiceIds();
-                    final List<Integer> newPartVoices = new ArrayList<Integer>();
-
-                    // Re-number IDs in part
-                    for (int i = 0; i < partIds.size(); i++) {
-                        final int id = partIds.get(i);
-                        int newId = voiceOffset + i + 1;
-                        newPartVoices.add(newId);
-
-                        if (newId != id) {
-                            part.swapVoiceId(i, newId);
-                            swapped = true;
-                        }
-                    }
-
-                    if (swapped) {
-                        for (Measure measure : part.getMeasures()) {
-                            measure.sortVoices();
-                        }
-                    }
-
-                    part.setVoiceIds(newPartVoices);
-                    logicalVoiceCount = Math.max(logicalVoiceCount, newPartVoices.size());
                 }
             }
-
-            // Voice IDs used in this logical part
-            final List<Integer> newLogicalVoices = new ArrayList<Integer>();
-
-            for (int i = 0; i < logicalVoiceCount; i++) {
-                newLogicalVoices.add(voiceOffset + i + 1);
-            }
-
-            logicalPart.setVoiceIds(newLogicalVoices);
-            logger.debug("{} voices:{}", logicalPart, newLogicalVoices);
-            voiceOffset += logicalVoiceCount;
         }
     }
 
@@ -194,11 +169,58 @@ public abstract class VoiceFixer
     //-------------//
     /**
      * Connect voices within the same logical part across all pages of a score.
+     * <p>
+     * Ties across sheets cannot easily be persisted, so we detect and use them on the fly.
      *
      * @param score the score to process
      */
     public static void refineScore (Score score)
     {
+        SystemInfo prevSystem = null; // Last system of preceding page, if any
+
+        for (int pageNumber = 1; pageNumber <= score.getPageCount(); pageNumber++) {
+            Page page = score.getPage(pageNumber);
+
+            if (prevSystem != null) {
+                for (LogicalPart scorePart : score.getLogicalParts()) {
+                    // Check tied voices from same logicalPart in previous page
+                    final LogicalPart logicalPart = page.getLogicalPartById(scorePart.getId());
+
+                    if (logicalPart == null) {
+                        continue; // scorePart not found in this page
+                    }
+
+                    final Part part = page.getFirstSystem().getPartById(logicalPart.getId());
+
+                    if (part == null) {
+                        continue; // logicalPart not found in the first system
+                    }
+
+                    final Map<SlurInter, SlurInter> links = getLinks(logicalPart, page, prevSystem);
+                    final SlurAdapter pageSlurAdapter = new SlurAdapter()
+                    {
+                        @Override
+                        public SlurInter getInitialSlur (SlurInter slur)
+                        {
+                            return links.get(slur);
+                        }
+                    };
+
+                    for (Voice voice : part.getFirstMeasure().getVoices()) {
+                        Integer tiedId = getTiedId(voice, pageSlurAdapter);
+
+                        if ((tiedId != null) && (voice.getId() != tiedId)) {
+                            logicalPart.swapVoiceId(page, voice.getId(), tiedId);
+                        }
+                    }
+                }
+            }
+
+            prevSystem = page.getLastSystem();
+
+            // TODO: Here we could dispose of sheet/page...
+            /// score.disposePage(page);
+        }
     }
 
     //-------------//
@@ -209,26 +231,18 @@ public abstract class VoiceFixer
      * <p>
      * When this method is called, initial IDs have been assigned according to voice creation
      * (whole voices first, then slot voices, with each voice remaining in its part).
-     * See Slot.buildVoices() and Slot.assignVoices() methods.
+     * See {@link Slot#buildVoices(java.util.List)} and {@link Slot#assignVoices()} methods.
      * <p>
-     * Here we simply rename the IDs from top to bottom.
+     * Here we simply rename the IDs from top to bottom (roughly), within each part.
      *
      * @param stack the stack to process
      */
     public static void refineStack (MeasureStack stack)
     {
-        // Sort voices vertically in stack
-        List<Voice> voices = new ArrayList<Voice>(stack.getVoices());
-        Collections.sort(voices, byOrdinate);
-
-        // Assign each voice ID according to its relative vertical position
-        for (int i = 0; i < voices.size(); i++) {
-            voices.get(i).setId(i + 1);
-        }
-
-        // Sort voices by ID within each measure
+        // Within each measure, sort voices vertically and rename them accordingly.
         for (Measure measure : stack.getMeasures()) {
             measure.sortVoices();
+            measure.renameVoices();
         }
     }
 
@@ -246,60 +260,76 @@ public abstract class VoiceFixer
     public static void refineSystem (SystemInfo system)
     {
         final MeasureStack firstStack = system.getFirstMeasureStack();
-        int count = 0; // Count of voice IDs in this system
+        final SlurAdapter measureSlurAdapter = new SlurAdapter()
+        {
+            @Override
+            public SlurInter getInitialSlur (SlurInter slur)
+            {
+                return slur;
+            }
+        };
 
         for (Part part : system.getParts()) {
-            // Voice IDs assigned in this part
-            final List<Integer> partIds = new ArrayList<Integer>();
-
             for (MeasureStack stack : system.getMeasureStacks()) {
-                // Voices used within this measure
-                final Measure measure = stack.getMeasureAt(part);
-                final List<Voice> measureVoices = measure.getVoices(); // Sorted by ID & vertically
-
                 if (stack != firstStack) {
-                    // Check tied voices from previous measure
+                    // Check tied voices from same part in previous measure
+                    final Measure measure = stack.getMeasureAt(part);
+                    final List<Voice> measureVoices = measure.getVoices(); // Sorted vertically
+
                     for (Voice voice : measureVoices) {
-                        Integer tiedId = getMeasureTiedId(voice);
+                        Integer tiedId = getTiedId(voice, measureSlurAdapter);
 
                         if ((tiedId != null) && (voice.getId() != tiedId)) {
                             measure.swapVoiceId(voice, tiedId);
                         }
                     }
                 }
-
-                // Connect un-assigned measure voices to part voices
-                for (int i = 0; i < measureVoices.size(); i++) {
-                    final Voice voice = measureVoices.get(i);
-                    int newId = voice.getId();
-
-                    if (!partIds.contains(newId)) {
-                        partIds.add(newId = ++count); // Extend part list
-
-                        if (voice.getId() != newId) {
-                            measure.swapVoiceId(voice, newId);
-                        }
-                    }
-                }
             }
-
-            // Store voices IDs into their containing part
-            logger.debug("System#{} {} {}", system.getId(), part, partIds);
-            part.setVoiceIds(partIds);
         }
     }
 
-    //------------------//
-    // getMeasureTiedId //
-    //------------------//
+    //----------//
+    // getLinks //
+    //----------//
     /**
-     * Check whether the provided (measure) voice is tied to a voice in previous measure
-     * and thus must reuse the same ID.
+     * Within the same logical part, retrieve the connections between the (orphan) slurs
+     * at beginning of this page and the (orphan) slurs at end of the previous page.
      *
-     * @param voice the voice to check
+     * @param logicalPart     the logicalPart to connect
+     * @param page            the containing page
+     * @param precedingSystem the last system of previous page, if any
+     * @return the links (slur-> prevSlur), perhaps empty but not null
+     */
+    private static Map<SlurInter, SlurInter> getLinks (LogicalPart logicalPart,
+                                                       Page page,
+                                                       SystemInfo precedingSystem)
+    {
+        if (precedingSystem != null) {
+            final SystemInfo firstSystem = page.getFirstSystem();
+            final Part part = firstSystem.getPartById(logicalPart.getId());
+            final Part precedingPart = precedingSystem.getPartById(logicalPart.getId());
+
+            if ((part != null) && (precedingPart != null)) {
+                return part.connectSlursWith(precedingPart); // Links: Slur -> prevSlur
+            }
+        }
+
+        return Collections.EMPTY_MAP;
+    }
+
+    //-----------//
+    // getTiedId //
+    //-----------//
+    /**
+     * Check whether the provided voice is tied (via a tie slur) to a previous voice
+     * and thus must use the same ID.
+     *
+     * @param voice       the voice to check
+     * @param slurAdapter to provide the linked slur at previous location
      * @return the imposed ID if any, null otherwise
      */
-    private static Integer getMeasureTiedId (Voice voice)
+    private static Integer getTiedId (Voice voice,
+                                      SlurAdapter slurAdapter)
     {
         final AbstractChordInter firstChord = voice.getFirstChord();
         final SIGraph sig = firstChord.getSig();
@@ -314,49 +344,7 @@ public abstract class VoiceFixer
                         SlurInter slur = (SlurInter) sig.getOppositeInter(note, r);
 
                         if (slur.isTie()) {
-                            AbstractHeadInter left = slur.getHead(LEFT);
-
-                            if (left != null) {
-                                final Voice leftVoice = left.getVoice();
-                                logger.debug("{} ties {} to {}", slur, voice, leftVoice);
-
-                                return leftVoice.getId();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    //-----------------//
-    // getSystemTiedId //
-    //-----------------//
-    /**
-     * Check whether the provided (system) voice is tied to a voice in previous system
-     * and thus must reuse the same ID.
-     *
-     * @param voice the voice to check
-     * @return the imposed ID if any, null otherwise
-     */
-    private static Integer getSystemTiedId (Voice voice)
-    {
-        final AbstractChordInter firstChord = voice.getFirstChord();
-        final SIGraph sig = firstChord.getSig();
-
-        // Is there an incoming tie on a head of this chord?
-        for (Inter note : firstChord.getNotes()) {
-            if (note instanceof AbstractHeadInter) {
-                for (Relation r : sig.getRelations(note, SlurHeadRelation.class)) {
-                    SlurHeadRelation shRel = (SlurHeadRelation) r;
-
-                    if (shRel.getSide() == RIGHT) {
-                        SlurInter slur = (SlurInter) sig.getOppositeInter(note, r);
-
-                        if (slur.isTie()) {
-                            SlurInter prevSlur = slur.getExtension(LEFT);
+                            SlurInter prevSlur = slurAdapter.getInitialSlur(slur);
 
                             if (prevSlur != null) {
                                 AbstractHeadInter left = prevSlur.getHead(LEFT);
@@ -375,5 +363,24 @@ public abstract class VoiceFixer
         }
 
         return null;
+    }
+
+    //~ Inner Interfaces ---------------------------------------------------------------------------
+    //-------------//
+    // SlurAdapter //
+    //-------------//
+    private static interface SlurAdapter
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        /**
+         * Report the slur connected to the left of the provided one.
+         * This can be the extending slur when looking in previous system, or the slur itself when
+         * looking in previous measure within the same system.
+         *
+         * @param slur the slur to follow
+         * @return the extending slur (or the slur itself)
+         */
+        SlurInter getInitialSlur (SlurInter slur);
     }
 }

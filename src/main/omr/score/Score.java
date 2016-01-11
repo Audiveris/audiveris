@@ -20,6 +20,7 @@ import omr.sheet.Book;
 import omr.sheet.Sheet;
 import omr.sheet.SheetStub;
 
+import omr.util.Navigable;
 import omr.util.Param;
 
 import org.slf4j.Logger;
@@ -34,7 +35,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import omr.util.Navigable;
 
 /**
  * Class {@code Score} represents a single movement, and is composed of one or several
@@ -83,7 +83,6 @@ public class Score
     /** Referenced pages. */
     private ArrayList<Page> pages;
 
-    //
     /** Handling of parts name and program. */
     private final Param<List<PartData>> partsParam = new PartsParam();
 
@@ -115,6 +114,32 @@ public class Score
         return constants.defaultVolume.getValue();
     }
 
+    //-----------------//
+    // setDefaultTempo //
+    //-----------------//
+    /**
+     * Assign default value for Midi tempo.
+     *
+     * @param tempo the default tempo value
+     */
+    public static void setDefaultTempo (int tempo)
+    {
+        constants.defaultTempo.setValue(tempo);
+    }
+
+    //------------------//
+    // setDefaultVolume //
+    //------------------//
+    /**
+     * Assign default value for Midi volume.
+     *
+     * @param volume the default volume value
+     */
+    public static void setDefaultVolume (int volume)
+    {
+        constants.defaultVolume.setValue(volume);
+    }
+
     //---------//
     // addPage //
     //---------//
@@ -135,6 +160,14 @@ public class Score
     public void close ()
     {
         logger.info("Closing {}", this);
+    }
+
+    //-------------//
+    // disposePage //
+    //-------------//
+    public void disposePage (Page page)
+    {
+        throw new RuntimeException("disposePage. Not implemented yet.");
     }
 
     /**
@@ -217,6 +250,39 @@ public class Score
         }
 
         return offset;
+    }
+
+    //---------//
+    // getPage //
+    //---------//
+    /**
+     * Report the page at provided 1-based number
+     *
+     * @param number 1-based number in score
+     * @return the corresponding page
+     */
+    public Page getPage (int number)
+    {
+        final int index = number - 1;
+
+        if ((index < 0) || (index >= pageRefs.size())) {
+            throw new IllegalArgumentException("No page with number " + number);
+        }
+
+        return getPage(pageRefs.get(index));
+    }
+
+    //--------------//
+    // getPageCount //
+    //--------------//
+    /**
+     * Report the number of pages in score.
+     *
+     * @return number of pages
+     */
+    public int getPageCount ()
+    {
+        return pageRefs.size();
     }
 
     //--------------//
@@ -331,32 +397,6 @@ public class Score
     public Param<Integer> getTempoParam ()
     {
         return tempoParam;
-    }
-
-    //-----------------//
-    // setDefaultTempo //
-    //-----------------//
-    /**
-     * Assign default value for Midi tempo.
-     *
-     * @param tempo the default tempo value
-     */
-    public static void setDefaultTempo (int tempo)
-    {
-        constants.defaultTempo.setValue(tempo);
-    }
-
-    //------------------//
-    // setDefaultVolume //
-    //------------------//
-    /**
-     * Assign default value for Midi volume.
-     *
-     * @param volume the default volume value
-     */
-    public static void setDefaultVolume (int volume)
-    {
-        constants.defaultVolume.setValue(volume);
     }
 
     //-----------//
@@ -665,38 +705,3 @@ public class Score
         }
     }
 }
-//
-//    //--------------//
-//    // containsPage //
-//    //--------------//
-//    public boolean containsPage (Page page)
-//    {
-//        return getPages().contains(page);
-//    }
-//
-//
-//    //-------------//
-//    // buildSource //
-//    //-------------//
-//    /**
-//     * Build the Source structure that describes the source items for this score.
-//     *
-//     * @return the populated Source object
-//     */
-//    public Source buildSource ()
-//    {
-//        Source source = new Source();
-//        source.setFile(book.getInputPath().toString());
-//        source.setOffset((book.getOffset() != null) ? book.getOffset() : 0);
-//
-//        for (Page page : getPages()) {
-//            Source.SheetSystems sheetSystems = new Source.SheetSystems(page.getSheet().getNumber());
-//            source.getSheets().add(sheetSystems);
-//
-//            for (SystemInfo system : page.getSystems()) {
-//                sheetSystems.getSystems().add(system.getId());
-//            }
-//        }
-//
-//        return source;
-//    }

@@ -19,7 +19,6 @@ import omr.lag.Section;
 
 import omr.score.LogicalPart;
 import omr.score.Page;
-import omr.score.Score;
 import omr.score.StaffPosition;
 
 import omr.sheet.grid.LineInfo;
@@ -34,7 +33,9 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.SentenceInter;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Jaxb;
 import omr.util.Navigable;
 
@@ -278,47 +279,6 @@ public class SystemInfo
     public int compareTo (SystemInfo that)
     {
         return Integer.compare(id, that.id);
-    }
-
-    //-------------------------//
-    // connectPageInitialSlurs //
-    //-------------------------//
-    /**
-     * For this system, retrieve the connections between the (orphan) slurs at the
-     * beginning of this page and the (orphan) slurs at the end of the previous page.
-     *
-     * @param score the containing score
-     */
-    public void connectPageInitialSlurs (Score score)
-    {
-        // Containing page
-        final Page page = getPage();
-
-        // Safer: check we are the very first system in page
-        if (page.getFirstSystem() != this) {
-            throw new IllegalArgumentException(
-                    "connectPageInitialSlurs called for non-first system");
-        }
-
-        // If very first page, we are done
-        if (score.getFirstPage() == page) {
-            return;
-        }
-
-        SystemInfo precedingSystem = page.getPrecedingInScore(score).getLastSystem();
-
-        if (precedingSystem != null) {
-            // Examine every part in sequence
-            for (int index = 0; index < parts.size(); index++) {
-                final Part part = parts.get(index);
-
-                // Find out the proper preceding part (across pages)
-                Part precedingPart = precedingSystem.getParts().get(index);
-
-                // Ending orphans in preceding system/part (if such part exists)
-                part.connectSlursWith(precedingPart);
-            }
-        }
     }
 
     //---------//

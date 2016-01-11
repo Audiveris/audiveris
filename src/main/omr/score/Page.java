@@ -562,7 +562,7 @@ public class Page
     @Override
     public String toString ()
     {
-        return "{Page " + getId() + "}";
+        return "{Page#" + sheet.getNumber() + "." + getId() + "}";
     }
 
     //------------------------//

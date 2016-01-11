@@ -30,9 +30,7 @@ import omr.sig.relation.Relation;
 import omr.sig.relation.SlurHeadRelation;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Jaxb;
 import omr.util.Predicate;
 
@@ -244,20 +242,16 @@ public class SlurInter
                && this.isCompatibleWith(prevSlur);
     }
 
-    //-----------//
-    // connectTo //
-    //-----------//
+    //----------//
+    // checkTie //
+    //----------//
     /**
-     * Make the connection with another slur in the previous system (within same sheet).
+     * Check whether the cross-system slur connection is a tie.
      *
-     * @param prevSlur slur at the end of previous system
+     * @param prevSlur slur at the end of previous system (perhaps in previous sheet)
      */
-    public void connectTo (SlurInter prevSlur)
+    public void checkTie (SlurInter prevSlur)
     {
-        // Cross-extensions
-        leftExtension = prevSlur;
-        prevSlur.rightExtension = this;
-
         // Tie?
         boolean isATie = haveSameHeight(prevSlur.getHead(LEFT), this.getHead(RIGHT));
 
@@ -313,7 +307,7 @@ public class SlurInter
      */
     public SlurInter getExtension (HorizontalSide side)
     {
-        Objects.requireNonNull(side, "No side provided for slur extension");
+        Objects.requireNonNull(side, "No side provided for slur getExtension");
 
         return (side == HorizontalSide.LEFT) ? leftExtension : rightExtension;
     }
@@ -370,6 +364,27 @@ public class SlurInter
     public boolean isTie ()
     {
         return tie != null;
+    }
+
+    //--------------//
+    // setExtension //
+    //--------------//
+    /**
+     * Link the slur to another one, on the provided side.
+     *
+     * @param side  the provided side
+     * @param other the other slur
+     */
+    public void setExtension (HorizontalSide side,
+                              SlurInter other)
+    {
+        Objects.requireNonNull(side, "No side provided for slur setExtension");
+
+        if (side == HorizontalSide.LEFT) {
+            leftExtension = other;
+        } else {
+            rightExtension = other;
+        }
     }
 
     //--------//
