@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -399,9 +400,9 @@ public class SlotsBuilder
 
                 // Check slots time so far are consistent
                 if (!slot.setStartTime(term) || !checkInterSlot(slot)) {
-//                    if (failFast) {
-                    return false;
-//                    }
+                    if (failFast) {
+                        return false;
+                    }
                 }
 
                 // Determine the voice of each chord in the slot
@@ -416,7 +417,8 @@ public class SlotsBuilder
             actives.removeAll(endings);
         }
 
-        return true;
+        // Check that no staff is left empty
+        return checkStavesAreFilled();
     }
 
     //----------------//
@@ -470,6 +472,44 @@ public class SlotsBuilder
         //            }
         //
         return false;
+    }
+
+    //----------------------//
+    // checkStavesAreFilled //
+    //----------------------//
+    /**
+     * Configuration checks may overlook (poor) rests, thus leaving staves empty.
+     *
+     * @return true if OK
+     */
+    private boolean checkStavesAreFilled ()
+    {
+        // Use a temporary map: (staff -> chords)
+        Map<Staff, List<AbstractChordInter>> map = new HashMap<Staff, List<AbstractChordInter>>();
+
+        for (Staff staff : stack.getSystem().getStaves()) {
+            map.put(staff, new ArrayList<AbstractChordInter>());
+        }
+
+        // Populate map of staves with installed chords
+        for (Measure measure : stack.getMeasures()) {
+            for (AbstractChordInter chord : measure.getAllChords()) {
+                for (Staff staff : chord.getStaves()) {
+                    map.get(staff).add(chord);
+                }
+            }
+        }
+
+        // Look for empty staves
+        for (Map.Entry<Staff, List<AbstractChordInter>> entry : map.entrySet()) {
+            if (entry.getValue().isEmpty()) {
+                logger.debug("{} staff#{} is empty", stack, entry.getKey().getId());
+
+                return false;
+            }
+        }
+
+        return true;
     }
 
     //-----------------//
