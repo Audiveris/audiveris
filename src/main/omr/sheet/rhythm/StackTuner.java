@@ -676,7 +676,6 @@ public class StackTuner
 
         // This should be used only for rather small sizes of rests collection ...
         final boolean[][] bools = Combinations.getVectors(n);
-        int targetIdx = candidateIndex + 1;
 
         for (boolean[] vector : bools) {
             StackConfig newConfig = config.copy();
@@ -692,18 +691,6 @@ public class StackTuner
                 if (!candidates.contains(newConfig)) {
                     candidates.add(newConfig);
                 }
-
-                //                if (!candidates.contains(newConfig)) {
-                //                    logger.debug("Ins{}", newConfig.ids());
-                //                    candidates.add(targetIdx++, newConfig);
-                //                } else {
-                //                    int idx = candidates.indexOf(newConfig);
-                //
-                //                    if (idx > targetIdx) {
-                //                        Collections.swap(candidates, idx, targetIdx++);
-                //                        logger.debug("Pro{}", newConfig.ids());
-                //                    }
-                //                }
             }
         }
     }

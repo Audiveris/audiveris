@@ -20,6 +20,7 @@ import java.awt.Rectangle;
 
 /**
  * Class {@code AbstractDirectionInter} represents any direction.
+ * Coda, text, pedal, segno, wedge.
  *
  * @author Hervé Bitteur
  */

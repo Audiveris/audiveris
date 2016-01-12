@@ -18,6 +18,7 @@ import omr.sheet.rhythm.Voice;
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.DynamicsInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.LyricItemInter;
 import omr.sig.inter.PedalInter;
@@ -36,6 +37,7 @@ import omr.sig.relation.SlurHeadRelation;
 import omr.text.TextRole;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
@@ -52,7 +54,7 @@ import java.awt.geom.Point2D;
  *
  * @author Hervé Bitteur
  */
-class SymbolsLinker
+public class SymbolsLinker
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -84,10 +86,22 @@ class SymbolsLinker
     //---------//
     public void process ()
     {
+        linkDynamics();
         linkTexts();
         linkPedals();
         linkWedges();
         linkGraces();
+    }
+
+    //--------------//
+    // linkDynamics //
+    //--------------//
+    private void linkDynamics ()
+    {
+        for (Inter inter : sig.inters(DynamicsInter.class)) {
+            DynamicsInter dynamics = (DynamicsInter) inter;
+            dynamics.linkWithChord();
+        }
     }
 
     //------------//
@@ -198,7 +212,7 @@ class SymbolsLinker
             case ChordName: {
                 // Map chordName with proper chord
                 MeasureStack stack = system.getMeasureStackAt(location);
-                AbstractChordInter chordBelow = stack.getChordBelow(location);
+                AbstractChordInter chordBelow = stack.getStandardChordBelow(location);
 
                 if (chordBelow != null) {
                     WordInter word = sentence.getFirstWord(); // The single word in fact
@@ -238,7 +252,7 @@ class SymbolsLinker
                 if (chordAbove != null) {
                     sig.addEdge(chordAbove, wedge, new ChordWedgeRelation(side));
                 } else {
-                    final AbstractChordInter chordBelow = stack.getChordBelow(location);
+                    final AbstractChordInter chordBelow = stack.getStandardChordBelow(location);
 
                     if (chordBelow != null) {
                         sig.addEdge(chordBelow, wedge, new ChordWedgeRelation(side));

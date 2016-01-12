@@ -20,6 +20,7 @@ import java.awt.Rectangle;
 
 /**
  * Class {@code AbstractNotationInter} represents any notation.
+ * arpeggiate, articulation, fermata, ornament, tuplet.
  *
  * @author Hervé Bitteur
  */

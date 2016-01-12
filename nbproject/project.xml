@@ -21,6 +21,8 @@
         <references xmlns="http://www.netbeans.org/ns/ant-project-references/1"/>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>arg</word>
+            <word>arpeggiate</word>
+            <word>Audiveris</word>
             <word>barline</word>
             <word>barlines</word>
             <word>binarization</word>

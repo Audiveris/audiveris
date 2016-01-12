@@ -445,16 +445,16 @@ public class MeasureStack
         return null;
     }
 
-    //---------------//
-    // getChordBelow //
-    //---------------//
+    //-----------------------//
+    // getStandardChordBelow //
+    //-----------------------//
     /**
-     * Retrieve the closest chord within staff below.
+     * Retrieve the closest chord (head or rest) within staff below.
      *
      * @param point the system-based location
      * @return the most suitable chord, or null
      */
-    public AbstractChordInter getChordBelow (Point2D point)
+    public AbstractChordInter getStandardChordBelow (Point2D point)
     {
         Collection<AbstractChordInter> belows = getStandardChordsBelow(point);
 
@@ -676,7 +676,7 @@ public class MeasureStack
         }
 
         // Second, try staff just below
-        return getChordBelow(point);
+        return getStandardChordBelow(point);
     }
 
     //-----------//

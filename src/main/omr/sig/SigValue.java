@@ -99,6 +99,7 @@ import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import omr.sig.inter.FermataDotInter;
+import omr.sig.relation.ChordDynamicsRelation;
 
 /**
  * Class {@code SigValue} represents the content of a SIG for use by JAXB.
@@ -337,6 +338,7 @@ public class SigValue
             @XmlElement(name = "chord-pedal", type = ChordPedalRelation.class),
             @XmlElement(name = "chord-sentence", type = ChordSentenceRelation.class),
             @XmlElement(name = "chord-syllable", type = ChordSyllableRelation.class),
+            @XmlElement(name = "chord-dynamics", type = ChordDynamicsRelation.class),
             @XmlElement(name = "chord-wedge", type = ChordWedgeRelation.class),
             @XmlElement(name = "clef-key", type = ClefKeyRelation.class),
             @XmlElement(name = "dot-fermata", type = DotFermataRelation.class),

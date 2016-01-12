@@ -43,6 +43,8 @@ import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.AlterInter;
 import omr.sig.inter.ClefInter;
+import omr.sig.inter.DynamicsInter;
+import omr.sig.inter.FermataInter;
 import omr.sig.inter.HeadChordInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.KeyInter;
@@ -56,10 +58,12 @@ import omr.sig.inter.StemInter;
 import omr.sig.inter.TimeInter;
 import omr.sig.inter.TupletInter;
 import omr.sig.inter.WedgeInter;
+import omr.sig.relation.ChordDynamicsRelation;
 import omr.sig.relation.ChordPedalRelation;
 import omr.sig.relation.ChordSentenceRelation;
 import omr.sig.relation.ChordSyllableRelation;
 import omr.sig.relation.ChordWedgeRelation;
+import omr.sig.relation.FermataChordRelation;
 import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.SlurHeadRelation;
@@ -90,8 +94,10 @@ import com.audiveris.proxymusic.Credit;
 import com.audiveris.proxymusic.Defaults;
 import com.audiveris.proxymusic.Direction;
 import com.audiveris.proxymusic.DirectionType;
+import com.audiveris.proxymusic.Dynamics;
 import com.audiveris.proxymusic.Empty;
 import com.audiveris.proxymusic.Encoding;
+import com.audiveris.proxymusic.Fermata;
 import com.audiveris.proxymusic.FontStyle;
 import com.audiveris.proxymusic.FontWeight;
 import com.audiveris.proxymusic.FormattedText;
@@ -146,6 +152,7 @@ import com.audiveris.proxymusic.TimeModification;
 import com.audiveris.proxymusic.TimeSymbol;
 import com.audiveris.proxymusic.Tuplet;
 import com.audiveris.proxymusic.TypedText;
+import com.audiveris.proxymusic.UprightInverted;
 import com.audiveris.proxymusic.Wedge;
 import com.audiveris.proxymusic.WedgeType;
 import com.audiveris.proxymusic.Work;
@@ -1106,97 +1113,98 @@ public class PartwiseBuilder
     //        }
     //    }
     //
-    //
-    //    //------------------//
-    //    // process Dynamics //
-    //    //------------------//
-    //    private void process (Dynamics dynamics)
-    //    {
-    //        try {
-    //            logger.debug("Visiting {}", dynamics);
-    //
-    //            // No point to export incorrect dynamics
-    //            if (dynamics.getShape() == null) {
-    //                return;
-    //            }
-    //
-    //            Direction direction = factory.createDirection();
-    //            DirectionType directionType = factory.createDirectionType();
-    //            Dynamics pmDynamics = factory.createDynamics();
-    //
-    //            // Precise dynamic signature
-    //            pmDynamics.getPOrPpOrPpp().add(getDynamicsObject(dynamics.getShape()));
-    //
-    //            // Staff ?
-    //            OldStaff staff = current.note.getStaff();
-    //            insertStaffId(direction, staff);
-    //
-    //            // Placement
-    //            if (dynamics.getReferencePoint().y < current.note.getCenter().y) {
-    //                direction.setPlacement(AboveBelow.ABOVE);
-    //            } else {
-    //                direction.setPlacement(AboveBelow.BELOW);
-    //            }
-    //
-    //            // default-y
-    //            pmDynamics.setDefaultY(yOf(dynamics.getReferencePoint(), staff));
-    //
-    //            // Relative-x (No offset for the time being) using note left side
-    //            pmDynamics.setRelativeX(
-    //                    toTenths(dynamics.getReferencePoint().x - current.note.getCenterLeft().x));
-    //
-    //            // Related sound level, if available
-    //            Integer soundLevel = dynamics.getSoundLevel();
-    //
-    //            if (soundLevel != null) {
-    //                Sound sound = factory.createSound();
-    //                sound.setDynamics(new BigDecimal(soundLevel));
-    //                direction.setSound(sound);
-    //            }
-    //
-    //            // Everything is now OK
-    //            directionType.getDynamics().add(pmDynamics);
-    //            direction.getDirectionType().add(directionType);
-    //            current.pmMeasure.getNoteOrBackupOrForward().add(direction);
-    //        } catch (Exception ex) {
-    //            logger.warn("Error visiting " + dynamics, ex);
-    //        }
-    //    }
-    //
-    //    //----------------//
-    //    // processFermata //
-    //    //----------------//
-    //    private void processFermata (OldFermata fermata)
-    //    {
-    //        try {
-    //            logger.debug("Visiting {}", fermata);
-    //
-    //            Fermata pmFermata = factory.createFermata();
-    //
-    //            // default-y (of the fermata dot)
-    //            // For upright we use bottom of the box, for inverted the top of the box
-    //            Rectangle box = fermata.getBox();
-    //            Point dot;
-    //
-    //            if (fermata.getShape() == Shape.FERMATA_BELOW) {
-    //                dot = new Point(box.x + (box.width / 2), box.y);
-    //            } else {
-    //                dot = new Point(box.x + (box.width / 2), box.y + box.height);
-    //            }
-    //
-    //            pmFermata.setDefaultY(yOf(dot, current.note.getStaff()));
-    //
-    //            // Type
-    //            pmFermata.setType(
-    //                    (fermata.getShape() == Shape.FERMATA) ? UprightInverted.UPRIGHT
-    //                            : UprightInverted.INVERTED);
-    //            // Everything is now OK
-    //            getNotations().getTiedOrSlurOrTuplet().add(pmFermata);
-    //        } catch (Exception ex) {
-    //            logger.warn("Error visiting " + fermata, ex);
-    //        }
-    //    }
-    //
+    //-----------------//
+    // processDynamics //
+    //-----------------//
+    private void processDynamics (DynamicsInter dynamics)
+    {
+        try {
+            logger.debug("Visiting {}", dynamics);
+
+            // No point to export incorrect dynamics
+            if (dynamics.getShape() == null) {
+                return;
+            }
+
+            Direction direction = factory.createDirection();
+            DirectionType directionType = factory.createDirectionType();
+            Dynamics pmDynamics = factory.createDynamics();
+
+            // Precise dynamic signature
+            pmDynamics.getPOrPpOrPpp().add(getDynamicsObject(dynamics.getShape()));
+
+            // Staff ?
+            Staff staff = current.note.getStaff();
+            insertStaffId(direction, staff);
+
+            // Placement
+            final Point location = dynamics.getCenterLeft();
+
+            if (location.y < current.note.getCenter().y) {
+                direction.setPlacement(AboveBelow.ABOVE);
+            } else {
+                direction.setPlacement(AboveBelow.BELOW);
+            }
+
+            // default-y
+            pmDynamics.setDefaultY(yOf(location, staff));
+
+            // Relative-x (No offset for the time being) using note left side
+            pmDynamics.setRelativeX(toTenths(location.x - current.note.getCenterLeft().x));
+
+            // Related sound level, if available
+            Integer soundLevel = dynamics.getSoundLevel();
+
+            if (soundLevel != null) {
+                Sound sound = factory.createSound();
+                sound.setDynamics(new BigDecimal(soundLevel));
+                direction.setSound(sound);
+            }
+
+            // Everything is now OK
+            directionType.getDynamics().add(pmDynamics);
+            direction.getDirectionType().add(directionType);
+            current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+        } catch (Exception ex) {
+            logger.warn("Error visiting " + dynamics, ex);
+        }
+    }
+
+    //----------------//
+    // processFermata //
+    //----------------//
+    private void processFermata (FermataInter fermata)
+    {
+        try {
+            logger.debug("Visiting {}", fermata);
+
+            Fermata pmFermata = factory.createFermata();
+
+            // default-y (of the fermata dot)
+            // For upright we use bottom of the box, for inverted the top of the box
+            Rectangle box = fermata.getBounds();
+            Point dot;
+
+            if (fermata.getShape() == Shape.FERMATA_BELOW) {
+                dot = new Point(box.x + (box.width / 2), box.y);
+            } else {
+                dot = new Point(box.x + (box.width / 2), box.y + box.height);
+            }
+
+            pmFermata.setDefaultY(yOf(dot, current.note.getStaff()));
+
+            // Type
+            pmFermata.setType(
+                    (fermata.getShape() == Shape.FERMATA) ? UprightInverted.UPRIGHT
+                            : UprightInverted.INVERTED);
+
+            // Everything is now OK
+            getNotations().getTiedOrSlurOrTuplet().add(pmFermata);
+        } catch (Exception ex) {
+            logger.warn("Error visiting " + fermata, ex);
+        }
+    }
+
     //------------//
     // processKey //
     //------------//
@@ -1519,7 +1527,7 @@ public class PartwiseBuilder
             // For first note in chord
             if (!current.measure.isDummy()) {
                 if (isFirstInChord) {
-                    // Chord direction events (statement, pedal, TODO: others?)
+                    // Chord direction events (statement, pedal, dynamics, TODO: others?)
                     for (Relation rel : sig.edgesOf(chord)) {
                         if (rel instanceof ChordSentenceRelation) {
                             processDirection((SentenceInter) sig.getOppositeInter(chord, rel));
@@ -1528,6 +1536,8 @@ public class PartwiseBuilder
                         } else if (rel instanceof ChordWedgeRelation) {
                             HorizontalSide side = ((ChordWedgeRelation) rel).getSide();
                             processWedge((WedgeInter) sig.getOppositeInter(chord, rel), side);
+                        } else if (rel instanceof ChordDynamicsRelation) {
+                            processDynamics((DynamicsInter) sig.getOppositeInter(chord, rel));
                         }
                     }
 
@@ -1550,6 +1560,11 @@ public class PartwiseBuilder
                 //                    ///node.accept(this);
                 //                    process(node);
                 //                }
+                for (Relation rel : sig.edgesOf(chord)) {
+                    if (rel instanceof FermataChordRelation) {
+                        processFermata((FermataInter) sig.getOppositeInter(chord, rel));
+                    }
+                }
             } else {
                 // Chord indication for every other note
                 current.pmNote.setChord(new Empty());

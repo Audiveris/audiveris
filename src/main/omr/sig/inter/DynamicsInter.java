@@ -11,9 +11,25 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.constant.ConstantSet;
+
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
+import omr.math.GeoUtil;
+
+import omr.sheet.Scale;
+import omr.sheet.Staff;
+import omr.sheet.rhythm.MeasureStack;
+
+import omr.sig.relation.ChordDynamicsRelation;
+
+import omr.util.VerticalSide;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +48,10 @@ public class DynamicsInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(DynamicsInter.class);
+
     /** Map Shape -> Signature. */
     private static final Map<Shape, String> sigs = new EnumMap<Shape, String>(Shape.class);
 
@@ -43,14 +63,15 @@ public class DynamicsInter
         //        sigs.put(Shape.DYNAMICS_CHAR_Z, "z");
         //
         // True dynamics symbols
-        sigs.put(Shape.DYNAMICS_P, "p");
         sigs.put(Shape.DYNAMICS_PP, "pp");
+        sigs.put(Shape.DYNAMICS_P, "p");
         sigs.put(Shape.DYNAMICS_MP, "mp");
+        //------------
+        sigs.put(Shape.DYNAMICS_MF, "mf");
         sigs.put(Shape.DYNAMICS_F, "f");
         sigs.put(Shape.DYNAMICS_FF, "ff");
-        sigs.put(Shape.DYNAMICS_MF, "mf");
-        sigs.put(Shape.DYNAMICS_FP, "fp");
-        sigs.put(Shape.DYNAMICS_SFZ, "sfz");
+        sigs.put(Shape.DYNAMICS_FP, "fp"); // Forte then piano
+        sigs.put(Shape.DYNAMICS_SFZ, "sfz"); // Sforzando: sudden accent
 
         //        sigs.put(Shape.DYNAMICS_FFF, "fff");
         //        sigs.put(Shape.DYNAMICS_FZ, "fz");
@@ -67,12 +88,12 @@ public class DynamicsInter
     private static final Map<String, Shape> shapes = new HashMap<String, Shape>();
 
     static {
-        shapes.put("p", Shape.DYNAMICS_P);
         shapes.put("pp", Shape.DYNAMICS_PP);
+        shapes.put("p", Shape.DYNAMICS_P);
         shapes.put("mp", Shape.DYNAMICS_MP);
+        shapes.put("mf", Shape.DYNAMICS_MF);
         shapes.put("f", Shape.DYNAMICS_F);
         shapes.put("ff", Shape.DYNAMICS_FF);
-        shapes.put("mf", Shape.DYNAMICS_MF);
         shapes.put("fp", Shape.DYNAMICS_FP);
         shapes.put("sfz", Shape.DYNAMICS_SFZ);
 
@@ -85,6 +106,35 @@ public class DynamicsInter
         //        shapes.put("sffz", Shape.DYNAMICS_SFFZ);
         //        shapes.put("sfp", Shape.DYNAMICS_SFP);
         //        shapes.put("sfpp", Shape.DYNAMICS_SFPP);
+    }
+
+    /** Map Shape -> Sound. (TODO: complete the table) */
+    private static final Map<Shape, Integer> sounds = new HashMap<Shape, Integer>();
+
+    static {
+        sounds.put(Shape.DYNAMICS_PP, 45);
+        sounds.put(Shape.DYNAMICS_P, 56);
+        sounds.put(Shape.DYNAMICS_MP, 67);
+        //------------
+        // Default: 78
+        //------------
+        sounds.put(Shape.DYNAMICS_MF, 89);
+        sounds.put(Shape.DYNAMICS_F, 100);
+        sounds.put(Shape.DYNAMICS_FF, 122);
+
+        sounds.put(Shape.DYNAMICS_FP, 100); // ???
+        sounds.put(Shape.DYNAMICS_SFZ, 100); // ???
+
+        //        sounds.put(Shape.DYNAMICS_PPP, 34);
+        //        sounds.put(Shape.DYNAMICS_FP, "fp");
+        //        sounds.put(Shape.DYNAMICS_FZ, "fz");
+        //        sounds.put(Shape.DYNAMICS_RF, "rf");
+        //        sounds.put(Shape.DYNAMICS_RFZ, "rfz");
+        //        sounds.put(Shape.DYNAMICS_SF, "sf");
+        //        sounds.put(Shape.DYNAMICS_SFFZ, "sffz");
+        //        sounds.put(Shape.DYNAMICS_SFP, "sfp");
+        //        sounds.put(Shape.DYNAMICS_SFPP, "sfpp");
+        //        sounds.put(Shape.DYNAMICS_SFZ, "sfz");
     }
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -110,6 +160,20 @@ public class DynamicsInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------------//
+    // getSoundLevel //
+    //---------------//
+    public Integer getSoundLevel ()
+    {
+        Shape shape = getShape();
+
+        if (shape != null) {
+            return sounds.get(shape);
+        } else {
+            return null;
+        }
+    }
+
     //-----------------//
     // getSymbolString //
     //-----------------//
@@ -117,5 +181,87 @@ public class DynamicsInter
     public String getSymbolString ()
     {
         return sigs.get(shape);
+    }
+
+    //----------------//
+    // linkWithChords //
+    //----------------//
+    /**
+     * Try to connect this dynamics element with a suitable chord.
+     *
+     * @return true if successful
+     */
+    public boolean linkWithChord ()
+    {
+        if (isVip()) {
+            logger.info("VIP linkWithChord for {}", this);
+        }
+
+        // Look for a suitable chord related to this dynamics element
+        final Point center = getCenter();
+        final MeasureStack stack = sig.getSystem().getMeasureStackAt(center);
+        getBounds();
+
+        for (VerticalSide side : VerticalSide.values()) {
+            final boolean lookAbove = side == VerticalSide.TOP;
+            AbstractChordInter chord = lookAbove ? stack.getStandardChordAbove(center)
+                    : stack.getStandardChordBelow(center);
+
+            if ((chord == null)
+                || chord instanceof RestChordInter
+                || (GeoUtil.xGap(bounds, chord.getBounds()) > 0)) {
+                continue;
+            }
+
+            double dyChord = GeoUtil.yGap(bounds, chord.getBounds());
+
+            // If chord is mirrored, select the closest vertically
+            if (chord.getMirror() != null) {
+                double dyMirror = GeoUtil.yGap(bounds, chord.getMirror().getBounds());
+
+                if (dyMirror < dyChord) {
+                    dyChord = dyMirror;
+                    chord = (AbstractChordInter) chord.getMirror();
+                    logger.debug("{} selecting mirror {}", this, chord);
+                }
+            }
+
+            // Check vertical distance between element and chord
+            final Scale scale = sig.getSystem().getSheet().getScale();
+            final int maxDy = scale.toPixels(constants.maxDy);
+
+            if (dyChord > maxDy) {
+                // Check vertical distance between element and staff
+                final Staff chordStaff = chord.getTopStaff();
+                final int dyStaff = chordStaff.gapTo(bounds);
+
+                if (dyStaff > maxDy) {
+                    logger.debug("{} too far from staff/chord: {}", this, dyStaff);
+
+                    continue;
+                }
+            }
+
+            // For dynamics & for chord
+            sig.addEdge(chord, this, new ChordDynamicsRelation());
+
+            return true;
+        }
+
+        return false;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Scale.Fraction maxDy = new Scale.Fraction(
+                3.5,
+                "Maximum vertical distance between dynamics center and related chord/staff");
     }
 }
