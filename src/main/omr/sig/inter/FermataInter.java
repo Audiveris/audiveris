@@ -11,17 +11,23 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.constant.ConstantSet;
+
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
 import omr.math.GeoUtil;
 
+import omr.sheet.Scale;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
 import omr.sig.relation.FermataBarRelation;
 import omr.sig.relation.FermataChordRelation;
 import omr.sig.relation.FermataNoteRelation;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.util.Collection;
@@ -48,8 +54,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class FermataInter
         extends AbstractNotationInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(FermataInter.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code FermataInter} object.
      *
@@ -120,6 +131,17 @@ public class FermataInter
         BarlineInter bar = BarlineInter.getClosestBarline(bars, center);
 
         if ((bar != null) && (GeoUtil.xOverlap(getBounds(), bar.getBounds()) > 0)) {
+            // Check vertical distance to bar/staff
+            final Scale scale = sig.getSystem().getSheet().getScale();
+            final int maxDy = scale.toPixels(constants.maxFermataDy);
+            final int dyStaff = staff.distanceTo(center);
+
+            if (dyStaff > maxDy) {
+                logger.debug("{} too far from barline: {}", this, bar);
+
+                return false;
+            }
+
             // For fermata & for bar
             sig.addEdge(this, bar, new FermataBarRelation());
 
@@ -140,12 +162,42 @@ public class FermataInter
      */
     public boolean linkWithChords (Collection<AbstractChordInter> chords)
     {
-        // Look for a chord related to this fermata
-        //TODO: what if the note is mirrored between 2 chords?
+        // Look for a suitable chord related to this fermata
         Point center = getCenter();
         AbstractChordInter chord = AbstractChordInter.getClosestChord(chords, center);
 
         if ((chord != null) && (GeoUtil.xOverlap(getBounds(), chord.getBounds()) > 0)) {
+            double dyChord = Math.sqrt(GeoUtil.ptDistanceSq(chord.getBounds(), center.x, center.y));
+
+            // If chord is mirrored, select the closest vertically
+            if (chord.getMirror() != null) {
+                double dyMirror = Math.sqrt(
+                        GeoUtil.ptDistanceSq(chord.getMirror().getBounds(), center.x, center.y));
+
+                if (dyMirror < dyChord) {
+                    dyChord = dyMirror;
+                    chord = (AbstractChordInter) chord.getMirror();
+                    logger.debug("{} selecting mirror {}", this, chord);
+                }
+            }
+
+            // Check vertical distance between fermata and chord
+            final Scale scale = sig.getSystem().getSheet().getScale();
+            final int maxDy = scale.toPixels(constants.maxFermataDy);
+
+            if (dyChord > maxDy) {
+                // Check vertical distance between fermata and staff
+                final Staff chordStaff = (shape == Shape.FERMATA) ? chord.getTopStaff()
+                        : chord.getBottomStaff();
+                final int dyStaff = chordStaff.distanceTo(center);
+
+                if (dyStaff > maxDy) {
+                    logger.debug("{} too far from staff/chord: {}", this, dyStaff);
+
+                    return false;
+                }
+            }
+
             // For fermata & for chord
             sig.addEdge(this, chord, new FermataChordRelation());
 
@@ -160,5 +212,19 @@ public class FermataInter
         }
 
         return false;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Scale.Fraction maxFermataDy = new Scale.Fraction(
+                2.5,
+                "Maximum vertical distance between fermata center and related chord/staff/barline");
     }
 }
