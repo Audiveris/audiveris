@@ -309,9 +309,9 @@ public class SigReducer
                                Class<?>... classes)
     {
         AdapterForRhythms adapter = new AdapterForRhythms(systemPoorFrats, classes);
-        Set<Inter> allReductions = reduce(adapter);
-        allReductions.retainAll(adapter.selected);
-        systemPoorFrats.setSeeds(allReductions);
+        Set<Inter> allRemoved = reduce(adapter);
+        allRemoved.retainAll(adapter.selected);
+        systemPoorFrats.setSeeds(allRemoved);
     }
 
     //---------------//
@@ -858,11 +858,11 @@ public class SigReducer
     /**
      * Detect and remove a small slur around a tuplet sign.
      *
-     * @return the count of modifications done
+     * @return the slurs removed
      */
-    private int checkSlurOnTuplet ()
+    private Set<Inter> checkSlurOnTuplet ()
     {
-        int modifs = 0;
+        Set<Inter> deleted = new HashSet<Inter>();
         final int maxSlurWidth = scale.toPixels(constants.maxTupletSlurWidth);
         final List<Inter> slurs = sig.inters(
                 new Predicate<Inter>()
@@ -901,14 +901,14 @@ public class SigReducer
                     }
 
                     slur.delete();
-                    modifs++;
+                    deleted.add(slur);
 
                     break;
                 }
             }
         }
 
-        return modifs;
+        return deleted;
     }
 
     //------------//
@@ -982,16 +982,14 @@ public class SigReducer
     /**
      * Perform checks on time signatures.
      * <p>
-     * Check there is no note between measure start and time signature.
-     *
-     * @return the count of deletions made (0)
+     * Check there is no note between measure start and time signature, otherwise insert exclusion.
      */
-    private int checkTimeSignatures ()
+    private void checkTimeSignatures ()
     {
         List<Inter> systemNotes = sig.inters(AbstractNoteInter.class);
 
         if (systemNotes.isEmpty()) {
-            return 0;
+            return;
         }
 
         final List<Inter> systemTimes = sig.inters(TimeInter.class);
@@ -1038,8 +1036,6 @@ public class SigReducer
                 }
             }
         }
-
-        return 0;
     }
 
     //------------//
@@ -1156,11 +1152,11 @@ public class SigReducer
     /**
      * Reduce all the interpretations and relations of the SIG.
      *
-     * @return the collection of reduced inters
+     * @return the collection of removed inters
      */
     private Set<Inter> reduce (Adapter adapter)
     {
-        final Set<Inter> allReducedInters = new HashSet<Inter>();
+        final Set<Inter> allRemoved = new HashSet<Inter>();
 
         logger.debug("S#{} reducing sig ...", system.getId());
 
@@ -1175,14 +1171,18 @@ public class SigReducer
 
         adapter.prolog();
 
-        int reductions; // Count of reductions performed
-        int deletions; // Count of deletions performed
+        Set<Inter> reduced = new HashSet<Inter>(); // Reduced inters
+        Set<Inter> deleted = new HashSet<Inter>(); // Deleted inters
 
         do {
-            // First, remove all inters with too low contextual grade
-            deletions = updateAndPurge();
+            reduced.clear();
+            deleted.clear();
 
-            deletions += adapter.checkSlurs();
+            // First, remove all inters with too low contextual grade
+            deleted.addAll(updateAndPurge());
+
+            deleted.addAll(adapter.checkSlurs());
+            allRemoved.addAll(deleted);
 
             int modifs; // modifications done in current iteration
 
@@ -1191,14 +1191,13 @@ public class SigReducer
             }
 
             // Remaining exclusions
-            Set<Inter> reducedInters = sig.reduceExclusions();
-            reductions = reducedInters.size();
-            allReducedInters.addAll(reducedInters);
+            reduced.addAll(sig.reduceExclusions());
+            allRemoved.addAll(reduced);
 
-            logger.debug("S#{} reductions: {}", system.getId(), reductions);
-        } while ((reductions > 0) || (deletions > 0));
+            logger.debug("S#{} reductions: {}", system.getId(), reduced);
+        } while (!reduced.isEmpty() || !deleted.isEmpty());
 
-        return allReducedInters;
+        return allRemoved;
     }
 
     //---------------------//
@@ -1320,17 +1319,17 @@ public class SigReducer
      * Update the contextual grade of each Inter in SIG, and remove the weak ones if so
      * desired.
      *
-     * @return the number of inters removed
+     * @return the set of inters removed
      */
-    private int updateAndPurge ()
+    private Set<Inter> updateAndPurge ()
     {
         sig.contextualize();
 
         if (purgeWeaks) {
-            return sig.deleteWeakInters().size();
+            return sig.deleteWeakInters();
         }
 
-        return 0;
+        return Collections.EMPTY_SET;
     }
 
     //-------------------//
@@ -1367,9 +1366,9 @@ public class SigReducer
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        int deletions;
+        Set<Inter> deleted = new HashSet<Inter>();
 
-        int reductions;
+        Set<Inter> reduced = new HashSet<Inter>();
 
         //~ Methods --------------------------------------------------------------------------------
         public int checkConsistencies ()
@@ -1382,9 +1381,9 @@ public class SigReducer
             // Void by default
         }
 
-        public int checkSlurs ()
+        public Set<Inter> checkSlurs ()
         {
-            return 0; // Void by default
+            return Collections.EMPTY_SET;
         }
 
         public void prolog ()
@@ -1407,19 +1406,19 @@ public class SigReducer
             int modifs = 0;
 
             modifs += checkHeads();
-            deletions += updateAndPurge();
+            deleted.addAll(updateAndPurge());
 
             modifs += checkHooks();
-            deletions += updateAndPurge();
+            deleted.addAll(updateAndPurge());
 
             modifs += checkBeams();
-            deletions += updateAndPurge();
+            deleted.addAll(updateAndPurge());
 
             modifs += checkLedgers();
-            deletions += updateAndPurge();
+            deleted.addAll(updateAndPurge());
 
             modifs += checkStems();
-            deletions += updateAndPurge();
+            deleted.addAll(updateAndPurge());
 
             return modifs;
         }
@@ -1475,21 +1474,21 @@ public class SigReducer
             int modifs = 0;
 
             modifs += checkDoubleAlters();
-            deletions += updateAndPurge();
+            deleted.addAll(updateAndPurge());
 
             modifs += checkTimeNumbers();
-            deletions += checkTimeSignatures();
-            deletions += updateAndPurge();
+            checkTimeSignatures();
+            deleted.addAll(updateAndPurge());
 
             modifs += checkAugmentationDots();
             modifs += checkAugmented();
-            deletions += updateAndPurge();
+            deleted.addAll(updateAndPurge());
 
             return modifs;
         }
 
         @Override
-        public int checkSlurs ()
+        public Set<Inter> checkSlurs ()
         {
             return checkSlurOnTuplet();
         }

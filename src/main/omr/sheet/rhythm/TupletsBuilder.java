@@ -166,14 +166,8 @@ public class TupletsBuilder
             // We assume that chords with 2 staves have their tuplet sign above...
             Staff staff = chord.getTopStaff();
 
-            // Check that all chords are on the same staff (for head-based chords)
-            // For rest-based chords we must relax the rule
-            if (chord.isRest()) {
-                // Rest staff is not very precise
-                if (Math.abs(staff.getId() - targetStaff.getId()) > 1) {
-                    continue;
-                }
-            } else if (staff != targetStaff) {
+            // Check that all chords are on the same staff
+            if (staff != targetStaff) {
                 continue;
             }
 

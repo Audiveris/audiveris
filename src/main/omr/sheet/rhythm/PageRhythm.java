@@ -111,7 +111,7 @@ public class PageRhythm
 
         for (SystemInfo system : page.getSystems()) {
             SystemBackup systemPoorFrats = new SystemBackup(system);
-            new SigReducer(system, false).reduceRhythms(systemPoorFrats, FRAT_CLASSES);
+            new SigReducer(system, true).reduceRhythms(systemPoorFrats, FRAT_CLASSES);
             poorsMap.put(system, systemPoorFrats);
         }
 
