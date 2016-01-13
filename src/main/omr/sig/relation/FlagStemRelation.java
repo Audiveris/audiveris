@@ -25,12 +25,15 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Line2D;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code FlagStemRelation} represents the relation support between a flag and a
  * stem.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "flag-stem")
 public class FlagStemRelation
         extends AbstractStemConnection
 {

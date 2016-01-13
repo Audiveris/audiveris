@@ -11,12 +11,15 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code ChordSyllableRelation} represents a support relation between a chord
  * and a lyric item (syllable).
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "chord-syllable")
 public class ChordSyllableRelation
         extends AbstractSupport
 {

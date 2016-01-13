@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code NoExclusion} is used to formalize that two Inters, generally originating
  * from mirrored entities, do not exclude each other, although they overlap.
@@ -18,6 +20,7 @@ package omr.sig.relation;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "no-exclusion")
 public class NoExclusion
         extends AbstractSupport
 {

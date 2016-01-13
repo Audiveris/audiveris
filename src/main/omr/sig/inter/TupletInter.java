@@ -26,7 +26,7 @@ import omr.sheet.rhythm.Voice;
 
 import omr.sig.SIGraph;
 import omr.sig.relation.Relation;
-import omr.sig.relation.TupletChordRelation;
+import omr.sig.relation.ChordTupletRelation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +132,7 @@ public class TupletInter
     public Rational getBaseDuration ()
     {
         if (baseDuration == null) {
-            for (Relation rel : sig.getRelations(this, TupletChordRelation.class)) {
+            for (Relation rel : sig.getRelations(this, ChordTupletRelation.class)) {
                 AbstractChordInter chord = (AbstractChordInter) sig.getOppositeInter(this, rel);
                 Rational rawDur = chord.getDurationSansDotOrTuplet();
 
@@ -158,7 +158,7 @@ public class TupletInter
         if (chords == null) {
             List<AbstractChordInter> list = new ArrayList<AbstractChordInter>();
 
-            for (Relation tcRel : sig.getRelations(this, TupletChordRelation.class)) {
+            for (Relation tcRel : sig.getRelations(this, ChordTupletRelation.class)) {
                 list.add((AbstractChordInter) sig.getOppositeInter(this, tcRel));
             }
 
@@ -191,7 +191,7 @@ public class TupletInter
     public Voice getVoice ()
     {
         // Use the voice of the first chord embraced by the tuplet
-        for (Relation rel : sig.getRelations(this, TupletChordRelation.class)) {
+        for (Relation rel : sig.getRelations(this, ChordTupletRelation.class)) {
             return sig.getOppositeInter(this, rel).getVoice();
         }
 

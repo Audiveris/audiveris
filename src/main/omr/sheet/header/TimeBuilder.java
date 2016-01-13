@@ -50,7 +50,7 @@ import omr.sheet.rhythm.MeasureStack;
 import omr.sig.SIGraph;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.Inter;
-import omr.sig.inter.TimeInter;
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.TimeNumberInter;
 import omr.sig.inter.TimePairInter;
 import omr.sig.inter.TimeWholeInter;
@@ -224,7 +224,7 @@ public abstract class TimeBuilder
                     // Restrict num/den pairs to supported combinations
                     TimeRational nd = new TimeRational(top.getValue(), bottom.getValue());
 
-                    if (TimeInter.isSupported(nd)) {
+                    if (AbstractTimeInter.isSupported(nd)) {
                         // Halves support each other
                         sig.addEdge(top, bottom, new TimeTopBottomRelation());
                     } else {
@@ -265,7 +265,7 @@ public abstract class TimeBuilder
      *
      * @param bestTimeInter the time inter instance for this staff
      */
-    protected void createSig (TimeInter bestTimeInter)
+    protected void createSig (AbstractTimeInter bestTimeInter)
     {
         // Store time ending abscissa for this staff
         if (bestTimeInter != null) {
@@ -576,7 +576,7 @@ public abstract class TimeBuilder
             HeaderTimeBuilder builder = new HeaderTimeBuilder(staff, this, browseStart);
             builder.addPlot(plotter);
 
-            TimeInter timeInter = staff.getHeader().time;
+            AbstractTimeInter timeInter = staff.getHeader().time;
 
             if (timeInter != null) {
                 return "time:" + timeInter.getValue();
@@ -731,7 +731,7 @@ public abstract class TimeBuilder
         // createSig //
         //-----------//
         @Override
-        protected void createSig (TimeInter bestTimeInter)
+        protected void createSig (AbstractTimeInter bestTimeInter)
         {
             super.createSig(bestTimeInter);
 
@@ -1229,17 +1229,17 @@ public abstract class TimeBuilder
          * <p>
          * The selection is driven from the whole system column point of view, as follows:
          * <ol>
-         * <li>For each staff, identify all the possible & supported TimeInter instances, each
-         * with its own grade.</li>
-         * <li>Then for each possible TimeInter value (called TimeValue), make sure it appears
-         * in each staff as a TimeInter instance and assign a global grade (as average of
-         * staff-based TimeInter instances for the same TimeValue).</li>
+         * <li>For each staff, identify all the possible & supported AbstractTimeInter instances, each
+ with its own grade.</li>
+         * <li>Then for each possible AbstractTimeInter value (called TimeValue), make sure it appears
+ in each staff as a AbstractTimeInter instance and assign a global grade (as average of
+ staff-based AbstractTimeInter instances for the same TimeValue).</li>
          * <li>The best system-based TimeValue is then chosen as THE time signature for this
          * system column. </li>
-         * <li>All staff non compatible TimeInter instances are destroyed and the member numbers
-         * that don't belong to the chosen TimeInter are destroyed.
-         * (TODO: perhaps removed from SIG but saved apart and restored if ever a new TimeValue
-         * is chosen based on measure intrinsic rhythm data?)</li>
+         * <li>All staff non compatible AbstractTimeInter instances are destroyed and the member numbers
+ that don't belong to the chosen AbstractTimeInter are destroyed.
+ (TODO: perhaps removed from SIG but saved apart and restored if ever a new TimeValue
+ is chosen based on measure intrinsic rhythm data?)</li>
          * </ol>
          */
         protected void checkConsistency ()
@@ -1294,7 +1294,7 @@ public abstract class TimeBuilder
             for (int is = 0; is < staves.size(); is++) {
                 Staff staff = staves.get(is);
                 TimeBuilder builder = builders.get(staff);
-                builder.createSig((TimeInter) bestVector[is]);
+                builder.createSig((AbstractTimeInter) bestVector[is]);
                 builder.discardOtherMaterial(bestTime);
             }
 
@@ -1304,8 +1304,8 @@ public abstract class TimeBuilder
         /**
          * Report the system vector of values for each time value found.
          * A vector is an array, one element per staff, the element being the staff candidate
-         * TimeInter for the desired time value, or null if the time value has no acceptable
-         * candidate in this staff.
+ AbstractTimeInter for the desired time value, or null if the time value has no acceptable
+ candidate in this staff.
          *
          * @return the system vectors of candidates found, organized per TimeValue
          */
@@ -1324,7 +1324,7 @@ public abstract class TimeBuilder
 
                 // Whole candidate signatures, if any, in this staff
                 for (Inter inter : builder.wholes) {
-                    TimeInter whole = (TimeInter) inter;
+                    AbstractTimeInter whole = (AbstractTimeInter) inter;
                     TimeValue time = whole.getValue();
                     Inter[] vector = values.get(time);
 

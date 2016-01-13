@@ -11,9 +11,9 @@
 // </editor-fold>
 package omr.sheet.header;
 
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.KeyInter;
-import omr.sig.inter.TimeInter;
 import omr.sig.inter.TimePairInter;
 import omr.sig.inter.TimeWholeInter;
 
@@ -26,7 +26,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementRefs;
 
 /**
  * Class {@code StaffHeader} gathers information about the (Clef + Key + Time) sequence
@@ -68,11 +69,11 @@ public class StaffHeader
     public KeyInter key;
 
     /** Time-sig found, if any. */
-    @XmlElements({
-        @XmlElement(name = "time-pair", type = TimePairInter.class),
-        @XmlElement(name = "time-whole", type = TimeWholeInter.class)
+    @XmlElementRefs({
+        @XmlElementRef(type = TimePairInter.class),
+        @XmlElementRef(type = TimeWholeInter.class)
     })
-    public TimeInter time;
+    public AbstractTimeInter time;
 
     // Transient data
     //---------------

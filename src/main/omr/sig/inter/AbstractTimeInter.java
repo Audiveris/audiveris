@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        T i m e I n t e r                                       //
+//                                A b s t r a c t T i m e I n t e r                               //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -40,13 +40,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code TimeInter} represents a time signature, with either one (full) symbol
- * (COMMON, CUT or predefined combo) or a pair of top and bottom numbers.
+ * Class {@code AbstractTimeInter} represents a time signature, with either one (full)
+ * symbol (COMMON, CUT or predefined combo) or a pair of top and bottom numbers.
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
-public abstract class TimeInter
+public abstract class AbstractTimeInter
         extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -73,7 +73,7 @@ public abstract class TimeInter
     private static final List<TimeRational> optionalTimes = TimeRational.parseValues(
             constants.optionalTimes.getValue());
 
-    private static final Logger logger = LoggerFactory.getLogger(TimeInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractTimeInter.class);
 
     /** Rational value of each (full) time sig shape. */
     private static final Map<Shape, TimeRational> rationals = new EnumMap<Shape, TimeRational>(
@@ -109,9 +109,9 @@ public abstract class TimeInter
      * @param shape precise shape (COMMON_TIME, CUT_TIME or predefined combo like TIME_FOUR_FOUR)
      * @param grade evaluation grade
      */
-    public TimeInter (Glyph glyph,
-                      Shape shape,
-                      double grade)
+    public AbstractTimeInter (Glyph glyph,
+                              Shape shape,
+                              double grade)
     {
         super(glyph, null, shape, grade);
         timeRational = rationalOf(shape);
@@ -125,10 +125,10 @@ public abstract class TimeInter
      * @param timeRational the pair of num and den numbers
      * @param grade        evaluation grade
      */
-    public TimeInter (Glyph glyph,
-                      Rectangle bounds,
-                      TimeRational timeRational,
-                      double grade)
+    public AbstractTimeInter (Glyph glyph,
+                              Rectangle bounds,
+                              TimeRational timeRational,
+                              double grade)
     {
         super(glyph, bounds, null, grade);
         this.timeRational = timeRational;
@@ -137,7 +137,7 @@ public abstract class TimeInter
     /**
      * No-arg constructor meant for JAXB.
      */
-    private TimeInter ()
+    private AbstractTimeInter ()
     {
         super(null, null, null, null);
     }
@@ -147,13 +147,13 @@ public abstract class TimeInter
     // replicate //
     //-----------//
     /**
-     * Use this TimeInter instance as a template for creating another one.
+     * Use this AbstractTimeInter instance as a template for creating another one.
      * NOTA: Its bounds should be updated to the target location.
      *
      * @param targetStaff the target staff
      * @return the duplicate (not inserted in sig)
      */
-    public abstract TimeInter replicate (Staff targetStaff);
+    public abstract AbstractTimeInter replicate (Staff targetStaff);
 
     //--------//
     // create //

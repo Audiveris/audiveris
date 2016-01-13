@@ -14,12 +14,15 @@ package omr.sig.relation;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code TimeTopBottomRelation} represents the relation between a top number and
  * a bottom number in a time signature.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "time-top-bottom")
 public class TimeTopBottomRelation
         extends AbstractSupport
 {

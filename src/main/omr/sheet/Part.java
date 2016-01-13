@@ -21,7 +21,7 @@ import omr.sig.inter.ClefInter;
 import omr.sig.inter.KeyInter;
 import omr.sig.inter.LyricLineInter;
 import omr.sig.inter.SlurInter;
-import omr.sig.inter.TimeInter;
+import omr.sig.inter.AbstractTimeInter;
 
 import omr.step.PageStep;
 
@@ -347,10 +347,10 @@ public class Part
                 }
 
                 // Replicate Time if any (from current measure in this part)
-                TimeInter ts = measure.getTimeSignature();
+                AbstractTimeInter ts = measure.getTimeSignature();
 
                 if (ts != null) {
-                    TimeInter dummyTime = ts.replicate(dummyStaff);
+                    AbstractTimeInter dummyTime = ts.replicate(dummyStaff);
                     dummyMeasure.addInter(dummyTime);
                 }
 

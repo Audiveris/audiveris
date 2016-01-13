@@ -34,7 +34,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -542,9 +543,9 @@ public class BasicIndex<E extends Entity>
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        @XmlElements({
-            @XmlElement(name = "glyph", type = BasicGlyph.class),
-            @XmlElement(name = "symbol", type = BasicSymbol.class)
+        @XmlElementRefs({
+            @XmlElementRef(type = BasicGlyph.class),
+            @XmlElementRef(type = BasicSymbol.class)
         })
         ArrayList<E> list; // Flat list of entities (each with its embedded id)
     }

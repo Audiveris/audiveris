@@ -20,6 +20,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 
 import omr.math.Rational;
+
 import static omr.score.MusicXML.*;
 
 import omr.sheet.Book;
@@ -55,7 +56,7 @@ import omr.sig.inter.SentenceInter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.SmallChordInter;
 import omr.sig.inter.StemInter;
-import omr.sig.inter.TimeInter;
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.TupletInter;
 import omr.sig.inter.WedgeInter;
 import omr.sig.relation.ChordDynamicsRelation;
@@ -70,12 +71,16 @@ import omr.sig.relation.SlurHeadRelation;
 
 import omr.text.FontInfo;
 import omr.text.TextRole;
+
 import static omr.text.TextRole.*;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
+
 import omr.util.OmrExecutors;
+
 import static omr.util.VerticalSide.*;
 
 import com.audiveris.proxymusic.AboveBelow;
@@ -2429,7 +2434,7 @@ public class PartwiseBuilder
     //-------------//
     // processTime //
     //-------------//
-    private void processTime (TimeInter timeSig)
+    private void processTime (AbstractTimeInter timeSig)
     {
         logger.debug("Visiting {}", timeSig);
         processTime(timeSig.getNumerator(), timeSig.getDenominator(), timeSig.getShape());

@@ -11,12 +11,15 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code ChordDynamicsRelation} represents a support relation between a chord
  * and a dynamics element.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "chord-dynamics")
 public class ChordDynamicsRelation
         extends AbstractSupport
 {

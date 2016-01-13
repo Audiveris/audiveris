@@ -29,16 +29,9 @@ import omr.sheet.note.NotePosition;
 
 import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.BarlineInter;
-import omr.sig.inter.BlackHeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.InterEnsemble;
 import omr.sig.inter.LedgerInter;
-import omr.sig.inter.RestInter;
-import omr.sig.inter.SmallBlackHeadInter;
-import omr.sig.inter.SmallVoidHeadInter;
-import omr.sig.inter.SmallWholeInter;
-import omr.sig.inter.VoidHeadInter;
-import omr.sig.inter.WholeInter;
 
 import omr.ui.util.AttachmentHolder;
 import omr.ui.util.BasicAttachmentHolder;
@@ -83,7 +76,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -169,15 +162,7 @@ public class Staff
     private final TreeMap<Integer, List<LedgerInter>> ledgerMap = new TreeMap<Integer, List<LedgerInter>>();
 
     /** Notes (heads & rests) assigned to this staff. */
-    @XmlElements({
-        @XmlElement(name = "black-head", type = BlackHeadInter.class),
-        @XmlElement(name = "small-black-head", type = SmallBlackHeadInter.class),
-        @XmlElement(name = "small-void-head", type = SmallVoidHeadInter.class),
-        @XmlElement(name = "small-whole", type = SmallWholeInter.class),
-        @XmlElement(name = "void-head", type = VoidHeadInter.class),
-        @XmlElement(name = "whole", type = WholeInter.class),
-        @XmlElement(name = "rest", type = RestInter.class)
-    })
+    @XmlElementRef
     private LinkedHashSet<AbstractNoteInter> notes = new LinkedHashSet<AbstractNoteInter>();
 
     // Transient data

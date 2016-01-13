@@ -21,12 +21,14 @@ import omr.step.StepException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code SheetStepTask} performs a step on a single sheet.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "sheet-step")
 @XmlAccessorType(XmlAccessType.NONE)
 public class SheetStepTask
         extends SheetTask

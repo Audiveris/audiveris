@@ -34,6 +34,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code AlterInter} represents an alteration (sharp, flat, natural,
  * double-sharp, double-flat).
@@ -41,6 +43,7 @@ import java.util.List;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "alter")
 public class AlterInter
         extends AbstractPitchedInter
 {

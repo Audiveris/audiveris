@@ -14,11 +14,14 @@ package omr.sig.relation;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code BeamHeadRelation}
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "beam-head")
 public class BeamHeadRelation
         extends AbstractSupport
 {

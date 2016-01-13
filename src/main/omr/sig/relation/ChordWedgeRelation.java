@@ -11,10 +11,12 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import omr.util.HorizontalSide;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import omr.util.HorizontalSide;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code ChordWedgeRelation} represents a support relation between a chord and
@@ -23,6 +25,7 @@ import omr.util.HorizontalSide;
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "chord-wedge")
 public class ChordWedgeRelation
         extends AbstractSupport
 {

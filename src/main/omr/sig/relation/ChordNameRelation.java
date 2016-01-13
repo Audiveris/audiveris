@@ -11,12 +11,15 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code ChordNameRelation} represents a support relation between a chord
  * and a chordName (such as Am).
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "chord-name")
 public class ChordNameRelation
         extends AbstractSupport
 {

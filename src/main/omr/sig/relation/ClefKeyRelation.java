@@ -14,12 +14,15 @@ package omr.sig.relation;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code ClefKeyRelation} represents a support relation between a clef and a
  * compatible key signature.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "clef-key")
 public class ClefKeyRelation
         extends AbstractSupport
 {

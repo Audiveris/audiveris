@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code PrintTask} prints a score to a PDFfile
@@ -28,6 +29,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "print")
 public class PrintTask
         extends ScriptTask
 {

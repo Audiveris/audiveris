@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code ExportTask} exports score entities to a MusicXML file
@@ -27,6 +28,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "export")
 public class ExportTask
         extends ScriptTask
 {

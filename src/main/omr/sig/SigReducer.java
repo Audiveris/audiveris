@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
+
 import static omr.glyph.ShapeSet.Alterations;
 import static omr.glyph.ShapeSet.CoreBarlines;
 import static omr.glyph.ShapeSet.Flags;
@@ -44,7 +45,7 @@ import omr.sig.inter.SmallBeamInter;
 import omr.sig.inter.SmallBlackHeadInter;
 import omr.sig.inter.StemInter;
 import omr.sig.inter.StringSymbolInter;
-import omr.sig.inter.TimeInter;
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.TimeNumberInter;
 import omr.sig.inter.TupletInter;
 import omr.sig.inter.VoidHeadInter;
@@ -60,11 +61,15 @@ import omr.sig.relation.Exclusion;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.StemPortion;
+
 import static omr.sig.relation.StemPortion.*;
+
 import omr.sig.relation.TimeTopBottomRelation;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 import omr.util.Predicate;
 
@@ -992,7 +997,7 @@ public class SigReducer
             return;
         }
 
-        final List<Inter> systemTimes = sig.inters(TimeInter.class);
+        final List<Inter> systemTimes = sig.inters(AbstractTimeInter.class);
         Collections.sort(systemNotes, Inter.byAbscissa);
 
         for (Staff staff : system.getStaves()) {
@@ -1005,7 +1010,7 @@ public class SigReducer
             List<Inter> notes = SIGraph.inters(staff, systemNotes);
 
             for (Inter inter : staffTimes) {
-                TimeInter timeSig = (TimeInter) inter;
+                AbstractTimeInter timeSig = (AbstractTimeInter) inter;
 
                 // Position WRT Notes in staff
                 int notePrev = -2 - Collections.binarySearch(notes, timeSig, Inter.byAbscissa);

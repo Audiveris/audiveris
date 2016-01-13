@@ -139,7 +139,7 @@ public class TestRefs
 
             if (fRef instanceof Apple) {
                 Apple apple = (Apple) fRef;
-                System.out.println(" apple:" + apple.name);
+                System.out.println(" apple: " + apple.name);
             }
 
             if (fRef instanceof Orange) {

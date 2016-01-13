@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code SlurHeadRelation} represents a link between a slur and one of the two
@@ -32,6 +33,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "slur-head")
 public class SlurHeadRelation
         extends AbstractSupport
 {

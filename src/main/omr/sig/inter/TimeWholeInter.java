@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "time-whole")
 public class TimeWholeInter
-        extends TimeInter
+        extends AbstractTimeInter
 {
     //~ Constructors -------------------------------------------------------------------------------
 

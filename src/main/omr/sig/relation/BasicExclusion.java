@@ -12,6 +12,7 @@
 package omr.sig.relation;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
@@ -19,6 +20,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "exclusion")
 public class BasicExclusion
         extends AbstractRelation
         implements Exclusion

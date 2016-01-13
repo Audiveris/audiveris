@@ -215,7 +215,7 @@ public class BasicSheet
     {
         Objects.requireNonNull(stub, "Cannot create a sheet in a null stub");
 
-        createNest();
+        glyphIndex = new GlyphIndex();
 
         initTransients(stub);
 
@@ -603,14 +603,14 @@ public class BasicSheet
         return stub.getFilterParam();
     }
 
-    //--------------//
+    //---------------//
     // getGlyphIndex //
-    //--------------//
+    //---------------//
     @Override
     public GlyphIndex getGlyphIndex ()
     {
         if (glyphIndex == null) {
-            createNest();
+            glyphIndex = new GlyphIndex();
         }
 
         return glyphIndex;
@@ -1176,38 +1176,6 @@ public class BasicSheet
         return jaxbContext;
     }
 
-    //
-    //    //----------------//
-    //    // afterUnmarshal //
-    //    //----------------//
-    //    /**
-    //     * Called after all the properties (except IDREF) are unmarshalled
-    //     * for this object, but before this object is set to the parent object.
-    //     * All non-persistent members are null.
-    //     */
-    //    @PostConstruct // Don't remove this method, invoked by JAXB through reflection
-    //
-    //    private void afterUnmarshal (Unmarshaller um,
-    //                                 Object parent)
-    //    {
-    //        initTransients((SheetStub) parent);
-    //    }
-    //
-    //------------//
-    // createNest //
-    //------------//
-    private void createNest ()
-    {
-        // Beware: Glyph nest must subscribe to location before any lag,
-        // to allow cleaning up of glyph data, before publication by a lag
-        glyphIndex = new GlyphIndex();
-
-        //
-        //        if (OMR.getGui() != null) {
-        //            nest.setEntityService(new GlyphService(nest, locationService));
-        //        }
-    }
-
     //-------------------------//
     // createSymbolsController //
     //-------------------------//
@@ -1427,7 +1395,7 @@ public class BasicSheet
             ////                    nest.cutServices(locationService);
             ////                }
             ////
-            //                createNest();
+            //                createGlyphIndex();
             //            }
             skew = null;
 

@@ -25,7 +25,7 @@ import omr.sheet.grid.LineInfo;
 import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.HeadChordInter;
 import omr.sig.inter.Inter;
-import omr.sig.inter.TimeInter;
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.TupletInter;
 
 import omr.util.HorizontalSide;
@@ -231,7 +231,7 @@ public class MeasureStack
     //------------------//
     // addTimeSignature //
     //------------------//
-    public void addTimeSignature (TimeInter ts)
+    public void addTimeSignature (AbstractTimeInter ts)
     {
         // Populate (part) measure with provided time signature
         Staff staff = ts.getStaff();
@@ -625,7 +625,7 @@ public class MeasureStack
      *
      * @return the current time signature, or null if not found at all
      */
-    public TimeInter getCurrentTimeSignature ()
+    public AbstractTimeInter getCurrentTimeSignature ()
     {
         // Backward from this measure to the beginning of the score
         MeasureStack stack = this;
@@ -633,7 +633,7 @@ public class MeasureStack
 
         while (stack != null) {
             // Check in the measure stack
-            TimeInter ts = stack.getFirstMeasure().getTimeSignature();
+            AbstractTimeInter ts = stack.getFirstMeasure().getTimeSignature();
 
             if (ts != null) {
                 return ts;
@@ -708,7 +708,7 @@ public class MeasureStack
         //            if (expectedDuration == null) {
         //                int numerator;
         //                int denominator;
-        //                TimeInter ts = getCurrentTimeSignature();
+        //                AbstractTimeInter ts = getCurrentTimeSignature();
         //
         //                if (ts != null) {
         //                    numerator = ts.getNumerator();
@@ -1042,10 +1042,10 @@ public class MeasureStack
      *
      * @return the stack time signature, or null if not found
      */
-    public TimeInter getTimeSignature ()
+    public AbstractTimeInter getTimeSignature ()
     {
         for (Measure measure : measures) {
-            TimeInter ts = measure.getTimeSignature();
+            AbstractTimeInter ts = measure.getTimeSignature();
 
             if (ts != null) {
                 return ts;

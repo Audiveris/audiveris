@@ -29,7 +29,7 @@ import omr.sig.relation.AugmentationRelation;
 import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.SlurHeadRelation;
-import omr.sig.relation.TupletChordRelation;
+import omr.sig.relation.ChordTupletRelation;
 
 import omr.util.HorizontalSide;
 
@@ -249,7 +249,7 @@ public abstract class AbstractChordInter
                 logger.error("No sig for inter#" + getId());
             } else {
                 // Tuplet?
-                for (Relation rel : sig.getRelations(this, TupletChordRelation.class)) {
+                for (Relation rel : sig.getRelations(this, ChordTupletRelation.class)) {
                     TupletInter tuplet = (TupletInter) sig.getOppositeInter(this, rel);
                     setTupletFactor(tuplet.getDurationFactor());
 
@@ -923,7 +923,7 @@ public abstract class AbstractChordInter
      */
     public TupletInter getTuplet ()
     {
-        for (Relation tcRel : sig.getRelations(this, TupletChordRelation.class)) {
+        for (Relation tcRel : sig.getRelations(this, ChordTupletRelation.class)) {
             return (TupletInter) sig.getOppositeInter(this, tcRel);
         }
 

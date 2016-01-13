@@ -22,7 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Line2D;
+
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code BeamStemRelation} implements the geographic link between a beam
@@ -30,6 +32,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "beam-stem")
 public class BeamStemRelation
         extends AbstractStemConnection
 {
@@ -37,7 +40,8 @@ public class BeamStemRelation
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(BeamStemRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            BeamStemRelation.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Which portion of beam is used?. */

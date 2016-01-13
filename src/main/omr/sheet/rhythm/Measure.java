@@ -32,11 +32,13 @@ import omr.sig.inter.KeyInter;
 import omr.sig.inter.RestChordInter;
 import omr.sig.inter.RestInter;
 import omr.sig.inter.SmallChordInter;
-import omr.sig.inter.TimeInter;
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.TupletInter;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -142,7 +144,7 @@ public class Measure
     private final Map<Integer, KeyInter> keys = new TreeMap<Integer, KeyInter>();
 
     /** Potential one Time signature per staff. */
-    private final Set<TimeInter> timeSigs = new LinkedHashSet<TimeInter>();
+    private final Set<AbstractTimeInter> timeSigs = new LinkedHashSet<AbstractTimeInter>();
 
     /** Only whole rest-based chords (handled outside time slots). (subset of restChords) */
     private final Set<AbstractChordInter> wholeRestChords = new LinkedHashSet<AbstractChordInter>();
@@ -259,8 +261,8 @@ public class Measure
             KeyInter key = (KeyInter) inter;
             List<Staff> staves = part.getStaves();
             keys.put(staves.indexOf(key.getStaff()), key);
-        } else if (inter instanceof TimeInter) {
-            timeSigs.add((TimeInter) inter);
+        } else if (inter instanceof AbstractTimeInter) {
+            timeSigs.add((AbstractTimeInter) inter);
         } else if (inter instanceof FlagInter
                    || inter instanceof AugmentationDotInter
                    || inter instanceof TupletInter) {
@@ -287,8 +289,7 @@ public class Measure
             final SIGraph sig = part.getSystem().getSig();
 
             // Clefs, keys, timeSigs to fill measure
-            List<Inter> measureInters = filter(
-                    sig.inters(new Class[]{ClefInter.class, KeyInter.class, TimeInter.class}));
+            List<Inter> measureInters = filter(sig.inters(new Class[]{ClefInter.class, KeyInter.class, AbstractTimeInter.class}));
 
             for (Inter inter : measureInters) {
                 addInter(inter);
@@ -965,7 +966,7 @@ public class Measure
      *
      * @return the measure time signature, or null if not found
      */
-    public TimeInter getTimeSignature ()
+    public AbstractTimeInter getTimeSignature ()
     {
         if (!timeSigs.isEmpty()) {
             return timeSigs.iterator().next();
@@ -983,9 +984,9 @@ public class Measure
      * @param staffIndexInPart imposed part-based staff index
      * @return the staff time signature, or null if not found
      */
-    public TimeInter getTimeSignature (int staffIndexInPart)
+    public AbstractTimeInter getTimeSignature (int staffIndexInPart)
     {
-        for (TimeInter ts : timeSigs) {
+        for (AbstractTimeInter ts : timeSigs) {
             if (ts.getStaff().getId() == staffIndexInPart) {
                 return ts;
             }

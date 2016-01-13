@@ -20,12 +20,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code SaveTask} saves project on disk.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "save")
 public class SaveTask
         extends ScriptTask
 {

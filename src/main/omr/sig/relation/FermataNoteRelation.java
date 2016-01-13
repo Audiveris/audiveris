@@ -14,12 +14,15 @@ package omr.sig.relation;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code FermataNoteRelation} represents the relation between a fermata and
  * a chord note member.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "fermata-note")
 public class FermataNoteRelation
         extends AbstractSupport
 {

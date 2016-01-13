@@ -19,12 +19,15 @@ import omr.sheet.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code DotFermataRelation} represents the relation between a dot in the middle
  * of a fermata half-circle and the fermata symbol (perhaps just the half-circle).
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "dot-fermata")
 public class DotFermataRelation
         extends AbstractConnection
 {
@@ -118,6 +121,8 @@ public class DotFermataRelation
                 1,
                 "Relative impact weight for xOutGap");
 
-        private final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for yGap");
     }
 }

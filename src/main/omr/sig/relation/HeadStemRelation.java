@@ -17,7 +17,6 @@ import omr.constant.ConstantSet;
 import omr.sheet.Scale;
 
 import omr.sig.inter.Inter;
-
 import static omr.sig.relation.StemPortion.*;
 
 import omr.util.HorizontalSide;
@@ -28,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.geom.Line2D;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code HeadStemRelation} represents the relation support between a head and a
@@ -35,6 +35,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "head-stem")
 public class HeadStemRelation
         extends AbstractStemConnection
 {

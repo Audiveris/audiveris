@@ -45,9 +45,10 @@ import omr.sig.relation.DoubleDotRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.RepeatDotBarRelation;
 import omr.sig.relation.RepeatDotPairRelation;
-import omr.sig.relation.StaccatoChordRelation;
+import omr.sig.relation.ChordStaccatoRelation;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
@@ -455,8 +456,8 @@ public class DotFactory
      */
     private void instantCheckStaccato (Dot dot)
     {
-        final int maxDx = scale.toPixels(StaccatoChordRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(StaccatoChordRelation.getYGapMaximum());
+        final int maxDx = scale.toPixels(ChordStaccatoRelation.getXOutGapMaximum());
+        final int maxDy = scale.toPixels(ChordStaccatoRelation.getYGapMaximum());
         final Rectangle dotBox = dot.glyph.getBounds();
         final Point dotPt = dot.glyph.getCenter();
         final Rectangle luBox = new Rectangle(dotPt);
@@ -471,7 +472,7 @@ public class DotFactory
             return;
         }
 
-        StaccatoChordRelation bestRel = null;
+        ChordStaccatoRelation bestRel = null;
         Inter bestChord = null;
         double bestYGap = Double.MAX_VALUE;
 
@@ -490,7 +491,7 @@ public class DotFactory
                     : chordBox.y;
             double xGap = Math.abs(center.x - dotPt.x);
             double yGap = Math.abs(yRef - dotPt.y);
-            StaccatoChordRelation rel = new StaccatoChordRelation();
+            ChordStaccatoRelation rel = new ChordStaccatoRelation();
             rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
             if (rel.getGrade() >= rel.getMinGrade()) {
@@ -506,7 +507,7 @@ public class DotFactory
             double grade = Inter.intrinsicRatio * dot.eval.grade;
             StaccatoInter staccato = new StaccatoInter(dot.glyph, grade);
             sig.addVertex(staccato);
-            sig.addEdge(staccato, bestChord, bestRel);
+            sig.addEdge(bestChord, staccato, bestRel);
             logger.debug("Created {}", staccato);
         }
     }

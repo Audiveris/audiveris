@@ -17,7 +17,7 @@ import omr.glyph.Shape;
 import omr.sheet.rhythm.Voice;
 
 import omr.sig.relation.Relation;
-import omr.sig.relation.StaccatoChordRelation;
+import omr.sig.relation.ChordStaccatoRelation;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -58,7 +58,7 @@ public class StaccatoInter
     @Override
     public Voice getVoice ()
     {
-        for (Relation rel : sig.getRelations(this, StaccatoChordRelation.class)) {
+        for (Relation rel : sig.getRelations(this, ChordStaccatoRelation.class)) {
             return sig.getOppositeInter(this, rel).getVoice();
         }
 

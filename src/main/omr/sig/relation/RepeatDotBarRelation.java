@@ -19,12 +19,15 @@ import omr.sheet.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code RepeatDotBarRelation} represents the relation between a repeat dot and
  * the related bar line.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "repeat-dot-bar")
 public class RepeatDotBarRelation
         extends AbstractConnection
 {
@@ -120,6 +123,8 @@ public class RepeatDotBarRelation
                 3,
                 "Relative impact weight for xOutGap");
 
-        private final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for yGap");
     }
 }

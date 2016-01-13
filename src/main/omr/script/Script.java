@@ -31,7 +31,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -77,24 +78,26 @@ public class Script
     private SortedSet<Integer> sheetIds;
 
     /** Sequence of tasks that compose the script. */
-    @XmlElements({
-        @XmlElement(name = "assign", type = AssignTask.class),
-        @XmlElement(name = "barline", type = BarlineTask.class),
-        @XmlElement(name = "delete", type = DeleteTask.class),
-        @XmlElement(name = "export", type = ExportTask.class),
-        @XmlElement(name = "save", type = SaveTask.class),
-        @XmlElement(name = "score", type = ScoreTask.class),
-        @XmlElement(name = "insert", type = InsertTask.class),
-        @XmlElement(name = "invalidate", type = InvalidateTask.class),
-        @XmlElement(name = "parameters", type = ParametersTask.class),
-        @XmlElement(name = "print", type = PrintTask.class),
-        @XmlElement(name = "rational", type = RationalTask.class),
-        @XmlElement(name = "reset", type = ResetTask.class),
-        @XmlElement(name = "segment", type = SegmentTask.class),
-        @XmlElement(name = "slur", type = SlurTask.class),
-        @XmlElement(name = "book-step", type = BookStepTask.class),
-        @XmlElement(name = "sheet-step", type = SheetStepTask.class),
-        @XmlElement(name = "text", type = TextTask.class)
+    @XmlElementRefs({
+        @XmlElementRef(type = BookStepTask.class),
+        @XmlElementRef(type = ExportTask.class),
+        @XmlElementRef(type = PrintTask.class),
+        @XmlElementRef(type = SaveTask.class),
+        @XmlElementRef(type = ResetTask.class),
+        @XmlElementRef(type = ScoreTask.class),
+        @XmlElementRef(type = SheetStepTask.class)
+
+    /* -- Here below: tasks no longer used, to be reworked -- */
+    //        @XmlElement(name = "assign", type = AssignTask.class),
+    //        @XmlElement(name = "barline", type = BarlineTask.class),
+    //        @XmlElement(name = "delete", type = DeleteTask.class),
+    //        @XmlElement(name = "insert", type = InsertTask.class),
+    //        @XmlElement(name = "invalidate", type = InvalidateTask.class),
+    //        @XmlElement(name = "parameters", type = ParametersTask.class),
+    //        @XmlElement(name = "rational", type = RationalTask.class),
+    //        @XmlElement(name = "segment", type = SegmentTask.class),
+    //        @XmlElement(name = "slur", type = SlurTask.class),
+    //        @XmlElement(name = "text", type = TextTask.class)
     })
     private final List<ScriptTask> tasks = new ArrayList<ScriptTask>();
 

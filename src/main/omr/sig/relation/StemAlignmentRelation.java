@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sig.relation;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code StemAlignmentRelation} is used to formalize that two stems are strongly
  * aligned with each other (because they both derive from a larger root stem) and that
@@ -18,6 +20,7 @@ package omr.sig.relation;
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "stem-alignment")
 public class StemAlignmentRelation
         extends AbstractSupport
 {

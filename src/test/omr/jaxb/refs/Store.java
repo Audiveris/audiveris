@@ -31,8 +31,10 @@ public class Store
     @XmlElementWrapper(name = "fruits")
     @XmlElementRef
     //    @XmlElements({
-    //        @XmlElement(name = "apple", type = Apple.class),
-    //        @XmlElement(name = "orange", type = Orange.class)
+    //        ///@XmlElement(name = "apple", type = Apple.class),
+    //        @XmlElement(type = Apple.class),
+    //        ///@XmlElement(name = "orange", type = Orange.class)
+    //        @XmlElement(type = Orange.class)
     //    })
     ArrayList<Fruit> fruits = new ArrayList<Fruit>();
 

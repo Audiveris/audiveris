@@ -19,12 +19,15 @@ import omr.sheet.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code AccidHeadRelation} represents the relation support between an accidental
  * alteration (sharp, flat, natural, double-sharp, double-flat) and a note head.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "accid-head")
 public class AccidHeadRelation
         extends AbstractConnection
 {

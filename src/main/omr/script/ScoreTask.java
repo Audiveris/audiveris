@@ -17,11 +17,14 @@ import omr.sheet.SheetStub;
 
 import omr.step.Step;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code ScoreTask} builds the score(s) of a book.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "score")
 public class ScoreTask
         extends ScriptTask
 {

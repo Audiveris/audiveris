@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "time-pair")
 @XmlAccessorType(XmlAccessType.NONE)
 public class TimePairInter
-        extends TimeInter
+        extends AbstractTimeInter
         implements InterEnsemble
 {
     //~ Instance fields ----------------------------------------------------------------------------

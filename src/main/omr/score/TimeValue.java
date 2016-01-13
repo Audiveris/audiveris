@@ -14,7 +14,7 @@ package omr.score;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 
-import omr.sig.inter.TimeInter;
+import omr.sig.inter.AbstractTimeInter;
 
 import java.util.Objects;
 
@@ -41,7 +41,7 @@ public class TimeValue
      */
     public TimeValue (Shape shape)
     {
-        this(shape, TimeInter.rationalOf(shape));
+        this(shape, AbstractTimeInter.rationalOf(shape));
     }
 
     /**

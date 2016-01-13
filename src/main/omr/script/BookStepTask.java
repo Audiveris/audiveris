@@ -20,6 +20,7 @@ import omr.step.StepException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code BookStepTask} performs a step on a whole book.
@@ -27,6 +28,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "book-step")
 public class BookStepTask
         extends ScriptTask
 {

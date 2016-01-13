@@ -15,6 +15,7 @@ import omr.sheet.Sheet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code ResetTask} resets a sheet to initial state.
@@ -22,6 +23,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "reset")
 public class ResetTask
         extends SheetTask
 {

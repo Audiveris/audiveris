@@ -26,7 +26,7 @@ import omr.sig.inter.Inters;
 import omr.sig.inter.TupletInter;
 import omr.sig.relation.BeamHeadRelation;
 import omr.sig.relation.Relation;
-import omr.sig.relation.TupletChordRelation;
+import omr.sig.relation.ChordTupletRelation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +89,7 @@ public class TupletsBuilder
 
         for (TupletInter tuplet : tuplets) {
             // Clear existing tuplet-chord relations, if any
-            sig.removeAllEdges(sig.getRelations(tuplet, TupletChordRelation.class));
+            sig.removeAllEdges(sig.getRelations(tuplet, ChordTupletRelation.class));
 
             // Try to link tuplet with proper chords found in measure stack
             // (just staff above and staff below)
@@ -102,7 +102,7 @@ public class TupletsBuilder
                 logger.trace("{} connectable to {}", tuplet, chords);
 
                 for (AbstractChordInter chord : chords) {
-                    sig.addEdge(tuplet, chord, new TupletChordRelation(tuplet.getShape()));
+                    sig.addEdge(chord, tuplet, new ChordTupletRelation(tuplet.getShape()));
                     chord.setTupletFactor(tuplet.getDurationFactor());
                 }
             } else {

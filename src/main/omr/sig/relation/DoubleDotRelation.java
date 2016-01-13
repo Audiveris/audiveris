@@ -19,12 +19,15 @@ import omr.sheet.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code DoubleDotRelation} represents the relation between a second
  * augmentation dot and a first augmentation dot (case of double dot augmentation).
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "double-dot")
 public class DoubleDotRelation
         extends AbstractConnection
 {

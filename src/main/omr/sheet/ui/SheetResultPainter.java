@@ -40,18 +40,21 @@ import omr.sig.relation.BeamStemRelation;
 import omr.sig.relation.DoubleDotRelation;
 import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.Relation;
-import omr.sig.relation.StaccatoChordRelation;
+import omr.sig.relation.ChordStaccatoRelation;
 import omr.sig.ui.SigPainter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
+
 import static omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static omr.ui.symbol.Alignment.TOP_LEFT;
+
 import omr.ui.symbol.OmrFont;
 import omr.ui.util.Panel;
 import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.LEFT;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -330,7 +333,7 @@ public class SheetResultPainter
             }
 
             // Paint chord related stuff: staccato dot(s) if any
-            for (Relation sRel : sig.getRelations(chord, StaccatoChordRelation.class)) {
+            for (Relation sRel : sig.getRelations(chord, ChordStaccatoRelation.class)) {
                 Inter dot = sig.getOppositeInter(chord, sRel);
                 dot.accept(sigPainter);
             }

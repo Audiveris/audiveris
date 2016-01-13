@@ -19,12 +19,15 @@ import omr.sheet.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code AugmentationRelation} represents the relation between an augmentation
  * dot and the related note (head or rest) instance.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "augmentation")
 public class AugmentationRelation
         extends AbstractConnection
 {
@@ -114,6 +117,8 @@ public class AugmentationRelation
                 0,
                 "Relative impact weight for xOutGap");
 
-        private final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for yGap");
     }
 }

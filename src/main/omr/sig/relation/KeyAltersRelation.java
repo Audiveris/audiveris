@@ -14,12 +14,15 @@ package omr.sig.relation;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code KeyAltersRelation} represents the support relation between the
  * alterations items of a key signature.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "key-alters")
 public class KeyAltersRelation
         extends AbstractSupport
 {

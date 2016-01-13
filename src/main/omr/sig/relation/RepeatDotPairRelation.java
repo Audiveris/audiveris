@@ -14,12 +14,15 @@ package omr.sig.relation;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code RepeatDotPairRelation} represents the relation between two repeat dots
  * in a pair.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "repeat-dot-pair")
 public class RepeatDotPairRelation
         extends AbstractSupport
 {

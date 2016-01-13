@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                              T u p l e t C h o r d R e l a t i o n                             //
+//                              C h o r d T u p l e t R e l a t i o n                             //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -16,13 +16,16 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
- * Class {@code TupletChordRelation} represents the relation between a Tuplet sign and
- * an embraced chord.
+ * Class {@code ChordTupletRelation} represents the relation between a chord and an
+ * embracing tuplet sign.
  *
  * @author Hervé Bitteur
  */
-public class TupletChordRelation
+@XmlRootElement(name = "chord-tuplet")
+public class ChordTupletRelation
         extends AbstractSupport
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -37,7 +40,7 @@ public class TupletChordRelation
     /**
      * Creates a new {@code TupletChordRelation} object.
      */
-    public TupletChordRelation (Shape shape)
+    public ChordTupletRelation (Shape shape)
     {
         tupletCoeff = getTupletCoeff(shape);
     }
@@ -45,17 +48,17 @@ public class TupletChordRelation
     /**
      * No-arg constructor meant for JAXB.
      */
-    private TupletChordRelation ()
+    private ChordTupletRelation ()
     {
         this.tupletCoeff = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     //----------------//
-    // getSourceCoeff //
+    // getTargetCoeff //
     //----------------//
     @Override
-    protected double getSourceCoeff ()
+    protected double getTargetCoeff ()
     {
         return tupletCoeff;
     }

@@ -11,7 +11,9 @@
 // </editor-fold>
 package omr.script;
 
+import omr.image.AdaptiveDescriptor;
 import omr.image.FilterDescriptor;
+import omr.image.GlobalDescriptor;
 
 import omr.sheet.Book;
 import omr.sheet.Sheet;
@@ -28,9 +30,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
-import omr.image.AdaptiveDescriptor;
-import omr.image.GlobalDescriptor;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementRefs;
 
 /**
  * Class {@code ParametersTask} handles global parameters as the
@@ -54,9 +55,9 @@ public class ParametersTask
     private Integer tempo;
 
     /** Pixel filter. */
-    @XmlElements({
-        @XmlElement(name = "global-filter", type = GlobalDescriptor.class),
-        @XmlElement(name = "adaptive-filter", type = AdaptiveDescriptor.class)
+    @XmlElementRefs({
+        @XmlElementRef(type = GlobalDescriptor.class),
+        @XmlElementRef(type = AdaptiveDescriptor.class)
     })
     private FilterDescriptor filterDescriptor;
 
@@ -389,9 +390,9 @@ public class ParametersTask
         private String language;
 
         /** Pixel filter. */
-        @XmlElements({
-            @XmlElement(name = "global-filter", type = GlobalDescriptor.class),
-            @XmlElement(name = "adaptive-filter", type = AdaptiveDescriptor.class)
+        @XmlElementRefs({
+            @XmlElementRef(type = GlobalDescriptor.class),
+            @XmlElementRef(type = AdaptiveDescriptor.class)
         })
         private FilterDescriptor filterDescriptor;
 

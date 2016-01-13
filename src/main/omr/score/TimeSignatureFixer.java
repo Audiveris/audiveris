@@ -17,7 +17,7 @@ import omr.sheet.rhythm.Measure;
 import omr.sheet.rhythm.MeasureStack;
 import omr.sheet.rhythm.Voice;
 
-import omr.sig.inter.TimeInter;
+import omr.sig.inter.AbstractTimeInter;
 
 import omr.util.WrappedBoolean;
 
@@ -179,7 +179,7 @@ public class TimeSignatureFixer
             for (Measure measure : startStack.getMeasures()) {
                 for (Staff staff : measure.getPart().getStaves()) {
                     int staffIndexInPart = measure.getPart().getStaves().indexOf(staff);
-                    TimeInter time = measure.getTimeSignature(staffIndexInPart);
+                    AbstractTimeInter time = measure.getTimeSignature(staffIndexInPart);
 
                     if (time != null) {
                         try {
@@ -226,7 +226,7 @@ public class TimeSignatureFixer
         for (Measure measure : stack.getMeasures()) {
             for (Staff staff : measure.getPart().getStaves()) {
                 int staffIndexInPart = measure.getPart().getStaves().indexOf(staff);
-                TimeInter time = measure.getTimeSignature(staffIndexInPart);
+                AbstractTimeInter time = measure.getTimeSignature(staffIndexInPart);
 
                 if (time != null) {
                     logger.debug("Stack#{} T{} {}", stack.getPageId(), staff.getId(), time);

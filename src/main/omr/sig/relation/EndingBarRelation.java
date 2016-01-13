@@ -14,12 +14,14 @@ package omr.sig.relation;
 import omr.util.HorizontalSide;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code EndingBarRelation} connects an ending side with a bar line.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "ending-bar")
 public class EndingBarRelation
         extends AbstractRelation
 {

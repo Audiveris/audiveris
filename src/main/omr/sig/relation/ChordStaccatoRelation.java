@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                            S t a c c a t o C h o r d R e l a t i o n                           //
+//                            C h o r d S t a c c a t o R e l a t i o n                           //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -19,20 +19,23 @@ import omr.sheet.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
- * Class {@code StaccatoChordRelation} represents the relation between a staccato dot
- * and a note-based chord.
+ * Class {@code ChordStaccatoRelation} represents the relation between a note-based
+ * chord and a staccato dot.
  *
  * @author Hervé Bitteur
  */
-public class StaccatoChordRelation
+@XmlRootElement(name = "chord-staccato")
+public class ChordStaccatoRelation
         extends AbstractConnection
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(StaccatoChordRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChordStaccatoRelation.class);
 
     private static final double[] WEIGHTS = new double[]{
         constants.xWeight.getValue(),
@@ -83,13 +86,13 @@ public class StaccatoChordRelation
     }
 
     //----------------//
-    // getSourceCoeff //
+    // getTargetCoeff //
     //----------------//
     /**
      * @return the supporting coefficient for (source) staccato dot
      */
     @Override
-    protected double getSourceCoeff ()
+    protected double getTargetCoeff ()
     {
         return constants.staccatoDotSupportCoeff.getValue();
     }
@@ -123,7 +126,7 @@ public class StaccatoChordRelation
 
         private final Constant.Ratio staccatoDotSupportCoeff = new Constant.Ratio(
                 5,
-                "Supporting coeff for (source) staccato dot");
+                "Supporting coeff for (target) staccato dot");
 
         private final Scale.Fraction xGapMax = new Scale.Fraction(
                 0.75,

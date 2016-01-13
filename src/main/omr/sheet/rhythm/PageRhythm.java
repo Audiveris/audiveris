@@ -23,7 +23,7 @@ import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.FlagInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.RestChordInter;
-import omr.sig.inter.TimeInter;
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.TupletInter;
 
 import org.slf4j.Logger;
@@ -181,7 +181,7 @@ public class PageRhythm
     private void populateTimeSignatures ()
     {
         for (SystemInfo system : page.getSystems()) {
-            List<Inter> systemTimes = system.getSig().inters(TimeInter.class);
+            List<Inter> systemTimes = system.getSig().inters(AbstractTimeInter.class);
 
             if (!systemTimes.isEmpty()) {
                 Collections.sort(systemTimes, Inter.byAbscissa);
@@ -190,7 +190,7 @@ public class PageRhythm
                     boolean found = false;
 
                     for (Inter inter : stack.filter(systemTimes)) {
-                        TimeInter ts = (TimeInter) inter;
+                        AbstractTimeInter ts = (AbstractTimeInter) inter;
                         stack.addTimeSignature(ts);
                         systemTimes.remove(ts);
                         found = true;
@@ -355,13 +355,13 @@ public class PageRhythm
 
         int stopId; // Id of last stack
 
-        TimeInter ts; // Time signature found in first stack of range, if any
+        AbstractTimeInter ts; // Time signature found in first stack of range, if any
 
         Rational duration; // Inferred duration for the range
 
         //~ Constructors ---------------------------------------------------------------------------
         public Range (int startId,
-                      TimeInter ts)
+                      AbstractTimeInter ts)
         {
             this.startId = startId;
             this.ts = ts;
