@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.ui;
 
-import omr.selection.SelectionService;
-import omr.selection.UserEvent;
+import omr.ui.selection.SelectionService;
+import omr.ui.selection.UserEvent;
 
 import omr.ui.field.LCheckBox;
 import omr.ui.util.Panel;

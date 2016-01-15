@@ -17,11 +17,12 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 
 import omr.math.GeoOrder;
+
 import static omr.math.GeoOrder.*;
 
 import omr.run.Orientation;
 
-import omr.selection.EntityListEvent;
+import omr.ui.selection.EntityListEvent;
 
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;

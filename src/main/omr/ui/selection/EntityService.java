@@ -9,9 +9,9 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.selection;
+package omr.ui.selection;
 
-import static omr.selection.SelectionHint.ENTITY_INIT;
+import static omr.ui.selection.SelectionHint.ENTITY_INIT;
 
 import omr.util.Entities;
 import omr.util.Entity;

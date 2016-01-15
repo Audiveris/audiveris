@@ -22,8 +22,8 @@ import omr.glyph.ShapeSet;
 
 import omr.script.InsertTask;
 
-import omr.selection.MouseMovement;
-import omr.selection.UserEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.UserEvent;
 
 import omr.sheet.Sheet;
 

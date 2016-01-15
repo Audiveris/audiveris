@@ -30,8 +30,8 @@ import omr.plugin.PluginManager;
 
 import omr.score.PartwiseBuilder;
 
-import omr.selection.MouseMovement;
-import omr.selection.StubEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.StubEvent;
 
 import omr.sheet.Book;
 import omr.sheet.SheetStub;

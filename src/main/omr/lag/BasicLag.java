@@ -15,7 +15,7 @@ import omr.run.Orientation;
 import omr.run.Run;
 import omr.run.RunTable;
 
-import omr.selection.SelectionService;
+import omr.ui.selection.SelectionService;
 
 import omr.util.BasicIndex;
 import omr.util.Predicate;

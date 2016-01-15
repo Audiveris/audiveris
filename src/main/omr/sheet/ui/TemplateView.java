@@ -21,12 +21,13 @@ import omr.image.DistanceTable;
 import omr.image.PixelDistance;
 import omr.image.Template;
 
-import omr.selection.AnchoredTemplateEvent;
-import omr.selection.MouseMovement;
-import static omr.selection.SelectionHint.CONTEXT_INIT;
-import omr.selection.SelectionService;
-import omr.selection.UserEvent;
+import omr.ui.selection.AnchoredTemplateEvent;
+import omr.ui.selection.MouseMovement;
 
+import static omr.ui.selection.SelectionHint.CONTEXT_INIT;
+
+import omr.ui.selection.SelectionService;
+import omr.ui.selection.UserEvent;
 import omr.sheet.Sheet;
 
 import omr.ui.symbol.Alignment;

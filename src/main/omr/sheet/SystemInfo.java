@@ -699,18 +699,18 @@ public class SystemInfo
         return page;
     }
 
-    //--------------//
-    // getPartAbove //
-    //--------------//
+    //------------------//
+    // getPartAtOrAbove //
+    //------------------//
     /**
-     * Determine the (real) part which is above the given point.
+     * Determine the (real) part which is at or above the given point.
      *
      * @param point the given point
-     * @return the part above
+     * @return the part at or above
      */
-    public Part getPartAbove (Point point)
+    public Part getPartAtOrAbove (Point point)
     {
-        Staff staff = getStaffAbove(point);
+        Staff staff = getStaffAtOrAbove(point);
 
         if (staff == null) {
             return getFirstPart();
@@ -883,32 +883,6 @@ public class SystemInfo
         return sheet.getSkew();
     }
 
-    //---------------//
-    // getStaffAbove //
-    //---------------//
-    /**
-     * Determine the (real) staff which is just above the given point.
-     *
-     * @param point the given point
-     * @return the staff above
-     */
-    // Plain wrong!
-    @Deprecated
-    public Staff getStaffAbove (Point point)
-    {
-        Staff above = null;
-
-        for (Staff staff : staves) {
-            if (staff.getAreaBounds().getCenterY() <= point.y) {
-                above = staff;
-            } else {
-                break;
-            }
-        }
-
-        return above;
-    }
-
     //-------------------//
     // getStaffAtOrAbove //
     //-------------------//
@@ -960,28 +934,6 @@ public class SystemInfo
 
         if (index < (staves.size() - 1)) {
             return staves.get(index + 1);
-        }
-
-        return null;
-    }
-
-    //---------------//
-    // getStaffBelow //
-    //---------------//
-    /**
-     * Determine the (real) staff which is just below the given point.
-     *
-     * @param point the given point
-     * @return the staff below
-     */
-    // Plain wrong!
-    @Deprecated
-    public Staff getStaffBelow (Point point)
-    {
-        for (Staff staff : staves) {
-            if (staff.getAreaBounds().getCenterY() > point.y) {
-                return staff;
-            }
         }
 
         return null;

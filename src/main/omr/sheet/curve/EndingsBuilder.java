@@ -258,7 +258,7 @@ public class EndingsBuilder
             SIGraph sig = system.getSig();
 
             // Consider the staff just below the segment
-            Staff staff = system.getStaffBelow(leftEnd);
+            Staff staff = system.getStaffAtOrBelow(leftEnd);
 
             if (staff == null) {
                 continue;

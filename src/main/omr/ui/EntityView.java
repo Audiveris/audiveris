@@ -13,15 +13,14 @@ package omr.ui;
 
 import omr.score.ui.PaintingParameters;
 
-import omr.selection.EntityListEvent;
-import omr.selection.EntityService;
-import omr.selection.LocationEvent;
-import omr.selection.MouseMovement;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.EntityService;
+import omr.ui.selection.LocationEvent;
+import omr.ui.selection.MouseMovement;
 
-import static omr.selection.SelectionHint.ENTITY_INIT;
+import static omr.ui.selection.SelectionHint.ENTITY_INIT;
 
-import omr.selection.UserEvent;
-
+import omr.ui.selection.UserEvent;
 import omr.ui.view.RubberPanel;
 
 import omr.util.Entities;

@@ -13,8 +13,8 @@ package omr.sheet.ui;
 
 import omr.OMR;
 
-import omr.selection.LocationEvent;
-import omr.selection.SelectionService;
+import omr.ui.selection.LocationEvent;
+import omr.ui.selection.SelectionService;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetStub;

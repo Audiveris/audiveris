@@ -20,7 +20,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 
 import omr.math.Rational;
-
 import static omr.score.MusicXML.*;
 
 import omr.sheet.Book;
@@ -30,6 +29,7 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SheetStub;
 import omr.sheet.Staff;
+import omr.sheet.StaffBarline;
 import omr.sheet.SystemInfo;
 import omr.sheet.rhythm.Measure;
 import omr.sheet.rhythm.MeasureStack;
@@ -42,8 +42,11 @@ import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AbstractNoteInter;
+import static omr.sig.inter.AbstractNoteInter.QUARTER_DURATION;
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.AlterInter;
 import omr.sig.inter.ClefInter;
+import omr.sig.inter.CodaInter;
 import omr.sig.inter.DynamicsInter;
 import omr.sig.inter.FermataInter;
 import omr.sig.inter.HeadChordInter;
@@ -52,11 +55,11 @@ import omr.sig.inter.KeyInter;
 import omr.sig.inter.LyricItemInter;
 import omr.sig.inter.PedalInter;
 import omr.sig.inter.RestChordInter;
+import omr.sig.inter.SegnoInter;
 import omr.sig.inter.SentenceInter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.SmallChordInter;
 import omr.sig.inter.StemInter;
-import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.TupletInter;
 import omr.sig.inter.WedgeInter;
 import omr.sig.relation.ChordDynamicsRelation;
@@ -71,16 +74,12 @@ import omr.sig.relation.SlurHeadRelation;
 
 import omr.text.FontInfo;
 import omr.text.TextRole;
-
 import static omr.text.TextRole.*;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
-
 import omr.util.OmrExecutors;
-
 import static omr.util.VerticalSide.*;
 
 import com.audiveris.proxymusic.AboveBelow;
@@ -101,6 +100,7 @@ import com.audiveris.proxymusic.Direction;
 import com.audiveris.proxymusic.DirectionType;
 import com.audiveris.proxymusic.Dynamics;
 import com.audiveris.proxymusic.Empty;
+import com.audiveris.proxymusic.EmptyPrintStyleAlign;
 import com.audiveris.proxymusic.Encoding;
 import com.audiveris.proxymusic.Fermata;
 import com.audiveris.proxymusic.FontStyle;
@@ -346,63 +346,6 @@ public class PartwiseBuilder
                && Objects.equals(left.getClefOctaveChange(), right.getClefOctaveChange());
     }
 
-    //------------------//
-    // getArticulations //
-    //------------------//
-    /**
-     * Report (after creating it if necessary) the articulations elements in the
-     * notations element of the current note.
-     *
-     * @return the note notations articulations element
-     */
-    private Articulations getArticulations ()
-    {
-        for (Object obj : getNotations().getTiedOrSlurOrTuplet()) {
-            if (obj instanceof Articulations) {
-                return (Articulations) obj;
-            }
-        }
-
-        // Need to allocate articulations
-        Articulations articulations = factory.createArticulations();
-        getNotations().getTiedOrSlurOrTuplet().add(articulations);
-
-        return articulations;
-    }
-
-    //---------------//
-    // getCurrentKey //
-    //---------------//
-    /**
-     * Report the key that applies to the current part.
-     * TODO: we could as well add a Key member in current structure?
-     *
-     * @return the current key
-     */
-    private Key getCurrentKey ()
-    {
-        // Browse the current list of measures backwards within current part
-        List<ScorePartwise.Part.Measure> measures = current.pmPart.getMeasure();
-
-        for (ListIterator<ScorePartwise.Part.Measure> it = measures.listIterator(measures.size());
-                it.hasPrevious();) {
-            ScorePartwise.Part.Measure pmMeasure = it.previous();
-
-            for (Object obj : pmMeasure.getNoteOrBackupOrForward()) {
-                if (obj instanceof Attributes) {
-                    Attributes attributes = (Attributes) obj;
-                    List<Key> keys = attributes.getKey();
-
-                    if (!keys.isEmpty()) {
-                        return keys.get(keys.size() - 1);
-                    }
-                }
-            }
-        }
-
-        return null; // No key found
-    }
-
     //--------//
     // getDen // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
     //--------//
@@ -604,6 +547,30 @@ public class PartwiseBuilder
         return pmPart;
     }
 
+    //------------------//
+    // getArticulations //
+    //------------------//
+    /**
+     * Report (after creating it if necessary) the articulations elements in the
+     * notations element of the current note.
+     *
+     * @return the note notations articulations element
+     */
+    private Articulations getArticulations ()
+    {
+        for (Object obj : getNotations().getTiedOrSlurOrTuplet()) {
+            if (obj instanceof Articulations) {
+                return (Articulations) obj;
+            }
+        }
+
+        // Need to allocate articulations
+        Articulations articulations = factory.createArticulations();
+        getNotations().getTiedOrSlurOrTuplet().add(articulations);
+
+        return articulations;
+    }
+
     //---------------//
     // getAttributes //
     //---------------//
@@ -620,6 +587,67 @@ public class PartwiseBuilder
         }
 
         return current.pmAttributes;
+    }
+
+    //------------------//
+    // getBarlineOnLeft //
+    //------------------//
+    /**
+     * Report the barline located on left side of the provided measure.
+     *
+     * @param measure the provided measure
+     * @return the partBarline or null
+     */
+    private PartBarline getBarlineOnLeft (Measure measure)
+    {
+        if (measure.getLeftBarline() != null) {
+            return measure.getLeftBarline();
+        } else if (isFirst.measure) {
+            return measure.getPart().getStartingBarline();
+        } else {
+            final Measure prevMeasure = measure.getPreviousSibling();
+
+            if (prevMeasure != null) {
+                if (!prevMeasure.isDummy()) {
+                    return prevMeasure.getRightBarline();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    //---------------//
+    // getCurrentKey //
+    //---------------//
+    /**
+     * Report the key that applies to the current part.
+     * TODO: we could as well add a Key member in current structure?
+     *
+     * @return the current key
+     */
+    private Key getCurrentKey ()
+    {
+        // Browse the current list of measures backwards within current part
+        List<ScorePartwise.Part.Measure> measures = current.pmPart.getMeasure();
+
+        for (ListIterator<ScorePartwise.Part.Measure> it = measures.listIterator(measures.size());
+                it.hasPrevious();) {
+            ScorePartwise.Part.Measure pmMeasure = it.previous();
+
+            for (Object obj : pmMeasure.getNoteOrBackupOrForward()) {
+                if (obj instanceof Attributes) {
+                    Attributes attributes = (Attributes) obj;
+                    List<Key> keys = attributes.getKey();
+
+                    if (!keys.isEmpty()) {
+                        return keys.get(keys.size() - 1);
+                    }
+                }
+            }
+        }
+
+        return null; // No key found
     }
 
     //----------//
@@ -849,58 +877,92 @@ public class PartwiseBuilder
     //----------------//
     // processBarline //
     //----------------//
-    private void processBarline (PartBarline barline)
+    /**
+     * Process a part barline for the current measure.
+     * <p>
+     * This can be a left, mid or right barline WRT the current measure.
+     * <p>
+     * Related entities: repeat, ending, fermata, segno, coda.
+     * (TODO: still to be implemented: fermata, ending)
+     *
+     * @param partBarline the PartBarline to process
+     * @param location    barline location WRT current measure
+     */
+    private void processBarline (PartBarline partBarline,
+                                 RightLeftMiddle location)
     {
         try {
-            if (barline == null) {
+            if (partBarline == null) {
                 return;
             }
 
-            logger.debug("Visiting {}", barline);
+            final MeasureStack stack = current.measure.getStack();
+            final PartBarline.Style style = partBarline.getStyle();
 
-            //TODO: handle endings if any
-            PartBarline.Style style = barline.getStyle();
-
-            if (style != PartBarline.Style.REGULAR) {
+            if ((partBarline == current.measure.getLeftBarline())
+                || (location == RightLeftMiddle.MIDDLE)
+                || ((location == RightLeftMiddle.RIGHT) && (style != PartBarline.Style.REGULAR))
+                || ((location == RightLeftMiddle.LEFT) && stack.isRepeat(LEFT))
+                || ((location == RightLeftMiddle.RIGHT) && stack.isRepeat(RIGHT))) {
                 try {
-                    Barline pmBarline = factory.createBarline();
+                    logger.debug("Visiting {} on {}", partBarline, location);
+
+                    final Barline pmBarline = factory.createBarline();
+                    pmBarline.setLocation(location);
+
                     BarStyleColor barStyleColor = factory.createBarStyleColor();
                     barStyleColor.setValue(barStyleOf(style));
+                    pmBarline.setBarStyle(barStyleColor);
 
-                    if (barline == current.measure.getRightBarline()) {
-                        // The bar is on right side
-                        pmBarline.setLocation(RightLeftMiddle.RIGHT);
+                    switch (location) {
+                    case LEFT:
 
-                        // Repeat?
-                        ///if (barline.isRightRepeat()) {
-                        if (current.measure.getStack().isRepeat(RIGHT)) {
-                            Repeat repeat = factory.createRepeat();
-                            repeat.setDirection(BackwardForward.BACKWARD);
-                            pmBarline.setRepeat(repeat);
-                        }
-                    } else {
-                        // Inside barline (on left)
-                        // Or bar is on left side
-                        pmBarline.setLocation(RightLeftMiddle.LEFT);
-
-                        // Repeat?
-                        ///if (barline.isLeftRepeat()) {
-                        if (current.measure.getStack().isRepeat(LEFT)) {
+                        // (Left) repeat?
+                        if (stack.isRepeat(LEFT)) {
                             Repeat repeat = factory.createRepeat();
                             repeat.setDirection(BackwardForward.FORWARD);
                             pmBarline.setRepeat(repeat);
                         }
+
+                        // Ending ???
+                        break;
+
+                    case MIDDLE:
+
+                        // Ending ???
+                        break;
+
+                    case RIGHT:
+
+                        // (Right) repeat?
+                        if (stack.isRepeat(RIGHT)) {
+                            Repeat repeat = factory.createRepeat();
+                            repeat.setDirection(BackwardForward.BACKWARD);
+                            pmBarline.setRepeat(repeat);
+                        }
+
+                    // Ending ???
                     }
 
                     // Everything is now OK
-                    pmBarline.setBarStyle(barStyleColor);
                     current.pmMeasure.getNoteOrBackupOrForward().add(pmBarline);
                 } catch (Exception ex) {
                     logger.warn("Cannot process barline", ex);
                 }
             }
+
+            if (location == RightLeftMiddle.LEFT) {
+                // Coda? Segno? Check staffBarline of top staff of top part in current stack
+                Part part = current.measure.getPart();
+                Measure topMeasure = current.measure.getStack().getFirstMeasure();
+                PartBarline topPartBarline = getBarlineOnLeft(topMeasure);
+                StaffBarline topBarline = topPartBarline.getBarline(part, part.getFirstStaff());
+
+                processCoda(topBarline.getCoda());
+                processSegno(topBarline.getSegno());
+            }
         } catch (Exception ex) {
-            logger.warn("Error visiting " + barline, ex);
+            logger.warn("Error visiting " + partBarline, ex);
         }
     }
 
@@ -932,45 +994,50 @@ public class PartwiseBuilder
         }
     }
 
-    //
-    //    //--------------//
-    //    // process Coda //
-    //    //--------------//
-    //    private void process (Coda coda)
-    //    {
-    //        try {
-    //            logger.debug("Visiting {}", coda);
-    //
-    //            Direction direction = factory.createDirection();
-    //
-    //            // Staff ?
-    //            OldStaff staff = current.note.getStaff();
-    //            insertStaffId(direction, staff);
-    //
-    //            EmptyPrintStyleAlign pmCoda = factory.createEmptyPrintStyleAlign();
-    //            // default-x
-    //            pmCoda.setDefaultX(toTenths(coda.getReferencePoint().x - current.measure.getLeftX()));
-    //
-    //            // default-y
-    //            pmCoda.setDefaultY(yOf(coda.getReferencePoint(), staff));
-    //
-    //            DirectionType directionType = new DirectionType();
-    //            directionType.getCoda().add(pmCoda);
-    //            direction.getDirectionType().add(directionType);
-    //
-    //            // Need also a Sound element
-    //            Sound sound = factory.createSound();
-    //            direction.setSound(sound);
-    //            sound.setCoda("" + current.measure.getScoreId());
-    //            sound.setDivisions(
-    //                    new BigDecimal(score.simpleDurationOf(omr.score.entity.Note.QUARTER_DURATION)));
-    //
-    //            // Everything is now OK
-    //            current.pmMeasure.getNoteOrBackupOrForward().add(direction);
-    //        } catch (Exception ex) {
-    //            logger.warn("Error visiting " + coda, ex);
-    //        }
-    //    }
+    //-------------//
+    // processCoda //
+    //-------------//
+    private void processCoda (CodaInter coda)
+    {
+        if (coda == null) {
+            return;
+        }
+
+        try {
+            logger.debug("Visiting {}", coda);
+
+            Direction direction = factory.createDirection();
+
+            // Staff? We use top staff of current measure, perhaps not the coda staff.
+            insertStaffId(direction, current.measure.getPart().getFirstStaff());
+
+            EmptyPrintStyleAlign empty = factory.createEmptyPrintStyleAlign();
+
+            //
+            //            // default-x
+            //            empty.setDefaultX(
+            //                    toTenths(coda.getCenterLeft().x - current.measure.getAbscissa(LEFT, staff)));
+            //
+            //            // default-y
+            //            empty.setDefaultY(yOf(coda.getCenterLeft(), staff));
+            //
+            DirectionType directionType = new DirectionType();
+            directionType.getCoda().add(empty);
+            direction.getDirectionType().add(directionType);
+
+            // Need also a Sound element
+            Sound sound = factory.createSound();
+            direction.setSound(sound);
+            sound.setCoda("" + current.measure.getStack().getScoreId(score));
+            sound.setDivisions(new BigDecimal(current.page.simpleDurationOf(QUARTER_DURATION)));
+
+            // Everything is now OK
+            current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+        } catch (Exception ex) {
+            logger.warn("Error visiting " + coda, ex);
+        }
+    }
+
     //------------------//
     // processDirection //
     //------------------//
@@ -1354,23 +1421,20 @@ public class PartwiseBuilder
             // Print?
             new MeasurePrint(measure).process();
 
-            //
-            //            // Inside barline?
-            //            process(measure.getInsideBarline());
-            //
             // Left barline ?
-            final Measure prevMeasure = measure.getPreviousSibling();
+            processBarline(getBarlineOnLeft(measure), RightLeftMiddle.LEFT);
 
-            if ((prevMeasure != null) && !prevMeasure.isDummy()) {
-                processBarline(prevMeasure.getRightBarline());
-            }
-
+            //
+            //            // Mid barline?
+            //            // TODO: insert this in proper location between notes???
+            //            process(measure.getMidBarline(), RightLeftMiddle.MIDDLE);
+            //
             // Divisions?
             if (isPageFirstMeasure) {
                 try {
-                    getAttributes().setDivisions(
-                            new BigDecimal(
-                                    current.page.simpleDurationOf(AbstractNoteInter.QUARTER_DURATION)));
+                    getAttributes()
+                            .setDivisions(
+                                    new BigDecimal(current.page.simpleDurationOf(QUARTER_DURATION)));
                 } catch (Exception ex) {
                     if (current.page.getDurationDivisor() == null) {
                         logger.warn(
@@ -1413,7 +1477,8 @@ public class PartwiseBuilder
                 processTime(measure.getTimeSignature());
             } else if (isScoreFirstMeasure) {
                 // We need to insert a time sig!
-                ///processTime(2,4,null);
+                // TODO
+                ///processTime(4,4,null);
             }
 
             // Clefs may be inserted further down the measure
@@ -1499,7 +1564,7 @@ public class PartwiseBuilder
 
             // Right Barline
             if (!measure.isDummy()) {
-                processBarline(measure.getRightBarline());
+                processBarline(measure.getRightBarline(), RightLeftMiddle.RIGHT);
             }
         } catch (Exception ex) {
             logger.warn("Error visiting " + measure + " in " + current.page, ex);
@@ -2124,46 +2189,49 @@ public class PartwiseBuilder
     //            logger.warn("Error visiting " + ornament, ex);
     //        }
     //    }
-    //
-    //    //---------------//
-    //    // process Segno //
-    //    //---------------//
-    //    private void process (OldSegno segno)
-    //    {
-    //        try {
-    //            logger.debug("Visiting {}", segno);
-    //
-    //            Direction direction = new Direction();
-    //            DirectionType directionType = factory.createDirectionType();
-    //
-    //            EmptyPrintStyleAlign empty = factory.createEmptyPrintStyleAlign();
-    //
-    //            // Staff ?
-    //            Staff staff = current.note.getStaff();
-    //            insertStaffId(direction, staff);
-    //
-    //            // default-x
-    //            empty.setDefaultX(
-    //                    toTenths(segno.getReferencePoint().x - current.measure.getAbscissa(LEFT, staff)));
-    //
-    //            // default-y
-    //            empty.setDefaultY(yOf(segno.getReferencePoint(), staff));
-    //
-    //            // Need also a Sound element (TODO: We don't do anything with sound!)
-    //            Sound sound = factory.createSound();
-    //            sound.setSegno("" + current.measure.getStack().getScoreId(score));
-    //            sound.setDivisions(
-    //                    new BigDecimal(
-    //                            current.page.simpleDurationOf(omr.score.entity.OldNote.QUARTER_DURATION)));
-    //
-    //            // Everything is OK
-    //            directionType.getSegno().add(empty);
-    //            direction.getDirectionType().add(directionType);
-    //            current.pmMeasure.getNoteOrBackupOrForward().add(direction);
-    //        } catch (Exception ex) {
-    //            logger.warn("Error visiting " + segno, ex);
-    //        }
-    //    }
+    //--------------//
+    // processSegno //
+    //--------------//
+    private void processSegno (SegnoInter segno)
+    {
+        if (segno == null) {
+            return;
+        }
+
+        try {
+            logger.debug("Visiting {}", segno);
+
+            Direction direction = new Direction();
+            DirectionType directionType = factory.createDirectionType();
+
+            EmptyPrintStyleAlign empty = factory.createEmptyPrintStyleAlign();
+
+            // Staff? We use top staff of current measure, perhaps not the segno staff.
+            insertStaffId(direction, current.measure.getPart().getFirstStaff());
+
+            //
+            //            // default-x
+            //            empty.setDefaultX(
+            //                    toTenths(segno.getCenterLeft().x - current.measure.getAbscissa(LEFT, staff)));
+            //
+            //            // default-y
+            //            empty.setDefaultY(yOf(segno.getCenterLeft(), staff));
+            //
+            // Need also a Sound element (TODO: We don't do anything with sound!)
+            Sound sound = factory.createSound();
+            sound.setSegno("" + current.measure.getStack().getScoreId(score));
+            sound.setDivisions(new BigDecimal(current.page.simpleDurationOf(QUARTER_DURATION)));
+            direction.setSound(sound);
+
+            // Everything is OK
+            directionType.getSegno().add(empty);
+            direction.getDirectionType().add(directionType);
+            current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+        } catch (Exception ex) {
+            logger.warn("Error visiting " + segno, ex);
+        }
+    }
+
     //-----------------//
     // processSentence //
     //-----------------//

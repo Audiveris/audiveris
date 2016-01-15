@@ -35,9 +35,9 @@ import omr.score.ui.BookPdfOutput;
 
 import omr.script.ExportTask;
 
-import omr.selection.LocationEvent;
-import omr.selection.PixelEvent;
-import omr.selection.SelectionService;
+import omr.ui.selection.LocationEvent;
+import omr.ui.selection.PixelEvent;
+import omr.ui.selection.SelectionService;
 
 import omr.sheet.ui.BinarizationBoard;
 import omr.sheet.ui.PictureView;

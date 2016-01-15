@@ -36,7 +36,7 @@ import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.util.ArrayList;
 import java.util.List;
-import omr.selection.EntityService;
+import omr.ui.selection.EntityService;
 
 /**
  * Class {@code NestView} is a view that combines the display of several lags to

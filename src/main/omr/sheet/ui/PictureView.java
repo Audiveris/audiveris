@@ -16,7 +16,7 @@ import omr.run.RunTable;
 import omr.score.ui.PageMenu;
 import omr.score.ui.PaintingParameters;
 
-import omr.selection.MouseMovement;
+import omr.ui.selection.MouseMovement;
 
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
@@ -35,8 +35,10 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_OFF;
+
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

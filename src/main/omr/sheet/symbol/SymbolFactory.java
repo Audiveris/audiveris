@@ -18,6 +18,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
+
 import static omr.glyph.ShapeSet.*;
 
 import omr.sheet.Scale;
@@ -34,6 +35,7 @@ import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AlterInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.ClefInter;
+import omr.sig.inter.CodaInter;
 import omr.sig.inter.DynamicsInter;
 import omr.sig.inter.FermataInter;
 import omr.sig.inter.FingeringInter;
@@ -42,19 +44,17 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.PedalInter;
 import omr.sig.inter.PluckingInter;
 import omr.sig.inter.RestInter;
+import omr.sig.inter.SegnoInter;
 import omr.sig.inter.TimeNumberInter;
 import omr.sig.inter.TimeWholeInter;
 import omr.sig.inter.TupletInter;
-import omr.sig.relation.FermataBarRelation;
 
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -162,17 +162,13 @@ public class SymbolFactory
         sheet.getGlyphIndex().register(glyph); // TODO: perhaps an overkill...
 
         if (glyph.isVip()) {
-            logger.info("glyph#{} symbol created as {}", glyph.getId(), eval.shape);
+            logger.info("VIP glyph#{} symbol created as {}", glyph.getId(), eval.shape);
         }
 
         if (Clefs.contains(shape)) {
             addSymbol(ClefInter.create(glyph, shape, grade, closestStaff)); // Staff is OK
         } else if (Rests.contains(shape)) {
-            RestInter rest = RestInter.create(glyph, shape, grade, system, systemHeadChords);
-
-            if (rest != null) {
-                addSymbol(rest);
-            }
+            addSymbol(RestInter.create(glyph, shape, grade, system, systemHeadChords));
         } else if (Alterations.contains(shape)) {
             AlterInter alterInter = AlterInter.create(glyph, shape, grade, closestStaff); // Staff is very questionable!
             addSymbol(alterInter);
@@ -180,15 +176,7 @@ public class SymbolFactory
         } else if (Flags.contains(shape)) {
             AbstractFlagInter.create(glyph, shape, grade, system, systemStems); // Glyph is checked
         } else if (PartialTimes.contains(shape)) {
-            TimeNumberInter timeNumberInter = TimeNumberInter.create(
-                    glyph,
-                    shape,
-                    grade,
-                    closestStaff); // Staff is OK
-
-            if (timeNumberInter != null) {
-                addSymbol(timeNumberInter);
-            }
+            addSymbol(TimeNumberInter.create(glyph, shape, grade, closestStaff)); // Staff is OK
         } else if (WholeTimes.contains(shape)) {
             TimeWholeInter time = new TimeWholeInter(glyph, shape, grade);
             time.setStaff(closestStaff); // Staff is OK
@@ -196,11 +184,7 @@ public class SymbolFactory
         } else if (Dynamics.contains(shape)) {
             addSymbol(new DynamicsInter(glyph, shape, grade));
         } else if (Tuplets.contains(shape)) {
-            TupletInter tuplet = TupletInter.create(glyph, shape, grade, system, systemHeadChords);
-
-            if (tuplet != null) {
-                addSymbol(tuplet);
-            }
+            addSymbol(TupletInter.create(glyph, shape, grade, system, systemHeadChords));
         } else if (Fermatas.contains(shape)) {
             FermataInter fermata = FermataInter.create(glyph, shape, grade, system);
 
@@ -208,10 +192,22 @@ public class SymbolFactory
                 addSymbol(fermata);
                 fermata.linkWithBarline();
             }
-        } else if (Pedals.contains(shape)) {
-            addSymbol(new PedalInter(glyph, shape, grade));
         } else if (shape == Shape.DOT_set) {
             dotFactory.instantDotChecks(eval, glyph);
+        } else if (Pedals.contains(shape)) {
+            addSymbol(new PedalInter(glyph, shape, grade));
+        } else if (shape == Shape.CODA) {
+            CodaInter coda = new CodaInter(glyph, grade);
+            coda.setStaff(closestStaff); // Staff is OK
+            closestStaff.addOtherInter(coda);
+            addSymbol(coda);
+            coda.linkWithBarline();
+        } else if (shape == Shape.SEGNO) {
+            SegnoInter segno = new SegnoInter(glyph, grade);
+            segno.setStaff(closestStaff); // Staff is OK
+            closestStaff.addOtherInter(segno);
+            addSymbol(segno);
+            segno.linkWithBarline();
         } else if (constants.supportFingerings.isSet() && Digits.contains(shape)) {
             addSymbol(FingeringInter.create(glyph, shape, grade));
         } else if (constants.supportFrets.isSet() && Romans.contains(shape)) {
@@ -260,9 +256,6 @@ public class SymbolFactory
     //-------------//
     public void linkSymbols ()
     {
-        // Handle fermata relationships
-        linkFermatas();
-
         // Conflicting dot interpretations
         dotFactory.lateDotChecks();
 
@@ -292,10 +285,14 @@ public class SymbolFactory
     /**
      * Add the provided inter to the SIG, and make sure its glyph if any is registered.
      *
-     * @param inter the created inter to add to SIG
+     * @param inter the created inter to add to SIG (perhaps null)
      */
     private void addSymbol (Inter inter)
     {
+        if (inter == null) {
+            return;
+        }
+
         Glyph glyph = inter.getGlyph();
 
         if ((glyph != null) && (glyph.getId() == null)) {
@@ -361,40 +358,6 @@ public class SymbolFactory
         // Finally, scan each relevant stack
         for (Entry<MeasureStack, Set<Inter>> entry : timeMap.entrySet()) {
             new TimeBuilder.BasicColumn(entry.getKey(), entry.getValue()).retrieveTime();
-        }
-    }
-
-    //--------------//
-    // linkFermatas //
-    //--------------//
-    /**
-     * Try to link any fermata with chords (head or rest) or barline.
-     * If not successful, the fermata candidate is deleted.
-     */
-    private void linkFermatas ()
-    {
-        List<Inter> fermatas = sig.inters(FermataInter.class);
-
-        for (Inter inter : fermatas) {
-            FermataInter fermata = (FermataInter) inter;
-
-            if (fermata.isVip()) {
-                logger.info("VIP linkFermatas on {}", fermata);
-            }
-
-            // Look for a chord (head or rest) related to this fermata
-            final Point center = fermata.getCenter();
-            final MeasureStack stack = system.getMeasureStackAt(center);
-            final Collection<AbstractChordInter> chords = (fermata.getShape() == Shape.FERMATA_BELOW)
-                    ? stack.getStandardChordsAbove(center)
-                    : stack.getStandardChordsBelow(center);
-
-            if (!fermata.linkWithChords(chords)) {
-                // Check whether this fermata has a link to a barline
-                if (!sig.hasRelation(fermata, FermataBarRelation.class)) {
-                    fermata.delete(); // No link at all
-                }
-            }
         }
     }
 

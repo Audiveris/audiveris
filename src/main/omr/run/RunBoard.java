@@ -13,9 +13,9 @@ package omr.run;
 
 import omr.lag.Lag;
 
-import omr.selection.MouseMovement;
-import omr.selection.RunEvent;
-import omr.selection.UserEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.RunEvent;
+import omr.ui.selection.UserEvent;
 
 import omr.ui.Board;
 import omr.ui.field.LIntegerField;

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.util;
 
-import omr.selection.SelectionService;
+import omr.ui.selection.SelectionService;
 
 import java.awt.Rectangle;
 import java.util.Collection;

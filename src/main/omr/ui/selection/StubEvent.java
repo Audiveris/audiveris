@@ -1,47 +1,48 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                       G r o u p E v e n t                                      //
+//                                       S t u b E v e n t                                        //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2016. All rights reserved.
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.selection;
+package omr.ui.selection;
 
-import omr.glyph.Symbol.Group;
+import omr.sheet.SheetStub;
 
 /**
- * Class {@code GroupEvent} represents the selection of a specific glyph group.
+ * Class {@code StubEvent} represent a SheetStub selection event, used to call attention
+ * about a selected stub.
  *
  * @author Hervé Bitteur
  */
-public class GroupEvent
+public class StubEvent
         extends UserEvent
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The selected group. (Can be null) */
-    private final Group group;
+    /** The selected sheet stub, which may be null. */
+    private final SheetStub stub;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new GroupEvent object.
+     * Creates a new SheetEvent object.
      *
      * @param source   the entity that created this event
-     * @param hint     hint about event origin (or null)
+     * @param hint     hint about event origin
      * @param movement the mouse movement
-     * @param group    the specific group chosen (perhaps null)
+     * @param stub     the selected sheet stub (or null)
      */
-    public GroupEvent (Object source,
-                       SelectionHint hint,
-                       MouseMovement movement,
-                       Group group)
+    public StubEvent (Object source,
+                      SelectionHint hint,
+                      MouseMovement movement,
+                      SheetStub stub)
     {
-        super(source, hint, movement);
-        this.group = group;
+        super(source, null, null);
+        this.stub = stub;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -49,8 +50,8 @@ public class GroupEvent
     // getData //
     //---------//
     @Override
-    public Group getData ()
+    public SheetStub getData ()
     {
-        return group;
+        return stub;
     }
 }

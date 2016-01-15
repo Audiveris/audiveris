@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.selection;
+package omr.ui.selection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

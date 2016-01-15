@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.dynamic;
 
-import omr.selection.EntityService;
+import omr.ui.selection.EntityService;
 
 import omr.ui.Board;
 import omr.ui.EntityBoard;

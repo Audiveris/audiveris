@@ -24,8 +24,8 @@ import omr.image.DistanceTable;
 
 import omr.run.Orientation;
 
-import omr.selection.AnchoredTemplateEvent;
-import omr.selection.SelectionService;
+import omr.ui.selection.AnchoredTemplateEvent;
+import omr.ui.selection.SelectionService;
 
 import omr.sheet.Picture;
 import omr.sheet.Sheet;

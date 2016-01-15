@@ -1,48 +1,46 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                       S t u b E v e n t                                        //
+//                                    T e m p l a t e E v e n t                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.selection;
+package omr.ui.selection;
 
-import omr.sheet.SheetStub;
+import omr.image.Template;
 
 /**
- * Class {@code StubEvent} represent a SheetStub selection event, used to call attention
- * about a selected stub.
+ * Class {@code TemplateEvent} represents a Template selection.
  *
  * @author Hervé Bitteur
  */
-public class StubEvent
+public class TemplateEvent
         extends UserEvent
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The selected sheet stub, which may be null. */
-    private final SheetStub stub;
+    private final Template template;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new SheetEvent object.
+     * Creates a new {@code TemplateEvent} object.
      *
      * @param source   the entity that created this event
-     * @param hint     hint about event origin
+     * @param hint     how the event originated
      * @param movement the mouse movement
-     * @param stub     the selected sheet stub (or null)
+     * @param template the selected template or null
      */
-    public StubEvent (Object source,
-                      SelectionHint hint,
-                      MouseMovement movement,
-                      SheetStub stub)
+    public TemplateEvent (Object source,
+                          SelectionHint hint,
+                          MouseMovement movement,
+                          Template template)
     {
-        super(source, null, null);
-        this.stub = stub;
+        super(source, hint, movement);
+        this.template = template;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -50,8 +48,8 @@ public class StubEvent
     // getData //
     //---------//
     @Override
-    public SheetStub getData ()
+    public Template getData ()
     {
-        return stub;
+        return template;
     }
 }

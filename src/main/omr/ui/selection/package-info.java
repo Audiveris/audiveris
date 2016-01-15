@@ -8,4 +8,4 @@
  * <p>
  * <img src="doc-files/Events.png" alt="All user events" title="All user events" />
  */
-package omr.selection;
+package omr.ui.selection;

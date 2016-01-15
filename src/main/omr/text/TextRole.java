@@ -152,7 +152,7 @@ public enum TextRole
         StaffPosition systemPosition = system.getStaffPosition(left);
 
         // Vertical position wrt (part) staves
-        Part part = system.getPartAbove(left);
+        Part part = system.getPartAtOrAbove(left);
         StaffPosition partPosition = part.getStaffPosition(left);
 
         // Vertical distance from staff?

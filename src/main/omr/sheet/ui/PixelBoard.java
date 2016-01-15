@@ -11,11 +11,11 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.selection.LocationEvent;
-import omr.selection.MouseMovement;
-import omr.selection.PixelEvent;
-import omr.selection.SelectionHint;
-import omr.selection.UserEvent;
+import omr.ui.selection.LocationEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.PixelEvent;
+import omr.ui.selection.SelectionHint;
+import omr.ui.selection.UserEvent;
 
 import omr.sheet.Sheet;
 

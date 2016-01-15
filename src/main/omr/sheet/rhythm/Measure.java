@@ -23,6 +23,7 @@ import omr.sheet.grid.LineInfo;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractChordInter;
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.FlagInter;
@@ -32,13 +33,10 @@ import omr.sig.inter.KeyInter;
 import omr.sig.inter.RestChordInter;
 import omr.sig.inter.RestInter;
 import omr.sig.inter.SmallChordInter;
-import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.TupletInter;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -289,7 +287,9 @@ public class Measure
             final SIGraph sig = part.getSystem().getSig();
 
             // Clefs, keys, timeSigs to fill measure
-            List<Inter> measureInters = filter(sig.inters(new Class[]{ClefInter.class, KeyInter.class, AbstractTimeInter.class}));
+            List<Inter> measureInters = filter(
+                    sig.inters(
+                            new Class[]{ClefInter.class, KeyInter.class, AbstractTimeInter.class}));
 
             for (Inter inter : measureInters) {
                 addInter(inter);
@@ -745,6 +745,19 @@ public class Measure
         return null; // No clef previously defined in this measure and staff
     }
 
+    //---------------//
+    // getMidBarline //
+    //---------------//
+    /**
+     * Report the mid barline, if any.
+     *
+     * @return the mid barline or null
+     */
+    public PartBarline getMidBarline ()
+    {
+        return midBarline;
+    }
+
     //---------//
     // getPart //
     //---------//
@@ -807,29 +820,6 @@ public class Measure
         return Collections.unmodifiableSet(restChords);
     }
 
-    //
-    //    //---------------//
-    //    // getRestChords //
-    //    //---------------//
-    //    /**
-    //     * @return the restChords
-    //     */
-    //    public Set<AbstractChordInter> getRestChords ()
-    //    {
-    //        return restChords;
-    //    }
-    //
-    //    //------------//
-    //    // getRhythms //
-    //    //------------//
-    //    /**
-    //     * @return the rhythms
-    //     */
-    //    public Set<Inter> getRhythms ()
-    //    {
-    //        return rhythms;
-    //    }
-    //
     //-----------------//
     // getRightBarline //
     //-----------------//
@@ -1238,6 +1228,16 @@ public class Measure
         }
     }
 
+    //--------------//
+    // renameVoices //
+    //--------------//
+    public void renameVoices ()
+    {
+        for (int i = 0; i < voices.size(); i++) {
+            voices.get(i).setId(i + 1);
+        }
+    }
+
     //-----------//
     // replicate //
     //-----------//
@@ -1318,17 +1318,6 @@ public class Measure
     public void sortVoices ()
     {
         Collections.sort(voices, Voices.byOrdinate);
-    }
-
-    //--------------//
-    // renameVoices //
-    //--------------//
-    public void renameVoices ()
-    {
-        for (int i = 0; i < voices.size(); i++) {
-            voices.get(i).setId(i + 1);
-        }
-
     }
 
     //-------------//

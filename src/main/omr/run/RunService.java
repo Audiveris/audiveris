@@ -11,11 +11,11 @@
 // </editor-fold>
 package omr.run;
 
-import omr.selection.LocationEvent;
-import omr.selection.MouseMovement;
-import omr.selection.RunEvent;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionService;
+import omr.ui.selection.LocationEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.RunEvent;
+import omr.ui.selection.SelectionHint;
+import omr.ui.selection.SelectionService;
 
 import org.bushe.swing.event.EventSubscriber;
 

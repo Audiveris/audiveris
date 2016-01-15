@@ -22,11 +22,11 @@ import omr.image.PixelDistance;
 import omr.image.Template;
 import omr.image.TemplateFactory;
 
-import omr.selection.AnchoredTemplateEvent;
-import omr.selection.LocationEvent;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionService;
-import omr.selection.UserEvent;
+import omr.ui.selection.AnchoredTemplateEvent;
+import omr.ui.selection.LocationEvent;
+import omr.ui.selection.SelectionHint;
+import omr.ui.selection.SelectionService;
+import omr.ui.selection.UserEvent;
 
 import omr.sheet.Sheet;
 import omr.sheet.note.NoteHeadsBuilder;

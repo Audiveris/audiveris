@@ -14,9 +14,9 @@ package omr.sheet.ui;
 import omr.image.ChamferDistance;
 import omr.image.DistanceTable;
 
-import omr.selection.LocationEvent;
-import omr.selection.MouseMovement;
-import omr.selection.UserEvent;
+import omr.ui.selection.LocationEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.UserEvent;
 
 import omr.sheet.Sheet;
 

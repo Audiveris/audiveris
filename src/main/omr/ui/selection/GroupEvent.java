@@ -1,47 +1,47 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        R u n E v e n t                                         //
+//                                       G r o u p E v e n t                                      //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.selection;
+package omr.ui.selection;
 
-import omr.run.Run;
+import omr.glyph.Symbol.Group;
 
 /**
- * Class {@code RunEvent} represents a Run selection.
+ * Class {@code GroupEvent} represents the selection of a specific glyph group.
  *
  * @author Hervé Bitteur
  */
-public class RunEvent
+public class GroupEvent
         extends UserEvent
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The selected run, which may be null */
-    private final Run run;
+    /** The selected group. (Can be null) */
+    private final Group group;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new RunEvent object.
+     * Creates a new GroupEvent object.
      *
      * @param source   the entity that created this event
-     * @param hint     how the event originated
+     * @param hint     hint about event origin (or null)
      * @param movement the mouse movement
-     * @param run      the selected run (or null)
+     * @param group    the specific group chosen (perhaps null)
      */
-    public RunEvent (Object source,
-                     SelectionHint hint,
-                     MouseMovement movement,
-                     Run run)
+    public GroupEvent (Object source,
+                       SelectionHint hint,
+                       MouseMovement movement,
+                       Group group)
     {
         super(source, hint, movement);
-        this.run = run;
+        this.group = group;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -49,8 +49,8 @@ public class RunEvent
     // getData //
     //---------//
     @Override
-    public Run getData ()
+    public Group getData ()
     {
-        return run;
+        return group;
     }
 }

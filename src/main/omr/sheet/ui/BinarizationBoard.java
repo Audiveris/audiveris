@@ -17,9 +17,9 @@ import omr.image.FilterDescriptor;
 import omr.image.PixelFilter;
 import omr.image.RandomFilter;
 
-import omr.selection.LocationEvent;
-import omr.selection.MouseMovement;
-import omr.selection.UserEvent;
+import omr.ui.selection.LocationEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.UserEvent;
 
 import omr.sheet.Picture;
 import omr.sheet.Sheet;

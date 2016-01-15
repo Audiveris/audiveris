@@ -20,7 +20,7 @@ import omr.lag.LagManager;
 
 import omr.score.Page;
 
-import omr.selection.SelectionService;
+import omr.ui.selection.SelectionService;
 
 import omr.sheet.ui.SheetAssembly;
 

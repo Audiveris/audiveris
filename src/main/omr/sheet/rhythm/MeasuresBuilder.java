@@ -113,29 +113,10 @@ public class MeasuresBuilder
             buildPartMeasures(part, staffMap);
         }
     }
-//
-//    //-----------//
-//    // addDotsTo //
-//    //-----------//
-//    /**
-//     * Include the repeat dots, if any, linked to one side of this logical bar.
-//     *
-//     * @param staffBar the logical staff bar to populate with repeat dots
-//     */
-//    private void addDotsTo (StaffBarline staffBar)
-//    {
-//        // There cannot be dots on both sides, so let's browse both sides
-//        for (BarlineInter bar : staffBar.getBars()) {
-//            for (Relation rel : sig.getRelations(bar, RepeatDotBarRelation.class)) {
-//                staffBar.addInter((RepeatDotInter) sig.getOppositeInter(bar, rel));
-//            }
-//        }
-//    }
-//
+
     //-------------------//
     // buildPartMeasures //
     //-------------------//
-
     /**
      * Here, we build the sequence of PartBarlines in parallel with the StaffBarline
      * sequence of each staff within part.
@@ -170,7 +151,7 @@ public class MeasuresBuilder
             List<BarlineInter> topGroup = (ig < topGroups.size()) ? topGroups.get(ig) : null;
             Measure measure = ((topGroup != null)
                                && topGroup.get(0).isStaffEnd(HorizontalSide.LEFT)) ? null
-                            : new Measure(part);
+                    : new Measure(part);
 
             if (measure != null) {
                 part.addMeasure(measure);
@@ -198,7 +179,7 @@ public class MeasuresBuilder
                     List<BarlineInter> group = staffMap.get(s).get(ig);
 
                     for (int i = 0; i < Math.min(2, topGroup.size()); i++) {
-                        staffBar.addInter(group.get(i));
+                        staffBar.addBar(group.get(i));
                     }
 
                     //TODO: Dots will appear only in SYMBOLS step!!!!
@@ -223,7 +204,7 @@ public class MeasuresBuilder
                         List<BarlineInter> group = staffMap.get(s).get(ig);
 
                         for (int i = topGroup.size() - 2; i < topGroup.size(); i++) {
-                            staffBar.addInter(group.get(i));
+                            staffBar.addBar(group.get(i));
                         }
 
                         //TODO: Dots will appear only in SYMBOLS step!!!!

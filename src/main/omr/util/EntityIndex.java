@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.util;
 
-import omr.selection.EntityService;
+import omr.ui.selection.EntityService;
 
 import java.util.Collection;
 import java.util.Iterator;

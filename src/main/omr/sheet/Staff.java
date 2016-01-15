@@ -27,6 +27,7 @@ import omr.sheet.grid.StaffPeak;
 import omr.sheet.header.StaffHeader;
 import omr.sheet.note.NotePosition;
 
+import omr.sig.inter.AbstractInter;
 import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.Inter;
@@ -37,13 +38,10 @@ import omr.ui.util.AttachmentHolder;
 import omr.ui.util.BasicAttachmentHolder;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Jaxb;
 import omr.util.Navigable;
 import omr.util.VerticalSide;
-
 import static omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
@@ -67,6 +65,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -140,6 +139,10 @@ public class Staff
     @XmlAttribute
     private int right;
 
+    /** Flag for short staff. (With a neighbor staff on left or right side) */
+    @XmlAttribute
+    private Boolean isShort;
+
     /** Sequence of staff lines. (from top to bottom) */
     @XmlElement(name = "line")
     private final List<LineInfo> lines;
@@ -147,10 +150,6 @@ public class Staff
     /** Staff Header information. */
     @XmlElement
     private StaffHeader header;
-
-    /** Flag for short staff. (With a neighbor staff on left or right side) */
-    @XmlAttribute
-    private Boolean isShort;
 
     /** Sequence of bar lines. */
     @XmlElement(name = "bar")
@@ -164,6 +163,10 @@ public class Staff
     /** Notes (heads & rests) assigned to this staff. */
     @XmlElementRef
     private LinkedHashSet<AbstractNoteInter> notes = new LinkedHashSet<AbstractNoteInter>();
+
+    /** Other staff-related inters. Containment is needed for their staff info to persist. */
+    @XmlElementRef
+    private final List<AbstractInter> others = new ArrayList<AbstractInter>();
 
     // Transient data
     //---------------
@@ -239,14 +242,6 @@ public class Staff
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------------//
-    // getDefiningPointSize //
-    //----------------------//
-    public static Scale.Fraction getDefiningPointSize ()
-    {
-        return constants.definingPointSize;
-    }
-
     //
     //---------------//
     // addAttachment //
@@ -309,6 +304,15 @@ public class Staff
     public void addNote (AbstractNoteInter note)
     {
         notes.add(note);
+    }
+
+    //---------------//
+    // addOtherInter //
+    //---------------//
+    public void addOtherInter (AbstractInter inter)
+    {
+        Objects.requireNonNull(inter, "Cannot add other null inter");
+        others.add(inter);
     }
 
     //-------------//
@@ -569,6 +573,14 @@ public class Staff
         return lines.get(idx);
     }
 
+    //----------------------//
+    // getDefiningPointSize //
+    //----------------------//
+    public static Scale.Fraction getDefiningPointSize ()
+    {
+        return constants.definingPointSize;
+    }
+
     //----------------//
     // getEndingSlope //
     //----------------//
@@ -600,28 +612,22 @@ public class Staff
         return sum / (slopes.size() - 2);
     }
 
-    //--------------//
-    // getFirstLine //
-    //--------------//
+    //--------------------//
+    // getLedgerLineIndex //
+    //--------------------//
     /**
-     * Report the first line in the series.
+     * Compute staff-based line index, based on provided pitch position
      *
-     * @return the first line
+     * @param pitchPosition the provided pitch position
+     * @return the computed line index
      */
-    public LineInfo getFirstLine ()
+    public static int getLedgerLineIndex (double pitchPosition)
     {
-        return lines.get(0);
-    }
-
-    //-----------//
-    // getHeader //
-    //-----------//
-    /**
-     * @return the StaffHeader information
-     */
-    public StaffHeader getHeader ()
-    {
-        return header;
+        if (pitchPosition > 0) {
+            return (int) Math.rint(pitchPosition / 2) - 2;
+        } else {
+            return (int) Math.rint(pitchPosition / 2) + 2;
+        }
     }
 
     //------------------------//
@@ -649,6 +655,38 @@ public class Staff
         } else {
             return -4 + (2 * lineIndex);
         }
+    }
+
+    //--------------------//
+    // showDefiningPoints //
+    //--------------------//
+    public static Boolean showDefiningPoints ()
+    {
+        return constants.showDefiningPoints.isSet();
+    }
+
+    //--------------//
+    // getFirstLine //
+    //--------------//
+    /**
+     * Report the first line in the series.
+     *
+     * @return the first line
+     */
+    public LineInfo getFirstLine ()
+    {
+        return lines.get(0);
+    }
+
+    //-----------//
+    // getHeader //
+    //-----------//
+    /**
+     * @return the StaffHeader information
+     */
+    public StaffHeader getHeader ()
+    {
+        return header;
     }
 
     //----------------//
@@ -743,24 +781,6 @@ public class Staff
     public LineInfo getLastLine ()
     {
         return lines.get(lines.size() - 1);
-    }
-
-    //--------------------//
-    // getLedgerLineIndex //
-    //--------------------//
-    /**
-     * Compute staff-based line index, based on provided pitch position
-     *
-     * @param pitchPosition the provided pitch position
-     * @return the computed line index
-     */
-    public static int getLedgerLineIndex (double pitchPosition)
-    {
-        if (pitchPosition > 0) {
-            return (int) Math.rint(pitchPosition / 2) - 2;
-        } else {
-            return (int) Math.rint(pitchPosition / 2) + 2;
-        }
     }
 
     //--------------//
@@ -1162,6 +1182,14 @@ public class Staff
         return notes.remove(note);
     }
 
+    //------------------//
+    // removeOtherInter //
+    //------------------//
+    public void removeOtherInter (AbstractInter inter)
+    {
+        others.remove(inter);
+    }
+
     //-------------//
     // removePeaks //
     //-------------//
@@ -1213,14 +1241,6 @@ public class Staff
     public void renderAttachments (Graphics2D g)
     {
         attachments.renderAttachments(g);
-    }
-
-    //--------------------//
-    // showDefiningPoints //
-    //--------------------//
-    public static Boolean showDefiningPoints ()
-    {
-        return constants.showDefiningPoints.isSet();
     }
 
     //-----------//

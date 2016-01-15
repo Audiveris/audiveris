@@ -101,15 +101,15 @@ public class FermataInter
                                        SystemInfo system)
     {
         // Look for proper staff
-        Point center = glyph.getCenter();
-        Staff staff = (shape == Shape.FERMATA) ? system.getStaffBelow(center)
-                : system.getStaffAbove(center);
+        final Point center = glyph.getCenter();
+        final Staff staff = (shape == Shape.FERMATA) ? system.getStaffAtOrBelow(center)
+                : system.getStaffAtOrAbove(center);
 
         if (staff == null) {
             return null;
         }
 
-        FermataInter fermata = new FermataInter(glyph, shape, grade);
+        final FermataInter fermata = new FermataInter(glyph, shape, grade);
         fermata.setStaff(staff);
 
         return fermata;
@@ -119,13 +119,12 @@ public class FermataInter
     // linkWithBarline //
     //-----------------//
     /**
-     * Try to connect this fermata with a suitable barline.
+     * (Try to) connect this fermata with a suitable barline.
      *
      * @return true if successful
      */
     public boolean linkWithBarline ()
     {
-        // Look for a barline related to this fermata
         Point center = getCenter();
         List<BarlineInter> bars = getStaff().getBars();
         BarlineInter bar = BarlineInter.getClosestBarline(bars, center);
@@ -155,7 +154,7 @@ public class FermataInter
     // linkWithChords //
     //----------------//
     /**
-     * Try to connect this fermata with suitable chord(s).
+     * (Try to) connect this fermata with suitable chord.
      *
      * @param chords the chords in fermata related staff
      * @return true if successful
@@ -201,7 +200,7 @@ public class FermataInter
             // For fermata & for chord
             sig.addEdge(this, chord, new FermataChordRelation());
 
-            // For chord members (notes)
+            // For chord members (notes). TODO: is this useful???
             for (Inter member : chord.getMembers()) {
                 if (member instanceof AbstractNoteInter) {
                     sig.addEdge(this, member, new FermataNoteRelation());

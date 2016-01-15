@@ -14,9 +14,9 @@ package omr.sig.ui;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphIndex;
 
-import omr.selection.EntityListEvent;
-import omr.selection.MouseMovement;
-import omr.selection.SelectionHint;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionHint;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

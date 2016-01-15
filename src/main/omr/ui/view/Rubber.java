@@ -13,7 +13,7 @@ package omr.ui.view;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import static omr.selection.MouseMovement.*;
+import static omr.ui.selection.MouseMovement.*;
 
 import omr.ui.Colors;
 import static omr.ui.util.UIPredicates.*;

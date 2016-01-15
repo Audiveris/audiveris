@@ -14,8 +14,8 @@ package omr.sheet.symbol;
 import omr.glyph.Glyph;
 import omr.glyph.ui.SymbolsEditor;
 
-import omr.selection.EntityListEvent;
-import omr.selection.SelectionService;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.SelectionService;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;

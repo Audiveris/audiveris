@@ -13,7 +13,7 @@ package omr.glyph.dynamic;
 
 import omr.lag.Section;
 
-import omr.selection.EntityService;
+import omr.ui.selection.EntityService;
 
 import omr.sheet.Sheet;
 

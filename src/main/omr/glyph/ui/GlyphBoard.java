@@ -16,10 +16,10 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.Symbol.Group;
 
-import omr.selection.EntityListEvent;
-import omr.selection.GroupEvent;
-import omr.selection.MouseMovement;
-import omr.selection.UserEvent;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.GroupEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.UserEvent;
 
 import omr.ui.Board;
 import omr.ui.EntityBoard;

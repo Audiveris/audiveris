@@ -11,12 +11,12 @@
 // </editor-fold>
 package omr.ui;
 
-import omr.selection.EntityListEvent;
-import omr.selection.EntityService;
-import omr.selection.IdEvent;
-import omr.selection.MouseMovement;
-import omr.selection.SelectionHint;
-import omr.selection.UserEvent;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.EntityService;
+import omr.ui.selection.IdEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionHint;
+import omr.ui.selection.UserEvent;
 
 import omr.ui.field.LCheckBox;
 import omr.ui.field.SpinnerUtil;

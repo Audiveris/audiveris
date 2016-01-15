@@ -19,12 +19,14 @@ import omr.constant.ConstantSet;
 import omr.glyph.Symbol.Group;
 import omr.glyph.ui.GlyphService;
 
-import omr.selection.EntityListEvent;
-import omr.selection.EntityService;
-import omr.selection.GroupEvent;
-import omr.selection.IdEvent;
-import omr.selection.LocationEvent;
-import omr.selection.SelectionService;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.EntityService;
+import omr.ui.selection.GroupEvent;
+import omr.ui.selection.IdEvent;
+import omr.ui.selection.LocationEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionHint;
+import omr.ui.selection.SelectionService;
 
 import omr.sheet.Sheet;
 
@@ -39,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -47,6 +50,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.swing.SwingUtilities;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -119,6 +123,38 @@ public class GlyphIndex
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // initTransients //
+    //----------------//
+    public final void initTransients (Sheet sheet)
+    {
+        // Declared VIP IDs?
+        List<Integer> vipIds = IntUtil.parseInts(constants.vipGlyphs.getValue());
+
+        if (!vipIds.isEmpty()) {
+            logger.info("VIP glyphs: {}", vipIds);
+            weakIndex.setVipIds(vipIds);
+        }
+
+        for (Iterator<Glyph> it = iterator(); it.hasNext();) {
+            Glyph glyph = it.next();
+
+            if (glyph != null) {
+                glyph.setIndex(this);
+
+                if (isVipId(glyph.getId())) {
+                    glyph.setVip(true);
+                }
+            }
+        }
+
+        // User glyph service?
+        if (OMR.getGui() != null) {
+            SelectionService locationService = (sheet != null) ? sheet.getLocationService() : null;
+            setEntityService(new GlyphService(this, locationService));
+        }
+    }
+
     //-----------------//
     // containedGlyphs //
     //-----------------//
@@ -281,38 +317,6 @@ public class GlyphIndex
         return (Group) glyphService.getSelection(GroupEvent.class);
     }
 
-    //----------------//
-    // initTransients //
-    //----------------//
-    public final void initTransients (Sheet sheet)
-    {
-        // Declared VIP IDs?
-        List<Integer> vipIds = IntUtil.parseInts(constants.vipGlyphs.getValue());
-
-        if (!vipIds.isEmpty()) {
-            logger.info("VIP glyphs: {}", vipIds);
-            weakIndex.setVipIds(vipIds);
-        }
-
-        for (Iterator<Glyph> it = iterator(); it.hasNext();) {
-            Glyph glyph = it.next();
-
-            if (glyph != null) {
-                glyph.setIndex(this);
-
-                if (isVipId(glyph.getId())) {
-                    glyph.setVip(true);
-                }
-            }
-        }
-
-        // User glyph service?
-        if (OMR.getGui() != null) {
-            SelectionService locationService = (sheet != null) ? sheet.getLocationService() : null;
-            setEntityService(new GlyphService(this, locationService));
-        }
-    }
-
     //-------------------//
     // intersectedGlyphs //
     //-------------------//
@@ -400,6 +404,34 @@ public class GlyphIndex
         }
 
         return null;
+    }
+
+    //--------------//
+    // publishGlyph //
+    //--------------//
+    /**
+     * Convenient debug UI method to publish and focus on a glyph.
+     *
+     * @param glyph the provided glyph
+     */
+    public void publishGlyph (final Glyph glyph)
+    {
+        if (glyphService != null) {
+            SwingUtilities.invokeLater(
+                    new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    glyphService.publish(
+                            new EntityListEvent(
+                                    this,
+                                    SelectionHint.ENTITY_INIT,
+                                    MouseMovement.PRESSING,
+                                    Arrays.asList(glyph)));
+                }
+            });
+        }
     }
 
     //----------//
@@ -520,6 +552,19 @@ public class GlyphIndex
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.String vipGlyphs = new Constant.String(
+                "",
+                "(Debug) Comma-separated values of VIP glyphs IDs");
+    }
+
     //---------//
     // Adapter //
     //---------//
@@ -544,19 +589,6 @@ public class GlyphIndex
     }
 
     //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.String vipGlyphs = new Constant.String(
-                "",
-                "(Debug) Comma-separated values of VIP glyphs IDs");
-    }
-
-    //-----------//
     // GlyphList //
     //-----------//
     private static class GlyphList
@@ -574,6 +606,33 @@ public class GlyphIndex
         public GlyphList (ArrayList<Glyph> glyphs)
         {
             this.glyphs = glyphs;
+        }
+    }
+
+    //----------------//
+    // WeakGlyphIndex //
+    //----------------//
+    private static class WeakGlyphIndex
+            extends BasicIndex<WeakGlyph>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public WeakGlyphIndex ()
+        {
+            super("G");
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void insert (WeakGlyph weak)
+        {
+            super.insert(weak);
+        }
+
+        @Override
+        protected boolean isValid (WeakGlyph weak)
+        {
+            return (weak != null) && (weak.get() != null);
         }
     }
 
@@ -631,33 +690,6 @@ public class GlyphIndex
             }
 
             return null;
-        }
-    }
-
-    //----------------//
-    // WeakGlyphIndex //
-    //----------------//
-    private static class WeakGlyphIndex
-            extends BasicIndex<WeakGlyph>
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public WeakGlyphIndex ()
-        {
-            super("G");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void insert (WeakGlyph weak)
-        {
-            super.insert(weak);
-        }
-
-        @Override
-        protected boolean isValid (WeakGlyph weak)
-        {
-            return (weak != null) && (weak.get() != null);
         }
     }
 }

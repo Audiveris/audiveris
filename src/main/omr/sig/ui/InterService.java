@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.sig.ui;
 
-import omr.selection.EntityListEvent;
-import omr.selection.EntityService;
-import omr.selection.IdEvent;
-import omr.selection.SelectionService;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.EntityService;
+import omr.ui.selection.IdEvent;
+import omr.ui.selection.SelectionService;
 
 import omr.sig.inter.Inter;
 

@@ -11,9 +11,9 @@
 // </editor-fold>
 package omr.check;
 
-import omr.selection.MouseMovement;
-import omr.selection.SelectionService;
-import omr.selection.UserEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionService;
+import omr.ui.selection.UserEvent;
 
 import omr.ui.Board;
 

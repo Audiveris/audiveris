@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                   L o c a t i o n E v e n t                                    //
+//                                      P i x e l E v e n t                                       //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -9,49 +9,37 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.selection;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.awt.Rectangle;
+package omr.ui.selection;
 
 /**
- * Class {@code LocationEvent} is UI Event that represents a new location (a rectangle,
- * perhaps degenerated to a point) within the Sheet coordinates space.
+ * Class {@code PixelEvent} represent a Pixel Level selection.
  *
  * @author Hervé Bitteur
  */
-public class LocationEvent
+public class PixelEvent
         extends UserEvent
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Logger logger = LoggerFactory.getLogger(LocationEvent.class);
-
     //~ Instance fields ----------------------------------------------------------------------------
-    /**
-     * The location rectangle, which can be degenerated to a point when both
-     * width and height values equal zero
-     */
-    private final Rectangle rectangle;
+
+    /** The current pixel level, which may be null. */
+    private final Integer level;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new LocationEvent object.
+     * Creates a new {@code PixelEvent} object.
      *
-     * @param source    the actual entity that created this event
-     * @param hint      how the event originated
-     * @param movement  the precise mouse movement
-     * @param rectangle the location within the sheet space
+     * @param source   the entity that created this event
+     * @param hint     hint about event origin
+     * @param movement the mouse movement
+     * @param level    the selected pixel level (or null)
      */
-    public LocationEvent (Object source,
-                          SelectionHint hint,
-                          MouseMovement movement,
-                          Rectangle rectangle)
+    public PixelEvent (Object source,
+                       SelectionHint hint,
+                       MouseMovement movement,
+                       Integer level)
     {
         super(source, hint, movement);
-        this.rectangle = rectangle;
+        this.level = level;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -59,8 +47,8 @@ public class LocationEvent
     // getData //
     //---------//
     @Override
-    public Rectangle getData ()
+    public Integer getData ()
     {
-        return rectangle;
+        return level;
     }
 }

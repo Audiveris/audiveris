@@ -11,9 +11,9 @@
 // </editor-fold>
 package omr.sig.ui;
 
-import omr.selection.EntityListEvent;
-import omr.selection.MouseMovement;
-import omr.selection.SelectionHint;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionHint;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.Inter;
@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.util.Arrays;
 
 import javax.swing.AbstractAction;
+
 import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**

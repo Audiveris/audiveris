@@ -21,9 +21,9 @@ import omr.glyph.Shape;
 import omr.script.AssignTask;
 import omr.script.DeleteTask;
 
-import omr.selection.EntityListEvent;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionService;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.SelectionHint;
+import omr.ui.selection.SelectionService;
 
 import omr.sheet.Sheet;
 

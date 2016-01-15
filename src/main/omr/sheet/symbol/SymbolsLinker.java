@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sheet.symbol;
 
+import omr.glyph.Shape;
+
 import omr.sheet.SystemInfo;
 import omr.sheet.rhythm.MeasureStack;
 import omr.sheet.rhythm.Voice;
@@ -19,6 +21,7 @@ import omr.sig.SIGraph;
 import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.DynamicsInter;
+import omr.sig.inter.FermataInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.LyricItemInter;
 import omr.sig.inter.PedalInter;
@@ -31,6 +34,7 @@ import omr.sig.relation.ChordNameRelation;
 import omr.sig.relation.ChordPedalRelation;
 import omr.sig.relation.ChordSentenceRelation;
 import omr.sig.relation.ChordWedgeRelation;
+import omr.sig.relation.FermataBarRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.SlurHeadRelation;
 
@@ -46,6 +50,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Class {@code SymbolsLinker} defines final relations between certain symbols.
@@ -90,6 +96,7 @@ public class SymbolsLinker
         linkTexts();
         linkPedals();
         linkWedges();
+        linkFermatas();
         linkGraces();
     }
 
@@ -101,6 +108,40 @@ public class SymbolsLinker
         for (Inter inter : sig.inters(DynamicsInter.class)) {
             DynamicsInter dynamics = (DynamicsInter) inter;
             dynamics.linkWithChord();
+        }
+    }
+
+    //--------------//
+    // linkFermatas //
+    //--------------//
+    /**
+     * Try to link any fermata with chords (head or rest) or barline.
+     * If not successful, the fermata candidate is deleted.
+     */
+    private void linkFermatas ()
+    {
+        List<Inter> fermatas = sig.inters(FermataInter.class);
+
+        for (Inter inter : fermatas) {
+            FermataInter fermata = (FermataInter) inter;
+
+            if (fermata.isVip()) {
+                logger.info("VIP linkFermatas on {}", fermata);
+            }
+
+            // Look for a chord (head or rest) related to this fermata
+            final Point center = fermata.getCenter();
+            final MeasureStack stack = system.getMeasureStackAt(center);
+            final Collection<AbstractChordInter> chords = (fermata.getShape() == Shape.FERMATA_BELOW)
+                    ? stack.getStandardChordsAbove(center)
+                    : stack.getStandardChordsBelow(center);
+
+            if (!fermata.linkWithChords(chords)) {
+                // Check whether this fermata has a link to a barline
+                if (!sig.hasRelation(fermata, FermataBarRelation.class)) {
+                    fermata.delete(); // No link at all
+                }
+            }
         }
     }
 
@@ -161,6 +202,14 @@ public class SymbolsLinker
                 logger.info("No chord above {}", pedal);
             }
         }
+    }
+
+    //------------//
+    // linkSegnos //
+    //------------//
+    private void linkSegnos ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //-----------//

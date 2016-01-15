@@ -14,9 +14,9 @@ package omr.script;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
-import omr.selection.EntityListEvent;
-import omr.selection.MouseMovement;
-import omr.selection.SelectionHint;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionHint;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;

@@ -29,12 +29,12 @@ import omr.lag.Section;
 
 import omr.math.GeoUtil;
 import omr.math.LineUtil;
+
 import static omr.run.Orientation.*;
 
-import omr.selection.EntityListEvent;
-import omr.selection.MouseMovement;
-import omr.selection.UserEvent;
-
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.UserEvent;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -52,7 +52,9 @@ import omr.sig.inter.LedgerInter;
 import omr.sig.relation.Exclusion;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 import omr.util.Predicate;
 

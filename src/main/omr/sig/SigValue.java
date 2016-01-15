@@ -21,6 +21,7 @@ import omr.sig.inter.BlackHeadInter;
 import omr.sig.inter.BraceInter;
 import omr.sig.inter.ChordNameInter;
 import omr.sig.inter.ClefInter;
+import omr.sig.inter.CodaInter;
 import omr.sig.inter.DynamicsInter;
 import omr.sig.inter.EndingInter;
 import omr.sig.inter.FermataDotInter;
@@ -34,6 +35,7 @@ import omr.sig.inter.PedalInter;
 import omr.sig.inter.RepeatDotInter;
 import omr.sig.inter.RestChordInter;
 import omr.sig.inter.RestInter;
+import omr.sig.inter.SegnoInter;
 import omr.sig.inter.SentenceInter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.SmallBlackHeadInter;
@@ -65,6 +67,7 @@ import omr.sig.relation.ChordSyllableRelation;
 import omr.sig.relation.ChordTupletRelation;
 import omr.sig.relation.ChordWedgeRelation;
 import omr.sig.relation.ClefKeyRelation;
+import omr.sig.relation.CodaBarRelation;
 import omr.sig.relation.DotFermataRelation;
 import omr.sig.relation.DoubleDotRelation;
 import omr.sig.relation.EndingBarRelation;
@@ -78,6 +81,7 @@ import omr.sig.relation.NoExclusion;
 import omr.sig.relation.Relation;
 import omr.sig.relation.RepeatDotBarRelation;
 import omr.sig.relation.RepeatDotPairRelation;
+import omr.sig.relation.SegnoBarRelation;
 import omr.sig.relation.SlurHeadRelation;
 import omr.sig.relation.StemAlignmentRelation;
 import omr.sig.relation.TimeTopBottomRelation;
@@ -143,6 +147,7 @@ public class SigValue
         @XmlElementRef(type = BraceInter.class),
         @XmlElementRef(type = ChordNameInter.class),
         @XmlElementRef(type = ClefInter.class),
+        @XmlElementRef(type = CodaInter.class),
         @XmlElementRef(type = DynamicsInter.class),
         @XmlElementRef(type = EndingInter.class),
         @XmlElementRef(type = FermataDotInter.class),
@@ -155,6 +160,7 @@ public class SigValue
         @XmlElementRef(type = RepeatDotInter.class),
         @XmlElementRef(type = RestChordInter.class),
         @XmlElementRef(type = RestInter.class),
+        @XmlElementRef(type = SegnoInter.class),
         @XmlElementRef(type = SentenceInter.class),
         @XmlElementRef(type = SlurInter.class),
         @XmlElementRef(type = SmallBlackHeadInter.class),
@@ -339,6 +345,7 @@ public class SigValue
             @XmlElementRef(type = BasicExclusion.class),
             @XmlElementRef(type = BeamHeadRelation.class),
             @XmlElementRef(type = BeamStemRelation.class),
+            @XmlElementRef(type = CodaBarRelation.class),
             @XmlElementRef(type = ChordNameRelation.class),
             @XmlElementRef(type = ChordPedalRelation.class),
             @XmlElementRef(type = ChordSentenceRelation.class),
@@ -360,6 +367,7 @@ public class SigValue
             @XmlElementRef(type = NoExclusion.class),
             @XmlElementRef(type = RepeatDotBarRelation.class),
             @XmlElementRef(type = RepeatDotPairRelation.class),
+            @XmlElementRef(type = SegnoBarRelation.class),
             @XmlElementRef(type = SlurHeadRelation.class),
             @XmlElementRef(type = StemAlignmentRelation.class),
             @XmlElementRef(type = TimeTopBottomRelation.class)

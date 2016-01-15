@@ -14,13 +14,13 @@ package omr.glyph.ui;
 import omr.glyph.Glyph;
 import omr.glyph.Symbol;
 
-import omr.selection.EntityListEvent;
-import omr.selection.EntityService;
-import omr.selection.GroupEvent;
-import omr.selection.IdEvent;
-import omr.selection.MouseMovement;
-import omr.selection.SelectionService;
-import omr.selection.UserEvent;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.EntityService;
+import omr.ui.selection.GroupEvent;
+import omr.ui.selection.IdEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionService;
+import omr.ui.selection.UserEvent;
 
 import omr.util.EntityIndex;
 

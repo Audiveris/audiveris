@@ -11,17 +11,19 @@
 // </editor-fold>
 package omr.sheet.symbol;
 
-import omr.constant.ConstantSet;
-
+import omr.classifier.Classifier;
 import omr.classifier.Evaluation;
 import omr.classifier.GlyphClassifier;
+
+import omr.constant.ConstantSet;
+
+import omr.glyph.Glyph;
 import omr.glyph.GlyphCluster;
-import omr.glyph.GlyphLink;
 import omr.glyph.GlyphIndex;
+import omr.glyph.GlyphLink;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
-import omr.classifier.Classifier;
-import omr.glyph.Glyph;
+import omr.glyph.Symbol.Group;
 
 import omr.math.GeoUtil;
 
@@ -51,7 +53,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import omr.glyph.Symbol.Group;
 
 /**
  * Class {@code SymbolsBuilder} is in charge, at system level, of retrieving all
@@ -170,12 +171,13 @@ public class SymbolsBuilder
 
         glyph.setPitchPosition(closestStaff.pitchPositionOf(center));
 
-        Evaluation[] evals = evaluator.evaluate(glyph,
-                                                system,
-                                                10, // Or any high number...
-                                                Grades.symbolMinGrade,
-                                                EnumSet.of(Classifier.Condition.CHECKED),
-                                                null);
+        Evaluation[] evals = evaluator.evaluate(
+                glyph,
+                system,
+                10, // Or any high number...
+                Grades.symbolMinGrade,
+                EnumSet.of(Classifier.Condition.CHECKED),
+                null);
 
         if (evals.length > 0) {
             // Create one interpretation for each acceptable evaluation

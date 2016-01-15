@@ -13,7 +13,7 @@ package omr.util;
 
 import omr.glyph.BasicGlyph;
 
-import omr.selection.EntityService;
+import omr.ui.selection.EntityService;
 
 import omr.ui.symbol.BasicSymbol;
 

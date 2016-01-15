@@ -16,16 +16,17 @@ import omr.glyph.Shape;
 import omr.math.PointUtil;
 
 import omr.sheet.PartBarline.Style;
-
 import static omr.sheet.PartBarline.Style.*;
 
 import omr.sig.SIGraph;
-import omr.sig.inter.AbstractInter;
 import omr.sig.inter.BarlineInter;
+import omr.sig.inter.CodaInter;
 import omr.sig.inter.Inter;
-import omr.sig.inter.RepeatDotInter;
+import omr.sig.inter.SegnoInter;
+import omr.sig.relation.CodaBarRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.RepeatDotBarRelation;
+import omr.sig.relation.SegnoBarRelation;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -42,11 +43,14 @@ import javax.xml.bind.annotation.XmlValue;
 /**
  * Class {@code StaffBarline} represents a logical barline for one staff only.
  * <p>
- * Such logical barline may be composed of a horizontal sequence of Inter instances of
- * {@link RepeatDotInter} and {@link BarlineInter} classes.
- * <p>
  * A {@link PartBarline} is a logical barline for one part, that is made of one
  * {@code StaffBarline} for each staff in the part.
+ * <p>
+ * Such logical barline is composed of a horizontal sequence of one or several {@link BarlineInter}
+ * instances, called 'bars' in this class.
+ * <p>
+ * Barline-related entities such as repeat dot(s), ending(s), fermata(s), segno or coda are not
+ * contained by this class, but implemented as separate inters, linked to a bar by proper relation.
  * <p>
  * Reference abscissa (quoting Michael Good): the best approximation that's application-independent
  * would probably be to use the center of the barline. In back-to-back barlines that would be the
@@ -61,11 +65,11 @@ public class StaffBarline
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Abscissa-ordered sequence of physical components. */
+    /** Abscissa-ordered sequence of physical barlines. */
     @XmlList
     @XmlValue
     @XmlIDREF
-    private final ArrayList<AbstractInter> items = new ArrayList<AbstractInter>();
+    private final ArrayList<BarlineInter> bars = new ArrayList<BarlineInter>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -76,24 +80,20 @@ public class StaffBarline
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // addBar //
+    //--------//
     /**
-     * Insert a repeat dot inter as part of the logical barline.
-     *
-     * @param inter the repeat dot inter to insert
-     */
-    public void addInter (RepeatDotInter inter)
-    {
-        addItem(inter);
-    }
-
-    /**
-     * Insert a barline inter as part of the logical barline.
+     * Insert a physical barline inter as part of this logical barline.
      *
      * @param inter the barline inter to insert
      */
-    public void addInter (BarlineInter inter)
+    public void addBar (BarlineInter inter)
     {
-        addItem(inter);
+        if (!bars.contains(inter)) {
+            bars.add(inter);
+            Collections.sort(bars, Inter.byFullAbscissa);
+        }
     }
 
     //---------//
@@ -101,15 +101,7 @@ public class StaffBarline
     //---------//
     public List<BarlineInter> getBars ()
     {
-        List<BarlineInter> bars = new ArrayList<BarlineInter>();
-
-        for (Inter inter : items) {
-            if (inter instanceof BarlineInter) {
-                bars.add((BarlineInter) inter);
-            }
-        }
-
-        return bars;
+        return Collections.unmodifiableList(bars);
     }
 
     //-----------//
@@ -134,18 +126,29 @@ public class StaffBarline
         }
     }
 
+    //---------//
+    // getCoda //
+    //---------//
+    /**
+     * Convenient method to report the related coda, if any
+     *
+     * @return coda inter or null
+     */
+    public CodaInter getCoda ()
+    {
+        return (CodaInter) getRelated(CodaBarRelation.class);
+    }
+
     //------------//
     // getLeftBar //
     //------------//
     public BarlineInter getLeftBar ()
     {
-        for (Inter inter : items) {
-            if (inter instanceof BarlineInter) {
-                return (BarlineInter) inter;
-            }
+        if (bars.isEmpty()) {
+            return null;
         }
 
-        return null;
+        return bars.get(0);
     }
 
     //----------//
@@ -167,20 +170,38 @@ public class StaffBarline
         throw new IllegalStateException("No abscissa computable for " + this);
     }
 
+    //------------//
+    // getRelated //
+    //------------//
+    /**
+     * Report the first barline-related entity found, if any
+     *
+     * @param relationClass the desired class for bar-entity relation
+     * @return the first related entity found or null
+     */
+    public Inter getRelated (Class<?> relationClass)
+    {
+        for (BarlineInter bar : bars) {
+            SIGraph sig = bar.getSig();
+
+            for (Relation rel : sig.getRelations(bar, relationClass)) {
+                return sig.getOppositeInter(bar, rel);
+            }
+        }
+
+        return null;
+    }
+
     //-------------//
     // getRightBar //
     //-------------//
     public BarlineInter getRightBar ()
     {
-        Inter last = null;
-
-        for (Inter inter : items) {
-            if (inter instanceof BarlineInter) {
-                last = inter;
-            }
+        if (bars.isEmpty()) {
+            return null;
         }
 
-        return (BarlineInter) last;
+        return bars.get(bars.size() - 1);
     }
 
     //-----------//
@@ -200,6 +221,19 @@ public class StaffBarline
         }
 
         throw new IllegalStateException("No abscissa computable for " + this);
+    }
+
+    //----------//
+    // getSegno //
+    //----------//
+    /**
+     * Convenient method to report the related segno, if any
+     *
+     * @return segno inter or null
+     */
+    public SegnoInter getSegno ()
+    {
+        return (SegnoInter) getRelated(SegnoBarRelation.class);
     }
 
     //----------//
@@ -234,19 +268,14 @@ public class StaffBarline
     {
         final Point center = getCenter();
 
-        for (Inter inter : items) {
-            //            if (inter instanceof RepeatDotInter && (inter.getCenter().x < center.x)) {
-            //                return true;
-            //            }
-            if (inter instanceof BarlineInter) {
-                SIGraph sig = inter.getSig();
+        for (BarlineInter bar : bars) {
+            SIGraph sig = bar.getSig();
 
-                for (Relation rel : sig.getRelations(inter, RepeatDotBarRelation.class)) {
-                    Inter dot = sig.getOppositeInter(inter, rel);
+            for (Relation rel : sig.getRelations(bar, RepeatDotBarRelation.class)) {
+                Inter dot = sig.getOppositeInter(bar, rel);
 
-                    if (dot.getCenter().x < center.x) {
-                        return true;
-                    }
+                if (dot.getCenter().x < center.x) {
+                    return true;
                 }
             }
         }
@@ -261,19 +290,14 @@ public class StaffBarline
     {
         final Point center = getCenter();
 
-        for (Inter inter : items) {
-            //            if (inter instanceof RepeatDotInter && (inter.getCenter().x > center.x)) {
-            //                return true;
-            //            }
-            if (inter instanceof BarlineInter) {
-                SIGraph sig = inter.getSig();
+        for (BarlineInter bar : bars) {
+            SIGraph sig = bar.getSig();
 
-                for (Relation rel : sig.getRelations(inter, RepeatDotBarRelation.class)) {
-                    Inter dot = sig.getOppositeInter(inter, rel);
+            for (Relation rel : sig.getRelations(bar, RepeatDotBarRelation.class)) {
+                Inter dot = sig.getOppositeInter(bar, rel);
 
-                    if (dot.getCenter().x > center.x) {
-                        return true;
-                    }
+                if (dot.getCenter().x > center.x) {
+                    return true;
                 }
             }
         }
@@ -312,81 +336,11 @@ public class StaffBarline
         return sb.toString();
     }
 
-    //---------//
-    // addItem //
-    //---------//
-    /**
-     * Maintain the 'items' list as if it was an ordered set.
-     * 'Items' is declared as a list to ease JAXB processing
-     *
-     * @param inter the inter to add
-     */
-    private void addItem (AbstractInter inter)
-    {
-        if (!items.contains(inter)) {
-            items.add(inter);
-            Collections.sort(items, Inter.byFullAbscissa);
-        }
-    }
-
     //-------------//
     // getBarCount //
     //-------------//
     private int getBarCount ()
     {
-        int count = 0;
-
-        for (Inter inter : items) {
-            if (inter instanceof BarlineInter) {
-                count++;
-            }
-        }
-
-        return count;
+        return bars.size();
     }
-
-    //
-    //    //~ Inner Classes ------------------------------------------------------------------------------
-    //    private static class Adapter
-    //            extends XmlAdapter<ItemList, SortedSet<AbstractInter>>
-    //    {
-    //        //~ Methods --------------------------------------------------------------------------------
-    //
-    //        @Override
-    //        public ItemList marshal (SortedSet<AbstractInter> set)
-    //                throws Exception
-    //        {
-    //            if (set == null)
-    //                return null;
-    //
-    //            return new ItemList(set);
-    //        }
-    //
-    //        @Override
-    //        public SortedSet<AbstractInter> unmarshal (ItemList lst)
-    //                throws Exception
-    //        {
-    //            SortedSet<AbstractInter> items = new TreeSet<AbstractInter>(Inter.byFullAbscissa);
-    //        }
-    //    }
-    //
-    //    private static class ItemList
-    //    {
-    //        //~ Instance fields ------------------------------------------------------------------------
-    //
-    //        @XmlList
-    //        @XmlIDREF
-    //        @XmlElement(name = "items")
-    //        ArrayList<AbstractInter> inters = new ArrayList<AbstractInter>();
-    //
-    //        //~ Constructors ---------------------------------------------------------------------------
-    //        public ItemList (Collection<AbstractInter> inters)
-    //        {
-    //            this.inters.addAll(inters);
-    //        }
-    //
-    //        public ItemList ()
-    //        {
-    //        }
-    //    }
 }

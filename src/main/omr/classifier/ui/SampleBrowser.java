@@ -36,16 +36,15 @@ import omr.lag.SectionService;
 
 import omr.run.Orientation;
 
-import omr.selection.EntityListEvent;
-import omr.selection.LocationEvent;
-import omr.selection.MouseMovement;
-import omr.selection.SelectionHint;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.LocationEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionHint;
 
-import static omr.selection.SelectionHint.*;
+import static omr.ui.selection.SelectionHint.*;
 
-import omr.selection.SelectionService;
-import omr.selection.UserEvent;
-
+import omr.ui.selection.SelectionService;
+import omr.ui.selection.UserEvent;
 import omr.ui.Board;
 import omr.ui.field.LTextField;
 import omr.ui.util.Panel;

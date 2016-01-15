@@ -18,8 +18,8 @@ import omr.constant.ConstantSet;
 
 import omr.lag.Lag;
 
-import omr.selection.SelectionService;
-import omr.selection.StubEvent;
+import omr.ui.selection.SelectionService;
+import omr.ui.selection.StubEvent;
 
 import omr.sheet.Book;
 import omr.sheet.Sheet;

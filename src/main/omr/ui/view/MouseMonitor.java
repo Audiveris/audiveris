@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui.view;
 
-import omr.selection.MouseMovement;
+import omr.ui.selection.MouseMovement;
 
 import java.awt.Point;
 import java.awt.Rectangle;

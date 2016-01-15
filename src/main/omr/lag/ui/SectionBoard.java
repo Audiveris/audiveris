@@ -16,9 +16,9 @@ import omr.lag.Section;
 
 import omr.run.Orientation;
 
-import omr.selection.EntityListEvent;
-import omr.selection.MouseMovement;
-import omr.selection.UserEvent;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.UserEvent;
 
 import omr.ui.Board;
 import omr.ui.EntityBoard;

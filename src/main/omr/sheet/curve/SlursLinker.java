@@ -57,8 +57,6 @@ import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
-import static java.lang.Math.abs;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -71,6 +69,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.abs;
+import static java.lang.Math.abs;
 import static java.lang.Math.abs;
 
 /**
@@ -601,7 +602,7 @@ public class SlursLinker
                 final BeamGroup group = chord.getBeamGroup();
 
                 if ((group != null) && ((group == leftGroup) || (group == rightGroup))) {
-                    logger.info("Tie forbidden across {}", chord);
+                    logger.debug("Tie forbidden across {}", chord);
 
                     return false;
                 }

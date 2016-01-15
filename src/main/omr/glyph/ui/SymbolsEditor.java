@@ -31,12 +31,13 @@ import omr.run.RunBoard;
 import omr.score.ui.EditorMenu;
 import omr.score.ui.PaintingParameters;
 
-import omr.selection.EntityListEvent;
-import omr.selection.EntityService;
-import omr.selection.MouseMovement;
-import static omr.selection.SelectionHint.*;
-import omr.selection.UserEvent;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.EntityService;
+import omr.ui.selection.MouseMovement;
 
+import static omr.ui.selection.SelectionHint.*;
+
+import omr.ui.selection.UserEvent;
 import omr.sheet.Part;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
@@ -68,8 +69,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
+
 import java.awt.Stroke;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
