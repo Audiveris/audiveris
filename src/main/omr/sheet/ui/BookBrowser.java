@@ -17,7 +17,20 @@ import omr.OMR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
+import omr.glyph.GlyphIndex;
+import omr.glyph.WeakGlyph;
+
 import omr.sheet.Book;
+import omr.sheet.Sheet;
+import omr.sheet.SheetStub;
+
+import omr.sig.SIGraph;
+import omr.sig.inter.Inter;
+
+import omr.ui.selection.LocationEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionHint;
 
 import omr.util.Dumper;
 import omr.util.Dumping.PackageRelevance;
@@ -180,13 +193,13 @@ public class BookBrowser
             // Set up the views, and display it all
             JButton refreshButton = new JButton(
                     new AbstractAction()
-                    {
-                        @Override
-                        public void actionPerformed (ActionEvent e)
-                        {
-                            refresh();
-                        }
-                    });
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    refresh();
+                }
+            });
             refreshButton.setName("refreshButton");
             toolBar.add(refreshButton);
             frame.add(component);
@@ -282,7 +295,7 @@ public class BookBrowser
     //-------//
     // Model //
     //-------//
-    // This adapter converts the current Score into a JTree model.
+    // This adapter converts the current Book into a JTree model.
     private class Model
             implements TreeModel
     {
@@ -591,6 +604,44 @@ public class BookBrowser
                     if (obj instanceof NamedData) {
                         NamedData nd = (NamedData) obj;
                         obj = nd.data;
+                    }
+
+                    // Publish selection?
+                    if (obj instanceof Inter) {
+                        Inter inter = (Inter) obj;
+                        SIGraph sig = inter.getSig();
+
+                        if (sig != null) {
+                            sig.publish(inter);
+                        }
+                    } else if (obj instanceof Glyph) {
+                        Glyph glyph = (Glyph) obj;
+                        GlyphIndex index = glyph.getIndex();
+                        index.publish(glyph);
+                    } else if (obj instanceof WeakGlyph) {
+                        WeakGlyph weakGlyph = (WeakGlyph) obj;
+                        Glyph glyph = weakGlyph.get();
+
+                        if (glyph != null) {
+                            GlyphIndex index = glyph.getIndex();
+                            index.publish(glyph);
+                        }
+                    } else {
+                        // Empty selections
+                        StubsController controller = StubsController.getInstance();
+                        SheetStub stub = controller.getSelectedStub();
+
+                        if (stub.hasSheet()) {
+                            Sheet sheet = stub.getSheet();
+                            sheet.getInterIndex().publish(null);
+                            sheet.getGlyphIndex().publish(null);
+                            sheet.getLocationService().publish(
+                                    new LocationEvent(
+                                            this,
+                                            SelectionHint.LOCATION_INIT,
+                                            MouseMovement.PRESSING,
+                                            null));
+                        }
                     }
 
                     htmlPane.setText(new Dumper.Html(filter, obj).toString());

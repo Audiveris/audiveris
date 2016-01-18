@@ -17,12 +17,9 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 
 import omr.math.GeoOrder;
-
 import static omr.math.GeoOrder.*;
 
 import omr.run.Orientation;
-
-import omr.ui.selection.EntityListEvent;
 
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
@@ -1065,9 +1062,14 @@ public class SIGraph
     //---------//
     // publish //
     //---------//
-    public void publish (EntityListEvent<Inter> event)
+    /**
+     * Convenient method to publish an Inter instance.
+     *
+     * @param inter the inter to publish (can be null)
+     */
+    public void publish (final Inter inter)
     {
-        system.getSheet().getInterIndex().getEntityService().publish(event);
+        system.getSheet().getInterIndex().publish(inter);
     }
 
     //------------------//

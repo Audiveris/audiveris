@@ -13,15 +13,13 @@ package omr.ui.view;
 
 import omr.constant.ConstantSet;
 
+import omr.ui.PixelCount;
 import omr.ui.selection.LocationEvent;
 import omr.ui.selection.MouseMovement;
 import omr.ui.selection.SelectionHint;
-
 import static omr.ui.selection.SelectionHint.*;
-
 import omr.ui.selection.SelectionService;
 import omr.ui.selection.UserEvent;
-import omr.ui.PixelCount;
 
 import omr.util.ClassUtil;
 
@@ -442,9 +440,9 @@ public class RubberPanel
         revalidate();
         repaint();
 
-        if (rect != null) {
-            rubber.resetRectangle(rect);
+        rubber.resetRectangle(rect);
 
+        if (rect != null) {
             // Check whether the rectangle is fully visible,
             // if not, scroll so as to make (most of) it visible
             Rectangle scaledRect = zoom.scaled(rect);

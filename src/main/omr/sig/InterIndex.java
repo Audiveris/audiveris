@@ -22,6 +22,11 @@ import omr.sheet.SystemInfo;
 import omr.sig.inter.Inter;
 import omr.sig.ui.InterService;
 
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.EntityService;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionHint;
+
 import omr.util.BasicIndex;
 import omr.util.IdUtil;
 import omr.util.IntUtil;
@@ -30,8 +35,10 @@ import omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -133,6 +140,36 @@ public class InterIndex
     public String getName ()
     {
         return "inters";
+    }
+
+    //---------//
+    // publish //
+    //---------//
+    /**
+     * Convenient method to publish an Inter instance.
+     *
+     * @param inter the inter to publish (can be null)
+     */
+    public void publish (final Inter inter)
+    {
+        final EntityService<Inter> interService = this.getEntityService();
+
+        if (interService != null) {
+            SwingUtilities.invokeLater(
+                    new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    interService.publish(
+                            new EntityListEvent(
+                                    this,
+                                    SelectionHint.ENTITY_INIT,
+                                    MouseMovement.PRESSING,
+                                    (inter != null) ? Arrays.asList(inter) : null));
+                }
+            });
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

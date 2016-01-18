@@ -293,7 +293,7 @@ public class EditorMenu
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                stack.printVoices(null);
+                stack.printVoices("\n");
             }
         }
     }

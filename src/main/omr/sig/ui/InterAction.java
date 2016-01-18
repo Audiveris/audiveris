@@ -14,17 +14,13 @@ package omr.sig.ui;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
+import omr.sig.SIGraph;
 import omr.sig.inter.Inter;
-
-import omr.ui.selection.EntityListEvent;
-import omr.ui.selection.MouseMovement;
-import omr.ui.selection.SelectionHint;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
-import java.util.Arrays;
 
 import javax.swing.AbstractAction;
 import static javax.swing.Action.SHORT_DESCRIPTION;
@@ -100,19 +96,10 @@ public class InterAction
     {
         // Publish underlying glyph, if any
         final Glyph glyph = inter.getGlyph();
-        inter.getSig().getSystem().getSheet().getGlyphIndex().getEntityService().publish(
-                new EntityListEvent<Glyph>(
-                        this,
-                        SelectionHint.ENTITY_INIT,
-                        MouseMovement.PRESSING,
-                        (glyph != null) ? Arrays.asList(glyph) : null));
+        final SIGraph sig = inter.getSig();
+        sig.getSystem().getSheet().getGlyphIndex().publish(glyph);
 
         // Publish selected inter last, so that display of its bounds remains visible
-        inter.getSig().publish(
-                new EntityListEvent<Inter>(
-                        this,
-                        SelectionHint.ENTITY_INIT,
-                        MouseMovement.PRESSING,
-                        Arrays.asList(inter)));
+        sig.publish(inter);
     }
 }

@@ -19,6 +19,8 @@ import omr.constant.ConstantSet;
 import omr.glyph.Symbol.Group;
 import omr.glyph.ui.GlyphService;
 
+import omr.sheet.Sheet;
+
 import omr.ui.selection.EntityListEvent;
 import omr.ui.selection.EntityService;
 import omr.ui.selection.GroupEvent;
@@ -27,8 +29,6 @@ import omr.ui.selection.LocationEvent;
 import omr.ui.selection.MouseMovement;
 import omr.ui.selection.SelectionHint;
 import omr.ui.selection.SelectionService;
-
-import omr.sheet.Sheet;
 
 import omr.util.BasicIndex;
 import omr.util.EntityIndex;
@@ -406,15 +406,15 @@ public class GlyphIndex
         return null;
     }
 
-    //--------------//
-    // publishGlyph //
-    //--------------//
+    //---------//
+    // publish //
+    //---------//
     /**
      * Convenient debug UI method to publish and focus on a glyph.
      *
      * @param glyph the provided glyph
      */
-    public void publishGlyph (final Glyph glyph)
+    public void publish (final Glyph glyph)
     {
         if (glyphService != null) {
             SwingUtilities.invokeLater(
@@ -428,7 +428,7 @@ public class GlyphIndex
                                     this,
                                     SelectionHint.ENTITY_INIT,
                                     MouseMovement.PRESSING,
-                                    Arrays.asList(glyph)));
+                                    (glyph != null) ? Arrays.asList(glyph) : null));
                 }
             });
         }

@@ -11,19 +11,13 @@
 // </editor-fold>
 package omr.sig.ui;
 
-import omr.ui.selection.EntityListEvent;
-import omr.ui.selection.MouseMovement;
-import omr.ui.selection.SelectionHint;
-
 import omr.sig.SIGraph;
 import omr.sig.inter.Inter;
 import omr.sig.relation.Relation;
 
 import java.awt.event.ActionEvent;
-import java.util.Arrays;
 
 import javax.swing.AbstractAction;
-
 import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**
@@ -96,13 +90,7 @@ class RelationAction
     public void publish ()
     {
         if (other != null) {
-            SIGraph sig = other.getSig();
-            EntityListEvent<Inter> event = new EntityListEvent<Inter>(
-                    this,
-                    SelectionHint.ENTITY_INIT,
-                    MouseMovement.PRESSING,
-                    Arrays.asList(other));
-            sig.publish(event);
+            other.getSig().publish(other);
         }
     }
 }
