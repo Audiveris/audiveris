@@ -16,14 +16,13 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.Symbol.Group;
 
+import omr.ui.Board;
+import omr.ui.EntityBoard;
+import omr.ui.PixelCount;
 import omr.ui.selection.EntityListEvent;
 import omr.ui.selection.GroupEvent;
 import omr.ui.selection.MouseMovement;
 import omr.ui.selection.UserEvent;
-
-import omr.ui.Board;
-import omr.ui.EntityBoard;
-import omr.ui.PixelCount;
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.layout.CellConstraints;
@@ -33,14 +32,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
+import java.util.EnumSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerListModel;
+import javax.swing.JLabel;
 import javax.swing.SwingConstants;
-import javax.swing.event.ChangeEvent;
 
 /**
  * Class {@code GlyphBoard} defines a UI board dedicated to the display of {@link Glyph}
@@ -67,8 +65,11 @@ public class GlyphBoard
     /** The related glyph model. */
     protected final GlyphsController controller;
 
-    /** Input : group selection. */
-    protected final JSpinner groupSpinner;
+    //
+    //    /** Input : group selection. */
+    //    protected final JSpinner groupSpinner;
+    /** Output : group info. */
+    protected final JLabel groupField = new JLabel();
 
     /** Input : Deassign action. */
     protected Action deassignAction;
@@ -106,10 +107,12 @@ public class GlyphBoard
         //                { 3, 7, 11 }
         //            });
         // Group spinner
-        groupSpinner = new JSpinner(new SpinnerListModel(Group.values()));
-        groupSpinner.addChangeListener(this);
-        groupSpinner.setName("groupSpinner");
-        groupSpinner.setToolTipText("Selection of glyph group");
+        //        groupSpinner = new JSpinner(new SpinnerListModel(Group.values()));
+        //        groupSpinner.addChangeListener(this);
+        //        groupSpinner.setName("groupSpinner");
+        //        groupSpinner.setToolTipText("Selection of glyph group");
+        groupField.setHorizontalAlignment(SwingConstants.CENTER);
+        groupField.setToolTipText("Assigned group(s)");
 
         defineLayout();
     }
@@ -153,36 +156,42 @@ public class GlyphBoard
 
             super.onEvent(event); // count, vip, dump, id
 
-            if (event instanceof GroupEvent) {
-                // Change group
-                handleEvent((GroupEvent) event);
+            if (event instanceof EntityListEvent) {
+                // Display additional entity parameters
+                handleEvent((EntityListEvent<Glyph>) event);
             }
+
+            //
+            //            if (event instanceof GroupEvent) {
+            //                // Change group
+            //                handleEvent((GroupEvent) event);
+            //            }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 
-    //--------------//
-    // stateChanged //
-    //--------------//
-    /**
-     * CallBack triggered by a change in one of the spinners.
-     *
-     * @param e the change event, this allows to retrieve the originating spinner
-     */
-    @Override
-    public void stateChanged (ChangeEvent e)
-    {
-        JSpinner spinner = (JSpinner) e.getSource();
-
-        if (spinner == groupSpinner) {
-//            getSelectionService().publish(
-//                    new GroupEvent(this, SelectionHint.ENTITY_INIT, null, (Group) spinner.getValue()));
-        } else {
-            super.stateChanged(e);
-        }
-    }
-
+    //    //--------------//
+    //    // stateChanged //
+    //    //--------------//
+    //    /**
+    //     * CallBack triggered by a change in one of the spinners.
+    //     *
+    //     * @param e the change event, this allows to retrieve the originating spinner
+    //     */
+    //    @Override
+    //    public void stateChanged (ChangeEvent e)
+    //    {
+    //        JSpinner spinner = (JSpinner) e.getSource();
+    //
+    //        if (spinner == groupSpinner) {
+    //            //            getSelectionService().publish(
+    //            //                    new GroupEvent(this, SelectionHint.ENTITY_INIT, null, (Group) spinner.getValue()));
+    //        } else {
+    //            super.stateChanged(e);
+    //        }
+    //    }
+    //
     //---------------//
     // getFormLayout //
     //---------------//
@@ -206,7 +215,8 @@ public class GlyphBoard
         // Shape Icon (start, spans several rows) + layer + Deassign button
 
         ///builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
-        builder.add(groupSpinner, cst.xyw(5, r, 3));
+        ///builder.add(groupSpinner, cst.xyw(5, r, 3));
+        builder.add(groupField, cst.xyw(5, r, 3));
 
         JButton deassignButton = new JButton(getDeassignAction());
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -216,6 +226,35 @@ public class GlyphBoard
         r += 2; // --------------------------------
     }
 
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in EntityList
+     *
+     * @param EntityListEvent
+     */
+    private void handleEvent (EntityListEvent<Glyph> listEvent)
+    {
+        final Glyph entity = listEvent.getEntity();
+
+        if (entity != null) {
+            // Group
+            EnumSet<Group> groups = entity.getGroups();
+
+            if (groups.isEmpty()) {
+                groupField.setText("");
+            } else {
+                Group firstFroup = groups.iterator().next();
+                groupField.setText(firstFroup.toString());
+            }
+        } else {
+            // Group
+            groupField.setText("");
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //    //-------------//
     //    // handleEvent //
@@ -263,22 +302,21 @@ public class GlyphBoard
     //        }
     //    }
     //
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Interest in Group
-     *
-     * @param GroupEvent
-     */
-    private void handleEvent (GroupEvent groupEvent)
-    {
-        // Display new group
-        Group group = groupEvent.getData();
-        groupSpinner.setValue(group);
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //    //-------------//
+    //    // handleEvent //
+    //    //-------------//
+    //    /**
+    //     * Interest in Group
+    //     *
+    //     * @param GroupEvent
+    //     */
+    //    private void handleEvent (GroupEvent groupEvent)
+    //    {
+    //        // Display new group
+    //        Group group = groupEvent.getData();
+    //        groupSpinner.setValue(group);
+    //    }
+    //
     //-----------//
     // Constants //
     //-----------//

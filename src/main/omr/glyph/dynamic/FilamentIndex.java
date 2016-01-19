@@ -16,11 +16,13 @@ import omr.OMR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.sheet.Sheet;
+
 import omr.ui.selection.EntityListEvent;
 import omr.ui.selection.EntityService;
 import omr.ui.selection.IdEvent;
-
-import omr.sheet.Sheet;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionHint;
 
 import omr.util.BasicIndex;
 import omr.util.IntUtil;
@@ -29,7 +31,10 @@ import omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.List;
+
+import javax.swing.SwingUtilities;
 
 /**
  * Class {@code FilamentIndex} is a global index for handled filaments in a sheet.
@@ -45,7 +50,7 @@ public class FilamentIndex
 
     private static final Logger logger = LoggerFactory.getLogger(FilamentIndex.class);
 
-    /** Events that can be published on inter service. */
+    /** Events that can be published on filament service. */
     private static final Class<?>[] eventsAllowed = new Class<?>[]{
         EntityListEvent.class, IdEvent.class
     };
@@ -124,6 +129,34 @@ public class FilamentIndex
     public Sheet getSheet ()
     {
         return sheet;
+    }
+
+    //---------//
+    // publish //
+    //---------//
+    /**
+     * Convenient debug UI method to publish and focus on a filament.
+     *
+     * @param filament the provided filament
+     */
+    public void publish (final Filament filament)
+    {
+        if (entityService != null) {
+            SwingUtilities.invokeLater(
+                    new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    entityService.publish(
+                            new EntityListEvent(
+                                    this,
+                                    SelectionHint.ENTITY_INIT,
+                                    MouseMovement.PRESSING,
+                                    (filament != null) ? Arrays.asList(filament) : null));
+                }
+            });
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

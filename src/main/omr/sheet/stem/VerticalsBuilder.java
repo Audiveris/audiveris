@@ -23,19 +23,14 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphIndex;
 import omr.glyph.NearLine;
 import omr.glyph.Symbol.Group;
-import omr.glyph.dynamic.FilamentFactory;
+import omr.glyph.dynamic.StickFactory;
 import omr.glyph.dynamic.StraightFilament;
 
 import omr.lag.Section;
 
 import omr.math.LineUtil;
-
 import static omr.run.Orientation.*;
 
-import omr.ui.selection.EntityListEvent;
-import omr.ui.selection.MouseMovement;
-import omr.ui.selection.SelectionService;
-import omr.ui.selection.UserEvent;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -46,6 +41,11 @@ import omr.sheet.ui.SheetTab;
 import omr.sig.GradeImpacts;
 
 import omr.step.StepException;
+
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionService;
+import omr.ui.selection.UserEvent;
 
 import ij.process.ByteProcessor;
 
@@ -368,38 +368,61 @@ public class VerticalsBuilder
      */
     private List<StraightFilament> retrieveCandidates ()
     {
-        // Select suitable sections
+        // Select suitable (vertical) sections
         // Since we are looking for major seeds, we'll use only vertical sections
-        List<Section> sections = new ArrayList<Section>();
+        List<Section> vSections = new ArrayList<Section>();
 
         for (Section section : system.getVerticalSections()) {
             // Check section is within system left and right boundaries
             Point center = section.getAreaCenter();
 
             if ((center.x > system.getLeft()) && (center.x < system.getRight())) {
-                sections.add(section);
+                vSections.add(section);
             }
         }
 
-        // Use filament factory with straight lines as default
-        final FilamentFactory<StraightFilament> factory = new FilamentFactory<StraightFilament>(
-                scale,
-                sheet.getFilamentIndex(),
-                VERTICAL,
-                StraightFilament.class);
+        // Horizontal sections (to contribute to stickers)
+        List<Section> hSections = new ArrayList<Section>();
 
-        // Adjust factory parameters
-        factory.setMaxThickness(sheet.getScale().getMaxStem());
-        factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
-        factory.setMaxOverlapSpace(constants.maxOverlapSpace);
-        factory.setMaxCoordGap(constants.maxCoordGap);
+        for (Section section : system.getHorizontalSections()) {
+            // Limit width to 1 pixel
+            if (section.getLength(HORIZONTAL) == 1) {
+                // Check section is within system left and right boundaries
+                Point center = section.getAreaCenter();
 
-        if (system.getId() == 1) {
-            factory.dump("VerticalsBuilder factory");
+                if ((center.x > system.getLeft()) && (center.x < system.getRight())) {
+                    hSections.add(section);
+                }
+            }
         }
 
-        // Retrieve candidates
-        return factory.retrieveFilaments(sections);
+        //
+        //        // Use filament factory with straight lines as default
+        //        final FilamentFactory<StraightFilament> factory = new FilamentFactory<StraightFilament>(
+        //                scale,
+        //                sheet.getFilamentIndex(),
+        //                VERTICAL,
+        //                StraightFilament.class);
+        //
+        //        // Adjust factory parameters
+        //        factory.setMaxThickness(sheet.getScale().getMaxStem());
+        //        factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
+        //        factory.setMaxOverlapSpace(constants.maxOverlapSpace);
+        //        factory.setMaxCoordGap(constants.maxCoordGap);
+        //
+        //        if (system.getId() == 1) {
+        //            factory.dump("VerticalsBuilder factory");
+        //        }
+        //
+        //        // Retrieve candidates
+        //        return factory.retrieveFilaments(sections);
+        //
+        final StickFactory factory = new StickFactory(
+                system,
+                sheet.getFilamentIndex(),
+                sheet.getScale().getMaxStem());
+
+        return factory.retrieveSticks(vSections, hSections);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -145,7 +145,7 @@ public interface Section
                 return dy;
             }
 
-            // Finally, use id. Note this should return zero since different sections cannot overlap
+            // Finally, use id. Note this should return zero if different sections cannot overlap
             return IdUtil.compare(s1.getId(), s2.getId());
         }
     };
@@ -567,17 +567,3 @@ public interface Section
      */
     public void translate (Point vector);
 }
-//    /**
-//     * Register the adjacency of a section from the other orientation.
-//     *
-//     * @param otherSection the other section to remember
-//     */
-//    public void addOppositeSection (Section otherSection);
-//
-//
-//    /**
-//     * A read-only access to adjacent sections from opposite orientation
-//     *
-//     * @return the set of adjacent sections of the opposite orientation
-//     */
-//    public Set<Section> getOppositeSections ();

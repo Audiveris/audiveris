@@ -157,22 +157,6 @@ public class SectionCompound
         return false;
     }
 
-    //-------------//
-    // cutSections //
-    //-------------//
-    /**
-     * Cut the link to this compound from its member sections, only if the
-     * sections actually point to this compound.
-     */
-    public void cutSections ()
-    {
-        for (Section section : getMembers()) {
-            if (section.getCompound() == this) {
-                section.setCompound(null);
-            }
-        }
-    }
-
     //--------//
     // dumpOf //
     //--------//
