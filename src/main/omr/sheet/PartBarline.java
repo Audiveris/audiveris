@@ -14,13 +14,19 @@ package omr.sheet;
 import omr.math.GeoUtil;
 import omr.math.PointUtil;
 
+import omr.sig.inter.FermataInter;
+import omr.sig.inter.Inter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -100,6 +106,32 @@ public class PartBarline
         }
 
         return null;
+    }
+
+    //-------------//
+    // getFermatas //
+    //-------------//
+    /**
+     * Convenient method to report related fermata signs, if any
+     *
+     * @return list of (several?) fermata inters, top down, perhaps empty but not null
+     */
+    public List<FermataInter> getFermatas ()
+    {
+        Set<FermataInter> fermatas = new HashSet<FermataInter>();
+
+        for (StaffBarline sb : staffBarlines) {
+            fermatas.addAll(sb.getFermatas());
+        }
+
+        if (!fermatas.isEmpty()) {
+            List<FermataInter> list = new ArrayList<FermataInter>(fermatas);
+            Collections.sort(list, Inter.byCenterOrdinate);
+
+            return list;
+        }
+
+        return Collections.EMPTY_LIST;
     }
 
     //----------//

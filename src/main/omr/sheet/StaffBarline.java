@@ -21,9 +21,11 @@ import static omr.sheet.PartBarline.Style.*;
 import omr.sig.SIGraph;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.CodaInter;
+import omr.sig.inter.FermataInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SegnoInter;
 import omr.sig.relation.CodaBarRelation;
+import omr.sig.relation.FermataBarRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.RepeatDotBarRelation;
 import omr.sig.relation.SegnoBarRelation;
@@ -31,7 +33,9 @@ import omr.sig.relation.SegnoBarRelation;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -137,6 +141,33 @@ public class StaffBarline
     public CodaInter getCoda ()
     {
         return (CodaInter) getRelated(CodaBarRelation.class);
+    }
+
+    //-------------//
+    // getFermatas //
+    //-------------//
+    /**
+     * Convenient method to report related fermata signs, if any
+     *
+     * @return set of (maximum two) fermata inters, perhaps empty but not null
+     */
+    public Set<FermataInter> getFermatas ()
+    {
+        Set<FermataInter> fermatas = null;
+
+        for (BarlineInter bar : bars) {
+            SIGraph sig = bar.getSig();
+
+            for (Relation rel : sig.getRelations(bar, FermataBarRelation.class)) {
+                if (fermatas == null) {
+                    fermatas = new HashSet<FermataInter>();
+                }
+
+                fermatas.add((FermataInter) sig.getOppositeInter(bar, rel));
+            }
+        }
+
+        return (fermatas != null) ? fermatas : Collections.EMPTY_SET;
     }
 
     //------------//
