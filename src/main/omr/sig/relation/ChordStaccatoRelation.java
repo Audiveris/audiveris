@@ -125,7 +125,7 @@ public class ChordStaccatoRelation
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio staccatoDotSupportCoeff = new Constant.Ratio(
-                5,
+                3,
                 "Supporting coeff for (target) staccato dot");
 
         private final Scale.Fraction xGapMax = new Scale.Fraction(

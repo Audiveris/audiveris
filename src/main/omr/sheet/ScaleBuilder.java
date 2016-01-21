@@ -381,7 +381,7 @@ public class ScaleBuilder
                 public void run ()
                 {
                     // Make sheet visible to the user
-                    StubsController.getInstance().showAssembly(sheet.getStub());
+                    StubsController.getInstance().selectAssembly(sheet.getStub());
                 }
             });
         }

@@ -21,17 +21,16 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
-import omr.ui.selection.EntityListEvent;
-import omr.ui.selection.MouseMovement;
-import omr.ui.selection.SelectionHint;
-import omr.ui.selection.UserEvent;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 
 import omr.ui.Board;
 import omr.ui.Colors;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionHint;
+import omr.ui.selection.UserEvent;
 import omr.ui.util.Panel;
 
 import omr.util.Navigable;
@@ -85,9 +84,6 @@ public class EvaluationBoard
     private static final Color EVAL_SOSO_COLOR = new Color(150, 150, 150);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The evaluator this display is related to */
-    private final Classifier evaluator = GlyphClassifier.getInstance();
-
     /** Related glyphs controller */
     private final GlyphsController glyphsController;
 
@@ -107,6 +103,7 @@ public class EvaluationBoard
      * network evaluator.
      *
      * @param glyphModel the related glyph model
+     * @param expanded   true for pre-selection
      */
     public EvaluationBoard (GlyphsController glyphModel,
                             boolean expanded)
@@ -122,8 +119,9 @@ public class EvaluationBoard
      * Create an evaluation board with one neural network evaluator and the ability to
      * force glyph shape.
      *
-     * @param glyphController the related glyph controller
      * @param sheet           the related sheet, or null
+     * @param glyphController the related glyph controller
+     * @param expanded        true for pre-selection
      */
     public EvaluationBoard (Sheet sheet,
                             GlyphsController glyphController,
@@ -160,12 +158,12 @@ public class EvaluationBoard
         if (glyph == null) {
             // Blank the output
             selector.setEvals(null, null);
-        } else if (evaluator != null) {
+        } else if (getClassifier() != null) {
             SystemManager systemManager = sheet.getSystemManager();
 
             for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
                 selector.setEvals(
-                        evaluator.evaluate(
+                        getClassifier().evaluate(
                                 glyph,
                                 system,
                                 selector.evalCount(),
@@ -245,6 +243,14 @@ public class EvaluationBoard
             builder.add(evb.grade, cst.xy(5, r));
             builder.add((sheet != null) ? evb.button : evb.field, cst.xyw(7, r, 5));
         }
+    }
+
+    //---------------//
+    // getClassifier //
+    //---------------//
+    private Classifier getClassifier ()
+    {
+        return GlyphClassifier.getInstance();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

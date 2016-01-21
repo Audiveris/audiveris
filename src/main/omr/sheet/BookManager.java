@@ -466,15 +466,6 @@ public class BookManager
         return projectHistory;
     }
 
-    //------------//
-    // initialize //
-    //------------//
-    @Override
-    public void initialize ()
-    {
-        // void
-    }
-
     //-------------//
     // isMultiBook //
     //-------------//
@@ -568,15 +559,6 @@ public class BookManager
     public static void setDefaultProjectFolder (String value)
     {
         constants.defaultProjectFolder.setValue(value);
-    }
-
-    //-----------//
-    // terminate //
-    //-----------//
-    @Override
-    public void terminate ()
-    {
-        // void
     }
 
     //----------------//

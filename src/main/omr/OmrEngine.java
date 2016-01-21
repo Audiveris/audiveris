@@ -44,11 +44,6 @@ public interface OmrEngine
     List<Book> getAllBooks ();
 
     /**
-     * Needed to be called first to initialize OMR internals.
-     */
-    void initialize ();
-
-    /**
      * Build a book out of an input file.
      *
      * @param path path to the input file, which may contain several images
@@ -79,9 +74,4 @@ public interface OmrEngine
      * @return true if book is actually removed
      */
     boolean removeBook (Book book);
-
-    /**
-     * Close the service, and release all OMR data.
-     */
-    void terminate ();
 }

@@ -471,15 +471,15 @@ public class StubsController
         }
     }
 
-    //--------------//
-    // showAssembly //
-    //--------------//
+    //----------------//
+    // selectAssembly //
+    //----------------//
     /**
-     * Display the assembly that relates to the specified sheet.
+     * Select the assembly that relates to the specified stub.
      *
-     * @param stub the sheet to be viewed (sheet cannot be null).
+     * @param stub the stub to be displayed (cannot be null).
      */
-    public void showAssembly (SheetStub stub)
+    public void selectAssembly (SheetStub stub)
     {
         logger.debug("showAssembly for {}", stub);
 
@@ -498,7 +498,7 @@ public class StubsController
     //--------------//
     /**
      * This method is called whenever the sheet selection is modified,
-     * whether programmatically (by means of {@link #showAssembly} or {@link
+     * whether programmatically (by means of {@link #selectAssembly} or {@link
      * SheetStub#reset()} or by user action (manual selection of the sheet tab).
      */
     @Override

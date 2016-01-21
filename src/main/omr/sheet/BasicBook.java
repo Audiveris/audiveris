@@ -386,7 +386,7 @@ public class BasicBook
                 SheetStub validStub = getFirstValidStub();
 
                 if (validStub != null) {
-                    controller.showAssembly(validStub);
+                    controller.selectAssembly(validStub);
                 } else {
                     logger.info("No valid sheet in {}", this);
                 }
