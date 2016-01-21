@@ -228,6 +228,10 @@ public class Script
 
                 return;
             }
+
+            if (OMR.getGui() != null) {
+                book.createStubsTabs(); // Tabs are now accessible
+            }
         }
 
         // Run the tasks in sequence

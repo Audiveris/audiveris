@@ -42,7 +42,6 @@ import java.util.Collection;
  */
 public enum Step
 {
-
     LOAD("Load the sheet (gray) picture", new LoadStep()),
     BINARY("Binarize the sheet picture", new BinaryStep()),
     SCALE("Compute sheet line thickness, interline, beam thickness", new ScaleStep()),
@@ -192,7 +191,7 @@ public enum Step
         public Constant (Step defaultValue,
                          java.lang.String description)
         {
-            super(null, defaultValue.toString(), description);
+            super(null, (defaultValue != null) ? defaultValue.toString() : "", description);
         }
 
         public Step getValue ()
@@ -202,7 +201,7 @@ public enum Step
 
         public void setValue (Step step)
         {
-            setTuple(step.toString(), step);
+            setTuple((step != null) ? step.toString() : "", step);
         }
 
         @Override
@@ -214,6 +213,10 @@ public enum Step
         @Override
         protected Step decode (java.lang.String str)
         {
+            if ((str == null) || str.trim().isEmpty()) {
+                return null;
+            }
+
             return Step.valueOf(str);
         }
     }

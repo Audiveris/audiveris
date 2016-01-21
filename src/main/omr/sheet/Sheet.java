@@ -35,7 +35,6 @@ import omr.ui.util.ItemRenderer;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -48,7 +47,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>
  * Methods are organized as follows:
  * <dl>
- * <dt>Admin</dt>
+ * <dt>Administration</dt>
  * <dd><ul>
  * <li>{@link #getId}</li>
  * <li>{@link #getLogPrefix}</li>
@@ -67,7 +66,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <dt>Transcription</dt>
  * <dd><ul>
  * <li>{@link #transcribe}</li>
- * <li>{@link #doStep}</li>
  * <li>{@link #isDone}</li>
  * <li>{@link #ensureStep}</li>
  * <li>{@link #getCurrentStep}</li>
@@ -205,17 +203,6 @@ public interface Sheet
      * @return true if OK
      */
     boolean transcribe ();
-
-    /**
-     * Perform a step, including intermediate ones if any, with online progress monitor.
-     * If any step throws {@link StepException} the processing is stopped.
-     *
-     * @param target  the targeted step
-     * @param systems the impacted systems (null for all of them)
-     * @return true if OK
-     */
-    boolean doStep (Step target,
-                    Collection<SystemInfo> systems);
 
     /**
      * Report whether the specified step has been performed on this sheet

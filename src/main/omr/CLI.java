@@ -686,6 +686,10 @@ public class CLI
                     book.createStubs(sheetIds);
                 }
 
+                if (OMR.getGui() != null) {
+                    book.createStubsTabs(); // Tabs are now accessible
+                }
+
                 // Specific step to reach?
                 final Step targetStep = params.step;
 
@@ -764,7 +768,13 @@ public class CLI
         @Override
         protected Book loadBook (Path path)
         {
-            return OMR.getEngine().loadProject(path);
+            Book book = OMR.getEngine().loadProject(path);
+
+            if (OMR.getGui() != null) {
+                book.createStubsTabs(); // Tabs are now accessible
+            }
+
+            return book;
         }
     }
 

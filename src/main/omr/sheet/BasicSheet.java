@@ -392,9 +392,17 @@ public class BasicSheet
     //--------//
     // doStep //
     //--------//
-    @Override
-    public boolean doStep (Step target,
-                           Collection<SystemInfo> systems)
+    /**
+     * Perform a step, including intermediate ones if any, with online progress monitor
+     * (method to be called from synchronized {@link #ensureStep(omr.step.Step)} only).
+     * If any step throws {@link StepException} the processing is stopped.
+     *
+     * @param target  the targeted step
+     * @param systems the impacted systems (null for all of them)
+     * @return true if OK
+     */
+    boolean doStep (Step target,
+                    Collection<SystemInfo> systems)
     {
         if (isDone(target)) {
             return true;
@@ -437,6 +445,9 @@ public class BasicSheet
         } catch (Exception ex) {
             logger.warn(getLogPrefix() + "Error in performing " + mySteps + " " + ex, ex);
         } finally {
+            // Make sure we reset the sheet "current" step, always.
+            setCurrentStep(null);
+
             StepMonitoring.notifyStop();
 
             if (constants.printWatch.isSet()) {
@@ -472,11 +483,7 @@ public class BasicSheet
     @Override
     public boolean ensureStep (Step step)
     {
-        if (!isDone(step)) {
-            return doStep(step, null);
-        }
-
-        return true;
+        return stub.ensureStep(step);
     }
 
     //--------//
@@ -1159,7 +1166,7 @@ public class BasicSheet
     @Override
     public boolean transcribe ()
     {
-        return doStep(Step.last(), null);
+        return ensureStep(Step.last());
     }
 
     //----------------//
@@ -1226,8 +1233,6 @@ public class BasicSheet
             logger.warn("doOneStep error in " + step + " " + ex, ex);
             throw ex;
         } finally {
-            // Make sure we reset the sheet "current" step, always.
-            setCurrentStep(null);
             StepMonitoring.notifyStep(this, step); // Stop
         }
     }
@@ -1380,7 +1385,6 @@ public class BasicSheet
         switch (step) {
         case LOAD:
             picture = null;
-            stub.setCurrentStep(null);
 
         // Fall-through!
         case BINARY:

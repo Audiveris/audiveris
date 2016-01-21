@@ -137,8 +137,8 @@ public class FileDropHandler
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Step.Constant defaultStep = new Step.Constant(
-                Step.BINARY,
+        private final Step.Constant dropStep = new Step.Constant(
+                null,
                 "Default step launched when an image file is dropped");
     }
 
@@ -153,14 +153,16 @@ public class FileDropHandler
         @Override
         public Step getSpecific ()
         {
-            return constants.defaultStep.getValue();
+            return constants.dropStep.getValue();
         }
 
         @Override
         public boolean setSpecific (Step specific)
         {
-            if (!getSpecific().equals(specific)) {
-                constants.defaultStep.setValue(specific);
+            final Step oldSpecific = getSpecific();
+
+            if (((oldSpecific == null) && (specific != null)) || !oldSpecific.equals(specific)) {
+                constants.dropStep.setValue(specific);
                 logger.info("Default drop step is now ''{}''", specific);
 
                 return true;
@@ -180,14 +182,14 @@ public class FileDropHandler
 
         private final File file;
 
-        private final Step target;
+        private final Step dropStep;
 
         //~ Constructors ---------------------------------------------------------------------------
         public DropImageTask (File file,
-                              Step target)
+                              Step dropStep)
         {
             this.file = file;
-            this.target = target;
+            this.dropStep = dropStep;
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -198,7 +200,14 @@ public class FileDropHandler
             logger.info("Dropping book file {}", file);
 
             final Book book = OMR.getEngine().loadInput(file.toPath());
-            book.doStep(target, null);
+            book.createStubs(null);
+            book.createStubsTabs(); // Tabs are now accessible
+
+            // If a specific drop target is specified, run it on book as a whole
+            // Otherwise run the early target on first stub only.
+            if (dropStep != null) {
+                book.doStep(dropStep, null);
+            }
 
             return null;
         }
@@ -225,7 +234,8 @@ public class FileDropHandler
         protected Void doInBackground ()
                 throws Exception
         {
-            OMR.getEngine().loadProject(file.toPath());
+            Book book = OMR.getEngine().loadProject(file.toPath());
+            book.createStubsTabs(); // Tabs are now accessible
 
             return null;
         }

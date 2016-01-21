@@ -149,25 +149,17 @@ public class LagManager
         // Remove runs whose height is larger than line thickness
         RunTable shortVertTable = sourceTable.copy().purge(
                 new Predicate<Run>()
-                {
-                    @Override
-                    public final boolean check (Run run)
-                    {
-                        return run.getLength() >= minVerticalRunLength;
-                    }
-                },
+        {
+            @Override
+            public final boolean check (Run run)
+            {
+                return run.getLength() >= minVerticalRunLength;
+            }
+        },
                 vertTable);
         RunTableFactory runFactory = new RunTableFactory(HORIZONTAL);
         RunTable horiTable = runFactory.createTable(shortVertTable.getBuffer());
-//
-//        logger.info("source:{} weight:{}", sourceTable, sourceTable.getWeight());
-//
-//        if (vertTable != null) {
-//            logger.info("vert:{} weight:{}", vertTable, vertTable.getWeight());
-//        }
-//
-//        logger.info("hori:{} weight:{}", horiTable, horiTable.getWeight());
-//
+
         return horiTable;
     }
 

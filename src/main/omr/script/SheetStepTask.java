@@ -66,7 +66,7 @@ public class SheetStepTask
     public void core (final Sheet sheet)
             throws StepException
     {
-        sheet.doStep(step, null);
+        sheet.ensureStep(step);
         logger.info("End of sheet step {}", step);
         sheet.getBook().getScript().addTask(this);
     }

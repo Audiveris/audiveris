@@ -140,8 +140,7 @@ public class SectionSets
 
                     if (section == null) {
                         logger.warn(
-                                sheet.getLogPrefix() + "Cannot find section for " + sectionId,
-                                new Throwable());
+                                sheet.getLogPrefix() + "Cannot find section for " + sectionId);
                     } else {
                         sectionSet.add(section);
                     }

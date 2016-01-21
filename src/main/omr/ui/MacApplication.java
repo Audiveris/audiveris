@@ -132,9 +132,10 @@ public class MacApplication
 
                 worker.execute();
             } else {
-                // Actually load the sheet picture
+                // Actually load the book
                 Book book = OMR.getEngine().loadInput(Paths.get(filename));
-                book.createStubs(null); // So that sheets stubs are visible
+                book.createStubs(null);
+                book.createStubsTabs(); // Tabs are now accessible
             }
 
             break;

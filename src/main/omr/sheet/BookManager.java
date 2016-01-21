@@ -495,6 +495,7 @@ public class BookManager
     public Book loadInput (Path path)
     {
         final Book book = new BasicBook(path);
+        book.setModified(true);
         addBook(book);
 
         getInputHistory().add(path); // Insert in input history

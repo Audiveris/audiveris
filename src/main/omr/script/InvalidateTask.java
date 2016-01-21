@@ -69,7 +69,7 @@ public class InvalidateTask
                     if (ViewParameters.getInstance().isInvalidSheetDisplay() == false) {
                         controller.removeAssembly(sheet.getStub());
                     } else {
-                        controller.callAboutSheet(sheet.getStub());
+                        controller.callAboutStub(sheet.getStub());
                     }
                 }
             });

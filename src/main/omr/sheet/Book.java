@@ -206,14 +206,19 @@ public interface Book
     void createStubs (SortedSet<Integer> sheetNumbers);
 
     /**
-     * Display assemblies of all sheets, including the invalid ones.
+     * Insert stubs assemblies in UI tabbed pane.
      */
-    void displayAllSheets ();
+    void createStubsTabs ();
 
     /**
-     * Hide assemblies of invalid sheets.
+     * Display all stubs assemblies, including the invalid ones.
      */
-    void hideInvalidSheets ();
+    void displayAllStubs ();
+
+    /**
+     * Hide stub assemblies of invalid sheets.
+     */
+    void hideInvalidStubs ();
 
     /**
      * Actually load the image that corresponds to the specified sheet id.

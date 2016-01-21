@@ -53,6 +53,7 @@ public interface SheetStub
 
     /**
      * Make sure the provided step has been reached on this sheet stub
+     * (NOTA: this is a synchronized method which may launch a synchronous processing).
      *
      * @param step the step to check
      * @return true if OK

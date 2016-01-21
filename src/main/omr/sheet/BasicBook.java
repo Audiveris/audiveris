@@ -32,9 +32,7 @@ import omr.script.BookStepTask;
 import omr.script.ExportTask;
 import omr.script.PrintTask;
 import omr.script.Script;
-
 import static omr.sheet.Sheet.INTERNALS_RADIX;
-
 import omr.sheet.rhythm.Voices;
 import omr.sheet.ui.BookBrowser;
 import omr.sheet.ui.StubsController;
@@ -42,7 +40,6 @@ import omr.sheet.ui.StubsController;
 import omr.step.ProcessingCancellationException;
 import omr.step.Step;
 import omr.step.StepException;
-
 import static omr.step.ui.StepMonitoring.notifyStart;
 import static omr.step.ui.StepMonitoring.notifyStop;
 
@@ -269,22 +266,22 @@ public class BasicBook
             // Merges pages into their containing movement score (connecting the parts across pages)
             // TODO: this may need the addition of dummy parts in some pages
             new ScoreReduction(score).reduce();
-//
-//            for (Page page : score.getPages()) {
-//                //                // - Retrieve the actual duration of every measure
-//                //                page.accept(new DurationRetriever());
-//                //
-//                //                // - Check all voices timing, assign forward items if needed.
-//                //                // - Detect special measures and assign proper measure ids
-//                //                // If needed, we can trigger a reprocessing of this page
-//                //                page.accept(new MeasureFixer());
-//                //
-//                // Check whether time signatures are consistent accross all pages in score
-//                // TODO: to be implemented
-//                //
-//                // Connect slurs across pages
-//                page.getFirstSystem().connectPageInitialSlurs(score);
-//            }
+            //
+            //            for (Page page : score.getPages()) {
+            //                //                // - Retrieve the actual duration of every measure
+            //                //                page.accept(new DurationRetriever());
+            //                //
+            //                //                // - Check all voices timing, assign forward items if needed.
+            //                //                // - Detect special measures and assign proper measure ids
+            //                //                // If needed, we can trigger a reprocessing of this page
+            //                //                page.accept(new MeasureFixer());
+            //                //
+            //                // Check whether time signatures are consistent accross all pages in score
+            //                // TODO: to be implemented
+            //                //
+            //                // Connect slurs across pages
+            //                page.getFirstSystem().connectPageInitialSlurs(score);
+            //            }
 
             // Voices connection
             Voices.refineScore(score);
@@ -361,33 +358,40 @@ public class BasicBook
             for (int num : sheetNumbers) {
                 stubs.add(new BasicStub(this, num));
             }
-
-            if (OMR.getGui() != null) {
-                SwingUtilities.invokeLater(
-                        new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        final StubsController controller = StubsController.getInstance();
-
-                        // Allocate one tab per stub
-                        for (SheetStub stub : stubs) {
-                            controller.addAssembly(stub.getAssembly());
-                        }
-
-                        controller.adjustDisplayedStubs(BasicBook.this);
-
-                        // Focus on first valid stub, if any
-                        SheetStub validStub = getFirstValidStub();
-
-                        if (validStub != null) {
-                            controller.showAssembly(validStub);
-                        }
-                    }
-                });
-            }
         }
+    }
+
+    //-----------------//
+    // createStubsTabs //
+    //-----------------//
+    @Override
+    public void createStubsTabs ()
+    {
+        SwingUtilities.invokeLater(
+                new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                final StubsController controller = StubsController.getInstance();
+
+                // Allocate one tab per stub
+                for (SheetStub stub : stubs) {
+                    controller.addAssembly(stub.getAssembly());
+                }
+
+                controller.adjustStubTabs(BasicBook.this);
+
+                // Focus on first valid stub, if any
+                SheetStub validStub = getFirstValidStub();
+
+                if (validStub != null) {
+                    controller.showAssembly(validStub);
+                } else {
+                    logger.info("No valid sheet in {}", this);
+                }
+            }
+        });
     }
 
     //--------------//
@@ -421,11 +425,11 @@ public class BasicBook
         }
     }
 
-    //------------------//
-    // displayAllSheets //
-    //------------------//
+    //-----------------//
+    // displayAllStubs //
+    //-----------------//
     @Override
-    public void displayAllSheets ()
+    public void displayAllStubs ()
     {
         SwingUtilities.invokeLater(
                 new Runnable()
@@ -449,14 +453,8 @@ public class BasicBook
         logger.debug("doStep {} on {}", target, this);
 
         try {
-            if (stubs.isEmpty()) {
-                // Create book stubs if not yet done
-                // This will usually trigger the early step on first sheet in synchronous mode
-                createStubs(sheetIds);
-            }
-
             if (target == null) {
-                return true; // Nothing to
+                return true; // Nothing to do
             }
 
             // Find the least advanced step performed across all book sheets
@@ -505,7 +503,7 @@ public class BasicBook
                                     public Void call ()
                                             throws StepException
                                     {
-                                        stub.getSheet().doStep(target, null);
+                                        stub.ensureStep(target);
 
                                         return null;
                                     }
@@ -535,7 +533,7 @@ public class BasicBook
                         // Process one sheet after the other
                         for (SheetStub stub : new ArrayList<SheetStub>(stubs)) {
                             if (!stub.isDone(target)) {
-                                if (!stub.getSheet().doStep(target, null)) {
+                                if (!stub.ensureStep(target)) {
                                     failure = true;
                                 }
                             }
@@ -545,7 +543,7 @@ public class BasicBook
                     return !failure;
                 } else {
                     // Process the single sheet
-                    return stubs.get(0).getSheet().doStep(target, null);
+                    return stubs.get(0).ensureStep(target);
                 }
             } finally {
                 notifyStop();
@@ -778,9 +776,9 @@ public class BasicBook
         return stubs.get(sheetId - 1);
     }
 
-    //-----------//
+    //----------//
     // getStubs //
-    //-----------//
+    //----------//
     @Override
     public List<SheetStub> getStubs ()
     {
@@ -804,11 +802,11 @@ public class BasicBook
         return valids;
     }
 
-    //-------------------//
-    // hideInvalidSheets //
-    //-------------------//
+    //------------------//
+    // hideInvalidStubs //
+    //------------------//
     @Override
-    public void hideInvalidSheets ()
+    public void hideInvalidStubs ()
     {
         SwingUtilities.invokeLater(
                 new Runnable()
@@ -902,37 +900,6 @@ public class BasicBook
             book.initTransients(null, projectPath);
             is.close();
             rootPath.getFileSystem().close(); // Close project file
-
-            if (OMR.getGui() != null) {
-                SwingUtilities.invokeLater(
-                        new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        final StubsController controller = StubsController.getInstance();
-
-                        // Prepare stub assemblies
-                        for (SheetStub stub : book.getValidStubs()) {
-                            controller.addAssembly(stub.getAssembly());
-                        }
-
-                        controller.adjustDisplayedStubs(book);
-
-                        // Show first (valid) sheet, if any
-                        SheetStub firstValidStub = book.getFirstValidStub();
-
-                        if (firstValidStub != null) {
-                            if (firstValidStub != controller.getSelectedStub()) {
-                                firstValidStub.getSheet().displayMainTabs();
-                                StubsController.getInstance().showAssembly(firstValidStub);
-                            }
-                        } else {
-                            logger.info("No valid sheet in {}", book);
-                        }
-                    }
-                });
-            }
 
             return book;
         } catch (Exception ex) {
@@ -1358,7 +1325,7 @@ public class BasicBook
                     @Override
                     public void run ()
                     {
-                        StubsController.getInstance().updateFirstSheetTitle(BasicBook.this);
+                        StubsController.getInstance().updateFirstStubTitle(BasicBook.this);
                     }
                 });
             }

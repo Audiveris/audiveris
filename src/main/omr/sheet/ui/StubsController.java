@@ -18,9 +18,6 @@ import omr.constant.ConstantSet;
 
 import omr.lag.Lag;
 
-import omr.ui.selection.SelectionService;
-import omr.ui.selection.StubEvent;
-
 import omr.sheet.Book;
 import omr.sheet.Sheet;
 import omr.sheet.SheetStub;
@@ -29,6 +26,8 @@ import omr.step.Step;
 
 import omr.ui.Colors;
 import omr.ui.ViewParameters;
+import omr.ui.selection.SelectionService;
+import omr.ui.selection.StubEvent;
 
 import omr.util.OmrExecutors;
 
@@ -52,7 +51,6 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -60,24 +58,24 @@ import javax.swing.event.ChangeListener;
  * Class {@code StubsController} is the UI Controller in charge of user interactions
  * with the sheets stubs.
  * <p>
- * Multiple sheets are handled by means of a tabbed pane. For each tab, and thus for each sheet, we
+ * Multiple stubs are handled by means of a tabbed pane. For each tab, and thus for each stub, we
  * have a separate {@link SheetAssembly}.
  * NOTA: All methods that access the tabbed pane must be called only from Swing EDT.
  * <p>
- * The stubsPane plays with the foreground color of its tabs to indicate current sheet status:
+ * The stubsPane plays with the foreground color of its tabs to indicate current sheet stub status:
  * <ul>
  * <li><span style="color:gray"><b>LIGHT_GRAY</b></span> as default color
- * (for a sheet just created and still empty).</li>
- * <li><span style="color:orange"><b>ORANGE</b></span> for a sheet on which early
- * steps, typically LOAD+BINARY, are being processed.</li>
+ * (for a stub just created and still empty).</li>
+ * <li><span style="color:orange"><b>ORANGE</b></span> for a stub on which early steps,
+ * typically LOAD+BINARY, are being processed.</li>
  * <li><span style=""><b>BLACK</b></span> for a sheet ready.</li>
- * <li><span style="color:red"><b>RED</b></span> for a sheet where early steps
+ * <li><span style="color:red"><b>RED</b></span> for a sheet stub where early steps
  * failed (e.g. for lack of memory on very large books).
- * Selecting the sheet tab again will re-launch those steps.</li>
- * <li><span style="color:pink"><b>PINK</b></span> for a sheet flagged as invalid.</li>
+ * Selecting the tab again will re-launch those steps.</li>
+ * <li><span style="color:pink"><b>PINK</b></span> for a sheet stub flagged as invalid.</li>
  * </ul>
  * <p>
- * This class encapsulates an event service, which publishes the sheet currently selected by a user
+ * This class encapsulates an event service, which publishes the stub currently selected by a user
  * interface. See {@link #subscribe}, {@link #unsubscribe} and {@link #getSelectedStub}.
  * <p>
  * This class is meant to be a Singleton.
@@ -107,10 +105,8 @@ public class StubsController
     /** Reverse map: component -> Stub. */
     private final Map<JComponent, SheetStub> stubsMap;
 
-    /** The global event service which publishes the currently selected sheet. */
-    private final SelectionService stubService = new SelectionService(
-            "sheetService",
-            eventsWritten);
+    /** The global event service which publishes the currently selected sheet stub. */
+    private final SelectionService stubService = new SelectionService("stubService", eventsWritten);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -161,15 +157,15 @@ public class StubsController
         }
     }
 
-    //----------------------//
-    // adjustDisplayedStubs //
-    //----------------------//
+    //----------------//
+    // adjustStubTabs //
+    //----------------//
     /**
-     * Adjust color and title for each displayed stub of the provided book.
+     * Adjust color and title for tab of each displayed stub in the provided book.
      *
      * @param book the provided book
      */
-    public void adjustDisplayedStubs (Book book)
+    public void adjustStubTabs (Book book)
     {
         SheetStub firstDisplayed = null;
 
@@ -190,18 +186,27 @@ public class StubsController
         }
     }
 
-    //----------------//
-    // callAboutSheet //
-    //----------------//
+    //---------------//
+    // callAboutStub //
+    //---------------//
     /**
      * Call the attention about the provided sheet stub, by publishing it on
      * the proper event service.
      *
      * @param stub the provided sheet stub, which may be null
      */
-    public void callAboutSheet (SheetStub stub)
+    public void callAboutStub (SheetStub stub)
     {
         stubService.publish(new StubEvent(this, null, null, stub));
+    }
+
+    //----------------//
+    // deleteAssembly //
+    //----------------//
+    public void deleteAssembly (SheetStub stub)
+    {
+        removeAssembly(stub); // Removed from stubsPane
+        stubsMap.remove(stub.getAssembly().getComponent()); // Removed from stubsMap
     }
 
     //-----------------//
@@ -246,15 +251,15 @@ public class StubsController
         }
 
         // Adjust color & title for each stub
-        adjustDisplayedStubs(book);
+        adjustStubTabs(book);
     }
 
     //--------------------------//
     // dumpCurrentSheetServices //
     //--------------------------//
     /**
-     * Debug action to dump the current status of all event services
-     * related to the selected sheet if any.
+     * Debug action to dump the current status of all event services related to
+     * the selected sheet if any.
      */
     public void dumpCurrentSheetServices ()
     {
@@ -325,6 +330,19 @@ public class StubsController
     public static SheetStub getCurrentStub ()
     {
         return getInstance().getSelectedStub();
+    }
+
+    //--------------//
+    // getEarlyStep //
+    //--------------//
+    /**
+     * Report the step run by default on every new stub displayed.
+     *
+     * @return the default target step
+     */
+    public static Step getEarlyStep ()
+    {
+        return constants.earlyStep.getValue();
     }
 
     //-------------//
@@ -419,7 +437,7 @@ public class StubsController
     public void refresh ()
     {
         logger.debug("StubsController refresh()");
-        callAboutSheet(getSelectedStub());
+        callAboutStub(getSelectedStub());
     }
 
     //----------------//
@@ -444,22 +462,13 @@ public class StubsController
             // Make sure the first sheet of a multipage score is OK
             // We need to modify the tab label for the book (new) first tab
             Book book = stub.getBook();
-            updateFirstSheetTitle(book);
+            updateFirstStubTitle(book);
         }
 
         // Empty sheets cache?
         if (stubsPane.getTabCount() == 0) {
-            callAboutSheet(null); // No more current sheet!
+            callAboutStub(null); // No more current sheet!
         }
-    }
-
-    //----------------//
-    // deleteAssembly //
-    //----------------//
-    public void deleteAssembly (SheetStub stub)
-    {
-        removeAssembly(stub); // Removed from stubsPane
-        stubsMap.remove(stub.getAssembly().getComponent()); // Removed from stubsMap
     }
 
     //--------------//
@@ -496,6 +505,7 @@ public class StubsController
     public void stateChanged (ChangeEvent e)
     {
         final int tabIndex = stubsPane.getSelectedIndex();
+        logger.debug("stateChanged tabIndex: {}", tabIndex);
 
         // User has selected a new sheet tab?
         if (tabIndex != -1) {
@@ -505,13 +515,13 @@ public class StubsController
 
             if (!stub.getBook().isClosing()) {
                 // Check whether we should run early steps on the sheet
-                checkSheetStatus(stub, tabIndex);
+                checkStubStatus(stub, tabIndex);
 
                 // Tell the selected assembly that it now has the focus
                 stub.getAssembly().assemblySelected();
 
                 // This is the new current stub
-                callAboutSheet(stub);
+                callAboutStub(stub);
             }
         }
     }
@@ -551,15 +561,15 @@ public class StubsController
         stubService.unsubscribe(StubEvent.class, subscriber);
     }
 
-    //-----------------------//
-    // updateFirstSheetTitle //
-    //-----------------------//
+    //----------------------//
+    // updateFirstStubTitle //
+    //----------------------//
     /**
-     * Update the title of first displayed sheet tab, according to book radix
+     * Update the title of first displayed stub tab, according to book radix.
      *
      * @param book the book at hand
      */
-    public void updateFirstSheetTitle (Book book)
+    public void updateFirstStubTitle (Book book)
     {
         final int tabIndex = getFirstDisplayedStubIndex(book);
 
@@ -594,9 +604,9 @@ public class StubsController
         actionMap.put("CtrlEndAction", new CtrlEndAction());
     }
 
-    //------------------//
-    // checkSheetStatus //
-    //------------------//
+    //-----------------//
+    // checkStubStatus //
+    //-----------------//
     /**
      * Check whether the selected sheet is visible and, if not so, launch the proper
      * early steps on the sheet.
@@ -604,15 +614,15 @@ public class StubsController
      * @param stub     the sheet at hand
      * @param tabIndex the corresponding tab index in stubsPane
      */
-    private void checkSheetStatus (final SheetStub stub,
-                                   final int tabIndex)
+    private void checkStubStatus (final SheetStub stub,
+                                  final int tabIndex)
     {
-        logger.debug("checkSheetStatus for {}", stub);
+        logger.debug("checkStubStatus for {}", stub);
 
         Step currentStep = stub.getCurrentStep();
 
         if (currentStep == null) {
-            final Step earlyStep = Step.valueOf(constants.earlyStep.getValue());
+            final Step earlyStep = getEarlyStep();
 
             if ((earlyStep != null) && !stub.isDone(earlyStep)) {
                 // Process sheet asynchronously
@@ -622,7 +632,7 @@ public class StubsController
                     public Void call ()
                             throws Exception
                     {
-                        boolean ok = stub.getSheet().doStep(earlyStep, null);
+                        boolean ok = stub.ensureStep(earlyStep);
                         markTab(stub, ok ? Color.BLACK : Color.RED);
 
                         return null;
@@ -638,15 +648,8 @@ public class StubsController
                 logger.debug("launching {}", task);
                 stubsPane.setForegroundAt(tabIndex, Colors.SHEET_BUSY);
 
-                if (SwingUtilities.isEventDispatchThread()) {
-                    OmrExecutors.getCachedLowExecutor().submit(task);
-                } else {
-                    try {
-                        task.call();
-                    } catch (Exception ex) {
-                        logger.warn("Error in synchronous call to " + task, ex);
-                    }
-                }
+                // Since we are on Swing EDT, use asynchronous processing
+                OmrExecutors.getCachedLowExecutor().submit(task);
             } else if (!stub.hasSheet()) {
                 // Stub just loaded from project file, load & display the related sheet
                 stub.getSheet().displayMainTabs();
@@ -751,9 +754,9 @@ public class StubsController
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.String earlyStep = new Constant.String(
-                "BINARY",
-                "Early step triggered when an empty sheet tab is selected ");
+        private final Step.Constant earlyStep = new Step.Constant(
+                Step.BINARY,
+                "Early step triggered when an empty stub tab is selected ");
 
         private final Constant.Ratio initialZoomRatio = new Constant.Ratio(
                 0.5,

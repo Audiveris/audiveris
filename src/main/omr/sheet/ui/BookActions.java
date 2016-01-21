@@ -1460,6 +1460,7 @@ public class BookActions
             if (Files.exists(path)) {
                 // Actually open the project
                 Book book = OMR.getEngine().loadProject(path);
+                book.createStubsTabs(); // Tabs are now accessible
             } else {
                 logger.warn("Path {} does not exist", path);
             }
@@ -1498,7 +1499,10 @@ public class BookActions
                     // Actually open the image file
                     Book book = OMR.getEngine().loadInput(path);
                     book.createStubs(null);
-                    book.setModified(true);
+                    book.createStubsTabs(); // Tabs are now accessible
+
+                    // Launch early steps on first stub
+                    book.getFirstValidStub().ensureStep(StubsController.getEarlyStep());
                 } catch (Exception ex) {
                     logger.warn("Error opening path " + path + " " + ex, ex);
                 }

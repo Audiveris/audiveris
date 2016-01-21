@@ -96,7 +96,7 @@ public class BasicStub
     private volatile Sheet sheet;
 
     /** The step being performed on the sheet. */
-    private Step currentStep;
+    private volatile Step currentStep;
 
     /** Has sheet been modified, WRT its project data. */
     private boolean modified = false;
@@ -182,10 +182,10 @@ public class BasicStub
     // ensureStep //
     //------------//
     @Override
-    public boolean ensureStep (Step step)
+    public synchronized boolean ensureStep (Step step)
     {
         if (!isDone(step)) {
-            return getSheet().doStep(step, null);
+            return ((BasicSheet) getSheet()).doStep(step, null);
         }
 
         return true;

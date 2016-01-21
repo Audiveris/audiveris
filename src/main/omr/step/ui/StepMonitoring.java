@@ -134,7 +134,7 @@ public abstract class StepMonitoring
                     SheetStub currentStub = ctrl.getSelectedStub();
 
                     if (currentStub == stub) {
-                        ctrl.callAboutSheet(currentStub);
+                        ctrl.callAboutStub(currentStub);
                     }
                 }
             });
