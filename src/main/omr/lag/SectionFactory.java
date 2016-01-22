@@ -26,8 +26,10 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class {@code SectionFactory} builds a collection of sections out of provided runs.
@@ -66,6 +68,9 @@ public class SectionFactory
 
     /** Policy for detection of junctions. */
     private final JunctionPolicy junctionPolicy;
+
+    /** Processed sections. true/false */
+    private final Set<Section> processedSections = new HashSet<Section>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -194,6 +199,22 @@ public class SectionFactory
         return sections;
     }
 
+    //-------------//
+    // isProcessed //
+    //-------------//
+    private boolean isProcessed (Section section)
+    {
+        return processedSections.contains(section);
+    }
+
+    //--------------//
+    // setProcessed //
+    //--------------//
+    private void setProcessed (Section section)
+    {
+        processedSections.add(section);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Build //
@@ -282,11 +303,6 @@ public class SectionFactory
                 lag.addRunTable(runTable);
             }
 
-            // House keeping
-            for (Section section : created) {
-                section.setProcessed(false);
-            }
-
             return created;
         }
 
@@ -335,22 +351,6 @@ public class SectionFactory
             return section;
         }
 
-        //--------//
-        // finish //
-        //--------//
-        private void finish (Section section)
-        {
-            section.setProcessed(true);
-        }
-
-        //------------//
-        // isFinished //
-        //------------//
-        private boolean isFinished (Section section)
-        {
-            return section.isProcessed();
-        }
-
         //-----------------//
         // processNextSide //
         //-----------------//
@@ -396,7 +396,7 @@ public class SectionFactory
 
                 Section prevSection = overlappingSections.get(0);
 
-                if (!isFinished(prevSection)) {
+                if (!isProcessed(prevSection)) {
                     continueSection(prevSection, run);
                 } else {
                     // Create a new section, linked by a junction
@@ -473,13 +473,13 @@ public class SectionFactory
                     logger.debug("Perhaps extending section {} with run {}", section, overlapRun);
                 } else {
                     logger.debug("Incompatible height between {} and run {}", section, overlapRun);
-                    finish(section);
+                    setProcessed(section);
                 }
 
                 break;
 
             default: // Diverging, so conclude the section here
-                finish(section);
+                setProcessed(section);
             }
         }
     }

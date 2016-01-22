@@ -193,9 +193,6 @@ public class BarFilamentFactory
         final Filament fil = new CurvedFilament(scale.getInterline());
 
         for (Section section : source) {
-            section.setProcessed(false);
-            section.resetFat(); // ????????????
-
             Rectangle sectRect = VERTICAL.oriented(section.getBounds());
 
             // Section with significant length, intersecting core and centroid in core alignment?
@@ -205,7 +202,6 @@ public class BarFilamentFactory
 
                     if (GeoUtil.yEmbraces(core, oCentroid.y)) {
                         fil.addSection(section, false);
-                        section.setProcessed(true);
                     }
                 }
             }

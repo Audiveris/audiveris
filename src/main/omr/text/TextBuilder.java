@@ -27,7 +27,6 @@ import omr.lag.SectionFactory;
 
 import omr.math.GeoUtil;
 import omr.math.LineUtil;
-
 import static omr.run.Orientation.VERTICAL;
 
 import omr.sheet.Part;
@@ -42,9 +41,7 @@ import omr.sig.inter.ChordNameInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.LyricLineInter;
 import omr.sig.inter.SentenceInter;
-
 import static omr.text.TextRole.PartName;
-
 import omr.text.tesseract.TesseractOCR;
 
 import omr.ui.symbol.TextFont;
@@ -71,6 +68,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -125,6 +123,9 @@ public class TextBuilder
 
     /** Set of text lines. */
     private final Set<TextLine> textLines = new LinkedHashSet<TextLine>();
+
+    /** Processed sections. true/false */
+    private final Set<Section> processedSections = new HashSet<Section>();
 
     //~ Constructors -------------------------------------------------------------------------------
     //
@@ -576,6 +577,7 @@ public class TextBuilder
             if (!areaBounds.intersects(sheetLine.getBounds())) {
                 continue;
             }
+
             TextLine line = new TextLine();
 
             for (TextWord sheetWord : sheetLine.getWords()) {
@@ -600,6 +602,7 @@ public class TextBuilder
         // Retrieve candidate sections and map words to glyphs
         watch.start("getSections");
 
+        // Brand new sections (not the horizontal or vertical sheet sections)
         List<Section> allSections = getSections(buffer, systemLines);
         watch.start("mapGlyphs");
         mapGlyphs(systemLines, allSections, sheet.getStub().getLanguageParam().getActual());
@@ -664,9 +667,9 @@ public class TextBuilder
 
             for (Section section : allSections) {
                 // Do we contain a section not (yet) assigned?
-                if (!section.isProcessed() && charBox.contains(section.getBounds())) {
+                if (!isProcessed(section) && charBox.contains(section.getBounds())) {
                     set.add(section);
-                    section.setProcessed(true);
+                    setProcessed(section);
                 }
             }
         }
@@ -823,44 +826,6 @@ public class TextBuilder
         //        }
     }
 
-    //-----------//
-    // checkRole //
-    //-----------//
-    /**
-     * Try to assign a role to the provided line, if none is already assigned.
-     *
-     * @param line the line to check for role
-     */
-    private void checkRole (TextLine line)
-    {
-        if (line.getRole() == null) {
-            TextRole role = TextRole.guessRole(line, system);
-
-            if (role != null) {
-                line.setRole(role);
-            }
-        }
-    }
-
-    //------------------//
-    // getAbnormalWords //
-    //------------------//
-    /**
-     * Compile the provided regexp to detect abnormal words
-     *
-     * @return the pattern for abnormal words, if successful
-     */
-    private static Pattern getAbnormalWords ()
-    {
-        try {
-            return Pattern.compile(constants.abnormalWordRegexp.getValue());
-        } catch (PatternSyntaxException pse) {
-            logger.warn("Error in regexp for abnormal words", pse);
-
-            return null;
-        }
-    }
-
     //----------------//
     // assignSentence //
     //----------------//
@@ -883,6 +848,25 @@ public class TextBuilder
             break;
 
         default:
+        }
+    }
+
+    //-----------//
+    // checkRole //
+    //-----------//
+    /**
+     * Try to assign a role to the provided line, if none is already assigned.
+     *
+     * @param line the line to check for role
+     */
+    private void checkRole (TextLine line)
+    {
+        if (line.getRole() == null) {
+            TextRole role = TextRole.guessRole(line, system);
+
+            if (role != null) {
+                line.setRole(role);
+            }
         }
     }
 
@@ -968,6 +952,25 @@ public class TextBuilder
         }
 
         return null;
+    }
+
+    //------------------//
+    // getAbnormalWords //
+    //------------------//
+    /**
+     * Compile the provided regexp to detect abnormal words
+     *
+     * @return the pattern for abnormal words, if successful
+     */
+    private static Pattern getAbnormalWords ()
+    {
+        try {
+            return Pattern.compile(constants.abnormalWordRegexp.getValue());
+        } catch (PatternSyntaxException pse) {
+            logger.warn("Error in regexp for abnormal words", pse);
+
+            return null;
+        }
     }
 
     //-----------------//
@@ -1121,6 +1124,14 @@ public class TextBuilder
         return line.isChordName() ? params.maxChordDx : params.maxWordDx;
     }
 
+    //-------------//
+    // isProcessed //
+    //-------------//
+    private boolean isProcessed (Section section)
+    {
+        return processedSections.contains(section);
+    }
+
     //-----------//
     // mapGlyphs //
     //-----------//
@@ -1139,13 +1150,7 @@ public class TextBuilder
         logger.debug("mapGlyphs");
 
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
-
         final int interline = sheet.getInterline();
-
-        // To make sure that the same section is not assigned to several words
-        for (Section section : allSections) {
-            section.setProcessed(false);
-        }
 
         for (TextLine line : lines) {
             logger.debug("  mapping {}", line);
@@ -1518,6 +1523,14 @@ public class TextBuilder
                 }
             }
         }
+    }
+
+    //--------------//
+    // setProcessed //
+    //--------------//
+    private void setProcessed (Section section)
+    {
+        processedSections.add(section);
     }
 
     //--------------------//

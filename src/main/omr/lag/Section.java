@@ -460,21 +460,6 @@ public interface Section
     public boolean isCompoundMember ();
 
     /**
-     * Report whether this section is "fat", according to the current
-     * criteria and desired orientation.
-     *
-     * @return the fat flag, if any
-     */
-    public Boolean isFat ();
-
-    /**
-     * Report whether this section has been "processed".
-     *
-     * @return the processed
-     */
-    public boolean isProcessed ();
-
-    /**
      * Reports whether this section is organized in vertical runs.
      *
      * @return true if vertical, false otherwise
@@ -523,13 +508,6 @@ public interface Section
     public void setCompound (SectionCompound compound);
 
     /**
-     * Record the current "fatness" value of this section.
-     *
-     * @param fat the fat flag
-     */
-    public void setFat (boolean fat);
-
-    /**
      * Set the position of the first run of the section.
      *
      * @param firstPos position of the first run, abscissa for a vertical run,
@@ -543,13 +521,6 @@ public interface Section
      * @param lag the containing lag
      */
     public void setLag (Lag lag);
-
-    /**
-     * Set a flag to be used at caller's will.
-     *
-     * @param processed the processed to set
-     */
-    public void setProcessed (boolean processed);
 
     /**
      * Check whether this section touches that other section

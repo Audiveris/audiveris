@@ -42,8 +42,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class {@code FilamentFactory} builds filaments (long series of sections) out of a
@@ -100,6 +104,12 @@ public class FilamentFactory<F extends Filament>
     /** Scale-dependent constants. */
     private final Parameters params;
 
+    /** Processed sections. true/false */
+    private final Set<Section> processedSections = new HashSet<Section>();
+
+    /** Fat sections. unknown/true/false */
+    private final Map<Section, Boolean> fatSections = new HashMap<Section, Boolean>();
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a factory of filaments.
@@ -153,62 +163,62 @@ public class FilamentFactory<F extends Filament>
      */
     public boolean isSectionFat (Section section)
     {
-        if (section.isFat() == null) {
-            try {
-                if (section.getMeanThickness(orientation) <= 1) {
-                    section.setFat(false);
+        final Boolean fat = fatSections.get(section);
 
-                    return section.isFat();
-                }
-
-                // Check global slimness
-                if (section.getMeanAspect(orientation) < params.minSectionAspect) {
-                    section.setFat(true);
-
-                    return section.isFat();
-                }
-
-                // Check thickness
-                Rectangle bounds = orientation.oriented(section.getBounds());
-                Line line = orientation.switchRef(section.getAbsoluteLine());
-
-                if (Math.abs(line.getSlope()) < (Math.PI / 4)) {
-                    // Measure mean thickness on each half
-                    int startCoord = bounds.x + (bounds.width / 4);
-                    int startPos = line.yAtX(startCoord);
-                    int stopCoord = bounds.x + ((3 * bounds.width) / 4);
-                    int stopPos = line.yAtX(stopCoord);
-
-                    // Start side
-                    Rectangle oRoi = new Rectangle(startCoord, startPos, 0, 0);
-                    final int halfWidth = Math.min(params.probeWidth / 2, bounds.width / 4);
-                    oRoi.grow(halfWidth, params.maxThickness);
-
-                    PointsCollector collector = new PointsCollector(orientation.absolute(oRoi));
-                    section.cumulate(collector);
-
-                    int startThickness = (int) Math.rint((double) collector.getSize() / oRoi.width);
-
-                    // Stop side
-                    oRoi.translate(stopCoord - startCoord, stopPos - startPos);
-                    collector = new PointsCollector(orientation.absolute(oRoi));
-                    section.cumulate(collector);
-
-                    int stopThickness = (int) Math.rint((double) collector.getSize() / oRoi.width);
-
-                    section.setFat(
-                            (startThickness > params.maxThickness)
-                            || (stopThickness > params.maxThickness));
-                } else {
-                    section.setFat(bounds.height > params.maxThickness);
-                }
-            } catch (Exception ex) {
-                logger.warn("Error in checking fatness of " + section, ex);
-                section.setFat(true);
-            }
+        if (fat != null) {
+            return fat;
         }
 
-        return section.isFat();
+        try {
+            if (section.getMeanThickness(orientation) <= 1) {
+                return setFat(section, false);
+            }
+
+            // Check global slimness
+            if (section.getMeanAspect(orientation) < params.minSectionAspect) {
+                return setFat(section, true);
+            }
+
+            // Check thickness
+            Rectangle bounds = orientation.oriented(section.getBounds());
+            Line line = orientation.switchRef(section.getAbsoluteLine());
+
+            if (Math.abs(line.getSlope()) < (Math.PI / 4)) {
+                // Measure mean thickness on each half
+                int startCoord = bounds.x + (bounds.width / 4);
+                int startPos = line.yAtX(startCoord);
+                int stopCoord = bounds.x + ((3 * bounds.width) / 4);
+                int stopPos = line.yAtX(stopCoord);
+
+                // Start side
+                Rectangle oRoi = new Rectangle(startCoord, startPos, 0, 0);
+                final int halfWidth = Math.min(params.probeWidth / 2, bounds.width / 4);
+                oRoi.grow(halfWidth, params.maxThickness);
+
+                PointsCollector collector = new PointsCollector(orientation.absolute(oRoi));
+                section.cumulate(collector);
+
+                int startThickness = (int) Math.rint((double) collector.getSize() / oRoi.width);
+
+                // Stop side
+                oRoi.translate(stopCoord - startCoord, stopPos - startPos);
+                collector = new PointsCollector(orientation.absolute(oRoi));
+                section.cumulate(collector);
+
+                int stopThickness = (int) Math.rint((double) collector.getSize() / oRoi.width);
+
+                return setFat(
+                        section,
+                        (startThickness > params.maxThickness)
+                        || (stopThickness > params.maxThickness));
+            } else {
+                return setFat(section, bounds.height > params.maxThickness);
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in checking fatness of " + section, ex);
+
+            return setFat(section, true);
+        }
     }
 
     //-------------------//
@@ -677,7 +687,7 @@ public class FilamentFactory<F extends Filament>
 
             if (section != null) {
                 fil.addSection(section, true);
-                section.setProcessed(true);
+                setProcessed(section);
 
                 //
                 //                if (constants.registerEachAndEveryGlyph.isSet()) {
@@ -709,10 +719,6 @@ public class FilamentFactory<F extends Filament>
             throws Exception
     {
         for (Section section : inputSections) {
-            // Reset section cached data
-            section.setProcessed(false);
-            section.resetFat();
-
             // Limit to main sections
             if (section.getLength(orientation) < params.minCoreSectionLength) {
                 if (section.isVip()) {
@@ -760,7 +766,7 @@ public class FilamentFactory<F extends Filament>
             List<Section> sections = new ArrayList<Section>();
 
             for (Section section : source) {
-                if (!section.isProcessed() && !isSectionFat(section)) {
+                if (!isProcessed(section) && !isSectionFat(section)) {
                     sections.add(section);
                 }
             }
@@ -821,10 +827,8 @@ public class FilamentFactory<F extends Filament>
 
                                 break;
                             }
-                        } else {
-                            if (fil.isVip() && sectionFil.isVip()) {
-                                logger.info("No intersection between {} and {}", fil, sectionFil);
-                            }
+                        } else if (fil.isVip() && sectionFil.isVip()) {
+                            logger.info("No intersection between {} and {}", fil, sectionFil);
                         }
                     }
                 } while (expanding);
@@ -834,6 +838,14 @@ public class FilamentFactory<F extends Filament>
         }
 
         return filaments;
+    }
+
+    //-------------//
+    // isProcessed //
+    //-------------//
+    private boolean isProcessed (Section section)
+    {
+        return processedSections.contains(section);
     }
 
     //------------------------//
@@ -896,13 +908,11 @@ public class FilamentFactory<F extends Filament>
 
                                 break HeadsLoop;
                             }
-                        } else {
-                            if (head.isVip() && candidate.isVip()) {
-                                logger.info(
-                                        "VIP no fat intersection between {} and {}",
-                                        candidate,
-                                        head);
-                            }
+                        } else if (head.isVip() && candidate.isVip()) {
+                            logger.info(
+                                    "VIP no fat intersection between {} and {}",
+                                    candidate,
+                                    head);
                         }
                     }
                 }
@@ -933,9 +943,6 @@ public class FilamentFactory<F extends Filament>
         F fil = createFilament(null);
 
         for (Section section : source) {
-            section.setProcessed(false);
-            section.resetFat(); // ????????????
-
             Rectangle sectRect = orientation.oriented(section.getBounds());
 
             if (sectRect.width < params.minCoreSectionLength) {
@@ -957,7 +964,7 @@ public class FilamentFactory<F extends Filament>
 
                     if (Math.abs(gap) <= params.maxPosGap) {
                         fil.addSection(section, true);
-                        section.setProcessed(true);
+                        setProcessed(section);
                     }
                 }
             }
@@ -1007,6 +1014,25 @@ public class FilamentFactory<F extends Filament>
                 it.remove();
             }
         }
+    }
+
+    //--------//
+    // setFat //
+    //--------//
+    private boolean setFat (Section section,
+                            boolean bool)
+    {
+        fatSections.put(section, bool);
+
+        return bool;
+    }
+
+    //--------------//
+    // setProcessed //
+    //--------------//
+    private void setProcessed (Section section)
+    {
+        processedSections.add(section);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

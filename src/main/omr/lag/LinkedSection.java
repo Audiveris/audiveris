@@ -401,18 +401,6 @@ public class LinkedSection
     }
 
     @Override
-    public Boolean isFat ()
-    {
-        return section.isFat();
-    }
-
-    @Override
-    public boolean isProcessed ()
-    {
-        return section.isProcessed();
-    }
-
-    @Override
     public boolean isVertical ()
     {
         return section.isVertical();
@@ -457,12 +445,6 @@ public class LinkedSection
     }
 
     @Override
-    public void setFat (boolean fat)
-    {
-        section.setFat(fat);
-    }
-
-    @Override
     public void setFirstPos (int firstPos)
     {
         section.setFirstPos(firstPos);
@@ -478,12 +460,6 @@ public class LinkedSection
     public void setLag (Lag lag)
     {
         section.setLag(lag);
-    }
-
-    @Override
-    public void setProcessed (boolean processed)
-    {
-        section.setProcessed(processed);
     }
 
     @Override

@@ -858,24 +858,6 @@ public class BasicSection
         return compound != null;
     }
 
-    //-------//
-    // isFat //
-    //-------//
-    @Override
-    public Boolean isFat ()
-    {
-        return fat;
-    }
-
-    //-------------//
-    // isProcessed //
-    //-------------//
-    @Override
-    public boolean isProcessed ()
-    {
-        return processed;
-    }
-
     //------------//
     // isVertical //
     //------------//
@@ -1011,15 +993,6 @@ public class BasicSection
         this.compound = compound;
     }
 
-    //--------//
-    // setFat //
-    //--------//
-    @Override
-    public void setFat (boolean fat)
-    {
-        this.fat = fat;
-    }
-
     //-------------//
     // setFirstPos //
     //-------------//
@@ -1045,15 +1018,6 @@ public class BasicSection
         if (lag != null) {
             orientation = lag.getOrientation();
         }
-    }
-
-    //--------------//
-    // setProcessed //
-    //--------------//
-    @Override
-    public void setProcessed (boolean processed)
-    {
-        this.processed = processed;
     }
 
     //---------//
@@ -1181,10 +1145,6 @@ public class BasicSection
         //          .append(getLevel());
         //        sb.append(" fW=")
         //          .append(foreWeight);
-        if ((isFat() != null) && isFat()) {
-            sb.append(" fat");
-        }
-
         if (compound != null) {
             sb.append(" compound#").append(compound.getId());
 

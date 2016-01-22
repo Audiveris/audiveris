@@ -233,11 +233,9 @@ public class LedgersBuilder
                 }
 
                 return true;
-            } else {
-                // Speedup, since beams are sorted by abscissa
-                if (beam.getBounds().getLocation().x > middle.getX()) {
-                    return false;
-                }
+            } else // Speedup, since beams are sorted by abscissa
+            if (beam.getBounds().getLocation().x > middle.getX()) {
+                return false;
             }
         }
 
@@ -382,13 +380,13 @@ public class LedgersBuilder
     {
         List<Inter> beams = sig.inters(
                 new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        return (inter instanceof AbstractBeamInter) && inter.isGood();
-                    }
-                });
+        {
+            @Override
+            public boolean check (Inter inter)
+            {
+                return (inter instanceof AbstractBeamInter) && inter.isGood();
+            }
+        });
 
         Collections.sort(beams, Inter.byAbscissa);
 

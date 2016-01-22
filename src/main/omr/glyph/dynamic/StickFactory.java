@@ -94,12 +94,32 @@ public class StickFactory
     /** Map (abscissa -> horizontal sections (1-pixel wide)) of potential stickers. */
     private Map<Integer, List<Section>> hMap;
 
+    /** A specific view (with adjacency links) of global vertical sections. */
     private List<LinkedSection> allVerticals;
 
     private final int maxStickWidth;
 
     /** Scale-dependent constants. */
     private final Parameters params;
+
+    /** Processed sections. true/false */
+    private final Set<Section> processedSections = new HashSet<Section>();
+
+    //-------------//
+    // isProcessed //
+    //-------------//
+    private boolean isProcessed (Section section)
+    {
+        return processedSections.contains(section);
+    }
+
+    //--------------//
+    // setProcessed //
+    //--------------//
+    private void setProcessed (Section section)
+    {
+        processedSections.add(section);
+    }
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -193,7 +213,7 @@ public class StickFactory
 
         for (Section sticker : stickers) {
             fil.addSection(sticker, false);
-            sticker.setProcessed(true);
+            setProcessed(sticker);
         }
     }
 
@@ -211,7 +231,6 @@ public class StickFactory
         List<LinkedSection> list = new ArrayList<LinkedSection>();
 
         for (Section section : sections) {
-            section.setProcessed(false);
             list.add(new LinkedSection(section));
         }
 
@@ -301,13 +320,13 @@ public class StickFactory
         final List<StraightFilament> fils = new ArrayList<StraightFilament>();
 
         for (LinkedSection good : goods) {
-            if (good.isProcessed()) {
+            if (isProcessed(good)) {
                 continue;
             }
 
             StraightFilament fil = new StraightFilament(interline);
             fil.addSection(good, true);
-            good.setProcessed(true);
+            setProcessed(good);
             fils.add(fil);
             index.register(fil);
 
@@ -475,7 +494,7 @@ public class StickFactory
 
                     for (Iterator<LinkedSection> it = sideLinks.iterator(); it.hasNext();) {
                         final LinkedSection linked = it.next();
-                        linked.setProcessed(true);
+                        setProcessed(linked);
 
                         final int width = linked.getRunCount();
 
@@ -521,7 +540,7 @@ public class StickFactory
                     // Do expand filament on this side
                     for (LinkedSection linked : links) {
                         fil.addSection(linked, false);
-                        linked.setProcessed(true);
+                        setProcessed(linked);
                     }
 
                     grown = true;
