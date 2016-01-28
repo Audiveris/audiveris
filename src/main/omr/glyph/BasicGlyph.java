@@ -523,7 +523,13 @@ public class BasicGlyph
             checkLine(); // To make sure the line has been computed
 
             if (line != null) {
-                g.draw(line);
+                ///g.draw(line);
+                g.draw(
+                        new Line2D.Double(
+                                line.getX1(),
+                                line.getY1() + 0.5,
+                                line.getX2() + 1,
+                                line.getY2() + 0.5));
             }
         }
     }
@@ -567,7 +573,7 @@ public class BasicGlyph
     {
         StringBuilder sb = new StringBuilder(super.internals());
 
-        if (groups != null && !groups.isEmpty()) {
+        if ((groups != null) && !groups.isEmpty()) {
             sb.append(' ').append(groups);
         }
 

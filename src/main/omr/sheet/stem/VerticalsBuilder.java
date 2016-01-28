@@ -29,6 +29,8 @@ import omr.glyph.dynamic.StraightFilament;
 import omr.lag.Section;
 
 import omr.math.LineUtil;
+
+import omr.run.Orientation;
 import static omr.run.Orientation.*;
 
 import omr.sheet.Picture;
@@ -418,9 +420,13 @@ public class VerticalsBuilder
         //        return factory.retrieveFilaments(sections);
         //
         final StickFactory factory = new StickFactory(
+                Orientation.VERTICAL,
                 system,
                 sheet.getFilamentIndex(),
-                sheet.getScale().getMaxStem());
+                null,
+                scale.getMaxStem(),
+                scale.toPixels(constants.minCoreSectionLength),
+                constants.minSideRatio.getValue());
 
         return factory.retrieveSticks(vSections, hSections);
     }
@@ -627,17 +633,26 @@ public class VerticalsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
-                1.0,
-                "Maximum delta position between two overlapping filaments");
+        //
+        //        private final Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
+        //                1.0,
+        //                "Maximum delta position between two overlapping filaments");
+        //
+        //        private final Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(
+        //                0.3,
+        //                "Maximum space between overlapping filaments");
+        //
+        //        private final Scale.Fraction maxCoordGap = new Scale.Fraction(
+        //                0,
+        //                "Maximum delta coordinate for a gap between filaments");
+        //
+        private final Constant.Ratio minSideRatio = new Constant.Ratio(
+                0.4,
+                "Minimum ratio of filament length to be actually enlarged");
 
-        private final Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(
-                0.3,
-                "Maximum space between overlapping filaments");
-
-        private final Scale.Fraction maxCoordGap = new Scale.Fraction(
-                0,
-                "Maximum delta coordinate for a gap between filaments");
+        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
+                1.5,
+                "Minimum length for core sections");
 
         private final Scale.Fraction beltMarginDx = new Scale.Fraction(
                 0.15,
@@ -680,10 +695,11 @@ public class VerticalsBuilder
                 0.2,
                 "High maximum distance to average stem line");
 
-        private final Constant.Double maxCoTangentForCheck = new Constant.Double(
-                "cotangent",
-                0.1,
-                "Maximum cotangent for interactive check of a stem candidate");
+        //
+        //        private final Constant.Double maxCoTangentForCheck = new Constant.Double(
+        //                "cotangent",
+        //                0.1,
+        //                "Maximum cotangent for interactive check of a stem candidate");
     }
 
     //----------//

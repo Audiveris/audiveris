@@ -23,6 +23,7 @@ import omr.lag.Sections;
 
 import omr.math.GeoOrder;
 import omr.math.LineUtil;
+
 import static omr.run.Orientation.VERTICAL;
 
 import omr.sheet.Scale;
@@ -38,10 +39,13 @@ import omr.sig.inter.BarlineInter;
 import omr.sig.inter.EndingInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SegmentInter;
+import omr.sig.inter.SentenceInter;
 import omr.sig.relation.EndingBarRelation;
 
 import omr.util.Dumping;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -51,9 +55,12 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import omr.sig.relation.EndingSentenceRelation;
 
 /**
  * Class {@code EndingsBuilder} retrieves the endings out of segments found in sheet
@@ -109,6 +116,36 @@ public class EndingsBuilder
 
         for (SegmentInter segment : segments) {
             processSegment(segment);
+        }
+    }
+
+    //--------------//
+    // grabSentence //
+    //--------------//
+    /**
+     * Try to retrieve the text that should lie in the left corner of provided ending.
+     *
+     * @param ending provided ending
+     */
+    private void grabSentence (EndingInter ending)
+    {
+        Rectangle box = ending.getBounds();
+        SIGraph sig = ending.getSig();
+        List<SentenceInter> found = new ArrayList<SentenceInter>();
+        List<Inter> systemSentences = sig.inters(SentenceInter.class);
+
+        for (Inter si : systemSentences) {
+            ///if (box.intersects(si.getBounds())) {
+            if (box.contains(si.getBounds())) {
+                found.add((SentenceInter) si);
+            }
+        }
+
+        if (!found.isEmpty()) {
+            Collections.sort(found, Inter.byFullAbscissa);
+
+            SentenceInter sentence = found.get(0);
+            sig.addEdge(ending, sentence, new EndingSentenceRelation());
         }
     }
 
@@ -168,9 +205,11 @@ public class EndingsBuilder
                                 Staff staff)
     {
         Point end = seg.getEnd(reverse);
-        Rectangle box = new Rectangle(end);
-        box.grow(params.maxBarShift, 0);
-        box.height = staff.getFirstLine().yAt(end.x) - end.y;
+        Rectangle box = new Rectangle(
+                end.x - params.maxLegXGap,
+                end.y + params.legYMargin,
+                2 * params.maxLegXGap,
+                staff.getFirstLine().yAt(end.x) - end.y - (2 * params.legYMargin));
 
         SystemInfo system = staff.getSystem();
         Set<Section> sections = Sections.intersectedSections(
@@ -196,6 +235,16 @@ public class EndingsBuilder
 
         // Retrieve candidates
         List<StraightFilament> filaments = factory.retrieveFilaments(sections);
+
+        // Purge filaments
+        for (Iterator<StraightFilament> it = filaments.iterator(); it.hasNext();) {
+            StraightFilament fil = it.next();
+
+            if ((fil.getLength(VERTICAL) < params.minLegLow)
+                || ((fil.getStartPoint().getY() - end.y) > params.maxLegYGap)) {
+                it.remove();
+            }
+        }
 
         if (filaments.isEmpty()) {
             return null;
@@ -225,6 +274,9 @@ public class EndingsBuilder
     //----------------//
     /**
      * Check the horizontal segment for being an ending.
+     * <p>
+     * TODO: Grab text (such as '1.' or '1,2' etc) located in left corner of the ending.
+     * Perhaps force local OCR processing there (or symbol extraction/recognition)?
      *
      * @param segment the horizontal segment
      */
@@ -346,6 +398,9 @@ public class EndingsBuilder
                         endingInter,
                         rightBar,
                         new EndingBarRelation(RIGHT, scale.pixelsToFrac(rightDist)));
+
+                // Ending text?
+                grabSentence(endingInter);
             }
         }
     }
@@ -375,17 +430,21 @@ public class EndingsBuilder
                 2.5,
                 "High minimum leg length");
 
+        private final Scale.Fraction legYMargin = new Scale.Fraction(
+                0.25,
+                "Vertical margin for leg lookup area");
+
+        private final Scale.Fraction maxLegXGap = new Scale.Fraction(
+                0.5,
+                "Maximum abscissa gap between ending and leg");
+
+        private final Scale.Fraction maxLegYGap = new Scale.Fraction(
+                0.5,
+                "Maximum ordinate gap between ending and leg");
+
         private final Scale.Fraction maxBarShift = new Scale.Fraction(
                 2.0,
-                "High maximum abscissa shift between ending and bar line");
-
-        private final Scale.Fraction maxLegShift = new Scale.Fraction(
-                0.25,
-                "High maximum abscissa shift between leg and bar line");
-
-        private final Scale.Fraction maxLegGap = new Scale.Fraction(
-                0.5,
-                "High maximum ordinate gap between leg and ending");
+                "High maximum abscissa shift between ending and barline");
 
         private final Constant.Double maxSlope = new Constant.Double(
                 "tangent",
@@ -419,32 +478,35 @@ public class EndingsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final double minLengthLow;
+        final int minLengthLow;
 
-        final double minLengthHigh;
+        final int minLengthHigh;
 
-        final double minLegLow;
+        final int minLegLow;
 
-        final double minLegHigh;
+        final int minLegHigh;
+
+        final int legYMargin;
+
+        final int maxLegXGap;
+
+        final int maxLegYGap;
 
         final int maxBarShift;
-
-        final double maxLegShift;
-
-        final double maxLegGap;
 
         final double maxSlope;
 
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
-            minLengthLow = scale.toPixelsDouble(constants.minLengthLow);
-            minLengthHigh = scale.toPixelsDouble(constants.minLengthHigh);
-            minLegLow = scale.toPixelsDouble(constants.minLegLow);
-            minLegHigh = scale.toPixelsDouble(constants.minLegHigh);
+            minLengthLow = scale.toPixels(constants.minLengthLow);
+            minLengthHigh = scale.toPixels(constants.minLengthHigh);
+            minLegLow = scale.toPixels(constants.minLegLow);
+            minLegHigh = scale.toPixels(constants.minLegHigh);
+            legYMargin = scale.toPixels(constants.legYMargin);
+            maxLegXGap = scale.toPixels(constants.maxLegXGap);
+            maxLegYGap = scale.toPixels(constants.maxLegYGap);
             maxBarShift = scale.toPixels(constants.maxBarShift);
-            maxLegShift = scale.toPixelsDouble(constants.maxLegShift);
-            maxLegGap = scale.toPixelsDouble(constants.maxLegGap);
             maxSlope = constants.maxSlope.getValue();
 
             if (logger.isDebugEnabled()) {

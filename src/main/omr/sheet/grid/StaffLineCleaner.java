@@ -14,35 +14,34 @@ package omr.sheet.grid;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.dynamic.SectionCompound;
-
 import omr.lag.Lag;
 import omr.lag.Lags;
-import omr.lag.Section;
 
-import omr.run.Orientation;
+import omr.run.RunTable;
 
+import omr.sheet.Picture.TableKey;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 
 import omr.util.Navigable;
-import omr.util.Predicate;
 import omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import omr.glyph.Symbol.Group;
-import omr.run.RunTable;
-import omr.sheet.Picture;
 
 /**
  * Class {@code StaffLineCleaner} handles the "removal" of staff line pixels.
+ * <ol>
+ * <li>It removes from global {@link Lags#HLAG} lag the (horizontal) sections used by staff lines.
+ * <li>It generates the {@link TableKey#NO_STAFF} table.
+ * <li>It dispatches vertical & remaining horizontal sections into their containing system(s).
+ * </ol>
  *
  * @author Hervé Bitteur
  */
-class StaffLineCleaner
+public class StaffLineCleaner
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -83,21 +82,17 @@ class StaffLineCleaner
         watch.start("simplify staff lines");
 
         for (Staff staff : sheet.getStaffManager().getStaves()) {
-            staff.simplifyLines(sheet);
+            List<LineInfo> originals = staff.simplifyLines(sheet);
+
+            // Remove staff line sections from hLag
+            for (LineInfo line : originals) {
+                hLag.removeSections(((StaffFilament) line).getMembers());
+            }
         }
-
-        // Remove staff line stuff from hLag
-        watch.start("purge hLag");
-
-        List<Section> staffLinesSections = removeStaffLineSections(hLag);
-        logger.debug(
-                "{}StaffLine sections removed: {}",
-                sheet.getLogPrefix(),
-                staffLinesSections.size());
 
         // Make the NO_STAFF buffer & table available
         RunTable noStaffTable = sheet.getPicture().buildNoStaffTable();
-        sheet.getPicture().setTable(Picture.TableKey.NO_STAFF, noStaffTable);
+        sheet.getPicture().setTable(TableKey.NO_STAFF, noStaffTable);
 
         // Regenerate hLag from noStaff buffer
         sheet.getLagManager().rebuildHLag();
@@ -109,47 +104,6 @@ class StaffLineCleaner
         if (constants.printWatch.isSet()) {
             watch.print();
         }
-    }
-
-    //-------------------------//
-    // removeStaffLineSections //
-    //-------------------------//
-    private List<Section> removeStaffLineSections (Lag hLag)
-    {
-        List<Section> removedSections = hLag.purgeSections(
-                new Predicate<Section>()
-                {
-                    @Override
-                    public boolean check (Section section)
-                    {
-                        SectionCompound compound = section.getCompound();
-
-                        if ((compound != null) && (compound.hasGroup(Group.STAFF_LINE))) {
-                            /**
-                             * Narrow horizontal section can be kept to avoid
-                             * over-segmentation between vertical sections.
-                             * TODO: keep this?
-                             * TODO: use constant (instead of 1-pixel width)?
-                             */
-                            if ((section.getLength(Orientation.HORIZONTAL) == 1)
-                                && (section.getLength(Orientation.VERTICAL) > 1)) {
-                                if (section.isVip() || logger.isDebugEnabled()) {
-                                    logger.info("Keeping staffline section {}", section);
-                                }
-
-                                section.setCompound(null);
-
-                                return false;
-                            } else {
-                                return true;
-                            }
-                        } else {
-                            return false;
-                        }
-                    }
-                });
-
-        return removedSections;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -164,7 +164,7 @@ public class BarFilamentFactory
                         logger.info("VIP merging {} w/ {}", fil, section);
                     }
 
-                    fil.addSection(section, false);
+                    fil.addSection(section);
                     it.remove();
                     expanding = true;
 
@@ -201,7 +201,7 @@ public class BarFilamentFactory
                     Point oCentroid = VERTICAL.oriented(section.getCentroid());
 
                     if (GeoUtil.yEmbraces(core, oCentroid.y)) {
-                        fil.addSection(section, false);
+                        fil.addSection(section);
                     }
                 }
             }

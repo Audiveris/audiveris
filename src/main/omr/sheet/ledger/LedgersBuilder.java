@@ -22,7 +22,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.Symbol.Group;
 import omr.glyph.dynamic.Filament;
-import omr.glyph.dynamic.FilamentFactory;
+import omr.glyph.dynamic.StickFactory;
 import omr.glyph.dynamic.StraightFilament;
 
 import omr.lag.Section;
@@ -30,11 +30,9 @@ import omr.lag.Section;
 import omr.math.GeoUtil;
 import omr.math.LineUtil;
 
+import omr.run.Orientation;
 import static omr.run.Orientation.*;
 
-import omr.ui.selection.EntityListEvent;
-import omr.ui.selection.MouseMovement;
-import omr.ui.selection.UserEvent;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -51,12 +49,15 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.LedgerInter;
 import omr.sig.relation.Exclusion;
 
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.UserEvent;
+
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.Predicate;
+import omr.util.StopWatch;
 
 import ij.process.ByteProcessor;
 
@@ -98,7 +99,7 @@ public class LedgersBuilder
     /** Events this entity is interested in. */
     private static final Class<?>[] eventClasses = new Class<?>[]{EntityListEvent.class};
 
-    /** Failure codes */
+    /** Failure codes. */
     private static final Failure TOO_SHORT = new Failure("Hori-TooShort");
 
     private static final Failure TOO_THIN = new Failure("Hori-TooThin");
@@ -141,6 +142,9 @@ public class LedgersBuilder
     /** The (good) system-wide beams and hooks, sorted by left abscissa. */
     private List<Inter> sortedSystemBeams;
 
+    /** Minimum x overlap between successive ledgers. */
+    private final int minAbscissaOverlap;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * @param system   the related system to process
@@ -155,6 +159,8 @@ public class LedgersBuilder
         sig = system.getSig();
         sheet = system.getSheet();
         scale = sheet.getScale();
+
+        minAbscissaOverlap = scale.toPixels(constants.minAbscissaOverlap);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -175,22 +181,27 @@ public class LedgersBuilder
     // buildLedgers //
     //--------------//
     /**
-     * Search horizontal sticks for ledgers.
+     * Search horizontal sticks for ledgers and build ledgers incrementally.
      */
     public void buildLedgers ()
     {
         try {
-            // Put apart the (good) system beams
+            // Put apart the (good) system beams, they can't intersect ledgers.
+            StopWatch watch = new StopWatch("buildLedgers S#" + system.getId());
+            watch.start("getGoodBeams");
             sortedSystemBeams = getGoodBeams();
 
-            // Retrieve system sections to provide to factory
-            List<Section> keptSections = getCandidateSections();
-
             // Retrieve system candidate glyphs out of candidate sections
-            ledgerCandidates = getCandidateFilaments(keptSections);
+            watch.start("getCandidateFilaments among " + sections.size());
+            ledgerCandidates = getCandidateFilaments(sections);
 
             // Filter candidates accurately, line by line
+            watch.start("filterLedgers");
             filterLedgers();
+
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
         } catch (Throwable ex) {
             logger.warn("Error retrieving ledgers. " + ex, ex);
         }
@@ -233,8 +244,7 @@ public class LedgersBuilder
                 }
 
                 return true;
-            } else // Speedup, since beams are sorted by abscissa
-            if (beam.getBounds().getLocation().x > middle.getX()) {
+            } else if (beam.getBounds().getLocation().x > middle.getX()) {
                 return false;
             }
         }
@@ -254,21 +264,12 @@ public class LedgersBuilder
         for (Staff staff : system.getStaves()) {
             logger.debug("Staff#{}", staff.getId());
 
-            // Above staff
-            for (int i = -1;; i--) {
-                int count = lookupLine(staff, i);
-
-                if (count == 0) {
-                    break;
-                }
-            }
-
-            // Below staff
-            for (int i = 1;; i++) {
-                int count = lookupLine(staff, i);
-
-                if (count == 0) {
-                    break;
+            // Above staff (-1,-2,-3, ...) then below staff (+1,+2,+3, ...)
+            for (int dir : new int[]{-1, +1}) {
+                for (int index = dir;; index += dir) {
+                    if (0 == lookupLine(staff, index)) {
+                        break;
+                    }
                 }
             }
         }
@@ -285,86 +286,77 @@ public class LedgersBuilder
      */
     private List<StraightFilament> getCandidateFilaments (List<Section> sections)
     {
-        // Use filament factory
-        FilamentFactory<StraightFilament> factory = new FilamentFactory<StraightFilament>(
-                scale,
+        //        // Use filament factory
+        //        FilamentFactory<StraightFilament> factory = new FilamentFactory<StraightFilament>(
+        //                scale,
+        //                sheet.getFilamentIndex(),
+        //                HORIZONTAL,
+        //                StraightFilament.class);
+        //
+        //        // Adjust factory parameters
+        //        final int maxThickness = Math.min(
+        //                scale.toPixels(constants.maxThicknessHigh),
+        //                scale.toPixels(constants.maxThicknessHigh2));
+        //        factory.setMaxThickness(maxThickness);
+        //        factory.setMinCoreSectionLength(constants.minCoreSectionLength);
+        //        factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
+        //        factory.setMaxCoordGap(constants.maxCoordGap);
+        //        factory.setMaxPosGap(constants.maxPosGap);
+        //        factory.setMaxOverlapSpace(constants.maxOverlapSpace);
+        //
+        //        if (system.getId() == 1) {
+        //            factory.dump("LedgersBuilder factory");
+        //        }
+        //
+        //        for (Section section : sections) {
+        //            //TODO: this may prevent the processing of systems in parallel!???
+        //            section.setCompound(null); // Needed for sections "shared" by two systems!
+        //        }
+        //
+        //        List<StraightFilament> filaments = factory.retrieveFilaments(sections);
+        //
+        //        // Purge candidates that overlap good beams
+        //        purgeBeamOverlaps(filaments);
+        //
+        //        // TODO: Aggregate 1-pixel high horizontal sections if stuck on filament
+        //        //
+        //        // This is only meant to show them in a specific color
+        //        for (Filament fil : filaments) {
+        //            fil.addGroup(Group.LEDGER_CANDIDATE);
+        //        }
+        //
+        //
+        final Predicate<Section> predicate = new Predicate<Section>()
+        {
+            @Override
+            public boolean check (Section section)
+            {
+                return intersectHorizontal(section);
+            }
+        };
+
+        final int maxThickness = scale.getMaxFore(); //TODO: Simplistic???
+
+        // Use stick factory
+        final StickFactory factory = new StickFactory(
+                Orientation.HORIZONTAL,
+                system,
                 sheet.getFilamentIndex(),
-                HORIZONTAL,
-                StraightFilament.class);
-
-        // Adjust factory parameters
-        final int maxThickness = Math.min(
-                scale.toPixels(constants.maxThicknessHigh),
-                scale.toPixels(constants.maxThicknessHigh2));
-        factory.setMaxThickness(maxThickness);
-        factory.setMinCoreSectionLength(constants.minCoreSectionLength);
-        factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
-        factory.setMaxCoordGap(constants.maxCoordGap);
-        factory.setMaxPosGap(constants.maxPosGap);
-        factory.setMaxOverlapSpace(constants.maxOverlapSpace);
-
-        if (system.getId() == 1) {
-            factory.dump("LedgersBuilder factory");
-        }
-
-        for (Section section : sections) {
-            //TODO: this may prevent the processing of systems in parallel!???
-            section.setCompound(null); // Needed for sections "shared" by two systems!
-        }
-
-        List<StraightFilament> filaments = factory.retrieveFilaments(sections);
+                predicate,
+                maxThickness,
+                scale.toPixels(constants.minCoreSectionLength),
+                constants.minSideRatio.getValue());
+        final List<StraightFilament> filaments = factory.retrieveSticks(sections, null);
 
         // Purge candidates that overlap good beams
-        List<Filament> toRemove = new ArrayList<Filament>();
+        purgeBeamOverlaps(filaments);
 
-        for (Filament fil : filaments) {
-            if (beamOverlap(fil)) {
-                toRemove.add(fil);
-            }
-        }
-
-        if (!toRemove.isEmpty()) {
-            filaments.removeAll(toRemove);
-        }
-
-        // This is only meant to show them in a specific color
+        // This is only meant to show filaments in a specific color
         for (Filament fil : filaments) {
             fil.addGroup(Group.LEDGER_CANDIDATE);
         }
 
         return filaments;
-    }
-
-    //----------------------//
-    // getCandidateSections //
-    //----------------------//
-    /**
-     * Retrieve good candidate sections.
-     * These are sections from a (complete) horizontal lag that do not stand within staves and are
-     * long enough.
-     *
-     * @return list of sections kept
-     */
-    private List<Section> getCandidateSections ()
-    {
-        List<Section> keptSections = new ArrayList<Section>();
-        int minWidth = scale.toPixels(constants.minLedgerLengthLow);
-
-        for (Section section : sections) {
-            // Check minimum length
-            if (section.getBounds().width < minWidth) {
-                continue;
-            }
-
-            // Check this section intersects a horizontal section
-            if (!intersectHorizontal(section)) {
-                continue;
-            }
-
-            keptSections.add(section);
-        }
-
-        return keptSections;
     }
 
     //--------------//
@@ -453,7 +445,7 @@ public class LedgersBuilder
 
                 Rectangle ledgerBox = ledger.getBounds();
 
-                if (GeoUtil.xOverlap(stickBox, ledgerBox) > 0) {
+                if (GeoUtil.xOverlap(stickBox, ledgerBox) > minAbscissaOverlap) {
                     // Use this previous ledger as ordinate reference
                     double xMid = stick.getCenter().x;
                     Glyph ledgerGlyph = ledger.getGlyph();
@@ -617,6 +609,29 @@ public class LedgersBuilder
         return ledgers.size();
     }
 
+    //-------------------//
+    // purgeBeamOverlaps //
+    //-------------------//
+    /**
+     * Purge the filaments that overlap a (good) beam.
+     *
+     * @param filaments (updated) the collection of filaments to purge
+     */
+    private void purgeBeamOverlaps (List<StraightFilament> filaments)
+    {
+        List<Filament> toRemove = new ArrayList<Filament>();
+
+        for (Filament fil : filaments) {
+            if (beamOverlap(fil)) {
+                toRemove.add(fil);
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            filaments.removeAll(toRemove);
+        }
+    }
+
     //---------------//
     // reduceLedgers //
     //---------------//
@@ -674,10 +689,18 @@ public class LedgersBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
         private final Constant.Double maxSlopeForCheck = new Constant.Double(
                 "slope",
                 0.1,
                 "Maximum slope for displaying check board");
+
+        private final Constant.Ratio minSideRatio = new Constant.Ratio(
+                0.8,
+                "Minimum ratio of filament length to be actually enlarged");
 
         private final Constant.Double convexityLow = new Constant.Double(
                 "end number",
@@ -700,13 +723,13 @@ public class LedgersBuilder
 
         // Constants specified WRT mean interline
         // --------------------------------------
+        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
+                1.0,
+                "Minimum length for a section to be considered as core");
+
         private final Scale.Fraction maxThicknessHigh2 = new Scale.Fraction(
                 0.3,
                 "High Maximum thickness of an interesting stick (WRT interline)");
-
-        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
-                0.5,
-                "Minimum length for a section to be considered as core");
 
         private final Scale.Fraction maxCoordGap = new Scale.Fraction(
                 0.0,
@@ -723,6 +746,10 @@ public class LedgersBuilder
         private final Scale.Fraction ledgerMarginY = new Scale.Fraction(
                 0.35,
                 "Margin on ledger ordinate WRT theoretical ordinate");
+
+        private final Scale.Fraction minAbscissaOverlap = new Scale.Fraction(
+                0.75,
+                "Minimum abscissa overlap of a ledger with the previous one");
 
         private final Scale.Fraction minLedgerLengthHigh = new Scale.Fraction(
                 1.5,
@@ -881,7 +908,6 @@ public class LedgersBuilder
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        // Retrieve the density
         @Override
         protected double getValue (StickContext context)
         {
@@ -891,8 +917,8 @@ public class LedgersBuilder
             Rectangle box = stick.getBounds();
             int convexities = 0;
 
-            // On each end of the stick, we check that pixels just above and
-            // just below are white, so that stick slightly points out.
+            // On each end of the stick, we check that pixels just above and just below are white,
+            // so that stick slightly stands out.
             // We use the stick bounds, regardless of the precise geometry inside.
             //
             //  X                                                         X

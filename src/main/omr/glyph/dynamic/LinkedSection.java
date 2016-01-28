@@ -9,9 +9,10 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.lag;
+package omr.glyph.dynamic;
 
-import omr.glyph.dynamic.SectionCompound;
+import omr.lag.Lag;
+import omr.lag.Section;
 
 import omr.math.Barycenter;
 import omr.math.Line;
@@ -20,9 +21,9 @@ import omr.math.PointsCollector;
 import omr.run.Orientation;
 import omr.run.Run;
 
-import omr.util.HorizontalSide;
-
 import ij.process.ByteProcessor;
+
+import net.jcip.annotations.NotThreadSafe;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -31,28 +32,39 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 /**
- * Class {@code LinkedSection} encapsulates a section together with links to source
- * sections and links to target sections.
+ * Class {@code LinkedSection} is a working wrapper around a section.
+ * <p>
+ * <b>NOTA BENE</b>: This wrapper is <b>NOT</b> meant to be used by several threads!
+ * Additional transient data:
+ * <ul>
+ * <li>Links to source sections and target sections</li>
+ * <li>Link to compound</li>
+ * <li>Processed flag</li>
+ * </ul>
  *
  * @author Hervé Bitteur
  */
+@NotThreadSafe
 public class LinkedSection
         implements Section
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
+    /** Concrete underlying section, to which most features are delegated. */
     private final Section section;
 
-    private Set<LinkedSection> sources;
+    private List<LinkedSection> sources;
 
-    private Set<LinkedSection> targets;
+    private List<LinkedSection> targets;
+
+    private boolean processed;
+
+    private SectionCompound compound;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -72,7 +84,7 @@ public class LinkedSection
     public void addSource (LinkedSection source)
     {
         if (sources == null) {
-            sources = new LinkedHashSet<LinkedSection>();
+            sources = new ArrayList<LinkedSection>();
         }
 
         sources.add(source);
@@ -84,7 +96,7 @@ public class LinkedSection
     public void addTarget (LinkedSection target)
     {
         if (targets == null) {
-            targets = new LinkedHashSet<LinkedSection>();
+            targets = new ArrayList<LinkedSection>();
         }
 
         targets.add(target);
@@ -184,10 +196,12 @@ public class LinkedSection
         return section.getCentroid();
     }
 
-    @Override
+    //-------------//
+    // getCompound //
+    //-------------//
     public SectionCompound getCompound ()
     {
-        return section.getCompound();
+        return compound;
     }
 
     @Override
@@ -206,6 +220,12 @@ public class LinkedSection
     public String getId ()
     {
         return section.getId();
+    }
+
+    @Override
+    public int getIntId ()
+    {
+        return section.getIntId();
     }
 
     @Override
@@ -230,20 +250,6 @@ public class LinkedSection
     public int getLength (Orientation orientation)
     {
         return section.getLength(orientation);
-    }
-
-    //-------------//
-    // getLinkedOn //
-    //-------------//
-    public Set<LinkedSection> getLinkedOn (HorizontalSide side)
-    {
-        Objects.requireNonNull(side, "LinkedSection.getLinkedOn requires a non-null side");
-
-        if (side == HorizontalSide.LEFT) {
-            return getSources();
-        } else {
-            return getTargets();
-        }
     }
 
     @Override
@@ -326,10 +332,10 @@ public class LinkedSection
      *
      * @return the (non-null but perhaps empty) set of connected source sections
      */
-    public Set<LinkedSection> getSources ()
+    public List<LinkedSection> getSources ()
     {
         if (sources == null) {
-            return Collections.EMPTY_SET;
+            return Collections.EMPTY_LIST;
         }
 
         return sources;
@@ -355,10 +361,10 @@ public class LinkedSection
      *
      * @return the (non-null but perhaps empty) set of connected target sections
      */
-    public Set<LinkedSection> getTargets ()
+    public List<LinkedSection> getTargets ()
     {
         if (targets == null) {
-            return Collections.EMPTY_SET;
+            return Collections.EMPTY_LIST;
         }
 
         return targets;
@@ -394,10 +400,12 @@ public class LinkedSection
         return section.intersects(that);
     }
 
-    @Override
-    public boolean isCompoundMember ()
+    //-------------//
+    // isProcessed //
+    //-------------//
+    public boolean isProcessed ()
     {
-        return section.isCompoundMember();
+        return processed;
     }
 
     @Override
@@ -432,16 +440,12 @@ public class LinkedSection
         return section.renderSelected(g);
     }
 
-    @Override
-    public void resetFat ()
-    {
-        section.resetFat();
-    }
-
-    @Override
+    //-------------//
+    // setCompound //
+    //-------------//
     public void setCompound (SectionCompound compound)
     {
-        section.setCompound(compound);
+        this.compound = compound;
     }
 
     @Override
@@ -460,6 +464,14 @@ public class LinkedSection
     public void setLag (Lag lag)
     {
         section.setLag(lag);
+    }
+
+    //--------------//
+    // setProcessed //
+    //--------------//
+    public void setProcessed ()
+    {
+        processed = true;
     }
 
     @Override

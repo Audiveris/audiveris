@@ -33,9 +33,7 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.SentenceInter;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Jaxb;
 import omr.util.Navigable;
 
@@ -77,7 +75,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlType(propOrder = {
-    /** Sig must be the last member to marshal. */
+    /** NOTA: Sig must be marshalled last. */
     "id", "indented", "stacks", "parts", "standaloneGlyphs", "sig"}
 )
 public class SystemInfo
@@ -131,7 +129,7 @@ public class SystemInfo
 
     /**
      * Symbol Interpretation Graph for this system.
-     * Nota: sig must be marshalled AFTER parts hierarchy to separate IDs and IDREFs handling.
+     * NOTA: sig must be marshalled AFTER parts hierarchy to separate IDs and IDREFs handling.
      */
     @XmlElement(name = "sig")
     private SIGraph sig;
@@ -149,7 +147,7 @@ public class SystemInfo
     /** Assigned page, if any. */
     private Page page;
 
-    /** PartGroups in this system */
+    /** PartGroups in this system. */
     private final List<PartGroup> partGroups = new ArrayList<PartGroup>();
 
     /** Horizontal sections. */
@@ -461,10 +459,10 @@ public class SystemInfo
     // getHorizontalSections //
     //-----------------------//
     /**
-     * Report the (unmodifiable) collection of horizontal sections in
-     * the system related area.
+     * Report the (unmodifiable) list of horizontal sections in the system area, ordered
+     * by position (y) then coordinate (x).
      *
-     * @return the area horizontal sections
+     * @return the ordered area horizontal sections
      */
     public List<Section> getHorizontalSections ()
     {
@@ -1043,10 +1041,10 @@ public class SystemInfo
     // getVerticalSections //
     //---------------------//
     /**
-     * Report the (unmodifiable) collection of vertical sections in
-     * the system related area.
+     * Report the (unmodifiable) list of vertical sections in system area, ordered by
+     * position (x) then coordinate (y).
      *
-     * @return the area vertical sections
+     * @return the ordered area vertical sections
      */
     public Collection<Section> getVerticalSections ()
     {
@@ -1226,52 +1224,6 @@ public class SystemInfo
         this.page = page;
     }
 
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * @param staves the range of staves
-     */
-    public final void setStaves (List<Staff> staves)
-    {
-        this.staves = staves;
-
-        for (Staff staff : staves) {
-            staff.setSystem(this);
-        }
-
-        updateCoordinates();
-    }
-
-    //-------------------//
-    // updateCoordinates //
-    //-------------------//
-    public final void updateCoordinates ()
-    {
-        Staff firstStaff = getFirstStaff();
-        LineInfo firstLine = firstStaff.getFirstLine();
-        Point2D topLeft = firstLine.getEndPoint(LEFT);
-
-        Staff lastStaff = getLastStaff();
-        LineInfo lastLine = lastStaff.getLastLine();
-        Point2D botLeft = lastLine.getEndPoint(LEFT);
-
-        left = Integer.MAX_VALUE;
-
-        int right = 0;
-
-        for (Staff staff : staves) {
-            left = Math.min(left, staff.getAbscissa(LEFT));
-            right = Math.max(right, staff.getAbscissa(RIGHT));
-        }
-
-        top = (int) Math.rint(topLeft.getY());
-        width = right - left + 1;
-        deltaY = (int) Math.rint(
-                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
-        bottom = (int) Math.rint(botLeft.getY());
-    }
-
     //----------//
     // toString //
     //----------//
@@ -1297,6 +1249,23 @@ public class SystemInfo
         sb.append("]");
 
         return sb.toString();
+    }
+
+    //-----------//
+    // setStaves //
+    //-----------//
+    /**
+     * @param staves the range of staves
+     */
+    public final void setStaves (List<Staff> staves)
+    {
+        this.staves = staves;
+
+        for (Staff staff : staves) {
+            staff.setSystem(this);
+        }
+
+        updateCoordinates();
     }
 
     //
@@ -1340,6 +1309,35 @@ public class SystemInfo
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-------------------//
+    // updateCoordinates //
+    //-------------------//
+    public final void updateCoordinates ()
+    {
+        Staff firstStaff = getFirstStaff();
+        LineInfo firstLine = firstStaff.getFirstLine();
+        Point2D topLeft = firstLine.getEndPoint(LEFT);
+
+        Staff lastStaff = getLastStaff();
+        LineInfo lastLine = lastStaff.getLastLine();
+        Point2D botLeft = lastLine.getEndPoint(LEFT);
+
+        left = Integer.MAX_VALUE;
+
+        int right = 0;
+
+        for (Staff staff : staves) {
+            left = Math.min(left, staff.getAbscissa(LEFT));
+            right = Math.max(right, staff.getAbscissa(RIGHT));
+        }
+
+        top = (int) Math.rint(topLeft.getY());
+        width = right - left + 1;
+        deltaY = (int) Math.rint(
+                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+        bottom = (int) Math.rint(botLeft.getY());
     }
 
     //-----------//

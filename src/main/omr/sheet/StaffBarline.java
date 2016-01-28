@@ -21,14 +21,18 @@ import static omr.sheet.PartBarline.Style.*;
 import omr.sig.SIGraph;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.CodaInter;
+import omr.sig.inter.EndingInter;
 import omr.sig.inter.FermataInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SegnoInter;
 import omr.sig.relation.CodaBarRelation;
+import omr.sig.relation.EndingBarRelation;
 import omr.sig.relation.FermataBarRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.RepeatDotBarRelation;
 import omr.sig.relation.SegnoBarRelation;
+
+import omr.util.HorizontalSide;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -141,6 +145,32 @@ public class StaffBarline
     public CodaInter getCoda ()
     {
         return (CodaInter) getRelated(CodaBarRelation.class);
+    }
+
+    //-----------//
+    // getEnding //
+    //-----------//
+    /**
+     * Report related ending, if any, with bar on desired side of ending.
+     *
+     * @param side horizontal side of barline WRT ending
+     * @return the ending found or null
+     */
+    public EndingInter getEnding (HorizontalSide side)
+    {
+        for (BarlineInter bar : bars) {
+            SIGraph sig = bar.getSig();
+
+            for (Relation rel : sig.getRelations(bar, EndingBarRelation.class)) {
+                EndingBarRelation ebRel = (EndingBarRelation) rel;
+
+                if (ebRel.getEndingSide() == side) {
+                    return (EndingInter) sig.getOppositeInter(bar, rel);
+                }
+            }
+        }
+
+        return null;
     }
 
     //-------------//

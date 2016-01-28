@@ -460,7 +460,7 @@ public class BarsRetriever
                 Section section = it.next();
 
                 if (compound.touches(section)) {
-                    compound.addSection(section, false);
+                    compound.addSection(section);
                     it.remove();
                     expanding = true;
 
@@ -1679,11 +1679,13 @@ public class BarsRetriever
 
                                 group.add(peak);
                             } else // We are NOT grouped with previous peak
-                             if (group != null) {
+                            {
+                                if (group != null) {
                                     group = null;
                                 } else {
                                     isolated.add(prevPeak);
                                 }
+                            }
                         }
 
                         prevPeak = peak;

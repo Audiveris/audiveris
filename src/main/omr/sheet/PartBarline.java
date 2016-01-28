@@ -14,8 +14,11 @@ package omr.sheet;
 import omr.math.GeoUtil;
 import omr.math.PointUtil;
 
+import omr.sig.inter.EndingInter;
 import omr.sig.inter.FermataInter;
 import omr.sig.inter.Inter;
+
+import omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,6 +109,22 @@ public class PartBarline
         }
 
         return null;
+    }
+
+    //-----------//
+    // getEnding //
+    //-----------//
+    /**
+     * Report related ending, if any, with bar on desired side of ending.
+     *
+     * @param side horizontal side of barline WRT ending
+     * @return the ending found or null
+     */
+    public EndingInter getEnding (HorizontalSide side)
+    {
+        final StaffBarline sb = staffBarlines.get(0);
+
+        return sb.getEnding(side);
     }
 
     //-------------//

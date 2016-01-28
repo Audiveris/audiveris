@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.glyph.dynamic.SectionCompound;
-
 import omr.math.Barycenter;
 import omr.math.Line;
 import omr.math.PointsCollector;
@@ -40,6 +38,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 /**
  * Interface {@code Section} handles a section of contiguous and compatible {@link Run}
  * instances.
+ * <p>
+ * NOTA: Cross-section source/target relationship are not handled here, they would need an external
+ * SimpleDirectedGraph.
  * <p>
  * A section carries orientation information, which is the orientation for all runs in this section.
  * <ol> <li> Positions increase in parallel with run numbers, so the thickness of a section is
@@ -85,7 +86,7 @@ public interface Section
     };
 
     /** For comparing Section instances on their start value. */
-    public static final Comparator<Section> startComparator = new Comparator<Section>()
+    public static final Comparator<Section> byCoordinate = new Comparator<Section>()
     {
         @Override
         public int compare (Section s1,
@@ -95,14 +96,35 @@ public interface Section
         }
     };
 
-    /** For comparing Section instances on their pos value. */
-    public static final Comparator<Section> posComparator = new Comparator<Section>()
+    /** For comparing Section instances on their position value. */
+    public static final Comparator<Section> byPosition = new Comparator<Section>()
     {
         @Override
         public int compare (Section s1,
                             Section s2)
         {
             return s1.getFirstPos() - s2.getFirstPos();
+        }
+    };
+
+    /** For comparing Section instances on their position, then coordinate values. */
+    public static final Comparator<Section> byFullPosition = new Comparator<Section>()
+    {
+        @Override
+        public int compare (Section s1,
+                            Section s2)
+        {
+            final int p1 = s1.getFirstPos();
+            final int p2 = s2.getFirstPos();
+
+            if (p1 != p2) {
+                return p1 - p2;
+            }
+
+            final int c1 = s1.getStartCoord();
+            final int c2 = s2.getStartCoord();
+
+            return c1 - c2;
         }
     };
 
@@ -256,13 +278,6 @@ public interface Section
      * @return the mass center of the section, as a absolute point
      */
     public Point getCentroid ();
-
-    /**
-     * Report the compound the section belongs to, if any.
-     *
-     * @return the compound, which may be null
-     */
-    public SectionCompound getCompound ();
 
     /**
      * Return the position (x for vertical runs, y for horizontal runs)
@@ -453,13 +468,6 @@ public interface Section
     public boolean intersects (Section that);
 
     /**
-     * Checks whether the section is already a member of a compound.
-     *
-     * @return the result of the test
-     */
-    public boolean isCompoundMember ();
-
-    /**
      * Reports whether this section is organized in vertical runs.
      *
      * @return true if vertical, false otherwise
@@ -494,18 +502,6 @@ public interface Section
      *         the section has been drawn
      */
     public boolean renderSelected (Graphics g);
-
-    /**
-     * Nullify the fat sticky attribute.
-     */
-    public void resetFat ();
-
-    /**
-     * Assign the containing compound, if any.
-     *
-     * @param compound the containing compound, perhaps null
-     */
-    public void setCompound (SectionCompound compound);
 
     /**
      * Set the position of the first run of the section.

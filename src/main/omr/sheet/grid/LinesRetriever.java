@@ -31,7 +31,9 @@ import omr.math.NaturalSpline;
 import omr.math.Population;
 
 import omr.run.Orientation;
+
 import static omr.run.Orientation.*;
+
 import omr.run.Run;
 import omr.run.RunTable;
 
@@ -51,7 +53,9 @@ import omr.ui.util.UIUtil;
 import omr.util.Dumping;
 import omr.util.Entities;
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.IdUtil;
 import omr.util.Navigable;
 import omr.util.Predicate;
@@ -108,7 +112,7 @@ public class LinesRetriever
     /** Lag of horizontal runs */
     private Lag hLag;
 
-    /** Long horizontal filaments found, non sorted */
+    /** Long horizontal filaments found, non sorted. */
     private List<StaffFilament> filaments;
 
     /** Second collection of filaments */
@@ -184,13 +188,13 @@ public class LinesRetriever
 
         RunTable longHoriTable = horiTable.purge(
                 new Predicate<Run>()
-                {
-                    @Override
-                    public final boolean check (Run run)
-                    {
-                        return run.getLength() < params.minRunLength;
-                    }
-                },
+        {
+            @Override
+            public final boolean check (Run run)
+            {
+                return run.getLength() < params.minRunLength;
+            }
+        },
                 shortHoriTable);
 
         if (runsViewer != null) {
@@ -265,11 +269,11 @@ public class LinesRetriever
 
             // First, consider thick sections
             watch.start("include " + thickSections.size() + " thick stickers");
-            includeSections(thickSections, true);
+            includeSections(thickSections);
 
             // Second, consider thin sections
             watch.start("include " + thinSections.size() + " thin stickers");
-            includeSections(thinSections, true);
+            includeSections(thinSections);
 
             // Polish staff lines (TODO: to be improved)
             watch.start("polishCurvatures");
@@ -830,18 +834,21 @@ public class LinesRetriever
     /**
      * Include "sticker" sections into their related lines, when applicable
      *
-     * @param sections       List of sections that are stickers candidates
-     * @param updateGeometry should we update the line geometry with stickers
-     *                       (this should be limited to large sections).
+     * @param sections List of sections that are stickers candidates
      */
-    private void includeSections (List<Section> sections,
-                                  boolean updateGeometry)
+    private void includeSections (List<Section> sections)
     {
+        // Use a temporary vector indexed by section ID
+        final int idMax = IdUtil.getIntValue(hLag.getLastId());
+        final boolean[] included = new boolean[idMax + 1];
+        Arrays.fill(included, false);
+
         // Sections are sorted according to their top run (Y)
-        Collections.sort(sections, Section.posComparator);
+        Collections.sort(sections, Section.byPosition);
 
         final int iMax = sections.size() - 1;
 
+        // Sections included so far
         for (SystemInfo system : sheet.getSystems()) {
             // Because of possible side by side systems, we must restart from top
             int iMin = 0;
@@ -868,7 +875,7 @@ public class LinesRetriever
                     for (int i = iMin; i <= iMax; i++) {
                         Section section = sections.get(i);
 
-                        if (section.isCompoundMember()) {
+                        if (included[section.getIntId()]) {
                             continue;
                         }
 
@@ -893,14 +900,10 @@ public class LinesRetriever
                         }
                     }
 
-                    // Actually include the retrieved stickers?
+                    // Actually include the retrieved stickers
                     for (Section section : stickers) {
-                        if (updateGeometry) {
-                            // This invalidates filament cache, including extrema
-                            fil.addSection(section, true);
-                        } else {
-                            section.setCompound(fil);
-                        }
+                        fil.addSection(section); // Invalidates filament cache, including extrema
+                        included[section.getIntId()] = true;
                     }
 
                     // Restore extrema points (keep abscissae, but recompute ordinates)

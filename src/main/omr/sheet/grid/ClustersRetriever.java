@@ -158,7 +158,7 @@ public class ClustersRetriever
     /** Long filaments to process */
     private final List<StaffFilament> filaments;
 
-    /** Filaments discarded */
+    /** Filaments discarded. */
     private final List<StaffFilament> discardedFilaments = new ArrayList<StaffFilament>();
 
     /** Skew of the sheet */
@@ -214,6 +214,11 @@ public class ClustersRetriever
     //-----------//
     // buildInfo //
     //-----------//
+    /**
+     * Organize the filaments into clusters as possible.
+     *
+     * @return the filaments that could not be clustered
+     */
     public List<StaffFilament> buildInfo ()
     {
         // Retrieve all vertical combs gathering filaments
@@ -393,19 +398,17 @@ public class ClustersRetriever
             logger.debug("Gap too wide between {} & {}", one, two);
 
             return false;
-        } else {
-            // True gap: use proper edges
-            if (oneLeft < twoLeft) { // Case one --- two
-                dist = bestMatch(
-                        ordinatesOf(one.getStops()),
-                        ordinatesOf(two.getStarts()),
-                        deltaPos);
-            } else { // Case two --- one
-                dist = bestMatch(
-                        ordinatesOf(one.getStarts()),
-                        ordinatesOf(two.getStops()),
-                        deltaPos);
-            }
+        } else // True gap: use proper edges
+        if (oneLeft < twoLeft) { // Case one --- two
+            dist = bestMatch(
+                    ordinatesOf(one.getStops()),
+                    ordinatesOf(two.getStarts()),
+                    deltaPos);
+        } else { // Case two --- one
+            dist = bestMatch(
+                    ordinatesOf(one.getStarts()),
+                    ordinatesOf(two.getStops()),
+                    deltaPos);
         }
 
         // Check best distance
@@ -599,16 +602,12 @@ public class ClustersRetriever
 
                             break;
                         }
-                    } else {
-                        if (areVips) {
-                            logger.info("VIP {}dy={} vs {}", vips, dy, params.maxExpandDy);
-                        }
+                    } else if (areVips) {
+                        logger.info("VIP {}dy={} vs {}", vips, dy, params.maxExpandDy);
                     }
                 }
-            } else {
-                if (areVips) {
-                    logger.info("{}No box intersection", vips);
-                }
+            } else if (areVips) {
+                logger.info("{}No box intersection", vips);
             }
         }
     }

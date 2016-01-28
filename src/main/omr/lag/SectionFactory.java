@@ -400,10 +400,11 @@ public class SectionFactory
                     continueSection(prevSection, run);
                 } else {
                     // Create a new section, linked by a junction
-                    Section sct = createSection(col, run);
-                    nextActives.add(sct);
+                    Section newSection = createSection(col, run);
+                    nextActives.add(newSection);
 
-                    ///prevSection.addTarget(sct);
+                    //                    prevSection.addTarget(newSection);
+                    //                    newSection.addSource(prevSection);
                 }
 
                 break;
@@ -414,9 +415,11 @@ public class SectionFactory
                 Section newSection = createSection(col, run);
                 nextActives.add(newSection);
 
-                for (Section section : overlappingSections) {
-                    ///section.addTarget(newSection);
-                }
+            //
+            //                for (Section section : overlappingSections) {
+            //                    section.addTarget(newSection);
+            //                    newSection.addSource(section);
+            //                }
             }
         }
 

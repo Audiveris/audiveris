@@ -35,10 +35,6 @@ import omr.score.ui.BookPdfOutput;
 
 import omr.script.ExportTask;
 
-import omr.ui.selection.LocationEvent;
-import omr.ui.selection.PixelEvent;
-import omr.ui.selection.SelectionService;
-
 import omr.sheet.ui.BinarizationBoard;
 import omr.sheet.ui.PictureView;
 import omr.sheet.ui.PixelBoard;
@@ -55,6 +51,9 @@ import omr.step.ui.StepMonitoring;
 
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
+import omr.ui.selection.LocationEvent;
+import omr.ui.selection.PixelEvent;
+import omr.ui.selection.SelectionService;
 import omr.ui.util.ItemRenderer;
 import omr.ui.util.WeakItemRenderer;
 
@@ -234,6 +233,228 @@ public class BasicSheet
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------------//
+    // getSheetFileName //
+    //------------------//
+    public static String getSheetFileName (int number)
+    {
+        return Sheet.INTERNALS_RADIX + number + ".xml";
+    }
+
+    //------------------//
+    // getFilamentIndex //
+    //------------------//
+    @Override
+    public FilamentIndex getFilamentIndex ()
+    {
+        if (filamentIndex == null) {
+            filamentIndex = new FilamentIndex(this);
+        }
+
+        return filamentIndex;
+    }
+
+    //----------------//
+    // getFilterParam //
+    //----------------//
+    @Override
+    public LiveParam<FilterDescriptor> getFilterParam ()
+    {
+        return stub.getFilterParam();
+    }
+
+    //---------------//
+    // getGlyphIndex //
+    //---------------//
+    @Override
+    public GlyphIndex getGlyphIndex ()
+    {
+        if (glyphIndex == null) {
+            glyphIndex = new GlyphIndex();
+        }
+
+        return glyphIndex;
+    }
+
+    //-----------//
+    // getHeight //
+    //-----------//
+    @Override
+    public int getHeight ()
+    {
+        return picture.getHeight();
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    @Override
+    public String getId ()
+    {
+        if (stub != null) {
+            return stub.getId();
+        }
+
+        return null;
+    }
+
+    //---------------//
+    // getInterIndex //
+    //---------------//
+    @Override
+    public InterIndex getInterIndex ()
+    {
+        return interIndex;
+    }
+
+    //--------------//
+    // getInterline //
+    //--------------//
+    @Override
+    public int getInterline ()
+    {
+        return scale.getInterline();
+    }
+
+    //---------------//
+    // getLagManager //
+    //---------------//
+    @Override
+    public LagManager getLagManager ()
+    {
+        return lagManager;
+    }
+
+    //------------------//
+    // getLanguageParam //
+    //------------------//
+    @Override
+    public LiveParam<String> getLanguageParam ()
+    {
+        return stub.getLanguageParam();
+    }
+
+    //-------------//
+    // getLastPage //
+    //-------------//
+    /**
+     * Report the last page of the sheet, if any.
+     *
+     * @return the last page or null
+     */
+    public Page getLastPage ()
+    {
+        if (pages.isEmpty()) {
+            return null;
+        }
+
+        return pages.get(pages.size() - 1);
+    }
+
+    //---------------//
+    // getLatestStep //
+    //---------------//
+    @Override
+    public Step getLatestStep ()
+    {
+        return stub.getLatestStep();
+    }
+
+    //--------------------//
+    // getLocationService //
+    //--------------------//
+    @Override
+    public SelectionService getLocationService ()
+    {
+        return locationService;
+    }
+
+    //--------------//
+    // getLogPrefix //
+    //--------------//
+    @Override
+    public String getLogPrefix ()
+    {
+        return stub.getLogPrefix();
+    }
+
+    //-----------//
+    // getNumber //
+    //-----------//
+    @Override
+    public int getNumber ()
+    {
+        return stub.getNumber();
+    }
+
+    //----------//
+    // getPages //
+    //----------//
+    @Override
+    public List<Page> getPages ()
+    {
+        return pages;
+    }
+
+    //------------//
+    // getPicture //
+    //------------//
+    @Override
+    public Picture getPicture ()
+    {
+        if (picture == null) {
+            BufferedImage img = book.loadSheetImage(getNumber());
+
+            try {
+                setImage(img);
+            } catch (StepException ex) {
+                logger.warn("Error setting image id " + getNumber(), ex);
+            }
+        }
+
+        return picture;
+    }
+
+    //----------//
+    // getScale //
+    //----------//
+    @Override
+    public Scale getScale ()
+    {
+        return scale;
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    @Override
+    public final void setImage (BufferedImage image)
+            throws StepException
+    {
+        try {
+            picture = new Picture(this, image, locationService);
+
+            if (OMR.getGui() != null) {
+                createPictureView();
+            }
+
+            done(Step.LOAD);
+        } catch (ImageFormatException ex) {
+            String msg = "Unsupported image format in file " + getBook().getInputPath() + "\n"
+                         + ex.getMessage();
+
+            if (OMR.getGui() != null) {
+                OMR.getGui().displayWarning(msg);
+            } else {
+                logger.warn(msg);
+            }
+
+            throw new StepException(ex);
+        } catch (Throwable ex) {
+            logger.warn("Error loading image", ex);
+        }
+    }
+
     //-----------------//
     // addItemRenderer //
     //-----------------//
@@ -380,84 +601,6 @@ public class BasicSheet
         StubsController.getInstance().markTab(this, Color.BLACK);
     }
 
-    //-----------//
-    // swapSheet //
-    //-----------//
-    @Override
-    public void swapSheet ()
-    {
-        stub.swapSheet();
-    }
-
-    //--------//
-    // doStep //
-    //--------//
-    /**
-     * Perform a step, including intermediate ones if any, with online progress monitor
-     * (method to be called from synchronized {@link #ensureStep(omr.step.Step)} only).
-     * If any step throws {@link StepException} the processing is stopped.
-     *
-     * @param target  the targeted step
-     * @param systems the impacted systems (null for all of them)
-     * @return true if OK
-     */
-    boolean doStep (Step target,
-                    Collection<SystemInfo> systems)
-    {
-        if (isDone(target)) {
-            return true;
-        }
-
-        stub.setModified(true);
-
-        SortedSet<Step> mySteps = new TreeSet();
-
-        // Add all needed steps
-        for (Step step : EnumSet.range(Step.first(), target)) {
-            if (!isDone(step)) {
-                mySteps.add(step);
-            }
-        }
-
-        logger.debug("Sheet#{} scheduling {}", stub.getNumber(), mySteps);
-
-        StopWatch watch = new StopWatch("doStep " + target);
-
-        try {
-            StepMonitoring.notifyStart();
-
-            for (Step step : mySteps) {
-                watch.start(step.name());
-                StepMonitoring.notifyMsg(getLogPrefix() + step);
-                doOneStep(step, systems);
-            }
-
-            if (OMR.getGui() != null) {
-                // Update sheet tab color
-                StubsController.getInstance().markTab(this, Color.BLACK);
-            }
-
-            return true; // Normal exit
-        } catch (StepException se) {
-            logger.info("{}Processing stopped. {}", getLogPrefix(), se.getMessage());
-        } catch (ProcessingCancellationException pce) {
-            throw pce;
-        } catch (Exception ex) {
-            logger.warn(getLogPrefix() + "Error in performing " + mySteps + " " + ex, ex);
-        } finally {
-            // Make sure we reset the sheet "current" step, always.
-            setCurrentStep(null);
-
-            StepMonitoring.notifyStop();
-
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
-
-        return false;
-    }
-
     //-----------------//
     // dumpSystemInfos //
     //-----------------//
@@ -588,197 +731,6 @@ public class BasicSheet
         return errorsEditor;
     }
 
-    //------------------//
-    // getFilamentIndex //
-    //------------------//
-    @Override
-    public FilamentIndex getFilamentIndex ()
-    {
-        if (filamentIndex == null) {
-            filamentIndex = new FilamentIndex(this);
-        }
-
-        return filamentIndex;
-    }
-
-    //----------------//
-    // getFilterParam //
-    //----------------//
-    @Override
-    public LiveParam<FilterDescriptor> getFilterParam ()
-    {
-        return stub.getFilterParam();
-    }
-
-    //---------------//
-    // getGlyphIndex //
-    //---------------//
-    @Override
-    public GlyphIndex getGlyphIndex ()
-    {
-        if (glyphIndex == null) {
-            glyphIndex = new GlyphIndex();
-        }
-
-        return glyphIndex;
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    @Override
-    public int getHeight ()
-    {
-        return picture.getHeight();
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    @Override
-    public String getId ()
-    {
-        if (stub != null) {
-            return stub.getId();
-        }
-
-        return null;
-    }
-
-    //---------------//
-    // getInterIndex //
-    //---------------//
-    @Override
-    public InterIndex getInterIndex ()
-    {
-        return interIndex;
-    }
-
-    //------------------//
-    // getSheetFileName //
-    //------------------//
-    public static String getSheetFileName (int number)
-    {
-        return Sheet.INTERNALS_RADIX + number + ".xml";
-    }
-
-    //--------------//
-    // getInterline //
-    //--------------//
-    @Override
-    public int getInterline ()
-    {
-        return scale.getInterline();
-    }
-
-    //---------------//
-    // getLagManager //
-    //---------------//
-    @Override
-    public LagManager getLagManager ()
-    {
-        return lagManager;
-    }
-
-    //------------------//
-    // getLanguageParam //
-    //------------------//
-    @Override
-    public LiveParam<String> getLanguageParam ()
-    {
-        return stub.getLanguageParam();
-    }
-
-    //-------------//
-    // getLastPage //
-    //-------------//
-    /**
-     * Report the last page of the sheet, if any.
-     *
-     * @return the last page or null
-     */
-    public Page getLastPage ()
-    {
-        if (pages.isEmpty()) {
-            return null;
-        }
-
-        return pages.get(pages.size() - 1);
-    }
-
-    //---------------//
-    // getLatestStep //
-    //---------------//
-    @Override
-    public Step getLatestStep ()
-    {
-        return stub.getLatestStep();
-    }
-
-    //--------------------//
-    // getLocationService //
-    //--------------------//
-    @Override
-    public SelectionService getLocationService ()
-    {
-        return locationService;
-    }
-
-    //--------------//
-    // getLogPrefix //
-    //--------------//
-    @Override
-    public String getLogPrefix ()
-    {
-        return stub.getLogPrefix();
-    }
-
-    //-----------//
-    // getNumber //
-    //-----------//
-    @Override
-    public int getNumber ()
-    {
-        return stub.getNumber();
-    }
-
-    //----------//
-    // getPages //
-    //----------//
-    @Override
-    public List<Page> getPages ()
-    {
-        return pages;
-    }
-
-    //------------//
-    // getPicture //
-    //------------//
-    @Override
-    public Picture getPicture ()
-    {
-        if (picture == null) {
-            BufferedImage img = book.loadSheetImage(getNumber());
-
-            try {
-                setImage(img);
-            } catch (StepException ex) {
-                logger.warn("Error setting image id " + getNumber(), ex);
-            }
-        }
-
-        return picture;
-    }
-
-    //----------//
-    // getScale //
-    //----------//
-    @Override
-    public Scale getScale ()
-    {
-        return scale;
-    }
-
     //----------//
     // getSheet //
     //----------//
@@ -795,6 +747,38 @@ public class BasicSheet
     public SheetDiff getSheetDelta ()
     {
         return sheetDelta;
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the provided XML stream to allocate the corresponding sheet.
+     *
+     * @param in the input stream that contains the sheet in XML format.
+     *           The stream is not closed by this method
+     *
+     * @return the allocated sheet.
+     * @exception JAXBException raised when unmarshalling goes wrong
+     */
+    public static Sheet unmarshal (InputStream in)
+            throws JAXBException
+    {
+        //        StopWatch watch = new StopWatch("Sheet unmarshal");
+        //        watch.start("createUnmarshaller");
+        Unmarshaller um = getJaxbContext().createUnmarshaller();
+
+        ///um.setListener(new Jaxb.UnmarshalLogger());
+        //        watch.start("unmarshal");
+        BasicSheet sheet = (BasicSheet) um.unmarshal(in);
+        //
+        //        if (constants.printWatch.isSet()) {
+        //            watch.print();
+        //        }
+        //
+        logger.debug("Sheet unmarshalled");
+
+        return sheet;
     }
 
     //---------//
@@ -835,91 +819,6 @@ public class BasicSheet
         }
 
         return symbolsController;
-    }
-
-    //----------//
-    // setImage //
-    //----------//
-    @Override
-    public final void setImage (BufferedImage image)
-            throws StepException
-    {
-        try {
-            picture = new Picture(this, image, locationService);
-
-            if (OMR.getGui() != null) {
-                createPictureView();
-            }
-
-            done(Step.LOAD);
-        } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " + getBook().getInputPath() + "\n"
-                         + ex.getMessage();
-
-            if (OMR.getGui() != null) {
-                OMR.getGui().displayWarning(msg);
-            } else {
-                logger.warn(msg);
-            }
-
-            throw new StepException(ex);
-        } catch (Throwable ex) {
-            logger.warn("Error loading image", ex);
-        }
-    }
-
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal the provided XML stream to allocate the corresponding sheet.
-     *
-     * @param in the input stream that contains the sheet in XML format.
-     *           The stream is not closed by this method
-     *
-     * @return the allocated sheet.
-     * @exception JAXBException raised when unmarshalling goes wrong
-     */
-    public static Sheet unmarshal (InputStream in)
-            throws JAXBException
-    {
-        StopWatch watch = new StopWatch("Sheet unmarshal");
-
-        Unmarshaller um = getJaxbContext().createUnmarshaller();
-
-        ///um.setListener(new Jaxb.UnmarshalLogger());
-        BasicSheet sheet = (BasicSheet) um.unmarshal(in);
-
-        //
-        //        book.initTransients(null, projectPath, fileSystem);
-        //
-        //        for (SheetStub stub : book.getValidStubs()) {
-        //            watch.start("stub#" + stub.getNumber());
-        //
-        //            //                BasicStub basicStub = (BasicStub) stub;
-        //            //
-        //            //                ///basicSheet.initTransients(book);
-        //            //                if (stub.hasPicture()) {
-        //            //                    Picture picture = stub.getPicture();
-        //            //                    picture.initTransients(stub);
-        //            //
-        //            //                    if (OMR.getGui() != null) {
-        //            //                        if (picture.hasTable(Picture.TableKey.BINARY)) {
-        //            //                            basicSheet.createPictureView(SheetTab.BINARY_TAB);
-        //            //                            StubsController.getInstance().markTab(stub, Color.BLACK);
-        //            //                        } else {
-        //            //                            basicSheet.createPictureView(SheetTab.PICTURE_TAB);
-        //            //                        }
-        //            //                    }
-        //            //                }
-        //        }
-        if (constants.printWatch.isSet()) {
-            watch.print();
-        }
-
-        logger.debug("Sheet unmarshalled");
-
-        return sheet;
     }
 
     //------------------//
@@ -1025,6 +924,7 @@ public class BasicSheet
         // Actually write the PDF
         try {
             Path parent = sheetPrintPath.getParent();
+
             if (!Files.exists(parent)) {
                 Files.createDirectories(parent);
             }
@@ -1151,6 +1051,15 @@ public class BasicSheet
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    //-----------//
+    // swapSheet //
+    //-----------//
+    @Override
+    public void swapSheet ()
+    {
+        stub.swapSheet();
+    }
+
     //----------//
     // toString //
     //----------//
@@ -1167,6 +1076,88 @@ public class BasicSheet
     public boolean transcribe ()
     {
         return ensureStep(Step.last());
+    }
+
+    //--------//
+    // doStep //
+    //--------//
+    /**
+     * Perform a step, including intermediate ones if any, with online progress monitor
+     * (method to be called from synchronized {@link #ensureStep(omr.step.Step)} only).
+     * If any step throws {@link StepException} the processing is stopped.
+     *
+     * @param target  the targeted step
+     * @param systems the impacted systems (null for all of them)
+     * @return true if OK
+     */
+    boolean doStep (Step target,
+                    Collection<SystemInfo> systems)
+    {
+        if (isDone(target)) {
+            return true;
+        }
+
+        stub.setModified(true);
+
+        SortedSet<Step> mySteps = new TreeSet();
+
+        // Add all needed steps
+        for (Step step : EnumSet.range(Step.first(), target)) {
+            if (!isDone(step)) {
+                mySteps.add(step);
+            }
+        }
+
+        logger.debug("Sheet#{} scheduling {}", stub.getNumber(), mySteps);
+
+        StopWatch watch = new StopWatch("doStep " + target);
+
+        try {
+            StepMonitoring.notifyStart();
+
+            for (Step step : mySteps) {
+                watch.start(step.name());
+                StepMonitoring.notifyMsg(getLogPrefix() + step);
+                doOneStep(step, systems);
+            }
+
+            if (OMR.getGui() != null) {
+                // Update sheet tab color
+                StubsController.getInstance().markTab(this, Color.BLACK);
+            }
+
+            return true; // Normal exit
+        } catch (StepException se) {
+            logger.info("{}Processing stopped. {}", getLogPrefix(), se.getMessage());
+        } catch (ProcessingCancellationException pce) {
+            throw pce;
+        } catch (Exception ex) {
+            logger.warn(getLogPrefix() + "Error in performing " + mySteps + " " + ex, ex);
+        } finally {
+            // Make sure we reset the sheet "current" step, always.
+            setCurrentStep(null);
+
+            StepMonitoring.notifyStop();
+
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+
+        return false;
+    }
+
+    //------//
+    // done //
+    //------//
+    /**
+     * Remember that the provided step has been completed on the sheet.
+     *
+     * @param step the provided step
+     */
+    private final void done (Step step)
+    {
+        ((BasicStub) stub).done(step);
     }
 
     //----------------//
@@ -1237,19 +1228,6 @@ public class BasicSheet
         }
     }
 
-    //------//
-    // done //
-    //------//
-    /**
-     * Remember that the provided step has been completed on the sheet.
-     *
-     * @param step the provided step
-     */
-    private final void done (Step step)
-    {
-        ((BasicStub) stub).done(step);
-    }
-
     //---------------------//
     // getSheetPathSansExt //
     //---------------------//
@@ -1280,25 +1258,6 @@ public class BasicSheet
         }
     }
 
-    //    //----------//
-    //    // addError //
-    //    //----------//
-    //    /**
-    //     * Register an error in the sheet ErrorsWindow
-    //     *
-    //     * @param container the immediate container for the error location
-    //     * @param glyph     the related glyph if any
-    //     * @param text      the error message
-    //     */
-    //    public void addError (OldSystemNode container,
-    //                          Glyph glyph,
-    //                          String text)
-    //    {
-    //        if (OMR.getGui() != null) {
-    //            getErrorsEditor().addError(container, glyph, text);
-    //        }
-    //    }
-    //
     //----------------//
     // initTransients //
     //----------------//
@@ -1393,14 +1352,6 @@ public class BasicSheet
 
         // Fall-through!
         case GRID:
-            //
-            //            if (nest != null) {
-            ////                if (OMR.getGui() != null) {
-            ////                    nest.cutServices(locationService);
-            ////                }
-            ////
-            //                createGlyphIndex();
-            //            }
             skew = null;
 
             lagManager.setLag(Lags.HLAG, null);
@@ -1409,10 +1360,6 @@ public class BasicSheet
             staffManager.reset();
             symbolsController = null;
             symbolsEditor = null;
-
-        // Fall-through!
-        case LEDGERS:
-            lagManager.setLag(Lags.LEDGER_LAG, null);
 
         // Fall-through!
         case BEAMS:
@@ -1460,3 +1407,22 @@ public class BasicSheet
                 "Should we print out the stop watch for steps?");
     }
 }
+//    //----------//
+//    // addError //
+//    //----------//
+//    /**
+//     * Register an error in the sheet ErrorsWindow
+//     *
+//     * @param container the immediate container for the error location
+//     * @param glyph     the related glyph if any
+//     * @param text      the error message
+//     */
+//    public void addError (OldSystemNode container,
+//                          Glyph glyph,
+//                          String text)
+//    {
+//        if (OMR.getGui() != null) {
+//            getErrorsEditor().addError(container, glyph, text);
+//        }
+//    }
+//

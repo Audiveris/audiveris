@@ -17,12 +17,11 @@ import omr.run.RunTable;
 
 import omr.ui.selection.SelectionService;
 
-import omr.util.Predicate;
+import omr.util.EntityIndex;
 
 import java.awt.Rectangle;
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
-import omr.util.EntityIndex;
 
 /**
  * Interface {@code Lag} defines a graph of {@link Section} instances (sets of
@@ -87,12 +86,11 @@ public interface Lag
     Set<Section> intersectedSections (Rectangle rect);
 
     /**
-     * Purge the lag of all sections for which provided predicate holds.
+     * Remove the provided sections from the lag.
      *
-     * @param predicate means to specify whether a section applies for purge
-     * @return the list of sections purged in this call
+     * @param sections the collection of sections to remove
      */
-    List<Section> purgeSections (Predicate<Section> predicate);
+    void removeSections (Collection<Section> sections);
 
     /**
      * Use the provided runs table as the lag underlying table.

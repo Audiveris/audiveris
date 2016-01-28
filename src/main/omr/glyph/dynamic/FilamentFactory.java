@@ -686,7 +686,7 @@ public class FilamentFactory<F extends Filament>
                     new Object[]{scale.getInterline()});
 
             if (section != null) {
-                fil.addSection(section, true);
+                fil.addSection(section);
                 setProcessed(section);
 
                 //
@@ -773,7 +773,7 @@ public class FilamentFactory<F extends Filament>
 
             logger.debug("expandFilaments: {}/{}", sections.size(), source.size());
 
-            Collections.sort(sections, Section.posComparator);
+            Collections.sort(sections, Section.byPosition);
 
             // We allocate one glyph per candidate section
             // (simply to be able to reuse the canMerge() method !!!!!!!)
@@ -963,7 +963,7 @@ public class FilamentFactory<F extends Filament>
                             : (line.xAtYExt(centroid.y) - centroid.x);
 
                     if (Math.abs(gap) <= params.maxPosGap) {
-                        fil.addSection(section, true);
+                        fil.addSection(section);
                         setProcessed(section);
                     }
                 }

@@ -301,7 +301,7 @@ public class StemScaler
         {
             new HistogramPlotter(sheet, "horizontal black", fore, histo, peak, null, maxFore).plot(
                     new Point(80, 80),
-                    "Lengths for stem",
+                    "Stem thickness",
                     spreadRatio,
                     quorumRatio);
         }

@@ -133,7 +133,7 @@ public class GridBuilder
             watch.start("completeLines");
             linesRetriever.completeLines();
 
-            /** Companion in charge of target grid */
+            /** Companion in charge of target grid. */
             // Define the destination grid, if so desired
             if (constants.buildDewarpedTarget.isSet()) {
                 watch.start("targetBuilder");

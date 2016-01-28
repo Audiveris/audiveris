@@ -18,7 +18,7 @@
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>603</x>
-      <y>477</y>
+      <y>495</y>
       <w>179</w>
       <h>44</h>
     </coordinates>
@@ -29,7 +29,7 @@
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>558</x>
-      <y>486</y>
+      <y>504</y>
       <w>72</w>
       <h>108</h>
     </coordinates>
@@ -47,7 +47,7 @@ print()</panel_attributes>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>765</x>
-      <y>486</y>
+      <y>504</y>
       <w>108</w>
       <h>153</h>
     </coordinates>
@@ -67,40 +67,43 @@ print()</panel_attributes>
   <element>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
-      <x>729</x>
-      <y>117</y>
-      <w>180</w>
-      <h>135</h>
+      <x>756</x>
+      <y>171</y>
+      <w>126</w>
+      <h>180</h>
     </coordinates>
     <panel_attributes>&lt;&lt;singleton&gt;&gt;
-*SheetsController*
+*StubsController*
 bg=#ffaaff
 --
-sheetService
-assemblies
+stubPane
+stubService
 --
-getCurrentSheet()
+getCurrentStub()
 getCurrentBook()
-subscribe(EventSubscriber)
-unsubscribe(EventSubscriber)</panel_attributes>
+subscribe()
+unsubscribe()
+addAssembly()
+selectAssembly()
+removeAssembly()</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>810</x>
-      <y>243</y>
+      <y>342</y>
       <w>27</w>
-      <h>261</h>
+      <h>180</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;270.0;10.0;10.0</additional_attributes>
+    <additional_attributes>10.0;180.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>567</x>
-      <y>414</y>
+      <y>432</y>
       <w>44</w>
       <h>89</h>
     </coordinates>
@@ -140,18 +143,19 @@ main()</panel_attributes>
     <coordinates>
       <x>252</x>
       <y>396</y>
-      <w>117</w>
-      <h>108</h>
+      <w>99</w>
+      <h>126</h>
     </coordinates>
     <panel_attributes>*CLI*
 bg=#88ff88
 --
 parameters
 --
+getXXXAs()
 getXXXFolder()
 getOptions()
-getFilesTasks()
-getScriptsTasks()</panel_attributes>
+getCliTasks()
+isBatchMode()</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -261,12 +265,13 @@ removeBook()</panel_attributes>
       <x>549</x>
       <y>396</y>
       <w>99</w>
-      <h>45</h>
+      <h>63</h>
     </coordinates>
     <panel_attributes>*BookManager*
 bg=#55ffff
 --
-history
+inputHistory
+projectHistory
 </panel_attributes>
     <additional_attributes/>
   </element>

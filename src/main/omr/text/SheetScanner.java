@@ -169,13 +169,13 @@ public class SheetScanner
                     new ScrollImageView(
                             sheet,
                             new ImageView(img)
-                            {
-                                @Override
-                                protected void renderItems (Graphics2D g)
-                                {
-                                    sheet.renderItems(g); // Apply registered sheet renderers
-                                }
-                            }),
+                    {
+                        @Override
+                        protected void renderItems (Graphics2D g)
+                        {
+                            sheet.renderItems(g); // Apply registered sheet renderers
+                        }
+                    }),
                     new BoardsPane(new PixelBoard(sheet)));
         }
 
@@ -326,17 +326,7 @@ public class SheetScanner
         private void eraseBorderGlyphs (List<Glyph> glyphs,
                                         List<Area> cores)
         {
-            ///final int minWeight = sheet.getScale().toPixels(constants.minGlyphWeight);
             for (Glyph glyph : glyphs) {
-                //                // Check weight
-                //                if (glyph.getWeight() < minWeight) {
-                //                    for (Section section : glyph.getMembers()) {
-                //                        g.fill(section.getPolygon());
-                //                    }
-                //
-                //                    continue;
-                //                }
-
                 // Check position WRT staves cores
                 Rectangle glyphBox = glyph.getBounds();
                 glyphBox.grow(1, 1); // To catch touching glyphs (on top of intersecting ones)

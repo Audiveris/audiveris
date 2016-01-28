@@ -121,6 +121,19 @@ public enum Step
         helper.clearErrors(this, sheet);
     }
 
+    //------------//
+    // isParallel //
+    //------------//
+    /**
+     * Report whether the step can run systems in parallel.
+     *
+     * @return true if potentially parallel
+     */
+    public boolean isParallel ()
+    {
+        return helper instanceof AbstractSystemStep;
+    }
+
     //-----------//
     // displayUI //
     //-----------//

@@ -137,6 +137,18 @@ public class WeakGlyph
         return null;
     }
 
+    @Override
+    public int getIntId ()
+    {
+        final Glyph glyph = get();
+
+        if (glyph != null) {
+            return glyph.getIntId();
+        }
+
+        return 0;
+    }
+
     //----------//
     // hashCode //
     //----------//

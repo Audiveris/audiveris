@@ -55,6 +55,13 @@ public interface Entity
     String getId ();
 
     /**
+     * Report the integer part of ID.
+     *
+     * @return integer ID
+     */
+    int getIntId ();
+
+    /**
      * Assign an ID to this entity
      *
      * @param id the ID to be assigned to the entity

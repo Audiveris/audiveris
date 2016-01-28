@@ -22,7 +22,6 @@ import omr.sheet.Scale;
 import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -64,31 +63,6 @@ public abstract class Compounds
                 return s2.getLength(orientation) - s1.getLength(orientation);
             }
         };
-    }
-
-    //-------------//
-    // compoundsOf //
-    //-------------//
-    /**
-     * Report the set of compound instances that are pointed back by the
-     * provided collection of sections.
-     *
-     * @param sections the provided sections
-     * @return the set of active containing compound instances
-     */
-    public static Set<SectionCompound> compoundsOf (Collection<Section> sections)
-    {
-        Set<SectionCompound> compounds = new LinkedHashSet<SectionCompound>();
-
-        for (Section section : sections) {
-            SectionCompound compound = section.getCompound();
-
-            if (compound != null) {
-                compounds.add(compound);
-            }
-        }
-
-        return compounds;
     }
 
     //----------------//

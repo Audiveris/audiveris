@@ -51,7 +51,7 @@ public class CompoundFactory
         final SectionCompound compound = createInstance(compoundClass, interline);
 
         for (Section section : sections) {
-            compound.addSection(section, false);
+            compound.addSection(section);
         }
 
         return compound;

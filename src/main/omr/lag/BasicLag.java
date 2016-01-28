@@ -18,14 +18,12 @@ import omr.run.RunTable;
 import omr.ui.selection.SelectionService;
 
 import omr.util.BasicIndex;
-import omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -61,7 +59,7 @@ public class BasicLag
     public BasicLag (String name,
                      Orientation orientation)
     {
-        super(orientation.isVertical() ? "V" : "H");
+        super(Lags.LEDGER_LAG.equals(name) ? "L" : (orientation.isVertical() ? "V" : "H"));
         this.name = name;
         this.orientation = orientation;
 
@@ -69,16 +67,6 @@ public class BasicLag
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // getRunAt //
-    //----------//
-    @Override
-    public final Run getRunAt (int x,
-                               int y)
-    {
-        return runTable.getRunAt(x, y);
-    }
-
     //-------------//
     // addRunTable //
     //-------------//
@@ -109,6 +97,16 @@ public class BasicLag
     public Orientation getOrientation ()
     {
         return orientation;
+    }
+
+    //----------//
+    // getRunAt //
+    //----------//
+    @Override
+    public final Run getRunAt (int x,
+                               int y)
+    {
+        return runTable.getRunAt(x, y);
     }
 
     //---------------//
@@ -151,39 +149,31 @@ public class BasicLag
         return orientation.isVertical();
     }
 
-    //---------------//
-    // purgeSections //
-    //---------------//
+    //----------------//
+    // removeSections //
+    //----------------//
     @Override
-    public List<Section> purgeSections (Predicate<Section> predicate)
+    public void removeSections (Collection<Section> sections)
     {
-        // List of sections to be purged (to avoid concurrent modifications)
-        List<Section> purges = new ArrayList<Section>(2000);
-
-        // Iterate on all sections
-        for (Section section : getEntities()) {
-            // Check predicate on the current section
-            if (predicate.check(section)) {
-                logger.debug("Purging {}", section);
-                purges.add(section);
-            }
-        }
-
-        // Now, actually perform the needed removals
-        for (Section section : purges) {
-            ///section.delete();
+        for (Section section : sections) {
             remove(section);
 
-            // Remove the related runs from the underlying runsTable
+            // Remove the related runs from the underlying runTable
             int pos = section.getFirstPos();
 
             for (Run run : section.getRuns()) {
                 runTable.removeRun(pos++, run);
             }
         }
+    }
 
-        // Return the sections purged
-        return purges;
+    //--------//
+    // remove //
+    //--------//
+    @Override
+    public void remove (Section section)
+    {
+        super.remove(section); // Removal from index
     }
 
     //-------//
@@ -200,12 +190,12 @@ public class BasicLag
     // setRuns //
     //---------//
     @Override
-    public void setRuns (RunTable runsTable)
+    public void setRuns (RunTable runTable)
     {
         if (this.runTable != null) {
             throw new RuntimeException("Attempt to overwrite lag runs table");
         } else {
-            this.runTable = runsTable;
+            this.runTable = runTable;
         }
     }
 
@@ -226,234 +216,3 @@ public class BasicLag
         return sb.toString();
     }
 }
-//
-//    //~ Inner Classes ------------------------------------------------------------------------------
-//    //----------------//
-//    // SectionService //
-//    //----------------//
-//    private class SectionService
-//            extends EntityService<Section>
-//    {
-//        //~ Constructors ---------------------------------------------------------------------------
-//
-//        public SectionService ()
-//        {
-//            super(BasicLag.this, BasicLag.eventsAllowed);
-//        }
-//
-//        //---------//
-//        // onEvent //
-//        //---------//
-//        @Override
-//        public void onEvent (UserEvent event)
-//        {
-//            try {
-//                // Ignore RELEASING
-//                if (event.movement == MouseMovement.RELEASING) {
-//                    return;
-//                }
-//
-//                super.onEvent(event); // Location, Id
-//
-//                if (event instanceof SectionIdEvent) {
-//                    // Section ID => Section
-//                    handleEvent((SectionIdEvent) event);
-//                } else if (event instanceof SectionEvent) {
-//                    // Section => contour & SectionSet update + Glyph?
-//                    handleEvent((SectionEvent) event);
-//                }
-//            } catch (Exception ex) {
-//                logger.warn(getClass().getName() + " onEvent error", ex);
-//            }
-//        }
-//
-//        //-------------//
-//        // handleEvent //
-//        //-------------//
-//        /**
-//         * Interest in lasso SheetLocation => Section(s)
-//         *
-//         * @param sheetLocation
-//         */
-//        private void handleEvent (LocationEvent locationEvent)
-//        {
-//            logger.debug("Lag. sheetLocation:{}", locationEvent);
-//
-//            Rectangle rect = locationEvent.getData();
-//
-//            if (rect == null) {
-//                return;
-//            }
-//
-//            SelectionHint hint = locationEvent.hint;
-//            MouseMovement movement = locationEvent.movement;
-//
-//            if (!hint.isLocation() && !hint.isContext()) {
-//                return;
-//            }
-//
-//            // Section selection mode?
-//            if (ViewParameters.getInstance().isSectionMode()) {
-//                final Collection<Section> allSections = index.getEntities();
-//                final Set<Section> sectionsFound;
-//
-//                if ((rect.width > 0) && (rect.height > 0)) {
-//                    // Non-degenerated rectangle, look for enclosed sections
-//                    sectionsFound = Entities.containedEntities(allSections, rect);
-//                } else {
-//                    // Just a point, look for containing section(s)
-//                    sectionsFound = Entities.containingEntities(allSections, rect.getLocation());
-//                }
-//
-//                // Publish whole section list
-//                publish(
-//                        new EntityListEvent<Section>(
-//                                this,
-//                                hint,
-//                                movement,
-//                                new ArrayList<Section>(sectionsFound)));
-//            }
-//        }
-//
-//        //-------------//
-//        // handleEvent //
-//        //-------------//
-//        /**
-//         * Interest in SectionId => Section
-//         *
-//         * @param idEvent
-//         */
-//        private void handleEvent (SectionIdEvent idEvent)
-//        {
-//            Integer id = idEvent.getData();
-//
-//            if ((id == null) || (id == 0)) {
-//                return;
-//            }
-//
-//            SelectionHint hint = idEvent.hint;
-//            MouseMovement movement = idEvent.movement;
-//
-//            // Always publish a null Run
-//            publish(new RunEvent(this, hint, movement, null));
-//
-//            // Lookup a lag section with proper ID
-//            publish(new SectionEvent(this, hint, movement, getEntity(id)));
-//        }
-//
-//        //-------------//
-//        // handleEvent //
-//        //-------------//
-//        /**
-//         * Interest in Section => section contour + update SectionSet
-//         *
-//         * @param sectionEvent
-//         */
-//        private void handleEvent (SectionEvent sectionEvent)
-//        {
-//            SelectionHint hint = sectionEvent.hint;
-//            MouseMovement movement = sectionEvent.movement;
-//            Section section = sectionEvent.getData();
-//
-//            if (hint == SelectionHint.SECTION_INIT) {
-//                // Publish section contour
-//                publish(
-//                        new LocationEvent(
-//                                this,
-//                                hint,
-//                                null,
-//                                (section != null) ? section.getBounds() : null));
-//            }
-//
-//            // In section-selection mode, update section set
-//            if (ViewParameters.getInstance().isSectionMode()) {
-//                // Section mode: Update section set
-//                List<Section> sections = getSelectedEntityList();
-//
-//                if (sections == null) {
-//                    sections = new ArrayList<Section>();
-//                }
-//
-//                if (hint == SelectionHint.LOCATION_ADD) {
-//                    if (section != null) {
-//                        if (movement == MouseMovement.PRESSING) {
-//                            // Adding to (or Removing from) the set of sections
-//                            if (sections.contains(section)) {
-//                                sections.remove(section);
-//                            } else {
-//                                sections.add(section);
-//                            }
-//                        } else if (movement == MouseMovement.DRAGGING) {
-//                            // Always adding to the set of sections
-//                            sections.add(section);
-//                        }
-//                    }
-//                } else {
-//                    // Overwriting the set of sections
-//                    if (section != null) {
-//                        // Make a one-section set
-//                        sections.clear();
-//                        sections.add(section);
-//                    } else if (!sections.isEmpty()) {
-//                        // Empty the section set
-//                        sections.clear();
-//                    }
-//                }
-//
-//                logger.debug("{}. Publish section set {}", getName(), sections);
-//                publish(new EntityListEvent<Section>(this, hint, movement, sections));
-//            }
-//        }
-//    }
-//}
-//
-//    //-------------//
-//    // cutServices //
-//    //-------------//
-//    @Override
-//    public void cutServices ()
-//    {
-//        if (runTable != null) {
-//            RunService runService = runTable.getRunService();
-//
-//            if (runService != null) {
-//                runService.cutLocationService(locationService);
-//            }
-//        }
-//
-//        for (Class<?> eventClass : locEventsRead) {
-//            locationService.unsubscribe(eventClass, this);
-//        }
-//
-//        for (Class<?> eventClass : sctEventsRead) {
-//            entityService.unsubscribe(eventClass, this);
-//        }
-//    }
-//
-//
-//    //-------------//
-//    // setServices //
-//    //-------------//
-//    @Override
-//    public void setServices (SelectionService locationService)
-//    {
-//        this.locationService = locationService;
-//
-//        if (runTable != null) {
-//            RunService runService = runTable.getRunService();
-//
-//            if (runService == null) {
-//                runTable.setRunService(runService = new RunService(getName() + "-runs", runTable));
-//            }
-//
-//            runService.setLocationService(locationService);
-//        }
-//
-//        for (Class<?> eventClass : locEventsRead) {
-//            locationService.subscribeStrongly(eventClass, entityService);
-//        }
-//
-//        for (Class<?> eventClass : sctEventsRead) {
-//            entityService.subscribeStrongly(eventClass, entityService);
-//        }
-//    }

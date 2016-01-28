@@ -45,6 +45,9 @@ public abstract class AbstractEntity
     /** (Debug) flag this as VIP. */
     protected boolean vip;
 
+    /** BINGO: Temporary fix. */
+    private int intId = -1;
+
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // dumpOf //
@@ -64,6 +67,19 @@ public abstract class AbstractEntity
         return id;
     }
 
+    //----------//
+    // getIntId //
+    //----------//
+    @Override
+    public int getIntId ()
+    {
+        if (intId == -1) {
+            intId = IdUtil.getIntValue(id);
+        }
+
+        return intId;
+    }
+
     //-------//
     // isVip //
     //-------//
@@ -80,6 +96,7 @@ public abstract class AbstractEntity
     public void setId (String id)
     {
         this.id = id;
+        intId = -1;
     }
 
     //--------//

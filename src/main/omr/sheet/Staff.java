@@ -1392,24 +1392,29 @@ public class Staff
     //---------------//
     /**
      * Replace the transient StaffFilament instances by persistent StaffLine instances.
+     *
+     * @param sheet the sheet to process
+     * @return the original StaffFilaments
      */
-    public void simplifyLines (Sheet sheet)
+    public List<LineInfo> simplifyLines (Sheet sheet)
     {
         if (getFirstLine() instanceof StaffLine) {
             logger.error("Staff lines have already been simplified!");
 
-            return;
+            return null;
         }
 
-        final GlyphIndex nest = sheet.getGlyphIndex();
+        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
         List<LineInfo> copies = new ArrayList<LineInfo>(lines);
         lines.clear();
 
         for (LineInfo line : copies) {
             StaffFilament staffFilament = (StaffFilament) line;
-            StaffLine staffLine = staffFilament.toStaffLine(nest);
+            StaffLine staffLine = staffFilament.toStaffLine(glyphIndex);
             lines.add(staffLine);
         }
+
+        return copies;
     }
 
     //----------//

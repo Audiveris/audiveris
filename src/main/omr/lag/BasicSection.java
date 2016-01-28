@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.glyph.dynamic.SectionCompound;
-
 import omr.math.Barycenter;
 import omr.math.BasicLine;
 import omr.math.GeoUtil;
@@ -98,19 +96,6 @@ public class BasicSection
 
     /** Absolute contour points */
     private Polygon polygon;
-
-    /**
-     * Glyph this section belongs to.
-     * This reference is kept in sync with the containing GlyphLag activeMap.
-     * Don't directly assign a value to 'glyph', use the setCompound() method instead.
-     */
-    private SectionCompound compound;
-
-    /** To flag sections too thick for staff line (null = don't know) */
-    private Boolean fat = null;
-
-    /** Flag to remember processing has been done */
-    private boolean processed = false;
 
     /** Approximating oriented line for this section */
     protected Line orientedLine;
@@ -536,15 +521,6 @@ public class BasicSection
     }
 
     //-------------//
-    // getCompound //
-    //-------------//
-    @Override
-    public SectionCompound getCompound ()
-    {
-        return compound;
-    }
-
-    //-------------//
     // getFirstPos //
     //-------------//
     @Override
@@ -849,15 +825,6 @@ public class BasicSection
         return intersects(that.getPolygon());
     }
 
-    //------------------//
-    // isCompoundMember //
-    //------------------//
-    @Override
-    public boolean isCompoundMember ()
-    {
-        return compound != null;
-    }
-
     //------------//
     // isVertical //
     //------------//
@@ -909,16 +876,6 @@ public class BasicSection
             // Default section color
             Color color = isVertical() ? Colors.GRID_VERTICAL : Colors.GRID_HORIZONTAL;
 
-            //
-            //                // Use color defined for section glyph shape, if any
-            //                if (glyph != null) {
-            //                    Shape shape = glyph.getShape();
-            //
-            //                    if (shape != null) {
-            //                        color = shape.getColor();
-            //                    }
-            //                }
-            //
             if (color != oldColor) {
                 g.setColor(color);
             }
@@ -965,32 +922,6 @@ public class BasicSection
         } else {
             return false;
         }
-    }
-
-    //----------//
-    // resetFat //
-    //----------//
-    @Override
-    public void resetFat ()
-    {
-        this.fat = null;
-    }
-
-    //-------------//
-    // setCompound //
-    //-------------//
-    @Override
-    public void setCompound (SectionCompound compound)
-    {
-        if (isVip()) {
-            logger.info("VIP {} linkedTo {}", this, compound);
-
-            if (compound != null) {
-                compound.setVip(true);
-            }
-        }
-
-        this.compound = compound;
     }
 
     //-------------//
@@ -1118,49 +1049,6 @@ public class BasicSection
         return poly;
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        ///sb.append(isVertical() ? "V" : "H");
-        //        sb.append(" fPos=")
-        //          .append(firstPos)
-        //          .append(" ");
-        //        sb.append(getFirstRun());
-        //
-        //        if (getRunCount() > 1) {
-        //            sb.append("-")
-        //              .append(getRunCount())
-        //              .append("-")
-        //              .append(getLastRun());
-        //        }
-        //
-        //        sb.append(" Wt=")
-        //          .append(weight);
-        //        sb.append(" lv=")
-        //          .append(getLevel());
-        //        sb.append(" fW=")
-        //          .append(foreWeight);
-        if (compound != null) {
-            sb.append(" compound#").append(compound.getId());
-
-            //
-            //            if (glyph.getShape() != null) {
-            //                sb.append(":").append(glyph.getShape());
-            //            }
-        }
-
-        //        if (system != null) {
-        //            sb.append(" syst:")
-        //              .append(system.getId());
-        //        }
-        return sb.toString();
-    }
-
     //-----------------//
     // invalidateCache //
     //-----------------//
@@ -1176,7 +1064,7 @@ public class BasicSection
     // addRun //
     //--------//
     /**
-     * Compute incrementally the cached parameters
+     * Compute incrementally the cached parameters.
      */
     private void addRun (Run run)
     {
@@ -1293,69 +1181,6 @@ public class BasicSection
         }
     }
 }
-//
-//    //---------------------//
-//    // getOppositeSections //
-//    //---------------------//
-//    @Override
-//    public Set<Section> getOppositeSections ()
-//    {
-//        if (oppositeSections != null) {
-//            return Collections.unmodifiableSet(oppositeSections);
-//        } else {
-//            return Collections.emptySet();
-//        }
-//    }
-//
-//    //------------------//
-//    // getLastAdjacency //
-//    //------------------//
-//    @Override
-//    public double getLastAdjacency ()
-//    {
-//        Run run = getLastRun();
-//        int runStart = run.getStart();
-//        int runStop = run.getStop();
-//        int adjacency = 0;
-//
-//        for (Section target : getTargets()) {
-//            Run firstRun = target.getFirstRun();
-//            int start = Math.max(runStart, firstRun.getStart());
-//            int stop = Math.min(runStop, firstRun.getStop());
-//
-//            if (stop >= start) {
-//                adjacency += (stop - start + 1);
-//            }
-//        }
-//
-//        return (double) adjacency / (double) run.getLength();
-//    }
-//
-//
-//    //-------------------//
-//    // getFirstAdjacency //
-//    //-------------------//
-//    @Override
-//    public double getFirstAdjacency ()
-//    {
-//        Run run = getFirstRun();
-//        int runStart = run.getStart();
-//        int runStop = run.getStop();
-//        int adjacency = 0;
-//
-//        for (Section source : getSources()) {
-//            Run lastRun = source.getLastRun();
-//            int start = Math.max(runStart, lastRun.getStart());
-//            int stop = Math.min(runStop, lastRun.getStop());
-//
-//            if (stop >= start) {
-//                adjacency += (stop - start + 1);
-//            }
-//        }
-//
-//        return (double) adjacency / (double) run.getLength();
-//    }
-//
 //
 //    //---------------//
 //    // inNextSibling //

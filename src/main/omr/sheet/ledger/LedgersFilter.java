@@ -16,15 +16,18 @@ import omr.OMR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.dynamic.FilamentBoard;
+
 import omr.lag.BasicLag;
 import omr.lag.JunctionShiftPolicy;
 import omr.lag.Lag;
 import omr.lag.Lags;
 import omr.lag.Section;
 import omr.lag.SectionFactory;
+import omr.lag.SectionService;
 
-import omr.run.Orientation;
 import static omr.run.Orientation.HORIZONTAL;
+
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -47,6 +50,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -97,56 +101,58 @@ public class LedgersFilter
     //---------//
     /**
      * Start from NO_STAFF image and build the runs and sections that could make ledgers.
+     * <p>
+     * We build a horizontal RunTable with all runs from NO_STAFF source, except the ones too close
+     * to any staff interior, since they could not be part of any ledger.
+     * <p>
+     * Then runs are packed into rectangular sections (no shift between runs of same section).
      *
-     * @return the map: system -> relevant sections for ledgers
+     * @return the map: system -> relevant sections for ledgers in system
      */
     public Map<SystemInfo, List<Section>> process ()
     {
         final Scale scale = sheet.getScale();
         final int minDistanceFromStaff = scale.toPixels(
                 constants.minDistanceFromStaff);
-        final int minRunLength = scale.toPixels(constants.minRunLength);
         final StaffManager staffManager = sheet.getStaffManager();
-        final RunTableFactory.Filter filter = new RunTableFactory.LengthFilter(minRunLength)
+
+        // Filter to keep only the runs which stand outside of staves cores.
+        final RunTableFactory.Filter filter = new RunTableFactory.Filter()
         {
             @Override
             public boolean check (int x,
                                   int y,
                                   int length)
             {
-                // Check run length
-                if (super.check(x, y, length)) {
-                    // Check also that the run stands outside of staves cores.
-                    Point center = new Point(x + (length / 2), y);
-                    Staff staff = staffManager.getClosestStaff(center);
+                Point center = new Point(x + (length / 2), y);
+                Staff staff = staffManager.getClosestStaff(center);
 
-                    return staff.distanceTo(center) >= minDistanceFromStaff;
-                }
-
-                return false;
+                return staff.distanceTo(center) >= minDistanceFromStaff;
             }
         };
 
         final RunTableFactory runFactory = new RunTableFactory(HORIZONTAL, filter);
         final ByteProcessor buffer = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
         final RunTable ledgerTable = runFactory.createTable(buffer);
-        final Lag lag = new BasicLag(Lags.LEDGER_LAG, Orientation.HORIZONTAL);
-        final int maxShift = scale.toPixels(constants.maxRunShift);
-        final SectionFactory sectionsBuilder = new SectionFactory(
-                lag,
-                new JunctionShiftPolicy(maxShift));
+        final Lag lag = new BasicLag(Lags.LEDGER_LAG, HORIZONTAL);
 
-        List<Section> sections = sectionsBuilder.createSections(ledgerTable, null, true);
+        // We accept no shift between runs of the same section!
+        final SectionFactory sectionsBuilder = new SectionFactory(lag, new JunctionShiftPolicy(0));
+        sectionsBuilder.createSections(ledgerTable, null, true);
         setVipSections(lag);
 
-        sheet.getLagManager().setLag(Lags.LEDGER_LAG, lag);
-
+        // Display a view on this lag?
         if ((OMR.getGui() != null) && constants.displayLedgers.isSet()) {
-            // Display a view on this lag
+            lag.setEntityService(new SectionService(lag, sheet.getLocationService()));
             new LagController(sheet, lag, SheetTab.LEDGER_TAB).refresh();
+
+            // Filament board
+            sheet.getAssembly().addBoard(
+                    SheetTab.LEDGER_TAB,
+                    new FilamentBoard(sheet.getFilamentIndex().getEntityService(), true));
         }
 
-        return dispatchLedgerSections(sections);
+        return dispatchLedgerSections(lag.getEntities());
     }
 
     //------------------------//
@@ -155,7 +161,7 @@ public class LedgersFilter
     /**
      * Dispatch the various horizontal ledger sections among systems.
      */
-    private Map<SystemInfo, List<Section>> dispatchLedgerSections (List<Section> sections)
+    private Map<SystemInfo, List<Section>> dispatchLedgerSections (Collection<Section> sections)
     {
         Map<SystemInfo, List<Section>> sectionMap = new TreeMap<SystemInfo, List<Section>>();
         List<SystemInfo> relevants = new ArrayList<SystemInfo>();
@@ -214,14 +220,6 @@ public class LedgersFilter
         private final Scale.Fraction minDistanceFromStaff = new Scale.Fraction(
                 0.25,
                 "Minimum vertical distance from nearest staff");
-
-        private final Scale.Fraction maxRunShift = new Scale.Fraction(
-                0, //0.05,
-                "Max shift between two runs of ledger sections");
-
-        private final Scale.Fraction minRunLength = new Scale.Fraction(
-                0.15,
-                "Minimum length for a ledger run (not section)");
 
         private final Constant.String ledgerVipSections = new Constant.String(
                 "",

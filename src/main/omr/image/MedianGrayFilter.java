@@ -33,8 +33,7 @@ public class MedianGrayFilter
     /**
      * Creates a new MedianGrayFilter object.
      *
-     * @param radius desired radius for the filter (1 for 3x3 filter, 2 for 5x5,
-     *               etc)
+     * @param radius desired radius for the filter (1 for 3x3 filter, 2 for 5x5, etc)
      */
     public MedianGrayFilter (int radius)
     {

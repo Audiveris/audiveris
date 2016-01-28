@@ -430,8 +430,8 @@ public class SigPainter
         setColor(ledger);
         g.setStroke(
                 new BasicStroke(
-                        (float) ledger.getGlyph().getMeanThickness(Orientation.HORIZONTAL),
-                        BasicStroke.CAP_ROUND,
+                        (float) Math.rint(ledger.getGlyph().getMeanThickness(Orientation.HORIZONTAL)),
+                        BasicStroke.CAP_BUTT,
                         BasicStroke.JOIN_ROUND));
         ledger.getGlyph().renderLine(g);
     }

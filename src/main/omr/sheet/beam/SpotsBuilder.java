@@ -122,10 +122,13 @@ public class SpotsBuilder
             List<Glyph> spots = buildSpots(buffer, null, beam, null);
 
             // Dispatch spots per system(s)
+            watch.start("dispatchSheetSpots");
             dispatchSheetSpots(spots);
 
             // Display on all spot glyphs?
             if ((OMR.getGui() != null) && constants.displayBeamSpots.isSet()) {
+                watch.start("spotsController");
+
                 SpotsController spotController = new SpotsController(sheet, spotLag);
                 spotController.refresh();
             }
@@ -155,6 +158,7 @@ public class SpotsBuilder
                                    double beam,
                                    String cueId)
     {
+        final StopWatch watch = new StopWatch("buildSpots");
         final Lag spotLag;
 
         // Erase Header for non-cue buffers
@@ -175,6 +179,7 @@ public class SpotsBuilder
 
         final int[] seOffset = {0, 0};
         StructureElement se = new StructureElement(0, 1, radius, seOffset);
+        watch.start("close");
         new MorphoProcessor(se).close(buffer);
 
         // For visual check
@@ -201,22 +206,29 @@ public class SpotsBuilder
 
             // Save a specific binarized version for HEADS step
             saveHeadRuns((ByteProcessor) buffer.duplicate());
-        } else {
-            if (constants.keepCueSpots.isSet()) {
-                BufferedImage img = buffer.getBufferedImage();
-                ImageUtil.saveOnDisk(img, sheet.getId() + "." + cueId + ".spot");
-            }
+        } else if (constants.keepCueSpots.isSet()) {
+            BufferedImage img = buffer.getBufferedImage();
+            ImageUtil.saveOnDisk(img, sheet.getId() + "." + cueId + ".spot");
         }
 
         // Binarize the spots via a global filter (no illumination problem)
+        watch.start("binarize");
         buffer.threshold(constants.beamBinarizationThreshold.getValue());
 
         // Runs
+        watch.start("createTable");
+
         RunTableFactory runFactory = new RunTableFactory(SPOT_ORIENTATION);
         RunTable spotTable = runFactory.createTable(buffer);
 
         // Glyphs
+        watch.start("buildGlyphs");
+
         List<Glyph> glyphs = GlyphFactory.buildGlyphs(spotTable, offset);
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
 
         return glyphs;
     }
@@ -298,24 +310,40 @@ public class SpotsBuilder
      */
     private ByteProcessor getBuffer ()
     {
-        final Picture picture = sheet.getPicture();
-        final int stemWidth = sheet.getScale().getMaxStem();
+        StopWatch watch = new StopWatch("SpotsBuilder.getBuffer");
 
-        ///return  picture.getSource(Picture.SourceKey.GAUSSIAN);
-        ByteProcessor buffer = picture.getSource(Picture.SourceKey.NO_STAFF);
+        try {
+            final Picture picture = sheet.getPicture();
+            final int stemWidth = sheet.getScale().getMaxStem();
 
-        // Remove stem runs (could be much more efficient if performed on buffer directly)
-        RunTableFactory factory = new RunTableFactory(
-                Orientation.HORIZONTAL,
-                new RunTableFactory.LengthFilter(stemWidth));
-        RunTable table = factory.createTable(buffer);
-        buffer = table.getBuffer();
+            ///return  picture.getSource(Picture.SourceKey.GAUSSIAN);
+            watch.start("getSource NO_STAFF");
 
-        // Apply median filter
-        buffer = picture.medianFiltered(buffer);
+            ByteProcessor buffer = picture.getSource(Picture.SourceKey.NO_STAFF);
 
-        // Apply gaussian filter
-        return picture.gaussianFiltered(buffer);
+            // Remove stem runs (could be much more efficient if performed on buffer directly)
+            watch.start("createtable");
+
+            RunTableFactory factory = new RunTableFactory(
+                    Orientation.HORIZONTAL,
+                    new RunTableFactory.LengthFilter(stemWidth));
+            RunTable table = factory.createTable(buffer);
+            watch.start("table to buffer");
+            buffer = table.getBuffer();
+
+            // Apply median filter
+            watch.start("median");
+            buffer = picture.medianFiltered(buffer);
+
+            // Apply gaussian filter
+            watch.start("gaussian");
+
+            return picture.gaussianFiltered(buffer);
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
     }
 
     //--------------//

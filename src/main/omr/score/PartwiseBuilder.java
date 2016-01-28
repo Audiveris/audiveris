@@ -48,6 +48,7 @@ import omr.sig.inter.AlterInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.CodaInter;
 import omr.sig.inter.DynamicsInter;
+import omr.sig.inter.EndingInter;
 import omr.sig.inter.FermataInter;
 import omr.sig.inter.HeadChordInter;
 import omr.sig.inter.Inter;
@@ -67,6 +68,7 @@ import omr.sig.relation.ChordPedalRelation;
 import omr.sig.relation.ChordSentenceRelation;
 import omr.sig.relation.ChordSyllableRelation;
 import omr.sig.relation.ChordWedgeRelation;
+import omr.sig.relation.EndingSentenceRelation;
 import omr.sig.relation.FermataChordRelation;
 import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.Relation;
@@ -102,6 +104,7 @@ import com.audiveris.proxymusic.Dynamics;
 import com.audiveris.proxymusic.Empty;
 import com.audiveris.proxymusic.EmptyPrintStyleAlign;
 import com.audiveris.proxymusic.Encoding;
+import com.audiveris.proxymusic.Ending;
 import com.audiveris.proxymusic.Fermata;
 import com.audiveris.proxymusic.FontStyle;
 import com.audiveris.proxymusic.FontWeight;
@@ -144,6 +147,7 @@ import com.audiveris.proxymusic.StaffLayout;
 import com.audiveris.proxymusic.StartStop;
 import com.audiveris.proxymusic.StartStopChangeContinue;
 import com.audiveris.proxymusic.StartStopContinue;
+import com.audiveris.proxymusic.StartStopDiscontinue;
 import com.audiveris.proxymusic.Stem;
 import com.audiveris.proxymusic.StemValue;
 import com.audiveris.proxymusic.Supports;
@@ -171,6 +175,7 @@ import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -309,6 +314,75 @@ public class PartwiseBuilder
     {
     }
 
+    //----------//
+    // areEqual //
+    //----------//
+    private static boolean areEqual (Time left,
+                                     Time right)
+    {
+        return (getNum(left).equals(getNum(right))) && (getDen(left).equals(getDen(right)));
+    }
+
+    //----------//
+    // areEqual //
+    //----------//
+    private static boolean areEqual (Key left,
+                                     Key right)
+    {
+        return left.getFifths().equals(right.getFifths());
+    }
+
+    //----------//
+    // areEqual //
+    //----------//
+    /**
+     * Check whether the two Clef instances are equal.
+     *
+     * @param left  one clef
+     * @param right another clef
+     * @return true if equal
+     */
+    private static boolean areEqual (Clef left,
+                                     Clef right)
+    {
+        return Objects.equals(left.getNumber(), right.getNumber())
+               && Objects.equals(left.getSign(), right.getSign())
+               && Objects.equals(left.getLine(), right.getLine())
+               && Objects.equals(left.getClefOctaveChange(), right.getClefOctaveChange());
+    }
+
+    //--------//
+    // getDen // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
+    //--------//
+    private static java.lang.String getDen (Time time)
+    {
+        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
+            if (elem.getName().getLocalPart().equals("beat-type")) {
+                return elem.getValue();
+            }
+        }
+
+        logger.error("No denominator found in {}", time);
+
+        return "";
+    }
+
+    //--------//
+    // getNum // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
+    //--------//
+    private static java.lang.String getNum (Time time)
+    {
+        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
+            if (elem.getName().getLocalPart().equals("beats")) {
+                return elem.getValue();
+            }
+        }
+
+        logger.error("No numerator found in {}", time);
+
+        return "";
+    }
+
     //---------//
     // addSlur //
     //---------//
@@ -354,43 +428,6 @@ public class PartwiseBuilder
         }
 
         getNotations().getTiedOrSlurOrTuplet().add(pmSlur);
-    }
-
-    //----------//
-    // areEqual //
-    //----------//
-    private static boolean areEqual (Time left,
-                                     Time right)
-    {
-        return (getNum(left).equals(getNum(right))) && (getDen(left).equals(getDen(right)));
-    }
-
-    //----------//
-    // areEqual //
-    //----------//
-    private static boolean areEqual (Key left,
-                                     Key right)
-    {
-        return left.getFifths().equals(right.getFifths());
-    }
-
-    //----------//
-    // areEqual //
-    //----------//
-    /**
-     * Check whether the two Clef instances are equal.
-     *
-     * @param left  one clef
-     * @param right another clef
-     * @return true if equal
-     */
-    private static boolean areEqual (Clef left,
-                                     Clef right)
-    {
-        return Objects.equals(left.getNumber(), right.getNumber())
-               && Objects.equals(left.getSign(), right.getSign())
-               && Objects.equals(left.getLine(), right.getLine())
-               && Objects.equals(left.getClefOctaveChange(), right.getClefOctaveChange());
     }
 
     //-----------//
@@ -618,22 +655,6 @@ public class PartwiseBuilder
         return null; // No key found
     }
 
-    //--------//
-    // getDen // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
-    //--------//
-    private static java.lang.String getDen (Time time)
-    {
-        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
-            if (elem.getName().getLocalPart().equals("beat-type")) {
-                return elem.getValue();
-            }
-        }
-
-        logger.error("No denominator found in {}", time);
-
-        return "";
-    }
-
     //----------//
     // getGrace //
     //----------//
@@ -678,22 +699,6 @@ public class PartwiseBuilder
         }
 
         return current.pmNotations;
-    }
-
-    //--------//
-    // getNum // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
-    //--------//
-    private static java.lang.String getNum (Time time)
-    {
-        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
-            if (elem.getName().getLocalPart().equals("beats")) {
-                return elem.getValue();
-            }
-        }
-
-        logger.error("No numerator found in {}", time);
-
-        return "";
     }
 
     //--------------//
@@ -899,13 +904,16 @@ public class PartwiseBuilder
             final MeasureStack stack = current.measure.getStack();
             final PartBarline.Style style = partBarline.getStyle();
             final List<FermataInter> fermatas = partBarline.getFermatas(); // Top down list
+            final EndingInter ending = (location == RightLeftMiddle.MIDDLE) ? null
+                    : partBarline.getEnding(
+                            (location == RightLeftMiddle.LEFT) ? LEFT : RIGHT);
 
             if ((partBarline == current.measure.getLeftBarline())
                 || (location == RightLeftMiddle.MIDDLE)
                 || ((location == RightLeftMiddle.RIGHT)
-                    && (stack.isRepeat(RIGHT) || !fermatas.isEmpty()
+                    && (stack.isRepeat(RIGHT) || !fermatas.isEmpty() || (ending != null)
                         || (style != PartBarline.Style.REGULAR)))
-                || ((location == RightLeftMiddle.LEFT) && stack.isRepeat(LEFT))) {
+                || ((location == RightLeftMiddle.LEFT) && (stack.isRepeat(LEFT) || (ending != null)))) {
                 try {
                     logger.debug("Visiting {} on {}", partBarline, location);
 
@@ -926,12 +934,39 @@ public class PartwiseBuilder
                             pmBarline.setRepeat(repeat);
                         }
 
-                        // Ending ???
+                        // (Left side of) Ending?
+                        if (ending != null) {
+                            Ending pmEnding = factory.createEnding();
+                            Point2D pt = ending.getLine().getP1();
+
+                            Staff staff = current.measure.getPart().getFirstStaff();
+                            pmEnding.setDefaultY(yOf(pt, staff));
+
+                            Line2D leg = ending.getLeftLeg();
+                            pmEnding.setEndLength(toTenths(leg.getY2() - pt.getY()));
+
+                            pmEnding.setType(StartStopDiscontinue.START);
+
+                            //TODO: number/text?
+                            SIGraph sig = ending.getSig();
+
+                            for (Relation r : sig.getRelations(
+                                    ending,
+                                    EndingSentenceRelation.class)) {
+                                SentenceInter sentence = (SentenceInter) sig.getOppositeInter(
+                                        ending,
+                                        r);
+                                pmEnding.setValue(sentence.getValue());
+                            }
+
+                            pmBarline.setEnding(pmEnding);
+                        }
+
                         break;
 
                     case MIDDLE:
 
-                        // Ending ???
+                        // Ending? TODO: Can an ending start or stop at a middle barline????
                         break;
 
                     case RIGHT:
@@ -967,7 +1002,20 @@ public class PartwiseBuilder
                             }
                         }
 
-                    // Ending ???
+                        // (Right side of) Ending?
+                        if (ending != null) {
+                            Ending pmEnding = factory.createEnding();
+                            Point2D pt = ending.getLine().getP2();
+
+                            Staff staff = current.measure.getPart().getFirstStaff();
+                            pmEnding.setDefaultY(yOf(pt, staff));
+
+                            pmEnding.setType(
+                                    (ending.getRightLeg() != null) ? StartStopDiscontinue.STOP
+                                            : StartStopDiscontinue.DISCONTINUE);
+                            //TODO: number?
+                            pmBarline.setEnding(pmEnding);
+                        }
                     }
 
                     // Everything is now OK
@@ -2760,6 +2808,128 @@ public class PartwiseBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Integer pageHorizontalMargin = new Constant.Integer(
+                "tenths",
+                80,
+                "Page horizontal margin");
+
+        private final Constant.Integer pageVerticalMargin = new Constant.Integer(
+                "tenths",
+                80,
+                "Page vertical margin");
+
+        private final Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
+                false,
+                "Should we avoid brackets for all tuplets");
+    }
+
+    //---------------//
+    // ClefIterators //
+    //---------------//
+    /**
+     * Class to handle the insertion of clefs in a measure.
+     * If needed, this class could be reused for some attribute other than clef,
+     * such as key signature or time signature (if these attributes can indeed
+     * occur in the middle of a measure. To be checked).
+     */
+    private class ClefIterators
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Containing measure. */
+        private final Measure measure;
+
+        /** Staves of the containing part. */
+        private final List<Staff> staves;
+
+        /** Per staff, iterator on Clefs sorted by abscissa. */
+        private final Map<Staff, ListIterator<ClefInter>> iters;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ClefIterators (Measure measure)
+        {
+            this.measure = measure;
+
+            staves = measure.getPart().getStaves();
+
+            // Temporary map: staff -> staff's clefs
+            Map<Staff, List<ClefInter>> map = new HashMap<Staff, List<ClefInter>>();
+
+            for (ClefInter clef : measure.getClefs()) {
+                Staff staff = clef.getStaff();
+                List<ClefInter> list = map.get(staff);
+
+                if (list == null) {
+                    map.put(staff, list = new ArrayList<ClefInter>());
+                }
+
+                list.add(clef);
+            }
+
+            // Populate iterators
+            iters = new HashMap<Staff, ListIterator<ClefInter>>();
+
+            for (Map.Entry<Staff, List<ClefInter>> entry : map.entrySet()) {
+                List<ClefInter> list = entry.getValue();
+                Collections.sort(list, Inter.byCenterAbscissa); // not needed? (already sorted)
+                iters.put(entry.getKey(), list.listIterator());
+            }
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Push as far as possible the relevant clefs iterators, according to the
+         * current abscissa offset.
+         *
+         * @param xOffset       the abscissa offset of chord to be exported, if any
+         * @param specificStaff a specific staff, or null for all staves within current part
+         */
+        public void push (Integer xOffset,
+                          Staff specificStaff)
+        {
+            if (xOffset != null) {
+                MeasureStack stack = measure.getStack();
+
+                for (Staff staff : staves) {
+                    List<Staff> theStaff = Collections.singletonList(staff);
+
+                    if ((specificStaff == null) || (staff == specificStaff)) {
+                        final ListIterator<ClefInter> it = iters.get(staff);
+
+                        // Check pending clef WRT current abscissa offset
+                        if ((it != null) && it.hasNext()) {
+                            final ClefInter clef = it.next();
+
+                            if (measure.isDummy() /// || measure.isTemporary()
+                                || (stack.getXOffset(clef.getCenter(), theStaff) <= xOffset)) {
+                                // Consume this clef
+                                processClef(clef);
+                            } else {
+                                // Reset iterator
+                                it.previous();
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Flush all iterators
+                for (ListIterator<ClefInter> it : iters.values()) {
+                    while (it.hasNext()) {
+                        processClef(it.next());
+                    }
+                }
+            }
+        }
+    }
+
     //---------//
     // Current //
     //---------//
@@ -2876,128 +3046,6 @@ public class PartwiseBuilder
 
             return sb.toString();
         }
-    }
-
-    //---------------//
-    // ClefIterators //
-    //---------------//
-    /**
-     * Class to handle the insertion of clefs in a measure.
-     * If needed, this class could be reused for some attribute other than clef,
-     * such as key signature or time signature (if these attributes can indeed
-     * occur in the middle of a measure. To be checked).
-     */
-    private class ClefIterators
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Containing measure. */
-        private final Measure measure;
-
-        /** Staves of the containing part. */
-        private final List<Staff> staves;
-
-        /** Per staff, iterator on Clefs sorted by abscissa. */
-        private final Map<Staff, ListIterator<ClefInter>> iters;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public ClefIterators (Measure measure)
-        {
-            this.measure = measure;
-
-            staves = measure.getPart().getStaves();
-
-            // Temporary map: staff -> staff's clefs
-            Map<Staff, List<ClefInter>> map = new HashMap<Staff, List<ClefInter>>();
-
-            for (ClefInter clef : measure.getClefs()) {
-                Staff staff = clef.getStaff();
-                List<ClefInter> list = map.get(staff);
-
-                if (list == null) {
-                    map.put(staff, list = new ArrayList<ClefInter>());
-                }
-
-                list.add(clef);
-            }
-
-            // Populate iterators
-            iters = new HashMap<Staff, ListIterator<ClefInter>>();
-
-            for (Map.Entry<Staff, List<ClefInter>> entry : map.entrySet()) {
-                List<ClefInter> list = entry.getValue();
-                Collections.sort(list, Inter.byCenterAbscissa); // not needed? (already sorted)
-                iters.put(entry.getKey(), list.listIterator());
-            }
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        /**
-         * Push as far as possible the relevant clefs iterators, according to the
-         * current abscissa offset.
-         *
-         * @param xOffset       the abscissa offset of chord to be exported, if any
-         * @param specificStaff a specific staff, or null for all staves within current part
-         */
-        public void push (Integer xOffset,
-                          Staff specificStaff)
-        {
-            if (xOffset != null) {
-                MeasureStack stack = measure.getStack();
-
-                for (Staff staff : staves) {
-                    List<Staff> theStaff = Collections.singletonList(staff);
-
-                    if ((specificStaff == null) || (staff == specificStaff)) {
-                        final ListIterator<ClefInter> it = iters.get(staff);
-
-                        // Check pending clef WRT current abscissa offset
-                        if ((it != null) && it.hasNext()) {
-                            final ClefInter clef = it.next();
-
-                            if (measure.isDummy() /// || measure.isTemporary()
-                                || (stack.getXOffset(clef.getCenter(), theStaff) <= xOffset)) {
-                                // Consume this clef
-                                processClef(clef);
-                            } else {
-                                // Reset iterator
-                                it.previous();
-                            }
-                        }
-                    }
-                }
-            } else {
-                // Flush all iterators
-                for (ListIterator<ClefInter> it : iters.values()) {
-                    while (it.hasNext()) {
-                        processClef(it.next());
-                    }
-                }
-            }
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Integer pageHorizontalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page horizontal margin");
-
-        private final Constant.Integer pageVerticalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page vertical margin");
-
-        private final Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
-                false,
-                "Should we avoid brackets for all tuplets");
     }
 
     //--------------//

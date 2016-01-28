@@ -72,7 +72,7 @@ public class LedgersStep
     /**
      * {@inheritDoc}
      * <p>
-     * Retrieve horizontal sticks for ledger candidates, mapped by related system(s)
+     * Retrieve horizontal sticks for ledger candidates, mapped by related system(s).
      *
      * @return the context (map of sections per system)
      */

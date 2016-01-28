@@ -35,6 +35,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -90,49 +91,12 @@ public class SectionCompound
      * Add a section as a member of this compound.
      *
      * @param section The section to be included
-     * @param linked  While adding a section to this compound members, should we also set the link
-     *                from section back to the compound?
      */
-    public void addSection (Section section,
-                            boolean linked)
+    public void addSection (Section section)
     {
-        if (section == null) {
-            throw new IllegalArgumentException("Cannot add a null section");
-        }
-
-        // Nota: We must include the section in the compound members before
-        // linking back the section to the containing compound.
-        // Otherwise, there is a risk of using the compound bounds (which depend on its member
-        // sections) before the section is actually part of the compound members.
-        // This phenomenum was sometimes observed when using parallelism.
-        //
-        /** First, update compound data */
+        Objects.requireNonNull(section, "Cannot add a null section");
         members.add(section);
-
-        /** Second, update section data, if so desired */
-        if (linked) {
-            section.setCompound(this);
-        }
-
         invalidateCache();
-    }
-
-    //-------------//
-    // addSections //
-    //-------------//
-    /**
-     * Add all the sections from the other compound (which is not modified)
-     *
-     * @param other  the other compounds
-     * @param linked true if sections must now point to this compound
-     */
-    public void addSections (SectionCompound other,
-                             boolean linked)
-    {
-        // Update compound info with other sections
-        for (Section section : other.getMembers()) {
-            addSection(section, linked);
-        }
     }
 
     //----------//
@@ -383,19 +347,6 @@ public class SectionCompound
         return bounds.width;
     }
 
-    //-----------------//
-    // linkAllSections //
-    //-----------------//
-    /**
-     * Make all the compound sections point back to this compound.
-     */
-    public void linkAllSections ()
-    {
-        for (Section section : members) {
-            section.setCompound(this);
-        }
-    }
-
     //---------------//
     // removeSection //
     //---------------//
@@ -409,10 +360,6 @@ public class SectionCompound
     public boolean removeSection (Section section,
                                   boolean linked)
     {
-        if (linked) {
-            section.setCompound(null);
-        }
-
         boolean bool = members.remove(section);
         invalidateCache();
 
@@ -458,7 +405,7 @@ public class SectionCompound
     public void stealSections (SectionCompound that)
     {
         for (Section section : that.getMembers()) {
-            addSection(section, true);
+            addSection(section);
         }
 
         that.setPartOf(this);

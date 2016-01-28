@@ -30,6 +30,8 @@ import omr.step.StepException;
 
 import omr.ui.BoardsPane;
 
+import omr.util.StopWatch;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,8 +93,14 @@ public class GridStep
                       Sheet sheet)
             throws StepException
     {
+        StopWatch watch = new StopWatch("GridStep");
+        watch.start("GridBuilder");
         new GridBuilder(sheet).buildInfo();
+
+        watch.start("StaffLineCleaner");
         new StaffLineCleaner(sheet).process();
+
+        ///watch.print();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
