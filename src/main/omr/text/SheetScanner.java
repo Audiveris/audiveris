@@ -23,8 +23,8 @@ import omr.image.ImageUtil;
 import omr.image.ShapeDescriptor;
 import omr.image.Template;
 
+import omr.run.Orientation;
 import static omr.run.Orientation.VERTICAL;
-
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -42,6 +42,7 @@ import omr.sheet.ui.ScrollImageView;
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.Inter;
+import omr.sig.inter.LedgerInter;
 
 import omr.ui.BoardsPane;
 
@@ -53,9 +54,11 @@ import ij.process.ByteProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -310,6 +313,24 @@ public class SheetScanner
             for (final Point p : fores) {
                 g.fillRect(box.x + p.x, box.y + p.y, 1, 1);
             }
+        }
+
+        //-------//
+        // visit //
+        //-------//
+        @Override
+        public void visit (LedgerInter ledger)
+        {
+            super.visit(ledger); // Defaultcleaning by erasing underlying glyph
+
+            // Thicken the ledgerline 1 pixel above & 1 pixel below
+            final Stroke oldStroke = g.getStroke();
+            final Glyph glyph = ledger.getGlyph();
+            float thickness = (float) ledger.getGlyph().getMeanThickness(Orientation.HORIZONTAL);
+            thickness += 2;
+            g.setStroke(new BasicStroke(thickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+            glyph.renderLine(g);
+            g.setStroke(oldStroke);
         }
 
         //-------------------//

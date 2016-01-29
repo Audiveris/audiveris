@@ -312,8 +312,7 @@ public class TextBuilder
             }
         }
 
-        // OK
-        return null;
+        return null; // OK
     }
 
     //---------------//
@@ -569,7 +568,7 @@ public class TextBuilder
         List<TextLine> systemLines = new ArrayList<TextLine>();
 
         // We pick up the words that are contained by system area
-        // Beware: a text located between two systems must be copied to each system!
+        // Beware: a text located between two systems must be deep copied to each system!
         final Area area = system.getArea();
         final Rectangle areaBounds = area.getBounds();
 
@@ -623,29 +622,6 @@ public class TextBuilder
         }
     }
 
-    //-----------------//
-    // retrieveOcrLine //
-    //-----------------//
-    /**
-     * Launch the OCR on the provided glyph, to retrieve the TextLine instance(s)
-     * this glyph represents.
-     *
-     * @param glyph    the glyph to OCR
-     * @param language the probable language
-     * @return a list, not null but perhaps empty, of TextLine instances with absolute coordinates.
-     */
-    public List<TextLine> retrieveOcrLine (Glyph glyph,
-                                           String language)
-    {
-        return getOcr().recognize(
-                sheet.getScale().getInterline(),
-                glyph.getBuffer().getBufferedImage(),
-                glyph.getBounds().getLocation(),
-                language,
-                OCR.LayoutMode.SINGLE_BLOCK,
-                sheet.getId() + "-g" + glyph.getId());
-    }
-
     //------------------//
     // retrieveSections //
     //------------------//
@@ -675,6 +651,31 @@ public class TextBuilder
         }
 
         return set;
+    }
+
+    //-----------//
+    // scanGlyph //
+    //-----------//
+    /**
+     * Launch the OCR on the provided glyph, to retrieve the TextLine instance(s)
+     * this glyph represents.
+     *
+     * @param glyph    the glyph to OCR
+     * @param language the probable language spec
+     * @param sheet    the containing sheet
+     * @return a list, not null but perhaps empty, of TextLine instances with absolute coordinates.
+     */
+    public static List<TextLine> scanGlyph (Glyph glyph,
+                                            String language,
+                                            Sheet sheet)
+    {
+        return getOcr().recognize(
+                sheet.getScale().getInterline(),
+                glyph.getBuffer().getBufferedImage(),
+                glyph.getBounds().getLocation(),
+                language,
+                OCR.LayoutMode.SINGLE_BLOCK,
+                sheet.getId() + "-g" + glyph.getId());
     }
 
     //------------//
@@ -781,7 +782,7 @@ public class TextBuilder
         //            Glyph compound = (glyphs.size() == 1) ? glyphs.get(0)
         //                    : system.registerStandaloneGlyph(nest.buildGlyph(glyphs, false));
         //
-        //            List<TextLine> lines = retrieveOcrLine(compound, language);
+        //            List<TextLine> lines = scanGlyph(compound, language);
         //
         //            if ((lines == null) || (lines.size() != 1)) {
         //                logger.debug("{} No valid replacement for {}", sheet.getLogPrefix(), oldLine);
@@ -1492,9 +1493,9 @@ public class TextBuilder
     /**
      * Separate the provided lines into lyrics lines and standard (non-lyrics) lines.
      *
-     * @param lines     the global population
-     * @param standards the non-lyrics population
-     * @param lyrics    the lyrics population
+     * @param lines     (input) the global population
+     * @param standards (output) the non-lyrics population
+     * @param lyrics    (output) the lyrics population
      */
     private void separatePopulations (Collection<TextLine> lines,
                                       List<TextLine> standards,
@@ -1552,7 +1553,7 @@ public class TextBuilder
         List<TextLine> newStandards = new ArrayList<TextLine>();
 
         for (TextLine line : oldStandards) {
-            final int maxAbscissaGap = getWordGap(line);
+            final int maxAbscissaGap = getWordGap(line); // TODO: should gap depend on font size?
             List<TextWord> words = line.getWords();
             boolean splitting = true;
 
@@ -1623,7 +1624,7 @@ public class TextBuilder
                 "Should we print out the stop watch?");
 
         private final Constant.String abnormalWordRegexp = new Constant.String(
-                "^[\\.°>']$",
+                "^[°>']$",
                 "Regular expression to detect abnormal words");
 
         private final Constant.Double minConfidence = new Constant.Double(

@@ -240,9 +240,8 @@ public class TesseractOrder
      */
     private List<TextLine> getLines ()
     {
-        ResultIterator it = api.GetIterator();
-
-        List<TextLine> lines = new ArrayList<TextLine>(); // All lines built so far
+        final ResultIterator it = api.GetIterator();
+        final List<TextLine> lines = new ArrayList<TextLine>(); // All lines built so far
         TextLine line = null; // The line being built
         TextWord word = null; // The word being built
 
