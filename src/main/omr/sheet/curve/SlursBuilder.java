@@ -20,7 +20,9 @@ import omr.sheet.Scale;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
+
 import static omr.sheet.curve.ArcShape.STAFF_ARC;
+
 import omr.sheet.grid.LineInfo;
 
 import omr.sig.GradeImpacts;
@@ -49,11 +51,13 @@ import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.toRadians;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,6 +67,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 /**
  * Class {@code SlursBuilder} builds all slur curves from a sheet skeleton.

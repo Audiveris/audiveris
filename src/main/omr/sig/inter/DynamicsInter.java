@@ -251,6 +251,18 @@ public class DynamicsInter
         return false;
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(' ').append(shape);
+
+        return sb.toString();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //

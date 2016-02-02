@@ -375,6 +375,7 @@ public class SymbolsFilter
 
                     // Special case for one-char sentences: they are not erased
                     // since they might be isolated one-letter symbols
+                    // TODO: why not 1-char words as well (even within sentence with several words)?
                     if (SentenceInter.class.isInstance(inter)) {
                         SentenceInter sentence = (SentenceInter) inter;
                         String content = sentence.getValue();

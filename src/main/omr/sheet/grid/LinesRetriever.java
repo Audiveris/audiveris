@@ -31,9 +31,7 @@ import omr.math.NaturalSpline;
 import omr.math.Population;
 
 import omr.run.Orientation;
-
 import static omr.run.Orientation.*;
-
 import omr.run.Run;
 import omr.run.RunTable;
 
@@ -53,9 +51,7 @@ import omr.ui.util.UIUtil;
 import omr.util.Dumping;
 import omr.util.Entities;
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.IdUtil;
 import omr.util.Navigable;
 import omr.util.Predicate;
@@ -922,7 +918,7 @@ public class LinesRetriever
     {
         for (Staff staff : staffManager.getStaves()) {
             for (LineInfo line : staff.getLines()) {
-                ((StaffFilament) line).polishCurvature();
+                ((StaffFilament) line).polishCurvature(params.minRadius);
             }
         }
     }
@@ -1166,6 +1162,10 @@ public class LinesRetriever
                 0.25,
                 "Maximum ordinate jitter for staff pattern");
 
+        private final Scale.Fraction minRadius = new Scale.Fraction(
+                12,
+                "Minimum acceptable radius of polished curvature");
+
         // Constants for display
         // ---------------------
         Constant.Boolean displayRuns = new Constant.Boolean(
@@ -1237,6 +1237,9 @@ public class LinesRetriever
         /** Minimum absolute slope to be worth noting */
         final double minSlope;
 
+        /** Minimum polished radius. */
+        final int minRadius;
+
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -1258,6 +1261,7 @@ public class LinesRetriever
             maxEndingDx = scale.toPixels(constants.maxEndingDx);
             patternWidth = scale.toPixels(constants.patternWidth);
             patternJitter = scale.toPixels(constants.patternJitter);
+            minRadius = scale.toPixels(constants.minRadius);
             maxStickerExtension = (int) Math.ceil(
                     scale.toPixelsDouble(constants.maxStickerExtension));
             minSlope = constants.minSlope.getValue();

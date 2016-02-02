@@ -49,6 +49,14 @@ public class FretInter
         this.value = value;
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private FretInter ()
+    {
+        this.value = 0;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     public static FretInter create (Glyph glyph,
                                     Shape shape,

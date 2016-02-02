@@ -17,6 +17,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphIndex;
 import omr.glyph.dynamic.CompoundFactory;
+import omr.glyph.dynamic.CompoundFactory.CompoundConstructor;
 import omr.glyph.dynamic.SectionCompound;
 
 import omr.lag.BasicLag;
@@ -1152,6 +1153,14 @@ public class TextBuilder
 
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
         final int interline = sheet.getInterline();
+        final CompoundConstructor constructor = new CompoundConstructor()
+        {
+            @Override
+            public SectionCompound newInstance ()
+            {
+                return new SectionCompound(interline);
+            }
+        };
 
         for (TextLine line : lines) {
             logger.debug("  mapping {}", line);
@@ -1169,8 +1178,7 @@ public class TextBuilder
                 if (!wordSections.isEmpty()) {
                     SectionCompound compound = CompoundFactory.buildCompound(
                             wordSections,
-                            SectionCompound.class,
-                            interline);
+                            constructor);
                     Glyph wordGlyph = compound.toGlyph(null);
                     glyphIndex.register(wordGlyph);
 

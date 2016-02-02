@@ -50,27 +50,6 @@ public class KeyAlterInter
         super(glyph, shape, grade, staff, pitch, measuredPitch);
     }
 
-    //
-    //    /**
-    //     * Creates a new KeyAlterInter object.
-    //     *
-    //     * @param glyph         underlying glyph
-    //     * @param shape         precise shape
-    //     * @param impacts       assignment details
-    //     * @param staff         the related staff
-    //     * @param pitch         the pitch value WRT staff
-    //     * @param measuredPitch the measured pitch
-    //     */
-    //    public KeyAlterInter (Glyph glyph,
-    //                          Shape shape,
-    //                          GradeImpacts impacts,
-    //                          Staff staff,
-    //                          int pitch,
-    //                          double measuredPitch)
-    //    {
-    //        super(glyph, shape, impacts, staff, pitch, measuredPitch);
-    //    }
-    //
     /**
      * No-arg constructor needed for JAXB.
      */

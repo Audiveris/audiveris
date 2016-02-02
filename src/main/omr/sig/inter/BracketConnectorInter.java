@@ -17,12 +17,15 @@ import omr.sheet.grid.BarConnection;
 
 import omr.sig.GradeImpacts;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Class {@code BracketConnectorInter} represents a vertical connector between two
  * brackets inters across staves.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "bracket-connector")
 public class BracketConnectorInter
         extends AbstractVerticalInter
 {
@@ -42,6 +45,15 @@ public class BracketConnectorInter
     {
         super(null, BRACKET_CONNECTOR, impacts, connection.getMedian(), connection.getWidth());
         this.connection = connection;
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private BracketConnectorInter ()
+    {
+        super(null, null, null, null, 0);
+        this.connection = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------

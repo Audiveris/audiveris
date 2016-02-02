@@ -45,9 +45,9 @@ public class SmallBeamInter
     }
 
     /**
-     * Creates a new {@code SmallBeamInter} object.
+     * No-arg constructor meant for JAXB.
      */
-    public SmallBeamInter ()
+    private SmallBeamInter ()
     {
         super(null, null, null, 0);
     }

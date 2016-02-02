@@ -51,6 +51,9 @@ public class RhythmsStep
                       Sheet sheet)
             throws StepException
     {
+        // Detect cross-system exclusions
+        ///new CrossDetector(sheet).process();
+
         // Process each page of the sheet
         for (Page page : sheet.getPages()) {
             new PageRhythm(page).process();

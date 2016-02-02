@@ -25,6 +25,8 @@ import omr.ui.selection.SelectionService;
 import omr.sheet.ui.SheetAssembly;
 
 import omr.sig.InterIndex;
+import omr.sig.inter.Inter;
+import omr.sig.relation.CrossExclusion;
 
 import omr.step.Step;
 import omr.step.StepException;
@@ -36,6 +38,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -283,6 +286,13 @@ public interface Sheet
      * @return the index for filaments, perhaps null
      */
     FilamentIndex getFilamentIndex ();
+
+    /**
+     * Report the cross-system exclusions.
+     *
+     * @return the map of cross-exclusions
+     */
+    Map<Inter, List<CrossExclusion>> getCrossExclusions ();
 
     // -----------------
     // --- Artifacts ---

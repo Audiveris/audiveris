@@ -60,6 +60,9 @@ public class LedgerInter
         super(glyph, null, Shape.LEDGER, impacts);
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
     private LedgerInter ()
     {
         super(null, null, null, null);

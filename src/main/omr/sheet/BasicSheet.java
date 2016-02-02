@@ -43,6 +43,8 @@ import omr.sheet.ui.SheetTab;
 import omr.sheet.ui.StubsController;
 
 import omr.sig.InterIndex;
+import omr.sig.inter.Inter;
+import omr.sig.relation.CrossExclusion;
 
 import omr.step.ProcessingCancellationException;
 import omr.step.Step;
@@ -79,8 +81,10 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -146,6 +150,11 @@ public class BasicSheet
     /** Corresponding page(s). A single sheet may relate to several pages. */
     @XmlElement(name = "page")
     private final List<Page> pages = new ArrayList<Page>();
+
+    /** Cross-system exclusions. */
+    //TODO: use ConcurrentHashMap?
+    //TODO: handle persistency
+    private final Map<Inter, List<CrossExclusion>> crossExclusions = new HashMap<Inter, List<CrossExclusion>>();
 
     /** Inter index for all systems in this sheet. */
     @XmlElement(name = "inter-index")
@@ -233,197 +242,6 @@ public class BasicSheet
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------------//
-    // getSheetFileName //
-    //------------------//
-    public static String getSheetFileName (int number)
-    {
-        return Sheet.INTERNALS_RADIX + number + ".xml";
-    }
-
-    //------------------//
-    // getFilamentIndex //
-    //------------------//
-    @Override
-    public FilamentIndex getFilamentIndex ()
-    {
-        if (filamentIndex == null) {
-            filamentIndex = new FilamentIndex(this);
-        }
-
-        return filamentIndex;
-    }
-
-    //----------------//
-    // getFilterParam //
-    //----------------//
-    @Override
-    public LiveParam<FilterDescriptor> getFilterParam ()
-    {
-        return stub.getFilterParam();
-    }
-
-    //---------------//
-    // getGlyphIndex //
-    //---------------//
-    @Override
-    public GlyphIndex getGlyphIndex ()
-    {
-        if (glyphIndex == null) {
-            glyphIndex = new GlyphIndex();
-        }
-
-        return glyphIndex;
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    @Override
-    public int getHeight ()
-    {
-        return picture.getHeight();
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    @Override
-    public String getId ()
-    {
-        if (stub != null) {
-            return stub.getId();
-        }
-
-        return null;
-    }
-
-    //---------------//
-    // getInterIndex //
-    //---------------//
-    @Override
-    public InterIndex getInterIndex ()
-    {
-        return interIndex;
-    }
-
-    //--------------//
-    // getInterline //
-    //--------------//
-    @Override
-    public int getInterline ()
-    {
-        return scale.getInterline();
-    }
-
-    //---------------//
-    // getLagManager //
-    //---------------//
-    @Override
-    public LagManager getLagManager ()
-    {
-        return lagManager;
-    }
-
-    //------------------//
-    // getLanguageParam //
-    //------------------//
-    @Override
-    public LiveParam<String> getLanguageParam ()
-    {
-        return stub.getLanguageParam();
-    }
-
-    //-------------//
-    // getLastPage //
-    //-------------//
-    /**
-     * Report the last page of the sheet, if any.
-     *
-     * @return the last page or null
-     */
-    public Page getLastPage ()
-    {
-        if (pages.isEmpty()) {
-            return null;
-        }
-
-        return pages.get(pages.size() - 1);
-    }
-
-    //---------------//
-    // getLatestStep //
-    //---------------//
-    @Override
-    public Step getLatestStep ()
-    {
-        return stub.getLatestStep();
-    }
-
-    //--------------------//
-    // getLocationService //
-    //--------------------//
-    @Override
-    public SelectionService getLocationService ()
-    {
-        return locationService;
-    }
-
-    //--------------//
-    // getLogPrefix //
-    //--------------//
-    @Override
-    public String getLogPrefix ()
-    {
-        return stub.getLogPrefix();
-    }
-
-    //-----------//
-    // getNumber //
-    //-----------//
-    @Override
-    public int getNumber ()
-    {
-        return stub.getNumber();
-    }
-
-    //----------//
-    // getPages //
-    //----------//
-    @Override
-    public List<Page> getPages ()
-    {
-        return pages;
-    }
-
-    //------------//
-    // getPicture //
-    //------------//
-    @Override
-    public Picture getPicture ()
-    {
-        if (picture == null) {
-            BufferedImage img = book.loadSheetImage(getNumber());
-
-            try {
-                setImage(img);
-            } catch (StepException ex) {
-                logger.warn("Error setting image id " + getNumber(), ex);
-            }
-        }
-
-        return picture;
-    }
-
-    //----------//
-    // getScale //
-    //----------//
-    @Override
-    public Scale getScale ()
-    {
-        return scale;
-    }
-
     //----------//
     // setImage //
     //----------//
@@ -713,6 +531,25 @@ public class BasicSheet
         return book;
     }
 
+    //------------------//
+    // getSheetFileName //
+    //------------------//
+    public static String getSheetFileName (int number)
+    {
+        return Sheet.INTERNALS_RADIX + number + ".xml";
+    }
+
+    //--------------------//
+    // getCrossExclusions //
+    //--------------------//
+    /**
+     * @return the crossExclusions
+     */
+    public Map<Inter, List<CrossExclusion>> getCrossExclusions ()
+    {
+        return crossExclusions;
+    }
+
     //----------------//
     // getCurrentStep //
     //----------------//
@@ -729,6 +566,189 @@ public class BasicSheet
     public ErrorsEditor getErrorsEditor ()
     {
         return errorsEditor;
+    }
+
+    //------------------//
+    // getFilamentIndex //
+    //------------------//
+    @Override
+    public FilamentIndex getFilamentIndex ()
+    {
+        if (filamentIndex == null) {
+            filamentIndex = new FilamentIndex(this);
+        }
+
+        return filamentIndex;
+    }
+
+    //----------------//
+    // getFilterParam //
+    //----------------//
+    @Override
+    public LiveParam<FilterDescriptor> getFilterParam ()
+    {
+        return stub.getFilterParam();
+    }
+
+    //---------------//
+    // getGlyphIndex //
+    //---------------//
+    @Override
+    public GlyphIndex getGlyphIndex ()
+    {
+        if (glyphIndex == null) {
+            glyphIndex = new GlyphIndex();
+        }
+
+        return glyphIndex;
+    }
+
+    //-----------//
+    // getHeight //
+    //-----------//
+    @Override
+    public int getHeight ()
+    {
+        return picture.getHeight();
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    @Override
+    public String getId ()
+    {
+        if (stub != null) {
+            return stub.getId();
+        }
+
+        return null;
+    }
+
+    //---------------//
+    // getInterIndex //
+    //---------------//
+    @Override
+    public InterIndex getInterIndex ()
+    {
+        return interIndex;
+    }
+
+    //--------------//
+    // getInterline //
+    //--------------//
+    @Override
+    public int getInterline ()
+    {
+        return scale.getInterline();
+    }
+
+    //---------------//
+    // getLagManager //
+    //---------------//
+    @Override
+    public LagManager getLagManager ()
+    {
+        return lagManager;
+    }
+
+    //------------------//
+    // getLanguageParam //
+    //------------------//
+    @Override
+    public LiveParam<String> getLanguageParam ()
+    {
+        return stub.getLanguageParam();
+    }
+
+    //-------------//
+    // getLastPage //
+    //-------------//
+    /**
+     * Report the last page of the sheet, if any.
+     *
+     * @return the last page or null
+     */
+    public Page getLastPage ()
+    {
+        if (pages.isEmpty()) {
+            return null;
+        }
+
+        return pages.get(pages.size() - 1);
+    }
+
+    //---------------//
+    // getLatestStep //
+    //---------------//
+    @Override
+    public Step getLatestStep ()
+    {
+        return stub.getLatestStep();
+    }
+
+    //--------------------//
+    // getLocationService //
+    //--------------------//
+    @Override
+    public SelectionService getLocationService ()
+    {
+        return locationService;
+    }
+
+    //--------------//
+    // getLogPrefix //
+    //--------------//
+    @Override
+    public String getLogPrefix ()
+    {
+        return stub.getLogPrefix();
+    }
+
+    //-----------//
+    // getNumber //
+    //-----------//
+    @Override
+    public int getNumber ()
+    {
+        return stub.getNumber();
+    }
+
+    //----------//
+    // getPages //
+    //----------//
+    @Override
+    public List<Page> getPages ()
+    {
+        return pages;
+    }
+
+    //------------//
+    // getPicture //
+    //------------//
+    @Override
+    public Picture getPicture ()
+    {
+        if (picture == null) {
+            BufferedImage img = book.loadSheetImage(getNumber());
+
+            try {
+                setImage(img);
+            } catch (StepException ex) {
+                logger.warn("Error setting image id " + getNumber(), ex);
+            }
+        }
+
+        return picture;
+    }
+
+    //----------//
+    // getScale //
+    //----------//
+    @Override
+    public Scale getScale ()
+    {
+        return scale;
     }
 
     //----------//

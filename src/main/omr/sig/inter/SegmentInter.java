@@ -48,6 +48,14 @@ public class SegmentInter
         this.info = info;
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private SegmentInter ()
+    {
+        this.info = null;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getInfo //
