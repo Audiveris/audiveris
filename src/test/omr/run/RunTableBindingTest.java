@@ -14,7 +14,6 @@ package omr.run;
 import static omr.run.Orientation.HORIZONTAL;
 
 import omr.util.BaseTestCase;
-import omr.util.Dumping;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,7 +32,7 @@ import javax.xml.bind.PropertyException;
 import javax.xml.bind.Unmarshaller;
 
 /**
- * Class {@code RunTableBindingTest} tests the (un-)marshaling of RunTable.
+ * Class {@code RunTableBindingTest} tests the (un-)marshalling of RunTable.
  *
  * @author Hervé Bitteur
  */
@@ -70,14 +69,23 @@ public class RunTableBindingTest
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(table, new FileOutputStream(fileTable));
         System.out.println("Marshalled to " + fileTable);
+        System.out.println("===========================================");
         m.marshal(table, System.out);
 
         Unmarshaller um = jaxbContext.createUnmarshaller();
         InputStream is = new FileInputStream(fileTable);
         RunTable newTable = (RunTable) um.unmarshal(is);
+        System.out.println("===========================================");
         System.out.println("Unmarshalled from " + fileTable);
-        new Dumping().dump(newTable);
+
+        table.dumpSequences();
+        System.out.println("table: " + table.dumpOf());
+
         newTable.dumpSequences();
+        System.out.println("newTable: " + newTable.dumpOf());
+
+        assertEquals(table.dumpOf(), newTable.dumpOf());
+        assertEquals(table, newTable);
     }
 
     @Override

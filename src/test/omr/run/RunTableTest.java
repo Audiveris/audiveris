@@ -19,15 +19,13 @@ import omr.util.Predicate;
 
 import ij.process.ByteProcessor;
 
-import org.junit.Assert;
-
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 import java.awt.Dimension;
 import java.awt.Point;
-import java.util.Arrays;
+import omr.run.RunTable.RunSequence;
 
 /**
  *
@@ -60,7 +58,7 @@ public class RunTableTest
         RunTable expResult = instance;
         RunTable result = instance.copy();
 
-        if (!expResult.isIdentical(result)) {
+        if (!expResult.equals(result)) {
             fail("Copy not identical to original");
         }
     }
@@ -77,7 +75,7 @@ public class RunTableTest
         RunTable expResult = createHorizontalInstance();
         RunTable result = instance.copy();
 
-        if (!expResult.isIdentical(result)) {
+        if (!expResult.equals(result)) {
             fail("Copy not identical to original");
         }
     }
@@ -218,11 +216,11 @@ public class RunTableTest
 
         int index = 1;
         RunTable instance = createHorizontalInstance();
-        short[] expResult = new short[]{1, 3, 2};
-        System.out.println("expResult: " + Arrays.toString(expResult));
+        RunSequence expResult = new RunSequence(new short[]{1, 3, 2});
+        System.out.println("expResult: " + expResult);
 
-        short[] result = instance.getSequence(index);
-        Assert.assertArrayEquals(expResult, result);
+        RunSequence result = instance.getSequence(index);
+        assertEquals(expResult, result);
     }
 
     /**
@@ -299,22 +297,22 @@ public class RunTableTest
     }
 
     /**
-     * Test of isIdentical method, of class RunTable.
+     * Test of equals method, of class RunTable.
      */
     @Test
-    public void testIsIdentical ()
+    public void testEquals ()
     {
-        System.out.println("\n+++ isIdentical");
+        System.out.println("\n+++ equals");
 
         RunTable that = createHorizontalInstance();
         RunTable instance = createHorizontalInstance();
         boolean expResult = true;
-        boolean result = instance.isIdentical(that);
+        boolean result = instance.equals(that);
         assertEquals(expResult, result);
 
         that = createVerticalInstance();
         expResult = false;
-        result = instance.isIdentical(that);
+        result = instance.equals(that);
         assertEquals(expResult, result);
     }
 
@@ -413,13 +411,13 @@ public class RunTableTest
         int pos = 3;
         Run run = new Run(4, 1);
         RunTable instance = createHorizontalInstance();
-        short[] seq1 = instance.getSequence(pos);
-        System.out.println("sequence before: " + Arrays.toString(seq1));
+        RunSequence seq1 = instance.getSequence(pos);
+        System.out.println("sequence before: " + seq1);
         System.out.println("table before:" + instance.dumpOf());
         instance.removeRun(pos, run);
 
-        short[] seq2 = instance.getSequence(pos);
-        System.out.println("sequence  after: " + Arrays.toString(seq2));
+        RunSequence seq2 = instance.getSequence(pos);
+        System.out.println("sequence  after: " + seq2);
         System.out.println("table after:" + instance.dumpOf());
     }
 
@@ -432,7 +430,7 @@ public class RunTableTest
         System.out.println("\n+++ setSequence");
 
         int index = 1;
-        short[] seq = new short[]{0, 3, 7};
+        RunSequence seq = new RunSequence(new short[]{0, 3, 7});
         RunTable instance = createHorizontalInstance();
         System.out.println("table before:" + instance.dumpOf());
         instance.setSequence(index, seq);
