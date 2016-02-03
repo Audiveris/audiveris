@@ -35,6 +35,8 @@ import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.util.Comparator;
 
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 /**
  * Interface {@code Inter} defines a possible interpretation.
  * <p>
@@ -58,6 +60,7 @@ import java.util.Comparator;
  *
  * @author Hervé Bitteur
  */
+@XmlJavaTypeAdapter(AbstractInter.Adapter.class)
 public interface Inter
         extends Entity, VisitableInter, AttachmentHolder
 {

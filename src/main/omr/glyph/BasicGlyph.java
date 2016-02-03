@@ -590,9 +590,8 @@ public class BasicGlyph
         //            sb.append(" partOf#").append(getPartOf().getId());
         //        }
         //
-        sb.append(" bounds=[").append(left).append(',').append(top).append(',')
-                .append(runTable.getWidth()).append(',').append(runTable.getHeight()).append(']');
-
+//        sb.append(" bounds=[").append(left).append(',').append(top).append(',')
+//                .append(runTable.getWidth()).append(',').append(runTable.getHeight()).append(']');
         return sb.toString();
     }
 

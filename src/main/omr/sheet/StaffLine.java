@@ -70,7 +70,7 @@ public class StaffLine
 
     /** Underlying glyph. */
     @XmlIDREF
-    @XmlAttribute(name = "glyph-ref")
+    @XmlAttribute(name = "glyph")
     protected Glyph glyph;
 
     // Transient

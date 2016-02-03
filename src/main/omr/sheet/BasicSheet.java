@@ -65,6 +65,8 @@ import omr.util.LiveParam;
 import omr.util.Navigable;
 import omr.util.StopWatch;
 
+import com.sun.xml.internal.bind.IDResolver;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -242,35 +244,12 @@ public class BasicSheet
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // setImage //
-    //----------//
-    @Override
-    public final void setImage (BufferedImage image)
-            throws StepException
+    //------------------//
+    // getSheetFileName //
+    //------------------//
+    public static String getSheetFileName (int number)
     {
-        try {
-            picture = new Picture(this, image, locationService);
-
-            if (OMR.getGui() != null) {
-                createPictureView();
-            }
-
-            done(Step.LOAD);
-        } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " + getBook().getInputPath() + "\n"
-                         + ex.getMessage();
-
-            if (OMR.getGui() != null) {
-                OMR.getGui().displayWarning(msg);
-            } else {
-                logger.warn(msg);
-            }
-
-            throw new StepException(ex);
-        } catch (Throwable ex) {
-            logger.warn("Error loading image", ex);
-        }
+        return Sheet.INTERNALS_RADIX + number + ".xml";
     }
 
     //-----------------//
@@ -531,14 +510,6 @@ public class BasicSheet
         return book;
     }
 
-    //------------------//
-    // getSheetFileName //
-    //------------------//
-    public static String getSheetFileName (int number)
-    {
-        return Sheet.INTERNALS_RADIX + number + ".xml";
-    }
-
     //--------------------//
     // getCrossExclusions //
     //--------------------//
@@ -566,6 +537,37 @@ public class BasicSheet
     public ErrorsEditor getErrorsEditor ()
     {
         return errorsEditor;
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    @Override
+    public final void setImage (BufferedImage image)
+            throws StepException
+    {
+        try {
+            picture = new Picture(this, image, locationService);
+
+            if (OMR.getGui() != null) {
+                createPictureView();
+            }
+
+            done(Step.LOAD);
+        } catch (ImageFormatException ex) {
+            String msg = "Unsupported image format in file " + getBook().getInputPath() + "\n"
+                         + ex.getMessage();
+
+            if (OMR.getGui() != null) {
+                OMR.getGui().displayWarning(msg);
+            } else {
+                logger.warn(msg);
+            }
+
+            throw new StepException(ex);
+        } catch (Throwable ex) {
+            logger.warn("Error loading image", ex);
+        }
     }
 
     //------------------//
@@ -767,38 +769,6 @@ public class BasicSheet
     public SheetDiff getSheetDelta ()
     {
         return sheetDelta;
-    }
-
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal the provided XML stream to allocate the corresponding sheet.
-     *
-     * @param in the input stream that contains the sheet in XML format.
-     *           The stream is not closed by this method
-     *
-     * @return the allocated sheet.
-     * @exception JAXBException raised when unmarshalling goes wrong
-     */
-    public static Sheet unmarshal (InputStream in)
-            throws JAXBException
-    {
-        //        StopWatch watch = new StopWatch("Sheet unmarshal");
-        //        watch.start("createUnmarshaller");
-        Unmarshaller um = getJaxbContext().createUnmarshaller();
-
-        ///um.setListener(new Jaxb.UnmarshalLogger());
-        //        watch.start("unmarshal");
-        BasicSheet sheet = (BasicSheet) um.unmarshal(in);
-        //
-        //        if (constants.printWatch.isSet()) {
-        //            watch.print();
-        //        }
-        //
-        logger.debug("Sheet unmarshalled");
-
-        return sheet;
     }
 
     //---------//
@@ -1098,6 +1068,41 @@ public class BasicSheet
         return ensureStep(Step.last());
     }
 
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the provided XML stream to allocate the corresponding sheet.
+     *
+     * @param in the input stream that contains the sheet in XML format.
+     *           The stream is not closed by this method
+     *
+     * @return the allocated sheet.
+     * @exception JAXBException raised when unmarshalling goes wrong
+     */
+    public static Sheet unmarshal (InputStream in)
+            throws JAXBException
+    {
+        //        StopWatch watch = new StopWatch("Sheet unmarshal");
+        //        watch.start("createUnmarshaller");
+        Unmarshaller um = getJaxbContext().createUnmarshaller();
+
+        SheetIdResolver resolver = new SheetIdResolver();
+        um.setProperty(IDResolver.class.getName(), resolver);
+
+        ///um.setListener(new Jaxb.UnmarshalLogger());
+        //        watch.start("unmarshal");
+        BasicSheet sheet = (BasicSheet) um.unmarshal(in);
+        //
+        //        if (constants.printWatch.isSet()) {
+        //            watch.print();
+        //        }
+        //
+        logger.debug("Sheet unmarshalled");
+
+        return sheet;
+    }
+
     //--------//
     // doStep //
     //--------//
@@ -1167,33 +1172,6 @@ public class BasicSheet
         return false;
     }
 
-    //------//
-    // done //
-    //------//
-    /**
-     * Remember that the provided step has been completed on the sheet.
-     *
-     * @param step the provided step
-     */
-    private final void done (Step step)
-    {
-        ((BasicStub) stub).done(step);
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(BasicSheet.class);
-        }
-
-        return jaxbContext;
-    }
-
     //-------------------------//
     // createSymbolsController //
     //-------------------------//
@@ -1246,6 +1224,33 @@ public class BasicSheet
         } finally {
             StepMonitoring.notifyStep(this, step); // Stop
         }
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(BasicSheet.class);
+        }
+
+        return jaxbContext;
+    }
+
+    //------//
+    // done //
+    //------//
+    /**
+     * Remember that the provided step has been completed on the sheet.
+     *
+     * @param step the provided step
+     */
+    private final void done (Step step)
+    {
+        ((BasicStub) stub).done(step);
     }
 
     //---------------------//

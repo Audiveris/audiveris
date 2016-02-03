@@ -52,6 +52,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
@@ -77,7 +78,7 @@ public abstract class AbstractInter
     //
     /** The underlying glyph, if any. */
     @XmlIDREF
-    @XmlAttribute(name = "glyph-ref")
+    @XmlAttribute(name = "glyph")
     protected Glyph glyph;
 
     /** The assigned shape. */
@@ -960,5 +961,32 @@ public abstract class AbstractInter
     protected void setArea (Area area)
     {
         this.area = area;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Adapter //
+    //---------//
+    /**
+     * Meant for JAXB handling of Inter interface.
+     */
+    public static class Adapter
+            extends XmlAdapter<AbstractInter, Inter>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public AbstractInter marshal (Inter inter)
+                throws Exception
+        {
+            return (AbstractInter) inter;
+        }
+
+        @Override
+        public Inter unmarshal (AbstractInter abstractInter)
+                throws Exception
+        {
+            return abstractInter;
+        }
     }
 }

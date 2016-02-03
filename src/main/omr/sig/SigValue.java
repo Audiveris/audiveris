@@ -303,7 +303,7 @@ public class SigValue
         /**
          * Generate a (rather empty) SIG from this SigValue
          *
-         * @param sigValue the value to be converted (can reportedly be null???)
+         * @param sigValue the value to be converted
          * @return a new SIG instance, to be later populated via {@link #populateSig}
          * @throws java.lang.Exception
          */
@@ -311,12 +311,6 @@ public class SigValue
         public SIGraph unmarshal (SigValue sigValue)
                 throws Exception
         {
-            if (sigValue == null) {
-                logger.error("Trying to unmarshal a null SigValue");
-
-                return null;
-            }
-
             return new SIGraph(sigValue);
         }
     }
