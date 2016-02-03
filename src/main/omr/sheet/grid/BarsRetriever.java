@@ -18,9 +18,12 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphIndex;
 import omr.glyph.Shape;
 import omr.glyph.dynamic.CompoundFactory;
+import omr.glyph.dynamic.CompoundFactory.CompoundConstructor;
 import omr.glyph.dynamic.CurvedFilament;
 import omr.glyph.dynamic.Filament;
+import omr.glyph.dynamic.FilamentIndex;
 import omr.glyph.dynamic.SectionCompound;
+import omr.glyph.dynamic.StraightFilament;
 
 import omr.lag.Lag;
 import omr.lag.Lags;
@@ -32,9 +35,7 @@ import omr.math.GeoPath;
 import omr.math.GeoUtil;
 import omr.math.Histogram;
 import omr.math.PointUtil;
-
 import static omr.run.Orientation.*;
-
 import omr.run.RunTable;
 
 import omr.sheet.Part;
@@ -47,7 +48,6 @@ import omr.sheet.StaffManager;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 import omr.sheet.grid.PartGroup.Symbol;
-
 import static omr.sheet.grid.StaffPeak.Attribute.*;
 
 import omr.sig.GradeImpacts;
@@ -73,12 +73,9 @@ import omr.ui.util.UIUtil;
 import omr.util.Dumping;
 import omr.util.Entities;
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.VerticalSide;
-
 import static omr.util.VerticalSide.*;
 
 import ij.process.ByteProcessor;
@@ -107,7 +104,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import omr.glyph.dynamic.StraightFilament;
 
 /**
  * Class {@code BarsRetriever} focuses on the retrieval of vertical bar lines and
@@ -159,6 +155,12 @@ public class BarsRetriever
     /** All (physical) connections found between bars across staves. */
     private final Set<BarConnection> connections = new LinkedHashSet<BarConnection>();
 
+    /** Constructor for brace compound. */
+    private final CompoundConstructor braceConstructor;
+
+    /** Constructor for (bracket) serif compound. */
+    private final CompoundConstructor serifConstructor;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Retrieve the bar lines of all staves.
@@ -176,6 +178,24 @@ public class BarsRetriever
 
         // Companions
         staffManager = sheet.getStaffManager();
+
+        // Specific constructors
+        braceConstructor = new CompoundConstructor()
+        {
+            @Override
+            public SectionCompound newInstance ()
+            {
+                return new CurvedFilament(scale.getInterline(), params.braceSegmentLength);
+            }
+        };
+        serifConstructor = new CompoundConstructor()
+        {
+            @Override
+            public SectionCompound newInstance ()
+            {
+                return new StraightFilament(scale.getInterline());
+            }
+        };
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -448,8 +468,7 @@ public class BarsRetriever
         // Now we have two end glyphs and a few sections in the middle
         Filament compound = (Filament) CompoundFactory.buildCompoundFromParts(
                 Arrays.asList(topFilament, bottomFilament),
-                CurvedFilament.class,
-                scale.getInterline());
+                braceConstructor);
 
         boolean expanding;
 
@@ -513,23 +532,23 @@ public class BarsRetriever
                         logger.warn("Staff#{} expected a brace bottom", otherStaff.getId());
 
                         continue StaffLoop;
-                    } else {
-                        // Retrieve the full brace glyph
-                        if (allSections == null) {
-                            allSections = getSectionsByWidth(params.maxBraceThickness);
-                        }
-
-                        Filament braceFilament = buildBraceFilament(peak, otherPeak, allSections);
-                        Glyph glyph = nest.registerOriginal(braceFilament.toGlyph(null));
-                        BraceInter braceInter = new BraceInter(glyph, Inter.intrinsicRatio * 1);
-                        SIGraph sig = staff.getSystem().getSig();
-                        sig.addVertex(braceInter);
-
-                        // Skip the staves processed
-                        iStaff = staves.indexOf(otherStaff);
-
-                        continue StaffLoop;
                     }
+
+                    // Retrieve the full brace glyph
+                    if (allSections == null) {
+                        allSections = getSectionsByWidth(params.maxBraceThickness);
+                    }
+
+                    Filament braceFilament = buildBraceFilament(peak, otherPeak, allSections);
+                    Glyph glyph = nest.registerOriginal(braceFilament.toGlyph(null));
+                    BraceInter braceInter = new BraceInter(glyph, Inter.intrinsicRatio * 1);
+                    SIGraph sig = staff.getSystem().getSig();
+                    sig.addVertex(braceInter);
+
+                    // Skip the staves processed
+                    iStaff = staves.indexOf(otherStaff);
+
+                    continue StaffLoop;
                 }
             }
         }
@@ -555,8 +574,7 @@ public class BarsRetriever
         // Retrieve all glyphs out of connected sections
         List<SectionCompound> compounds = CompoundFactory.buildCompounds(
                 sections,
-                scale.getInterline(),
-                StraightFilament.class);
+                serifConstructor);
         logger.debug("Staff#{} serif {}", staff.getId(), Entities.ids(compounds));
 
         if (compounds.size() > 1) {
@@ -593,10 +611,7 @@ public class BarsRetriever
                 }
             }
 
-            return (Filament) CompoundFactory.buildCompoundFromParts(
-                    compounds,
-                    CurvedFilament.class,
-                    scale.getInterline());
+            return (Filament) CompoundFactory.buildCompoundFromParts(compounds, serifConstructor);
         } else {
             return (Filament) compounds.get(0);
         }
@@ -650,11 +665,15 @@ public class BarsRetriever
             double alignImpact = alignment.getImpacts().getGrade() / alignment.getImpacts()
                     .getIntrinsicRatio();
             GradeImpacts impacts = new BarConnection.Impacts(alignImpact, whiteImpact, gapImpact);
+            double grade = impacts.getGrade();
+            logger.debug("{} grade:{} impacts:{}", alignment, grade, impacts);
 
-            return new BarConnection(alignment, impacts);
-        } else {
-            return null;
+            if (grade >= params.minConnectionGrade) {
+                return new BarConnection(alignment, impacts);
+            }
         }
+
+        return null;
     }
 
     //---------------------//
@@ -829,36 +848,6 @@ public class BarsRetriever
         return part;
     }
 
-    //
-    //    //-------------//
-    //    // createParts //
-    //    //-------------//
-    //    /**
-    //     * Create Part for each part.
-    //     *
-    //     * @param partTops parts starting staves
-    //     */
-    //    private void createParts (Integer[] partTops)
-    //    {
-    //        for (SystemInfo system : sheet.getSystems()) {
-    //            system.getParts().clear(); // Start from scratch
-    //
-    //            int partTop = -1;
-    //            Part part = null;
-    //
-    //            for (Staff staff : system.getStaves()) {
-    //                int topId = partTops[staff.getId() - 1];
-    //
-    //                if (topId != partTop) {
-    //                    part = new Part(system);
-    //                    system.addPart(part);
-    //                    partTop = topId;
-    //                }
-    //
-    //                part.addStaff(staff);
-    //            }
-    //        }
-    //    }
     //-------------//
     // createParts //
     //-------------//
@@ -883,10 +872,13 @@ public class BarsRetriever
 
             for (Staff staff : staves) {
                 List<StaffPeak> peaks = staff.getPeaks();
+
+                // Look for starting barline
                 StaffPeak.Bar endBar = getPeakEnd(LEFT, peaks);
 
                 if (endBar == null) {
                     // Staff = system, just one part
+                    logger.debug("Staff#{} no starting barline", staff.getId());
                     createPart(system, staff, staff);
 
                     continue;
@@ -896,13 +888,13 @@ public class BarsRetriever
 
                 if (endIndex == 0) {
                     // Isolated staff: just one part
+                    logger.debug("Staff#{} nothing before starting barline", staff.getId());
                     createPart(system, staff, staff);
 
                     continue;
                 }
 
-                // Check for part connection above or below this staff
-                boolean topConn = isPartConnected(staff, TOP);
+                // Check for part connection below this staff
                 boolean bottomConn = isPartConnected(staff, BOTTOM);
 
                 // Going from endBar to the left, look for bracket(s) & brace
@@ -914,13 +906,14 @@ public class BarsRetriever
                     StaffPeak peak = peaks.get(i);
 
                     if (peak.isBracket()) {
-                        PartGroup pg = null;
+                        final PartGroup pg;
 
                         if (peak.isBracketEnd(TOP)) {
                             // Start bracket group
                             pg = new PartGroup(level, Symbol.bracket, bottomConn, staff);
                             allGroups.add(pg);
                             activeGroups.put(level, pg);
+                            logger.debug("Staff#{} start bracket {}", staff.getId(), pg);
                         } else {
                             // Continue bracket group
                             pg = activeGroups.get(level);
@@ -930,7 +923,10 @@ public class BarsRetriever
 
                                 // Stop bracket group?
                                 if (peak.isBracketEnd(BOTTOM)) {
+                                    logger.debug("Staff#{} stop bracket {}", staff.getId(), pg);
                                     activeGroups.put(level, null);
+                                } else {
+                                    logger.debug("Staff#{} continue bracket {}", staff.getId(), pg);
                                 }
                             } else {
                                 logger.warn("Staff#{} no group level:{}", staff.getId(), level);
@@ -947,6 +943,7 @@ public class BarsRetriever
                             PartGroup pg = new PartGroup(level, Symbol.brace, bottomConn, staff);
                             allGroups.add(pg);
                             activeGroups.put(level, pg);
+                            logger.debug("Staff#{} start brace {}", staff.getId(), pg);
                         } else {
                             // Continue brace group
                             PartGroup pg = activeGroups.get(level);
@@ -961,12 +958,16 @@ public class BarsRetriever
                                     // Was this brace a real group?
                                     if (!bottomConn && !isPartConnected(pg.getFirstStaff(), TOP)) {
                                         // No, just a multi-staff instrument
-                                        logger.debug("Multi-staff instrument {}", pg);
+                                        logger.debug(
+                                                "Staff#{} end multi-staff instrument {}",
+                                                staff.getId(),
+                                                pg);
                                         allGroups.remove(pg);
                                         createPart(system, pg.getFirstStaff(), pg.getLastStaff());
                                     } else {
                                         int i1 = staves.indexOf(pg.getFirstStaff());
                                         int i2 = staves.indexOf(pg.getLastStaff());
+                                        logger.debug("Staff#{} stop brace {}", staff.getId(), pg);
 
                                         for (Staff s : staves.subList(i1, i2 + 1)) {
                                             createPart(system, s, s);
@@ -1024,28 +1025,6 @@ public class BarsRetriever
         return newSystems;
     }
 
-    //
-    //    //-----------------------//
-    //    // createSystemsAndParts //
-    //    //-----------------------//
-    //    /**
-    //     * Gather staves per systems and parts and create the related info instances.
-    //     */
-    //    private void createSystemsAndParts ()
-    //    {
-    //        final int staffCount = staffManager.getStaffCount();
-    //
-    //        // For each staff, gives the staff that starts the containing system
-    //        final Integer[] systemTops = getSystemTops();
-    //
-    //        // For each staff, gives the staff that starts the containing part
-    //        final Integer[] partTops = new Integer[staffCount];
-    //
-    //        gatherStaves(systemTops, partTops);
-    //        sheet.setSystems(createSystems(systemTops));
-    //        createParts(partTops);
-    //    }
-    //
     //--------------//
     // detectBraces //
     //--------------//
@@ -1055,7 +1034,8 @@ public class BarsRetriever
     private void detectBraceEnds ()
     {
         // Preselect sections of proper max width
-        List<Section> allSections = getSectionsByWidth(params.maxBraceThickness);
+        final List<Section> allSections = getSectionsByWidth(params.maxBraceThickness);
+        final FilamentIndex filamentIndex = sheet.getFilamentIndex();
 
         BarFilamentFactory factory = new BarFilamentFactory(sheet.getScale());
 
@@ -1086,6 +1066,7 @@ public class BarsRetriever
             // Take proper slice of sections for this peak
             List<Section> sections = getPeakSections(bracePeak, allSections);
             Filament filament = factory.buildBarFilament(sections, bracePeak.getBounds());
+            filamentIndex.register(filament);
             bracePeak.setFilament(filament);
 
             // A few tests on glyph
@@ -1095,7 +1076,7 @@ public class BarsRetriever
 
             double curvature = filament.getMeanCurvature();
             logger.debug(
-                    "staff#{} brace curvature:{} vs {}",
+                    "Staff#{} brace curvature:{} vs {}",
                     staff.getId(),
                     curvature,
                     params.maxBraceCurvature);
@@ -1344,72 +1325,6 @@ public class BarsRetriever
                 it.remove();
             }
         }
-    }
-
-    //--------------//
-    // gatherStaves //
-    //--------------//
-    /**
-     * Use connections across staves to gather staves into systems and parts.
-     * <p>
-     * A first connection between two staves make them system partners.
-     * A second connection between two staves makes them part partners, provided that the second
-     * connection is sufficiently abscissa-shifted from the first one.
-     *
-     * @param systemTops (output) systems starting staves
-     * @param partTops   (output) parts starting staves
-     */
-    private void gatherStaves (Integer[] systemTops,
-                               Integer[] partTops)
-    {
-        BarConnection prevConnection = null;
-
-        // Connections are ordered per top staff then per abscissa.
-        for (BarConnection connection : connections) {
-            int top = connection.topPeak.getStaff().getId();
-            int bottom = connection.bottomPeak.getStaff().getId();
-
-            if (systemTops[top - 1] == null) {
-                // First connection ever between the 2 staves
-                systemTops[top - 1] = top;
-            } else {
-                // Is this a truely separate second connection?
-                // Check horizontal gap with previous one
-                int gap = connection.topPeak.getStart() - prevConnection.topPeak.getStop() - 1;
-
-                if (gap > params.maxDoubleBarGap) {
-                    if (partTops[top - 1] == null) {
-                        partTops[top - 1] = top;
-                    }
-
-                    partTops[bottom - 1] = partTops[top - 1];
-                }
-            }
-
-            systemTops[bottom - 1] = systemTops[top - 1];
-            prevConnection = connection;
-        }
-
-        // Complete assignments
-        for (int i = 1; i <= systemTops.length; i++) {
-            if (systemTops[i - 1] == null) {
-                systemTops[i - 1] = i;
-            }
-
-            if (partTops[i - 1] == null) {
-                partTops[i - 1] = i;
-            }
-        }
-
-        final int[] ids = new int[staffManager.getStaffCount()];
-
-        for (int i = 0; i < ids.length; i++) {
-            ids[i] = i + 1;
-        }
-
-        logger.info("{}Staves:  {}", sheet.getLogPrefix(), ids);
-        logger.info("{}Parts:   {}", sheet.getLogPrefix(), partTops);
-        logger.info("{}Systems: {}", sheet.getLogPrefix(), systemTops);
     }
 
     //-----------------//
@@ -1678,13 +1593,10 @@ public class BarsRetriever
                                 }
 
                                 group.add(peak);
-                            } else // We are NOT grouped with previous peak
-                            {
-                                if (group != null) {
-                                    group = null;
-                                } else {
-                                    isolated.add(prevPeak);
-                                }
+                            } else if (group != null) {
+                                group = null;
+                            } else {
+                                isolated.add(prevPeak);
                             }
                         }
 
@@ -1790,6 +1702,7 @@ public class BarsRetriever
         // Retrieve serif glyph from sections
         Filament serif = buildSerifFilament(staff, sections, side, roi);
         serif.computeLine();
+
         double slope = serif.getSlope();
         logger.debug(
                 "Staff#{} {} {} serif#{} weight:{} slope:{}",
@@ -2206,7 +2119,7 @@ public class BarsRetriever
                         && !isConnected(peak, TOP)
                         && !isConnected(peak, BOTTOM)) {
                         if (logger.isDebugEnabled() || peak.getFilament().isVip()) {
-                            logger.info("VIP Got a C-Clef peak1 at {}", peak);
+                            logger.info("Got a C-Clef peak1 at {}", peak);
                         }
 
                         final List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
@@ -2225,7 +2138,7 @@ public class BarsRetriever
                                 if (logger.isDebugEnabled()
                                     || peak.getFilament().isVip()
                                     || peak2.getFilament().isVip()) {
-                                    logger.info("VIP Got a C-Clef peak2 at {}", peak2);
+                                    logger.info("Got a C-Clef peak2 at {}", peak2);
                                 }
 
                                 peak2.set(CCLEF_TWO);
@@ -2378,7 +2291,10 @@ public class BarsRetriever
                         }
 
                         if (peak.getFilament().isVip()) {
-                            logger.info("VIP removed long on staff#{} {}", staff.getId(), peak);
+                            logger.info(
+                                    "VIP removed long peak on staff#{} {}",
+                                    staff.getId(),
+                                    peak);
                         }
 
                         toRemove.add(peak);
@@ -2517,6 +2433,10 @@ public class BarsRetriever
                 0.25,
                 "Max white ratio when connecting bar lines");
 
+        private final Constant.Ratio minConnectionGrade = new Constant.Ratio(
+                0.5,
+                "Minimum grade for a true connection");
+
         private final Scale.Fraction maxBarExtension = new Scale.Fraction(
                 0.3,
                 "Maximum extension for a bar line above or below staff line");
@@ -2569,6 +2489,10 @@ public class BarsRetriever
                 0.5,
                 "Margin on left side of brace peak to retrieve full glyph");
 
+        private final Scale.Fraction braceSegmentLength = new Scale.Fraction(
+                1.0,
+                "Typical distance between brace points");
+
         // For brackets ----------------------------------------------------------------------------
         //
         private final Scale.Fraction minBracketWidth = new Scale.Fraction(
@@ -2582,6 +2506,10 @@ public class BarsRetriever
         private final Scale.Fraction bracketLookupExtension = new Scale.Fraction(
                 2.0,
                 "Lookup height for bracket end above or below staff line");
+
+        private final Scale.Fraction serifSegmentLength = new Scale.Fraction(
+                1.0,
+                "Typical distance between bracket serif points");
 
         private final Scale.Fraction serifRoiWidth = new Scale.Fraction(
                 2.0,
@@ -2632,6 +2560,8 @@ public class BarsRetriever
 
         final double maxConnectionWhiteRatio;
 
+        final double minConnectionGrade;
+
         final int maxDoubleBarGap;
 
         final int minMeasureWidth;
@@ -2643,6 +2573,10 @@ public class BarsRetriever
         final int cClefTail;
 
         final int braceLeftMargin;
+
+        final int braceSegmentLength;
+
+        final int serifSegmentLength;
 
         final int minBracketWidth;
 
@@ -2678,6 +2612,7 @@ public class BarsRetriever
             maxBraceCurvature = scale.toPixels(constants.maxBraceCurvature);
             maxConnectionGap = scale.toPixels(constants.maxConnectionGap);
             maxConnectionWhiteRatio = constants.maxConnectionWhiteRatio.getValue();
+            minConnectionGrade = constants.minConnectionGrade.getValue();
             maxDoubleBarGap = scale.toPixels(constants.maxDoubleBarGap);
             minMeasureWidth = scale.toPixels(constants.minMeasureWidth);
 
@@ -2686,6 +2621,8 @@ public class BarsRetriever
             maxPeak2WidthForCClef = scale.toPixels(constants.maxPeak2WidthForCClef);
 
             braceLeftMargin = scale.toPixels(constants.braceLeftMargin);
+            braceSegmentLength = scale.toPixels(constants.braceSegmentLength);
+            serifSegmentLength = scale.toPixels(constants.serifSegmentLength);
             minBracketWidth = scale.toPixels(constants.minBracketWidth);
             maxBracketExtension = scale.toPixels(constants.maxBracketExtension);
             bracketLookupExtension = scale.toPixels(constants.bracketLookupExtension);

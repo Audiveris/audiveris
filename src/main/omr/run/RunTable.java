@@ -13,7 +13,9 @@ package omr.run;
 
 import omr.image.ChamferDistance;
 import omr.image.PixelSource;
+
 import static omr.image.PixelSource.BACKGROUND;
+
 import omr.image.Table;
 
 import omr.math.PointsCollector;
@@ -22,6 +24,7 @@ import omr.moments.ARTMoments;
 import omr.moments.BasicARTExtractor;
 import omr.moments.GeometricMoments;
 import omr.moments.QuantizedARTMoments;
+
 import static omr.run.Orientation.HORIZONTAL;
 
 import omr.util.ByteUtil;
@@ -48,7 +51,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -90,6 +92,8 @@ public class RunTable
             RunTable.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    // Persistent
+    //-----------
     /** Orientation, the same for this table and all contained runs. */
     @XmlAttribute
     private final Orientation orientation;
@@ -106,12 +110,11 @@ public class RunTable
     @XmlJavaTypeAdapter(SequencesAdapter.class)
     private final short[][] sequences;
 
+    // Transient
+    //----------
     /** Hosted event service for UI events related to this table (Runs), if any. */
-    @XmlTransient
     private RunService runService;
 
-    // Transient
-    //
     /** Total weight. */
     private Integer weight;
 

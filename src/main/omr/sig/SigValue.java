@@ -15,10 +15,13 @@ import omr.sig.inter.AbstractInter;
 import omr.sig.inter.AlterInter;
 import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.BarConnectorInter;
+import omr.sig.inter.BarlineInter;
 import omr.sig.inter.BeamHookInter;
 import omr.sig.inter.BeamInter;
 import omr.sig.inter.BlackHeadInter;
 import omr.sig.inter.BraceInter;
+import omr.sig.inter.BracketConnectorInter;
+import omr.sig.inter.BracketInter;
 import omr.sig.inter.ChordNameInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.CodaInter;
@@ -26,18 +29,26 @@ import omr.sig.inter.DynamicsInter;
 import omr.sig.inter.EndingInter;
 import omr.sig.inter.FermataDotInter;
 import omr.sig.inter.FermataInter;
+import omr.sig.inter.FingeringInter;
 import omr.sig.inter.FlagInter;
+import omr.sig.inter.FretInter;
 import omr.sig.inter.HeadChordInter;
 import omr.sig.inter.Inter;
+import omr.sig.inter.KeyAlterInter;
+import omr.sig.inter.KeyInter;
+import omr.sig.inter.LedgerInter;
 import omr.sig.inter.LyricItemInter;
 import omr.sig.inter.LyricLineInter;
 import omr.sig.inter.PedalInter;
+import omr.sig.inter.PluckingInter;
 import omr.sig.inter.RepeatDotInter;
 import omr.sig.inter.RestChordInter;
 import omr.sig.inter.RestInter;
+import omr.sig.inter.SegmentInter;
 import omr.sig.inter.SegnoInter;
 import omr.sig.inter.SentenceInter;
 import omr.sig.inter.SlurInter;
+import omr.sig.inter.SmallBeamInter;
 import omr.sig.inter.SmallBlackHeadInter;
 import omr.sig.inter.SmallChordInter;
 import omr.sig.inter.SmallFlagInter;
@@ -45,6 +56,9 @@ import omr.sig.inter.SmallVoidHeadInter;
 import omr.sig.inter.SmallWholeInter;
 import omr.sig.inter.StaccatoInter;
 import omr.sig.inter.StemInter;
+import omr.sig.inter.TimeNumberInter;
+import omr.sig.inter.TimePairInter;
+import omr.sig.inter.TimeWholeInter;
 import omr.sig.inter.TupletInter;
 import omr.sig.inter.VoidHeadInter;
 import omr.sig.inter.WedgeInter;
@@ -71,6 +85,7 @@ import omr.sig.relation.CodaBarRelation;
 import omr.sig.relation.DotFermataRelation;
 import omr.sig.relation.DoubleDotRelation;
 import omr.sig.relation.EndingBarRelation;
+import omr.sig.relation.EndingSentenceRelation;
 import omr.sig.relation.FermataBarRelation;
 import omr.sig.relation.FermataChordRelation;
 import omr.sig.relation.FermataNoteRelation;
@@ -133,7 +148,7 @@ public class SigValue
     private final ArrayList<AbstractInter> interRefs = new ArrayList<AbstractInter>();
 
     /**
-     * Standalone inters found in sig, hence gathered here as true defs.
+     * All CONCRETE inters found in sig, gathered here as true defs. No abstract!
      * For easier review, class names are listed alphabetically.
      */
     @XmlElementWrapper(name = "inter-defs")
@@ -141,10 +156,13 @@ public class SigValue
         @XmlElementRef(type = AlterInter.class),
         @XmlElementRef(type = AugmentationDotInter.class),
         @XmlElementRef(type = BarConnectorInter.class),
+        @XmlElementRef(type = BarlineInter.class),
         @XmlElementRef(type = BeamHookInter.class),
         @XmlElementRef(type = BeamInter.class),
         @XmlElementRef(type = BlackHeadInter.class),
         @XmlElementRef(type = BraceInter.class),
+        @XmlElementRef(type = BracketConnectorInter.class),
+        @XmlElementRef(type = BracketInter.class),
         @XmlElementRef(type = ChordNameInter.class),
         @XmlElementRef(type = ClefInter.class),
         @XmlElementRef(type = CodaInter.class),
@@ -152,24 +170,35 @@ public class SigValue
         @XmlElementRef(type = EndingInter.class),
         @XmlElementRef(type = FermataDotInter.class),
         @XmlElementRef(type = FermataInter.class),
+        @XmlElementRef(type = FingeringInter.class),
         @XmlElementRef(type = FlagInter.class),
+        @XmlElementRef(type = FretInter.class),
         @XmlElementRef(type = HeadChordInter.class),
+        @XmlElementRef(type = KeyAlterInter.class),
+        @XmlElementRef(type = KeyInter.class),
+        @XmlElementRef(type = LedgerInter.class),
         @XmlElementRef(type = LyricItemInter.class),
         @XmlElementRef(type = LyricLineInter.class),
         @XmlElementRef(type = PedalInter.class),
+        @XmlElementRef(type = PluckingInter.class),
         @XmlElementRef(type = RepeatDotInter.class),
         @XmlElementRef(type = RestChordInter.class),
         @XmlElementRef(type = RestInter.class),
+        @XmlElementRef(type = SegmentInter.class),
         @XmlElementRef(type = SegnoInter.class),
         @XmlElementRef(type = SentenceInter.class),
         @XmlElementRef(type = SlurInter.class),
+        @XmlElementRef(type = SmallBeamInter.class),
         @XmlElementRef(type = SmallBlackHeadInter.class),
         @XmlElementRef(type = SmallChordInter.class),
         @XmlElementRef(type = SmallFlagInter.class),
         @XmlElementRef(type = SmallVoidHeadInter.class),
         @XmlElementRef(type = SmallWholeInter.class),
-        @XmlElementRef(type = StemInter.class),
         @XmlElementRef(type = StaccatoInter.class),
+        @XmlElementRef(type = StemInter.class),
+        @XmlElementRef(type = TimeNumberInter.class),
+        @XmlElementRef(type = TimePairInter.class),
+        @XmlElementRef(type = TimeWholeInter.class),
         @XmlElementRef(type = TupletInter.class),
         @XmlElementRef(type = VoidHeadInter.class),
         @XmlElementRef(type = WedgeInter.class),
@@ -200,18 +229,23 @@ public class SigValue
      */
     public void populateSig (SIGraph sig)
     {
+        final InterIndex index = sig.getSystem().getSheet().getInterIndex();
+
         // Allocate vertices
         Graphs.addAllVertices(sig, interRefs);
         Graphs.addAllVertices(sig, interDefs);
 
         for (Inter inter : sig.vertexSet()) {
             inter.setSig(sig);
+            index.insert(inter);
         }
 
         // Allocate edges
         for (RelationValue rel : relations) {
             try {
-                sig.addEdge(rel.source, rel.target, rel.relation);
+                Inter source = index.getEntity(rel.sourceId);
+                Inter target = index.getEntity(rel.targetId);
+                sig.addEdge(source, target, rel.relation);
             } catch (Throwable ex) {
                 logger.error("Error unmarshalling relation " + rel + " ex:" + ex, ex);
             }
@@ -322,20 +356,19 @@ public class SigValue
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Relation source vertex. */
-        @XmlIDREF
-        @XmlAttribute
-        public AbstractInter source;
+        /** Relation source vertex ID. */
+        @XmlAttribute(name = "source")
+        public String sourceId;
 
-        /** Relation target vertex. */
-        @XmlIDREF
-        @XmlAttribute
-        public AbstractInter target;
+        /** Relation target vertex ID. */
+        @XmlAttribute(name = "target")
+        public String targetId;
 
         /**
          * The relation instance.
          * <p>
-         * Here we list alphabetically all concrete relation types. No abstract!
+         * Here we list alphabetically all CONCRETE relation types. No abstract!
+         * CrossExclusion is not listed here, because it must be handled outside any specific sig.
          */
         @XmlElementRefs({
             @XmlElementRef(type = AccidHeadRelation.class),
@@ -345,19 +378,20 @@ public class SigValue
             @XmlElementRef(type = BasicExclusion.class),
             @XmlElementRef(type = BeamHeadRelation.class),
             @XmlElementRef(type = BeamStemRelation.class),
-            @XmlElementRef(type = CodaBarRelation.class),
+            @XmlElementRef(type = ChordDynamicsRelation.class),
             @XmlElementRef(type = ChordNameRelation.class),
             @XmlElementRef(type = ChordPedalRelation.class),
             @XmlElementRef(type = ChordSentenceRelation.class),
-            @XmlElementRef(type = ChordSyllableRelation.class),
-            @XmlElementRef(type = ChordDynamicsRelation.class),
             @XmlElementRef(type = ChordStaccatoRelation.class),
+            @XmlElementRef(type = ChordSyllableRelation.class),
             @XmlElementRef(type = ChordTupletRelation.class),
             @XmlElementRef(type = ChordWedgeRelation.class),
             @XmlElementRef(type = ClefKeyRelation.class),
+            @XmlElementRef(type = CodaBarRelation.class),
             @XmlElementRef(type = DotFermataRelation.class),
             @XmlElementRef(type = DoubleDotRelation.class),
             @XmlElementRef(type = EndingBarRelation.class),
+            @XmlElementRef(type = EndingSentenceRelation.class),
             @XmlElementRef(type = FermataBarRelation.class),
             @XmlElementRef(type = FermataChordRelation.class),
             @XmlElementRef(type = FermataNoteRelation.class),
@@ -386,8 +420,8 @@ public class SigValue
                               Inter target,
                               Relation relation)
         {
-            this.source = (AbstractInter) source;
-            this.target = (AbstractInter) target;
+            this.sourceId = source.getId();
+            this.targetId = target.getId();
             this.relation = (AbstractRelation) relation;
         }
 
@@ -404,19 +438,10 @@ public class SigValue
         {
             StringBuilder sb = new StringBuilder("RelationValue{");
 
-            sb.append("src:").append(source);
-
-            if (source != null) {
-                sb.append('@').append(Integer.toHexString(source.hashCode()));
-            }
-
-            sb.append(" tgt:").append(target);
-
-            if (target != null) {
-                sb.append('@').append(Integer.toHexString(target.hashCode()));
-            }
-
+            sb.append("src:").append(sourceId);
+            sb.append(" tgt:").append(targetId);
             sb.append(" rel:").append(relation);
+
             sb.append('}');
 
             return sb.toString();

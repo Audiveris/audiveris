@@ -49,6 +49,14 @@ public class PluckingInter
         this.letter = letter;
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private PluckingInter ()
+    {
+        this.letter = 0;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // create //

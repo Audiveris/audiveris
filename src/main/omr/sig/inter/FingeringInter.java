@@ -49,6 +49,14 @@ public class FingeringInter
         this.value = value;
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private FingeringInter ()
+    {
+        this.value = 0;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // create //
@@ -115,7 +123,7 @@ public class FingeringInter
         case DIGIT_4:
             return 4;
 
-            //
+        //
         //        // Following shapes may be useless
         //        case DIGIT_5:
         //            return 5;

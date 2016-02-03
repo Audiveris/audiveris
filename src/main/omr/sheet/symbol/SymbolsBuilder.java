@@ -117,6 +117,7 @@ public class SymbolsBuilder
      * <p>
      * <b>Synopsis:</b>
      * <pre>
+     * - retrieveFineBoxes()                            // Retrieve areas around small chords
      * - getSymbolsGlyphs()                             // Retrieve all glyphs usable for symbols
      * - buildLinks()                                   // Build graph with distances
      * - processClusters():                             // Group connected glyphs into clusters

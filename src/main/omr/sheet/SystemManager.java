@@ -23,13 +23,12 @@ import omr.math.ReversePathIterator;
 
 import omr.score.Page;
 
+import omr.sig.relation.CrossExclusion;
+
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.VerticalSide;
-
 import static omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
@@ -67,6 +66,9 @@ import java.util.List;
  * each system process these entities as needed.
  * Basically the shareable entities are those found between the last line of upper system and the
  * first line of lower system.
+ * <p>
+ * {@link CrossExclusion} relation class is specifically meant to formalize Inter exclusion across
+ * systems.
  *
  * @author Hervé Bitteur
  */
@@ -125,16 +127,16 @@ public class SystemManager
     {
         final int sheetWidth = sheet.getWidth();
         final int sheetHeight = sheet.getHeight();
-        final List<SystemInfo> aboves = vertNeighbors(system, TOP);
-        final List<SystemInfo> belows = vertNeighbors(system, BOTTOM);
+        final List<SystemInfo> aboves = verticalNeighbors(system, TOP);
+        final List<SystemInfo> belows = verticalNeighbors(system, BOTTOM);
 
         // Vertical abscissae on system left & right
-        final SystemInfo leftNeighbor = horiNeighbor(system, LEFT);
+        final SystemInfo leftNeighbor = horizontalNeighbor(system, LEFT);
         final int left = (leftNeighbor != null)
                 ? ((leftNeighbor.getRight() + system.getLeft()) / 2) : 0;
         system.setAreaEnd(LEFT, left);
 
-        final SystemInfo rightNeighbor = horiNeighbor(system, RIGHT);
+        final SystemInfo rightNeighbor = horizontalNeighbor(system, RIGHT);
         final int right = (rightNeighbor != null)
                 ? ((system.getRight() + rightNeighbor.getLeft()) / 2) : sheetWidth;
         system.setAreaEnd(RIGHT, right);
@@ -382,6 +384,36 @@ public class SystemManager
         return sb.toString();
     }
 
+    //--------------------//
+    // horizontalNeighbor //
+    //--------------------//
+    /**
+     * Report the system, if any, located on the desired horizontal
+     * side of the current one.
+     *
+     * @param current current system
+     * @param side    desired horizontal side
+     * @return the neighboring system or null
+     */
+    public SystemInfo horizontalNeighbor (SystemInfo current,
+                                          HorizontalSide side)
+    {
+        final int idx = systems.indexOf(current);
+        final int dir = (side == LEFT) ? (-1) : 1;
+        final int iBreak = (side == LEFT) ? (-1) : systems.size();
+
+        // Pickup the one immediately on left (or right)
+        for (int i = idx + dir; (dir * (iBreak - i)) > 0; i += dir) {
+            SystemInfo s = systems.get(i);
+
+            if (current.yOverlaps(s)) {
+                return s;
+            }
+        }
+
+        return null;
+    }
+
     //-----------------//
     // populateSystems //
     //-----------------//
@@ -411,10 +443,10 @@ public class SystemManager
         // Dispatch sections to relevant systems
         dispatchHorizontalSections();
         dispatchVerticalSections();
-//
-//        // Dispatch glyphs to relevant systems
-//        dispatchGlyphs();
-//
+        //
+        //        // Dispatch glyphs to relevant systems
+        //        dispatchGlyphs();
+        //
         // Allocate one (or several) page instances for the sheet
         allocatePages();
 
@@ -436,6 +468,61 @@ public class SystemManager
             this.systems.clear();
             this.systems.addAll(systems);
         }
+    }
+
+    //-------------------//
+    // verticalNeighbors //
+    //-------------------//
+    /**
+     * Report the systems, if any, which are located immediately on the desired vertical
+     * side of the provided one.
+     *
+     * @param current current system
+     * @param side    desired vertical side
+     * @return the neighboring systems if any, otherwise an empty list
+     */
+    public List<SystemInfo> verticalNeighbors (SystemInfo current,
+                                               VerticalSide side)
+    {
+        final List<SystemInfo> neighbors = new ArrayList<SystemInfo>();
+        final int idx = systems.indexOf(current);
+        final int dir = (side == TOP) ? (-1) : 1;
+        final int iBreak = (side == TOP) ? (-1) : systems.size();
+        SystemInfo other = null;
+
+        // Pickup the one immediately above (or below)
+        for (int i = idx + dir; (dir * (iBreak - i)) > 0; i += dir) {
+            SystemInfo s = systems.get(i);
+
+            if (current.xOverlaps(s)) {
+                other = s;
+
+                break;
+            }
+        }
+
+        if (other != null) {
+            // Pick up this first one, and its horizontal neighbors
+            neighbors.add(other);
+
+            for (HorizontalSide hSide : HorizontalSide.values()) {
+                SystemInfo next = other;
+
+                do {
+                    next = horizontalNeighbor(next, hSide);
+
+                    if (next != null) {
+                        neighbors.add(next);
+                    } else {
+                        break;
+                    }
+                } while (true);
+            }
+        }
+
+        Collections.sort(neighbors, SystemInfo.byId);
+
+        return neighbors;
     }
 
     //----------------//
@@ -513,7 +600,7 @@ public class SystemManager
             Point2D ul = skew.deskewed(new Point(system.getLeft(), system.getTop()));
 
             for (VerticalSide side : VerticalSide.values()) {
-                List<SystemInfo> others = vertNeighbors(system, side);
+                List<SystemInfo> others = verticalNeighbors(system, side);
 
                 if (!others.isEmpty()) {
                     SystemInfo other = others.get(0);
@@ -559,36 +646,6 @@ public class SystemManager
         }
 
         return sheet.getStaffManager().getGlobalLine(staffList, side);
-    }
-
-    //--------------//
-    // horiNeighbor //
-    //--------------//
-    /**
-     * Report the system, if any, located on the desired horizontal
-     * side of the current one.
-     *
-     * @param current current system
-     * @param side    desired horizontal side
-     * @return the neighboring system or null
-     */
-    private SystemInfo horiNeighbor (SystemInfo current,
-                                     HorizontalSide side)
-    {
-        final int idx = systems.indexOf(current);
-        final int dir = (side == LEFT) ? (-1) : 1;
-        final int iBreak = (side == LEFT) ? (-1) : systems.size();
-
-        // Pickup the one immediately on left (or right)
-        for (int i = idx + dir; (dir * (iBreak - i)) > 0; i += dir) {
-            SystemInfo s = systems.get(i);
-
-            if (current.yOverlaps(s)) {
-                return s;
-            }
-        }
-
-        return null;
     }
 
     //---------------//
@@ -639,61 +696,6 @@ public class SystemManager
 
             logger.info("{}{}", sheet.getLogPrefix(), sb);
         }
-    }
-
-    //---------------//
-    // vertNeighbors //
-    //---------------//
-    /**
-     * Report the systems, if any, which are located immediately on the desired vertical
-     * side of the current one.
-     *
-     * @param current current system
-     * @param side    desired vertical side
-     * @return the neighboring systems if any, otherwise an empty list
-     */
-    private List<SystemInfo> vertNeighbors (SystemInfo current,
-                                            VerticalSide side)
-    {
-        final List<SystemInfo> neighbors = new ArrayList<SystemInfo>();
-        final int idx = systems.indexOf(current);
-        final int dir = (side == TOP) ? (-1) : 1;
-        final int iBreak = (side == TOP) ? (-1) : systems.size();
-        SystemInfo other = null;
-
-        // Pickup the one immediately above (or below)
-        for (int i = idx + dir; (dir * (iBreak - i)) > 0; i += dir) {
-            SystemInfo s = systems.get(i);
-
-            if (current.xOverlaps(s)) {
-                other = s;
-
-                break;
-            }
-        }
-
-        if (other != null) {
-            // Pick up this first one, and its horizontal neighbors
-            neighbors.add(other);
-
-            for (HorizontalSide hSide : HorizontalSide.values()) {
-                SystemInfo next = other;
-
-                do {
-                    next = horiNeighbor(next, hSide);
-
-                    if (next != null) {
-                        neighbors.add(next);
-                    } else {
-                        break;
-                    }
-                } while (true);
-            }
-        }
-
-        Collections.sort(neighbors, SystemInfo.byId);
-
-        return neighbors;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

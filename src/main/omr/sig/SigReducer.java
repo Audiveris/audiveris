@@ -15,7 +15,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
-
 import static omr.glyph.ShapeSet.Alterations;
 import static omr.glyph.ShapeSet.CoreBarlines;
 import static omr.glyph.ShapeSet.Flags;
@@ -32,6 +31,7 @@ import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AbstractNoteInter;
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.AlterInter;
 import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.BarlineInter;
@@ -45,7 +45,6 @@ import omr.sig.inter.SmallBeamInter;
 import omr.sig.inter.SmallBlackHeadInter;
 import omr.sig.inter.StemInter;
 import omr.sig.inter.StringSymbolInter;
-import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.TimeNumberInter;
 import omr.sig.inter.TupletInter;
 import omr.sig.inter.VoidHeadInter;
@@ -56,20 +55,17 @@ import omr.sig.relation.AugmentationRelation;
 import omr.sig.relation.BeamHeadRelation;
 import omr.sig.relation.BeamPortion;
 import omr.sig.relation.BeamStemRelation;
+import omr.sig.relation.CrossExclusion;
 import omr.sig.relation.DoubleDotRelation;
 import omr.sig.relation.Exclusion;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.StemPortion;
-
 import static omr.sig.relation.StemPortion.*;
-
 import omr.sig.relation.TimeTopBottomRelation;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.Predicate;
 
@@ -190,6 +186,72 @@ public class SigReducer
      * <p>
      * This method is key!
      *
+     * @param list1 the collection of inters to process from one system
+     * @param list2 the collection of inters to process from another system
+     */
+    public static void detectCrossOverlaps (List<Inter> list1,
+                                            List<Inter> list2)
+    {
+        Collections.sort(list2, Inter.byAbscissa);
+
+        for (Inter left : list1) {
+            if (left.isDeleted()) {
+                continue;
+            }
+
+            final Rectangle leftBox = left.getBounds();
+
+            final double xMax = leftBox.getMaxX();
+
+            for (Inter right : list2) {
+                if (right.isDeleted()) {
+                    continue;
+                }
+
+                // Overlap is accepted in some cases
+                if (compatible(new Inter[]{left, right})) {
+                    continue;
+                }
+
+                Rectangle rightBox = right.getBounds();
+
+                if (leftBox.intersects(rightBox)) {
+                    // Have a more precise look
+                    if (left.isVip() && right.isVip()) {
+                        ////////logger.info("VIP check overlap {} vs {}", left, right);
+                    }
+
+                    if (left.overlaps(right) && right.overlaps(left)) {
+                        // Specific case: Word vs "string" Symbol
+                        if (left instanceof WordInter && right instanceof StringSymbolInter) {
+                            if (wordMatchesSymbol((WordInter) left, (StringSymbolInter) right)) {
+                                left.decrease(0.5);
+                            }
+                        } else if (left instanceof StringSymbolInter && right instanceof WordInter) {
+                            if (wordMatchesSymbol((WordInter) right, (StringSymbolInter) left)) {
+                                right.decrease(0.5);
+                            }
+                        }
+
+                        logger.info("crossExclusion {} & {}", left, right);
+                        CrossExclusion.insert(left, right); // Cross-system
+                    }
+                } else if (rightBox.x > xMax) {
+                    break; // Since right list is sorted by abscissa
+                }
+            }
+        }
+    }
+
+    //----------------//
+    // detectOverlaps //
+    //----------------//
+    /**
+     * Detect all cases where 2 Inters actually overlap and, if there is no support
+     * relation between them, insert a mutual exclusion.
+     * <p>
+     * This method is key!
+     *
      * @param inters the collection of inters to process
      */
     public static void detectOverlaps (List<Inter> inters)
@@ -205,6 +267,7 @@ public class SigReducer
 
             final Rectangle leftBox = left.getBounds();
             Set<Inter> mirrors = null;
+
             final Inter leftMirror = left.getMirror();
 
             if (leftMirror != null) {
@@ -261,11 +324,11 @@ public class SigReducer
                             }
                         }
 
-                        // If there is no support between left & right, insert an exclusion
-                        SIGraph sig = left.getSig();
+                        final SIGraph leftSig = left.getSig();
 
-                        if (sig.noSupport(left, right)) {
-                            sig.insertExclusion(left, right, Exclusion.Cause.OVERLAP);
+                        // If there is no support between left & right, insert an exclusion
+                        if (leftSig.noSupport(left, right)) {
+                            leftSig.insertExclusion(left, right, Exclusion.Cause.OVERLAP);
                         }
                     }
                 } else if (rightBox.x > xMax) {

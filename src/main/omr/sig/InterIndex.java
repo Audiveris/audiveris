@@ -120,8 +120,6 @@ public class InterIndex
                 if (this.isVipId(inter.getId())) {
                     inter.setVip(true);
                 }
-
-                insert(inter);
             }
         }
 

@@ -14,9 +14,6 @@ package omr.sheet.symbol;
 import omr.glyph.Glyph;
 import omr.glyph.ui.SymbolsEditor;
 
-import omr.ui.selection.EntityListEvent;
-import omr.ui.selection.SelectionService;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.note.ChordsBuilder;
@@ -24,6 +21,9 @@ import omr.sheet.note.ChordsBuilder;
 import omr.step.AbstractSystemStep;
 import omr.step.Step;
 import omr.step.StepException;
+
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.SelectionService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class {@code SymbolsStep} retrieves fixed-shape symbols.
+ * Class {@code SymbolsStep} retrieves fixed-shape symbols in a system.
  * <p>
  * This accounts for rests, flags, dots, tuplets, alterations, ...
  *
@@ -63,15 +63,15 @@ public class SymbolsStep
     public void displayUI (Step step,
                            Sheet sheet)
     {
-        SymbolsEditor editor = sheet.getSymbolsEditor();
+        final SymbolsEditor editor = sheet.getSymbolsEditor();
 
         if (editor != null) {
             editor.refresh();
         }
 
         // Update glyph board if needed (to see OCR'ed data)
-        SelectionService service = sheet.getGlyphIndex().getEntityService();
-        EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) service.getLastEvent(
+        final SelectionService service = sheet.getGlyphIndex().getEntityService();
+        final EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) service.getLastEvent(
                 EntityListEvent.class);
 
         if (listEvent != null) {
@@ -87,7 +87,7 @@ public class SymbolsStep
                           Context context)
             throws StepException
     {
-        SymbolFactory factory = new SymbolFactory(system);
+        final SymbolFactory factory = new SymbolFactory(system);
 
         // Retrieve symbols inters
         new SymbolsBuilder(system, factory).buildSymbols(context.optionalsMap);
@@ -114,7 +114,7 @@ public class SymbolsStep
          * Prepare image without staff lines, with all good inters erased and with all
          * weak inters saved as optional symbol parts.
          */
-        Context context = new Context();
+        final Context context = new Context();
         new SymbolsFilter(sheet).process(context.optionalsMap);
 
         return context;

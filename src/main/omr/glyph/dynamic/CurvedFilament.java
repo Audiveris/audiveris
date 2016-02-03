@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.glyph.dynamic;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.lag.Section;
 
 import omr.math.LineUtil;
@@ -50,11 +47,12 @@ public class CurvedFilament
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Constants constants = new Constants();
-
     private static final Logger logger = LoggerFactory.getLogger(CurvedFilament.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /** Typical length between points. */
+    protected final int segmentLength;
+
     /** Absolute defining points (including start & stop points). */
     protected List<Point2D> points;
 
@@ -65,11 +63,14 @@ public class CurvedFilament
     /**
      * Creates a new {@code CurvedFilament} object.
      *
-     * @param interline scaling information
+     * @param interline     scaling information
+     * @param segmentLength typical length between points
      */
-    public CurvedFilament (int interline)
+    public CurvedFilament (int interline,
+                           int segmentLength)
     {
         super(interline);
+        this.segmentLength = segmentLength;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -89,15 +90,11 @@ public class CurvedFilament
             /** Width of window to retrieve pixels */
             int probeWidth = scale.toPixels(Filament.getProbeWidth());
 
-            /** Typical length of curve segments */
-            double typicalLength = scale.toPixels(constants.segmentLength);
-
             // We need a rough orientation right now
             Orientation orientation = getRoughOrientation();
-            Point2D orientedStart = (startPoint == null) ? null
-                    : orientation.oriented(startPoint);
-            Point2D orientedStop = (stopPoint == null) ? null
-                    : orientation.oriented(stopPoint);
+            Point2D orientedStart = (startPoint == null) ? null : orientation.oriented(
+                    startPoint);
+            Point2D orientedStop = (stopPoint == null) ? null : orientation.oriented(stopPoint);
             Rectangle oBounds = orientation.oriented(getBounds());
             double oStart = (orientedStart != null) ? orientedStart.getX() : oBounds.x;
             double oStop = (orientedStop != null) ? orientedStop.getX()
@@ -109,7 +106,7 @@ public class CurvedFilament
             oProbe.width = probeWidth;
 
             // Determine the number of segments and their precise length
-            int segCount = (int) Math.rint(length / typicalLength);
+            int segCount = (int) Math.rint(length / segmentLength);
             double segLength = length / segCount;
             List<Point2D> newPoints = new ArrayList<Point2D>(segCount + 1);
 
@@ -217,15 +214,13 @@ public class CurvedFilament
             } else {
                 return spline.yAtX(coord);
             }
-        } else {
-            if ((coord < startPoint.getY()) || (coord > stopPoint.getY())) {
-                double sl = (stopPoint.getX() - startPoint.getX()) / (stopPoint.getY()
-                                                                      - startPoint.getY());
+        } else if ((coord < startPoint.getY()) || (coord > stopPoint.getY())) {
+            double sl = (stopPoint.getX() - startPoint.getX()) / (stopPoint.getY()
+                                                                  - startPoint.getY());
 
-                return startPoint.getX() + (sl * (coord - startPoint.getY()));
-            } else {
-                return spline.xAtY(coord);
-            }
+            return startPoint.getX() + (sl * (coord - startPoint.getY()));
+        } else {
+            return spline.xAtY(coord);
         }
     }
 
@@ -274,8 +269,10 @@ public class CurvedFilament
      * derivative, which is linear for each cubic segment. Thus, maximum
      * absolute values of 2nd derivatives occur at spline knots. Simply remove
      * the knots that exhibit a too high absolute value.
+     *
+     * @param minimumRadius minimum radius value
      */
-    public void polishCurvature ()
+    public void polishCurvature (int minimumRadius)
     {
         // Perserve ending points
         final Point2D oldStartPoint = getStartPoint();
@@ -313,14 +310,12 @@ public class CurvedFilament
                 }
             }
 
-            double rad = minRadius / interline;
-
-            if (rad < constants.minRadius.getValue()) {
+            if (minRadius < minimumRadius) {
                 if (logger.isDebugEnabled() || isVip()) {
                     logger.info(
                             "Polishing F#{} minRad: {} seq:{} {}",
                             getId(),
-                            (float) rad,
+                            (float) minRadius / interline,
                             idx,
                             points.get(idx));
                 }
@@ -356,23 +351,23 @@ public class CurvedFilament
                     Collections.sort(
                             found,
                             new Comparator<Section>()
-                            {
-                                @Override
-                                public int compare (Section s1,
-                                                    Section s2)
-                                {
-                                    return Double.compare(
-                                            point.distance(s1.getCentroid()),
-                                            point.distance(s2.getCentroid()));
-                                }
-                            });
+                    {
+                        @Override
+                        public int compare (Section s1,
+                                            Section s2)
+                        {
+                            return Double.compare(
+                                    point.distance(s1.getCentroid()),
+                                    point.distance(s2.getCentroid()));
+                        }
+                    });
                 }
 
                 Section section = found.isEmpty() ? null : found.get(0);
 
                 if (section != null) {
-                    logger.info(
-                            "*polishCurvature*. Removed section#{} from {} F{}",
+                    logger.debug(
+                            "*polishCurvature*. Removed section#{} from {} Filament {}",
                             section.getId(),
                             orientation,
                             getId());
@@ -510,31 +505,5 @@ public class CurvedFilament
                 nextBisector.getP2());
 
         return Math.hypot(inter.getX() - point.getX(), inter.getY() - point.getY());
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Scale.Fraction segmentLength = new Scale.Fraction(
-                4.0,
-                "Typical length between filament curve intermediate points");
-
-        private final Constant.Boolean showFilamentPoints = new Constant.Boolean(
-                false,
-                "Should we show defining points?");
-
-        private final Scale.Fraction filamentPointSize = new Scale.Fraction(
-                0.05,
-                "Size of displayed defining points");
-
-        private final Scale.Fraction minRadius = new Scale.Fraction(
-                12,
-                "Minimum acceptable radius of curvature");
     }
 }

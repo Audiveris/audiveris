@@ -77,7 +77,9 @@ public class StaffFilament
      */
     public StaffFilament (int interline)
     {
-        super(interline);
+        super(
+                interline,
+                (int) Math.rint(interline * constants.segmentLength.getWrappedValue().doubleValue()));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -378,6 +380,10 @@ public class StaffFilament
             extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
+
+        private final Scale.Fraction segmentLength = new Scale.Fraction(
+                4.0,
+                "Typical length between filament curve intermediate points");
 
         private final Scale.Fraction virtualSegmentLength = new Scale.Fraction(
                 5.0,

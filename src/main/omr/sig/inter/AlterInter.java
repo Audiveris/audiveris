@@ -286,6 +286,18 @@ public class AlterInter
         return new Pitches((int) Math.rint(measuredPitch), measuredPitch);
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(' ').append(shape);
+
+        return sb.toString();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Pitches //

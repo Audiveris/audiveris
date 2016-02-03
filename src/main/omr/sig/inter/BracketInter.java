@@ -65,6 +65,15 @@ public class BracketInter
         this.kind = kind;
     }
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private BracketInter ()
+    {
+        super(null, null, null, null, 0);
+        this.kind = null;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //

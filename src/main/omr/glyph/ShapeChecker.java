@@ -112,8 +112,8 @@ public class ShapeChecker
      * Run a series of checks on the provided glyph, based on the
      * candidate shape, and annotate the evaluation accordingly.
      * This annotation can even change the shape itself, thus allowing a move
-     * from physical shape (such as WEDGE_set) to proper logical shape
-     * (CRESCENDO or DIMINUENDO).
+     * from physical shape (such as HW_REST_set) to proper logical shape
+     * (HALF_REST or WHOLE_REST).
      *
      * @param system   the containing system
      * @param eval     the evaluation to populate
@@ -299,15 +299,18 @@ public class ShapeChecker
                  */
                 int p2 = (int) Math.rint(2 * glyph.getPitchPosition()); // Pitch * 2
 
-                if (p2 == -1) {
+                switch (p2) {
+                case -1:
                     eval.shape = Shape.HALF_REST; // Standard pitch: -0.5
 
                     return true;
-                } else if (p2 == -3) {
+
+                case -3:
                     eval.shape = Shape.WHOLE_REST; // Standard pitch: -1.5
 
                     return true;
-                } else {
+
+                default:
                     eval.failure = new Evaluation.Failure("pitch");
 
                     return false;
@@ -323,8 +326,15 @@ public class ShapeChecker
                                   Glyph glyph,
                                   double[] features)
             {
-                // Must be within staff height
-                return Math.abs(glyph.getPitchPosition()) < 4;
+                final double pitchAbs = Math.abs(glyph.getPitchPosition());
+
+                // Very strict for percussion
+                if (eval.shape == Shape.PERCUSSION_CLEF) {
+                    return pitchAbs < 2;
+                }
+
+                // Must be within staff height for the other clefs
+                return pitchAbs < 4;
             }
         };
 
