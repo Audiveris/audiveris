@@ -1090,6 +1090,9 @@ public class BasicSheet
         SheetIdResolver resolver = new SheetIdResolver();
         um.setProperty(IDResolver.class.getName(), resolver);
 
+        //        um.setProperty("com.sun.xml.bind.IDResolver", resolver);
+        //        um.setProperty("com.sun.xml.internal.bind.IDResolver", resolver);
+        //
         ///um.setListener(new Jaxb.UnmarshalLogger());
         //        watch.start("unmarshal");
         BasicSheet sheet = (BasicSheet) um.unmarshal(in);

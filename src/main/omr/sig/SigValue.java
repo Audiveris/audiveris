@@ -266,10 +266,10 @@ public class SigValue
 
         /**
          * Generate a SigValue out of the existing SIG.
-         * We separate Inter instances already marshaled (the 'usedVertices') from the other
-         * instances (the 'tempVertices) that are not used out of the SIG.
+         * We separate Inter instances already marshalled (the 'interRefs') from the other
+         * instances (the 'interDefs') that are used only in SIG.
          *
-         * @param sig the existing SIG whose content is to stored into a SigValue
+         * @param sig the existing SIG whose content is to be stored into a SigValue
          * @return the generated SigValue instance
          * @throws Exception
          */
@@ -279,16 +279,18 @@ public class SigValue
         {
             SigValue sigValue = new SigValue();
 
-            // Dispose of interSet: from now on, any marshalling will go to interDefs
+            // Dispose of interSet: from now on, any marshalling will go directly to interDefs
             InterSet interSet = sig.getSystem().getInterSet();
-            HashSet<String> defined = interSet.getInters();
+            HashSet<AbstractInter> defined = interSet.getInters();
             sig.getSystem().setInterSet(null);
 
             for (Inter inter : sig.vertexSet()) {
-                if (defined.contains(inter.getId())) {
-                    sigValue.interRefs.add((AbstractInter) inter);
+                AbstractInter abstractInter = (AbstractInter) inter;
+
+                if (!defined.contains(abstractInter)) {
+                    sigValue.interDefs.add(abstractInter);
                 } else {
-                    sigValue.interDefs.add((AbstractInter) inter);
+                    sigValue.interRefs.add(abstractInter);
                 }
             }
 
@@ -305,7 +307,7 @@ public class SigValue
          *
          * @param sigValue the value to be converted
          * @return a new SIG instance, to be later populated via {@link #populateSig}
-         * @throws java.lang.Exception
+         * @throws Exception
          */
         @Override
         public SIGraph unmarshal (SigValue sigValue)
@@ -326,15 +328,15 @@ public class SigValue
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final HashSet<String> defined = new HashSet<String>();
+        private final HashSet<AbstractInter> defined = new HashSet<AbstractInter>();
 
         //~ Methods --------------------------------------------------------------------------------
-        public void addInter (Inter inter)
+        public void addInter (AbstractInter inter)
         {
-            defined.add(inter.getId());
+            defined.add(inter);
         }
 
-        public HashSet<String> getInters ()
+        public HashSet<AbstractInter> getInters ()
         {
             return defined;
         }

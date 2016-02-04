@@ -90,8 +90,8 @@ public class RunTable
             RunTable.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    // Persistent
-    //-----------
+    // Persistent data
+    //----------------
     /** Orientation, the same for this table and all contained runs. */
     @XmlAttribute
     private final Orientation orientation;
@@ -108,8 +108,8 @@ public class RunTable
     @XmlElement(name = "runs")
     private final RunSequence[] sequences;
 
-    // Transient
-    //----------
+    // Transient data
+    //---------------
     /** Hosted event service for UI events related to this table (Runs), if any. */
     private RunService runService;
 

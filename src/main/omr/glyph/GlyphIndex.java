@@ -362,28 +362,6 @@ public class GlyphIndex
         return new SkippingIterator(weakIndex.iterator());
     }
 
-    //
-    //    //----------//
-    //    // iterator //
-    //    //----------//
-    //    public Iterator<Glyph> iterator (Group group)
-    //    {
-    //        return new SkippingIterator(byGroup.get(group).iterator());
-    //    }
-    //
-    //    //----------//
-    //    // iterator //
-    //    //----------//
-    //    /**
-    //     * Iterator on existing glyphs which exhibit any of the required groups.
-    //     * @param groups the required groups
-    //     * @return the iterator
-    //     */
-    //    public Iterator<Glyph> iteratorAny (EnumSet<Group> groups)
-    //    {
-    //        return new SkippingIterator(byGroup.get(group).iterator());
-    //    }
-    //
     //--------------------//
     // lookupVirtualGlyph //
     //--------------------//

@@ -14,7 +14,6 @@ package omr.util;
 import omr.glyph.BasicGlyph;
 
 import omr.ui.selection.EntityService;
-
 import omr.ui.symbol.BasicSymbol;
 
 import org.slf4j.Logger;

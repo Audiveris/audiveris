@@ -56,8 +56,8 @@ public class StaffLine
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
-    // Persistent
-    //-----------
+    // Persistent data
+    //----------------
     //
     /** Absolute defining points (including start & stop points). */
     @XmlElement(name = "point")
@@ -73,8 +73,8 @@ public class StaffLine
     @XmlAttribute(name = "glyph")
     protected Glyph glyph;
 
-    // Transient
-    //----------
+    // Transient data
+    //---------------
     //
     /** Curved line across all defining points. */
     protected NaturalSpline spline;

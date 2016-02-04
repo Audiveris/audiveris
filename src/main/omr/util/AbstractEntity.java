@@ -37,11 +37,18 @@ public abstract class AbstractEntity
             AbstractEntity.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /** Identity for debugging. */
     @XmlID
     @XmlAttribute(name = "id")
     protected String id;
 
+    // Transient data
+    //---------------
+    //
     /** (Debug) flag this as VIP. */
     protected boolean vip;
 
