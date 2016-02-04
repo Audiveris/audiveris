@@ -637,6 +637,12 @@ public class GlyphIndex
 
             return glyph;
         }
+        
+        @Override
+        public void remove()
+        {
+            throw new UnsupportedOperationException();
+        }
 
         private Glyph findNextGlyph ()
         {
