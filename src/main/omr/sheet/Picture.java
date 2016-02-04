@@ -141,7 +141,6 @@ public class Picture
         //~ Enumeration constant initializers ------------------------------------------------------
 
         BINARY,
-        NO_STAFF,
         HEAD_SPOTS;
     }
 

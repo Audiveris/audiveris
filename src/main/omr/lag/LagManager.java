@@ -17,13 +17,13 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.run.Orientation;
-import static omr.run.Orientation.HORIZONTAL;
-import static omr.run.Orientation.VERTICAL;
+
+import static omr.run.Orientation.*;
+
 import omr.run.Run;
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
-import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
@@ -228,7 +228,7 @@ public class LagManager
     public void rebuildHLag ()
     {
         // Build tables
-        RunTable sourceTable = sheet.getPicture().getTable(Picture.TableKey.NO_STAFF);
+        RunTable sourceTable = sheet.getPicture().buildNoStaffTable();
         RunTable horiTable = filterRuns(sourceTable, null);
 
         // Repopulate hLag
@@ -249,14 +249,6 @@ public class LagManager
     public void setLag (String key,
                         Lag lag)
     {
-        //        Lag oldLag = getLag(key);
-        //
-        //        if ((oldLag != null) && (OMR.getGui() != null)) {
-        //            logger.warn("Need to cut lag services?");
-        //
-        //            ///oldLag.cutServices();
-        //        }
-        //
         lagMap.put(key, lag);
 
         if ((lag != null) && (OMR.getGui() != null) && (lag.getEntityService() == null)) {
@@ -329,7 +321,7 @@ public class LagManager
     private void rebuildBothLags ()
     {
         // Build tables
-        RunTable sourceTable = sheet.getPicture().getTable(Picture.TableKey.NO_STAFF);
+        RunTable sourceTable = sheet.getPicture().buildNoStaffTable();
         RunTable vertTable = new RunTable(VERTICAL, sheet.getWidth(), sheet.getHeight());
         RunTable horiTable = filterRuns(sourceTable, vertTable);
 

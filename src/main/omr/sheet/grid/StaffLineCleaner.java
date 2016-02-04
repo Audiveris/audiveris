@@ -17,9 +17,6 @@ import omr.constant.ConstantSet;
 import omr.lag.Lag;
 import omr.lag.Lags;
 
-import omr.run.RunTable;
-
-import omr.sheet.Picture.TableKey;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 
@@ -35,7 +32,6 @@ import java.util.List;
  * Class {@code StaffLineCleaner} handles the "removal" of staff line pixels.
  * <ol>
  * <li>It removes from global {@link Lags#HLAG} lag the (horizontal) sections used by staff lines.
- * <li>It generates the {@link TableKey#NO_STAFF} table.
  * <li>It dispatches vertical & remaining horizontal sections into their containing system(s).
  * </ol>
  *
@@ -89,10 +85,6 @@ public class StaffLineCleaner
                 hLag.removeSections(((StaffFilament) line).getMembers());
             }
         }
-
-        // Make the NO_STAFF buffer & table available
-        RunTable noStaffTable = sheet.getPicture().buildNoStaffTable();
-        sheet.getPicture().setTable(TableKey.NO_STAFF, noStaffTable);
 
         // Regenerate hLag from noStaff buffer
         sheet.getLagManager().rebuildHLag();
