@@ -68,8 +68,6 @@ public class FilamentIndex
      */
     public FilamentIndex (Sheet sheet)
     {
-        super("F");
-
         this.sheet = sheet;
 
         // Declared VIP IDs?

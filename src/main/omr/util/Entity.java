@@ -52,19 +52,12 @@ public interface Entity
      *
      * @return the entity ID
      */
-    String getId ();
-
-    /**
-     * Report the integer part of ID.
-     *
-     * @return integer ID
-     */
-    int getIntId ();
+    int getId ();
 
     /**
      * Assign an ID to this entity
      *
      * @param id the ID to be assigned to the entity
      */
-    void setId (String id);
+    void setId (int id);
 }

@@ -42,7 +42,6 @@ import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import omr.util.IdUtil;
 
 /**
  * Class {@code EntityBoard} is a basic board related to an entity type.
@@ -84,9 +83,6 @@ public class EntityBoard<E extends Entity>
     /** To avoid loop, indicate that update() method id being processed. */
     protected boolean selfUpdating = false;
 
-    /** Prefix for entity IDs. */
-    protected String prefix;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EntityBoard} object.
@@ -100,8 +96,6 @@ public class EntityBoard<E extends Entity>
                         boolean expanded)
     {
         super(desc, entityService, eventsRead, true, true, true, expanded);
-
-        prefix = entityService.getIndex().getPrefix();
 
         // Count
         count = getCountField();
@@ -216,7 +210,7 @@ public class EntityBoard<E extends Entity>
                                 this,
                                 SelectionHint.ENTITY_INIT,
                                 null,
-                                prefix + spinner.getValue()));
+                                (Integer) spinner.getValue()));
             }
         } else {
             logger.error("No known spinner");
@@ -331,8 +325,7 @@ public class EntityBoard<E extends Entity>
             // Dump
             dump.setEnabled(true);
             // Id
-            final Integer idValue = IdUtil.getIntValue(entity.getId());
-            idSpinner.setValue(idValue != null ? idValue : 0);
+            idSpinner.setValue(entity.getId());
         } else {
             // VIP
             vip.setEnabled(false);

@@ -31,7 +31,9 @@ import omr.math.NaturalSpline;
 import omr.math.Population;
 
 import omr.run.Orientation;
+
 import static omr.run.Orientation.*;
+
 import omr.run.Run;
 import omr.run.RunTable;
 
@@ -51,8 +53,9 @@ import omr.ui.util.UIUtil;
 import omr.util.Dumping;
 import omr.util.Entities;
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
-import omr.util.IdUtil;
+
 import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.StopWatch;
@@ -720,11 +723,11 @@ public class LinesRetriever
     private void dispatchShortSections (List<Section> thickSections,
                                         List<Section> thinSections)
     {
-        final String maxLongId = sheet.getLagManager().getLongSectionMaxId();
+        final int maxLongId = sheet.getLagManager().getLongSectionMaxId();
 
         for (Section section : hLag.getEntities()) {
             // Skip long sections
-            if (IdUtil.compare(section.getId(), maxLongId) <= 0) {
+            if (section.getId() <= maxLongId) {
                 continue;
             }
 
@@ -835,7 +838,7 @@ public class LinesRetriever
     private void includeSections (List<Section> sections)
     {
         // Use a temporary vector indexed by section ID
-        final int idMax = IdUtil.getIntValue(hLag.getLastId());
+        final int idMax = hLag.getLastId();
         final boolean[] included = new boolean[idMax + 1];
         Arrays.fill(included, false);
 
@@ -871,7 +874,7 @@ public class LinesRetriever
                     for (int i = iMin; i <= iMax; i++) {
                         Section section = sections.get(i);
 
-                        if (included[section.getIntId()]) {
+                        if (included[section.getId()]) {
                             continue;
                         }
 
@@ -899,7 +902,7 @@ public class LinesRetriever
                     // Actually include the retrieved stickers
                     for (Section section : stickers) {
                         fil.addSection(section); // Invalidates filament cache, including extrema
-                        included[section.getIntId()] = true;
+                        included[section.getId()] = true;
                     }
 
                     // Restore extrema points (keep abscissae, but recompute ordinates)

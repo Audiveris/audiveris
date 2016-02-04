@@ -12,7 +12,6 @@
 package omr.glyph;
 
 import omr.util.Entity;
-import omr.util.IdUtil;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -58,7 +57,7 @@ public class WeakGlyph
             return +1;
         }
 
-        return IdUtil.compare(thisGlyph.getId(), thatGlyph.getId());
+        return Integer.compare(thisGlyph.getId(), thatGlyph.getId());
     }
 
     @Override
@@ -126,24 +125,12 @@ public class WeakGlyph
     }
 
     @Override
-    public String getId ()
+    public int getId ()
     {
         final Glyph glyph = get();
 
         if (glyph != null) {
             return glyph.getId();
-        }
-
-        return null;
-    }
-
-    @Override
-    public int getIntId ()
-    {
-        final Glyph glyph = get();
-
-        if (glyph != null) {
-            return glyph.getIntId();
         }
 
         return 0;
@@ -179,7 +166,7 @@ public class WeakGlyph
     }
 
     @Override
-    public void setId (String id)
+    public void setId (int id)
     {
         final Glyph glyph = get();
 

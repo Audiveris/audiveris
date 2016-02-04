@@ -27,9 +27,9 @@ import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
+import omr.util.IntUtil;
 import omr.util.Navigable;
 import omr.util.Predicate;
-import omr.util.StringUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,10 +63,10 @@ public class LagManager
     private final Map<String, Lag> lagMap = new TreeMap<String, Lag>();
 
     /** Id of last long horizontal section. */
-    private String lastLongHSectionId;
+    private int lastLongHSectionId;
 
     /** (Debug)Predefined IDs for VIP sections. */
-    private final EnumMap<Orientation, List<String>> vipMap;
+    private final EnumMap<Orientation, List<Integer>> vipMap;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -214,7 +214,7 @@ public class LagManager
      *
      * @return the id of the last long horizontal section
      */
-    public String getLongSectionMaxId ()
+    public int getLongSectionMaxId ()
     {
         return lastLongHSectionId;
     }
@@ -272,7 +272,7 @@ public class LagManager
      *
      * @param id the id of the last long horizontal section
      */
-    public void setLongSectionMaxId (String id)
+    public void setLongSectionMaxId (int id)
     {
         lastLongHSectionId = id;
     }
@@ -282,11 +282,11 @@ public class LagManager
     //----------------//
     public void setVipSections (Orientation orientation)
     {
-        List<String> ids = vipMap.get(orientation);
+        List<Integer> ids = vipMap.get(orientation);
         Lag lag = lagMap.get(orientation.isVertical() ? Lags.VLAG : Lags.HLAG);
 
         // Debug sections VIPs
-        for (String id : ids) {
+        for (int id : ids) {
             Section sect = lag.getEntity(id);
 
             if (sect != null) {
@@ -299,16 +299,16 @@ public class LagManager
     //----------------//
     // getVipSections //
     //----------------//
-    private EnumMap<Orientation, List<String>> getVipSections ()
+    private EnumMap<Orientation, List<Integer>> getVipSections ()
     {
-        EnumMap<Orientation, List<String>> map = new EnumMap<Orientation, List<String>>(
+        EnumMap<Orientation, List<Integer>> map = new EnumMap<Orientation, List<Integer>>(
                 Orientation.class);
 
         for (Orientation orientation : Orientation.values()) {
             String vipStr = orientation.isVertical()
                     ? constants.verticalVipSections.getValue()
                     : constants.horizontalVipSections.getValue();
-            List<String> ids = StringUtil.parseStrings(vipStr);
+            List<Integer> ids = IntUtil.parseInts(vipStr);
 
             if (!ids.isEmpty()) {
                 logger.info("{} VIP sections: {}", orientation, ids);

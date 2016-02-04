@@ -27,7 +27,6 @@ import omr.sig.SIGraph;
 import omr.ui.util.AttachmentHolder;
 
 import omr.util.Entity;
-import omr.util.IdUtil;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -75,7 +74,7 @@ public interface Inter
         public int compare (Inter i1,
                             Inter i2)
         {
-            return IdUtil.compare(i1.getId(), i2.getId());
+            return Integer.compare(i1.getId(), i2.getId());
         }
     };
 
@@ -167,7 +166,7 @@ public interface Inter
             }
 
             // Finally, use id ...
-            return IdUtil.compare(o1.getId(), o2.getId());
+            return Integer.compare(o1.getId(), o2.getId());
         }
     };
 

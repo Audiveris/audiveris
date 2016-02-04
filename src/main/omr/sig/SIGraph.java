@@ -17,6 +17,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 
 import omr.math.GeoOrder;
+
 import static omr.math.GeoOrder.*;
 
 import omr.run.Orientation;
@@ -36,7 +37,6 @@ import omr.sig.relation.Exclusion.Cause;
 import omr.sig.relation.Relation;
 import omr.sig.relation.Support;
 
-import omr.util.IdUtil;
 import omr.util.Navigable;
 import omr.util.Predicate;
 
@@ -147,7 +147,7 @@ public class SIGraph
         inter.setSig(this);
 
         // Update index
-        if (inter.getId() == null) {
+        if (inter.getId() == 0) {
             system.getSheet().getInterIndex().register(inter);
         } else {
             system.getSheet().getInterIndex().insert(inter);
@@ -856,7 +856,7 @@ public class SIGraph
                                       Inter inter2,
                                       Cause cause)
     {
-        final boolean direct = IdUtil.compare(inter1.getId(), inter2.getId()) < 0;
+        final boolean direct = inter1.getId() < inter2.getId();
         final Inter source = direct ? inter1 : inter2;
         final Inter target = direct ? inter2 : inter1;
 

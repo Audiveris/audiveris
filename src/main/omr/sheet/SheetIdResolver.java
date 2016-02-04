@@ -74,8 +74,6 @@ public class SheetIdResolver
                       Object obj)
             throws SAXException
     {
-        logger.info("\n*** bind id:{} obj:{}", id, obj);
-
         if (obj instanceof BasicGlyph) {
             glyphMap.put(id, obj);
         } else {
@@ -109,8 +107,6 @@ public class SheetIdResolver
             @Override
             public Object call ()
             {
-                logger.info("\nresolve.Callable.call id:{} type:{}", id, targetType.getName());
-
                 final Object obj;
 
                 // For glyph, we do   get type = BasicGlyph class
@@ -119,10 +115,6 @@ public class SheetIdResolver
                     obj = glyphMap.get(id);
                 } else {
                     obj = interMap.get(id);
-                }
-
-                if (obj != null) {
-                    logger.warn("\ngot id:{} {}", id, obj);
                 }
 
                 return obj;

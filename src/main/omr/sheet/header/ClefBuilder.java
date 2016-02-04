@@ -193,7 +193,7 @@ public class ClefBuilder
                 inter.setBounds(clefBox);
                 inter.setStaff(staff);
 
-                String gid = inter.getGlyph().getId();
+                int gid = inter.getGlyph().getId();
                 sig.addVertex(inter);
                 logger.debug("Staff#{} {} g#{} {}", staff.getId(), inter, gid, clefBox);
 

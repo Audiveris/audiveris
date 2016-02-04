@@ -217,15 +217,9 @@ public class LinkedSection
     }
 
     @Override
-    public String getId ()
+    public int getId ()
     {
         return section.getId();
-    }
-
-    @Override
-    public int getIntId ()
-    {
-        return section.getIntId();
     }
 
     @Override
@@ -455,7 +449,7 @@ public class LinkedSection
     }
 
     @Override
-    public void setId (String id)
+    public void setId (int id)
     {
         section.setId(id);
     }

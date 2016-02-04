@@ -465,7 +465,7 @@ public class ShapeFocusBoard
         @Override
         public void stateChanged (ChangeEvent e)
         {
-            String id = (String) spinner.getValue();
+            Integer id = (Integer) spinner.getValue();
 
             int index = ids.indexOf(id);
             count.setText(index + "/" + (ids.size() - 1));

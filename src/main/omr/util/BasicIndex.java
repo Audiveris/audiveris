@@ -50,7 +50,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement
 @XmlType(propOrder = {
-    "prefix", "lastIdValue", "entities"}
+    "lastIdValue", "entities"}
 )
 public class BasicIndex<E extends Entity>
         implements EntityIndex<E>
@@ -65,20 +65,15 @@ public class BasicIndex<E extends Entity>
     // Persistent data
     //----------------
     //
-    /** Prefix for IDs. */
-    @XmlAttribute(name = "prefix")
-    protected final String prefix;
-
     /** Global id used to uniquely identify an entity instance. */
-    @XmlAttribute(name = "last-id-value")
+    @XmlAttribute(name = "last-id")
     @XmlJavaTypeAdapter(Jaxb.AtomicIntegerAdapter.class)
     protected final AtomicInteger lastIdValue = new AtomicInteger(0);
 
     /** Collection of all entities registered in this index, sorted on ID. */
     @XmlElement(name = "entities")
     @XmlJavaTypeAdapter(Adapter.class)
-    protected final ConcurrentSkipListMap<String, E> entities = new ConcurrentSkipListMap<String, E>(
-            IdUtil.byId);
+    protected final ConcurrentSkipListMap<Integer, E> entities = new ConcurrentSkipListMap<Integer, E>();
 
     // Transient data
     //---------------
@@ -95,21 +90,10 @@ public class BasicIndex<E extends Entity>
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BasicIndex} object.
-     *
-     * @param prefix prefix to be used for all IDs in this index
      */
-    public BasicIndex (String prefix)
+    public BasicIndex ()
     {
-        this.prefix = prefix;
         values = entities.values();
-    }
-
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    protected BasicIndex ()
-    {
-        this.prefix = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -126,7 +110,7 @@ public class BasicIndex<E extends Entity>
     // getEntity //
     //-----------//
     @Override
-    public E getEntity (String id)
+    public E getEntity (int id)
     {
         return entities.get(id);
     }
@@ -144,55 +128,52 @@ public class BasicIndex<E extends Entity>
     // getIdAfter //
     //------------//
     @Override
-    public String getIdAfter (String id)
+    public int getIdAfter (int id)
     {
-        if (id == null) {
+        if (id == 0) {
             if (!entities.isEmpty()) {
                 for (int i = 0, iMax = lastIdValue.get(); i <= iMax; i++) {
-                    final String newId = prefix + i;
-                    final E entity = entities.get(newId);
+                    final E entity = entities.get(i);
 
                     if (isValid(entity)) {
-                        return newId;
+                        return i;
                     }
                 }
             } else {
-                return null;
+                return 0;
             }
         }
 
-        for (int i = IdUtil.getIntValue(id) + 1, iMax = lastIdValue.get(); i <= iMax; i++) {
-            final String newId = prefix + i;
-            final E entity = entities.get(newId);
+        for (int i = id + 1, iMax = lastIdValue.get(); i <= iMax; i++) {
+            final E entity = entities.get(i);
 
             if (isValid(entity)) {
-                return newId;
+                return i;
             }
         }
 
-        return null;
+        return 0;
     }
 
     //-------------//
     // getIdBefore //
     //-------------//
     @Override
-    public String getIdBefore (String id)
+    public int getIdBefore (int id)
     {
-        if (id == null) {
-            return null;
+        if (id == 0) {
+            return 0;
         }
 
-        for (int i = IdUtil.getIntValue(id) - 1; i >= 0; i--) {
-            final String newId = prefix + i;
-            final E entity = entities.get(newId);
+        for (int i = id - 1; i >= 0; i--) {
+            final E entity = entities.get(i);
 
             if (isValid(entity)) {
-                return newId;
+                return i;
             }
         }
 
-        return null;
+        return 0;
     }
 
     //-----------------//
@@ -204,8 +185,7 @@ public class BasicIndex<E extends Entity>
         if ((idValue == null) || (idValue == 0)) {
             if (!entities.isEmpty()) {
                 for (int i = 0, iMax = lastIdValue.get(); i <= iMax; i++) {
-                    final String newId = prefix + i;
-                    final E entity = entities.get(newId);
+                    final E entity = entities.get(i);
 
                     if (isValid(entity)) {
                         return i;
@@ -217,8 +197,7 @@ public class BasicIndex<E extends Entity>
         }
 
         for (int i = idValue + 1, iMax = lastIdValue.get(); i <= iMax; i++) {
-            final String newId = prefix + i;
-            final E entity = entities.get(newId);
+            final E entity = entities.get(i);
 
             if (isValid(entity)) {
                 return i;
@@ -239,8 +218,7 @@ public class BasicIndex<E extends Entity>
         }
 
         for (int i = idValue - 1; i >= 0; i--) {
-            final String newId = prefix + i;
-            final E entity = entities.get(newId);
+            final E entity = entities.get(i);
 
             if (isValid(entity)) {
                 return i;
@@ -254,9 +232,9 @@ public class BasicIndex<E extends Entity>
     // getLastId //
     //-----------//
     @Override
-    public String getLastId ()
+    public int getLastId ()
     {
-        return prefix + lastIdValue.get();
+        return lastIdValue.get();
     }
 
     //---------//
@@ -266,15 +244,6 @@ public class BasicIndex<E extends Entity>
     public String getName ()
     {
         return "";
-    }
-
-    //-----------//
-    // getPrefix //
-    //-----------//
-    @Override
-    public String getPrefix ()
-    {
-        return prefix;
     }
 
     //--------//
@@ -288,9 +257,9 @@ public class BasicIndex<E extends Entity>
      */
     public void insert (E entity)
     {
-        String id = entity.getId();
+        int id = entity.getId();
 
-        if (id == null) {
+        if (id == 0) {
             throw new IllegalArgumentException("Entity has no ID");
         }
 
@@ -306,9 +275,9 @@ public class BasicIndex<E extends Entity>
     // isVipId //
     //---------//
     @Override
-    public boolean isVipId (String id)
+    public boolean isVipId (int id)
     {
-        return (vipIds != null) && vipIds.contains(IdUtil.getIntValue(id));
+        return (vipIds != null) && vipIds.contains(id);
     }
 
     //----------//
@@ -324,14 +293,14 @@ public class BasicIndex<E extends Entity>
     // register //
     //----------//
     @Override
-    public String register (E entity)
+    public int register (E entity)
     {
         // Already registered?
-        if (entity.getId() != null) {
+        if (entity.getId() != 0) {
             return entity.getId();
         }
 
-        String id = generateId();
+        int id = generateId();
         entity.setId(id);
 
         entities.put(id, entity);
@@ -377,15 +346,9 @@ public class BasicIndex<E extends Entity>
     // setLastId //
     //-----------//
     @Override
-    public void setLastId (String lastId)
+    public void setLastId (int lastId)
     {
-        Integer newValue = IdUtil.getIntValue(lastId);
-
-        if (newValue == null) {
-            throw new IllegalArgumentException("Cannot reset lastId with " + lastId);
-        }
-
-        this.lastIdValue.set(newValue);
+        this.lastIdValue.set(lastId);
     }
 
     //-----------//
@@ -413,9 +376,9 @@ public class BasicIndex<E extends Entity>
     //------------//
     // generateId //
     //------------//
-    protected String generateId ()
+    protected int generateId ()
     {
-        return prefix + lastIdValue.incrementAndGet();
+        return lastIdValue.incrementAndGet();
     }
 
     //-----------//
@@ -488,12 +451,12 @@ public class BasicIndex<E extends Entity>
      * @param <E> the specific entity type
      */
     private static class Adapter<E extends AbstractEntity>
-            extends XmlAdapter<IndexValue<E>, ConcurrentSkipListMap<String, E>>
+            extends XmlAdapter<IndexValue<E>, ConcurrentSkipListMap<Integer, E>>
     {
         //~ Methods --------------------------------------------------------------------------------
 
         @Override
-        public IndexValue<E> marshal (ConcurrentSkipListMap<String, E> map)
+        public IndexValue<E> marshal (ConcurrentSkipListMap<Integer, E> map)
                 throws Exception
         {
             IndexValue<E> value = new IndexValue<E>();
@@ -503,9 +466,10 @@ public class BasicIndex<E extends Entity>
         }
 
         @Override
-        public ConcurrentSkipListMap<String, E> unmarshal (IndexValue<E> value)
+        public ConcurrentSkipListMap<Integer, E> unmarshal (IndexValue<E> value)
                 throws Exception
         {
+            // TODO: is sorting needed?
             Collections.sort(
                     value.list,
                     new Comparator<E>()
@@ -514,12 +478,11 @@ public class BasicIndex<E extends Entity>
                 public int compare (E e1,
                                     E e2)
                 {
-                    return IdUtil.compare(e1.getId(), e2.getId());
+                    return Integer.compare(e1.getId(), e2.getId());
                 }
             });
 
-            ConcurrentSkipListMap<String, E> map = new ConcurrentSkipListMap<String, E>(
-                    IdUtil.byId);
+            ConcurrentSkipListMap<Integer, E> map = new ConcurrentSkipListMap<Integer, E>();
 
             for (E entity : value.list) {
                 map.put(entity.getId(), entity);

@@ -36,8 +36,7 @@ public class Entities
         public int compare (Entity o1,
                             Entity o2)
         {
-            ///return o1.getId() - o2.getId(); // When integers
-            return IdUtil.compare(o1.getId(), o2.getId()); // When prefix + integers
+            return o1.getId() - o2.getId();
         }
     };
 

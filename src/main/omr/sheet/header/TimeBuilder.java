@@ -425,14 +425,14 @@ public abstract class TimeBuilder
             Collections.sort(
                     lines,
                     new Comparator<Line>()
-                    {
-                        @Override
-                        public int compare (Line o1,
-                                            Line o2)
-                        {
-                            return Double.compare(o1.getOffset(), o2.getOffset());
-                        }
-                    });
+            {
+                @Override
+                public int compare (Line o1,
+                                    Line o2)
+                {
+                    return Double.compare(o1.getOffset(), o2.getOffset());
+                }
+            });
 
             Line chosenLine = lines.get(0);
             List<Inter> kept = new ArrayList<Inter>();
@@ -979,8 +979,8 @@ public abstract class TimeBuilder
                     }
 
                     spaceStop = x;
-                } else {
-                    // We are NOT in a space
+                } else // We are NOT in a space
+                {
                     if (spaceStart != -1) {
                         // End of space
                         spaces.add(new Space(spaceStart, spaceStop));
@@ -1042,7 +1042,7 @@ public abstract class TimeBuilder
                     sig.addVertex(inter);
                     inters.add(inter);
 
-                    String gid = inter.getGlyph().getId();
+                    int gid = inter.getGlyph().getId();
                     logger.debug(
                             "Staff#{} {} {} g#{} {}",
                             staff.getId(),
@@ -1092,7 +1092,7 @@ public abstract class TimeBuilder
                     sig.addVertex(inter);
                     wholes.add(inter);
 
-                    String gid = inter.getGlyph().getId();
+                    int gid = inter.getGlyph().getId();
                     logger.debug("Staff#{} {} g#{} {}", staff.getId(), inter, gid, timeBox);
                 }
             }
@@ -1229,17 +1229,20 @@ public abstract class TimeBuilder
          * <p>
          * The selection is driven from the whole system column point of view, as follows:
          * <ol>
-         * <li>For each staff, identify all the possible & supported AbstractTimeInter instances, each
- with its own grade.</li>
-         * <li>Then for each possible AbstractTimeInter value (called TimeValue), make sure it appears
- in each staff as a AbstractTimeInter instance and assign a global grade (as average of
- staff-based AbstractTimeInter instances for the same TimeValue).</li>
+         * <li>For each staff, identify all the possible & supported AbstractTimeInter instances,
+         * each
+         * with its own grade.</li>
+         * <li>Then for each possible AbstractTimeInter value (called TimeValue), make sure it
+         * appears
+         * in each staff as a AbstractTimeInter instance and assign a global grade (as average of
+         * staff-based AbstractTimeInter instances for the same TimeValue).</li>
          * <li>The best system-based TimeValue is then chosen as THE time signature for this
          * system column. </li>
-         * <li>All staff non compatible AbstractTimeInter instances are destroyed and the member numbers
- that don't belong to the chosen AbstractTimeInter are destroyed.
- (TODO: perhaps removed from SIG but saved apart and restored if ever a new TimeValue
- is chosen based on measure intrinsic rhythm data?)</li>
+         * <li>All staff non compatible AbstractTimeInter instances are destroyed and the member
+         * numbers
+         * that don't belong to the chosen AbstractTimeInter are destroyed.
+         * (TODO: perhaps removed from SIG but saved apart and restored if ever a new TimeValue
+         * is chosen based on measure intrinsic rhythm data?)</li>
          * </ol>
          */
         protected void checkConsistency ()
@@ -1304,8 +1307,8 @@ public abstract class TimeBuilder
         /**
          * Report the system vector of values for each time value found.
          * A vector is an array, one element per staff, the element being the staff candidate
- AbstractTimeInter for the desired time value, or null if the time value has no acceptable
- candidate in this staff.
+         * AbstractTimeInter for the desired time value, or null if the time value has no acceptable
+         * candidate in this staff.
          *
          * @return the system vectors of candidates found, organized per TimeValue
          */

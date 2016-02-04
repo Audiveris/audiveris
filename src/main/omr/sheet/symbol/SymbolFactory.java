@@ -295,7 +295,7 @@ public class SymbolFactory
 
         Glyph glyph = inter.getGlyph();
 
-        if ((glyph != null) && (glyph.getId() == null)) {
+        if ((glyph != null) && (glyph.getId() == 0)) {
             sheet.getGlyphIndex().register(glyph);
         }
 

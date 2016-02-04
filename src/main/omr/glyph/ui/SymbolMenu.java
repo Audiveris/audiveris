@@ -641,7 +641,7 @@ public class SymbolMenu
             // Proposed compound?
             Glyph glyph = nest.getSelectedGlyph();
 
-            if ((glyphNb > 0) && (glyph != null) && (glyph.getId() == null)) {
+            if ((glyphNb > 0) && (glyph != null) && (glyph.getId() == 0)) {
                 SystemManager systemManager = sheet.getSystemManager();
 
                 for (SystemInfo system : systemManager.getSystemsOf(glyph)) {

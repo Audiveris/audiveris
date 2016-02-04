@@ -86,7 +86,7 @@ public class SpinnerIdModel<E extends Entity>
         if (id == 0) {
             ok = true;
         } else {
-            E entity = index.getEntity(index.getPrefix() + id);
+            E entity = index.getEntity(id);
 
             if (entity != null) {
                 ok = true;

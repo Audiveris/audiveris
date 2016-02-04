@@ -22,7 +22,7 @@ public class IdEvent
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** The selected entity id, which may be null. */
-    private final String id;
+    private final Integer id;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -36,7 +36,7 @@ public class IdEvent
     public IdEvent (Object source,
                     SelectionHint hint,
                     MouseMovement movement,
-                    String id)
+                    int id)
     {
         super(source, hint, null);
         this.id = id;
@@ -47,7 +47,7 @@ public class IdEvent
     // getData //
     //---------//
     @Override
-    public String getData ()
+    public Integer getData ()
     {
         return id;
     }

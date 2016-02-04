@@ -28,7 +28,6 @@ import omr.ui.selection.MouseMovement;
 import omr.ui.selection.SelectionHint;
 
 import omr.util.BasicIndex;
-import omr.util.IdUtil;
 import omr.util.IntUtil;
 import omr.util.Navigable;
 
@@ -87,7 +86,6 @@ public class InterIndex
      */
     private InterIndex ()
     {
-        super("");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -183,7 +181,7 @@ public class InterIndex
         public InterIndexValue marshal (InterIndex index)
                 throws Exception
         {
-            return new InterIndexValue(index.getPrefix(), IdUtil.getIntValue(index.getLastId()));
+            return new InterIndexValue(index.getLastId());
         }
 
         @Override
@@ -191,7 +189,7 @@ public class InterIndex
                 throws Exception
         {
             InterIndex index = new InterIndex();
-            index.setLastId(shell.prefix + shell.lastIdValue);
+            index.setLastId(shell.lastIdValue);
 
             return index;
         }
@@ -205,10 +203,7 @@ public class InterIndex
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        @XmlAttribute(name = "prefix")
-        private String prefix;
-
-        @XmlAttribute(name = "last-id-value")
+        @XmlAttribute(name = "last-id")
         private int lastIdValue;
 
         //~ Constructors ---------------------------------------------------------------------------
@@ -216,10 +211,8 @@ public class InterIndex
         {
         }
 
-        public InterIndexValue (String prefix,
-                                int lastIdValue)
+        public InterIndexValue (int lastIdValue)
         {
-            this.prefix = prefix;
             this.lastIdValue = lastIdValue;
         }
     }

@@ -65,7 +65,7 @@ public class Sample
                    int top,
                    RunTable runTable,
                    int interline,
-                   String id,
+                   int id,
                    Shape shape)
     {
         super(left, top, runTable);
@@ -79,7 +79,7 @@ public class Sample
      */
     public Sample ()
     {
-        this(0, 0, null, 0, null, null);
+        this(0, 0, null, 0, 0, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

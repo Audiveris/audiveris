@@ -13,7 +13,6 @@ package omr.glyph;
 
 import omr.image.Table;
 
-import omr.util.IdUtil;
 import omr.util.Predicate;
 
 import org.jgrapht.graph.SimpleGraph;
@@ -55,7 +54,7 @@ public abstract class Glyphs
         public int compare (Glyph g1,
                             Glyph g2)
         {
-            return IdUtil.compare(g1.getId(), g2.getId());
+            return Integer.compare(g1.getId(), g2.getId());
         }
     };
 
@@ -102,7 +101,7 @@ public abstract class Glyphs
             }
 
             // Finally, use id ...
-            return IdUtil.compare(g1.getId(), g2.getId());
+            return Integer.compare(g1.getId(), g2.getId());
         }
     };
 
@@ -350,10 +349,10 @@ public abstract class Glyphs
     // containsId //
     //------------//
     public static boolean containsId (Collection<Glyph> glyphs,
-                                      String id)
+                                      int id)
     {
         for (Glyph glyph : glyphs) {
-            if (glyph.getId().equals(id)) {
+            if (glyph.getId() == id) {
                 return true;
             }
         }

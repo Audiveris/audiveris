@@ -60,7 +60,7 @@ public interface EntityIndex<E extends Entity>
      * @param id the entity id to search for
      * @return the entity found, or null otherwise
      */
-    E getEntity (String id);
+    E getEntity (int id);
 
     /**
      * Report the entity selection service, if any.
@@ -73,24 +73,24 @@ public interface EntityIndex<E extends Entity>
      * Report the used id, if any, right after the provided one
      *
      * @param id the provided id
-     * @return the next used id, or null
+     * @return the next used id, or 0
      */
-    String getIdAfter (String id);
+    int getIdAfter (int id);
 
     /**
      * Report the used id, if any, right before the provided one
      *
      * @param id the provided id
-     * @return the previous used id, or null
+     * @return the previous used id, or 0
      */
-    String getIdBefore (String id);
+    int getIdBefore (int id);
 
     /**
      * Report the last ID assigned so far.
      *
      * @return the last ID used so far, 0 if none
      */
-    String getLastId ();
+    int getLastId ();
 
     /**
      * Report the distinguished name of this index (for debug mainly).
@@ -100,19 +100,12 @@ public interface EntityIndex<E extends Entity>
     String getName ();
 
     /**
-     * Report the prefix used for IDs in this index.
-     *
-     * @return the ID prefix string
-     */
-    String getPrefix ();
-
-    /**
      * Check whether the provided ID has been declared as VIP.
      *
      * @param id the ID to check
      * @return true if id was declared as VIP
      */
-    boolean isVipId (String id);
+    boolean isVipId (int id);
 
     /**
      * Return an iterator on entities in this index.
@@ -127,7 +120,7 @@ public interface EntityIndex<E extends Entity>
      * @param entity the provided entity
      * @return the assigned unique id
      */
-    String register (E entity);
+    int register (E entity);
 
     /**
      * Remove the provided entity
@@ -153,5 +146,5 @@ public interface EntityIndex<E extends Entity>
      *
      * @param lastId ID assigned
      */
-    void setLastId (String lastId);
+    void setLastId (int lastId);
 }

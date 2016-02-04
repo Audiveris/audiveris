@@ -152,7 +152,7 @@ public class GlyphsController
      * @param id the glyph id
      * @return the glyph found, or null if not
      */
-    public Glyph getGlyphById (String id)
+    public Glyph getGlyphById (int id)
     {
         return model.getGlyphById(id);
     }

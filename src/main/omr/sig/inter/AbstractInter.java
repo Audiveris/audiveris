@@ -825,10 +825,10 @@ public abstract class AbstractInter
     // setId //
     //-------//
     @Override
-    public void setId (String id)
+    public void setId (int id)
     {
-        assert this.id == null : "Reassigning inter id";
-        assert id != null : "Assigning null inter id";
+        assert this.id == 0 : "Reassigning inter id";
+        assert id != 0 : "Assigning zero inter id";
 
         this.id = id;
     }
@@ -907,7 +907,7 @@ public abstract class AbstractInter
     protected void beforeMarshal (Marshaller m)
     {
         // Make sure this Inter instance either has no glyph or has a duly registered one
-        if ((glyph != null) && (glyph.getId() == null)) {
+        if ((glyph != null) && (glyph.getId() == 0)) {
             logger.error("Inter referencing a non-registered glyph: " + this + " glyph: " + glyph);
         }
 

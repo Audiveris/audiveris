@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code AbstractEntity}
@@ -44,16 +45,14 @@ public abstract class AbstractEntity
     /** Identity for debugging. */
     @XmlID
     @XmlAttribute(name = "id")
-    protected String id;
+    @XmlJavaTypeAdapter(value = Jaxb.StringIntegerAdapter.class, type = int.class)
+    protected int id;
 
     // Transient data
     //---------------
     //
     /** (Debug) flag this as VIP. */
     protected boolean vip;
-
-    /** BINGO: Temporary fix. */
-    private int intId = -1;
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
@@ -69,22 +68,9 @@ public abstract class AbstractEntity
     // getId //
     //-------//
     @Override
-    public String getId ()
+    public int getId ()
     {
         return id;
-    }
-
-    //----------//
-    // getIntId //
-    //----------//
-    @Override
-    public int getIntId ()
-    {
-        if (intId == -1) {
-            intId = IdUtil.getIntValue(id);
-        }
-
-        return intId;
     }
 
     //-------//
@@ -100,10 +86,9 @@ public abstract class AbstractEntity
     // setId //
     //-------//
     @Override
-    public void setId (String id)
+    public void setId (int id)
     {
         this.id = id;
-        intId = -1;
     }
 
     //--------//

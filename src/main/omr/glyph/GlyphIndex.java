@@ -32,7 +32,6 @@ import omr.ui.selection.SelectionService;
 
 import omr.util.BasicIndex;
 import omr.util.EntityIndex;
-import omr.util.IdUtil;
 import omr.util.IntUtil;
 
 import org.slf4j.Logger;
@@ -70,7 +69,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement
 @XmlType(propOrder = {
-    "prefix", "lastIdValue", "entities"}
+    "lastIdValue", "entities"}
 )
 public class GlyphIndex
         implements EntityIndex<Glyph>
@@ -205,7 +204,7 @@ public class GlyphIndex
     }
 
     @Override
-    public Glyph getEntity (String id)
+    public Glyph getEntity (int id)
     {
         WeakGlyph weak = weakIndex.getEntity(id);
 
@@ -223,13 +222,13 @@ public class GlyphIndex
     }
 
     @Override
-    public String getIdAfter (String id)
+    public int getIdAfter (int id)
     {
         return weakIndex.getIdAfter(id);
     }
 
     @Override
-    public String getIdBefore (String id)
+    public int getIdBefore (int id)
     {
         return weakIndex.getIdBefore(id);
     }
@@ -247,7 +246,7 @@ public class GlyphIndex
     }
 
     @Override
-    public String getLastId ()
+    public int getLastId ()
     {
         return weakIndex.getLastId();
     }
@@ -259,17 +258,6 @@ public class GlyphIndex
     public String getName ()
     {
         return "weakGlyphs";
-    }
-
-    //-----------//
-    // getPrefix //
-    //-----------//
-    /** Prefix for IDs. */
-    @Override
-    @XmlAttribute(name = "prefix")
-    public String getPrefix ()
-    {
-        return weakIndex.getPrefix();
     }
 
     //------------------//
@@ -348,7 +336,7 @@ public class GlyphIndex
     // isVipId //
     //---------//
     @Override
-    public boolean isVipId (String id)
+    public boolean isVipId (int id)
     {
         return weakIndex.isVipId(id);
     }
@@ -416,11 +404,11 @@ public class GlyphIndex
     // register //
     //----------//
     @Override
-    public String register (Glyph glyph)
+    public int register (Glyph glyph)
     {
-        String id = glyph.getId();
+        int id = glyph.getId();
 
-        if (id == null) {
+        if (id == 0) {
             WeakGlyph weak = new WeakGlyph(glyph);
 
             // Register in index
@@ -492,7 +480,7 @@ public class GlyphIndex
     }
 
     @Override
-    public void setLastId (String lastId)
+    public void setLastId (int lastId)
     {
         weakIndex.setLastId(lastId);
     }
@@ -501,10 +489,10 @@ public class GlyphIndex
     // getLastIdValue //
     //----------------//
     @SuppressWarnings("unchecked")
-    @XmlAttribute(name = "last-id-value")
+    @XmlAttribute(name = "last-id")
     private int getLastIdValue ()
     {
-        return IdUtil.getIntValue(weakIndex.getLastId());
+        return weakIndex.getLastId();
     }
 
     //-------------//
@@ -526,7 +514,7 @@ public class GlyphIndex
     @SuppressWarnings("unchecked")
     private void setLastIdValue (int value)
     {
-        weakIndex.setLastId(getPrefix() + value);
+        weakIndex.setLastId(value);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -593,14 +581,8 @@ public class GlyphIndex
     private static class WeakGlyphIndex
             extends BasicIndex<WeakGlyph>
     {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public WeakGlyphIndex ()
-        {
-            super("G");
-        }
-
         //~ Methods --------------------------------------------------------------------------------
+
         @Override
         public void insert (WeakGlyph weak)
         {

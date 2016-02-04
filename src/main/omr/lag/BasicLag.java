@@ -59,7 +59,6 @@ public class BasicLag
     public BasicLag (String name,
                      Orientation orientation)
     {
-        super(Lags.LEDGER_LAG.equals(name) ? "L" : (orientation.isVertical() ? "V" : "H"));
         this.name = name;
         this.orientation = orientation;
 

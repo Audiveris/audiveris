@@ -340,7 +340,7 @@ public class SectionFactory
             if (lag != null) {
                 lag.register(section); // Section gets an id from lag
             } else {
-                section.setId("" + ++localId); // Use a local id
+                section.setId(++localId); // Use a local id
             }
 
             section.setFirstPos(firstPos);

@@ -48,7 +48,7 @@ public class SpinnerGlyphModel
     private final Predicate<Glyph> predicate;
 
     /** Current glyph id */
-    private String currentId;
+    private int currentId;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -94,7 +94,7 @@ public class SpinnerGlyphModel
     {
         logger.debug("getNextValue cur={}", currentId);
 
-        if (currentId == null) {
+        if (currentId == 0) {
             // Return first suitable glyph in nest
             for (Iterator<Glyph> it = nest.iterator(); it.hasNext();) {
                 Glyph glyph = it.next();
@@ -113,7 +113,7 @@ public class SpinnerGlyphModel
                 final Glyph glyph = it.next();
 
                 if (!found) {
-                    if (glyph.getId().equals(currentId)) {
+                    if (glyph.getId() == currentId) {
                         found = true;
                     }
                 } else if ((predicate == null) || predicate.check(glyph)) {
@@ -141,7 +141,7 @@ public class SpinnerGlyphModel
         Glyph prevGlyph = null;
         logger.debug("getPreviousValue cur={}", currentId);
 
-        if (currentId == null) {
+        if (currentId == 0) {
             return null;
         }
 
@@ -149,7 +149,7 @@ public class SpinnerGlyphModel
         for (Iterator<Glyph> it = nest.iterator(); it.hasNext();) {
             final Glyph glyph = it.next();
 
-            if (glyph.getId().equals(currentId)) {
+            if (glyph.getId() == currentId) {
                 return (prevGlyph != null) ? prevGlyph.getId() : null;
             }
 
@@ -193,7 +193,7 @@ public class SpinnerGlyphModel
     {
         logger.debug("setValue value={}", value);
 
-        String id = (String) value;
+        Integer id = (Integer) value;
         boolean ok = false;
 
         if (id == null) {

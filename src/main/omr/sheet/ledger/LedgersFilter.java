@@ -25,9 +25,7 @@ import omr.lag.Lags;
 import omr.lag.Section;
 import omr.lag.SectionFactory;
 import omr.lag.SectionService;
-
 import static omr.run.Orientation.HORIZONTAL;
-
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -41,7 +39,7 @@ import omr.sheet.SystemManager;
 import omr.sheet.ui.LagController;
 import omr.sheet.ui.SheetTab;
 
-import omr.util.StringUtil;
+import omr.util.IntUtil;
 
 import ij.process.ByteProcessor;
 
@@ -75,7 +73,7 @@ public class LedgersFilter
     private final Sheet sheet;
 
     // Debug
-    final List<String> vipSections;
+    final List<Integer> vipSections;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -88,7 +86,7 @@ public class LedgersFilter
         this.sheet = sheet;
 
         // VIPs
-        vipSections = StringUtil.parseStrings(constants.ledgerVipSections.getValue());
+        vipSections = IntUtil.parseInts(constants.ledgerVipSections.getValue());
 
         if (!vipSections.isEmpty()) {
             logger.info("Ledger VIP sections: {}", vipSections);
@@ -194,7 +192,7 @@ public class LedgersFilter
     private void setVipSections (Lag lag)
     {
         // Debug sections VIPs
-        for (String id : vipSections) {
+        for (int id : vipSections) {
             Section sect = lag.getEntity(id);
 
             if (sect != null) {

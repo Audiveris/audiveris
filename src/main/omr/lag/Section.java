@@ -20,7 +20,6 @@ import omr.run.Oriented;
 import omr.run.Run;
 
 import omr.util.Entity;
-import omr.util.IdUtil;
 
 import ij.process.ByteProcessor;
 
@@ -70,7 +69,7 @@ public interface Section
         public int compare (Section s1,
                             Section s2)
         {
-            return IdUtil.compare(s1.getId(), s2.getId());
+            return Integer.compare(s1.getId(), s2.getId());
         }
     };
 
@@ -168,7 +167,7 @@ public interface Section
             }
 
             // Finally, use id. Note this should return zero if different sections cannot overlap
-            return IdUtil.compare(s1.getId(), s2.getId());
+            return Integer.compare(s1.getId(), s2.getId());
         }
     };
 

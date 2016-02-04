@@ -16,8 +16,6 @@ import omr.sheet.Sheet;
 import omr.sig.inter.AbstractInter;
 import omr.sig.inter.Inter;
 
-import omr.util.IdUtil;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +79,39 @@ public class CrossExclusion
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
+    // insert //
+    //--------//
+    /**
+     * Insert a cross-system exclusion between two Inter instances (assumed to belong to
+     * different systems).
+     *
+     * @param inter1 an inter
+     * @param inter2 another inter (in another system)
+     */
+    public static void insert (Inter inter1,
+                               Inter inter2)
+    {
+        final Sheet sheet = inter1.getSig().getSystem().getSheet();
+        final Map<Inter, List<CrossExclusion>> map = sheet.getCrossExclusions();
+        final boolean direct = inter1.getId() < inter2.getId();
+        final Inter source = direct ? inter1 : inter2;
+        final Inter target = direct ? inter2 : inter1;
+        final CrossExclusion exc = new CrossExclusion(source, target);
+
+        for (Inter inter : new Inter[]{source, target}) {
+            List<CrossExclusion> list = map.get(inter);
+
+            if (list == null) {
+                map.put(inter, list = new ArrayList<CrossExclusion>());
+            }
+
+            if (!list.contains(exc)) {
+                list.add(exc);
+            }
+        }
+    }
+
+    //--------//
     // equals //
     //--------//
     @Override
@@ -132,40 +163,5 @@ public class CrossExclusion
         hash = (89 * hash) + Objects.hashCode(this.target);
 
         return hash;
-    }
-
-    //--------//
-    // insert //
-    //--------//
-    /**
-     * Insert a cross-system exclusion between two Inter instances (assumed to belong to
-     * different systems).
-     *
-     * @param inter1 an inter
-     * @param inter2 another inter (in another system)
-     */
-    public static void insert (Inter inter1,
-                               Inter inter2)
-    {
-        final Sheet sheet = inter1.getSig().getSystem().getSheet();
-        final Map<Inter, List<CrossExclusion>> map = sheet.getCrossExclusions();
-        final boolean direct = IdUtil.compare(
-                inter1.getId(),
-                inter2.getId()) < 0;
-        final Inter source = direct ? inter1 : inter2;
-        final Inter target = direct ? inter2 : inter1;
-        final CrossExclusion exc = new CrossExclusion(source, target);
-
-        for (Inter inter : new Inter[]{source, target}) {
-            List<CrossExclusion> list = map.get(inter);
-
-            if (list == null) {
-                map.put(inter, list = new ArrayList<CrossExclusion>());
-            }
-
-            if (!list.contains(exc)) {
-                list.add(exc);
-            }
-        }
     }
 }

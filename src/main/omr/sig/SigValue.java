@@ -354,11 +354,11 @@ public class SigValue
 
         /** Relation source vertex ID. */
         @XmlAttribute(name = "source")
-        public String sourceId;
+        public int sourceId;
 
         /** Relation target vertex ID. */
         @XmlAttribute(name = "target")
-        public String targetId;
+        public int targetId;
 
         /**
          * The relation instance.

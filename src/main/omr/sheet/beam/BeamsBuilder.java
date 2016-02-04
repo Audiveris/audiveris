@@ -49,12 +49,15 @@ import omr.sig.relation.Relation;
 import omr.util.Corner;
 import omr.util.Dumping;
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
-import omr.util.IdUtil;
+
 import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.VerticalSide;
+
 import static omr.util.VerticalSide.*;
+
 import omr.util.WrappedInteger;
 
 import ij.process.ByteProcessor;
@@ -371,14 +374,12 @@ public class BeamsBuilder
             } else {
                 return "no good item";
             }
-        } else {
-            if (createBeamInters(structure, meanDist)) {
-                assignedSpots.add(glyph);
+        } else if (createBeamInters(structure, meanDist)) {
+            assignedSpots.add(glyph);
 
-                return null; // This means no failure
-            } else {
-                return "no good item";
-            }
+            return null; // This means no failure
+        } else {
+            return "no good item";
         }
     }
 
@@ -853,7 +854,7 @@ public class BeamsBuilder
 
                 // Side-effect: measure the actual vertical gap between such parallel beams
                 // (avoiding a given pair to be counted 4 times...)
-                if ((side == LEFT) && (IdUtil.compare(beam.getId(), other.getId()) < 0)) {
+                if ((side == LEFT) && (beam.getId() < other.getId())) {
                     measureVerticalDistance(beam, other);
                 }
 
@@ -1178,21 +1179,21 @@ public class BeamsBuilder
         // to be able to be connected by a cue beam.
         List<Inter> smallBlacks = sig.inters(
                 new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        if (inter.isDeleted() || (inter.getShape() != Shape.NOTEHEAD_BLACK_SMALL)) {
-                            return false;
-                        }
+        {
+            @Override
+            public boolean check (Inter inter)
+            {
+                if (inter.isDeleted() || (inter.getShape() != Shape.NOTEHEAD_BLACK_SMALL)) {
+                    return false;
+                }
 
-                        if (inter.getContextualGrade() == null) {
-                            sig.computeContextualGrade(inter, false);
-                        }
+                if (inter.getContextualGrade() == null) {
+                    sig.computeContextualGrade(inter, false);
+                }
 
-                        return inter.getContextualGrade() >= Inter.minContextualGrade;
-                    }
-                });
+                return inter.getContextualGrade() >= Inter.minContextualGrade;
+            }
+        });
 
         if (smallBlacks.isEmpty()) {
             return aggregates;
@@ -1292,25 +1293,25 @@ public class BeamsBuilder
                 Collections.sort(
                         others,
                         new Comparator<Inter>()
-                        {
-                            @Override
-                            public int compare (Inter o1,
-                                                Inter o2)
-                            {
-                                AbstractBeamInter b1 = (AbstractBeamInter) o1;
-                                AbstractBeamInter b2 = (AbstractBeamInter) o2;
+                {
+                    @Override
+                    public int compare (Inter o1,
+                                        Inter o2)
+                    {
+                        AbstractBeamInter b1 = (AbstractBeamInter) o1;
+                        AbstractBeamInter b2 = (AbstractBeamInter) o2;
 
-                                if (side == LEFT) {
-                                    return Double.compare(
-                                            endX - b1.getMedian().getX2(),
-                                            endX - b2.getMedian().getX2());
-                                } else {
-                                    return Double.compare(
-                                            b1.getMedian().getX1() - endX,
-                                            b2.getMedian().getX1() - endX);
-                                }
-                            }
-                        });
+                        if (side == LEFT) {
+                            return Double.compare(
+                                    endX - b1.getMedian().getX2(),
+                                    endX - b2.getMedian().getX2());
+                        } else {
+                            return Double.compare(
+                                    b1.getMedian().getX1() - endX,
+                                    b2.getMedian().getX1() - endX);
+                        }
+                    }
+                });
             }
 
             if (!others.isEmpty()) {

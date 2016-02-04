@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import omr.util.IdUtil;
 
 /**
  * Class {@code LineCluster} is meant to aggregate instances of {@link Filament} that
@@ -106,7 +105,7 @@ public class LineCluster
         }
 
         this.scale = scale;
-        this.id = "C" + IdUtil.getIntValue(seed.getId());
+        this.id = "C" + seed.getId();
 
         lines = new TreeMap<Integer, StaffFilament>();
 
@@ -314,22 +313,20 @@ public class LineCluster
             // Interpolate vertically
             if ((prevPos != null) && (nextPos != null)) {
                 y = prevVal + (((pos - prevPos) * (nextVal - prevVal)) / (nextPos - prevPos));
+            } else // Extrapolate vertically, only for one interline max
+            if ((prevPos != null) && ((pos - prevPos) == 1)) {
+                y = prevVal + interline;
+            } else if ((nextPos != null) && ((nextPos - pos) == 1)) {
+                y = nextVal - interline;
             } else {
-                // Extrapolate vertically, only for one interline max
-                if ((prevPos != null) && ((pos - prevPos) == 1)) {
-                    y = prevVal + interline;
-                } else if ((nextPos != null) && ((nextPos - pos) == 1)) {
-                    y = nextVal - interline;
-                } else {
-                    // Extrapolate horizontally on a short distance
-                    StaffFilament line = lines.get(pos);
-                    Point2D point = (x <= line.getStartPoint().getX()) ? line.getStartPoint()
-                            : line.getStopPoint();
-                    double dx = x - point.getX();
+                // Extrapolate horizontally on a short distance
+                StaffFilament line = lines.get(pos);
+                Point2D point = (x <= line.getStartPoint().getX()) ? line.getStartPoint()
+                        : line.getStopPoint();
+                double dx = x - point.getX();
 
-                    if (Math.abs(dx) <= xMargin) {
-                        y = point.getY() + (dx * globalSlope);
-                    }
+                if (Math.abs(dx) <= xMargin) {
+                    y = point.getY() + (dx * globalSlope);
                 }
             }
 

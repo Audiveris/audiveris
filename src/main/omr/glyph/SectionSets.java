@@ -221,7 +221,7 @@ public class SectionSets
         //private Collection<Integer> ids = new ArrayList<Integer>();
         /** Section id */
         @XmlAttribute(name = "id")
-        String id;
+        int id;
 
         /** Section orientation */
         @XmlAttribute(name = "orientation")
@@ -233,7 +233,7 @@ public class SectionSets
         {
         }
 
-        public SectionDesc (String id,
+        public SectionDesc (int id,
                             Orientation orientation)
         {
             this.id = id;
