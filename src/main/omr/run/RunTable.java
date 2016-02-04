@@ -11,11 +11,8 @@
 // </editor-fold>
 package omr.run;
 
-import omr.image.ChamferDistance;
 import omr.image.PixelSource;
-
 import static omr.image.PixelSource.BACKGROUND;
-
 import omr.image.Table;
 
 import omr.math.PointsCollector;
@@ -24,7 +21,6 @@ import omr.moments.ARTMoments;
 import omr.moments.BasicARTExtractor;
 import omr.moments.GeometricMoments;
 import omr.moments.QuantizedARTMoments;
-
 import static omr.run.Orientation.HORIZONTAL;
 
 import omr.util.ByteUtil;
@@ -47,13 +43,14 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code RunTable} handles a rectangular assembly of oriented runs.
@@ -63,8 +60,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>
  * The very first run is always considered to be foreground.
  * If a sequence starts with background, the very first (foreground) length must be zero.
- * So, the RLE array always has an odd number of cells, beginning and ending with Foreground.
- * An empty sequence is encoded as null (rather than an array containing a single 0 value).
+ * So, the RLE array always has an odd number of cells, beginning and ending with foreground.
+ * An empty sequence is encoded as null (although an array containing no value is also accepted).
  * <p>
  * No zero value should be found in the sequence (except in position 0, followed by a positive
  * background length and a positive foreground length).
@@ -73,6 +70,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * and 'B' for the length of a background run:
  * <pre>
  * null    (for an empty sequence)
+ * []      (for an empty sequence as well)
  * [F]     (>0)
  * [FBF]   (perhaps 0BF)
  * [FBFBF] (perhaps 0BFBF)
@@ -106,16 +104,16 @@ public class RunTable
     @XmlAttribute
     private final int height;
 
-    /** Sequences of runs per row. */
-    @XmlJavaTypeAdapter(SequencesAdapter.class)
-    private final short[][] sequences;
+    /** Sequences of runs. */
+    @XmlElement(name = "runs")
+    private final RunSequence[] sequences;
 
     // Transient
     //----------
     /** Hosted event service for UI events related to this table (Runs), if any. */
     private RunService runService;
 
-    /** Total weight. */
+    /** Cached total weight. */
     private Integer weight;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -134,9 +132,9 @@ public class RunTable
         this.width = width;
         this.height = height;
 
-        // Allocate the sequences, according to orientation
-        Rectangle rect = orientation.oriented(new Rectangle(0, 0, width, height));
-        sequences = new short[rect.height][];
+        // Allocate the array of sequences, according to orientation
+        final int seqNb = orientation.isVertical() ? width : height;
+        sequences = new RunSequence[seqNb];
     }
 
     /**
@@ -151,6 +149,80 @@ public class RunTable
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----//
+    // get //
+    //-----//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <b>Beware</b>, this implementation is not efficient enough for bulk operations.
+     * For such needs, a much more efficient way is to first retrieve a full buffer, via {@link
+     * #getBuffer()} method, then use this temporary buffer as the {@link PixelSource} instead of
+     * this table.
+     *
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return the pixel value (FOREGROUND or BACKGROUND)
+     */
+    @Override
+    public final int get (int x,
+                          int y)
+    {
+        Run run = getRunAt(x, y);
+
+        return (run != null) ? 0 : BACKGROUND;
+    }
+
+    //----------//
+    // getRunAt //
+    //----------//
+    /**
+     * Report the run found at given <b>relative</b> coordinates, if any.
+     *
+     * @param x abscissa, relative to runTable left
+     * @param y ordinate, relative to runTable top
+     * @return the run found, or null otherwise
+     */
+    public final Run getRunAt (int x,
+                               int y)
+    {
+        final int iSeq = (orientation == HORIZONTAL) ? y : x;
+
+        if ((iSeq < 0) || (iSeq >= sequences.length)) {
+            return null;
+        }
+
+        final int coord = (orientation == HORIZONTAL) ? x : y;
+
+        for (Itr it = new Itr(iSeq); it.hasNext();) {
+            Run run = it.next();
+
+            if (run.getStart() > coord) {
+                return null;
+            }
+
+            if (run.getStop() >= coord) {
+                return run;
+            }
+        }
+
+        return null;
+    }
+
+    //---------//
+    // getSize //
+    //---------//
+    /**
+     * Report the number of sequences of runs in the table.
+     * This is the width for a table of vertical runs and the height for a table of horizontal runs.
+     *
+     * @return the table size (in terms of sequences, including the null ones)
+     */
+    public final int getSize ()
+    {
+        return sequences.length;
+    }
+
     //--------//
     // addRun //
     //--------//
@@ -182,8 +254,6 @@ public class RunTable
                            int start,
                            int length)
     {
-        short[] rle = sequences[index];
-
         // Check run validity
         if (start < 0) {
             throw new RuntimeException("Illegal run start " + start);
@@ -193,9 +263,18 @@ public class RunTable
             throw new RuntimeException("Illegal run length " + length);
         }
 
+        weight = null; // Invalidate chached data
+
         // Look for background where foreground run is to take place
         // ...F(B)F... -> ...F(B1FB2)F...
         // .......^
+        RunSequence sequence = sequences[index];
+
+        if (sequence == null) {
+            sequences[index] = sequence = new RunSequence();
+        }
+
+        short[] rle = sequence.rle;
         Itr it = new Itr(index);
 
         while (it.hasNext()) {
@@ -220,7 +299,7 @@ public class RunTable
                     System.arraycopy(rle, 0, newRle, 0, c - 2);
                     newRle[c - 2] = (short) (rle[c - 2] + f + rle[c]);
                     System.arraycopy(rle, c + 1, newRle, c - 1, rle.length - c - 1);
-                    sequences[index] = newRle;
+                    sequence.rle = newRle;
                 } else if (b1 == 0) {
                     // ...F(B)F... -> ...F(0FB2)F... -> ...F+(B2)F...
                     // .......^
@@ -238,7 +317,7 @@ public class RunTable
                     newRle[c] = (short) f;
                     newRle[c + 1] = (short) b2;
                     System.arraycopy(rle, c, newRle, c + 2, rle.length - c);
-                    sequences[index] = newRle;
+                    sequence.rle = newRle;
                 }
 
                 return true;
@@ -258,7 +337,7 @@ public class RunTable
                 // null -> F+
                 final short[] newRle = new short[1];
                 newRle[0] = (short) length;
-                sequences[index] = newRle;
+                sequence.rle = newRle;
             }
         } else {
             final short[] newRle;
@@ -277,7 +356,7 @@ public class RunTable
                 newRle[2] = (short) length;
             }
 
-            sequences[index] = newRle;
+            sequence.rle = newRle;
         }
 
         return true;
@@ -289,7 +368,7 @@ public class RunTable
     /**
      * Compute the Angular Radial Transform moments for this runTable
      *
-     * @param left abscissa of topLeft corner (TOTO: useful?)
+     * @param left abscissa of topLeft corner (TODO: useful?)
      * @param top  ordinate of topLeft corner (TODO: useful?)
      * @return the ART moments
      */
@@ -384,7 +463,7 @@ public class RunTable
     // copy //
     //------//
     /**
-     * Make a copy of the table.
+     * Make a deep copy of the table.
      *
      * @return another table with runs content identical to this one
      */
@@ -393,12 +472,12 @@ public class RunTable
         RunTable clone = new RunTable(orientation, width, height);
 
         for (int i = 0; i < sequences.length; i++) {
-            short[] seq = getSequence(i);
+            RunSequence seq = sequences[i];
 
             if (seq != null) {
-                short[] rle = new short[seq.length];
-                System.arraycopy(seq, 0, rle, 0, seq.length);
-                clone.sequences[i] = rle;
+                short[] rle = new short[seq.rle.length];
+                System.arraycopy(seq.rle, 0, rle, 0, seq.rle.length);
+                clone.sequences[i] = new RunSequence(rle);
             }
         }
 
@@ -473,7 +552,7 @@ public class RunTable
     // dumpOf //
     //--------//
     /**
-     * Report an image of the table.
+     * Report a drawing of the table.
      *
      * @return a drawing of the table
      */
@@ -527,8 +606,8 @@ public class RunTable
         System.out.println(toString());
 
         for (int i = 0; i < sequences.length; i++) {
-            short[] rle = sequences[i];
-            System.out.printf("%4d:%s%n", i, Arrays.toString(rle));
+            final RunSequence seq = sequences[i];
+            System.out.printf("%4d:%s%n", i, (seq != null) ? seq.toString() : "null");
         }
     }
 
@@ -707,30 +786,6 @@ public class RunTable
         }
     }
 
-    //-----//
-    // get //
-    //-----//
-    /**
-     * {@inheritDoc}
-     * <p>
-     * <b>Beware</b>, this implementation is not efficient enough for bulk operations.
-     * For such needs, a much more efficient way is to first retrieve a full buffer, via {@link
-     * #getBuffer()} method, then use this temporary buffer as the {@link PixelSource} instead of
-     * this table.
-     *
-     * @param x absolute abscissa
-     * @param y absolute ordinate
-     * @return the pixel value (FOREGROUND or BACKGROUND)
-     */
-    @Override
-    public final int get (int x,
-                          int y)
-    {
-        Run run = getRunAt(x, y);
-
-        return (run != null) ? 0 : BACKGROUND;
-    }
-
     //-----------//
     // getBuffer //
     //-----------//
@@ -825,42 +880,6 @@ public class RunTable
         return orientation;
     }
 
-    //----------//
-    // getRunAt //
-    //----------//
-    /**
-     * Report the run found at given <b>relative</b> coordinates, if any.
-     *
-     * @param x abscissa, relative to runTable left
-     * @param y ordinate, relative to runTable top
-     * @return the run found, or null otherwise
-     */
-    public final Run getRunAt (int x,
-                               int y)
-    {
-        final int iSeq = (orientation == HORIZONTAL) ? y : x;
-
-        if ((iSeq < 0) || (iSeq >= sequences.length)) {
-            return null;
-        }
-
-        final int coord = (orientation == HORIZONTAL) ? x : y;
-
-        for (Itr it = new Itr(iSeq); it.hasNext();) {
-            Run run = it.next();
-
-            if (run.getStart() > coord) {
-                return null;
-            }
-
-            if (run.getStop() >= coord) {
-                return run;
-            }
-        }
-
-        return null;
-    }
-
     //---------------//
     // getRunService //
     //---------------//
@@ -872,20 +891,6 @@ public class RunTable
     public RunService getRunService ()
     {
         return runService;
-    }
-
-    //---------//
-    // getSize //
-    //---------//
-    /**
-     * Report the number of sequences of runs in the table.
-     * This is the width for a table of vertical runs and the height for a table of horizontal runs.
-     *
-     * @return the table size (in terms of sequences, including the null ones)
-     */
-    public final int getSize ()
-    {
-        return sequences.length;
     }
 
     //------------------//
@@ -900,8 +905,10 @@ public class RunTable
     {
         int total = 0;
 
-        for (short[] seq : sequences) {
-            total += sequenceSize(seq);
+        for (RunSequence seq : sequences) {
+            if (seq != null) {
+                total += seq.size();
+            }
         }
 
         return total;
@@ -1072,41 +1079,6 @@ public class RunTable
         return false;
     }
 
-    //-------------//
-    // isIdentical //
-    //-------------//
-    /**
-     * (package private) Field by field comparison (meant for unitary tests)
-     *
-     * @param that the other RunTable to compare with
-     * @return true if identical
-     */
-    public boolean isIdentical (RunTable that)
-    {
-        // Check null entities
-        if (that == null) {
-            return false;
-        }
-
-        if ((this.orientation == that.orientation)
-            && (this.width == that.width)
-            && (this.height == that.height)) {
-            // Check run sequences, row by row
-            for (int row = 0, size = getSize(); row < size; row++) {
-                short[] thisSeq = getSequence(row);
-                short[] thatSeq = that.getSequence(row);
-
-                if (!Arrays.equals(thisSeq, thatSeq)) {
-                    return false;
-                }
-            }
-
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     //-----------------//
     // isSequenceEmpty //
     //-----------------//
@@ -1214,6 +1186,7 @@ public class RunTable
             if (r.isIdentical(run)) {
                 // We are located on the right run
                 iter.remove();
+                weight = null;
 
                 return;
             }
@@ -1271,6 +1244,17 @@ public class RunTable
         }
     }
 
+    //--------//
+    // render //
+    //--------//
+    /**
+     * Render this runTable at the provided offset location in output table, using the
+     * provided value.
+     *
+     * @param table  output table to be filled
+     * @param val    value to be used for every rendered pixel
+     * @param offset target location relative to the output table
+     */
     public void render (Table table,
                         int val,
                         Point offset)
@@ -1285,9 +1269,8 @@ public class RunTable
                     final Run run = it.next();
                     final int y = offset.y + iSeq;
 
-                    ///g.fillRect(offset.x + run.getStart(), offset.y + iSeq, run.getLength(), 1);
                     for (int x = offset.x + run.getStart(); x <= (offset.x + run.getStop()); x++) {
-                        table.setValue(x, y, ChamferDistance.VALUE_UNKNOWN);
+                        table.setValue(x, y, val);
                     }
                 }
             }
@@ -1299,7 +1282,6 @@ public class RunTable
                     final Run run = it.next();
                     final int x = offset.x + iSeq;
 
-                    ///g.fillRect(offset.x + iSeq, offset.y + run.getStart(), 1, run.getLength());
                     for (int y = offset.y + run.getStart(); y <= (offset.y + run.getStop()); y++) {
                         table.setValue(x, y, val);
                     }
@@ -1415,32 +1397,33 @@ public class RunTable
         int i = -1; // Sequence index in newTable
 
         for (int iSeq = iSeqMin; iSeq <= iSeqMax; iSeq++) {
-            short[] seq = getSequence(iSeq);
+            RunSequence seq = getSequence(iSeq);
             i++;
 
-            if (seq != null) {
+            if ((seq != null) && (seq.rle != null)) {
+                final short[] seqRle = seq.rle;
                 final short[] rle;
 
                 if (coordMin == 0) {
                     // Simply copy the rle
-                    rle = new short[seq.length];
-                    System.arraycopy(seq, 0, rle, 0, seq.length);
+                    rle = new short[seqRle.length];
+                    System.arraycopy(seqRle, 0, rle, 0, seqRle.length);
                 } else {
-                    int backLg = seq[1] & 0xFFFF; // backLg >= coordMin by definition of coordMin
+                    int backLg = seqRle[1] & 0xFFFF; // backLg >= coordMin by definition of coordMin
 
                     if (backLg > coordMin) {
                         // Shorten the background length
-                        rle = new short[seq.length];
-                        System.arraycopy(seq, 0, rle, 0, seq.length);
+                        rle = new short[seqRle.length];
+                        System.arraycopy(seqRle, 0, rle, 0, seqRle.length);
                         rle[1] = (short) (backLg - coordMin);
                     } else {
                         // backLg == coordMin, hence skip the initial 0B pair of cells
-                        rle = new short[seq.length - 2];
-                        System.arraycopy(seq, 2, rle, 0, seq.length - 2);
+                        rle = new short[seqRle.length - 2];
+                        System.arraycopy(seqRle, 2, rle, 0, seqRle.length - 2);
                     }
                 }
 
-                newTable.sequences[i] = rle;
+                newTable.sequences[i] = new RunSequence(rle);
             }
         }
 
@@ -1481,56 +1464,6 @@ public class RunTable
         }
     }
 
-    //--------//
-    // encode //
-    //--------//
-    /**
-     * (Package-private) method to encode a list of runs into a table sequence.
-     *
-     * @param list the list of runs to compose the sequence
-     * @return the sequence ready to be inserted into table
-     */
-    static short[] encode (List<? extends Run> list)
-    {
-        if ((list == null) || list.isEmpty()) {
-            return null;
-        }
-
-        short[] seq;
-        int size = (2 * list.size()) - 1;
-        int start = list.get(0).getStart();
-        int cursor = 0;
-        int length = 0;
-        boolean injectBackground = false;
-
-        if (start != 0) {
-            // Insert an empty foreground length
-            size += 2;
-            seq = new short[size];
-            seq[0] = 0;
-            cursor = 1;
-            injectBackground = true;
-        } else {
-            seq = new short[size];
-        }
-
-        for (Run run : list) {
-            if (injectBackground) {
-                // Inject background
-                seq[cursor++] = (short) (run.getStart() - length);
-                length = run.getStart();
-            }
-
-            // Inject foreground
-            seq[cursor++] = (short) run.getLength();
-            length += run.getLength();
-
-            injectBackground = true;
-        }
-
-        return seq;
-    }
-
     //-------------//
     // getSequence //
     //-------------//
@@ -1538,9 +1471,9 @@ public class RunTable
      * (package private) Report the sequence of runs at a given index
      *
      * @param index the desired index
-     * @return the MODIFIABLE sequence of rows
+     * @return the MODIFIABLE sequence of runs
      */
-    final short[] getSequence (int index)
+    final RunSequence getSequence (int index)
     {
         return sequences[index];
     }
@@ -1554,33 +1487,191 @@ public class RunTable
      * @param index position in sequences list
      * @param seq   the run sequence already populated
      */
-    void setSequence (int index,
-                      short[] seq)
+    final void setSequence (int index,
+                            RunSequence seq)
     {
         sequences[index] = seq;
     }
 
+    //--------//
+    // encode //
+    //--------//
     /**
-     * Report the number of foreground runs in the sequence.
+     * (Package-private) method to encode a list of runs into a table sequence.
      *
-     * @param rle
-     * @return the number of foreground runs
+     * @param list the list of runs to compose the sequence
+     * @return the sequence ready to be inserted into table
      */
-    private static int sequenceSize (short[] rle)
+    static RunSequence encode (List<? extends Run> list)
     {
-        if ((rle == null) || (rle.length == 0)) {
-            return 0;
+        if ((list == null) || list.isEmpty()) {
+            return null;
         }
 
-        if (rle[0] == 0) {
-            // Case of an initial background run
-            return (rle.length - 1) / 2;
+        short[] rle;
+        int size = (2 * list.size()) - 1;
+        int start = list.get(0).getStart();
+        int cursor = 0;
+        int length = 0;
+        boolean injectBackground = false;
+
+        if (start != 0) {
+            // Insert an empty foreground length
+            size += 2;
+            rle = new short[size];
+            rle[0] = 0;
+            cursor = 1;
+            injectBackground = true;
         } else {
-            return (rle.length + 1) / 2;
+            rle = new short[size];
+        }
+
+        for (Run run : list) {
+            if (injectBackground) {
+                // Inject background
+                rle[cursor++] = (short) (run.getStart() - length);
+                length = run.getStart();
+            }
+
+            // Inject foreground
+            rle[cursor++] = (short) run.getLength();
+            length += run.getLength();
+
+            injectBackground = true;
+        }
+
+        return new RunSequence(rle);
+    }
+
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    /**
+     * Called immediately after marshalling of this object.
+     * We reset any empty RunSequence to null.
+     */
+    @SuppressWarnings("unused")
+    private void afterMarshal (Marshaller m)
+    {
+        for (int i = 0, iBreak = sequences.length; i < iBreak; i++) {
+            RunSequence seq = sequences[i];
+
+            if ((seq != null) && ((seq.rle == null) || (seq.rle.length == 0))) {
+                sequences[i] = null;
+            }
+        }
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called immediately after unmarshalling of this object.
+     * We reset any empty RunSequence to null.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller m,
+                                 Object parent)
+    {
+        afterMarshal(null);
+    }
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    /**
+     * Called immediately before the marshalling of this object begins.
+     * We replace any null RunSequence by an empty RunSequence (to be properly marshalled).
+     */
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
+    {
+        for (int i = 0, iBreak = sequences.length; i < iBreak; i++) {
+            RunSequence seq = sequences[i];
+
+            if (seq == null) {
+                sequences[i] = new RunSequence(new short[0]);
+            }
         }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // RunSequence //
+    //-------------//
+    /**
+     * (package private) Sequence of runs, using run-length encoding.
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlRootElement(name = "runs")
+    static class RunSequence
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlValue
+        private short[] rle;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public RunSequence (short[] rle)
+        {
+            this.rle = rle;
+        }
+
+        public RunSequence ()
+        {
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+
+            if (!(obj instanceof RunSequence)) {
+                return false;
+            }
+
+            final RunSequence that = (RunSequence) obj;
+
+            return Arrays.equals(rle, that.rle);
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 5;
+            hash = (67 * hash) + Arrays.hashCode(this.rle);
+
+            return hash;
+        }
+
+        /**
+         * Report the number of foreground runs in this sequence
+         *
+         * @return count of (foreground) runs
+         */
+        public int size ()
+        {
+            if ((rle == null) || (rle.length == 0)) {
+                return 0;
+            }
+
+            if (rle[0] == 0) {
+                return (rle.length - 1) / 2; // Case of an initial background run
+            } else {
+                return (rle.length + 1) / 2; // Standard case of an initial foreground run
+            }
+        }
+
+        @Override
+        public String toString ()
+        {
+            return Arrays.toString(rle);
+        }
+    }
+
     //-----//
     // Itr //
     //-----//
@@ -1615,16 +1706,20 @@ public class RunTable
         {
             this.index = index;
 
-            final short[] rle = sequences[index];
-
             // Check the case of an initial background run
-            if (rle != null) {
-                if (rle[cursor] == 0) {
-                    if (rle.length > 1) {
-                        loc = rle[1];
-                    }
+            final RunSequence seq = sequences[index];
 
-                    cursor += 2;
+            if (seq != null) {
+                final short[] rle = seq.rle;
+
+                if ((rle != null) && (rle.length > 0)) {
+                    if (rle[cursor] == 0) {
+                        if (rle.length > 1) {
+                            loc = rle[1];
+                        }
+
+                        cursor += 2;
+                    }
                 }
             }
         }
@@ -1638,7 +1733,13 @@ public class RunTable
         @Override
         public final boolean hasNext ()
         {
-            final short[] rle = sequences[index];
+            final RunSequence seq = sequences[index];
+
+            if (seq == null) {
+                return false;
+            }
+
+            final short[] rle = seq.rle;
 
             if (rle == null) {
                 return false;
@@ -1660,7 +1761,7 @@ public class RunTable
                 throw new NoSuchElementException();
             }
 
-            final short[] rle = sequences[index];
+            final short[] rle = sequences[index].rle;
 
             // ...v.. cursor before next()
             // ...FBF
@@ -1687,7 +1788,7 @@ public class RunTable
         @Override
         public void remove ()
         {
-            final short[] rle = sequences[index];
+            final short[] rle = sequences[index].rle;
             int c = cursor - 2;
 
             if (c == 0) {
@@ -1715,78 +1816,11 @@ public class RunTable
                 if ((newRle.length == 1) && (newRle[0] == 0)) {
                     sequences[index] = null;
                 } else {
-                    sequences[index] = newRle;
+                    sequences[index] = new RunSequence(newRle);
                 }
 
                 cursor = c;
             }
-        }
-    }
-
-    //------------------//
-    // SequencesAdapter //
-    //------------------//
-    /**
-     * Meant for customized JAXB support of sequences.
-     */
-    private static class SequencesAdapter
-            extends XmlAdapter<ShortVector[], short[][]>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public ShortVector[] marshal (short[][] data)
-                throws Exception
-        {
-            final ShortVector[] seqArray = new ShortVector[data.length];
-
-            for (int i = 0; i < data.length; i++) {
-                seqArray[i] = new ShortVector(data[i]);
-            }
-
-            return seqArray;
-        }
-
-        @Override
-        public short[][] unmarshal (ShortVector[] seqArray)
-        {
-            final short[][] matrix = new short[seqArray.length][];
-
-            for (int i = 0; i < seqArray.length; i++) {
-                ShortVector seq = seqArray[i];
-
-                if ((seq != null) && (seq.vector.length != 0)) {
-                    matrix[i] = seq.vector;
-                }
-            }
-
-            return matrix;
-        }
-    }
-
-    //-------------//
-    // ShortVector //
-    //-------------//
-    /**
-     * Temporary structure for (un)marshalling purpose.
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    private static class ShortVector
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        @XmlValue // Annotation to avoid any wrapper
-
-        private short[] vector;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public ShortVector ()
-        {
-        }
-
-        public ShortVector (short[] vector)
-        {
-            this.vector = vector;
         }
     }
 }

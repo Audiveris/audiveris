@@ -499,7 +499,7 @@ public class BasicGlyph
         }
 
         //TODO: we should accept different runTable orientations?
-        return this.runTable.isIdentical(((BasicGlyph) that).runTable);
+        return this.runTable.equals(((BasicGlyph) that).runTable);
     }
 
     @Override
