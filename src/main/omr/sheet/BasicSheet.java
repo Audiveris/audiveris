@@ -65,8 +65,6 @@ import omr.util.LiveParam;
 import omr.util.Navigable;
 import omr.util.StopWatch;
 
-import com.sun.xml.internal.bind.IDResolver;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -516,6 +514,7 @@ public class BasicSheet
     /**
      * @return the crossExclusions
      */
+    @Override
     public Map<Inter, List<CrossExclusion>> getCrossExclusions ()
     {
         return crossExclusions;
@@ -1083,24 +1082,13 @@ public class BasicSheet
     public static Sheet unmarshal (InputStream in)
             throws JAXBException
     {
-        //        StopWatch watch = new StopWatch("Sheet unmarshal");
-        //        watch.start("createUnmarshaller");
         Unmarshaller um = getJaxbContext().createUnmarshaller();
 
-        SheetIdResolver resolver = new SheetIdResolver();
-        um.setProperty(IDResolver.class.getName(), resolver);
-
-        //        um.setProperty("com.sun.xml.bind.IDResolver", resolver);
-        //        um.setProperty("com.sun.xml.internal.bind.IDResolver", resolver);
-        //
         ///um.setListener(new Jaxb.UnmarshalLogger());
-        //        watch.start("unmarshal");
+        SheetIdResolver resolver = new SheetIdResolver();
+        um.setProperty(SheetIdResolver.getPropertyName(), resolver);
+
         BasicSheet sheet = (BasicSheet) um.unmarshal(in);
-        //
-        //        if (constants.printWatch.isSet()) {
-        //            watch.print();
-        //        }
-        //
         logger.debug("Sheet unmarshalled");
 
         return sheet;
@@ -1251,7 +1239,7 @@ public class BasicSheet
      *
      * @param step the provided step
      */
-    private final void done (Step step)
+    private void done (Step step)
     {
         ((BasicStub) stub).done(step);
     }

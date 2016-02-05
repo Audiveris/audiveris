@@ -19,7 +19,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
@@ -127,30 +126,5 @@ public abstract class AbstractEntity
     protected String internals ()
     {
         return "";
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
-    /**
-     * Meant for JAXB handling of Entity interface.
-     */
-    public static class Adapter
-            extends XmlAdapter<AbstractEntity, Entity>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public AbstractEntity marshal (Entity s)
-        {
-            return (AbstractEntity) s;
-        }
-
-        @Override
-        public Entity unmarshal (AbstractEntity s)
-        {
-            return s;
-        }
     }
 }

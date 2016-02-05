@@ -19,8 +19,7 @@ import java.util.List;
 /**
  * Interface {@code OmrEngine} defines the API of an OMR engine.
  * <p>
- * Apart from the session-related methods {@link #initialize()} and {@link #terminate()}, OMR deals
- * with instances of {@link Book} class.
+ * OMR deals with instances of {@link Book} class.
  * <p>
  * A Book instance can be obtained from:<ul>
  * <li>An input image file, via {@link #loadInput(java.nio.file.Path)},</li>

@@ -11,9 +11,11 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.glyph.BasicGlyph;
+import omr.glyph.Glyph;
 
-import com.sun.xml.internal.bind.IDResolver;
+import omr.sig.inter.Inter;
+
+import com.sun.xml.internal.bind.IDResolver; // Sun internals used here!
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,22 +27,24 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
- * Class {@code SheetIdResolver} is a custom JAXB IDResolver meant to handle two
- * families of IDREF in a sheet, each with its own scope: one for Inter instances and
- * one for Glyph instances.
+ * Class {@code SheetIdResolver} is a custom JAXB unmarshalling IDResolver meant to
+ * handle <b>two families of ID/IDREF</b> in a sheet, each with its own scope:
+ * one for Inter instances and one for Glyph instances.
  * <p>
  * NOTA: this class extends com.sun.xml.internal.bind.IDResolver which is not publicly available
  * though advertised by JAXB.
  * <p>
- * Compiler javac does not link against rt.jar but uses lib/ct.sym symbol which does not reference
- * this class.
- * <p>
- * Two workarounds are possible until a better JAXB customization feature is provided: <ul>
+ * Compiler javac does not link against {@code rt.jar} but uses {@code lib/ct.sym} symbol table
+ * which does not reference this class. Two workarounds are possible until a better JAXB
+ * customization approach is provided (we use the latter one):
+ * <ul>
  * <li>Explicitly include rt.jar in the compile dependencies, or
- * <li>Use -XDignore.symbol.file as javac option
+ * <li>Use -XDignore.symbol.file as javac (and javadoc) option
  * </ul>
  *
- * @see http://stackoverflow.com/questions/4065401/using-internal-sun-classes-with-javac
+ * @see
+ * <a href="http://stackoverflow.com/questions.4065401/using-internal-sun-classes-with-javac">
+ * http://stackoverflow.com/questions.4065401/using-internal-sun-classes-with-javac</a>
  *
  * @author Hervé Bitteur
  */
@@ -53,10 +57,10 @@ public class SheetIdResolver
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Map of glyph IDs. */
-    private final Map<String, Object> glyphMap = new HashMap<String, Object>();
+    private final Map<String, Glyph> glyphMap = new HashMap<String, Glyph>();
 
     /** Map of inter IDs. */
-    private final Map<String, Object> interMap = new HashMap<String, Object>();
+    private final Map<String, Inter> interMap = new HashMap<String, Inter>();
 
     //~ Methods ------------------------------------------------------------------------------------
     //------//
@@ -74,11 +78,24 @@ public class SheetIdResolver
                       Object obj)
             throws SAXException
     {
-        if (obj instanceof BasicGlyph) {
-            glyphMap.put(id, obj);
+        if (obj instanceof Glyph) {
+            glyphMap.put(id, (Glyph) obj);
         } else {
-            interMap.put(id, obj);
+            interMap.put(id, (Inter) obj);
         }
+    }
+
+    //-----------------//
+    // getPropertyName //
+    //-----------------//
+    /**
+     * Report the property name to be used when assigning an IDResolver to unmarshaller.
+     *
+     * @return class name of IDResolver
+     */
+    public static String getPropertyName ()
+    {
+        return IDResolver.class.getName();
     }
 
     //---------//
@@ -111,7 +128,7 @@ public class SheetIdResolver
 
                 // For glyph, we do   get type = BasicGlyph class
                 // For inter, we only get type = Object class
-                if (BasicGlyph.class.isAssignableFrom(targetType)) {
+                if (Glyph.class.isAssignableFrom(targetType)) {
                     obj = glyphMap.get(id);
                 } else {
                     obj = interMap.get(id);

@@ -125,7 +125,7 @@ public class SystemInfo
     @XmlList
     @XmlIDREF
     @XmlElement(name = "standalone-glyph-refs")
-    private final LinkedHashSet<BasicGlyph> standaloneGlyphs = new LinkedHashSet<BasicGlyph>();
+    private final MyGlyphSet standaloneGlyphs = new MyGlyphSet();
 
     /**
      * Symbol Interpretation Graph for this system.
@@ -470,8 +470,6 @@ public class SystemInfo
      */
     public SystemInfo getFollowingInPage ()
     {
-        final Page page = getPage();
-
         if (page == null) {
             return null;
         }
@@ -888,8 +886,6 @@ public class SystemInfo
      */
     public SystemInfo getPrecedingInPage ()
     {
-        final Page page = getPage();
-
         if (page == null) {
             return null;
         }
@@ -1394,5 +1390,22 @@ public class SystemInfo
     {
         logger.debug("SystemInfo.beforeMarshal for {}", this);
         setInterSet(new InterSet());
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------//
+    // MyGlyphSet //
+    //------------//
+    /**
+     * This is just a trick to present the right class type (BasicGlyph) to IDResolver.
+     * Using plain LinkedHashSet&lt;BasicGlyph&gt; resulted in Object class being presented...
+     *
+     * @see
+     * <a href="http://metro.1045641.n5.nabble.com/JAXB-custom-IDResolver-gets-wrong-target-type-using-Collections-td1058562.html">
+     * This post</a>
+     */
+    private static class MyGlyphSet
+            extends LinkedHashSet<BasicGlyph>
+    {
     }
 }
