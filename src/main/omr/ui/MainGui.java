@@ -456,9 +456,6 @@ public class MainGui
         PropertyChangeListener weak = new WeakPropertyChangeListener(this);
         GuiActions.getInstance().addPropertyChangeListener(weak);
 
-        // Make the OmrGui instance available for the other classes
-        OMR.gui = this;
-
         // Check MusicFont is loaded
         MusicFont.checkMusicFont();
 
@@ -478,6 +475,9 @@ public class MainGui
     protected void startup ()
     {
         logger.debug("MainGui. 2/startup");
+
+        // Make the OmrGui instance available for the other classes
+        OMR.gui = this;
 
         frame = getMainFrame();
 
