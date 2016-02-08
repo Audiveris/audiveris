@@ -335,7 +335,10 @@ public class LedgersBuilder
             }
         };
 
-        final int maxThickness = scale.getMaxFore(); //TODO: Simplistic???
+        ///final int maxThickness = scale.getMaxFore(); //TODO: Simplistic???
+        final int maxThickness = Math.min(
+                scale.toPixels(constants.maxThicknessHigh),
+                scale.toPixels(constants.maxThicknessHigh2));
 
         // Use stick factory
         final StickFactory factory = new StickFactory(

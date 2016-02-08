@@ -112,8 +112,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * graceChords and restChords in Measure, wholeChord in Voice.
  * <p>
  * Once an instance of BasicSheet has been unmarshalled, transient members of some entities need to
- * be properly set. This is the purpose of the "afterReload" methods which are called in a certain
- * order as indicated by the "(ar#)" mentions on these entities.
+ * be properly set. This is the purpose of the "afterReload()" methods which are called in a certain
+ * order as mentioned by the "(ar #n)" indications on these entities.
  * <p>
  * <img alt="Sheet Binding" src="doc-files/SheetBinding.png">
  *

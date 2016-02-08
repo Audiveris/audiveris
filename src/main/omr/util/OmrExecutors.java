@@ -274,7 +274,7 @@ public class OmrExecutors
                 "Should we print out current environment?");
 
         private final Constant.Boolean useParallelism = new Constant.Boolean(
-                true,
+                false, //true, // Disabled for the time being
                 "Should we use parallelism when we have several processors?");
 
         private final Constant.Integer graceDelay = new Constant.Integer(

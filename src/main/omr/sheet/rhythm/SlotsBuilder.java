@@ -772,7 +772,7 @@ public class SlotsBuilder
         for (AbstractChordInter chord : wholes) {
             chord.setTimeOffset(Rational.ZERO);
 
-            Voice voice = Voice.createWholeVoice(chord, chord.getMeasure());
+            Voice voice = Voice.createWholeVoice((RestChordInter) chord, chord.getMeasure());
             Measure measure = stack.getMeasureAt(chord.getPart());
             measure.addVoice(voice);
         }

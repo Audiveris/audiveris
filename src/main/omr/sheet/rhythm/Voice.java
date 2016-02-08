@@ -18,12 +18,12 @@ import omr.score.Mark;
 import omr.score.TimeRational;
 
 import omr.sheet.beam.BeamGroup;
-
 import static omr.sheet.rhythm.Voice.Status.BEGIN;
 
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.RestChordInter;
 
 import omr.util.Navigable;
 
@@ -78,11 +78,11 @@ public class Voice
     /**
      * Whole chord of the voice, if any.
      * If a voice is assigned to a whole/multi rest, then this rest chord is defined as the
-     * wholeChord of this voice, and the slots table is left empty.
+     * wholeRestChord of this voice, and the slots table is left empty.
      */
     @XmlIDREF
-    @XmlElement(name = "whole-chord")
-    private AbstractChordInter wholeChord;
+    @XmlElement(name = "whole-rest-chord", type = RestChordInter.class)
+    private RestChordInter wholeRestChord;
 
     /**
      * Map (SlotId -> SlotVoice) to store chord information for each slot.
@@ -134,7 +134,7 @@ public class Voice
         chord.setVoice(this);
 
         if (chord.isWholeRest()) {
-            wholeChord = chord;
+            wholeRestChord = (RestChordInter) chord;
         }
 
         logger.debug("Created voice#{}", id);
@@ -158,7 +158,7 @@ public class Voice
 
             // Set chord voices
             if (isWhole()) {
-                wholeChord.setVoice(this);
+                wholeRestChord.setVoice(this);
             } else {
                 for (SlotVoice info : slots.values()) {
                     if (info.status == BEGIN) {
@@ -185,13 +185,13 @@ public class Voice
      * @param measure    the containing measure
      * @return the created voice instance
      */
-    public static Voice createWholeVoice (AbstractChordInter wholeChord,
+    public static Voice createWholeVoice (RestChordInter wholeChord,
                                           Measure measure)
     {
         logger.debug("createWholeVoice for {} in {}", wholeChord, measure);
 
         Voice voice = new Voice(wholeChord, measure);
-        voice.wholeChord = wholeChord;
+        voice.wholeRestChord = wholeChord;
 
         return voice;
     }
@@ -283,7 +283,7 @@ public class Voice
     //-------------//
     public Rational getDuration ()
     {
-        if (wholeChord != null) {
+        if (wholeRestChord != null) {
             return null;
         }
 
@@ -315,7 +315,7 @@ public class Voice
     public AbstractChordInter getFirstChord ()
     {
         if (isWhole()) {
-            return wholeChord;
+            return wholeRestChord;
         } else {
             for (SlotVoice info : slots.values()) {
                 return info.chord;
@@ -468,7 +468,7 @@ public class Voice
     public AbstractChordInter getLastChord ()
     {
         if (isWhole()) {
-            return wholeChord;
+            return wholeRestChord;
         } else {
             AbstractChordInter lastChord = null;
 
@@ -529,7 +529,7 @@ public class Voice
         List<AbstractChordInter> rests = new ArrayList<AbstractChordInter>();
 
         if (isWhole()) {
-            rests.add(wholeChord);
+            rests.add(wholeRestChord);
         } else {
             for (SlotVoice info : slots.values()) {
                 if (info.status == Status.BEGIN) {
@@ -582,7 +582,7 @@ public class Voice
      */
     public AbstractChordInter getWholeChord ()
     {
-        return wholeChord;
+        return wholeRestChord;
     }
 
     //---------------//
@@ -640,7 +640,7 @@ public class Voice
      */
     public boolean isWhole ()
     {
-        return wholeChord != null;
+        return wholeRestChord != null;
     }
 
     //-------//
@@ -723,8 +723,8 @@ public class Voice
         sb.append("V").append(id).append(" ");
 
         // Whole/Multi
-        if (wholeChord != null) {
-            sb.append("|Ch#").append(String.format("%-4s", wholeChord.getId()));
+        if (wholeRestChord != null) {
+            sb.append("|Ch#").append(String.format("%-4s", wholeRestChord.getId()));
 
             for (int s = 1; s < measure.getStack().getSlots().size(); s++) {
                 sb.append("========");

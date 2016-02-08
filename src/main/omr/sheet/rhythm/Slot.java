@@ -81,7 +81,7 @@ public class Slot
     private int xOffset;
 
     /** Time offset since measure start. */
-    @XmlAttribute(name = "start")
+    @XmlAttribute(name = "time-offset")
     @XmlJavaTypeAdapter(Rational.Adapter.class)
     private Rational timeOffset;
 
