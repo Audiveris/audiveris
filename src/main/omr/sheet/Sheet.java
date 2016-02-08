@@ -22,13 +22,10 @@ import omr.score.Page;
 
 import omr.ui.selection.SelectionService;
 
-import omr.sheet.ui.SheetAssembly;
-
 import omr.sig.InterIndex;
 import omr.sig.inter.Inter;
 import omr.sig.relation.CrossExclusion;
 
-import omr.step.Step;
 import omr.step.StepException;
 
 import omr.ui.ErrorsEditor;
@@ -44,6 +41,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Interface {@code Sheet} corresponds to one image in a book image file.
+ * It extends the {@link SheetStub} interface.
  * <p>
  * If a movement break occurs in the middle of a sheet, this sheet will contain at least two pages,
  * but in most cases there is exactly one {@link Page} instance per Sheet instance.
@@ -52,27 +50,12 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <dl>
  * <dt>Administration</dt>
  * <dd><ul>
- * <li>{@link #getId}</li>
- * <li>{@link #getLogPrefix}</li>
- * <li>{@link #getBook}</li>
- * <li>{@link #getNumber}</li>
- * <li>{@link #setImage}</li>
- * <li>{@link #close}</li>
- * </ul></dd>
- *
- * <dt>Pages</dt>
- * <dd><ul>
  * <li>{@link #addPage}</li>
+ * <li>{@link #afterReload}</li>
  * <li>{@link #getPages}</li>
- * </ul></dd>
- *
- * <dt>Transcription</dt>
- * <dd><ul>
+ * <li>{@link #getStub}</li>
+ * <li>{@link #setImage}</li>
  * <li>{@link #transcribe}</li>
- * <li>{@link #isDone}</li>
- * <li>{@link #ensureStep}</li>
- * <li>{@link #getCurrentStep}</li>
- * <li>{@link #getLatestStep}</li>
  * </ul></dd>
  *
  * <dt>Companions</dt>
@@ -106,7 +89,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <dt>UI</dt>
  * <dd><ul>
  * <li>{@link #getLocationService}</li>
- * <li>{@link #getAssembly}</li>
  * <li>{@link #getSymbolsEditor}</li>
  * <li>{@link #getErrorsEditor}</li>
  * <li>{@link #getSymbolsController}</li>
@@ -139,35 +121,11 @@ public interface Sheet
     void afterReload (SheetStub stub);
 
     /**
-     * Report the distinguished name for this sheet.
-     *
-     * @return sheet name
-     */
-    @Override
-    String getId ();
-
-    /**
      * Report the related sheet stub.
      *
      * @return the related stub (non null)
      */
     SheetStub getStub ();
-
-    /**
-     * Report the containing book.
-     *
-     * @return containing book
-     */
-    @Override
-    Book getBook ();
-
-    /**
-     * Report the number for this sheet in containing book
-     *
-     * @return the sheet index number (1-based) in containing book
-     */
-    @Override
-    int getNumber ();
 
     /**
      * Assign the related image to this sheet
@@ -206,40 +164,6 @@ public interface Sheet
      * @return true if OK
      */
     boolean transcribe ();
-
-    /**
-     * Report whether the specified step has been performed on this sheet
-     *
-     * @param step the step to check
-     * @return true if already performed
-     */
-    @Override
-    boolean isDone (Step step);
-
-    /**
-     * Make sure the provided step has been reached on this sheet
-     *
-     * @param step the step to check
-     * @return true if OK
-     */
-    @Override
-    boolean ensureStep (Step step);
-
-    /**
-     * Report the step being processed, if any.
-     *
-     * @return the current step or null
-     */
-    @Override
-    Step getCurrentStep ();
-
-    /**
-     * Report the latest step done so far on this sheet.
-     *
-     * @return the latest step done, or null
-     */
-    @Override
-    Step getLatestStep ();
 
     // ------------------
     // --- Companions ---
@@ -419,14 +343,6 @@ public interface Sheet
      * @return the selection service dedicated to location in sheet (null in batch mode)
      */
     SelectionService getLocationService ();
-
-    /**
-     * In non batch mode, report the related SheetAssembly for GUI
-     *
-     * @return the sheet UI assembly, or null in batch mode
-     */
-    @Override
-    SheetAssembly getAssembly ();
 
     /**
      * In non batch mode, report the editor dealing with symbols recognition in this sheet

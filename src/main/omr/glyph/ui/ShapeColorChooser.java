@@ -135,7 +135,7 @@ public class ShapeColorChooser
             resource.injectComponents(frame);
         }
 
-        OMR.getApplication().show(frame);
+        OMR.gui.getApplication().show(frame);
     }
 
     //--------------//

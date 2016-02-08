@@ -111,7 +111,7 @@ public class ActionManager
     public ApplicationAction getActionInstance (Object instance,
                                                 String methodName)
     {
-        ActionMap actionMap = OMR.getApplication().getContext().getActionMap(instance);
+        ActionMap actionMap = OMR.gui.getApplication().getContext().getActionMap(instance);
 
         return (ApplicationAction) actionMap.get(methodName);
     }
@@ -244,7 +244,8 @@ public class ActionManager
             }
 
             // Proper menu decoration
-            ResourceMap resource = OMR.getApplication().getContext().getResourceMap(Actions.class);
+            ResourceMap resource = OMR.gui.getApplication().getContext()
+                    .getResourceMap(Actions.class);
             menu.setText(domain); // As default
             menu.setName(domain);
 

@@ -268,7 +268,7 @@ public class GlyphsModel
 //        // Should we persist the assigned glyph?
 //        if ((shape != null)
 //            && (grade == Evaluation.MANUAL)
-//            && (OMR.getGui() != null)
+//            && (OMR.gui != null)
 //            && ScoreActions.getInstance().isManualPersisted()) {
 //            // Record the glyph description to disk
 //            SampleRepository.getInstance().recordOneGlyph(glyph, sheet);

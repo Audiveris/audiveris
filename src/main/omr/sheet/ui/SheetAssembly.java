@@ -13,15 +13,14 @@ package omr.sheet.ui;
 
 import omr.OMR;
 
-import omr.ui.selection.LocationEvent;
-import omr.ui.selection.SelectionService;
-
 import omr.sheet.Sheet;
 import omr.sheet.SheetStub;
 
 import omr.ui.Board;
 import omr.ui.BoardsPane;
 import omr.ui.GuiActions;
+import omr.ui.selection.LocationEvent;
+import omr.ui.selection.SelectionService;
 import omr.ui.util.ClosableTabbedPane;
 import omr.ui.util.Panel;
 import omr.ui.util.UIUtil;
@@ -92,8 +91,8 @@ public class SheetAssembly
         @Override
         public boolean tabAboutToClose (int tabIndex)
         {
-            return OMR.getGui()
-                    .displayConfirmation(getTitleAt(tabIndex) + " tab about to close.\nConfirm?");
+            return OMR.gui.displayConfirmation(
+                    getTitleAt(tabIndex) + " tab about to close.\nConfirm?");
         }
     };
 
@@ -238,7 +237,7 @@ public class SheetAssembly
 
         // Display the errors pane of this assembly?
         if (GuiActions.getInstance().isErrorsDisplayed()) {
-            OMR.getGui().setErrorsPane(stub.getSheet().getErrorsEditor().getComponent());
+            OMR.gui.setErrorsPane(stub.getSheet().getErrorsEditor().getComponent());
         }
     }
 
@@ -250,7 +249,7 @@ public class SheetAssembly
      */
     public void close ()
     {
-        OMR.getGui().removeBoardsPane();
+        OMR.gui.removeBoardsPane();
 
         // Disconnect all keyboard bindings from PixelBoard's (workaround for a Swing memory leak)
         for (ViewTab tab : tabs.values()) {
@@ -259,7 +258,7 @@ public class SheetAssembly
 
         // Hide the error messages (for this sheet)
         if (stub.hasSheet()) {
-            OMR.getGui().removeErrorsPane(stub.getSheet().getErrorsEditor().getComponent());
+            OMR.gui.removeErrorsPane(stub.getSheet().getErrorsEditor().getComponent());
         }
     }
 
@@ -685,9 +684,9 @@ public class SheetAssembly
                 boardsPane.connect();
 
                 // Display the boards pane related to the selected view
-                OMR.getGui().setBoardsPane(boardsPane.getComponent());
+                OMR.gui.setBoardsPane(boardsPane.getComponent());
             } else {
-                OMR.getGui().setBoardsPane(null);
+                OMR.gui.setBoardsPane(null);
             }
         }
     }

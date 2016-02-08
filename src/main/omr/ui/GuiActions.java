@@ -112,7 +112,7 @@ public class GuiActions
     @Action
     public void clearLog (ActionEvent e)
     {
-        OMR.getGui().clearLog();
+        OMR.gui.clearLog();
     }
 
     //---------------//
@@ -156,7 +156,7 @@ public class GuiActions
     @Action
     public void exit (ActionEvent e)
     {
-        OMR.getApplication().exit();
+        OMR.gui.getApplication().exit();
     }
 
     //-------------//
@@ -462,7 +462,7 @@ public class GuiActions
                 aboutBox = createAboutBox();
             }
 
-            OMR.getApplication().show(aboutBox);
+            OMR.gui.getApplication().show(aboutBox);
         }
 
         private JDialog createAboutBox ()
@@ -649,7 +649,7 @@ public class GuiActions
 
         public OptionsTask ()
         {
-            super(OMR.getApplication());
+            super(OMR.gui.getApplication());
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -668,7 +668,7 @@ public class GuiActions
         protected void succeeded (Options options)
         {
             if (options != null) {
-                OMR.getApplication().show(options.getComponent());
+                OMR.gui.getApplication().show(options.getComponent());
             }
         }
     }

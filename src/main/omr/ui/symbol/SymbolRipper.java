@@ -220,7 +220,7 @@ public class SymbolRipper
         // Frame behavior
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
-        OMR.getApplication().show(frame);
+        OMR.gui.getApplication().show(frame);
 
         // Actions
         image = buildImage();

@@ -301,7 +301,7 @@ public class BasicBook
         setClosing(true);
 
         // Close contained stubs/sheets
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             SwingUtilities.invokeLater(
                     new Runnable()
             {
@@ -325,7 +325,7 @@ public class BasicBook
         }
 
         // Remove from OMR instances
-        OMR.getEngine().removeBook(this);
+        OMR.engine.removeBook(this);
 
         // Time for some cleanup...
         Memory.gc();
@@ -1060,7 +1060,7 @@ public class BasicBook
         ///logger.info("{} setModified {}", this, val);
         this.modified = val;
 
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             SwingUtilities.invokeLater(
                     new Runnable()
             {
@@ -1196,7 +1196,7 @@ public class BasicBook
 
         SheetStub currentStub = null;
 
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             currentStub = StubsController.getCurrentStub();
         }
 
@@ -1317,7 +1317,7 @@ public class BasicBook
             // We are really changing the radix, so nullify all other paths
             exportPathSansExt = printPath = scriptPath = null;
 
-            if (OMR.getGui() != null) {
+            if (OMR.gui != null) {
                 // Update UI first sheet tab
                 SwingUtilities.invokeLater(
                         new Runnable()

@@ -102,7 +102,7 @@ public class DistancesBuilder
         paintLines();
 
         // Display distances image in a template view?
-        if ((OMR.getGui() != null) && constants.displayTemplates.isSet()) {
+        if ((OMR.gui != null) && constants.displayTemplates.isSet()) {
             SelectionService templateService = new SelectionService(
                     "templateService",
                     new Class[]{AnchoredTemplateEvent.class});

@@ -219,12 +219,12 @@ public class Voice
                         Slot slot = chord.getSlot();
 
                         // Need a forward before this chord ?
-                        if (timeCounter.compareTo(slot.getStartTime()) < 0) {
+                        if (timeCounter.compareTo(slot.getTimeOffset()) < 0) {
                             insertForward(
-                                    slot.getStartTime().minus(timeCounter),
+                                    slot.getTimeOffset().minus(timeCounter),
                                     Mark.Position.BEFORE,
                                     chord);
-                            timeCounter = slot.getStartTime();
+                            timeCounter = slot.getTimeOffset();
                         }
 
                         timeCounter = timeCounter.plus(chord.getDuration());
@@ -293,7 +293,7 @@ public class Voice
             SlotVoice info = getSlotInfo(slot);
 
             if ((info != null) && (info.status == Status.BEGIN)) {
-                Rational chordEnd = slot.getStartTime().plus(info.chord.getDuration());
+                Rational chordEnd = slot.getTimeOffset().plus(info.chord.getDuration());
 
                 if (chordEnd.compareTo(voiceDur) > 0) {
                     voiceDur = chordEnd;
@@ -352,8 +352,8 @@ public class Voice
             // Sequence of group (beamed or isolated chords) durations
             List<Rational> durations = new ArrayList<Rational>();
 
-            // Voice starting time
-            Rational startTime = null;
+            // Voice time offset
+            Rational timeOffset = null;
 
             // Start time of last note in group, if any
             Rational groupLastTime = null;
@@ -366,7 +366,7 @@ public class Voice
 
                     // Skip the remaining parts of beam group, including embraced rests
                     if ((groupLastTime != null)
-                        && (chord.getStartTime().compareTo(groupLastTime) <= 0)) {
+                        && (chord.getTimeOffset().compareTo(groupLastTime) <= 0)) {
                         continue;
                     }
 
@@ -378,12 +378,12 @@ public class Voice
                     } else {
                         // Starting a new group
                         durations.add(group.getDuration());
-                        groupLastTime = group.getLastChord().getStartTime();
+                        groupLastTime = group.getLastChord().getTimeOffset();
                     }
 
-                    if (startTime == null) {
+                    if (timeOffset == null) {
                         Slot slot = measure.getStack().getSlots().get(entry.getKey() - 1);
-                        startTime = slot.getStartTime();
+                        timeOffset = slot.getTimeOffset();
                     }
                 }
             }
@@ -426,7 +426,7 @@ public class Voice
             }
 
             // Check this voice fills the measure stack
-            if ((startTime == null) || !startTime.equals(Rational.ZERO)) {
+            if ((timeOffset == null) || !timeOffset.equals(Rational.ZERO)) {
                 return null;
             }
 
@@ -742,7 +742,7 @@ public class Voice
                     if (info.status == Status.BEGIN) {
                         sb.append("|Ch#").append(String.format("%-4s", info.chord.getId()));
 
-                        Rational chordEnd = slot.getStartTime().plus(info.chord.getDuration());
+                        Rational chordEnd = slot.getTimeOffset().plus(info.chord.getDuration());
 
                         if (chordEnd.compareTo(voiceDur) > 0) {
                             voiceDur = chordEnd;
@@ -782,12 +782,12 @@ public class Voice
         AbstractChordInter lastChord = null;
 
         for (Slot slot : measure.getStack().getSlots()) {
-            if (slot.getStartTime() != null) {
+            if (slot.getTimeOffset() != null) {
                 SlotVoice info = getSlotInfo(slot);
 
                 if (info == null) {
                     if ((lastChord != null)
-                        && (lastChord.getEndTime().compareTo(slot.getStartTime()) > 0)) {
+                        && (lastChord.getEndTime().compareTo(slot.getTimeOffset()) > 0)) {
                         setSlotInfo(slot, new SlotVoice(lastChord, Status.CONTINUE));
                     }
                 } else {

@@ -182,7 +182,7 @@ public class BookManager
                                     List<Path> paths)
     {
         if (!paths.isEmpty()) {
-            if (OMR.getGui() != null) {
+            if (OMR.gui != null) {
                 StringBuilder sb = new StringBuilder();
 
                 for (Path p : paths) {
@@ -195,7 +195,7 @@ public class BookManager
                     sb.append(p);
                 }
 
-                if (!OMR.getGui().displayConfirmation("Confirm " + title + "?\n" + sb)) {
+                if (!OMR.gui.displayConfirmation("Confirm " + title + "?\n" + sb)) {
                     return;
                 }
             }

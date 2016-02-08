@@ -144,7 +144,7 @@ public class ShapeBoard
             getBody().add(shapesPanel);
 
             // Perhaps this is too much ... TODO
-            JFrame frame = OMR.getGui().getFrame();
+            JFrame frame = OMR.gui.getFrame();
             frame.invalidate();
             frame.validate();
             frame.repaint();
@@ -168,7 +168,7 @@ public class ShapeBoard
             getBody().add(rangesPanel);
 
             // Perhaps this is too much ... TODO
-            JFrame frame = OMR.getGui().getFrame();
+            JFrame frame = OMR.gui.getFrame();
             frame.invalidate();
             frame.validate();
             frame.repaint();
@@ -207,7 +207,7 @@ public class ShapeBoard
     private Panel shapesPanel;
 
     /** GlassPane */
-    private final GhostGlassPane glassPane = OMR.getGui().getGlassPane();
+    private final GhostGlassPane glassPane = OMR.gui.getGlassPane();
 
     // Update image and forward mouse location
     private final MyMotionAdapter motionAdapter = new MyMotionAdapter(glassPane);

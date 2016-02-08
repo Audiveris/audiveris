@@ -132,7 +132,7 @@ public class SampleVerifier
         frame.add(vertSplitPane);
 
         // Resource injection
-        ResourceMap resource = OMR.getApplication().getContext().getResourceMap(getClass());
+        ResourceMap resource = OMR.gui.getApplication().getContext().getResourceMap(getClass());
         resource.injectComponents(frame);
     }
 
@@ -164,7 +164,7 @@ public class SampleVerifier
      */
     public void setVisible (boolean bool)
     {
-        OMR.getApplication().show(frame);
+        OMR.gui.getApplication().show(frame);
     }
 
     //--------//

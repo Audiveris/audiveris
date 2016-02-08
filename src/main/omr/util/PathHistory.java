@@ -71,7 +71,7 @@ public class PathHistory
         Path parent = path.getParent();
         folderConstant.setValue(parent.toAbsolutePath().toString());
 
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             // Enable input history menu
             SwingUtilities.invokeLater(
                     new Runnable()

@@ -170,32 +170,6 @@ public class Measure
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //
-    //    //--------------------//
-    //    // getCurrentDuration //
-    //    //--------------------//
-    //    private String getCurrentDuration ()
-    //    {
-    //        Rational measureDuration = Rational.ZERO;
-    //
-    //        for (Slot slot : slots) {
-    //            if (slot.getStartTime() != null) {
-    //                for (AbstractChordInter chord : slot.getChords()) {
-    //                    Rational chordEnd = slot.getStartTime().plus(chord.getDuration());
-    //
-    //                    if (chordEnd.compareTo(measureDuration) > 0) {
-    //                        measureDuration = chordEnd;
-    //                    }
-    //                }
-    //            }
-    //        }
-    //
-    //        if (measureDuration.equals(Rational.ZERO) && !wholeRestChords.isEmpty()) {
-    //            return "W";
-    //        }
-    //
-    //        return String.format("%-5s", measureDuration.toString());
-    //    }
     //--------------//
     // addBeamGroup //
     //--------------//
@@ -222,7 +196,7 @@ public class Measure
     {
         RestChordInter chord = new RestChordInter(0);
         chord.setStaff(staff);
-        chord.setStartTime(Rational.ZERO);
+        chord.setTimeOffset(Rational.ZERO);
 
         RestInter whole = new RestInter(null, Shape.WHOLE_REST, 0, staff, -1);
         chord.addMember(whole);
@@ -462,8 +436,8 @@ public class Measure
             }
 
             // Part starting bar?
-            if (part.getStartingBarline() != null) {
-                return part.getStartingBarline();
+            if (part.getLeftBarline() != null) {
+                return part.getLeftBarline();
             }
 
             return null; // No barline found on LEFT
@@ -890,8 +864,8 @@ public class Measure
             }
 
             // Part starting bar?
-            if (part.getStartingBarline() != null) {
-                return part.getStartingBarline().getBarline(part, staff).getRightBar().getCenter();
+            if (part.getLeftBarline() != null) {
+                return part.getLeftBarline().getBarline(part, staff).getRightBar().getCenter();
             }
             // No bar, use start of staff
              {
@@ -1450,61 +1424,6 @@ public class Measure
         return right;
     }
 }
-//
-//    //------------//
-//    // printVoices//
-//    //------------//
-//    /**
-//     * Print the voices of this measure on standard output.
-//     *
-//     * @param title a potential title for this printout, or null
-//     */
-//    public void printVoices (String title)
-//    {
-//        StringBuilder sb = new StringBuilder();
-//
-//        // Title
-//        if (title != null) {
-//            sb.append(title);
-//        }
-//
-//        // Measure
-//        sb.append(this);
-//
-//        // Slot headers
-//        if (!slots.isEmpty()) {
-//            sb.append("\n    ");
-//
-//            for (Slot slot : slots) {
-//                if (slot.getStartTime() != null) {
-//                    sb.append("|").append(String.format("%-7s", slot.getStartTime()));
-//                }
-//            }
-//
-//            sb.append("|").append(getCurrentDuration());
-//        }
-//
-//        for (Voice voice : voices) {
-//            sb.append("\n").append(voice.toStrip());
-//        }
-//
-//        logger.info(sb.toString());
-//    }
-//
-//
-//    //------------//
-//    // isImplicit //
-//    //------------//
-//    /**
-//     * Report whether this measure is implicit (pickup or repeat last half).
-//     *
-//     * @return true if measure is pickup or secondHalf
-//     */
-//    public boolean isImplicit ()
-//    {
-//        return (special == Special.PICKUP) || (special == Special.SECOND_HALF);
-//    }
-//
 //
 //    //------------//
 //    // lookupRest //

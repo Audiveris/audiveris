@@ -364,7 +364,7 @@ public class BasicStub
         invalid = Jaxb.TRUE;
         setModified(true);
 
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             StubsController.getInstance().markTab(this, Colors.SHEET_INVALID);
         }
 
@@ -416,7 +416,7 @@ public class BasicStub
         setModified(true);
         logger.info("Sheet {} reset as valid.", getId());
 
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             SwingUtilities.invokeLater(
                     new Runnable()
             {
@@ -476,7 +476,7 @@ public class BasicStub
             sheet = null;
         }
 
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             SwingUtilities.invokeLater(
                     new Runnable()
             {
@@ -544,7 +544,7 @@ public class BasicStub
         filterContext = new LiveParam<FilterDescriptor>(book.getFilterParam());
         textContext = new LiveParam<String>(book.getLanguageParam());
 
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             assembly = new SheetAssembly(this);
         }
     }

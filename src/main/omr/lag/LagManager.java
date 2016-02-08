@@ -251,7 +251,7 @@ public class LagManager
     {
         lagMap.put(key, lag);
 
-        if ((lag != null) && (OMR.getGui() != null) && (lag.getEntityService() == null)) {
+        if ((lag != null) && (OMR.gui != null) && (lag.getEntityService() == null)) {
             lag.setEntityService(new SectionService(lag, sheet.getLocationService()));
         }
     }

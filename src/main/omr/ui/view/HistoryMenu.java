@@ -97,7 +97,7 @@ public class HistoryMenu
                  });
 
         // Resource injection
-        ResourceMap resource = OMR.getApplication().getContext().getResourceMap(resourceClass);
+        ResourceMap resource = OMR.gui.getApplication().getContext().getResourceMap(resourceClass);
         resource.injectComponents(menu);
         this.menu = menu;
 

@@ -96,7 +96,7 @@ public class Curves
         BufferedImage img = skeleton.buildSkeleton();
 
         // Display skeleton buffer?
-        if ((OMR.getGui() != null) && constants.displayCurves.isSet()) {
+        if ((OMR.gui != null) && constants.displayCurves.isSet()) {
             view = new Curves.MyView(img);
             sheet.getAssembly().addViewTab(
                     "Curves",

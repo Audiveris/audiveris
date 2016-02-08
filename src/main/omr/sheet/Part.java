@@ -115,8 +115,8 @@ public class Part
     private String name;
 
     /** Starting barline, if any. (the others are linked to measures) */
-    @XmlElement(name = "starting-barline")
-    private PartBarline startingBarline;
+    @XmlElement(name = "left-barline")
+    private PartBarline leftBarline;
 
     /** Measures in this part. */
     @XmlElement(name = "measure")
@@ -643,17 +643,17 @@ public class Part
         return StaffPosition.WITHIN_STAVES;
     }
 
-    //--------------------//
-    // getStartingBarline //
-    //--------------------//
+    //----------------//
+    // getLeftBarline //
+    //----------------//
     /**
      * Get the barline that starts the part.
      *
      * @return barline the starting bar line (which may be null)
      */
-    public PartBarline getStartingBarline ()
+    public PartBarline getLeftBarline ()
     {
-        return startingBarline;
+        return leftBarline;
     }
 
     //-----------//
@@ -735,17 +735,17 @@ public class Part
         this.name = name;
     }
 
-    //--------------------//
-    // setStartingBarline //
-    //--------------------//
+    //----------------//
+    // setLeftBarline //
+    //----------------//
     /**
      * Set the barline that starts the part.
      *
-     * @param startingBarline the starting barline
+     * @param leftBarline the starting barline
      */
-    public void setStartingBarline (PartBarline startingBarline)
+    public void setLeftBarline (PartBarline leftBarline)
     {
-        this.startingBarline = startingBarline;
+        this.leftBarline = leftBarline;
     }
 
     //-----------//

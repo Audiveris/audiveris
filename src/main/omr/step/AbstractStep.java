@@ -49,7 +49,7 @@ public abstract class AbstractStep
     public void clearErrors (Step step,
                              Sheet sheet)
     {
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             sheet.getErrorsEditor().clearStep(step);
         }
     }

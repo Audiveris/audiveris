@@ -107,7 +107,7 @@ public class Main
         loadNativeLibraries();
 
         // Engine
-        OMR.setEngine(BookManager.getInstance());
+        OMR.engine = BookManager.getInstance();
 
         if (!cli.isBatchMode()) {
             // Here we are in interactive mode
@@ -202,8 +202,8 @@ public class Main
             // Inform user of OCR installation problem
             String msg = "Tesseract OCR is not installed properly";
 
-            if (OMR.getGui() != null) {
-                OMR.getGui().displayError(msg);
+            if (OMR.gui != null) {
+                OMR.gui.displayError(msg);
             } else {
                 logger.warn(msg);
             }

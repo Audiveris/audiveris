@@ -148,7 +148,7 @@ public class SymbolsFilter
         }
 
         // Display for visual check?
-        if (constants.displaySymbols.isSet() && (OMR.getGui() != null)) {
+        if (constants.displaySymbols.isSet() && (OMR.gui != null)) {
             sheet.getAssembly().addViewTab(
                     "Symbols",
                     new ScrollImageView(sheet, new MyView(img, optionalsMap)),

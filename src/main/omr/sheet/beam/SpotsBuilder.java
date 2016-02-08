@@ -126,7 +126,7 @@ public class SpotsBuilder
             dispatchSheetSpots(spots);
 
             // Display on all spot glyphs?
-            if ((OMR.getGui() != null) && constants.displayBeamSpots.isSet()) {
+            if ((OMR.gui != null) && constants.displayBeamSpots.isSet()) {
                 watch.start("spotsController");
 
                 SpotsController spotController = new SpotsController(sheet, spotLag);
@@ -193,7 +193,7 @@ public class SpotsBuilder
             }
 
             // Display the gray-level view of all spots
-            if ((OMR.getGui() != null) && constants.displayGraySpots.isSet()) {
+            if ((OMR.gui != null) && constants.displayGraySpots.isSet()) {
                 if (img == null) {
                     img = buffer.getBufferedImage();
                 }

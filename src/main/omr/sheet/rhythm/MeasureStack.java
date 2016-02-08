@@ -599,9 +599,9 @@ public class MeasureStack
 
         // Whole/multi rests are handled outside of slots
         for (Slot slot : slots) {
-            if (slot.getStartTime() != null) {
+            if (slot.getTimeOffset() != null) {
                 for (AbstractChordInter chord : slot.getChords()) {
-                    Rational chordEnd = slot.getStartTime().plus(chord.getDuration());
+                    Rational chordEnd = slot.getTimeOffset().plus(chord.getDuration());
 
                     if (chordEnd.compareTo(measureDur) > 0) {
                         measureDur = chordEnd;
@@ -1281,8 +1281,8 @@ public class MeasureStack
             sb.append("\n   ");
 
             for (Slot slot : slots) {
-                if (slot.getStartTime() != null) {
-                    sb.append("|").append(String.format("%-7s", slot.getStartTime()));
+                if (slot.getTimeOffset() != null) {
+                    sb.append("|").append(String.format("%-7s", slot.getTimeOffset()));
                 }
             }
 

@@ -79,7 +79,7 @@ public class FilamentIndex
         }
 
         // User filament service?
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             FilamentService filamentService = new FilamentService();
             setEntityService(filamentService);
 

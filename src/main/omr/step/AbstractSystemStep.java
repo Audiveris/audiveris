@@ -112,7 +112,7 @@ public abstract class AbstractSystemStep<C>
     protected void clearSystemErrors (Step step,
                                       SystemInfo system)
     {
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             system.getSheet().getErrorsEditor().clearSystem(step, system.getId());
         }
     }

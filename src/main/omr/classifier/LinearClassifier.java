@@ -95,24 +95,24 @@ public class LinearClassifier
         }
 
         // Listen to application exit
-        if (OMR.getGui() != null) {
-            OMR.getGui().addExitListener(
+        if (OMR.gui != null) {
+            OMR.gui.addExitListener(
                     new ExitListener()
-                    {
-                        @Override
-                        public boolean canExit (EventObject eo)
-                        {
-                            return true;
-                        }
+            {
+                @Override
+                public boolean canExit (EventObject eo)
+                {
+                    return true;
+                }
 
-                        @Override
-                        public void willExit (EventObject eo)
-                        {
-                            if (engine.isDataModified()) {
-                                marshal();
-                            }
-                        }
-                    });
+                @Override
+                public void willExit (EventObject eo)
+                {
+                    if (engine.isDataModified()) {
+                        marshal();
+                    }
+                }
+            });
         }
     }
 

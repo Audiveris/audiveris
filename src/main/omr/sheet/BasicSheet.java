@@ -102,7 +102,20 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Class {@code BasicSheet} is a basic implementation of {@link Sheet} interface.
+ * Class {@code BasicSheet} is our implementation of {@link Sheet} interface.
+ * <p>
+ * The picture below represents the data model used for marshalling/unmarshalling a sheet to/from
+ * a sheet#n.xml file within a project .omr file
+ * <p>
+ * Most entities are represented here. Some Inter instances are listed only via their containing
+ * entity, such as tuplets in MeasureStack, slurs and lyrics in Part, ledgers and bars in Staff,
+ * graceChords and restChords in Measure, wholeChord in Voice.
+ * <p>
+ * Once an instance of BasicSheet has been unmarshalled, transient members of some entities need to
+ * be properly set. This is the purpose of the "afterReload" methods which are called in a certain
+ * order as indicated by the "(ar#)" mentions on these entities.
+ * <p>
+ * <img alt="Sheet Binding" src="doc-files/SheetBinding.png">
  *
  * @author Hervé Bitteur
  */
@@ -256,7 +269,7 @@ public class BasicSheet
     @Override
     public boolean addItemRenderer (ItemRenderer renderer)
     {
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             return itemRenderers.add(new WeakItemRenderer(renderer));
 
             ///return itemRenderers.add(renderer);
@@ -548,7 +561,7 @@ public class BasicSheet
         try {
             picture = new Picture(this, image, locationService);
 
-            if (OMR.getGui() != null) {
+            if (OMR.gui != null) {
                 createPictureView();
             }
 
@@ -557,8 +570,8 @@ public class BasicSheet
             String msg = "Unsupported image format in file " + getBook().getInputPath() + "\n"
                          + ex.getMessage();
 
-            if (OMR.getGui() != null) {
-                OMR.getGui().displayWarning(msg);
+            if (OMR.gui != null) {
+                OMR.gui.displayWarning(msg);
             } else {
                 logger.warn(msg);
             }
@@ -933,7 +946,7 @@ public class BasicSheet
     @Override
     public void renderItems (Graphics2D g)
     {
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             for (ItemRenderer renderer : itemRenderers) {
                 renderer.renderItems(g);
             }
@@ -1137,7 +1150,7 @@ public class BasicSheet
                 doOneStep(step, systems);
             }
 
-            if (OMR.getGui() != null) {
+            if (OMR.gui != null) {
                 // Update sheet tab color
                 StubsController.getInstance().markTab(this, Color.BLACK);
             }
@@ -1195,7 +1208,7 @@ public class BasicSheet
             reset(step);
 
             // Clear errors for this step
-            if (OMR.getGui() != null) {
+            if (OMR.gui != null) {
                 getErrorsEditor().clearStep(step);
             }
 
@@ -1293,7 +1306,7 @@ public class BasicSheet
         book = stub.getBook();
 
         // Update UI information if so needed
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             locationService = new SelectionService("locationService", allowedEvents);
             errorsEditor = new ErrorsEditor(this);
             itemRenderers = new HashSet<ItemRenderer>();
@@ -1437,7 +1450,7 @@ public class BasicSheet
 //                          Glyph glyph,
 //                          String text)
 //    {
-//        if (OMR.getGui() != null) {
+//        if (OMR.gui != null) {
 //            getErrorsEditor().addError(container, glyph, text);
 //        }
 //    }

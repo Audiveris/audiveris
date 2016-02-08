@@ -80,7 +80,7 @@ public class GridBuilder
         barsRetriever = new BarsRetriever(sheet);
         linesRetriever = new LinesRetriever(sheet, barsRetriever);
 
-        if (constants.showGrid.isSet() && (OMR.getGui() != null)) {
+        if (constants.showGrid.isSet() && (OMR.gui != null)) {
             sheet.addItemRenderer(barsRetriever);
             sheet.addItemRenderer(linesRetriever);
         }
@@ -106,7 +106,7 @@ public class GridBuilder
             buildAllLags();
 
             // Display
-            if (OMR.getGui() != null) {
+            if (OMR.gui != null) {
                 sheet.getSymbolsEditor();
 
                 // Inter board

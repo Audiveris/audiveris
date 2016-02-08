@@ -40,7 +40,6 @@ public interface Symbol
     {
         //~ Enumeration constant initializers ------------------------------------------------------
 
-        DEFAULT("Default group", new Color(0x00ffff)),
         STAFF_LINE("Staff Line", new Color(0xffffcc)),
         BEAM_SPOT("Beam-oriented spot", new Color(0xaaaaaa)),
         HEAD_SPOT("Head-oriented spot", new Color(0xbbbbbb)),

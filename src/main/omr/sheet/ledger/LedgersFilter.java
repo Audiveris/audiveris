@@ -140,7 +140,7 @@ public class LedgersFilter
         setVipSections(lag);
 
         // Display a view on this lag?
-        if ((OMR.getGui() != null) && constants.displayLedgers.isSet()) {
+        if ((OMR.gui != null) && constants.displayLedgers.isSet()) {
             lag.setEntityService(new SectionService(lag, sheet.getLocationService()));
             new LagController(sheet, lag, SheetTab.LEDGER_TAB).refresh();
 

@@ -166,7 +166,7 @@ public class SheetScanner
         cleaner.eraseInters();
 
         // Display for visual check?
-        if (constants.displayTexts.isSet() && (OMR.getGui() != null)) {
+        if (constants.displayTexts.isSet() && (OMR.gui != null)) {
             sheet.getAssembly().addViewTab(
                     "Texts",
                     new ScrollImageView(

@@ -218,18 +218,18 @@ public class Script
         // Make book concrete (with its sheets)
         if (book == null) {
             if (inputPath != null) {
-                book = OMR.getEngine().loadInput(inputPath);
+                book = OMR.engine.loadInput(inputPath);
                 book.setOffset(offset);
                 book.createStubs(sheetIds); // This loads all specified sheets indices
             } else if (projectPath != null) {
-                book = OMR.getEngine().loadProject(projectPath);
+                book = OMR.engine.loadProject(projectPath);
             } else {
                 logger.warn("No book defined in script");
 
                 return;
             }
 
-            if (OMR.getGui() != null) {
+            if (OMR.gui != null) {
                 book.createStubsTabs(); // Tabs are now accessible
             }
         }

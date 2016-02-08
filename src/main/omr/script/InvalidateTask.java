@@ -57,7 +57,7 @@ public class InvalidateTask
     {
         sheet.invalidate();
 
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             SwingUtilities.invokeLater(
                     new Runnable()
             {

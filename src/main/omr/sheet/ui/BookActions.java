@@ -148,7 +148,7 @@ public class BookActions
     @Action(enabledProperty = STUB_AVAILABLE)
     public void browseBook (ActionEvent e)
     {
-        OMR.getApplication().show(StubsController.getCurrentBook().getBrowserFrame());
+        OMR.gui.getApplication().show(StubsController.getCurrentBook().getBrowserFrame());
     }
 
     //-----------//
@@ -277,7 +277,7 @@ public class BookActions
     {
         if (script.isModified() && defaultPrompt.getSpecific()) {
             int answer = JOptionPane.showConfirmDialog(
-                    OMR.getGui().getFrame(),
+                    OMR.gui.getFrame(),
                     "Save script for book " + script.getBook().getRadix() + "?");
 
             if (answer == JOptionPane.YES_OPTION) {
@@ -317,7 +317,7 @@ public class BookActions
     {
         if (book.isModified() && defaultPrompt.getSpecific()) {
             int answer = JOptionPane.showConfirmDialog(
-                    OMR.getGui().getFrame(),
+                    OMR.gui.getFrame(),
                     "Save modified book " + book.getRadix() + "?");
 
             if (answer == JOptionPane.YES_OPTION) {
@@ -592,7 +592,7 @@ public class BookActions
         final Path targetPath = Paths.get(sansExt + ext);
         final Path bookPath = UIUtil.pathChooser(
                 true,
-                OMR.getGui().getFrame(),
+                OMR.gui.getFrame(),
                 targetPath,
                 filter(ext),
                 "Choose book export target");
@@ -635,7 +635,7 @@ public class BookActions
         final Path defaultSheetPath = Paths.get(bookSansExt + suffix + ext);
         final Path sheetPath = UIUtil.pathChooser(
                 true,
-                OMR.getGui().getFrame(),
+                OMR.gui.getFrame(),
                 defaultSheetPath,
                 filter(ext),
                 "Choose sheet export target");
@@ -698,7 +698,7 @@ public class BookActions
 
         if (stub != null) {
             int answer = JOptionPane.showConfirmDialog(
-                    OMR.getGui().getFrame(),
+                    OMR.gui.getFrame(),
                     "Do you confirm sheet " + stub.getId() + " is invalid?");
 
             if (answer == JOptionPane.YES_OPTION) {
@@ -761,7 +761,7 @@ public class BookActions
     {
         final Path path = UIUtil.pathChooser(
                 false,
-                OMR.getGui().getFrame(),
+                OMR.gui.getFrame(),
                 Paths.get(constants.defaultScriptDirectory.getValue()),
                 new OmrFileFilter("Score script files", new String[]{OMR.SCRIPT_EXTENSION}));
 
@@ -814,7 +814,7 @@ public class BookActions
         String allSuffixes = suffixes + " " + suffixes.toUpperCase();
         Path path = UIUtil.pathChooser(
                 false,
-                OMR.getGui().getFrame(),
+                OMR.gui.getFrame(),
                 Paths.get(BookManager.getDefaultInputFolder()),
                 new OmrFileFilter(
                         "Major image files" + " (" + suffixes + ")",
@@ -907,7 +907,7 @@ public class BookActions
             }
 
             // Display popup menu
-            JFrame frame = OMR.getGui().getFrame();
+            JFrame frame = OMR.gui.getFrame();
             popup.show(frame, frame.getWidth() / 6, frame.getHeight() / 4);
         }
     }
@@ -982,7 +982,7 @@ public class BookActions
         // Select target book print path
         final Path bookPath = UIUtil.pathChooser(
                 true,
-                OMR.getGui().getFrame(),
+                OMR.gui.getFrame(),
                 BookManager.getDefaultPrintPath(book),
                 new OmrFileFilter(OMR.PDF_EXTENSION),
                 "Choose book print target");
@@ -1022,7 +1022,7 @@ public class BookActions
 
         final Path sheetPath = UIUtil.pathChooser(
                 true,
-                OMR.getGui().getFrame(),
+                OMR.gui.getFrame(),
                 defaultSheetPath,
                 filter(ext),
                 "Choose sheet print target");
@@ -1050,7 +1050,7 @@ public class BookActions
     public RecordGlyphsTask recordGlyphs ()
     {
         int answer = JOptionPane.showConfirmDialog(
-                OMR.getGui().getFrame(),
+                OMR.gui.getFrame(),
                 "Are you sure of all the symbols of this sheet ?");
 
         if (answer == JOptionPane.YES_OPTION) {
@@ -1075,7 +1075,7 @@ public class BookActions
 
         if (stub != null) {
             int answer = JOptionPane.showConfirmDialog(
-                    OMR.getGui().getFrame(),
+                    OMR.gui.getFrame(),
                     "Do you confirm resetting sheet " + stub.getId() + " to its initial state?");
 
             if (answer == JOptionPane.YES_OPTION) {
@@ -1194,7 +1194,7 @@ public class BookActions
         // Let the user select a script output file
         Path scriptPath = UIUtil.pathChooser(
                 true,
-                OMR.getGui().getFrame(),
+                OMR.gui.getFrame(),
                 getDefaultScriptPath(book),
                 new OmrFileFilter("Script files", new String[]{OMR.SCRIPT_EXTENSION}));
 
@@ -1322,7 +1322,7 @@ public class BookActions
             final String frameTitle = (stub != null)
                     ? (stub.getBook().getRadix() + " parameters")
                     : "General parameters";
-            final JDialog dialog = new JDialog(OMR.getGui().getFrame(), frameTitle, true); // Modal flag
+            final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
             dialog.setName("scoreParams");
 
@@ -1358,7 +1358,7 @@ public class BookActions
             });
 
             dialog.pack();
-            OMR.getApplication().show(dialog);
+            OMR.gui.getApplication().show(dialog);
 
             return apply.value;
         } catch (Exception ex) {
@@ -1381,7 +1381,7 @@ public class BookActions
     private static boolean confirmed (Path target)
     {
         return (!Files.exists(target))
-               || OMR.getGui().displayConfirmation("Overwrite " + target + "?");
+               || OMR.gui.displayConfirmation("Overwrite " + target + "?");
     }
 
     //--------//
@@ -1407,7 +1407,7 @@ public class BookActions
     {
         Path prjPath = UIUtil.pathChooser(
                 save,
-                OMR.getGui().getFrame(),
+                OMR.gui.getFrame(),
                 path,
                 filter(OMR.PROJECT_EXTENSION));
 
@@ -1459,7 +1459,7 @@ public class BookActions
         {
             if (Files.exists(path)) {
                 // Actually open the project
-                Book book = OMR.getEngine().loadProject(path);
+                Book book = OMR.engine.loadProject(path);
                 book.createStubsTabs(); // Tabs are now accessible
             } else {
                 logger.warn("Path {} does not exist", path);
@@ -1497,7 +1497,7 @@ public class BookActions
             if (Files.exists(path)) {
                 try {
                     // Actually open the image file
-                    Book book = OMR.getEngine().loadInput(path);
+                    Book book = OMR.engine.loadInput(path);
                     book.createStubs(null);
                     book.createStubsTabs(); // Tabs are now accessible
 

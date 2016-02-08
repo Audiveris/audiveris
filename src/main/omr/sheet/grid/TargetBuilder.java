@@ -126,7 +126,7 @@ public class TargetBuilder
         RenderedImage dewarpedImage = dewarper.dewarpImage(sheet.getPicture().getImage(null));
 
         // Add a view on dewarped image?
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             sheet.getAssembly().addViewTab(
                     "Dewarped",
                     new ScrollView(new DewarpedView(dewarpedImage)),

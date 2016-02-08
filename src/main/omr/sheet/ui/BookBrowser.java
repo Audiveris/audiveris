@@ -205,7 +205,7 @@ public class BookBrowser
             frame.add(component);
 
             // Resources injection
-            ResourceMap resource = OMR.getApplication().getContext().getResourceMap(getClass());
+            ResourceMap resource = OMR.gui.getApplication().getContext().getResourceMap(getClass());
             resource.injectComponents(frame);
             frame.setTitle(resource.getString("frameTitleMask", book.getRadix()));
         }

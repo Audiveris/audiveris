@@ -14,13 +14,13 @@ package omr.sheet.grid;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Symbol.Group;
 import omr.glyph.dynamic.Compounds;
 
 import omr.math.GeoUtil;
 import omr.math.Histogram;
 
 import omr.run.Orientation;
+
 import static omr.run.Orientation.*;
 
 import omr.sheet.Scale;
@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import omr.glyph.Symbol.Group;
 
 /**
  * Class {@code ClustersRetriever} performs vertical samplings of the horizontal
@@ -399,16 +400,18 @@ public class ClustersRetriever
 
             return false;
         } else // True gap: use proper edges
-        if (oneLeft < twoLeft) { // Case one --- two
-            dist = bestMatch(
-                    ordinatesOf(one.getStops()),
-                    ordinatesOf(two.getStarts()),
-                    deltaPos);
-        } else { // Case two --- one
-            dist = bestMatch(
-                    ordinatesOf(one.getStarts()),
-                    ordinatesOf(two.getStops()),
-                    deltaPos);
+        {
+            if (oneLeft < twoLeft) { // Case one --- two
+                dist = bestMatch(
+                        ordinatesOf(one.getStops()),
+                        ordinatesOf(two.getStarts()),
+                        deltaPos);
+            } else { // Case two --- one
+                dist = bestMatch(
+                        ordinatesOf(one.getStarts()),
+                        ordinatesOf(two.getStops()),
+                        deltaPos);
+            }
         }
 
         // Check best distance
@@ -510,7 +513,7 @@ public class ClustersRetriever
                 it.remove();
                 discardedFilaments.add(fil);
             } else {
-                fil.addGroup(Group.STAFF_LINE);
+                fil.addGroup(Group.STAFF_LINE); // Useless in fact
             }
         }
     }

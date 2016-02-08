@@ -33,7 +33,9 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.SentenceInter;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Jaxb;
 import omr.util.Navigable;
 
@@ -45,13 +47,11 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -76,7 +76,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlType(propOrder = {
     /** NOTA: Sig must be marshalled last. */
-    "id", "indented", "stacks", "parts", "standaloneGlyphs", "sig"}
+    "id", "indented", "stacks", "parts", "freeGlyphs", "sig"}
 )
 public class SystemInfo
         implements Comparable<SystemInfo>
@@ -119,13 +119,13 @@ public class SystemInfo
     @XmlElement(name = "part")
     private final List<Part> parts = new ArrayList<Part>();
 
-    /** Collection of standalone glyphs in this system.
+    /** Collection of stand-alone glyphs in this system.
      * This should be limited to glyphs not referenced elsewhere, to avoid garbage collection.
      */
     @XmlList
     @XmlIDREF
-    @XmlElement(name = "standalone-glyph-refs")
-    private final MyGlyphSet standaloneGlyphs = new MyGlyphSet();
+    @XmlElement(name = "free-glyphs")
+    private final FreeGlyphs freeGlyphs = new FreeGlyphs();
 
     /**
      * Symbol Interpretation Graph for this system.
@@ -155,9 +155,6 @@ public class SystemInfo
 
     /** Vertical sections. */
     private final List<Section> vSections = new ArrayList<Section>();
-
-    /** Unmodifiable view of the standalone glyphs collection. */
-    private final Set<BasicGlyph> glyphsView = Collections.unmodifiableSet(standaloneGlyphs);
 
     /** Area that encloses all items related to this system. */
     private Area area;
@@ -305,7 +302,7 @@ public class SystemInfo
      */
     public void clearStandaloneGlyphs ()
     {
-        standaloneGlyphs.clear();
+        freeGlyphs.clear();
     }
 
     //-----------//
@@ -482,19 +479,6 @@ public class SystemInfo
         }
 
         return null;
-    }
-
-    //-----------//
-    // getGlyphs //
-    //-----------//
-    /**
-     * Report the unmodifiable collection of glyphs within the system area.
-     *
-     * @return the unmodifiable collection of glyphs
-     */
-    public Set<BasicGlyph> getGlyphs ()
-    {
-        return glyphsView;
     }
 
     //-----------------------//
@@ -1144,29 +1128,6 @@ public class SystemInfo
         return indented != null;
     }
 
-    //-----------------------//
-    // lookupContainedGlyphs //
-    //-----------------------//
-    /**
-     * Look up in system glyphs for the glyphs contained by a
-     * provided rectangle.
-     *
-     * @param rect the coordinates rectangle, in pixels
-     * @return the glyphs found, which may be an empty list
-     */
-    public List<Glyph> lookupContainedGlyphs (Rectangle rect)
-    {
-        List<Glyph> found = new ArrayList<Glyph>();
-
-        for (Glyph glyph : getGlyphs()) {
-            if (rect.contains(glyph.getBounds())) {
-                found.add(glyph);
-            }
-        }
-
-        return found;
-    }
-
     //--------------------//
     // lookupGroupedGlyphs //
     //--------------------//
@@ -1180,34 +1141,8 @@ public class SystemInfo
     {
         List<Glyph> found = new ArrayList<Glyph>();
 
-        for (Glyph glyph : getGlyphs()) {
+        for (Glyph glyph : freeGlyphs) {
             if (glyph.hasGroup(group)) {
-                found.add(glyph);
-            }
-        }
-
-        return found;
-    }
-
-    //-------------------//
-    // intersectedGlyphs //
-    //-------------------//
-    /**
-     * Look up in system glyphs for <b>all</b> glyphs, apart from the
-     * excluded glyphs, intersected by a provided rectangle.
-     *
-     * @param rect     the coordinates rectangle, in pixels
-     * @param excluded the glyphs to be excluded
-     * @return the glyphs found, which may be an empty list
-     */
-    public List<Glyph> lookupIntersectedGlyphs (Rectangle rect,
-                                                Glyph... excluded)
-    {
-        List<Glyph> exc = Arrays.asList(excluded);
-        List<Glyph> found = new ArrayList<Glyph>();
-
-        for (Glyph glyph : getGlyphs()) {
-            if (!exc.contains(glyph) && glyph.intersects(rect)) {
                 found.add(glyph);
             }
         }
@@ -1226,7 +1161,7 @@ public class SystemInfo
     public void registerStandaloneGlyph (Glyph glyph)
     {
         sheet.getGlyphIndex().register(glyph);
-        standaloneGlyphs.add((BasicGlyph) glyph);
+        freeGlyphs.add((BasicGlyph) glyph);
     }
 
     //-----------------------//
@@ -1239,7 +1174,7 @@ public class SystemInfo
      */
     public void removeStandaloneGlyph (Glyph glyph)
     {
-        standaloneGlyphs.remove((BasicGlyph) glyph);
+        freeGlyphs.remove((BasicGlyph) glyph);
     }
 
     //---------//
@@ -1394,17 +1329,17 @@ public class SystemInfo
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
-    // MyGlyphSet //
+    // FreeGlyphs //
     //------------//
     /**
      * This is just a trick to present the right class type (BasicGlyph) to IDResolver.
-     * Using plain LinkedHashSet&lt;BasicGlyph&gt; resulted in Object class being presented...
+     * Using plain LinkedHashSet&lt;BasicGlyph&gt; resulted in Object class being presented!
      *
      * @see
      * <a href="http://metro.1045641.n5.nabble.com/JAXB-custom-IDResolver-gets-wrong-target-type-using-Collections-td1058562.html">
      * This post</a>
      */
-    private static class MyGlyphSet
+    private static class FreeGlyphs
             extends LinkedHashSet<BasicGlyph>
     {
     }

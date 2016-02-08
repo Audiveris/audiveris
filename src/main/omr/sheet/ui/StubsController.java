@@ -413,12 +413,12 @@ public class StubsController
 
         if (ViewParameters.getInstance().isInvalidSheetDisplay()) {
             // Display all sheets for all books, including invalid ones
-            for (Book book : OMR.getEngine().getAllBooks()) {
+            for (Book book : OMR.engine.getAllBooks()) {
                 controller.displayAllStubs(book);
             }
         } else {
             // Hide invalid sheets for all books
-            for (Book book : OMR.getEngine().getAllBooks()) {
+            for (Book book : OMR.engine.getAllBooks()) {
                 for (SheetStub stub : book.getStubs()) {
                     if (!stub.isValid()) {
                         controller.removeAssembly(stub);

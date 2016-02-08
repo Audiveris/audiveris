@@ -29,7 +29,7 @@ import javax.swing.JFrame;
  * <li>The actual Swing frame and the Glass pane.</li>
  * </ul>
  * <p>
- * This is an abstract class rather than an interface, because it must derive from SAF
+ * This is an abstract class rather than a true interface, because it must derive from SAF
  * SingleFrameApplication.
  *
  * @author Hervé Bitteur
@@ -37,8 +37,8 @@ import javax.swing.JFrame;
 public abstract class OmrGui
         extends SingleFrameApplication
 {
-
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Erase the content of the log window (but not the log itself).
      */
@@ -80,6 +80,13 @@ public abstract class OmrGui
      * @param message the warning message
      */
     public abstract void displayWarning (String message);
+
+    /**
+     * Report the single instance of this GUI SAF application.
+     *
+     * @return the SingleFrameApplication instance
+     */
+    public abstract SingleFrameApplication getApplication ();
 
     /**
      * Report the concrete Swing frame.

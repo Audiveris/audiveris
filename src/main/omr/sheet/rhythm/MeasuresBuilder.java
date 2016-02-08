@@ -187,7 +187,7 @@ public class MeasuresBuilder
                 }
 
                 if (measure == null) {
-                    part.setStartingBarline(partBar);
+                    part.setLeftBarline(partBar);
                 } else {
                     measure.setRightBarline(partBar);
                 }

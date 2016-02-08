@@ -83,7 +83,7 @@ public class Slot
     /** Time offset since measure start. */
     @XmlAttribute(name = "start")
     @XmlJavaTypeAdapter(Rational.Adapter.class)
-    private Rational startTime;
+    private Rational timeOffset;
 
     // Transient data
     //---------------
@@ -147,8 +147,8 @@ public class Slot
                     if ((slotVoice != null) && (slotVoice.status == BEGIN)) {
                         incomings.add(slotVoice.chord);
 
-                        // Forward startTime to incoming chord
-                        slotVoice.chord.setStartTime(startTime);
+                        // Forward timeOffset to incoming chord
+                        slotVoice.chord.setTimeOffset(timeOffset);
                         slotVoice.chord.setSlot(this);
                     }
                 }
@@ -365,17 +365,17 @@ public class Slot
         return stack;
     }
 
-    //--------------//
-    // getStartTime //
-    //--------------//
+    //---------------//
+    // getTimeOffset //
+    //---------------//
     /**
      * Report the time offset of this slot since the beginning of the measure.
      *
      * @return the time offset of this slot.
      */
-    public Rational getStartTime ()
+    public Rational getTimeOffset ()
     {
-        return startTime;
+        return timeOffset;
     }
 
     //------------//
@@ -400,27 +400,27 @@ public class Slot
         computeXOffset();
     }
 
-    //--------------//
-    // setStartTime //
-    //--------------//
+    //---------------//
+    // setTimeOffset //
+    //---------------//
     /**
-     * Assign the startTime since the beginning of the measure, for all chords in this
+     * Assign the timeOffset since the beginning of the measure, for all chords in this
      * time slot.
      *
-     * @param startTime time offset since measure start
+     * @param timeOffset time offset since measure start
      * @return true if OK, false otherwise
      */
-    public boolean setStartTime (Rational startTime)
+    public boolean setTimeOffset (Rational timeOffset)
     {
         boolean failed = false;
 
-        if (this.startTime == null) {
-            logger.debug("setStartTime {} for Slot #{}", startTime, getId());
-            this.startTime = startTime;
+        if (this.timeOffset == null) {
+            logger.debug("setTimeOffset {} for Slot #{}", timeOffset, getId());
+            this.timeOffset = timeOffset;
 
             // Assign to all chords of this slot first
             for (AbstractChordInter chord : incomings) {
-                if (!chord.setStartTime(startTime)) {
+                if (!chord.setTimeOffset(timeOffset)) {
                     failed = true;
                 }
             }
@@ -430,7 +430,7 @@ public class Slot
                 BeamGroup group = chord.getBeamGroup();
 
                 if (group != null) {
-                    group.computeStartTimes();
+                    group.computeTimeOffsets();
                 }
             }
 
@@ -438,9 +438,9 @@ public class Slot
             for (Voice voice : stack.getVoices()) {
                 voice.updateSlotTable();
             }
-        } else if (!this.startTime.equals(startTime)) {
+        } else if (!this.timeOffset.equals(timeOffset)) {
             logger.warn(
-                    "Reassigning startTime from " + this.startTime + " to " + startTime + " in "
+                    "Reassigning timeOffset from " + this.timeOffset + " to " + timeOffset + " in "
                     + this);
 
             failed = true;
@@ -462,8 +462,8 @@ public class Slot
         StringBuilder sb = new StringBuilder();
         sb.append("slot#").append(getId());
 
-        if (getStartTime() != null) {
-            sb.append(" start=").append(String.format("%5s", getStartTime()));
+        if (getTimeOffset() != null) {
+            sb.append(" start=").append(String.format("%5s", getTimeOffset()));
         }
 
         sb.append(" [");
@@ -495,8 +495,8 @@ public class Slot
 
         sb.append(" xOffset=").append(xOffset);
 
-        if (startTime != null) {
-            sb.append(" start=").append(startTime);
+        if (timeOffset != null) {
+            sb.append(" timeOffset=").append(timeOffset);
         }
 
         sb.append(" incomings=[");
@@ -527,7 +527,7 @@ public class Slot
         StringBuilder sb = new StringBuilder();
 
         //        sb.append("slot#").append(getId()).append(" start=")
-        //                .append(String.format("%5s", getStartTime())).append(" [");
+        //                .append(String.format("%5s", getTimeOffset())).append(" [");
         //
         //        SortedMap<Integer, AbstractChordInter> voiceChords = new TreeMap<Integer, AbstractChordInter>();
         //
@@ -617,7 +617,7 @@ public class Slot
                         // // Check there is no time hole with latest voice chord
                         // // Otherwise there is a rhythm error
                         // // (missing rest/dot on this voice / missing tuplet on other voice)
-                        // Rational delta = startTime.minus(latestVoiceChord.getEndTime());
+                        // Rational delta = timeOffset.minus(latestVoiceChord.getEndTime());
                         //
                         // if (delta.compareTo(Rational.ZERO) > 0) {
                         //     logger.debug("{} {} {} time hole: {}", measure, this, voice, delta);

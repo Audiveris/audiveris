@@ -237,14 +237,14 @@ public class BeamGroup
         this.voice = voice;
     }
 
-    //-------------------//
-    // computeStartTimes //
-    //-------------------//
+    //--------------------//
+    // computeTimeOffsets //
+    //--------------------//
     /**
-     * Compute start times for all chords of this beam group, assuming the first chord
-     * of the group already has its startTime set.
+     * Compute time offsets for all chords of this beam group, assuming the first chord
+     * of the group already has its time offset assigned.
      */
-    public void computeStartTimes ()
+    public void computeTimeOffsets ()
     {
         AbstractChordInter prevChord = null;
 
@@ -255,15 +255,15 @@ public class BeamGroup
                     AbstractNoteInter rest = measure.lookupRest(prevChord, chord);
 
                     if (rest != null) {
-                        rest.getChord().setStartTime(prevChord.getEndTime());
-                        chord.setStartTime(rest.getChord().getEndTime());
+                        rest.getChord().setTimeOffset(prevChord.getEndTime());
+                        chord.setTimeOffset(rest.getChord().getEndTime());
                     } else {
-                        chord.setStartTime(prevChord.getEndTime());
+                        chord.setTimeOffset(prevChord.getEndTime());
                     }
                 } catch (Exception ex) {
                     logger.warn("{} Cannot compute chord time based on previous chord", chord);
                 }
-            } else if (chord.getStartTime() == null) {
+            } else if (chord.getTimeOffset() == null) {
                 logger.warn("{} Computing beam group times with first chord not set", chord);
             }
 
@@ -297,7 +297,7 @@ public class BeamGroup
     {
         final AbstractChordInter first = getFirstChord();
         final AbstractChordInter last = getLastChord();
-        Rational duration = last.getStartTime().minus(first.getStartTime()).plus(
+        Rational duration = last.getTimeOffset().minus(first.getTimeOffset()).plus(
                 last.getDuration());
 
         return duration;

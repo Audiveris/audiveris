@@ -197,8 +197,8 @@ public abstract class UIUtil
         File file = null;
 
         if (WellKnowns.MAC_OS_X) {
-            if ((parent == null) && (omr.OMR.getGui() != null)) {
-                parent = omr.OMR.getGui().getFrame();
+            if ((parent == null) && (omr.OMR.gui != null)) {
+                parent = omr.OMR.gui.getFrame();
             }
 
             Component parentFrame = parent;

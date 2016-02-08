@@ -151,7 +151,7 @@ public class Trainer
         }
 
         // Resource injection
-        ResourceMap resource = OMR.getApplication().getContext().getResourceMap(getClass());
+        ResourceMap resource = OMR.gui.getApplication().getContext().getResourceMap(getClass());
         resource.injectComponents(frame);
         frameTitle = frame.getTitle();
     }
@@ -165,7 +165,7 @@ public class Trainer
      */
     public static void launch ()
     {
-        OMR.getApplication().show(getInstance().frame);
+        OMR.gui.getApplication().show(getInstance().frame);
     }
 
     //------//

@@ -156,8 +156,8 @@ public class MusicFont
             String msg = FONT_NAME + " font not found." + " Please install " + FONT_NAME + ".ttf";
             logger.error(msg);
 
-            if (OMR.getGui() != null) {
-                OMR.getGui().displayError(msg);
+            if (OMR.gui != null) {
+                OMR.gui.displayError(msg);
             }
 
             return false;

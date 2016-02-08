@@ -65,7 +65,7 @@ public class PluginStep
         Book book = sheet.getBook();
 
         // Interactive or Batch?
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             plugin.getTask(book).execute();
         } else {
             plugin.runPlugin(book);
@@ -102,7 +102,7 @@ public class PluginStep
 
         //        if (oldPlugin != null) {
         //            // Update step tooltip with this new plugin
-        //            MainGui gui = (MainGui) OMR.getGui();
+        //            MainGui gui = (MainGui) OMR.gui;
         //            gui.getStepMenu().updateMenu();
         //        }
     }

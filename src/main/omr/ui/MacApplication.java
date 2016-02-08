@@ -133,7 +133,7 @@ public class MacApplication
                 worker.execute();
             } else {
                 // Actually load the book
-                Book book = OMR.getEngine().loadInput(Paths.get(filename));
+                Book book = OMR.engine.loadInput(Paths.get(filename));
                 book.createStubs(null);
                 book.createStubsTabs(); // Tabs are now accessible
             }

@@ -17,59 +17,62 @@
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
-      <x>603</x>
-      <y>495</y>
-      <w>179</w>
+      <x>450</x>
+      <y>459</y>
+      <w>89</w>
       <h>44</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-    <additional_attributes>27;27;162;27</additional_attributes>
+    <additional_attributes>27;27;72;27</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
-      <x>558</x>
-      <y>504</y>
+      <x>405</x>
+      <y>477</y>
       <w>72</w>
-      <h>108</h>
+      <h>162</h>
     </coordinates>
     <panel_attributes>*Book*
 --
-file
+input
+offset
+project
+script
 --
-transcribe()
 doStep()
+transcribe()
 export()
-print()</panel_attributes>
+print()
+store()</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
-      <x>765</x>
-      <y>504</y>
-      <w>108</w>
-      <h>153</h>
+      <x>522</x>
+      <y>477</y>
+      <w>90</w>
+      <h>135</h>
     </coordinates>
-    <panel_attributes>*Sheet*
+    <panel_attributes>*/SheetStub/*
 --
-fileIndex
-picture
-scale
-skew
+number
+invalid?
+doneSteps
+currentStep
 --
-transcribe()
-doStep()
-export()
-print()</panel_attributes>
+ensureStep()
+storeSheet()
+swapSheet()</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
-      <x>756</x>
-      <y>171</y>
-      <w>126</w>
+      <x>522</x>
+      <y>9</y>
+      <w>117</w>
       <h>180</h>
     </coordinates>
     <panel_attributes>&lt;&lt;singleton&gt;&gt;
@@ -91,30 +94,30 @@ removeAssembly()</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>810</x>
-      <y>342</y>
-      <w>27</w>
-      <h>180</h>
+      <x>558</x>
+      <y>171</y>
+      <w>36</w>
+      <h>324</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;180.0;10.0;10.0</additional_attributes>
+    <additional_attributes>12.0;340.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
-      <x>567</x>
-      <y>432</y>
+      <x>414</x>
+      <y>414</y>
       <w>44</w>
-      <h>89</h>
+      <h>80</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-    <additional_attributes>27;27;27;72</additional_attributes>
+    <additional_attributes>27;27;27;63</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>18</x>
-      <y>315</y>
+      <x>9</x>
+      <y>261</y>
       <w>72</w>
       <h>54</h>
     </coordinates>
@@ -127,9 +130,9 @@ main()</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>135</x>
-      <y>315</y>
-      <w>90</w>
+      <x>117</x>
+      <y>261</y>
+      <w>45</w>
       <h>54</h>
     </coordinates>
     <panel_attributes>*Main*
@@ -141,8 +144,8 @@ main()</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>252</x>
-      <y>396</y>
+      <x>144</x>
+      <y>369</y>
       <w>99</w>
       <h>126</h>
     </coordinates>
@@ -161,54 +164,52 @@ isBatchMode()</panel_attributes>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
-      <x>63</x>
-      <y>324</y>
-      <w>89</w>
+      <x>54</x>
+      <y>270</y>
+      <w>80</w>
       <h>44</h>
     </coordinates>
     <panel_attributes>lt=.&gt;</panel_attributes>
-    <additional_attributes>27;27;72;27</additional_attributes>
+    <additional_attributes>27;27;63;27</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
-      <x>198</x>
-      <y>342</y>
-      <w>71</w>
-      <h>71</h>
+      <x>126</x>
+      <y>288</y>
+      <w>44</w>
+      <h>98</h>
     </coordinates>
     <panel_attributes>lt=-&gt;</panel_attributes>
-    <additional_attributes>27;27;54;54</additional_attributes>
+    <additional_attributes>27;27;27;81</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>333</x>
-      <y>288</y>
+      <x>198</x>
+      <y>261</y>
       <w>99</w>
-      <h>81</h>
+      <h>45</h>
     </coordinates>
     <panel_attributes>*OMR*
 bg=#ff5555
 --
-{file extensions}
---
-get/setEngine()
-get/setGui()</panel_attributes>
+{file extensions}</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>540</x>
-      <y>18</y>
+      <x>369</x>
+      <y>9</y>
       <w>108</w>
-      <h>117</h>
+      <h>135</h>
     </coordinates>
     <panel_attributes>*/OmrGui/*
 bg=#ffcfff
 --
 --
+getApplication()
 getFrame()
 getGlassPane()
 displayXXX()
@@ -220,32 +221,33 @@ XxxBoardsPane()</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>558</x>
+      <x>369</x>
       <y>171</y>
-      <w>81</w>
-      <h>27</h>
+      <w>108</w>
+      <h>36</h>
     </coordinates>
-    <panel_attributes>*MainGui*
+    <panel_attributes>&lt;&lt;singleton&gt;&gt;
+*MainGui*
 bg=#ffaaff</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>585</x>
-      <y>126</y>
+      <x>414</x>
+      <y>135</y>
       <w>27</w>
-      <h>63</h>
+      <h>54</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;.</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>549</x>
-      <y>252</y>
-      <w>99</w>
+      <x>369</x>
+      <y>234</y>
+      <w>108</w>
       <h>108</h>
     </coordinates>
     <panel_attributes>*/OmrEngine/*
@@ -262,12 +264,13 @@ removeBook()</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>549</x>
-      <y>396</y>
-      <w>99</w>
-      <h>63</h>
+      <x>369</x>
+      <y>369</y>
+      <w>108</w>
+      <h>72</h>
     </coordinates>
-    <panel_attributes>*BookManager*
+    <panel_attributes>&lt;&lt;singleton&gt;&gt;
+*BookManager*
 bg=#55ffff
 --
 inputHistory
@@ -278,47 +281,92 @@ projectHistory
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>585</x>
-      <y>351</y>
+      <x>414</x>
+      <y>333</y>
       <w>27</w>
-      <h>63</h>
+      <h>54</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;.</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
-      <x>405</x>
-      <y>153</y>
-      <w>170</w>
-      <h>161</h>
+      <x>270</x>
+      <y>162</y>
+      <w>116</w>
+      <h>125</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-gui</panel_attributes>
-    <additional_attributes>27;144;153;27</additional_attributes>
+m1=gui</panel_attributes>
+    <additional_attributes>27;108;81;108;81;27;99;27</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
-      <x>405</x>
+      <x>270</x>
       <y>270</y>
-      <w>161</w>
-      <h>152</h>
+      <w>116</w>
+      <h>134</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-engine</panel_attributes>
-    <additional_attributes>27;27;144;135</additional_attributes>
+m1=engine</panel_attributes>
+    <additional_attributes>27;27;81;27;81;117;99;117</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
-      <x>198</x>
-      <y>324</y>
-      <w>152</w>
+      <x>135</x>
+      <y>270</y>
+      <w>80</w>
       <h>44</h>
     </coordinates>
     <panel_attributes>lt=.&gt;</panel_attributes>
-    <additional_attributes>27;27;135;27</additional_attributes>
+    <additional_attributes>27;27;63;27</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>657</x>
+      <y>477</y>
+      <w>90</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>*/Sheet/*
+--
+number
+picture
+scale
+skew
+pages
+interIndex
+glyphIndex
+--
+doOneStep()
+export()
+print()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>585</x>
+      <y>495</y>
+      <w>89</w>
+      <h>44</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>27;27;72;27</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>585</x>
+      <y>459</y>
+      <w>89</w>
+      <h>44</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>27;27;72;27</additional_attributes>
   </element>
 </diagram>

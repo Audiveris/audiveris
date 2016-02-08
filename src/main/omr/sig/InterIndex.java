@@ -122,7 +122,7 @@ public class InterIndex
         }
 
         // User Inter service?
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             setEntityService(new InterService(this, sheet.getLocationService()));
         } else {
             entityService = null;

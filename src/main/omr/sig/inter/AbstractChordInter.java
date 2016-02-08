@@ -139,7 +139,7 @@ public abstract class AbstractChordInter
     protected Slot slot;
 
     /** Start time, if any, since beginning of the containing measure. */
-    protected Rational startTime;
+    protected Rational timeOffset;
 
     /** Voice this chord belongs to. */
     protected Voice voice;
@@ -624,7 +624,7 @@ public abstract class AbstractChordInter
         if (chordDur == null) {
             return null;
         } else {
-            return startTime.plus(chordDur);
+            return timeOffset.plus(chordDur);
         }
     }
 
@@ -818,17 +818,17 @@ public abstract class AbstractChordInter
         return staff;
     }
 
-    //--------------//
-    // getStartTime //
-    //--------------//
+    //---------------//
+    // getTimeOffset //
+    //---------------//
     /**
-     * Report the starting time for this chord
+     * Report the time offset for this chord
      *
-     * @return startTime chord starting time (counted within the measure)
+     * @return timeOffset chord time offset within the measure stack
      */
-    public Rational getStartTime ()
+    public Rational getTimeOffset ()
     {
-        return startTime;
+        return timeOffset;
     }
 
     //-----------//
@@ -1038,7 +1038,7 @@ public abstract class AbstractChordInter
         dotsNumber = 0;
         slot = null;
         voice = null;
-        startTime = null;
+        timeOffset = null;
         tupletFactor = null;
     }
 
@@ -1058,26 +1058,26 @@ public abstract class AbstractChordInter
         this.slot = slot;
     }
 
-    //--------------//
-    // setStartTime //
-    //--------------//
+    //----_----------//
+    // setTimeOffset //
+    //------_--------//
     /**
-     * Remember the starting time for this chord
+     * Remember the time offset for this chord
      *
-     * @param startTime chord starting time (counted within the measure)
+     * @param timeOffset chord starting time (counted within the measure)
      * @return true if OK
      */
-    public boolean setStartTime (Rational startTime)
+    public boolean setTimeOffset (Rational timeOffset)
     {
         if (isVip()) {
-            logger.info("VIP {} setStartTime from {} to {}", this, this.startTime, startTime);
+            logger.info("VIP {} setTimeOffset from {} to {}", this, this.timeOffset, timeOffset);
         }
 
         // Already done?
-        if (this.startTime == null) {
-            this.startTime = startTime;
-        } else if (!this.startTime.equals(startTime)) {
-            logger.debug("{} Reassign startTime from {} to {}", this, this.startTime, startTime);
+        if (this.timeOffset == null) {
+            this.timeOffset = timeOffset;
+        } else if (!this.timeOffset.equals(timeOffset)) {
+            logger.debug("{} Reassign timeOffset from {} to {}", this, this.timeOffset, timeOffset);
 
             return false;
         }

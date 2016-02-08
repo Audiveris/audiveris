@@ -653,7 +653,7 @@ public class CLI
         @Override
         protected Book loadBook (Path path)
         {
-            return OMR.getEngine().loadInput(path);
+            return OMR.engine.loadInput(path);
         }
     }
 
@@ -686,7 +686,7 @@ public class CLI
                     book.createStubs(sheetIds);
                 }
 
-                if (OMR.getGui() != null) {
+                if (OMR.gui != null) {
                     book.createStubsTabs(); // Tabs are now accessible
                 }
 
@@ -735,7 +735,7 @@ public class CLI
                 throw ex;
             } finally {
                 // Close (when in batch mode only)
-                if (OMR.getGui() == null) {
+                if (OMR.gui == null) {
                     book.close();
                 }
             }
@@ -768,9 +768,9 @@ public class CLI
         @Override
         protected Book loadBook (Path path)
         {
-            Book book = OMR.getEngine().loadProject(path);
+            Book book = OMR.engine.loadProject(path);
 
-            if (OMR.getGui() != null) {
+            if (OMR.gui != null) {
                 book.createStubsTabs(); // Tabs are now accessible
             }
 
@@ -804,7 +804,7 @@ public class CLI
         @Override
         protected Book loadBook (Path path)
         {
-            return OMR.getEngine().loadScript(path);
+            return OMR.engine.loadScript(path);
         }
     }
 }

@@ -248,18 +248,18 @@ public class SheetResultPainter
 
             g.draw(new Line2D.Double(top, bot));
 
-            // Draw slot start time (with a maximum font size)
-            Rational slotStartTime = slot.getStartTime();
+            // Draw slot time offset (with a maximum font size)
+            Rational slotTimeOffset = slot.getTimeOffset();
 
-            if (slotStartTime != null) {
+            if (slotTimeOffset != null) {
                 TextLayout layout;
                 double zoom = g.getTransform().getScaleX();
 
                 if (zoom <= 2) {
-                    layout = basicLayout(slotStartTime.toString(), halfAT);
+                    layout = basicLayout(slotTimeOffset.toString(), halfAT);
                 } else {
                     AffineTransform at = AffineTransform.getScaleInstance(1 / zoom, 1 / zoom);
-                    layout = basicLayout(slotStartTime.toString(), at);
+                    layout = basicLayout(slotTimeOffset.toString(), at);
                 }
 
                 Point topInt = PointUtil.rounded(top);

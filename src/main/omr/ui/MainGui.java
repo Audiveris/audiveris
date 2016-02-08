@@ -15,9 +15,6 @@ import omr.Main;
 import omr.OMR;
 import omr.WellKnowns;
 
-import omr.ui.action.ActionManager;
-import omr.ui.action.Actions;
-
 import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
@@ -30,18 +27,20 @@ import omr.plugin.PluginManager;
 
 import omr.score.PartwiseBuilder;
 
-import omr.ui.selection.MouseMovement;
-import omr.ui.selection.StubEvent;
-
 import omr.sheet.Book;
 import omr.sheet.SheetStub;
 import omr.sheet.ui.BookActions;
+import omr.sheet.ui.SheetResultPainter;
 import omr.sheet.ui.StubsController;
 
 import omr.step.ui.StepMenu;
 import omr.step.ui.StepMonitoring;
 
+import omr.ui.action.ActionManager;
+import omr.ui.action.Actions;
 import omr.ui.dnd.GhostGlassPane;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.StubEvent;
 import omr.ui.symbol.MusicFont;
 import omr.ui.util.ModelessOptionPane;
 import omr.ui.util.Panel;
@@ -55,6 +54,7 @@ import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +80,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
-import omr.sheet.ui.SheetResultPainter;
 
 /**
  * Class {@code MainGui} is the Java User Interface, the main class for displaying a
@@ -212,6 +211,20 @@ public class MainGui
                 message,
                 "Warning - " + appName,
                 JOptionPane.WARNING_MESSAGE);
+    }
+
+    //----------------//
+    // getApplication //
+    //----------------//
+    /**
+     * Report the single instance of this GUI SAF application.
+     *
+     * @return the SingleFrameApplication instance
+     */
+    @Override
+    public SingleFrameApplication getApplication ()
+    {
+        return (SingleFrameApplication) Application.getInstance();
     }
 
     //----------//
@@ -444,7 +457,7 @@ public class MainGui
         GuiActions.getInstance().addPropertyChangeListener(weak);
 
         // Make the OmrGui instance available for the other classes
-        OMR.setGui(this);
+        OMR.gui = this;
 
         // Check MusicFont is loaded
         MusicFont.checkMusicFont();
@@ -717,7 +730,7 @@ public class MainGui
         @Override
         public boolean canExit (EventObject eo)
         {
-            for (Book book : OMR.getEngine().getAllBooks()) {
+            for (Book book : OMR.engine.getAllBooks()) {
                 //                // Is script stored (or explicitly ignored)?
                 //                if (!ScriptActions.checkStored(book.getScript())) {
                 //                    return false;
@@ -742,7 +755,7 @@ public class MainGui
             int count = 0;
 
             // NB: Use a COPY of instances, to avoid concurrent modification
-            for (Book book : new ArrayList<Book>(OMR.getEngine().getAllBooks())) {
+            for (Book book : new ArrayList<Book>(OMR.engine.getAllBooks())) {
                 book.close();
                 count++;
             }

@@ -27,10 +27,10 @@ public abstract class BasicTask
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Audiveris application is injected into this task
+     * Audiveris application is injected into this task.
      */
     public BasicTask ()
     {
-        super(OMR.getApplication());
+        super(OMR.gui.getApplication());
     }
 }

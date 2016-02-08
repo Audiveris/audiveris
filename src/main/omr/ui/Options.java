@@ -106,9 +106,9 @@ public class Options
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            if (OMR.getGui() != null) {
-                if (true == OMR.getGui()
-                        .displayConfirmation("Reset all constants to their factory value?")) {
+            if (OMR.gui != null) {
+                if (true == OMR.gui.displayConfirmation(
+                        "Reset all constants to their factory value?")) {
                     UnitManager.getInstance().resetAllUnits();
                 }
             }
@@ -259,13 +259,13 @@ public class Options
         // Make sure the search entry field gets the focus at creation time
         frame.addWindowListener(
                 new WindowAdapter()
-                {
-                    @Override
-                    public void windowOpened (WindowEvent e)
-                    {
-                        searchField.requestFocus();
-                    }
-                });
+        {
+            @Override
+            public void windowOpened (WindowEvent e)
+            {
+                searchField.requestFocus();
+            }
+        });
     }
 
     //~ Methods ------------------------------------------------------------------------------------

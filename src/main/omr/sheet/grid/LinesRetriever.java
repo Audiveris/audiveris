@@ -169,7 +169,7 @@ public class LinesRetriever
      */
     public RunTable buildHorizontalLag ()
     {
-        final RunsViewer runsViewer = (constants.displayRuns.isSet() && (OMR.getGui() != null))
+        final RunsViewer runsViewer = (constants.displayRuns.isSet() && (OMR.gui != null))
                 ? new RunsViewer(sheet) : null;
 
         RunTable sourceTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);

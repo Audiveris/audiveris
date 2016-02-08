@@ -373,7 +373,7 @@ public class ScaleBuilder
 
         Book book = sheet.getBook();
 
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             SwingUtilities.invokeLater(
                     new Runnable()
             {
@@ -386,9 +386,8 @@ public class ScaleBuilder
             });
         }
 
-        if ((OMR.getGui() == null)
-            || (OMR.getGui()
-                .displayModelessConfirm(msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
+        if ((OMR.gui == null)
+            || (OMR.gui.displayModelessConfirm(msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
             if (book.isMultiSheet()) {
                 sheet.close();
                 throw new StepException("Sheet removed");
@@ -445,9 +444,7 @@ public class ScaleBuilder
                         (backPeak.getValue() + secondBackPeak.getValue()) / 2);
                 secondBackPeak = null;
                 logger.info("Merged two close background peaks");
-            } else // Check whether this second background peak can be an interline
-            // We check that p2 is not too large, compared with p1
-            if (p2.best > (p1.best * constants.maxSecondRatio.getValue())) {
+            } else if (p2.best > (p1.best * constants.maxSecondRatio.getValue())) {
                 logger.info("Second background peak too large {}, ignored", p2.best);
                 secondBackPeak = null;
             }

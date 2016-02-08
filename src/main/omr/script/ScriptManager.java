@@ -125,7 +125,7 @@ public class ScriptManager
             logger.warn(ex.toString(), ex);
         } finally {
             // Close when in batch mode?
-            if ((OMR.getGui() == null) && (script != null) && closeBookOnEnd) {
+            if ((OMR.gui == null) && (script != null) && closeBookOnEnd) {
                 Book book = script.getBook();
 
                 if (book != null) {

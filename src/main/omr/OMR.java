@@ -13,9 +13,6 @@ package omr;
 
 import omr.ui.OmrGui;
 
-import org.jdesktop.application.Application;
-import org.jdesktop.application.SingleFrameApplication;
-
 /**
  * Class {@code OMR} gathers definitions and dependencies for an OMR application.
  * <p>
@@ -48,87 +45,21 @@ public abstract class OMR
     /** The extension used for score output files: {@value}. */
     public static final String SCORE_EXTENSION = ".xml";
 
-    /** The extension used for script files: {@value}. */
+    /** The (double) extension used for script files: {@value}. */
     public static final String SCRIPT_EXTENSION = ".script.xml";
 
-    /** The suffix used for sheet output files in a multi-sheet book: {@value}. */
+    /** The suffix used for a single sheet output in a multi-sheet book: {@value}. */
     public static final String SHEET_SUFFIX = "-sheet#";
 
     /** OMR engine. */
-    private static OmrEngine engine;
+    public static OmrEngine engine;
 
     /** Master view, if any. */
-    private static OmrGui gui;
+    public static OmrGui gui;
 
     //~ Constructors -------------------------------------------------------------------------------
     /** Do not instantiate. */
     private OMR ()
     {
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // getApplication //
-    //----------------//
-    /**
-     * Report the single instance of this GUI SAF application.
-     *
-     * @return the SingleFrameApplication instance
-     */
-    public static SingleFrameApplication getApplication ()
-    {
-        return (SingleFrameApplication) Application.getInstance();
-    }
-
-    //-----------//
-    // getEngine //
-    //-----------//
-    /**
-     * Report the omr engine.
-     *
-     * @return the engine
-     */
-    public static OmrEngine getEngine ()
-    {
-        return engine;
-    }
-
-    //--------//
-    // getGui //
-    //--------//
-    /**
-     * Report the omr Gui, if any.
-     *
-     * @return the main gui, or null when in batch mode
-     */
-    public static OmrGui getGui ()
-    {
-        return gui;
-    }
-
-    //-----------//
-    // setEngine //
-    //-----------//
-    /**
-     * Assign the omr engine.
-     *
-     * @param engine the engine to set
-     */
-    public static void setEngine (OmrEngine engine)
-    {
-        OMR.engine = engine;
-    }
-
-    //--------//
-    // setGui //
-    //--------//
-    /**
-     * Assign the omr Gui.
-     *
-     * @param gui the main gui.
-     */
-    public static void setGui (OmrGui gui)
-    {
-        OMR.gui = gui;
     }
 }

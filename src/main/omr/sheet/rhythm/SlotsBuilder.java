@@ -156,7 +156,7 @@ public class SlotsBuilder
     /** Current earliest term for each staff in stack. */
     private final Map<Staff, Rational> stackTerms = new LinkedHashMap<Staff, Rational>();
 
-    /** Comparator based on inter-chord relationships, then on startTime when known. */
+    /** Comparator based on inter-chord relationships, then on timeOffset when known. */
     private final Comparator<AbstractChordInter> byRel = new Comparator<AbstractChordInter>()
     {
         @Override
@@ -181,9 +181,9 @@ public class SlotsBuilder
 
                 default:
 
-                    // Use start time difference when known
-                    if ((c1.getStartTime() != null) && (c2.getStartTime() != null)) {
-                        return c1.getStartTime().compareTo(c2.getStartTime());
+                    // Use time offsett difference when known
+                    if ((c1.getTimeOffset() != null) && (c2.getTimeOffset() != null)) {
+                        return c1.getTimeOffset().compareTo(c2.getTimeOffset());
                     } else {
                         return 0;
                     }
@@ -375,7 +375,7 @@ public class SlotsBuilder
             Rational term = computeNextTerm(actives, pendings);
             Slot lastSlot = stack.getLastSlot();
 
-            if ((lastSlot != null) && (term.compareTo(lastSlot.getStartTime()) <= 0)) {
+            if ((lastSlot != null) && (term.compareTo(lastSlot.getTimeOffset()) <= 0)) {
                 if (failFast) {
                     logger.info("Stack#{} suspicious {}", stack.getIdValue(), lastSlot);
 
@@ -399,7 +399,7 @@ public class SlotsBuilder
                 stack.getSlots().add(slot);
 
                 // Check slots time so far are consistent
-                if (!slot.setStartTime(term) || !checkInterSlot(slot)) {
+                if (!slot.setTimeOffset(term) || !checkInterSlot(slot)) {
                     if (failFast) {
                         return false;
                     }
@@ -532,17 +532,17 @@ public class SlotsBuilder
 
         // Check for pending chords that could lower a staff term
         for (AbstractChordInter chord : pendings) {
-            Rational startTime = chord.getStartTime();
+            Rational timeOffset = chord.getTimeOffset();
 
-            if (startTime != null) {
+            if (timeOffset != null) {
                 for (Staff staff : chord.getStaves()) {
                     Rational staffTerm = stackTerms.get(staff);
 
-                    if ((staffTerm == null) || (startTime.compareTo(staffTerm) < 0)) {
-                        stackTerms.put(staff, startTime);
+                    if ((staffTerm == null) || (timeOffset.compareTo(staffTerm) < 0)) {
+                        stackTerms.put(staff, timeOffset);
 
-                        if (startTime.compareTo(nextTerm) < 0) {
-                            nextTerm = startTime;
+                        if (timeOffset.compareTo(nextTerm) < 0) {
+                            nextTerm = timeOffset;
                         }
                     }
                 }
@@ -770,7 +770,7 @@ public class SlotsBuilder
     private void handleWholeVoices (List<AbstractChordInter> wholes)
     {
         for (AbstractChordInter chord : wholes) {
-            chord.setStartTime(Rational.ZERO);
+            chord.setTimeOffset(Rational.ZERO);
 
             Voice voice = Voice.createWholeVoice(chord, chord.getMeasure());
             Measure measure = stack.getMeasureAt(chord.getPart());
@@ -1078,7 +1078,7 @@ public class SlotsBuilder
         PendingLoop:
         for (AbstractChordInter chord : pendings) {
             // Here all chords should be >= firstChord
-            // Chords < firstChord indicate a startTime inconsistent with slot ordering !!!!!!!
+            // Chords < firstChord indicate a time offset inconsistent with slot ordering !!!!!!!
             // Chords = firstChord are taken as incomings
             // Chords > firstChord are left for following time slots
             if (byRel.compare(chord, firstChord) <= 0) {

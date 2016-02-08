@@ -230,17 +230,16 @@ public class SymbolsBuilder
      */
     private List<Glyph> getSymbolsGlyphs (Map<SystemInfo, List<Glyph>> optionalsMap)
     {
-        List<Glyph> glyphs = new ArrayList<Glyph>(); // Sorted by abscissa, ordinate, id
+        // Sorted by abscissa, ordinate, id
+        List<Glyph> glyphs = new ArrayList<Glyph>();
 
-        for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.hasGroup(Group.SYMBOL)) {
-                final int weight = glyph.getWeight();
+        for (Glyph glyph : system.lookupGroupedGlyphs(Group.SYMBOL)) {
+            final int weight = glyph.getWeight();
 
-                if (weight >= params.minWeight) {
-                    glyphs.add(glyph);
-                } else if ((weight >= params.minFineWeight) && hitFineBox(glyph)) {
-                    glyphs.add(glyph);
-                }
+            if (weight >= params.minWeight) {
+                glyphs.add(glyph);
+            } else if ((weight >= params.minFineWeight) && hitFineBox(glyph)) {
+                glyphs.add(glyph);
             }
         }
 

@@ -67,8 +67,8 @@ public class LogGuiAppender
     {
         logMbx.offer(event);
 
-        if (OMR.getGui() != null) {
-            OMR.getGui().notifyLog();
+        if (OMR.gui != null) {
+            OMR.gui.notifyLog();
         }
     }
 }

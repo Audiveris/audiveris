@@ -199,7 +199,7 @@ public class FileDropHandler
         {
             logger.info("Dropping book file {}", file);
 
-            final Book book = OMR.getEngine().loadInput(file.toPath());
+            final Book book = OMR.engine.loadInput(file.toPath());
             book.createStubs(null);
             book.createStubsTabs(); // Tabs are now accessible
 
@@ -234,7 +234,7 @@ public class FileDropHandler
         protected Void doInBackground ()
                 throws Exception
         {
-            Book book = OMR.getEngine().loadProject(file.toPath());
+            Book book = OMR.engine.loadProject(file.toPath());
             book.createStubsTabs(); // Tabs are now accessible
 
             return null;

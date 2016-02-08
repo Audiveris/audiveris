@@ -49,15 +49,11 @@ import omr.sig.relation.Relation;
 import omr.util.Corner;
 import omr.util.Dumping;
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.VerticalSide;
-
 import static omr.util.VerticalSide.*;
-
 import omr.util.WrappedInteger;
 
 import ij.process.ByteProcessor;
@@ -173,7 +169,7 @@ public class BeamsBuilder
         pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
 
         // First, retrieve beam candidates from spots
-        sortedBeamSpots = getBeamSpots();
+        sortedBeamSpots = system.lookupGroupedGlyphs(Group.BEAM_SPOT);
 
         // Create initial beams by checking spots individually
         createBeams();
@@ -1140,28 +1136,6 @@ public class BeamsBuilder
         return false;
     }
 
-    //--------------//
-    // getBeamSpots //
-    //--------------//
-    /**
-     * Gather the spots that are candidates for beam.
-     *
-     * @return the initial set of spot glyph instances for the current system
-     */
-    private List<Glyph> getBeamSpots ()
-    {
-        // Spots as candidate beams for this system
-        final List<Glyph> spots = new ArrayList<Glyph>();
-
-        for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.hasGroup(Group.BEAM_SPOT)) {
-                spots.add(glyph);
-            }
-        }
-
-        return spots;
-    }
-
     //------------------//
     // getCueAggregates //
     //------------------//
@@ -1720,100 +1694,6 @@ public class BeamsBuilder
                 "Ratio applied for cue beams height");
     }
 
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final int maxSideBeamDx;
-
-        final int minBeamsGapX;
-
-        final int maxBeamsGapX;
-
-        final int maxBeamsGapY;
-
-        final int beamsXMargin;
-
-        final int maxStemBeamGapX;
-
-        final int maxStemBeamGapY;
-
-        final int maxExtensionToStem;
-
-        final int maxExtensionToSpot;
-
-        final int beltMarginDx;
-
-        final int beltMarginDy;
-
-        final double maxBeamSlope;
-
-        final double maxBorderSlopeGap;
-
-        final double maxBeamSlopeGap;
-
-        final double maxDistanceToBorder;
-
-        final double maxBeltBlackRatio;
-
-        final double minCoreBlackRatio;
-
-        final double minExtBlackRatio;
-
-        final int cueXMargin;
-
-        final int cueYMargin;
-
-        final int cueBoxDx;
-
-        final int cueBoxDy;
-
-        final double cueBeamRatio;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
-        {
-            maxSideBeamDx = scale.toPixels(constants.maxSideBeamDx);
-            minBeamsGapX = scale.toPixels(constants.minBeamsGapX);
-            maxBeamsGapX = scale.toPixels(constants.maxBeamsGapX);
-            maxBeamsGapY = scale.toPixels(constants.maxBeamsGapY);
-            beamsXMargin = scale.toPixels(constants.beamsXMargin);
-            maxStemBeamGapX = scale.toPixels(constants.maxStemBeamGapX);
-            maxStemBeamGapY = scale.toPixels(constants.maxStemBeamGapY);
-            maxExtensionToStem = scale.toPixels(constants.maxExtensionToStem);
-            maxExtensionToSpot = scale.toPixels(constants.maxExtensionToSpot);
-            beltMarginDx = scale.toPixels(constants.beltMarginDx);
-            beltMarginDy = scale.toPixels(constants.beltMarginDy);
-            maxBeamSlope = constants.maxBeamSlope.getValue();
-            maxBorderSlopeGap = constants.maxBorderSlopeGap.getValue();
-            maxBeamSlopeGap = constants.maxBeamSlopeGap.getValue();
-            maxDistanceToBorder = scale.toPixelsDouble(constants.maxDistanceToBorder);
-            maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
-            minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
-            minExtBlackRatio = constants.minExtBlackRatio.getValue();
-            cueXMargin = scale.toPixels(constants.cueXMargin);
-            cueYMargin = scale.toPixels(constants.cueYMargin);
-            cueBoxDx = scale.toPixels(constants.cueBoxDx);
-            cueBoxDy = scale.toPixels(constants.cueBoxDy);
-            cueBeamRatio = constants.cueBeamRatio.getValue();
-
-            if (logger.isDebugEnabled()) {
-                new Dumping().dump(this);
-            }
-        }
-    }
-
     //--------------//
     // CueAggregate //
     //--------------//
@@ -2038,6 +1918,100 @@ public class BeamsBuilder
                     final Inter stem = stems.get(i);
                     connectStemToBeams(stem, beams, head);
                 }
+            }
+        }
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final int maxSideBeamDx;
+
+        final int minBeamsGapX;
+
+        final int maxBeamsGapX;
+
+        final int maxBeamsGapY;
+
+        final int beamsXMargin;
+
+        final int maxStemBeamGapX;
+
+        final int maxStemBeamGapY;
+
+        final int maxExtensionToStem;
+
+        final int maxExtensionToSpot;
+
+        final int beltMarginDx;
+
+        final int beltMarginDy;
+
+        final double maxBeamSlope;
+
+        final double maxBorderSlopeGap;
+
+        final double maxBeamSlopeGap;
+
+        final double maxDistanceToBorder;
+
+        final double maxBeltBlackRatio;
+
+        final double minCoreBlackRatio;
+
+        final double minExtBlackRatio;
+
+        final int cueXMargin;
+
+        final int cueYMargin;
+
+        final int cueBoxDx;
+
+        final int cueBoxDy;
+
+        final double cueBeamRatio;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            maxSideBeamDx = scale.toPixels(constants.maxSideBeamDx);
+            minBeamsGapX = scale.toPixels(constants.minBeamsGapX);
+            maxBeamsGapX = scale.toPixels(constants.maxBeamsGapX);
+            maxBeamsGapY = scale.toPixels(constants.maxBeamsGapY);
+            beamsXMargin = scale.toPixels(constants.beamsXMargin);
+            maxStemBeamGapX = scale.toPixels(constants.maxStemBeamGapX);
+            maxStemBeamGapY = scale.toPixels(constants.maxStemBeamGapY);
+            maxExtensionToStem = scale.toPixels(constants.maxExtensionToStem);
+            maxExtensionToSpot = scale.toPixels(constants.maxExtensionToSpot);
+            beltMarginDx = scale.toPixels(constants.beltMarginDx);
+            beltMarginDy = scale.toPixels(constants.beltMarginDy);
+            maxBeamSlope = constants.maxBeamSlope.getValue();
+            maxBorderSlopeGap = constants.maxBorderSlopeGap.getValue();
+            maxBeamSlopeGap = constants.maxBeamSlopeGap.getValue();
+            maxDistanceToBorder = scale.toPixelsDouble(constants.maxDistanceToBorder);
+            maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
+            minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
+            minExtBlackRatio = constants.minExtBlackRatio.getValue();
+            cueXMargin = scale.toPixels(constants.cueXMargin);
+            cueYMargin = scale.toPixels(constants.cueYMargin);
+            cueBoxDx = scale.toPixels(constants.cueBoxDx);
+            cueBoxDy = scale.toPixels(constants.cueBoxDy);
+            cueBeamRatio = constants.cueBeamRatio.getValue();
+
+            if (logger.isDebugEnabled()) {
+                new Dumping().dump(this);
             }
         }
     }

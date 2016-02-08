@@ -78,7 +78,7 @@ public class ExtractionMenu
         // Let the user select an output file
         File file = UIUtil.fileChooser(
                 true,
-                OMR.getGui().getFrame(),
+                OMR.gui.getFrame(),
                 new File(Picture.getDefaultExtractionDirectory(), sheet.getId() + "-ext.png"),
                 new OmrFileFilter(".png images", new String[]{".png"}));
 

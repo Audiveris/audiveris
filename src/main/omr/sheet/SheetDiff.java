@@ -167,7 +167,7 @@ public class SheetDiff
         }
 
         // Display the filtered differences
-        if (OMR.getGui() != null) {
+        if (OMR.gui != null) {
             sheet.getAssembly().addViewTab(
                     SheetTab.DIFF_TAB,
                     new ScrollView(new MyView(xor)),

@@ -608,7 +608,7 @@ public class PartwiseBuilder
         if (measure.getLeftBarline() != null) {
             return measure.getLeftBarline();
         } else if (isFirst.measure) {
-            return measure.getPart().getStartingBarline();
+            return measure.getPart().getLeftBarline();
         } else {
             final Measure prevMeasure = measure.getPreviousSibling();
 
@@ -1607,11 +1607,11 @@ public class PartwiseBuilder
                             clefIters.push(slot.getXOffset(), chord.getTopStaff());
 
                             // Need a forward before this chord ?
-                            Rational startTime = chord.getStartTime();
+                            Rational timeOffset = chord.getTimeOffset();
 
-                            if (timeCounter.compareTo(startTime) < 0) {
-                                insertForward(startTime.minus(timeCounter), chord);
-                                timeCounter = startTime;
+                            if (timeCounter.compareTo(timeOffset) < 0) {
+                                insertForward(timeOffset.minus(timeCounter), chord);
+                                timeCounter = timeOffset;
                             }
 
                             // Grace note before this chord?
@@ -2000,7 +2000,7 @@ public class PartwiseBuilder
             processStub(stub, partMap);
 
             // Lean management of sheet instances ...
-            if ((OMR.getGui() == null) || (StubsController.getCurrentStub() != stub)) {
+            if ((OMR.gui == null) || (StubsController.getCurrentStub() != stub)) {
                 stub.swapSheet();
             }
         }
