@@ -831,9 +831,9 @@ public class LinesRetriever
     // includeSections //
     //-----------------//
     /**
-     * Include "sticker" sections into their related lines, when applicable
+     * Include horizontal "sticker" sections into their related lines, when applicable
      *
-     * @param sections List of sections that are stickers candidates
+     * @param sections List of horizontal sections that are stickers candidates
      */
     private void includeSections (List<Section> sections)
     {
@@ -1136,7 +1136,7 @@ public class LinesRetriever
         // -------------------------------------------
         //
         private final Scale.LineFraction maxStickerGap = new Scale.LineFraction(
-                0.5,
+                0.25,
                 "Maximum vertical gap between sticker and closest line side");
 
         private final Scale.LineFraction maxStickerExtension = new Scale.LineFraction(
