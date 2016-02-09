@@ -1049,6 +1049,15 @@ public class BasicSection
         return poly;
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return orientation.isVertical() ? "V" : "H";
+    }
+
     //-----------------//
     // invalidateCache //
     //-----------------//

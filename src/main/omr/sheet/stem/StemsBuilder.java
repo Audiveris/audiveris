@@ -1535,7 +1535,6 @@ public class StemsBuilder
                 List<Section> sections = lookupSections(fatHeadSection);
 
                 // Aggregate these sections into glyphs & check them
-                int interline = scale.getInterline();
                 List<SectionCompound> chunks = CompoundFactory.buildCompounds(
                         sections,
                         stemConstructor);
@@ -1548,6 +1547,8 @@ public class StemsBuilder
                     Rectangle chunkBox = chunk.getBounds();
 
                     if (getContrib(chunkBox) == 0) {
+                        it.remove();
+                    } else if (chunk.getWeight() < params.minChunkWeight) {
                         it.remove();
                     } else {
                         int meanWidth = (int) Math.rint(
@@ -1814,6 +1815,8 @@ public class StemsBuilder
 
         final int maxStemThickness;
 
+        final int minChunkWeight;
+
         final int minHeadSectionContribution;
 
         final int minStemExtension;
@@ -1853,6 +1856,8 @@ public class StemsBuilder
             maxStemThickness = stemThickness;
             maxSeedJitter = constants.maxSeedJitter.getValue() * stemThickness;
             maxSectionJitter = constants.maxSectionJitter.getValue() * stemThickness;
+
+            minChunkWeight = scale.getStemMainThickness(); // TODO: check this
 
             Double beamDistance = scale.getBeamMeanDistance();
 
