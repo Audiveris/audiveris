@@ -129,7 +129,7 @@ public class EvaluationBoard
     {
         super(
                 Board.EVAL,
-                glyphController.getNest().getEntityService(),
+                glyphController.getIndex().getEntityService(),
                 eventsRead,
                 false,
                 false,
@@ -315,7 +315,7 @@ public class EvaluationBoard
         {
             // Assign current glyph with selected shape
             if (glyphsController != null) {
-                Glyph glyph = glyphsController.getNest().getSelectedGlyph();
+                Glyph glyph = glyphsController.getIndex().getSelectedGlyph();
 
                 if (glyph != null) {
                     String str = button.getText();

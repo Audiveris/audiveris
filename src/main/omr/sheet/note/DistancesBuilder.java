@@ -173,7 +173,7 @@ public class DistancesBuilder
             }
 
             // "Erase" stem seeds
-            List<Glyph> systemSeeds = system.lookupGroupedGlyphs(Group.VERTICAL_SEED);
+            List<Glyph> systemSeeds = system.getGroupedGlyphs(Group.VERTICAL_SEED);
 
             for (Glyph seed : systemSeeds) {
                 paintGlyph(seed);

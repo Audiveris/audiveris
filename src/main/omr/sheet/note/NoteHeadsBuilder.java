@@ -213,7 +213,7 @@ public class NoteHeadsBuilder
     {
         StopWatch watch = new StopWatch("buildNotes S#" + system.getId());
         systemCompetitors = getSystemCompetitors(); // Competitors
-        systemSeeds = system.lookupGroupedGlyphs(Symbol.Group.VERTICAL_SEED); // Vertical seeds
+        systemSeeds = system.getGroupedGlyphs(Symbol.Group.VERTICAL_SEED); // Vertical seeds
         Collections.sort(systemSeeds, Glyphs.byOrdinate);
         Collections.sort(systemSpots, Glyphs.byOrdinate);
 

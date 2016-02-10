@@ -280,7 +280,7 @@ public class StemsBuilder
         StopWatch watch = new StopWatch("StemsBuilder S#" + system.getId());
         watch.start("collections");
         // The abscissa-sorted stem seeds for this system
-        systemSeeds = system.lookupGroupedGlyphs(Group.VERTICAL_SEED);
+        systemSeeds = system.getGroupedGlyphs(Group.VERTICAL_SEED);
 
         // The abscissa-sorted beam (and beam hook) interpretations for this system
         systemBeams = sig.inters(AbstractBeamInter.class);

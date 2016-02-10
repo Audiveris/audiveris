@@ -69,7 +69,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement
 @XmlType(propOrder = {
-    "lastIdValue", "entities"}
+    "lastId", "entities"}
 )
 public class GlyphIndex
         implements EntityIndex<Glyph>
@@ -233,18 +233,7 @@ public class GlyphIndex
         return weakIndex.getIdBefore(id);
     }
 
-    @Override
-    public Integer getIdValueAfter (Integer idValue)
-    {
-        return weakIndex.getIdValueAfter(idValue);
-    }
-
-    @Override
-    public Integer getIdValueBefore (Integer idValue)
-    {
-        return weakIndex.getIdValueBefore(idValue);
-    }
-
+    @XmlAttribute(name = "last-id")
     @Override
     public int getLastId ()
     {
@@ -479,20 +468,13 @@ public class GlyphIndex
         entityService.connect();
     }
 
+    //-----------//
+    // setLastId //
+    //-----------//
     @Override
     public void setLastId (int lastId)
     {
         weakIndex.setLastId(lastId);
-    }
-
-    //----------------//
-    // getLastIdValue //
-    //----------------//
-    @SuppressWarnings("unchecked")
-    @XmlAttribute(name = "last-id")
-    private int getLastIdValue ()
-    {
-        return weakIndex.getLastId();
     }
 
     //-------------//
@@ -506,15 +488,6 @@ public class GlyphIndex
             weakIndex.insert(weak);
             originals.putIfAbsent(weak, weak);
         }
-    }
-
-    //----------------//
-    // setLastIdValue //
-    //----------------//
-    @SuppressWarnings("unchecked")
-    private void setLastIdValue (int value)
-    {
-        weakIndex.setLastId(value);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -637,9 +610,9 @@ public class GlyphIndex
 
             return glyph;
         }
-        
+
         @Override
-        public void remove()
+        public void remove ()
         {
             throw new UnsupportedOperationException();
         }

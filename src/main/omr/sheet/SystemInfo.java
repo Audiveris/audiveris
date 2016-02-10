@@ -33,9 +33,7 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.SentenceInter;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Jaxb;
 import omr.util.Navigable;
 
@@ -50,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -212,50 +211,6 @@ public class SystemInfo
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * @param staves the range of staves
-     */
-    public final void setStaves (List<Staff> staves)
-    {
-        this.staves = staves;
-
-        for (Staff staff : staves) {
-            staff.setSystem(this);
-        }
-
-        updateCoordinates();
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Convenient method, to build a string with just the IDs of the system collection.
-     *
-     * @param systems the collection of systems
-     * @return the string built
-     */
-    public static String toString (Collection<SystemInfo> systems)
-    {
-        if (systems == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(" systems[");
-
-        for (SystemInfo system : systems) {
-            sb.append("#").append(system.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
     //---------//
     // addPart //
     //---------//
@@ -481,6 +436,28 @@ public class SystemInfo
         return null;
     }
 
+    //------------------//
+    // getGroupedGlyphs //
+    //------------------//
+    /**
+     * Report in system glyphs those assigned to the provided group.
+     *
+     * @param group the desired group
+     * @return the glyphs found
+     */
+    public List<Glyph> getGroupedGlyphs (Symbol.Group group)
+    {
+        List<Glyph> found = new ArrayList<Glyph>();
+
+        for (Glyph glyph : freeGlyphs) {
+            if (glyph.hasGroup(group)) {
+                found.add(glyph);
+            }
+        }
+
+        return found;
+    }
+
     //-----------------------//
     // getHorizontalSections //
     //-----------------------//
@@ -493,6 +470,33 @@ public class SystemInfo
     public List<Section> getHorizontalSections ()
     {
         return Collections.unmodifiableList(hSections);
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the IDs of the system collection.
+     *
+     * @param systems the collection of systems
+     * @return the string built
+     */
+    public static String toString (Collection<SystemInfo> systems)
+    {
+        if (systems == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(" systems[");
+
+        for (SystemInfo system : systems) {
+            sb.append("#").append(system.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
     }
 
     //-------//
@@ -763,35 +767,6 @@ public class SystemInfo
         logger.debug("{} No part with id {} found", this, id);
 
         return null;
-    }
-
-    //-------------------//
-    // updateCoordinates //
-    //-------------------//
-    public final void updateCoordinates ()
-    {
-        Staff firstStaff = getFirstStaff();
-        LineInfo firstLine = firstStaff.getFirstLine();
-        Point2D topLeft = firstLine.getEndPoint(LEFT);
-
-        Staff lastStaff = getLastStaff();
-        LineInfo lastLine = lastStaff.getLastLine();
-        Point2D botLeft = lastLine.getEndPoint(LEFT);
-
-        left = Integer.MAX_VALUE;
-
-        int right = 0;
-
-        for (Staff staff : staves) {
-            left = Math.min(left, staff.getAbscissa(LEFT));
-            right = Math.max(right, staff.getAbscissa(RIGHT));
-        }
-
-        top = (int) Math.rint(topLeft.getY());
-        width = right - left + 1;
-        deltaY = (int) Math.rint(
-                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
-        bottom = (int) Math.rint(botLeft.getY());
     }
 
     //---------------//
@@ -1128,53 +1103,94 @@ public class SystemInfo
         return indented != null;
     }
 
-    //--------------------//
-    // lookupGroupedGlyphs //
-    //--------------------//
+    //-------------------//
+    // registerFreeGlyph //
+    //-------------------//
     /**
-     * Look up in system glyphs for those whose group is the desired one.
+     * Register a brand new free glyph in proper system (and sheet index).
      *
-     * @param group the desired group
-     * @return the glyphs found
+     * @param glyph the brand new free glyph
      */
-    public List<Glyph> lookupGroupedGlyphs (Symbol.Group group)
-    {
-        List<Glyph> found = new ArrayList<Glyph>();
-
-        for (Glyph glyph : freeGlyphs) {
-            if (glyph.hasGroup(group)) {
-                found.add(glyph);
-            }
-        }
-
-        return found;
-    }
-
-    //-------------------------//
-    // registerStandaloneGlyph //
-    //-------------------------//
-    /**
-     * Register a brand new standalone glyph in proper system (and sheet index).
-     *
-     * @param glyph the brand new standalone glyph
-     */
-    public void registerStandaloneGlyph (Glyph glyph)
+    public void registerFreeGlyph (Glyph glyph)
     {
         sheet.getGlyphIndex().register(glyph);
         freeGlyphs.add((BasicGlyph) glyph);
     }
 
-    //-----------------------//
-    // removeStandaloneGlyph //
-    //-----------------------//
+    //-----------------//
+    // removeFreeGlyph //
+    //-----------------//
     /**
-     * Remove a glyph from the containing system collection of standalone glyphs.
+     * Remove a glyph from the containing system collection of free glyphs.
      *
      * @param glyph the glyph to remove
      */
-    public void removeStandaloneGlyph (Glyph glyph)
+    public void removeFreeGlyph (Glyph glyph)
     {
         freeGlyphs.remove((BasicGlyph) glyph);
+    }
+
+    //---------------------//
+    // removeGroupedGlyphs //
+    //---------------------//
+    /**
+     * Remove all free glyphs that are assigned the provided group.
+     *
+     * @param group the group of glyphs to remove
+     */
+    public void removeGroupedGlyphs (Symbol.Group group)
+    {
+        for (Iterator<BasicGlyph> it = freeGlyphs.iterator(); it.hasNext();) {
+            if (it.next().hasGroup(group)) {
+                it.remove();
+            }
+        }
+    }
+
+    //-----------//
+    // setStaves //
+    //-----------//
+    /**
+     * @param staves the range of staves
+     */
+    public final void setStaves (List<Staff> staves)
+    {
+        this.staves = staves;
+
+        for (Staff staff : staves) {
+            staff.setSystem(this);
+        }
+
+        updateCoordinates();
+    }
+
+    //-------------------//
+    // updateCoordinates //
+    //-------------------//
+    public final void updateCoordinates ()
+    {
+        Staff firstStaff = getFirstStaff();
+        LineInfo firstLine = firstStaff.getFirstLine();
+        Point2D topLeft = firstLine.getEndPoint(LEFT);
+
+        Staff lastStaff = getLastStaff();
+        LineInfo lastLine = lastStaff.getLastLine();
+        Point2D botLeft = lastLine.getEndPoint(LEFT);
+
+        left = Integer.MAX_VALUE;
+
+        int right = 0;
+
+        for (Staff staff : staves) {
+            left = Math.min(left, staff.getAbscissa(LEFT));
+            right = Math.max(right, staff.getAbscissa(RIGHT));
+        }
+
+        top = (int) Math.rint(topLeft.getY());
+        width = right - left + 1;
+        deltaY = (int) Math.rint(
+                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+        bottom = (int) Math.rint(botLeft.getY());
     }
 
     //---------//

@@ -207,7 +207,7 @@ public class SymbolsFilter
             systemManager.getSystemsOf(center, relevants);
 
             for (SystemInfo system : relevants) {
-                system.registerStandaloneGlyph(glyph);
+                system.registerFreeGlyph(glyph);
             }
         }
     }

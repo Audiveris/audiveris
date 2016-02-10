@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sheet.beam;
 
+import omr.glyph.Symbol.Group;
+
 import omr.math.Population;
 
 import omr.sheet.Sheet;
@@ -78,9 +80,15 @@ public class BeamsStep
         if (distances.getCardinality() > 0) {
             logger.info("{}BeamDistance{{}}", sheet.getLogPrefix(), distances);
 
-            sheet.getScale().setBeamDistance(distances.getMeanValue(), distances.getStandardDeviation());
+            sheet.getScale()
+                    .setBeamDistance(distances.getMeanValue(), distances.getStandardDeviation());
         }
 
+        // Dispose of BEAM_SPOT glyphs
+        // (NOTA: the weak references may survive as long as a related SpotsController exists)
+        for (SystemInfo system : sheet.getSystems()) {
+            system.removeGroupedGlyphs(Group.BEAM_SPOT);
+        }
     }
 
     //----------//
@@ -101,7 +109,7 @@ public class BeamsStep
         // Retrieve significant spots for the whole sheet
         new SpotsBuilder(sheet).buildSheetSpots();
 
-        // Allocate map to collect vertical distances
+        // Allocate map to collect vertical distances between beams of the same group
         Map<SystemInfo, Population> distanceMap = new TreeMap<SystemInfo, Population>();
 
         for (SystemInfo system : sheet.getSystems()) {

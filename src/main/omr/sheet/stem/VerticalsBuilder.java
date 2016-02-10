@@ -226,7 +226,7 @@ public class VerticalsBuilder
         logger.debug("S#{} searching verticals on {} sticks", system.getId(), sticks.size());
 
         for (StraightFilament stick : sticks) {
-            //            stick = system.registerStandaloneGlyph(stick);
+            //            stick = system.registerFreeGlyph(stick);
             //
             if (stick.isVip()) {
                 logger.info("VIP checkVerticals for {} in system#{}", stick, system.getId());
@@ -247,7 +247,7 @@ public class VerticalsBuilder
             if (res >= suite.getMinThreshold()) {
                 final Glyph glyph = glyphIndex.registerOriginal(stick.toGlyph(null));
                 glyph.addGroup(Group.VERTICAL_SEED); // Needed
-                system.registerStandaloneGlyph(glyph);
+                system.registerFreeGlyph(glyph);
                 seedNb++;
             }
         }

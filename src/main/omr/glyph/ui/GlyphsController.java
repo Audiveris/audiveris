@@ -21,11 +21,11 @@ import omr.glyph.Shape;
 import omr.script.AssignTask;
 import omr.script.DeleteTask;
 
+import omr.sheet.Sheet;
+
 import omr.ui.selection.EntityListEvent;
 import omr.ui.selection.SelectionHint;
 import omr.ui.selection.SelectionService;
-
-import omr.sheet.Sheet;
 
 import org.jdesktop.application.Task;
 
@@ -157,6 +157,19 @@ public class GlyphsController
         return model.getGlyphById(id);
     }
 
+    //----------//
+    // getIndex //
+    //----------//
+    /**
+     * Report the underlying glyph nest.
+     *
+     * @return the related glyph nest
+     */
+    public GlyphIndex getIndex ()
+    {
+        return model.getNest();
+    }
+
     //----------------//
     // getLatestShape //
     //----------------//
@@ -197,19 +210,6 @@ public class GlyphsController
     public GlyphsModel getModel ()
     {
         return model;
-    }
-
-    //---------//
-    // getIndex //
-    //---------//
-    /**
-     * Report the underlying glyph nest.
-     *
-     * @return the related glyph nest
-     */
-    public GlyphIndex getNest ()
-    {
-        return model.getNest();
     }
 
     //----------------//
@@ -287,7 +287,7 @@ public class GlyphsController
     {
         // Update immediately the glyph info as displayed
         if (model.getSheet() != null) {
-            getNest().getEntityService().publish(
+            getIndex().getEntityService().publish(
                     new EntityListEvent<Glyph>(
                             this,
                             SelectionHint.GLYPH_MODIFIED,

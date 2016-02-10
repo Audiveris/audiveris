@@ -174,7 +174,7 @@ public class ClefBuilder
             List<Inter> inters = new ArrayList<Inter>();
 
             for (Entry<ClefKind, ClefInter> entry : adapter.bestMap.entrySet()) {
-                ///sheet.getGlyphIndex().registerStandaloneGlyph(adapter.bestGlyph);
+                ///sheet.getGlyphIndex().registerFreeGlyph(adapter.bestGlyph);
                 ClefInter inter = entry.getValue();
                 inter.increase(0.2); //TODO boost these StaffHeader clefs
                 inters.add(inter);

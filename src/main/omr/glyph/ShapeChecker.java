@@ -585,7 +585,7 @@ public class ShapeChecker
                 //                    if (Language.getOcr()
                 //                                .isAvailable()) {
                 //                        if (glyph.isTransient()) {
-                //                            glyph = system.registerStandaloneGlyph(glyph);
+                //                            glyph = system.registerFreeGlyph(glyph);
                 //                        }
                 //
                 //                        BasicContent textInfo = glyph.getTextInfo();

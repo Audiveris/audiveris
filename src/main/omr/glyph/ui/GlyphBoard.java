@@ -20,6 +20,7 @@ import omr.ui.Board;
 import omr.ui.EntityBoard;
 import omr.ui.PixelCount;
 import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.EntityService;
 import omr.ui.selection.GroupEvent;
 import omr.ui.selection.MouseMovement;
 import omr.ui.selection.UserEvent;
@@ -86,9 +87,49 @@ public class GlyphBoard
                        boolean useSpinners,
                        boolean expanded)
     {
-        super(Board.GLYPH, controller.getNest().getEntityService(), expanded);
+        super(Board.GLYPH, controller.getIndex().getEntityService(), expanded);
 
         this.controller = controller;
+
+        getDeassignAction().setEnabled(false);
+
+        // Force a constant height for the shapeIcon field, despite variation in size of the icon
+        //        Dimension dim = new Dimension(
+        //                constants.shapeIconWidth.getValue(),
+        //                constants.shapeIconHeight.getValue());
+        //        shapeIcon.setPreferredSize(dim);
+        //        shapeIcon.setMaximumSize(dim);
+        //        shapeIcon.setMinimumSize(dim);
+        //
+        //         Precise layout
+        //        layout.setColumnGroups(
+        //            new int[][] {
+        //                { 1, 5, 9 },
+        //                { 3, 7, 11 }
+        //            });
+        // Group spinner
+        //        groupSpinner = new JSpinner(new SpinnerListModel(Group.values()));
+        //        groupSpinner.addChangeListener(this);
+        //        groupSpinner.setName("groupSpinner");
+        //        groupSpinner.setToolTipText("Selection of glyph group");
+        groupField.setHorizontalAlignment(SwingConstants.CENTER);
+        groupField.setToolTipText("Assigned group(s)");
+
+        defineLayout();
+    }
+
+    /**
+     * A basic GlyphBoard, with just a glyph service
+     *
+     * @param glyphService the provided glyph service
+     * @param expanded     true if board must be initially expanded
+     */
+    public GlyphBoard (EntityService<Glyph> glyphService,
+                       boolean expanded)
+    {
+        super(Board.GLYPH, glyphService, expanded);
+
+        this.controller = null;
 
         getDeassignAction().setEnabled(false);
 

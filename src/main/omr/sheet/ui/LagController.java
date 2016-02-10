@@ -86,7 +86,7 @@ public class LagController
     private void displayFrame ()
     {
         // Specific rubber display
-        view = new MyView(getNest());
+        view = new MyView(getIndex());
 
         sheet.getAssembly().addViewTab(
                 tab,

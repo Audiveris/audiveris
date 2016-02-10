@@ -13,12 +13,7 @@ package omr.sheet.beam;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphIndex;
-import omr.glyph.GlyphsModel;
-import omr.glyph.Symbol.Group;
-import omr.glyph.ui.GlyphsController;
-import omr.glyph.ui.SymbolGlyphBoard;
-
-import omr.lag.Lag;
+import omr.glyph.ui.GlyphBoard;
 
 import omr.sheet.Sheet;
 import omr.sheet.ui.PixelBoard;
@@ -36,26 +31,31 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code SpotsController} is a quick & dirty hack to display the retrieved spots.
+ * Class {@code SpotsController} displays the retrieved spot glyphs for beams.
  *
  * @author Hervé Bitteur
  */
 public class SpotsController
-        extends GlyphsController
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SpotsController.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    private final Lag[] lags;
+    /** Related sheet. */
+    private final Sheet sheet;
 
-    /** Related user display if any */
+    /**
+     * Spot glyphs.
+     * Purpose of this collection is to prevent the BEAM_SPOT glyphs to get garbage
+     * collected (as long as this SpotsController instance exists).
+     */
+    private final List<Glyph> spots;
+
+    /** User display. */
     private MyView view;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -63,13 +63,13 @@ public class SpotsController
      * Creates a new SpotsController object.
      *
      * @param sheet related sheet
-     * @param lags  collection of lags to handle
+     * @param spots relevant glyphs
      */
     public SpotsController (Sheet sheet,
-                            Lag... lags)
+                            List<Glyph> spots)
     {
-        super(new GlyphsModel(sheet, sheet.getGlyphIndex(), null));
-        this.lags = lags;
+        this.sheet = sheet;
+        this.spots = spots;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -93,13 +93,12 @@ public class SpotsController
     //--------------//
     private void displayFrame ()
     {
-        // Specific rubber display
-        view = new MyView(getNest(), Arrays.asList(lags));
-
+        final GlyphIndex index = sheet.getGlyphIndex();
+        view = new MyView(index);
         sheet.getAssembly().addViewTab(
                 SheetTab.BEAM_SPOT_TAB,
                 new ScrollView(view),
-                new BoardsPane(new PixelBoard(sheet), new SymbolGlyphBoard(this, true, true)));
+                new BoardsPane(new PixelBoard(sheet), new GlyphBoard(index.getEntityService(), true)));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -111,10 +110,9 @@ public class SpotsController
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public MyView (GlyphIndex nest,
-                       List<Lag> lags)
+        public MyView (GlyphIndex glyphIndex)
         {
-            super(nest.getEntityService());
+            super(glyphIndex.getEntityService());
 
             setLocationService(sheet.getLocationService());
 
@@ -128,25 +126,25 @@ public class SpotsController
         @Override
         public void renderItems (Graphics2D g)
         {
-            final GlyphIndex nest = (GlyphIndex) entityIndex;
+            // We render all BEAM_SPOT glyphs
             final Rectangle clip = g.getClipBounds();
             final Color oldColor = g.getColor();
             final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
 
-            for (Iterator<Glyph> it = nest.iterator(); it.hasNext();) {
-                final Glyph glyph = it.next();
-
-                if (glyph.hasGroup(Group.BEAM_SPOT)
-                    && ((clip == null) || clip.intersects(glyph.getBounds()))) {
+            for (Glyph spot : spots) {
+                if ((clip == null) || clip.intersects(spot.getBounds())) {
+                    // Draw glyph
                     g.setColor(Color.LIGHT_GRAY);
-                    glyph.getRunTable().render(g, glyph.getTopLeft()); // Draw glyph
-                    g.setColor(Color.RED);
-                    glyph.renderLine(g); // Draw glyph mean line
-                }
-            }
+                    spot.getRunTable().render(g, spot.getTopLeft());
 
-            g.setStroke(oldStroke);
-            g.setColor(oldColor);
+                    // Draw glyph mean line
+                    g.setColor(Color.RED);
+                    spot.renderLine(g);
+                }
+
+                g.setStroke(oldStroke);
+                g.setColor(oldColor);
+            }
         }
     }
 }

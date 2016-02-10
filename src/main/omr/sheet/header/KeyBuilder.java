@@ -1085,7 +1085,7 @@ public class KeyBuilder
             double grade = Inter.intrinsicRatio * adapter.bestEval.grade;
 
             if (grade >= minGrade) {
-                ///sheet.getGlyphIndex().registerStandaloneGlyph(adapter.bestGlyph);
+                ///sheet.getGlyphIndex().registerFreeGlyph(adapter.bestGlyph);
                 logger.debug("Glyph#{} {}", adapter.bestGlyph.getId(), adapter.bestEval);
 
                 KeyAlterInter alterInter = KeyAlterInter.create(

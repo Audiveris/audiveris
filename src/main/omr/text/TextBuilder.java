@@ -781,7 +781,7 @@ public class TextBuilder
         //            // Launch OCR on the whole line image
         //            List<Glyph> glyphs = oldLine.getWordGlyphs();
         //            Glyph compound = (glyphs.size() == 1) ? glyphs.get(0)
-        //                    : system.registerStandaloneGlyph(nest.buildGlyph(glyphs, false));
+        //                    : system.registerFreeGlyph(nest.buildGlyph(glyphs, false));
         //
         //            List<TextLine> lines = scanGlyph(compound, language);
         //

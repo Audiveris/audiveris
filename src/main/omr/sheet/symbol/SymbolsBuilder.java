@@ -233,7 +233,7 @@ public class SymbolsBuilder
         // Sorted by abscissa, ordinate, id
         List<Glyph> glyphs = new ArrayList<Glyph>();
 
-        for (Glyph glyph : system.lookupGroupedGlyphs(Group.SYMBOL)) {
+        for (Glyph glyph : system.getGroupedGlyphs(Group.SYMBOL)) {
             final int weight = glyph.getWeight();
 
             if (weight >= params.minWeight) {

@@ -32,22 +32,6 @@ public interface EntityIndex<E extends Entity>
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Report the used integer id value, if any, right after the provided one
-     *
-     * @param idValue the provided id value
-     * @return the next used id, or null
-     */
-    public Integer getIdValueAfter (Integer idValue);
-
-    /**
-     * Report the used integer id value, if any, right before the provided one
-     *
-     * @param idValue the provided id value
-     * @return the previous used id, or null
-     */
-    public Integer getIdValueBefore (Integer idValue);
-
-    /**
      * Export the whole unmodifiable collection of entities in the nest, sorted on ID.
      *
      * @return the collection of entities

@@ -169,7 +169,7 @@ public class BeamsBuilder
         pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
 
         // First, retrieve beam candidates from spots
-        sortedBeamSpots = system.lookupGroupedGlyphs(Group.BEAM_SPOT);
+        sortedBeamSpots = system.getGroupedGlyphs(Group.BEAM_SPOT);
 
         // Create initial beams by checking spots individually
         createBeams();
@@ -732,7 +732,7 @@ public class BeamsBuilder
     private void extendBeams ()
     {
         // All stem seeds for this system, sorted by abscissa
-        sortedSystemSeeds = system.lookupGroupedGlyphs(Group.VERTICAL_SEED);
+        sortedSystemSeeds = system.getGroupedGlyphs(Group.VERTICAL_SEED);
 
         // The beam & hook inters for this system, NOT sorted by abscissa.
         // We may add to this list, but not remove elements (they are simply logically 'deleted').

@@ -44,11 +44,11 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -330,7 +330,7 @@ public class BookBrowser
         public Object getChild (Object parent,
                                 int index)
         {
-            return getRelevantChildren(parent).toArray()[index];
+            return getRelevantChildren(parent).get(index);
         }
 
         //---------------//
@@ -349,17 +349,7 @@ public class BookBrowser
         public int getIndexOfChild (Object parent,
                                     Object child)
         {
-            int i = 0;
-
-            for (Iterator<Object> it = getRelevantChildren(parent).iterator(); it.hasNext();) {
-                if (it.next() == child) {
-                    return i;
-                }
-
-                i++;
-            }
-
-            throw new RuntimeException("'" + child + "' not child of '" + parent + "'");
+            return getRelevantChildren(parent).indexOf(child);
         }
 
         //---------//
@@ -437,11 +427,11 @@ public class BookBrowser
         // getRelevantChildren //
         //---------------------//
         /**
-         * Report the set of children of the provided node that are
+         * Report the list of children of the provided node that are
          * relevant for display in the tree hierarchy (left pane)
          *
          * @param node the node to investigate
-         * @return the collection of relevant children
+         * @return the list of relevant children
          */
         private List<Object> getRelevantChildren (Object node)
         {
@@ -457,7 +447,8 @@ public class BookBrowser
 
             // Case of Named Collection
             if (node instanceof NamedCollection) {
-                ///logger.info("named collection: " + node);
+                logger.debug("named collection: " + node);
+
                 NamedCollection nc = (NamedCollection) node;
                 relevants = new ArrayList<Object>();
                 nodeMap.put(node, relevants);
@@ -477,7 +468,7 @@ public class BookBrowser
 
             // Case of Named Data
             if (node instanceof NamedData) {
-                ///logger.info("named data: " + node);
+                logger.debug("named data: " + node);
                 relevants = getRelevantChildren(((NamedData) node).data);
                 nodeMap.put(node, relevants);
 
@@ -576,9 +567,13 @@ public class BookBrowser
             //            return !isLeaf(node);
 
             // We display dummy containers only when they are not empty
-            if (constants.hideEmptyDummies.getValue() && node instanceof NamedCollection) {
+            if (constants.hideEmptyDummies.isSet() && node instanceof NamedCollection) {
                 return getChildCount(node) > 0;
             } else {
+                if (node instanceof WeakReference) {
+                    return ((WeakReference) node).get() != null;
+                }
+
                 return true;
             }
         }
@@ -644,7 +639,12 @@ public class BookBrowser
                         }
                     }
 
-                    htmlPane.setText(new Dumper.Html(filter, obj).toString());
+                    if (obj instanceof WeakReference) {
+                        Object o = ((WeakReference) obj).get();
+                        htmlPane.setText(new Dumper.Html(filter, o).toString());
+                    } else {
+                        htmlPane.setText(new Dumper.Html(filter, obj).toString());
+                    }
                 }
             } catch (Throwable ex) {
                 logger.warn("BookBrowser error: " + ex, ex);

@@ -25,6 +25,8 @@ import static omr.run.Orientation.HORIZONTAL;
 import omr.run.Run;
 import omr.run.RunTable;
 
+import omr.util.Navigable;
+
 import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
@@ -82,8 +84,9 @@ public class BasicGlyph
     // Transient data
     //---------------
     //
-    /** The containing glyph nest, if any. */
-    protected GlyphIndex nest;
+    /** The containing glyph index, if any. */
+    @Navigable(false)
+    protected GlyphIndex index;
 
     /** Position with respect to nearest staff. */
     protected Double pitchPosition;
@@ -289,7 +292,7 @@ public class BasicGlyph
     @Override
     public GlyphIndex getIndex ()
     {
-        return nest;
+        return index;
     }
 
     @Override
@@ -505,7 +508,7 @@ public class BasicGlyph
     @Override
     public boolean isTransient ()
     {
-        return nest == null;
+        return index == null;
     }
 
     @Override
@@ -535,9 +538,9 @@ public class BasicGlyph
     }
 
     @Override
-    public void setIndex (GlyphIndex nest)
+    public void setIndex (GlyphIndex index)
     {
-        this.nest = nest;
+        this.index = index;
     }
 
     @Override
@@ -590,8 +593,8 @@ public class BasicGlyph
         //            sb.append(" partOf#").append(getPartOf().getId());
         //        }
         //
-//        sb.append(" bounds=[").append(left).append(',').append(top).append(',')
-//                .append(runTable.getWidth()).append(',').append(runTable.getHeight()).append(']');
+        //        sb.append(" bounds=[").append(left).append(',').append(top).append(',')
+        //                .append(runTable.getWidth()).append(',').append(runTable.getHeight()).append(']');
         return sb.toString();
     }
 

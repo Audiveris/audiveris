@@ -1033,7 +1033,7 @@ public abstract class TimeBuilder
 
             if (!adapter.bestMap.isEmpty()) {
                 for (Entry<Shape, Inter> entry : adapter.bestMap.entrySet()) {
-                    ///sheet.getGlyphIndex().registerStandaloneGlyph(adapter.bestGlyph);
+                    ///sheet.getGlyphIndex().registerFreeGlyph(adapter.bestGlyph);
                     Inter inter = entry.getValue();
 
                     Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
@@ -1084,7 +1084,7 @@ public abstract class TimeBuilder
 
             if (!wholeAdapter.bestMap.isEmpty()) {
                 for (Entry<Shape, Inter> entry : wholeAdapter.bestMap.entrySet()) {
-                    ///sheet.getGlyphIndex().registerStandaloneGlyph(adapter.bestGlyph);
+                    ///sheet.getGlyphIndex().registerFreeGlyph(adapter.bestGlyph);
                     Inter inter = entry.getValue();
                     Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
                     inter.setBounds(timeBox);

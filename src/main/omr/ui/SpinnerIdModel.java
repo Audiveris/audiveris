@@ -57,13 +57,17 @@ public class SpinnerIdModel<E extends Entity>
     @Override
     public Integer getNextValue ()
     {
-        return index.getIdValueAfter(currentId);
+        final int next = index.getIdAfter(currentId);
+
+        return (next != 0) ? next : null;
     }
 
     @Override
     public Integer getPreviousValue ()
     {
-        return index.getIdValueBefore(currentId);
+        final int prev = index.getIdBefore(currentId);
+
+        return (prev != 0) ? prev : null;
     }
 
     @Override

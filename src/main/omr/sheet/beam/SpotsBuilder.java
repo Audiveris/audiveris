@@ -24,10 +24,6 @@ import omr.image.ImageUtil;
 import omr.image.MorphoProcessor;
 import omr.image.StructureElement;
 
-import omr.lag.BasicLag;
-import omr.lag.Lag;
-import omr.lag.Lags;
-
 import omr.run.Orientation;
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
@@ -106,10 +102,6 @@ public class SpotsBuilder
         final StopWatch watch = new StopWatch("buildSheetSpots");
 
         try {
-            /** Spots lag. */
-            final Lag spotLag = new BasicLag(Lags.SPOT_LAG, SPOT_ORIENTATION);
-            sheet.getLagManager().setLag(Lags.SPOT_LAG, spotLag);
-
             watch.start("gaussianBuffer");
 
             // We need a copy of image that we can overwrite.
@@ -129,7 +121,7 @@ public class SpotsBuilder
             if ((OMR.gui != null) && constants.displayBeamSpots.isSet()) {
                 watch.start("spotsController");
 
-                SpotsController spotController = new SpotsController(sheet, spotLag);
+                SpotsController spotController = new SpotsController(sheet, spots);
                 spotController.refresh();
             }
         } catch (Exception ex) {
@@ -159,14 +151,10 @@ public class SpotsBuilder
                                    String cueId)
     {
         final StopWatch watch = new StopWatch("buildSpots");
-        final Lag spotLag;
 
         // Erase Header for non-cue buffers
         if (cueId == null) {
-            spotLag = sheet.getLagManager().getLag(Lags.SPOT_LAG);
             eraseHeaderAreas(buffer);
-        } else {
-            spotLag = new BasicLag(Lags.SPOT_LAG, SPOT_ORIENTATION);
         }
 
         final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
@@ -259,7 +247,7 @@ public class SpotsBuilder
                 // Check glyph is within system abscissa boundaries
                 if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
                     glyph.addGroup(Group.BEAM_SPOT);
-                    system.registerStandaloneGlyph(glyph);
+                    system.registerFreeGlyph(glyph);
                     created = true;
                 }
             }

@@ -182,7 +182,7 @@ public class SymbolsEditor
         boards.add(new EvaluationBoard(sheet, symbolsController, false));
         BoardsPane boardsPane = new BoardsPane(boards);
 
-        GlyphIndex nest = symbolsController.getNest();
+        GlyphIndex nest = symbolsController.getIndex();
         view = new MyView(nest);
         view.setLocationService(sheet.getLocationService());
 

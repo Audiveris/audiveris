@@ -126,7 +126,7 @@ public class ShapeFocusBoard
     {
         super(
                 Board.FOCUS,
-                controller.getNest().getEntityService(),
+                controller.getIndex().getEntityService(),
                 eventsRead,
                 false,
                 false,

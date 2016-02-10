@@ -1390,10 +1390,6 @@ public class BasicSheet
             symbolsController = null;
             symbolsEditor = null;
 
-        // Fall-through!
-        case BEAMS:
-            lagManager.setLag(Lags.SPOT_LAG, null);
-
         default:
         }
     }

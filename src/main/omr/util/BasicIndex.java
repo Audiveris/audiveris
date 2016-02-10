@@ -68,7 +68,7 @@ public class BasicIndex<E extends Entity>
     /** Global id used to uniquely identify an entity instance. */
     @XmlAttribute(name = "last-id")
     @XmlJavaTypeAdapter(Jaxb.AtomicIntegerAdapter.class)
-    protected final AtomicInteger lastIdValue = new AtomicInteger(0);
+    protected final AtomicInteger lastId = new AtomicInteger(0);
 
     /** Collection of all entities registered in this index, sorted on ID. */
     @XmlElement(name = "entities")
@@ -132,7 +132,7 @@ public class BasicIndex<E extends Entity>
     {
         if (id == 0) {
             if (!entities.isEmpty()) {
-                for (int i = 0, iMax = lastIdValue.get(); i <= iMax; i++) {
+                for (int i = 0, iMax = lastId.get(); i <= iMax; i++) {
                     final E entity = entities.get(i);
 
                     if (isValid(entity)) {
@@ -144,7 +144,7 @@ public class BasicIndex<E extends Entity>
             }
         }
 
-        for (int i = id + 1, iMax = lastIdValue.get(); i <= iMax; i++) {
+        for (int i = id + 1, iMax = lastId.get(); i <= iMax; i++) {
             final E entity = entities.get(i);
 
             if (isValid(entity)) {
@@ -176,65 +176,13 @@ public class BasicIndex<E extends Entity>
         return 0;
     }
 
-    //-----------------//
-    // getIdValueAfter //
-    //-----------------//
-    @Override
-    public Integer getIdValueAfter (Integer idValue)
-    {
-        if ((idValue == null) || (idValue == 0)) {
-            if (!entities.isEmpty()) {
-                for (int i = 0, iMax = lastIdValue.get(); i <= iMax; i++) {
-                    final E entity = entities.get(i);
-
-                    if (isValid(entity)) {
-                        return i;
-                    }
-                }
-            } else {
-                return null;
-            }
-        }
-
-        for (int i = idValue + 1, iMax = lastIdValue.get(); i <= iMax; i++) {
-            final E entity = entities.get(i);
-
-            if (isValid(entity)) {
-                return i;
-            }
-        }
-
-        return null;
-    }
-
-    //------------------//
-    // getIdValueBefore //
-    //------------------//
-    @Override
-    public Integer getIdValueBefore (Integer idValue)
-    {
-        if ((idValue == null) || (idValue == 0)) {
-            return null;
-        }
-
-        for (int i = idValue - 1; i >= 0; i--) {
-            final E entity = entities.get(i);
-
-            if (isValid(entity)) {
-                return i;
-            }
-        }
-
-        return null;
-    }
-
     //-----------//
     // getLastId //
     //-----------//
     @Override
     public int getLastId ()
     {
-        return lastIdValue.get();
+        return lastId.get();
     }
 
     //---------//
@@ -328,7 +276,7 @@ public class BasicIndex<E extends Entity>
     @Override
     public void reset ()
     {
-        lastIdValue.set(0);
+        lastId.set(0);
         entities.clear();
     }
 
@@ -348,7 +296,7 @@ public class BasicIndex<E extends Entity>
     @Override
     public void setLastId (int lastId)
     {
-        this.lastIdValue.set(lastId);
+        this.lastId.set(lastId);
     }
 
     //-----------//
@@ -378,7 +326,7 @@ public class BasicIndex<E extends Entity>
     //------------//
     protected int generateId ()
     {
-        return lastIdValue.incrementAndGet();
+        return lastId.incrementAndGet();
     }
 
     //-----------//
