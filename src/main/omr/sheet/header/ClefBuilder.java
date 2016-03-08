@@ -20,15 +20,13 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphCluster;
 import omr.glyph.GlyphFactory;
-import omr.glyph.GlyphLink;
 import omr.glyph.GlyphIndex;
+import omr.glyph.GlyphLink;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
-
 import static omr.glyph.Shape.*;
 import static omr.run.Orientation.VERTICAL;
-
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -487,6 +485,12 @@ public class ClefBuilder
         public void evaluateGlyph (Glyph glyph)
         {
             trials++;
+
+            if (glyph.getId() == 0) {
+                glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+            }
+
+            logger.debug("ClefAdapter evaluateGlyph on {}", glyph);
 
             // TODO: use some checking, such as pitch position?
             Evaluation[] evals = evaluator.getNaturalEvaluations(glyph, sheet.getInterline());

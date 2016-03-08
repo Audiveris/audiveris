@@ -13,23 +13,23 @@ package omr.classifier.ui;
 
 import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
-
 import static omr.classifier.ui.Trainer.Task.Activity.*;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.ui.field.LIntegerField;
+import omr.ui.field.LLabel;
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import java.awt.Color;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.Comparator;
@@ -98,19 +98,15 @@ class SelectionPanel
             "Max Similar",
             "Max number of similar shapes");
 
-    /** Displayed counter on existing samples */
-    private final LIntegerField totalFiles = new LIntegerField(false, "Total", "Total number of samples");
+    /** Displayed counter on existing samples. */
+    private final LLabel totalFiles = new LLabel("Total:", "Total number of samples");
 
-    /** Displayed counter on loaded samples */
-    private final LIntegerField nbLoadedFiles = new LIntegerField(
-            false,
-            "Loaded",
-            "Number of samples loaded so far");
+    /** Displayed counter on loaded samples. */
+    private final LLabel nbLoadedSamples = new LLabel("Loaded:", "Number of samples loaded so far");
 
-    /** Displayed counter on selected samples */
-    private final LIntegerField nbSelectedFiles = new LIntegerField(
-            false,
-            "Selected",
+    /** Displayed counter on selected samples. */
+    private final LLabel nbSelectedSamples = new LLabel(
+            "Selected:",
             "Number of selected samples to load");
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -161,6 +157,7 @@ class SelectionPanel
             if (samples.isEmpty()) {
                 repository.loadRepository(false);
                 samples = repository.getAllSamples();
+                setTotalSamples(samples.size());
             }
 
             return samples;
@@ -183,47 +180,37 @@ class SelectionPanel
         return component;
     }
 
-    //-------------//
-    // loadedGlyph //
-    //-------------//
-    /**
-     * Call-back when a sample has just been loaded
-     *
-     * @param gName the normalized sample name
-     */
+    //--------------//
+    // loadedSample //
+    //--------------//
     @Override
-    public void loadedGlyph (String gName)
+    public void loadedSample (Sample sample)
     {
-        nbLoadedFiles.setValue(++nbLoaded);
+        nbLoadedSamples.setText(Integer.toString(++nbLoaded));
         progressBar.setValue(nbLoaded);
     }
 
-    //-------------------//
-    // setSelectedGlyphs //
-    //-------------------//
-    /**
-     * Notify the number of samples selected
-     *
-     * @param selected number of selected samples
-     */
+    //--------------------//
+    // setSelectedSamples //
+    //--------------------//
     @Override
-    public void setSelectedGlyphs (int selected)
+    public void setSelectedSamples (int selected)
     {
-        nbSelectedFiles.setValue(selected);
+        nbSelectedSamples.setText(Integer.toString(selected));
     }
 
-    //----------------//
-    // setTotalGlyphs //
-    //----------------//
+    //-----------------//
+    // setTotalSamples //
+    //-----------------//
     /**
      * Notify the total number of samples in the base
      *
      * @param total the total number of samples available
      */
     @Override
-    public void setTotalGlyphs (int total)
+    public void setTotalSamples (int total)
     {
-        totalFiles.setValue(total);
+        totalFiles.setText(Integer.toString(total));
         progressBar.setMaximum(total);
     }
 
@@ -267,73 +254,73 @@ class SelectionPanel
     //------------//
     private List<Sample> defineCore ()
     {
-//        // What for ? TODO
-//        inputParams();
-//
-//        // Train bayesian on them
-//        WekaClassifier bayesian = WekaClassifier.getInstance();
-//        List<Sample> samples = getBase(true); // use whole
-//
-//        // Quickly train the regression evaluator (on the whole base)
-//        bayesian.train(samples, null, StartingMode.SCRATCH);
-//
-//        // Measure all samples for each shape
-//        Map<Shape, List<GradedSample>> palmares = new HashMap<Shape, List<GradedSample>>();
-//
-//        for (Sample sample : samples) {
-//            if (sample != null) {
-//                try {
-//                    Shape shape = sample.getShape();
-//                    double grade = bayesian.measureDistance(
-//                            sample,
-//                            sample.getInterline(),
-//                            shape);
-//                    List<GradedSample> shapeGradedSamples = palmares.get(shape);
-//
-//                    if (shapeGradedSamples == null) {
-//                        palmares.put(shape, shapeGradedSamples = new ArrayList<GradedSample>());
-//                    }
-//
-//                    shapeGradedSamples.add(new GradedSample(sample, grade));
-//                } catch (Exception ex) {
-//                    logger.warn("Cannot evaluate {}", sample);
-//                }
-//            }
-//        }
-//
-//        // Set of chosen shapes
-//        final Set<GradedSample> set = new HashSet<GradedSample>();
-//        final int maxSimilar = similar.getValue();
-//
-//        // Sort the palmares, shape by shape, by (decreasing) grade
-//        for (List<GradedSample> shapeGradedSamples : palmares.values()) {
-//            Collections.sort(shapeGradedSamples, GradedSample.reverseGradeComparator);
-//
-//            // Take a sample equally distributed on instances of this shape
-//            final int size = shapeGradedSamples.size();
-//            final float delta = ((float) (size - 1)) / (maxSimilar - 1);
-//
-//            for (int i = 0; i < maxSimilar; i++) {
-//                int idx = Math.min(size - 1, Math.round(i * delta));
-//                GradedSample ng = shapeGradedSamples.get(idx);
-//
-//                if (ng.sample.getShape().isTrainable()) {
-//                    set.add(ng);
-//                }
-//            }
-//        }
-//
-//        // Build the core base
-//        List<Sample> base = new ArrayList<Sample>(set.size());
-//
-//        for (GradedSample gs : set) {
-//            base.add(gs.sample);
-//        }
-//
-//        ///repository.setCoreBase(base);
-//        setSelectedGlyphs(base.size());
-//
-//        return base;
+        //        // What for ? TODO
+        //        inputParams();
+        //
+        //        // Train bayesian on them
+        //        WekaClassifier bayesian = WekaClassifier.getInstance();
+        //        List<Sample> samples = getBase(true); // use whole
+        //
+        //        // Quickly train the regression evaluator (on the whole base)
+        //        bayesian.train(samples, null, StartingMode.SCRATCH);
+        //
+        //        // Measure all samples for each shape
+        //        Map<Shape, List<GradedSample>> palmares = new HashMap<Shape, List<GradedSample>>();
+        //
+        //        for (Sample sample : samples) {
+        //            if (sample != null) {
+        //                try {
+        //                    Shape shape = sample.getShape();
+        //                    double grade = bayesian.measureDistance(
+        //                            sample,
+        //                            sample.getInterline(),
+        //                            shape);
+        //                    List<GradedSample> shapeGradedSamples = palmares.get(shape);
+        //
+        //                    if (shapeGradedSamples == null) {
+        //                        palmares.put(shape, shapeGradedSamples = new ArrayList<GradedSample>());
+        //                    }
+        //
+        //                    shapeGradedSamples.add(new GradedSample(sample, grade));
+        //                } catch (Exception ex) {
+        //                    logger.warn("Cannot evaluate {}", sample);
+        //                }
+        //            }
+        //        }
+        //
+        //        // Set of chosen shapes
+        //        final Set<GradedSample> set = new HashSet<GradedSample>();
+        //        final int maxSimilar = similar.getValue();
+        //
+        //        // Sort the palmares, shape by shape, by (decreasing) grade
+        //        for (List<GradedSample> shapeGradedSamples : palmares.values()) {
+        //            Collections.sort(shapeGradedSamples, GradedSample.reverseGradeComparator);
+        //
+        //            // Take a sample equally distributed on instances of this shape
+        //            final int size = shapeGradedSamples.size();
+        //            final float delta = ((float) (size - 1)) / (maxSimilar - 1);
+        //
+        //            for (int i = 0; i < maxSimilar; i++) {
+        //                int idx = Math.min(size - 1, Math.round(i * delta));
+        //                GradedSample ng = shapeGradedSamples.get(idx);
+        //
+        //                if (ng.sample.getShape().isTrainable()) {
+        //                    set.add(ng);
+        //                }
+        //            }
+        //        }
+        //
+        //        // Build the core base
+        //        List<Sample> base = new ArrayList<Sample>(set.size());
+        //
+        //        for (GradedSample gs : set) {
+        //            base.add(gs.sample);
+        //        }
+        //
+        //        ///repository.setCoreBase(base);
+        //        setSelectedSamples(base.size());
+        //
+        //        return base;
         return Collections.EMPTY_LIST;
     }
 
@@ -365,11 +352,11 @@ class SelectionPanel
 
         r += 2; // ----------------------------
         builder.add(new JButton(selectAction), cst.xy(3, r));
-        builder.add(nbSelectedFiles.getLabel(), cst.xy(9, r));
-        builder.add(nbSelectedFiles.getField(), cst.xy(11, r));
+        builder.add(nbSelectedSamples.getLabel(), cst.xy(9, r));
+        builder.add(nbSelectedSamples.getField(), cst.xy(11, r));
 
-        builder.add(nbLoadedFiles.getLabel(), cst.xy(13, r));
-        builder.add(nbLoadedFiles.getField(), cst.xy(15, r));
+        builder.add(nbLoadedSamples.getLabel(), cst.xy(13, r));
+        builder.add(nbLoadedSamples.getField(), cst.xy(15, r));
     }
 
     //---------------//

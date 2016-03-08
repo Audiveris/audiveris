@@ -93,19 +93,19 @@ public class SampleRepository
     /** The single instance of this class. */
     private static volatile SampleRepository INSTANCE;
 
-    /** File name for images material. */
+    /** File name for images material: {@value}. */
     private static final String IMAGES_FILE_NAME = "images.zip";
 
-    /** File name for samples material. */
+    /** File name for samples material: {@value}. */
     private static final String SAMPLES_FILE_NAME = "samples.zip";
 
-    /** File path for images material. */
+    /** File path for images material: {@value}. */
     private static final Path IMAGES_FILE = WellKnowns.TRAIN_FOLDER.resolve(IMAGES_FILE_NAME);
 
-    /** File path for training material. */
+    /** File path for training material: {@value}. */
     private static final Path SAMPLES_FILE = WellKnowns.TRAIN_FOLDER.resolve(SAMPLES_FILE_NAME);
 
-    /** Special name to refer to font-based samples. */
+    /** Special name to refer to font-based samples: {@value}. */
     private static final String SYMBOLS = "<Font-Based Symbols>";
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -150,7 +150,7 @@ public class SampleRepository
     {
         Objects.requireNonNull(sheet, "Cannot add a sample to a null sheet");
 
-        sheet.addSample(sample);
+        sheet.privateAddSample(sample);
         sampleMap.put(sample, sheet);
     }
 
@@ -169,20 +169,6 @@ public class SampleRepository
         }
 
         return INSTANCE;
-    }
-
-    //-----------//
-    // isSymbols //
-    //-----------//
-    /**
-     * Report whether the provided sheet name is a font-based symbols sheet
-     *
-     * @param sheetName provided sheet name
-     * @return true if font-based symbols
-     */
-    public static boolean isSymbols (String sheetName)
-    {
-        return sheetName.startsWith("<");
     }
 
     //-----------------//
@@ -423,7 +409,7 @@ public class SampleRepository
     // getSampleSheet //
     //----------------//
     /**
-     * Report the SampleSheet that contains the provided sample
+     * Report the SampleSheet that contains the provided sample.
      *
      * @param sample the provided sample
      * @return the containing sheet
@@ -437,7 +423,7 @@ public class SampleRepository
     // getSamples //
     //------------//
     /**
-     * Report in the SampleSheet whose ID is provided, all samples assigned the
+     * Report, in the SampleSheet whose ID is provided, all samples assigned the
      * desired shape.
      *
      * @param id    ID of sample sheet
@@ -460,33 +446,7 @@ public class SampleRepository
     // getShapes //
     //-----------//
     /**
-     * Report all the shapes for which the provided sheet has concrete samples.
-     *
-     * @param sheetName name of the sample sheet
-     * @return the list of (non-empty) shapes
-     */
-    public Set<Shape> getShapes (String sheetName)
-    {
-        // Symbols?
-        if (isSymbols(sheetName)) {
-            return ShapeSet.allPhysicalShapes;
-        }
-
-        // Standard sheet
-        SampleSheet sampleSheet = idMap.get(sheetName);
-
-        if (sampleSheet != null) {
-            return sampleSheet.getShapes();
-        }
-
-        return Collections.EMPTY_SET;
-    }
-
-    //-----------//
-    // getShapes //
-    //-----------//
-    /**
-     * Report all the shapes for which the provided sheet has concrete samples.
+     * Report all shapes for which the provided sheet/descriptor has concrete samples.
      *
      * @param descriptor descriptor of the sample sheet
      * @return the list of (non-empty) shapes
@@ -599,7 +559,7 @@ public class SampleRepository
         final StopWatch watch = new StopWatch("Loading repository");
 
         try {
-            watch.start("open file");
+            watch.start("open samples.zip");
 
             final Path samplesRoot = Zip.openFileSystem(SAMPLES_FILE);
 
@@ -624,9 +584,11 @@ public class SampleRepository
             loadSamples(samplesRoot);
 
             if (withBinaries) {
-                watch.start("loadImages");
+                watch.start("open images.zip");
 
                 final Path imagesRoot = Zip.openFileSystem(IMAGES_FILE);
+
+                watch.start("loadImages");
                 loadImages(imagesRoot);
                 imagesRoot.getFileSystem().close();
             }
@@ -654,13 +616,16 @@ public class SampleRepository
     public void removeSample (Sample sample)
     {
         SampleSheet sampleSheet = getSampleSheet(sample);
-        sampleSheet.removeSample(sample);
+        sampleSheet.privateRemoveSample(sample);
         sampleMap.remove(sample);
     }
 
     //-----------------//
     // storeRepository //
     //-----------------//
+    /**
+     * Store the (modified parts of) repository to disk.
+     */
     public void storeRepository ()
     {
         try {
@@ -670,7 +635,9 @@ public class SampleRepository
                     : Zip.createFileSystem(IMAGES_FILE);
 
             // Container
-            sheetContainer.marshal(samplesRoot);
+            if (sheetContainer.isModified()) {
+                sheetContainer.marshal(samplesRoot);
+            }
 
             // Samples
             for (SampleSheet sampleSheet : idMap.values()) {
@@ -723,7 +690,7 @@ public class SampleRepository
     // buildSymbols //
     //--------------//
     /**
-     * Build the artificial font-based symbols.
+     * Build all the artificial symbols for a given font.
      * <p>
      * TODO: support additional fonts.
      */
@@ -741,7 +708,7 @@ public class SampleRepository
 
         for (Shape shape : ShapeSet.allPhysicalShapes) {
             Sample sample = buildSymbolSample(shape);
-            symbolSheet.addSample(sample);
+            symbolSheet.privateAddSample(sample);
             sampleMap.put(sample, symbolSheet);
         }
 
@@ -799,26 +766,16 @@ public class SampleRepository
                             Path parent = file.getParent();
                             String rel = root.relativize(parent).toString();
 
-                            if (Character.isDigit(rel.charAt(0))) {
-                                // Standard
-                                int id = Integer.decode(rel);
-                                logger.debug("id: {}", id);
+                            int id = Integer.decode(rel);
+                            logger.debug("id: {}", id);
 
-                                SampleSheet sampleSheet = idMap.get(id);
+                            SampleSheet sampleSheet = idMap.get(id);
 
-                                if (sampleSheet != null) {
-                                    sampleSheet.setImage(runTable);
-                                    logger.info("Loaded {}", file);
-                                }
+                            if (sampleSheet != null) {
+                                sampleSheet.setImage(runTable);
+                                logger.info("Loaded {}", file);
                             } else {
-                                //                                // Migration
-                                //                                Descriptor desc = sheetContainer.getDescriptor(rel);
-                                //                                SampleSheet sampleSheet = idMap.get(desc.id);
-                                //
-                                //                                if (sampleSheet != null) {
-                                //                                    sampleSheet.setBinaryTable(runTable);
-                                //                                    logger.info("Loaded {}", file);
-                                //                                }
+                                logger.warn("No SampleSheet found for image {}", file);
                             }
                         }
                     }
@@ -901,25 +858,23 @@ public class SampleRepository
         /**
          * Called whenever a new sample has been loaded.
          *
-         * @param gName the normalized sample name
+         * @param sample the sample loaded
          */
-        void loadedGlyph (String gName);
+        void loadedSample (Sample sample);
 
         /**
-         * Called to pass the number of selected samples, which will be
-         * later loaded.
+         * Called to pass the number of selected samples.
          *
          * @param selected the size of the selection
          */
-        void setSelectedGlyphs (int selected);
+        void setSelectedSamples (int selected);
 
         /**
-         * Called to pass the total number of available sample
-         * descriptions in the training material.
+         * Called to pass the total number of available samples in the training material.
          *
          * @param total the size of the training material
          */
-        void setTotalGlyphs (int total);
+        void setTotalSamples (int total);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

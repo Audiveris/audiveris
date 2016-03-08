@@ -709,16 +709,14 @@ public class KeyBuilder
                     }
 
                     spaceStop = x;
-                } else {
-                    if (spaceStart != -1) {
-                        // End of space
-                        if (!createSpace(spaceStart, spaceStop)) {
-                            // Too wide space encountered
-                            return;
-                        }
-
-                        spaceStart = -1;
+                } else if (spaceStart != -1) {
+                    // End of space
+                    if (!createSpace(spaceStart, spaceStop)) {
+                        // Too wide space encountered
+                        return;
                     }
+
+                    spaceStart = -1;
                 }
             }
 
@@ -764,11 +762,9 @@ public class KeyBuilder
                     logger.debug("Removing too narrow flat");
                     signature += 1;
                 }
-            } else {
-                if (trail < params.minSharpTrail) {
-                    logger.debug("Removing too narrow sharp");
-                    signature -= 1;
-                }
+            } else if (trail < params.minSharpTrail) {
+                logger.debug("Removing too narrow sharp");
+                signature -= 1;
             }
         }
 
@@ -1034,18 +1030,14 @@ public class KeyBuilder
                 // Set range.start here, since first chunk may be later skipped if lacking peak
                 range.start = space.stop + 1;
             }
-        } else {
-            // Make sure we have some item
-            if (peaks.isEmpty()) {
-                range.start = space.stop + 1;
-            } else {
-                // Second (wide) space stops it
-                if (space.getWidth() > params.maxInnerSpace) {
-                    range.stop = space.start;
-                    space.setWide();
-                    keepOn = false;
-                }
-            }
+        } else // Make sure we have some item
+        if (peaks.isEmpty()) {
+            range.start = space.stop + 1;
+        } else // Second (wide) space stops it
+        if (space.getWidth() > params.maxInnerSpace) {
+            range.stop = space.start;
+            space.setWide();
+            keepOn = false;
         }
 
         events.add(space);
@@ -2040,6 +2032,10 @@ public class KeyBuilder
         public void evaluateGlyph (Glyph glyph)
         {
             trials++;
+
+            if (glyph.getId() == 0) {
+                glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+            }
 
             Evaluation[] evals = evaluator.getNaturalEvaluations(glyph, sheet.getInterline());
 

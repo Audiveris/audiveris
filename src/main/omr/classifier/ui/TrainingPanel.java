@@ -284,10 +284,10 @@ abstract class TrainingPanel
         r += 2; // ----------------------------
         builder.add(coreButton, cst.xy(3, r));
         builder.add(coreNumber, cst.xy(5, r));
-
-        // Initialize with population cardinalities
-        coreAction.actionPerformed(null);
-        wholeAction.actionPerformed(null);
+//
+//        // Initialize with population cardinalities
+//        coreAction.actionPerformed(null);
+//        wholeAction.actionPerformed(null);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -253,6 +253,20 @@ public class SheetContainer
         this.modified = modified;
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append('{');
+        sb.append("maxId:").append(maxId);
+        sb.append('}');
+
+        return sb.toString();
+    }
+
     //----------------//
     // afterUnmarshal //
     //----------------//

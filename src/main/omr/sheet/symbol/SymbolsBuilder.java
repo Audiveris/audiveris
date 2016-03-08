@@ -159,8 +159,14 @@ public class SymbolsBuilder
      */
     private void evaluateGlyph (Glyph glyph)
     {
+        if (glyph.getId() == 0) {
+            glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+        }
+
+        logger.debug("evaluateGlyph on {}", glyph);
+
         if (glyph.isVip()) {
-            logger.info("VIP evaluateGlyph on glyph#{}", glyph.getId());
+            logger.info("VIP evaluateGlyph on {}", glyph);
         }
 
         final Point center = glyph.getCenter();

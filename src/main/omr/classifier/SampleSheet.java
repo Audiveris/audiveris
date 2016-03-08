@@ -52,7 +52,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * A negative ID indicates an artificial font-based SampleSheet.
  * <p>
  * A SampleSheet may also contain the binary run-table of the original image, thus allowing to
- * display the sample within its context.
+ * display each sample within its context.
  */
 public class SampleSheet
 {
@@ -61,10 +61,10 @@ public class SampleSheet
     private static final Logger logger = LoggerFactory.getLogger(
             SampleSheet.class);
 
-    /** File name for sheet samples. */
+    /** File name for sheet samples: {@value}. */
     public static final String SAMPLES_FILE_NAME = "samples.xml";
 
-    /** File name for sheet image. */
+    /** File name for sheet image: {@value}. */
     public static final String IMAGE_FILE_NAME = "image.xml";
 
     /** Un/marshalling context for use with JAXB. */
@@ -81,7 +81,7 @@ public class SampleSheet
     private final EnumMap<Shape, ArrayList<Sample>> shapeMap = new EnumMap<Shape, ArrayList<Sample>>(
             Shape.class);
 
-    /** Has this sheet been modified WRT its initial state?. */
+    /** Has this sheet been modified?. */
     private boolean modified;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -104,9 +104,9 @@ public class SampleSheet
     }
 
     /**
-     * Creates a new {@code SampleSheet} object from a SampleSheetValue parameter.
+     * Creates a new {@code SampleSheet} object from a SampleList parameter.
      *
-     * @param value the (unmarshalled) SampleSheetValue
+     * @param value the (unmarshalled) SampleList
      */
     private SampleSheet (SampleList value)
     {
@@ -142,6 +142,13 @@ public class SampleSheet
     //-----------//
     // unmarshal //
     //-----------//
+    /**
+     * Load a SampleSheet instance from the provided path.
+     *
+     * @param path the source path
+     * @return the unmarshalled instance
+     * @throws IOException
+     */
     public static SampleSheet unmarshal (Path path)
             throws IOException
     {
@@ -166,6 +173,11 @@ public class SampleSheet
     //---------------//
     // getAllSamples //
     //---------------//
+    /**
+     * Report all samples contained in this sheet.
+     *
+     * @return the sheet registered samples, whatever their shape
+     */
     public List<Sample> getAllSamples ()
     {
         List<Sample> allSamples = new ArrayList<Sample>();
@@ -177,6 +189,9 @@ public class SampleSheet
         return allSamples;
     }
 
+    //-------//
+    // getId //
+    //-------//
     /**
      * @return the id
      */
@@ -199,11 +214,19 @@ public class SampleSheet
     //-----------//
     // getShapes //
     //-----------//
+    /**
+     * Report all shapes for which we have concrete samples in this sheet.
+     *
+     * @return the concrete shapes in this sheet
+     */
     public Set<Shape> getShapes ()
     {
         return shapeMap.keySet();
     }
 
+    //------------//
+    // isModified //
+    //------------//
     /**
      * @return the modified value
      */
@@ -215,6 +238,11 @@ public class SampleSheet
     //-----------//
     // isSymbols //
     //-----------//
+    /**
+     * Tell whether this SampleSheet instance is based on artificial font-based symbols.
+     *
+     * @return true if artificial
+     */
     public boolean isSymbols ()
     {
         return isSymbols(id);
@@ -223,6 +251,13 @@ public class SampleSheet
     //---------//
     // marshal //
     //---------//
+    /**
+     * Marshal this instance to disk, using 'samplesRoot' for samples and "imagesRoot'
+     * for image.
+     *
+     * @param samplesRoot root for samples
+     * @param imagesRoot  root for images
+     */
     public void marshal (Path samplesRoot,
                          Path imagesRoot)
     {
@@ -256,6 +291,8 @@ public class SampleSheet
     // setImage //
     //----------//
     /**
+     * Register the image binary table for this sheet.
+     *
      * @param image the image to set
      */
     public void setImage (RunTable image)
@@ -263,8 +300,11 @@ public class SampleSheet
         this.image = image;
     }
 
+    //-------------//
+    // setModified //
+    //-------------//
     /**
-     * @param modified the modified to set
+     * @param modified the value to assign
      */
     public void setModified (boolean modified)
     {
@@ -291,17 +331,38 @@ public class SampleSheet
         return sb.toString();
     }
 
-    //-----------//
-    // addSample //
-    //-----------//
+    //------------//
+    // getSamples //
+    //------------//
+    /**
+     * Report the samples registered in this sheet for the provided shape.
+     *
+     * @param shape the provided shape
+     * @return the sheet samples for the provided shape
+     */
+    List<Sample> getSamples (Shape shape)
+    {
+        final List<Sample> samples = shapeMap.get(shape);
+
+        if (samples != null) {
+            return samples;
+        }
+
+        return Collections.EMPTY_LIST;
+    }
+
+    //------------------//
+    // privateAddSample //
+    //------------------//
     /**
      * (Package private) method to add a new sample to this SampleSheet.
-     * <b>NOTA:</b> Do not use directly,
-     * use {@link SampleRepository#addSample(Sample, SampleSheet)} instead.
+     * <p>
+     * <b>NOTA:</b> Do not use directly, use {@link SampleRepository#addSample(Sample, SampleSheet)}
+     * instead.
      *
      * @param sample the sample to add, non-null
      */
-    void addSample (Sample sample)
+    void privateAddSample (Sample sample)
     {
         Objects.requireNonNull(sample, "Cannot add a null sample");
 
@@ -320,31 +381,17 @@ public class SampleSheet
         }
     }
 
-    //------------//
-    // getSamples //
-    //------------//
-    List<Sample> getSamples (Shape shape)
-    {
-        final List<Sample> samples = shapeMap.get(shape);
-
-        if (samples != null) {
-            return samples;
-        }
-
-        return Collections.EMPTY_LIST;
-    }
-
-    //--------------//
-    // removeSample //
-    //--------------//
+    //---------------------//
+    // privateRemoveSample //
+    //---------------------//
     /**
      * (Package private) method to remove a sample from this SampleSheet.
-     * <b>NOTA:</b> Do not use directly,
-     * use {@link SampleRepository#removeSample(Sample)} instead.
+     * <p>
+     * <b>NOTA:</b> Do not use directly, use {@link SampleRepository#removeSample(Sample)} instead.
      *
      * @param sample
      */
-    void removeSample (Sample sample)
+    void privateRemoveSample (Sample sample)
     {
         Shape shape = sample.getShape();
         ArrayList<Sample> list = shapeMap.get(shape);
@@ -383,6 +430,9 @@ public class SampleSheet
     //------------//
     // SampleList //
     //------------//
+    /**
+     * Value class meant for JAXB.
+     */
     @XmlAccessorType(value = XmlAccessType.FIELD)
     @XmlRootElement(name = "samples")
     private static class SampleList

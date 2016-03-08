@@ -1587,6 +1587,10 @@ public abstract class TimeBuilder
         {
             trials++;
 
+            if (glyph.getId() == 0) {
+                glyph = system.getSheet().getGlyphIndex().registerOriginal(glyph);
+            }
+
             Evaluation[] evals = GlyphClassifier.getInstance().getNaturalEvaluations(
                     glyph,
                     system.getSheet().getInterline());
@@ -1671,6 +1675,10 @@ public abstract class TimeBuilder
         {
             //TODO: check glyph centroid for a whole symbol is not too far from staff middle line
             trials++;
+
+            if (glyph.getId() == 0) {
+                glyph = system.getSheet().getGlyphIndex().registerOriginal(glyph);
+            }
 
             Evaluation[] evals = GlyphClassifier.getInstance().getNaturalEvaluations(
                     glyph,
