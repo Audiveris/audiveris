@@ -37,24 +37,21 @@ import omr.sig.inter.StemInter;
 import omr.sig.relation.AccidHeadRelation;
 import omr.sig.relation.AugmentationRelation;
 import omr.sig.relation.BeamStemRelation;
+import omr.sig.relation.ChordStaccatoRelation;
 import omr.sig.relation.DoubleDotRelation;
 import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.Relation;
-import omr.sig.relation.ChordStaccatoRelation;
 import omr.sig.ui.SigPainter;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
-
 import static omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static omr.ui.symbol.Alignment.TOP_LEFT;
-
 import omr.ui.symbol.OmrFont;
 import omr.ui.util.Panel;
 import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.LEFT;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -66,6 +63,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -186,37 +184,6 @@ public class SheetResultPainter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------------//
-    // getVoicePanel //
-    //---------------//
-    /**
-     * Build a panel which displays all defined voice ID colors.
-     *
-     * @return the populated voice panel
-     */
-    public static JPanel getVoicePanel ()
-    {
-        final int length = voiceColors.length;
-        final Font font = new Font("SansSerif", Font.BOLD, 22);
-        final Color background = new Color(220, 220, 220);
-        final FormLayout layout = Panel.makeLabelsLayout(1, length, "0dlu", "10dlu");
-        final PanelBuilder builder = new PanelBuilder(layout, new Panel());
-        final CellConstraints cst = new CellConstraints();
-        final int r = 1;
-
-        for (int c = 1; c <= length; c++) {
-            final Color color = new Color(voiceColors[c - 1].getRGB()); // Remove alpha
-            final JLabel label = new JLabel("" + c, JLabel.CENTER);
-            label.setFont(font);
-            label.setOpaque(true);
-            label.setBackground(background);
-            label.setForeground(color);
-            builder.add(label, cst.xy((2 * c) - 1, r));
-        }
-
-        return builder.getPanel();
-    }
-
     //----------//
     // drawSlot //
     //----------//
@@ -272,6 +239,42 @@ public class SheetResultPainter
 
         g.setColor(oldColor);
         g.setStroke(oldStroke);
+    }
+
+    //---------------//
+    // getVoicePanel //
+    //---------------//
+    /**
+     * Build a panel which displays all defined voice ID colors.
+     *
+     * @return the populated voice panel
+     */
+    public static JPanel getVoicePanel ()
+    {
+        final int length = voiceColors.length;
+        final Font font = new Font("SansSerif", Font.BOLD, 22);
+        final Color background = new Color(220, 220, 220);
+        final FormLayout layout = Panel.makeLabelsLayout(1, length, "0dlu", "10dlu");
+        final Panel panel = new Panel();
+        final PanelBuilder builder = new PanelBuilder(layout, panel);
+        final CellConstraints cst = new CellConstraints();
+
+        // Adjust dimensions
+        final Dimension cellDim = new Dimension(5, 22);
+        panel.setInsets(3, 0, 0, 3); // TLBR
+
+        for (int c = 1; c <= length; c++) {
+            final Color color = new Color(voiceColors[c - 1].getRGB()); // Remove alpha
+            final JLabel label = new JLabel("" + c, JLabel.CENTER);
+            label.setPreferredSize(cellDim);
+            label.setFont(font);
+            label.setOpaque(true);
+            label.setBackground(background);
+            label.setForeground(color);
+            builder.add(label, cst.xy((2 * c) - 1, 1));
+        }
+
+        return panel;
     }
 
     //---------------//

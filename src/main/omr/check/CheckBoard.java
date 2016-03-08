@@ -63,10 +63,10 @@ public class CheckBoard<C>
                 Board.CHECK.position,
                 selectionService,
                 eventList,
+                false, // Selected
                 false, // Count
                 false, // Vip
-                false, // Dump
-                false); // Selected
+                false); // Dump
         checkPanel = new CheckPanel<C>(suite);
 
         if (suite != null) {

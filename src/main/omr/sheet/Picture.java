@@ -25,18 +25,16 @@ import omr.image.ImageUtil;
 import omr.image.MedianGrayFilter;
 import omr.image.PixelFilter;
 import omr.image.PixelSource;
-
 import static omr.run.Orientation.VERTICAL;
-
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
+
+import omr.sheet.grid.LineInfo;
 
 import omr.ui.selection.LocationEvent;
 import omr.ui.selection.MouseMovement;
 import omr.ui.selection.PixelEvent;
 import omr.ui.selection.SelectionService;
-
-import omr.sheet.grid.LineInfo;
 
 import omr.util.Navigable;
 import omr.util.StopWatch;
@@ -527,7 +525,9 @@ public class Picture
             return null;
         }
 
-        return tableHolder.getData();
+        final RunTable table = tableHolder.getData();
+
+        return table;
     }
 
     //----------//

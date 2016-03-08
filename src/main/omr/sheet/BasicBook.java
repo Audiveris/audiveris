@@ -32,7 +32,9 @@ import omr.script.BookStepTask;
 import omr.script.ExportTask;
 import omr.script.PrintTask;
 import omr.script.Script;
+
 import static omr.sheet.Sheet.INTERNALS_RADIX;
+
 import omr.sheet.rhythm.Voices;
 import omr.sheet.ui.BookBrowser;
 import omr.sheet.ui.StubsController;
@@ -40,6 +42,7 @@ import omr.sheet.ui.StubsController;
 import omr.step.ProcessingCancellationException;
 import omr.step.Step;
 import omr.step.StepException;
+
 import static omr.step.ui.StepMonitoring.notifyStart;
 import static omr.step.ui.StepMonitoring.notifyStop;
 
@@ -87,6 +90,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import omr.util.Zip;
 
 /**
  * Class {@code BasicBook} is a basic implementation of Book interface.
@@ -889,7 +893,7 @@ public class BasicBook
             watch.start("book");
 
             // Open project file
-            Path rootPath = openProjectFile(projectPath);
+            Path rootPath = Zip.openFileSystem(projectPath);
 
             // Load book internals (just the stubs)
             Path bookPath = rootPath.resolve(Book.BOOK_INTERNALS);
@@ -987,7 +991,7 @@ public class BasicBook
      */
     public Path openProjectFile ()
     {
-        return openProjectFile(projectPath);
+        return Zip.openFileSystem(projectPath);
     }
 
     //-----------------//
@@ -1121,9 +1125,9 @@ public class BasicBook
             if ((this.projectPath == null)
                 || this.projectPath.toAbsolutePath().equals(projectPath.toAbsolutePath())) {
                 if (this.projectPath == null) {
-                    root = createProjectFile(projectPath);
+                    root = Zip.createFileSystem(projectPath);
                 } else {
-                    root = openProjectFile(projectPath);
+                    root = Zip.openFileSystem(projectPath);
                 }
 
                 storeBookXml(root); // Book itself (book.xml)
@@ -1254,12 +1258,6 @@ public class BasicBook
         }
 
         try {
-            if (Files.exists(projectPath)) {
-                logger.debug("Project {} found, to be deleted ", projectPath);
-            } else {
-                logger.debug("Project file not found, creating {}", projectPath);
-            }
-
             Files.deleteIfExists(projectPath);
         } catch (IOException ex) {
             logger.warn("Error deleting project: " + projectPath, ex);
@@ -1269,7 +1267,7 @@ public class BasicBook
             // Make sure the containing folder exists
             Files.createDirectories(projectPath.getParent());
 
-            //TODO: Is this write really mandatory to make it a zip file?
+            // Make it a zip file
             ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(projectPath.toFile()));
             zos.close();
         } catch (IOException ex) {
@@ -1277,7 +1275,7 @@ public class BasicBook
         }
 
         // Finally open the project file just created
-        return openProjectFile(projectPath);
+        return Zip.openFileSystem(projectPath);
     }
 
     //----------------//

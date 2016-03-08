@@ -481,7 +481,7 @@ public class GlyphIndex
     // setEntities //
     //-------------//
     @SuppressWarnings("unchecked")
-    private void setEntities (ArrayList<Glyph> glyphs)
+    protected void setEntities (ArrayList<Glyph> glyphs)
     {
         for (Glyph glyph : glyphs) {
             WeakGlyph weak = new WeakGlyph(glyph);

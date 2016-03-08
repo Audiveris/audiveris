@@ -13,12 +13,13 @@ package omr.classifier.ui;
 
 import omr.classifier.AbstractClassifier;
 import omr.classifier.AbstractClassifier.StartingMode;
-import omr.classifier.NeuralClassifier;
 import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
+
 import static omr.classifier.ui.Trainer.Task.Activity.*;
 
 import omr.glyph.Shape;
+
 import static omr.glyph.Shape.*;
 
 import omr.ui.util.Panel;
@@ -30,10 +31,9 @@ import com.jgoodies.forms.layout.FormLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
@@ -49,16 +49,15 @@ import javax.swing.JRadioButton;
 import javax.swing.SwingWorker;
 
 /**
- * Class {@code TrainingPanel} is a panel dedicated to the training of an evaluation
- * engine.
+ * Class {@code TrainingPanel} is a panel dedicated to the training of a classifier.
  * <p>
- * It is used through its subclasses {@link NetworkPanel} and {@link RegressionPanel} to train the
- * neural network engine and the linear engine respectively. It is a dedicated companion of class
+ * It is used through its subclasses {@link NetworkPanel} and {@link BayesianPanel} to train the
+ * neural network engine and the bayesian engine respectively. It is a dedicated companion of class
  * {@link Trainer}.
  *
  * @author Hervé Bitteur
  */
-class TrainingPanel
+abstract class TrainingPanel
         implements AbstractClassifier.Monitor, Observer
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -98,16 +97,16 @@ class TrainingPanel
     private boolean useWhole = true;
 
     /** Display of cardinality of whole population */
-    private JLabel wholeNumber = new JLabel();
+    private final JLabel wholeNumber = new JLabel();
 
     /** Display of cardinality of core population */
-    private JLabel coreNumber = new JLabel();
+    private final JLabel coreNumber = new JLabel();
 
     /** UI panel dealing with repository selection */
     private final SelectionPanel selectionPanel;
 
-    /** The Neural Network engine */
-    private NeuralClassifier network = NeuralClassifier.getInstance();
+    /** Max index for progress bar. */
+    private int indexMax;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -136,7 +135,7 @@ class TrainingPanel
         FormLayout layout = Panel.makeFormLayout(totalRows, 4, "", standardWidth, standardWidth);
 
         builder = new PanelBuilder(layout, component);
-        ///builder.setDefaultDialogBorder(); // Useful ?
+
         defineLayout();
     }
 
@@ -162,12 +161,6 @@ class TrainingPanel
 
     @Override
     public void sampleProcessed (final Sample sample)
-    {
-    }
-
-    @Override
-    public void trainingStarted (final int epochIndex,
-                                 final double mse)
     {
     }
 
@@ -212,48 +205,6 @@ class TrainingPanel
         return useWhole;
     }
 
-    //--------------//
-    // defineLayout //
-    //--------------//
-    /**
-     * Define the common part of the layout, each subclass being able to augment
-     * this layout from its constructor
-     */
-    protected void defineLayout ()
-    {
-        // Buttons to select just the core samples, or the whole population
-        CoreAction coreAction = new CoreAction();
-        JRadioButton coreButton = new JRadioButton(coreAction);
-        WholeAction wholeAction = new WholeAction();
-        JRadioButton wholeButton = new JRadioButton(wholeAction);
-
-        // Group the radio buttons.
-        ButtonGroup group = new ButtonGroup();
-        group.add(wholeButton);
-        wholeButton.setToolTipText("Use the whole sample base for any action");
-        group.add(coreButton);
-        coreButton.setToolTipText("Use only the core sample base for any action");
-        wholeButton.setSelected(true);
-
-        // Evaluator Title & Progress Bar
-        int r = 1; // ----------------------------
-        String title = engine.getName() + " Training";
-        builder.addSeparator(title, cst.xyw(1, r, 7));
-        builder.add(progressBar, cst.xyw(9, r, 7));
-
-        r += 2; // ----------------------------
-        builder.add(wholeButton, cst.xy(3, r));
-        builder.add(wholeNumber, cst.xy(5, r));
-
-        r += 2; // ----------------------------
-        builder.add(coreButton, cst.xy(3, r));
-        builder.add(coreNumber, cst.xy(5, r));
-
-        // Initialize with population cardinalities
-        coreAction.actionPerformed(null);
-        wholeAction.actionPerformed(null);
-    }
-
     //-----------------//
     // checkPopulation //
     //-----------------//
@@ -293,6 +244,50 @@ class TrainingPanel
                 logger.warn("Missing shape: {}", Shape.values()[i]);
             }
         }
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define the common part of the layout, each subclass being able to augment
+     * this layout from its constructor
+     */
+    private void defineLayout ()
+    {
+        progressBar.setForeground(Color.ORANGE);
+
+        // Buttons to select just the core samples, or the whole population
+        CoreAction coreAction = new CoreAction();
+        JRadioButton coreButton = new JRadioButton(coreAction);
+        WholeAction wholeAction = new WholeAction();
+        JRadioButton wholeButton = new JRadioButton(wholeAction);
+
+        // Group the radio buttons.
+        ButtonGroup group = new ButtonGroup();
+        group.add(wholeButton);
+        wholeButton.setToolTipText("Use the whole sample base for any action");
+        group.add(coreButton);
+        coreButton.setToolTipText("Use only the core sample base for any action");
+        wholeButton.setSelected(true);
+
+        // Evaluator Title & Progress Bar
+        int r = 1; // ----------------------------
+        String title = engine.getName() + " classifier";
+        builder.addSeparator(title, cst.xyw(1, r, 7));
+        builder.add(progressBar, cst.xyw(9, r, 7));
+
+        r += 2; // ----------------------------
+        builder.add(wholeButton, cst.xy(3, r));
+        builder.add(wholeNumber, cst.xy(5, r));
+
+        r += 2; // ----------------------------
+        builder.add(coreButton, cst.xy(3, r));
+        builder.add(coreNumber, cst.xy(5, r));
+
+        // Initialize with population cardinalities
+        coreAction.actionPerformed(null);
+        wholeAction.actionPerformed(null);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -344,7 +339,7 @@ class TrainingPanel
             if (confirmationRequired) {
                 int answer = JOptionPane.showConfirmDialog(
                         component,
-                        "Do you really want to retrain " + engine.getName() + " from scratch?");
+                        "Confirm retrain " + engine.getName() + " from scratch?");
 
                 if (answer != JOptionPane.YES_OPTION) {
                     return;
@@ -374,25 +369,9 @@ class TrainingPanel
         {
             task.setActivity(TRAINING);
 
-            Collection<String> gNames = selectionPanel.getBase(useWhole);
+            List<Sample> samples = selectionPanel.getBase(useWhole);
             progressBar.setValue(0);
-            progressBar.setMaximum(network.getListEpochs());
-
-            List<Sample> samples = new ArrayList<Sample>();
-
-            for (String gName : gNames) {
-                Sample sample = repository.getSample(gName, selectionPanel);
-
-                if (sample != null) {
-                    if (sample.getShape() != null) {
-                        samples.add(sample);
-                    } else {
-                        logger.warn("Cannot infer shape from {}", gName);
-                    }
-                } else {
-                    logger.warn("Cannot get sample {}", gName);
-                }
-            }
+            progressBar.setMaximum(indexMax);
 
             // Check that all trainable shapes (and only those ones) are
             // present in the training population

@@ -111,7 +111,7 @@ public class TemplateBoard
                           DistanceTable table,
                           SelectionService templateService)
     {
-        super(Board.TEMPLATE, sheet.getLocationService(), eventsRead, false, false, false, true);
+        super(Board.TEMPLATE, sheet.getLocationService(), eventsRead, true, false, false, false);
         this.sheet = sheet;
         this.table = table;
         this.templateService = templateService;

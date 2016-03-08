@@ -19,12 +19,21 @@ import java.awt.Rectangle;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import static java.nio.file.StandardOpenOption.CREATE;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.PropertyException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -45,6 +54,50 @@ public abstract class Jaxb
 
     /** Used for booleans. */
     public static final True TRUE = new True();
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // marshal //
+    //---------//
+    public static void marshal (Object object,
+                                Path path,
+                                JAXBContext jaxbContext)
+            throws IOException, PropertyException, JAXBException
+    {
+        OutputStream os = null;
+
+        try {
+            Marshaller m = jaxbContext.createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            os = Files.newOutputStream(path, CREATE);
+            m.marshal(object, os);
+        } finally {
+            if (os != null) {
+                os.close();
+            }
+        }
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    public static Object unmarshal (Path path,
+                                    JAXBContext jaxbContext)
+            throws IOException, JAXBException
+    {
+        InputStream is = null;
+
+        try {
+            Unmarshaller um = jaxbContext.createUnmarshaller();
+            is = Files.newInputStream(path, StandardOpenOption.READ);
+
+            return um.unmarshal(is);
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+    }
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //----------------------//

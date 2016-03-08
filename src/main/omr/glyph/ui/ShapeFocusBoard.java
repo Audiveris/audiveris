@@ -117,21 +117,21 @@ public class ShapeFocusBoard
      * @param sheet          the related sheet
      * @param controller     the related glyph controller
      * @param filterListener the action linked to filter button
-     * @param expanded       true for pre-expanded board
+     * @param selected       true for pre-selected board
      */
     public ShapeFocusBoard (Sheet sheet,
                             GlyphsController controller,
                             ActionListener filterListener,
-                            boolean expanded)
+                            boolean selected)
     {
         super(
                 Board.FOCUS,
-                controller.getIndex().getEntityService(),
+                controller.getGlyphService(),
                 eventsRead,
+                selected,
                 false,
                 false,
-                false,
-                expanded);
+                false);
 
         this.sheet = sheet;
 

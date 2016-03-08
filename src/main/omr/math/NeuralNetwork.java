@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.math;
 
+import omr.classifier.AbstractClassifier.Monitor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,12 +36,11 @@ import javax.xml.bind.annotation.XmlValue;
  * network, with one input layer, one hidden layer and one output layer.
  * The transfer function is the sigmoid.
  * <p>
- * This neuralNetwork class can be stored on disk in XML form (through
- * the {@link #marshal} and {@link #unmarshal} methods).
+ * This neuralNetwork class can be stored on disk in XML form (through the {@link #marshal} and
+ * {@link #unmarshal} methods).
  * <p>
- * The class also allows in-memory {@link #backup} and {@link #restore}
- * operation, mainly used to save the most performant weight values during the
- * network training.
+ * The class also allows in-memory {@link #backup} and {@link #restore} operation, mainly used to
+ * save the most efficient weight values during the network training.
  *
  * @author Hervé Bitteur
  */
@@ -199,6 +200,28 @@ public class NeuralNetwork
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the provided XML stream to allocate the corresponding NeuralNetwork.
+     *
+     * @param in the input stream that contains the network definition in XML format.
+     *           The stream is not closed by this method
+     *
+     * @return the allocated network.
+     * @exception JAXBException raised when unmarshalling goes wrong
+     */
+    public static NeuralNetwork unmarshal (InputStream in)
+            throws JAXBException
+    {
+        Unmarshaller um = getJaxbContext().createUnmarshaller();
+        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
+        logger.debug("Network unmarshalled");
+
+        return nn;
+    }
+
     //
     //--------//
     // backup //
@@ -334,8 +357,8 @@ public class NeuralNetwork
     //---------//
     /**
      * Restore the internal memory of a Network, from a previous Backup.
-     * This does not reset the current parameters such as learning rate,
-     * momentum, maxError or epochs.
+     * This does not reset the current parameters such as learning rate, momentum, maxError or
+     * epochs.
      *
      * @param backup a backup previously made
      */
@@ -369,8 +392,8 @@ public class NeuralNetwork
      *
      * @param inputs  the provided input values
      * @param hiddens provided buffer for hidden values, or null
-     * @param outputs preallocated array for the computed output values, or null
-     *                if not already allocated
+     * @param outputs preallocated array for the computed output values, or null if not already
+     *                allocated
      *
      * @return the computed output values
      */
@@ -383,7 +406,7 @@ public class NeuralNetwork
             logger.error("run method. inputs array is null");
         } else if (inputs.length != inputSize) {
             logger.error(
-                    "run method. input size {} not consistent with" + " network input layer {}",
+                    "run method. input size {} not consistent with network input layer {}",
                     inputs.length,
                     inputSize);
         }
@@ -401,7 +424,7 @@ public class NeuralNetwork
             outputs = new double[outputSize];
         } else if (outputs.length != outputSize) {
             logger.error(
-                    "run method. output size {} not consistent with" + " network output layer {}",
+                    "run method. output size {} not consistent with network output layer {}",
                     outputs.length,
                     outputSize);
         }
@@ -416,8 +439,7 @@ public class NeuralNetwork
     // setEpochs //
     //-----------//
     /**
-     * Set the number of iterations for training the network with a
-     * given input.
+     * Set the number of iterations for training the network with a given input.
      *
      * @param epochs number of iterations
      */
@@ -459,8 +481,7 @@ public class NeuralNetwork
     /**
      * Set the momentum value.
      *
-     * @param momentum the fraction of previous move to be reported on the next
-     *                 correction
+     * @param momentum the fraction of previous move to be reported on the next correction
      */
     public void setMomentum (double momentum)
     {
@@ -485,14 +506,14 @@ public class NeuralNetwork
     /**
      * Train the neural network on a collection of input patterns,
      * so that it delivers the expected outputs within maxError.
-     * This method is not optimized for absolute speed, but rather for being
-     * able to keep the best weights values.
+     * This method is not optimized for ultimate speed, but rather for being able to keep the best
+     * weights values.
      *
      * @param inputs         the provided patterns of values for input cells
      * @param desiredOutputs the corresponding desired values for output cells
      * @param monitor        a monitor interface to be kept informed (or null)
      *
-     * @return mse, the final mean square error
+     * @return the final mean square error
      */
     public double train (double[][] inputs,
                          double[][] desiredOutputs,
@@ -525,7 +546,7 @@ public class NeuralNetwork
         // Mean Square Error
         double mse = 0;
 
-        // Notify Monitor we are starting
+        // Notify monitor we are starting
         if (monitor != null) {
             // Compute the initial mse
             for (int ip = 0; ip < patternNb; ip++) {
@@ -540,7 +561,7 @@ public class NeuralNetwork
 
             mse /= patternNb;
             mse = Math.sqrt(mse);
-            monitor.trainingStarted(0, mse);
+            monitor.trainingStarted(0, epochs, mse);
         }
 
         int ie = 0;
@@ -554,8 +575,7 @@ public class NeuralNetwork
             }
 
             // Compute the output layer error terms
-            mse = 0;
-
+            ///mse = 0;
             // Loop on all input patterns
             for (int ip = 0; ip < patternNb; ip++) {
                 // Run the network with input values and current weights
@@ -564,8 +584,10 @@ public class NeuralNetwork
                 for (int o = outputSize - 1; o >= 0; o--) {
                     double out = gottenOutputs[o];
                     double dif = desiredOutputs[ip][o] - out;
-                    mse += (dif * dif);
-                    outputGrads[o] = dif * out * (1 - out);
+                    ///mse += (dif * dif);
+                    ///outputGrads[o] = dif * out * (1 - out); // Sigmoid'
+                    outputGrads[o] = dif * sigmoidDif(out); // Sigmoid'
+                    ///outputGrads[o] = dif * reluDif(out); // ReLU'
                 }
 
                 // Compute the hidden layer error terms
@@ -577,7 +599,9 @@ public class NeuralNetwork
                         sum += (outputGrads[o] * outputWeights[o][h + 1]);
                     }
 
-                    hiddenGrads[h] = sum * hid * (1 - hid);
+                    ///hiddenGrads[h] = sum * hid * (1 - hid); // Sigmoid'
+                    hiddenGrads[h] = sum * sigmoidDif(hid); // Sigmoid'
+                    ///hiddenGrads[h] = sum * reluDif(hid); // ReLU'
                 }
 
                 // Now update the output weights
@@ -609,7 +633,7 @@ public class NeuralNetwork
                     hiddenWeights[h][0] += dw;
                     hiddenDeltas[h][0] = dw;
                 }
-            } // for (int ip = 0; i < patternNb; i++)
+            }
 
             // Compute true current mse
             mse = 0d;
@@ -637,7 +661,7 @@ public class NeuralNetwork
 
                 break;
             }
-        } // for (int ie = 0; ie < epochs; ie++)
+        }
 
         if (logger.isDebugEnabled()) {
             long stopTime = System.currentTimeMillis();
@@ -650,29 +674,6 @@ public class NeuralNetwork
         }
 
         return mse;
-    }
-
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal the provided XML stream to allocate the corresponding
-     * NeuralNetwork.
-     *
-     * @param in the input stream that contains the network definition in XML
-     *           format. The stream is not closed by this method
-     *
-     * @return the allocated network.
-     * @exception JAXBException raised when unmarshalling goes wrong
-     */
-    public static NeuralNetwork unmarshal (InputStream in)
-            throws JAXBException
-    {
-        Unmarshaller um = getJaxbContext().createUnmarshaller();
-        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
-        logger.debug("Network unmarshalled");
-
-        return nn;
     }
 
     //-------------//
@@ -727,20 +728,6 @@ public class NeuralNetwork
         }
 
         return matrix;
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(NeuralNetwork.class);
-        }
-
-        return jaxbContext;
     }
 
     //------------//
@@ -805,7 +792,32 @@ public class NeuralNetwork
             sum += ws[0];
 
             outs[o] = sigmoid(sum);
+            ///outs[o] = relu(sum);
         }
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(NeuralNetwork.class);
+        }
+
+        return jaxbContext;
+    }
+
+    private double relu (double val)
+    {
+        return Math.max(0, val);
+    }
+
+    private double reluDif (double val)
+    {
+        return (val >= 0) ? 1 : 0;
     }
 
     //---------//
@@ -822,38 +834,9 @@ public class NeuralNetwork
         return 1.0d / (1.0d + Math.exp(-val));
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
-    //
-    //---------//
-    // Monitor //
-    //---------//
-    /**
-     * Interface {@code Monitor} allows to plug a monitor to a Neural
-     * Network instance, and inform the monitor about the progress of
-     * the training activity.
-     */
-    public static interface Monitor
+    private double sigmoidDif (double val)
     {
-        //~ Methods --------------------------------------------------------------------------------
-
-        /**
-         * Entry called at end of each epoch during the training phase.
-         *
-         * @param epochIndex the sequential index of completed epoch
-         * @param mse        the remaining mean square error
-         */
-        void epochEnded (int epochIndex,
-                         double mse);
-
-        /**
-         * Entry called at the beginning of the training phase, to allow
-         * initial snap shots for example.
-         *
-         * @param epochIndex the sequential index (0)
-         * @param mse        the starting mean square error
-         * */
-        void trainingStarted (final int epochIndex,
-                              final double mse);
+        return val * (1 - val);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -866,8 +849,7 @@ public class NeuralNetwork
      * snapshot of a NeuralNetwork internal memory (its weights).
      * A Backup instance can only be obtained through the use of {@link #backup}
      * method of a NeuralNetwork.
-     * A Backup instance is the needed parameter for a NeuralNetwork {@link
-     * #restore} action.
+     * A Backup instance is the needed parameter for a NeuralNetwork {@link #restore} action.
      */
     public static class Backup
     {
@@ -892,10 +874,12 @@ public class NeuralNetwork
     //-------------//
     private static class StringArray
     {
+        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlValue
         String[] strings;
 
+        //~ Constructors ---------------------------------------------------------------------------
         public StringArray ()
         {
         }
@@ -904,6 +888,5 @@ public class NeuralNetwork
         {
             this.strings = strings;
         }
-
     }
 }

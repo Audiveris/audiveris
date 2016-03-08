@@ -66,9 +66,6 @@ public class GlyphBoard
     /** The related glyph model. */
     protected final GlyphsController controller;
 
-    //
-    //    /** Input : group selection. */
-    //    protected final JSpinner groupSpinner;
     /** Output : group info. */
     protected final JLabel groupField = new JLabel();
 
@@ -81,37 +78,18 @@ public class GlyphBoard
      *
      * @param controller  the related glyphs controller, if any
      * @param useSpinners true for use of spinners
-     * @param expanded    true if board must be initially expanded
+     * @param selected    true if board must be initially selected
      */
     public GlyphBoard (GlyphsController controller,
                        boolean useSpinners,
-                       boolean expanded)
+                       boolean selected)
     {
-        super(Board.GLYPH, controller.getIndex().getEntityService(), expanded);
+        super(Board.GLYPH, controller.getGlyphService(), selected);
 
         this.controller = controller;
 
         getDeassignAction().setEnabled(false);
 
-        // Force a constant height for the shapeIcon field, despite variation in size of the icon
-        //        Dimension dim = new Dimension(
-        //                constants.shapeIconWidth.getValue(),
-        //                constants.shapeIconHeight.getValue());
-        //        shapeIcon.setPreferredSize(dim);
-        //        shapeIcon.setMaximumSize(dim);
-        //        shapeIcon.setMinimumSize(dim);
-        //
-        //         Precise layout
-        //        layout.setColumnGroups(
-        //            new int[][] {
-        //                { 1, 5, 9 },
-        //                { 3, 7, 11 }
-        //            });
-        // Group spinner
-        //        groupSpinner = new JSpinner(new SpinnerListModel(Group.values()));
-        //        groupSpinner.addChangeListener(this);
-        //        groupSpinner.setName("groupSpinner");
-        //        groupSpinner.setToolTipText("Selection of glyph group");
         groupField.setHorizontalAlignment(SwingConstants.CENTER);
         groupField.setToolTipText("Assigned group(s)");
 
@@ -122,36 +100,17 @@ public class GlyphBoard
      * A basic GlyphBoard, with just a glyph service
      *
      * @param glyphService the provided glyph service
-     * @param expanded     true if board must be initially expanded
+     * @param selected     true if board must be initially selected
      */
     public GlyphBoard (EntityService<Glyph> glyphService,
-                       boolean expanded)
+                       boolean selected)
     {
-        super(Board.GLYPH, glyphService, expanded);
+        super(Board.GLYPH, glyphService, selected);
 
         this.controller = null;
 
         getDeassignAction().setEnabled(false);
 
-        // Force a constant height for the shapeIcon field, despite variation in size of the icon
-        //        Dimension dim = new Dimension(
-        //                constants.shapeIconWidth.getValue(),
-        //                constants.shapeIconHeight.getValue());
-        //        shapeIcon.setPreferredSize(dim);
-        //        shapeIcon.setMaximumSize(dim);
-        //        shapeIcon.setMinimumSize(dim);
-        //
-        //         Precise layout
-        //        layout.setColumnGroups(
-        //            new int[][] {
-        //                { 1, 5, 9 },
-        //                { 3, 7, 11 }
-        //            });
-        // Group spinner
-        //        groupSpinner = new JSpinner(new SpinnerListModel(Group.values()));
-        //        groupSpinner.addChangeListener(this);
-        //        groupSpinner.setName("groupSpinner");
-        //        groupSpinner.setToolTipText("Selection of glyph group");
         groupField.setHorizontalAlignment(SwingConstants.CENTER);
         groupField.setToolTipText("Assigned group(s)");
 

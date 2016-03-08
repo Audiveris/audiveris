@@ -153,7 +153,7 @@ public class BlackList
                 legals.add(path);
             }
         } catch (IOException ex) {
-            logger.warn("Error iterating in " + dir, ex);
+            logger.warn("Error iterating in " + dir + " " + ex);
         }
 
         if (legals.isEmpty()) {

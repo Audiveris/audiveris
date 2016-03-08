@@ -46,16 +46,16 @@ public abstract class OmrFont
 
     private static final Logger logger = LoggerFactory.getLogger(OmrFont.class);
 
-    /** Default interline value, consistent with base font: {@value} */
+    /** Default interline value, consistent with base font: {@value}. */
     public static final int DEFAULT_INTERLINE = 16;
 
-    /** Default staff height value, consistent with base font: {@value} */
+    /** Default staff height value, consistent with base font: {@value}. */
     public static final int DEFAULT_STAFF_HEIGHT = 67;
 
-    /** Needed for font size computation */
+    /** Needed for font size computation. */
     protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
 
-    /** Default color for images */
+    /** Default color for images. */
     public static final Color defaultImageColor = Color.BLACK;
 
     /** Cache for fonts. */
@@ -87,7 +87,7 @@ public abstract class OmrFont
      * @param g         the graphics environment
      * @param layout    what: the symbol, perhaps transformed
      * @param location  where: the precise location in the display
-     * @param alignment how: the way the symbol is aligned wrt the location
+     * @param alignment how: the way the symbol is aligned WRT the location
      */
     public static void paint (Graphics2D g,
                               TextLayout layout,
@@ -157,7 +157,6 @@ public abstract class OmrFont
         return layout(symbol.getString(), null);
     }
 
-    //
     //------------//
     // createFont //
     //------------//

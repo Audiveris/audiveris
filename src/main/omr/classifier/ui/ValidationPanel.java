@@ -12,15 +12,12 @@
 package omr.classifier.ui;
 
 import omr.classifier.Classifier;
-import static omr.classifier.Classifier.Condition.ALLOWED;
 import omr.classifier.Evaluation;
 import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
 
 import omr.glyph.Grades;
 
-import omr.ui.field.LDoubleField;
-import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -30,10 +27,9 @@ import com.jgoodies.forms.layout.FormLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -44,10 +40,11 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JProgressBar;
+import omr.ui.field.LLabel;
 
 /**
  * Class {@code ValidationPanel} handles the validation of an evaluator against the
- * selected population of s (either the whole base or the core base).
+ * selected population of samples (either the whole base or the core base).
  * <p>
  * It is a dedicated companion of class {@link Trainer}.
  *
@@ -61,66 +58,58 @@ class ValidationPanel
     private static final Logger logger = LoggerFactory.getLogger(ValidationPanel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Swing component */
+    /** Swing component. */
     private final Panel component;
 
-    /** Dedicated executor for validation */
+    /** Dedicated executor for validation. */
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    /** The evaluator to validate */
-    private final Classifier evaluator;
+    /** The classifier to validate. */
+    private final Classifier classifier;
 
-    /** User progress bar to visualize the validation process */
+    /** User progress bar to visualize the validation process. */
     private final JProgressBar progressBar = new JProgressBar();
 
-    /** Repository of known s */
+    /** Repository of training samples. */
     private final SampleRepository repository = SampleRepository.getInstance();
 
-    /** User interface that handles s selection */
+    /** User interface that handles samples selection. */
     private final SelectionPanel selectionPanel;
 
-    /** User interface that handles evaluator training */
-    private final TrainingPanel trainingPanel;
-
-    /** User action to validate the evaluator against whole or core base */
+    /** User action to validate the classifier against training base. */
     private final ValidateAction validateAction = new ValidateAction();
 
-    /** Display percentage of s correctly recognized */
-    private final LDoubleField pcValue = new LDoubleField(
-            false,
-            "% OK",
-            "Percentage of recognized s",
-            " %5.2f%%");
+    /** Display percentage of samples correctly recognized. */
+    private final LLabel pcValue = new LLabel(
+            "%:",
+            "Percentage of samples correctly recognized");
 
-    /** Display number of s correctly recognized */
-    private final LIntegerField positiveValue = new LIntegerField(
-            false,
-            "Glyphs OK",
-            "Number of s correctly recognized");
+    /** Display number of samples correctly recognized. */
+    private final LLabel positiveValue = new LLabel(
+            "Positives:",
+            "Number of samples correctly recognized");
 
-    /** Display number of s mistaken with some other shape */
-    private final LIntegerField falsePositiveValue = new LIntegerField(
-            false,
-            "False Pos.",
-            "Number of s incorrectly recognized");
+    /** Display number of samples mistaken with some other shape. */
+    private final LLabel falsePositiveValue = new LLabel(
+            "False Pos.:",
+            "Number of samples incorrectly recognized");
 
-    /** Collection of names leading to false positives */
-    private final List<String> falsePositives = new ArrayList<String>();
+    /** Collection of samples leading to false positives. */
+    private final List<Sample> falsePositives = new ArrayList<Sample>();
 
-    /** User action to investigate on false positives */
+    /** User action to investigate on false positives. */
     private final FalsePositiveAction falsePositiveAction = new FalsePositiveAction();
 
-    /** Display number of s not recognized */
-    private final LIntegerField negativeValue = new LIntegerField(
-            false,
-            "Negative",
-            "Number of s not recognized");
+    /** Display number of samples not recognized. */
+    private final LLabel falseNegativeValue = new LLabel(
+            "False Neg.:",
+            "Number of samples not recognized");
 
-    /** Collection of names not recognized (negatives) */
-    private final List<String> negatives = new ArrayList<String>();
+    /** Collection of samples not recognized (false negatives). */
+    private final List<Sample> falseNegatives = new ArrayList<Sample>();
 
-    /** User action to investigate on negatives */
-    private final NegativeAction negativeAction = new NegativeAction();
+    /** User action to investigate on false negatives. */
+    private final FalseNegativeAction falseNegativeAction = new FalseNegativeAction();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -128,19 +117,16 @@ class ValidationPanel
      *
      * @param task           the current training activity
      * @param standardWidth  standard width for fields & buttons
-     * @param evaluator      the evaluator to validate
+     * @param classifier     the classifier to validate
      * @param selectionPanel user panel for selection
-     * @param trainingPanel  user panel for evaluator training
      */
     public ValidationPanel (Trainer.Task task,
                             String standardWidth,
-                            Classifier evaluator,
-                            SelectionPanel selectionPanel,
-                            TrainingPanel trainingPanel)
+                            Classifier classifier,
+                            SelectionPanel selectionPanel)
     {
-        this.evaluator = evaluator;
+        this.classifier = classifier;
         this.selectionPanel = selectionPanel;
-        this.trainingPanel = trainingPanel;
         task.addObserver(this);
 
         component = new Panel();
@@ -178,7 +164,7 @@ class ValidationPanel
     public void update (Observable obs,
                         Object unused)
     {
-        negativeAction.setEnabled(!negatives.isEmpty());
+        falseNegativeAction.setEnabled(!falseNegatives.isEmpty());
         falsePositiveAction.setEnabled(!falsePositives.isEmpty());
     }
 
@@ -196,30 +182,31 @@ class ValidationPanel
 
         // Validation title & progress bar
         int r = 1;
-        builder.addSeparator("Validation", cst.xyw(1, r, 7));
+        builder.addSeparator("Validation", cst.xyw(3, r, 5));
         builder.add(progressBar, cst.xyw(9, r, 7));
+        progressBar.setForeground(Color.ORANGE);
 
         r += 2; // ----------------------------
 
+        JButton validateButton = new JButton(validateAction);
+        validateButton.setToolTipText("Validate the evaluator on current base of samples");
+        builder.add(validateButton, cst.xy(3, r));
+
         builder.add(positiveValue.getLabel(), cst.xy(5, r));
         builder.add(positiveValue.getField(), cst.xy(7, r));
-        builder.add(negativeValue.getLabel(), cst.xy(9, r));
-        builder.add(negativeValue.getField(), cst.xy(11, r));
+        builder.add(falseNegativeValue.getLabel(), cst.xy(9, r));
+        builder.add(falseNegativeValue.getField(), cst.xy(11, r));
         builder.add(falsePositiveValue.getLabel(), cst.xy(13, r));
         builder.add(falsePositiveValue.getField(), cst.xy(15, r));
 
         r += 2; // ----------------------------
 
-        JButton validateButton = new JButton(validateAction);
-        validateButton.setToolTipText("Validate the evaluator on current base of s");
-
-        JButton negativeButton = new JButton(negativeAction);
-        negativeButton.setToolTipText("Display the impacted s for verification");
+        JButton negativeButton = new JButton(falseNegativeAction);
+        negativeButton.setToolTipText("Display the impacted samples for verification");
 
         JButton falsePositiveButton = new JButton(falsePositiveAction);
-        falsePositiveButton.setToolTipText("Display the impacted s for verification");
+        falsePositiveButton.setToolTipText("Display the impacted samples for verification");
 
-        builder.add(validateButton, cst.xy(3, r));
         builder.add(pcValue.getLabel(), cst.xy(5, r));
         builder.add(pcValue.getField(), cst.xy(7, r));
         builder.add(negativeButton, cst.xy(11, r));
@@ -231,73 +218,84 @@ class ValidationPanel
     //---------------//
     private void runValidation ()
     {
-        logger.info(
-                "Validating {} evaluator on {} base ...",
-                evaluator.getName(),
-                trainingPanel.useWhole() ? "whole" : "core");
+        logger.info("Validating {} evaluator ...", classifier.getName());
 
         // Empty the display
         positiveValue.setText("");
         pcValue.setText("");
-        negativeValue.setText("");
+        falseNegativeValue.setText("");
         falsePositiveValue.setText("");
-        negativeAction.setEnabled(false);
+        falseNegativeAction.setEnabled(false);
         falsePositiveAction.setEnabled(false);
 
-        negatives.clear();
+        falseNegatives.clear();
         falsePositives.clear();
 
         int positives = 0;
-        Collection<String> gNames = selectionPanel.getBase(trainingPanel.useWhole());
+        final List<Sample> samples = repository.getAllSamples();
 
         progressBar.setValue(0);
-        progressBar.setMaximum(gNames.size());
+        progressBar.setMaximum(samples.size());
 
         int index = 0;
 
-        for (String gName : gNames) {
-            index++;
+        for (Sample sample : samples) {
+            Evaluation[] evals = classifier.evaluate(
+                    sample,
+                    sample.getInterline(),
+                    1,
+                    Grades.validationMinGrade,
+                    Classifier.NO_CONDITIONS);
 
-            Sample sample = repository.getSample(gName, selectionPanel);
-
-            if (sample != null) {
-                Evaluation[] evals = evaluator.evaluate(
-                        sample,
-                        null,
-                        1,
-                        Grades.validationMinGrade,
-                        EnumSet.of(ALLOWED),
-                        null);
-
-                if (evals.length == 0) {
-                    negatives.add(gName);
-                    System.out.printf("%-35s not recognized%n", gName);
-                } else if (evals[0].shape.getPhysicalShape() == sample.getShape().getPhysicalShape()) {
-                    positives++;
-                } else {
-                    falsePositives.add(gName);
-                    System.out.printf(
-                            "%-35s mistaken for %s%n",
-                            gName,
-                            evals[0].shape.getPhysicalShape());
-                }
+            if (evals.length == 0) {
+                falseNegatives.add(sample);
+                System.out.printf("%-35s not recognized%n", sample.toString());
+            } else if (evals[0].shape.getPhysicalShape() == sample.getShape().getPhysicalShape()) {
+                positives++;
+            } else {
+                falsePositives.add(sample);
+                System.out.printf(
+                        "%-35s mistaken for %s%n",
+                        sample.toString(),
+                        evals[0].shape.getPhysicalShape());
             }
 
-            // Update progress bar
-            progressBar.setValue(index);
+            progressBar.setValue(++index); // Update progress bar
         }
 
-        int total = gNames.size();
+        int total = samples.size();
         double pc = ((double) positives * 100) / (double) total;
         String pcStr = String.format(" %5.2f%%", pc);
-        logger.info("{}Evaluator. Ratio={} : {}/{}", evaluator.getName(), pcStr, positives, total);
-        positiveValue.setValue(positives);
-        pcValue.setValue(pc);
-        negativeValue.setValue(negatives.size());
-        falsePositiveValue.setValue(falsePositives.size());
+        logger.info("{}Evaluator. Ratio={} : {}/{}", classifier.getName(), pcStr, positives, total);
+        positiveValue.setText(Integer.toString(positives));
+        pcValue.setText(String.format("%.2f", pc));
+        falseNegativeValue.setText(Integer.toString(falseNegatives.size()));
+        falsePositiveValue.setText(Integer.toString(falsePositives.size()));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //---------------------//
+    // FalseNegativeAction //
+    //---------------------//
+    private class FalseNegativeAction
+            extends AbstractAction
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public FalseNegativeAction ()
+        {
+            super("Verify");
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            SampleVerifier.getInstance().verify(falseNegatives);
+            SampleVerifier.getInstance().setVisible();
+        }
+    }
+
     //---------------------//
     // FalsePositiveAction //
     //---------------------//
@@ -316,29 +314,7 @@ class ValidationPanel
         public void actionPerformed (ActionEvent e)
         {
             SampleVerifier.getInstance().verify(falsePositives);
-            SampleVerifier.getInstance().setVisible(true);
-        }
-    }
-
-    //----------------//
-    // NegativeAction //
-    //----------------//
-    private class NegativeAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public NegativeAction ()
-        {
-            super("Verify");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            SampleVerifier.getInstance().verify(negatives);
-            SampleVerifier.getInstance().setVisible(true);
+            SampleVerifier.getInstance().setVisible();
         }
     }
 
@@ -361,17 +337,17 @@ class ValidationPanel
         {
             executor.execute(
                     new Runnable()
-                    {
-                        @Override
-                        public void run ()
-                        {
-                            setEnabled(false);
-                            runValidation();
-                            negativeAction.setEnabled(negatives.size() > 0);
-                            falsePositiveAction.setEnabled(!falsePositives.isEmpty());
-                            setEnabled(true);
-                        }
-                    });
+            {
+                @Override
+                public void run ()
+                {
+                    setEnabled(false);
+                    runValidation();
+                    falseNegativeAction.setEnabled(falseNegatives.size() > 0);
+                    falsePositiveAction.setEnabled(!falsePositives.isEmpty());
+                    setEnabled(true);
+                }
+            });
         }
     }
 }

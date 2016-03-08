@@ -171,9 +171,6 @@ public abstract class WellKnowns
     /** The folder where training material is stored. */
     public static final Path TRAIN_FOLDER = DATA_FOLDER.resolve("train");
 
-    /** The folder where symbols information is stored. */
-    public static final Path SYMBOLS_FOLDER = TRAIN_FOLDER.resolve("symbols");
-
     /** The default folder where benches data is stored. */
     public static final Path DEFAULT_BENCHES_FOLDER = DATA_FOLDER.resolve("benches");
 

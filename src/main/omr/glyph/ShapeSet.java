@@ -95,6 +95,7 @@ public class ShapeSet
             TIME_TWO_FOUR,
             TIME_THREE_FOUR,
             TIME_FIVE_FOUR,
+            TIME_THREE_EIGHT,
             TIME_SIX_EIGHT);
 
     /** All sorts of F clefs */
@@ -217,9 +218,9 @@ public class ShapeSet
     /** Core shapes for barlines. */
     public static final EnumSet<Shape> CoreBarlines = EnumSet.copyOf(
             Arrays.asList(Shape.THICK_BARLINE,
-                    Shape.THICK_CONNECTOR,
-                    Shape.THIN_BARLINE,
-                    Shape.THIN_CONNECTOR));
+                          Shape.THICK_CONNECTOR,
+                          Shape.THIN_BARLINE,
+                          Shape.THIN_CONNECTOR));
 
     /**
      * Predefined instances of ShapeSet.
@@ -248,14 +249,14 @@ public class ShapeSet
             shapesOf(
                     CoreBarlines,
                     shapesOf(DOUBLE_BARLINE,
-                            FINAL_BARLINE,
-                            REVERSE_FINAL_BARLINE,
-                            LEFT_REPEAT_SIGN,
-                            RIGHT_REPEAT_SIGN,
-                            BACK_TO_BACK_REPEAT_SIGN,
-                            BRACE,
-                            BRACKET,
-                            BRACKET_CONNECTOR)));
+                             FINAL_BARLINE,
+                             REVERSE_FINAL_BARLINE,
+                             LEFT_REPEAT_SIGN,
+                             RIGHT_REPEAT_SIGN,
+                             BACK_TO_BACK_REPEAT_SIGN,
+                             BRACE,
+                             BRACKET,
+                             BRACKET_CONNECTOR)));
 
     public static final ShapeSet Beams = new ShapeSet(
             BEAM,

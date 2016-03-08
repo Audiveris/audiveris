@@ -11,68 +11,70 @@
 // </editor-fold>
 package omr.classifier;
 
+import omr.OMR;
 import omr.WellKnowns;
 
-import omr.glyph.Glyph;
+import omr.classifier.SheetContainer.Descriptor;
+
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.Shape;
-import omr.glyph.SymbolGlyphDescriptor;
+import omr.glyph.ShapeSet;
 import omr.glyph.SymbolSample;
 
-import omr.sheet.Sheet;
+import omr.run.RunTable;
 
-import omr.ui.symbol.MusicFont;
+import omr.ui.OmrGui;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
 
-import omr.util.BlackList;
-import omr.util.FileUtil;
+import omr.util.StopWatch;
+import omr.util.Zip;
+
+import org.jdesktop.application.Application;
+import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import javax.swing.JOptionPane;
 
 /**
- * Class {@code SampleRepository} handles the store of known samples,
- * across multiple sheets (and possibly multiple OMR sessions).
+ * Class {@code SampleRepository} handles the store of {@link Sample} instances,
+ * across multiple sheets and possibly multiple OMR sessions.
  * <p>
- * A sample is known by its full name, whose standard format is
- * <B>sheetName/Shape.id.xml</B>, regardless of the area it is stored (this may be the <I>core</I>
- * area or the global <I>sheets</I> area augmented by the <I>samples</I> area).
- * It can also be an <I>artificial</I> sample built from a symbol icon,
- * in that case its full name is the similar formats <B>icons/Shape.xml</B> or
- * <B>icons/Shape.nn.xml</B> where "nn" is a differentiating number.
+ * The repository is implemented as a collection of {@link SampleSheet} instances, to ease the
+ * addition or removal of sheet samples as a whole.
  * <p>
- * The repository handles a private map of all de-serialized samples so far,
- * since the de-serialization is a rather expensive operation.
+ * A special kind of samples is provided by the use of a musical font with proper scaling. These
+ * font-based samples, though being artificial, are considered as part of the training material.
+ * There is exactly one font-base sample for every trainable shape, and this sample is always
+ * shown in first position among all samples of the same shape.
+ * All these font-based samples are gathered in the virtual {@link #SYMBOLS} container.
+ * <br>
+ * TODO: Provide support for symbols based on additional music fonts, such as Bravura.
  * <p>
- * It handles two bases : the "whole base" (all samples from sheets and samples folders) and the
- * "core base" (just the samples of the core, which is built as a selected subset of the whole
- * base).
- * These bases are accessible respectively by {@link #getWholeBase} and
- * {@link #getCoreBase} methods.
+ * <img alt="Sample management" src="doc-files/Samples.png">
+ *
  *
  * @author Hervé Bitteur
  */
@@ -80,157 +82,83 @@ public class SampleRepository
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(
             SampleRepository.class);
+
+    /** Standard interline value: {@value}. (Any value could fit, if used consistently) */
+    public static final int STANDARD_INTERLINE = 20;
 
     /** The single instance of this class. */
     private static volatile SampleRepository INSTANCE;
 
-    /** Extension for training files. */
-    private static final String FILE_EXTENSION = ".xml";
+    /** File name for images material. */
+    private static final String IMAGES_FILE_NAME = "images.zip";
 
-    /** Specific subdirectory for sheet samples. */
-    private static final Path sheetsFolder = WellKnowns.TRAIN_FOLDER.resolve("sheets");
+    /** File name for samples material. */
+    private static final String SAMPLES_FILE_NAME = "samples.zip";
 
-    /** Specific subdirectory for core samples. */
-    private static final Path coreFolder = WellKnowns.TRAIN_FOLDER.resolve("core");
+    /** File path for images material. */
+    private static final Path IMAGES_FILE = WellKnowns.TRAIN_FOLDER.resolve(IMAGES_FILE_NAME);
 
-    /** Specific subdirectory for isolated samples. */
-    private static final Path samplesFolder = WellKnowns.TRAIN_FOLDER.resolve("samples");
+    /** File path for training material. */
+    private static final Path SAMPLES_FILE = WellKnowns.TRAIN_FOLDER.resolve(SAMPLES_FILE_NAME);
 
-    /** Specific filter for sample files. */
-    private static final Filter<Path> sampleFilter = new Filter<Path>()
-    {
-        @Override
-        public boolean accept (Path path)
-        {
-            return Files.isDirectory(path) || FileUtil.getExtension(path).equals(FILE_EXTENSION);
-        }
-    };
-
-    /** Un/marshalling context for use with JAXB. */
-    private static volatile JAXBContext jaxbContext;
-
-    /** For comparing shape names. */
-    public static final Comparator<String> shapeComparator = new Comparator<String>()
-    {
-        @Override
-        public int compare (String s1,
-                            String s2)
-        {
-            String n1 = SampleRepository.shapeNameOf(s1);
-            String n2 = SampleRepository.shapeNameOf(s2);
-
-            return n1.compareTo(n2);
-        }
-    };
+    /** Special name to refer to font-based samples. */
+    private static final String SYMBOLS = "<Font-Based Symbols>";
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Core collection of samples. */
-    private volatile List<String> coreBase;
+    /** Sheets, mapped by their ID. */
+    private final Map<Integer, SampleSheet> idMap = new TreeMap<Integer, SampleSheet>();
 
-    /** Whole collection of samples. */
-    private volatile List<String> wholeBase;
+    /** Sheets, mapped by their image. */
+    private final Map<RunTable, SampleSheet> imageMap = new HashMap<RunTable, SampleSheet>();
 
-    /**
-     * Map of all samples de-serialized so far, using full sample name as key.
-     * Full sample name format is : sheetName/Shape.id.xml
-     */
-    private final Map<String, Sample> samplesMap = new TreeMap<String, Sample>();
+    /** Sheets, mapped by their samples. */
+    private final Map<Sample, SampleSheet> sampleMap = new HashMap<Sample, SampleSheet>();
 
-    /** Inverse map. */
-    private final Map<Sample, String> namesMap = new HashMap<Sample, String>();
+    /** Container for sheet descriptors. */
+    private SheetContainer sheetContainer = new SheetContainer();
+
+    /** Is the repository already loaded?. */
+    private volatile boolean loaded;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /** Private singleton constructor */
+    /** Private singleton constructor. */
     private SampleRepository ()
     {
+        // Set application exit listener
+        if (OMR.gui != null) {
+            OmrGui.getApplication().addExitListener(getExitListener());
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // fileNameOf //
-    //------------//
+    //-----------//
+    // addSample //
+    //-----------//
     /**
-     * Report the file name w/o extension of a gName.
+     * Add a new sample to the provided SampleSheet.
      *
-     * @param gName sample name, using format "folder/name.number.xml"
-     *              or "folder/name.xml"
-     * @return the 'name' or 'name.number' part of the format
+     * @param sample the sample to add, non-null
+     * @param sheet  the containing sample sheet
+     * @see #removeSample(Sample)
      */
-    public static String fileNameOf (String gName)
+    public void addSample (Sample sample,
+                           SampleSheet sheet)
     {
-        int slash = gName.indexOf('/');
-        String nameWithExt = gName.substring(slash + 1);
+        Objects.requireNonNull(sheet, "Cannot add a sample to a null sheet");
 
-        int lastDot = nameWithExt.lastIndexOf('.');
-
-        if (lastDot != -1) {
-            return nameWithExt.substring(0, lastDot);
-        } else {
-            return nameWithExt;
-        }
-    }
-
-    //-------------//
-    // getCoreBase //
-    //-------------//
-    /**
-     * Return the names of the core collection of samples.
-     *
-     * @param monitor on-line monitoring if any
-     * @return the core collection of recorded samples
-     */
-    public List<String> getCoreBase (Monitor monitor)
-    {
-        if (coreBase == null) {
-            synchronized (this) {
-                if (coreBase == null) {
-                    coreBase = loadCoreBase(monitor);
-                }
-            }
-        }
-
-        return coreBase;
-    }
-
-    //--------------//
-    // getGlyphName //
-    //--------------//
-    public String getGlyphName (Sample sample)
-    {
-        return namesMap.get(sample);
-    }
-
-    //-------------//
-    // getGlyphsIn //
-    //-------------//
-    /**
-     * Report the list of sample files that are contained within a given
-     * directory
-     *
-     * @param dir the containing directory
-     * @return the list of sample files
-     */
-    public synchronized List<Path> getGlyphsIn (Path dir)
-    {
-        Path[] files = listLegalFiles(dir);
-
-        if (files != null) {
-            return Arrays.asList(files);
-        } else {
-            logger.warn("Cannot get files list from dir {}", dir);
-
-            return new ArrayList<Path>();
-        }
+        sheet.addSample(sample);
+        sampleMap.put(sample, sheet);
     }
 
     //-------------//
     // getInstance //
     //-------------//
     /**
-     * Report the single instance of this class, after creating it if
-     * needed.
+     * Report the single instance of this class, after creating it if needed.
      *
      * @return the single instance
      */
@@ -244,412 +172,518 @@ public class SampleRepository
     }
 
     //-----------//
-    // getSample //
+    // isSymbols //
     //-----------//
     /**
-     * Return a sample knowing its full sample name, which is the name of
-     * the corresponding training material.
-     * If not already done, the sample is de-serialized from the training file,
-     * searching first in the icons area, then in the train area.
+     * Report whether the provided sheet name is a font-based symbols sheet
      *
-     * @param gName   the full sample name (format is: sheetName/Shape.id.xml)
-     * @param monitor the monitor, if any, to be kept informed of sample loading
-     * @return the sample instance if found, null otherwise
+     * @param sheetName provided sheet name
+     * @return true if font-based symbols
      */
-    public synchronized Sample getSample (String gName,
-                                          Monitor monitor)
+    public static boolean isSymbols (String sheetName)
     {
-        // First, try the map of samples
-        Sample sample = samplesMap.get(gName);
+        return sheetName.startsWith("<");
+    }
 
-        if (sample == null) {
-            // If failed, actually load the sample from XML backup file.
-            if (isIcon(gName)) {
-                sample = buildSymbolSample(gName);
+    //-----------------//
+    // getExitListener //
+    //-----------------//
+    public final Application.ExitListener getExitListener ()
+    {
+        return new RepositoryExitListener();
+    }
+
+    //-----------------//
+    // checkAllSamples //
+    //-----------------//
+    /**
+     * Run checks on all samples to detect samples with identical run table
+     * (while having identical interline value).
+     * <p>
+     * WRONG: Having two samples that share the same run table, but are assigned different shapes,
+     * would seriously impact classifier training and must be fixed <b>manually</b>.
+     * TODO: provide help to address these cases.
+     * <p>
+     * REDUNDANT: Even if they are assigned the same shape, only one of these samples should be kept
+     * for optimal training, the others are reported via the returned purge list.
+     *
+     * @return the collection of samples to purge (REDUNDANT ones, not the WRONG ones)
+     */
+    public List<Sample> checkAllSamples ()
+    {
+        List<Sample> allSamples = getAllSamples();
+
+        // Sort by weight, then by sheet ID
+        Collections.sort(
+                allSamples,
+                new Comparator<Sample>()
+        {
+            @Override
+            public int compare (Sample s1,
+                                Sample s2)
+            {
+                int comp = Integer.compare(s1.getWeight(), s2.getWeight());
+
+                if (comp != 0) {
+                    return comp;
+                }
+
+                return Integer.compare(getSheetId(s1), getSheetId(s2));
+            }
+        });
+
+        List<Sample> purged = new ArrayList<Sample>();
+        int n = allSamples.size();
+        logger.debug("Checking {} samples...", n);
+
+        boolean[] deleted = new boolean[n];
+
+        for (int i = 0; i < n; i++) {
+            if (deleted[i]) {
+                continue;
+            }
+
+            final Sample sample = allSamples.get(i);
+            final int weight = sample.getWeight();
+            final RunTable runTable = sample.getRunTable();
+            final int interline = sample.getInterline();
+
+            for (int j = i + 1; j < n; j++) {
+                Sample s = allSamples.get(j);
+
+                if (deleted[j]) {
+                    break;
+                }
+
+                if (s.getWeight() != weight) {
+                    break;
+                }
+
+                if ((s.getInterline() == interline) && s.getRunTable().equals(runTable)) {
+                    if (s.getShape() != sample.getShape()) {
+                        logger.warn(
+                                "Conflicting shapes between {}/{} and {}/{}",
+                                getSheetId(sample),
+                                sample,
+                                getSheetId(s),
+                                s);
+                    } else {
+                        logger.info(
+                                "Same runtable for {}/{} & {}/{}",
+                                getSheetId(sample),
+                                sample,
+                                getSheetId(s),
+                                s);
+                        purged.add(s);
+                        deleted[j] = true;
+                    }
+                }
+            }
+        }
+
+        if (!purged.isEmpty()) {
+            logger.info("To be purged: {} / {}", purged.size(), allSamples.size());
+        }
+
+        return purged;
+    }
+
+    //-----------//
+    // findSheet //
+    //-----------//
+    /**
+     * Find out (or create) the SampleSheet that corresponds to provided name and/or
+     * image.
+     * <p>
+     * If sheet image is provided, the repository is searched for the image.
+     * <p>
+     * If an identical sheet image already exists, it is used and the provided name is kept as an
+     * alias.
+     * Otherwise, a new sample sheet is created.
+     * <p>
+     * If a sheet name is provided but no sheet image, we allocate a sheet with the provided name.
+     * Note that this is not reliable.
+     *
+     * @param name  name of containing sheet, non-null if image is null
+     * @param image sheet binary image, if any, strongly recommended
+     * @return the found or created sheet, where samples can be added to
+     */
+    public SampleSheet findSheet (String name,
+                                  RunTable image)
+    {
+        if ((name == null) || ((name.isEmpty()) && (image == null))) {
+            throw new IllegalArgumentException("findSheet() needs sheet name or image");
+        }
+
+        SampleSheet sheet;
+
+        if (image != null) {
+            final int hash = image.persistentHashCode();
+            sheet = imageMap.get(image);
+
+            if (sheet == null) {
+                // Is there a not yet loaded table?
+                List<Descriptor> descs = sheetContainer.getDescriptors(hash);
+
+                if (!descs.isEmpty()) {
+                    try {
+                        final Path root = Zip.openFileSystem(IMAGES_FILE);
+
+                        for (Descriptor desc : descs) {
+                            final Path file = root.resolve(Integer.toString(desc.id)).resolve(
+                                    SampleSheet.IMAGE_FILE_NAME);
+                            final RunTable rt = RunTable.unmarshal(file);
+
+                            if ((rt != null) && rt.equals(image)) {
+                                if (!desc.isAlias(name)) {
+                                    logger.info("Identical image for {} and {}", name, desc);
+                                    desc.addName(name);
+                                }
+
+                                sheet = idMap.get(desc.id);
+                                sheet.setImage(rt);
+                                imageMap.put(rt, sheet);
+
+                                break;
+                            }
+                        }
+
+                        root.getFileSystem().close();
+                    } catch (IOException ex) {
+                    }
+                }
+
+                if (sheet == null) {
+                    // Allocate a brand new descriptor
+                    int id = sheetContainer.getNewId();
+                    Descriptor desc = new Descriptor(id, hash, Arrays.asList(name));
+                    sheetContainer.addDescriptor(desc);
+
+                    // Allocate a brand new sheet
+                    sheet = new SampleSheet(id);
+                    idMap.put(id, sheet);
+                    imageMap.put(image, sheet);
+                    sheet.setImage(image);
+                }
+            }
+        } else {
+            // We have no image, just a sheet name. This is dangerous!
+            Descriptor desc = sheetContainer.getDescriptor(name);
+
+            if (desc != null) {
+                return idMap.get(desc.id);
             } else {
-                Path path = WellKnowns.TRAIN_FOLDER.resolve(gName);
+                // Allocate a brand new descriptor
+                int id = sheetContainer.getNewId();
+                desc = new Descriptor(id, null, Arrays.asList(name));
+                sheetContainer.addDescriptor(desc);
 
-                if (!Files.exists(path)) {
-                    logger.warn("Unable to find file for sample {}", gName);
-
-                    return null;
-                }
-
-                sample = loadSample(gName, path);
-            }
-
-            if (sample != null) {
-                samplesMap.put(gName, sample);
-                namesMap.put(sample, gName);
-            }
-
-            if (monitor != null) {
-                monitor.loadedGlyph(gName);
+                // Allocate a brand new sheet
+                sheet = new SampleSheet(id);
+                idMap.put(id, sheet);
             }
         }
 
-        return sample;
+        return sheet;
     }
 
-    //----------------------//
-    // getSampleDirectories //
-    //----------------------//
+    //-------------------//
+    // getAllDescriptors //
+    //-------------------//
     /**
-     * Report the list of all samples directories found in the training
-     * material.
+     * Report all the descriptors in repository.
      *
-     * @return the list of samples directories
+     * @return all the sheets descriptors
      */
-    public List<Path> getSampleDirectories ()
+    public List<Descriptor> getAllDescriptors ()
     {
-        return getSubdirectories(samplesFolder);
+        return sheetContainer.getAllDescriptors();
     }
 
-    //------------------//
-    // getSamplesFolder //
-    //------------------//
+    //---------------//
+    // getAllSamples //
+    //---------------//
     /**
-     * Report the folder where isolated samples samples are stored.
+     * Report all the samples in the repository.
      *
-     * @return the directory of isolated samples material
+     * @return all the repository samples
      */
-    public Path getSamplesFolder ()
+    public List<Sample> getAllSamples ()
     {
-        return samplesFolder;
-    }
+        final List<Sample> allSamples = new ArrayList<Sample>();
 
-    //---------------------//
-    // getSheetDirectories //
-    //---------------------//
-    /**
-     * Report the list of all sheet directories found in the training material.
-     *
-     * @return the list of sheet directories
-     */
-    public List<Path> getSheetDirectories ()
-    {
-        return getSubdirectories(sheetsFolder);
-    }
-
-    //-----------------//
-    // getSheetsFolder //
-    //-----------------//
-    /**
-     * Report the folder where all sheet samples are stored.
-     *
-     * @return the directory of all sheets material
-     */
-    public Path getSheetsFolder ()
-    {
-        return sheetsFolder;
-    }
-
-    //--------------//
-    // getWholeBase //
-    //--------------//
-    /**
-     * Return the names of the whole collection of samples.
-     *
-     * @return the whole collection of recorded samples
-     */
-    public List<String> getWholeBase (Monitor monitor)
-    {
-        if (wholeBase == null) {
-            synchronized (this) {
-                if (wholeBase == null) {
-                    wholeBase = loadWholeBase(monitor);
-                }
-            }
+        for (SampleSheet sheet : idMap.values()) {
+            allSamples.addAll(sheet.getAllSamples());
         }
 
-        return wholeBase;
+        return allSamples;
     }
 
-    //--------//
-    // isIcon //
-    //--------//
-    public boolean isIcon (String gName)
+    //----------------//
+    // getSampleSheet //
+    //----------------//
+    /**
+     * Report the SampleSheet that contains the provided sample
+     *
+     * @param sample the provided sample
+     * @return the containing sheet
+     */
+    public SampleSheet getSampleSheet (Sample sample)
     {
-        return isIcon(Paths.get(gName));
+        return sampleMap.get(sample);
     }
 
-    //---------------//
-    // isIconsFolder //
-    //---------------//
-    public boolean isIconsFolder (Path folder)
+    //------------//
+    // getSamples //
+    //------------//
+    /**
+     * Report in the SampleSheet whose ID is provided, all samples assigned the
+     * desired shape.
+     *
+     * @param id    ID of sample sheet
+     * @param shape desired shape
+     * @return the list of samples related to shape in provided sheet
+     */
+    public List<Sample> getSamples (int id,
+                                    Shape shape)
     {
-        return folder.equals(WellKnowns.SYMBOLS_FOLDER.getFileName());
+        SampleSheet sampleSheet = idMap.get(id);
+
+        if (sampleSheet != null) {
+            return sampleSheet.getSamples(shape);
+        }
+
+        return Collections.EMPTY_LIST;
+    }
+
+    //-----------//
+    // getShapes //
+    //-----------//
+    /**
+     * Report all the shapes for which the provided sheet has concrete samples.
+     *
+     * @param sheetName name of the sample sheet
+     * @return the list of (non-empty) shapes
+     */
+    public Set<Shape> getShapes (String sheetName)
+    {
+        // Symbols?
+        if (isSymbols(sheetName)) {
+            return ShapeSet.allPhysicalShapes;
+        }
+
+        // Standard sheet
+        SampleSheet sampleSheet = idMap.get(sheetName);
+
+        if (sampleSheet != null) {
+            return sampleSheet.getShapes();
+        }
+
+        return Collections.EMPTY_SET;
+    }
+
+    //-----------//
+    // getShapes //
+    //-----------//
+    /**
+     * Report all the shapes for which the provided sheet has concrete samples.
+     *
+     * @param descriptor descriptor of the sample sheet
+     * @return the list of (non-empty) shapes
+     */
+    public Set<Shape> getShapes (Descriptor descriptor)
+    {
+        // Symbols?
+        if (SampleSheet.isSymbols(descriptor.id)) {
+            return ShapeSet.allPhysicalShapes;
+        }
+
+        // Standard sheet
+        SampleSheet sampleSheet = idMap.get(descriptor.id);
+
+        if (sampleSheet != null) {
+            return sampleSheet.getShapes();
+        }
+
+        return Collections.EMPTY_SET;
+    }
+
+    //--------------------//
+    // getSheetDescriptor //
+    //--------------------//
+    /**
+     * Report the descriptor of the sample sheet that contains the provided sample.
+     *
+     * @param sample provided sample
+     * @return the descriptor of containing SampleSheet
+     */
+    public Descriptor getSheetDescriptor (Sample sample)
+    {
+        SampleSheet sampleSheet = sampleMap.get(sample);
+
+        if (sampleSheet != null) {
+            return sheetContainer.getDescriptor(sampleSheet.getId());
+        }
+
+        return null;
+    }
+
+    //------------//
+    // getSheetId //
+    //------------//
+    /**
+     * Report the ID of the sample sheet that contains the provided sample.
+     *
+     * @param sample provided sample
+     * @return the containing SampleSheet ID
+     */
+    public Integer getSheetId (Sample sample)
+    {
+        SampleSheet sampleSheet = sampleMap.get(sample);
+
+        if (sampleSheet != null) {
+            return sampleSheet.getId();
+        }
+
+        return null;
     }
 
     //----------//
     // isLoaded //
     //----------//
-    public synchronized boolean isLoaded (String gName)
+    /**
+     * @return the loaded
+     */
+    public boolean isLoaded ()
     {
-        return samplesMap.get(gName) != null;
+        return loaded;
     }
 
-    //----------------//
-    // recordOneGlyph //
-    //----------------//
-    /**
-     * Record one sample on disk (into the samples folder).
-     *
-     * @param shape the assigned shape
-     * @param glyph the glyph to record
-     * @param sheet its containing sheet
-     */
-    public void recordOneGlyph (Shape shape,
-                                Glyph glyph,
-                                Sheet sheet)
+    //------------//
+    // isModified //
+    //------------//
+    public boolean isModified ()
     {
-        Shape recordableShape = getRecordableShape(shape);
+        if (false) {
+            // Force writing of everything
+            sheetContainer.setModified(true);
 
-        if (recordableShape != null) {
-            // Prepare target directory, based on sheet id
-            Path sheetDir = getSamplesFolder().resolve(sheet.getId());
-
-            try {
-                // Make sure related directory chain exists
-                Files.createDirectories(sheetDir);
-
-                Sample sample = new Sample(
-                        glyph.getLeft(),
-                        glyph.getTop(),
-                        glyph.getRunTable(),
-                        sheet.getInterline(),
-                        glyph.getId(),
-                        recordableShape);
-
-                if (recordSample(sample, sheetDir) > 0) {
-                    logger.info(
-                            "Stored {} {} into {}",
-                            glyph.idString(),
-                            recordableShape,
-                            sheetDir);
-                }
-            } catch (IOException ex) {
-                logger.warn("Cannot create folder " + sheetDir, ex);
+            for (SampleSheet sheet : idMap.values()) {
+                sheet.setModified(true);
             }
-        } else {
-            logger.warn("Not recordable {}", glyph);
-        }
-    }
-
-    //-------------------//
-    // recordSheetGlyphs //
-    //-------------------//
-    /**
-     * Store all known samples of the provided sheet as separate XML
-     * files, so that they can be later reloaded to train an evaluator.
-     * We store sample for which Shape is not null, and different from NOISE and
-     * STEM (CLUTTER is thus stored as well).
-     *
-     * <p>
-     * STRUCTURE shapes are stored in a parallel sub-directory so that they
-     * don't get erased by shapes of their leaves.
-     *
-     * @param sheet           the sheet whose samples are to be stored
-     * @param emptyStructures flag to specify if the Structure directory must be
-     *                        emptied beforehand
-     */
-    public void recordSheetGlyphs (Sheet sheet,
-                                   boolean emptyStructures)
-    {
-        //        // Prepare target directory
-        //        Path sheetDir = getSheetsFolder().resolve(sheet.getId());
-        //
-        //        // Make sure related directory chain exists
-        //        if (Files.exists(sheetDir)) {
-        //            deleteXmlFiles(sheetDir.toFile());
-        //        } else {
-        //            try {
-        //                Files.createDirectories(sheetDir);
-        //                logger.info("Creating directory {}", sheetDir);
-        //            } catch (IOException ex) {
-        //                logger.warn("Error creating dir " + sheetDir, ex);
-        //            }
-        //        }
-        //
-        //        // Now record each relevant sample
-        //        int glyphNb = 0;
-        //
-        //        for (GlyphLayer layer : GlyphLayer.concreteValues()) {
-        //            for (Sample sample : sheet.getGlyphIndex().getGlyphs(layer)) {
-        //                Shape shape = getRecordableShape(sample);
-        //
-        //                if (shape != null) {
-        //                    glyphNb += recordSample(sample, shape, sheetDir);
-        //                }
-        //            }
-        //        }
-        //
-        //        // Refresh sample populations
-        //        refreshBases();
-        //
-        //        logger.info("{} samples stored from {}", glyphNb, sheet.getId());
-    }
-
-    //--------------//
-    // refreshBases //
-    //--------------//
-    public void refreshBases ()
-    {
-        wholeBase = null;
-        coreBase = null;
-    }
-
-    //-------------//
-    // removeGlyph //
-    //-------------//
-    /**
-     * Remove a sample from the repository memory (this does not delete
-     * the actual sample file on disk).
-     * We also remove it from the various bases which is safer.
-     *
-     * @param gName the full sample name
-     */
-    public synchronized void removeGlyph (String gName)
-    {
-        samplesMap.remove(gName);
-        refreshBases();
-    }
-
-    //-------------//
-    // setCoreBase //
-    //-------------//
-    /**
-     * Define the provided collection as the core training material.
-     *
-     * @param base the provided collection
-     */
-    public synchronized void setCoreBase (List<String> base)
-    {
-        coreBase = base;
-    }
-
-    //-------------//
-    // shapeNameOf //
-    //-------------//
-    /**
-     * Report the shape name of a gName.
-     *
-     * @param gName sample name, using format "folder/name.number.xml" or
-     *              "folder/name.xml"
-     * @return the 'name' part of the format
-     */
-    public static String shapeNameOf (String gName)
-    {
-        int slash = gName.indexOf('/');
-        String nameWithExt = gName.substring(slash + 1);
-
-        int firstDot = nameWithExt.indexOf('.');
-
-        if (firstDot != -1) {
-            return nameWithExt.substring(0, firstDot);
-        } else {
-            return nameWithExt;
-        }
-    }
-
-    //---------//
-    // shapeOf //
-    //---------//
-    /**
-     * Infer the shape of a sample directly from its full name.
-     *
-     * @param gName the full sample name
-     * @return the shape of the known sample
-     */
-    public Shape shapeOf (String gName)
-    {
-        return shapeOf(Paths.get(gName));
-    }
-
-    //---------------//
-    // storeCoreBase //
-    //---------------//
-    /**
-     * Store the core training material.
-     */
-    public synchronized void storeCoreBase ()
-    {
-        if (coreBase == null) {
-            logger.warn("Core base is null");
-
-            return;
         }
 
-        // Create the core directory if needed
+        if (sheetContainer.isModified()) {
+            return true;
+        }
+
+        for (SampleSheet sheet : idMap.values()) {
+            if (sheet.isModified()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //----------------//
+    // loadRepository //
+    //----------------//
+    /**
+     * Load the training material (font-based symbols as well as concrete samples).
+     *
+     * @param withBinaries if true, sheet binaries are also loaded.
+     */
+    public void loadRepository (boolean withBinaries)
+    {
+        final StopWatch watch = new StopWatch("Loading repository");
+
         try {
-            Files.createDirectories(coreFolder);
-        } catch (IOException ex) {
-            logger.warn("Cannot create directory " + coreBase, ex);
+            watch.start("open file");
 
-            return;
-        }
+            final Path samplesRoot = Zip.openFileSystem(SAMPLES_FILE);
 
-        // Empty the directory
-        FileUtil.deleteAll(coreFolder.toFile().listFiles());
+            watch.start("loadContainer");
 
-        // Copy the sample and icon files into the core directory
-        int copyNb = 0;
+            {
+                SheetContainer container = SheetContainer.unmarshal(samplesRoot);
 
-        for (String gName : coreBase) {
-            final boolean isIcon = isIcon(gName);
-            final Path source = isIcon ? WellKnowns.SYMBOLS_FOLDER.resolveSibling(gName)
-                    : WellKnowns.TRAIN_FOLDER.resolve(gName);
+                if (container != null) {
+                    if (logger.isDebugEnabled()) {
+                        container.dump();
+                    }
 
-            final Path target = coreFolder.resolve(gName);
-
-            try {
-                Files.createDirectories(target.getParent());
-                logger.debug("Storing {} as core", target);
-
-                if (isIcon) {
-                    Files.createFile(target);
-                } else {
-                    Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+                    sheetContainer = container;
                 }
+            }
 
-                copyNb++;
-            } catch (IOException ex) {
-                logger.warn("Cannot copy {} to {}", source, target);
+            //            watch.start("buildSymbols");
+            //            buildSymbols();
+            //
+            watch.start("loadSamples");
+            loadSamples(samplesRoot);
+
+            if (withBinaries) {
+                watch.start("loadImages");
+
+                final Path imagesRoot = Zip.openFileSystem(IMAGES_FILE);
+                loadImages(imagesRoot);
+                imagesRoot.getFileSystem().close();
+            }
+
+            samplesRoot.getFileSystem().close();
+            loaded = true;
+        } catch (IOException ex) {
+            logger.warn("Error loading repository " + ex, ex);
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
             }
         }
-
-        logger.info("{} samples copied as core training material", copyNb);
     }
 
-    //
-    //    //-----------------//
-    //    // unloadIconsFrom //
-    //    //-----------------//
-    //    public void unloadIconsFrom (List<String> names)
-    //    {
-    //        for (String gName : names) {
-    //            if (isIcon(gName)) {
-    //                if (isLoaded(gName)) {
-    //                    Sample sample = getSample(gName, null);
-    //
-    //                    for (Section section : sample.getMembers()) {
-    //                        section.clearViews();
-    //                        section.delete();
-    //                    }
-    //                }
-    //
-    //                unloadSample(gName);
-    //            }
-    //        }
-    //    }
-    //
     //--------------//
-    // unloadSample //
+    // removeSample //
     //--------------//
-    synchronized void unloadSample (String gName)
+    /**
+     * Remove the provided sample from the repository.
+     *
+     * @param sample the sample to remove
+     * @see #addSample(Sample, SampleSheet)
+     */
+    public void removeSample (Sample sample)
     {
-        if (samplesMap.containsKey(gName)) {
-            samplesMap.remove(gName);
+        SampleSheet sampleSheet = getSampleSheet(sample);
+        sampleSheet.removeSample(sample);
+        sampleMap.remove(sample);
+    }
+
+    //-----------------//
+    // storeRepository //
+    //-----------------//
+    public void storeRepository ()
+    {
+        try {
+            final Path samplesRoot = Files.exists(SAMPLES_FILE) ? Zip.openFileSystem(SAMPLES_FILE)
+                    : Zip.createFileSystem(SAMPLES_FILE);
+            final Path imagesRoot = Files.exists(IMAGES_FILE) ? Zip.openFileSystem(IMAGES_FILE)
+                    : Zip.createFileSystem(IMAGES_FILE);
+
+            // Container
+            sheetContainer.marshal(samplesRoot);
+
+            // Samples
+            for (SampleSheet sampleSheet : idMap.values()) {
+                if (sampleSheet.isModified()) {
+                    sampleSheet.marshal(samplesRoot, imagesRoot);
+                }
+            }
+
+            samplesRoot.getFileSystem().close();
+            imagesRoot.getFileSystem().close();
+            logger.debug("storeRepository done");
+        } catch (Throwable ex) {
+            logger.warn("Error storing repository to " + SAMPLES_FILE + " " + ex, ex);
         }
     }
 
@@ -658,14 +692,13 @@ public class SampleRepository
     //-------------------//
     /**
      * Build an artificial sample from a symbol descriptor, in order to
-     * train an evaluator even when we have no ground-truth sample.
+     * train a classifier even when we have no concrete sample.
      *
-     * @param gName path to the symbol descriptor on disk
+     * @param shape the symbol shape
      * @return the sample built, or null if failed
      */
-    private Sample buildSymbolSample (String gName)
+    private Sample buildSymbolSample (Shape shape)
     {
-        Shape shape = shapeOf(gName);
         Sample sample = null;
 
         // Make sure we have the drawing available for this shape
@@ -677,58 +710,42 @@ public class SampleRepository
         }
 
         if (symbol != null) {
-            logger.debug("Building symbol sample {}", gName);
-
-            Path path = WellKnowns.TRAIN_FOLDER.resolve(gName);
-
-            if (Files.exists(path)) {
-                try {
-                    InputStream is = new FileInputStream(path.toFile());
-                    SymbolGlyphDescriptor desc = SymbolGlyphDescriptor.loadFromXmlStream(is);
-                    is.close();
-
-                    logger.debug("Descriptor {}", desc);
-
-                    sample = SymbolSample.create(shape, symbol, MusicFont.DEFAULT_INTERLINE);
-                } catch (Exception ex) {
-                    logger.warn("Cannot process " + path, ex);
-                }
-            }
+            sample = SymbolSample.create(shape, symbol, STANDARD_INTERLINE);
+            sample.setSymbol(true);
         } else {
-            logger.warn("No symbol for {}", gName);
+            logger.warn("No symbol for {}", shape);
         }
 
         return sample;
     }
 
-    //----------------//
-    // deleteXmlFiles //
-    //----------------//
-    private void deleteXmlFiles (File dir)
+    //--------------//
+    // buildSymbols //
+    //--------------//
+    /**
+     * Build the artificial font-based symbols.
+     * <p>
+     * TODO: support additional fonts.
+     */
+    private void buildSymbols ()
     {
-        File[] files = dir.listFiles();
+        int id = -1;
+        Descriptor desc = sheetContainer.getDescriptor(id);
 
-        for (File file : files) {
-            if (FileUtil.getExtension(file).equals(FILE_EXTENSION)) {
-                if (!file.delete()) {
-                    logger.warn("Could not delete {}", file);
-                }
-            }
-        }
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(Sample.class);
+        if (desc == null) {
+            desc = new Descriptor(id, null, Arrays.asList(SYMBOLS));
+            sheetContainer.addDescriptor(desc);
         }
 
-        return jaxbContext;
+        SampleSheet symbolSheet = new SampleSheet(id);
+
+        for (Shape shape : ShapeSet.allPhysicalShapes) {
+            Sample sample = buildSymbolSample(shape);
+            symbolSheet.addSample(sample);
+            sampleMap.put(sample, symbolSheet);
+        }
+
+        idMap.put(id, symbolSheet);
     }
 
     //--------------------//
@@ -755,282 +772,117 @@ public class SampleRepository
         }
     }
 
-    //-------------------//
-    // getSubdirectories //
-    //-------------------//
-    private synchronized List<Path> getSubdirectories (Path folder)
-    {
-        List<Path> dirs = new ArrayList<Path>();
-        Path[] paths = listLegalFiles(folder);
-
-        for (Path path : paths) {
-            if (Files.isDirectory(path)) {
-                dirs.add(path);
-            }
-        }
-
-        return dirs;
-    }
-
-    //-------------//
-    // glyphNameOf //
-    //-------------//
-    /**
-     * Build the full sample name (which will be the unique sample name)
-     * from the file which contains the sample description.
-     *
-     * @param file the sample backup file
-     * @return the unique sample name
-     */
-    private String glyphNameOf (Path file)
-    {
-        if (isIcon(file)) {
-            return file.getParent().getFileName() + File.separator + file.getFileName();
-        } else {
-            return file.getParent().getParent().getFileName() + File.separator
-                   + file.getParent().getFileName() + File.separator + file.getFileName();
-        }
-    }
-
-    //--------//
-    // isIcon //
-    //--------//
-    private boolean isIcon (Path file)
-    {
-        Path folder = file.getParent().getFileName();
-
-        return isIconsFolder(folder);
-    }
-
-    //-------------//
-    // jaxbMarshal //
-    //-------------//
-    private void jaxbMarshal (Sample sample,
-                              OutputStream os)
-            throws JAXBException, Exception
-    {
-        Marshaller m = getJaxbContext().createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(sample, os);
-    }
-
-    //---------------//
-    // jaxbUnmarshal //
-    //---------------//
-    private Sample jaxbUnmarshal (InputStream is)
-            throws JAXBException
-    {
-        Unmarshaller um = getJaxbContext().createUnmarshaller();
-
-        return (Sample) um.unmarshal(is);
-    }
-
-    //----------------//
-    // listLegalFiles //
-    //----------------//
-    private Path[] listLegalFiles (Path dir)
-    {
-        return new BlackList(dir).listFiles(sampleFilter);
-    }
-
-    //----------//
-    // loadBase //
-    //----------//
-    /**
-     * Build the map and return the collection of samples names in a
-     * collection of directories.
-     *
-     * @param paths   the array of paths to the directories to load
-     * @param monitor the observing entity if any
-     * @return the collection of loaded samples names
-     */
-    private synchronized List<String> loadBase (Path[] paths,
-                                                Monitor monitor)
-    {
-        // Files in the provided directory & its subdirectories
-        List<Path> files = new ArrayList<Path>(4000);
-
-        for (Path path : paths) {
-            loadDirectory(path, files);
-        }
-
-        if (monitor != null) {
-            monitor.setTotalGlyphs(files.size());
-        }
-
-        // Now, collect the samples names
-        List<String> base = new ArrayList<String>(files.size());
-
-        for (Path file : files) {
-            base.add(glyphNameOf(file));
-        }
-
-        logger.debug("{} samples names collected", files.size());
-
-        return base;
-    }
-
-    //--------------//
-    // loadCoreBase //
-    //--------------//
-    /**
-     * Build the collection of only the core samples.
-     *
-     * @return the collection of core samples names
-     */
-    private List<String> loadCoreBase (Monitor monitor)
-    {
-        return loadBase(new Path[]{coreFolder}, monitor);
-    }
-
-    //---------------//
-    // loadDirectory //
-    //---------------//
-    /**
-     * Retrieve recursively all files in the hierarchy starting at
-     * the given directory, and append them in the provided file list.
-     * If a black list exists in a directory, then all black-listed files
-     * (and direct sub-directories) hosted in this directory are skipped.
-     *
-     * @param dir the top directory where search is launched
-     * @param all the list to be augmented by found files
-     */
-    private void loadDirectory (Path dir,
-                                List<Path> all)
-    {
-        Path[] files = listLegalFiles(dir);
-
-        if (files != null) {
-            logger.debug("Browsing directory {} total:{}", dir, files.length);
-
-            for (Path file : files) {
-                if (Files.isDirectory(file)) {
-                    loadDirectory(file, all); // Recurse through it
-                } else {
-                    all.add(file);
-                }
-            }
-        } else {
-            logger.warn("Directory {} is empty", dir);
-        }
-    }
-
     //------------//
-    // loadSample //
+    // loadImages //
     //------------//
-    private Sample loadSample (String gName,
-                               Path path)
+    /**
+     * Unmarshal all the sheet images available in training material.
+     */
+    private void loadImages (final Path root)
     {
-        logger.debug("Loading sample {}", path);
-
-        Sample sample = null;
-        InputStream is = null;
-
         try {
-            is = new FileInputStream(path.toFile());
-            sample = jaxbUnmarshal(is);
-        } catch (Exception ex) {
-            logger.warn("Could not unmarshal file {}", path);
-            ex.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (Exception ignored) {
+            Files.walkFileTree(
+                    root,
+                    new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs)
+                        throws IOException
+                {
+                    final String fileName = file.getFileName().toString();
+
+                    if (fileName.equals(SampleSheet.IMAGE_FILE_NAME)) {
+                        RunTable runTable = RunTable.unmarshal(file);
+
+                        if (runTable != null) {
+                            Path parent = file.getParent();
+                            String rel = root.relativize(parent).toString();
+
+                            if (Character.isDigit(rel.charAt(0))) {
+                                // Standard
+                                int id = Integer.decode(rel);
+                                logger.debug("id: {}", id);
+
+                                SampleSheet sampleSheet = idMap.get(id);
+
+                                if (sampleSheet != null) {
+                                    sampleSheet.setImage(runTable);
+                                    logger.info("Loaded {}", file);
+                                }
+                            } else {
+                                //                                // Migration
+                                //                                Descriptor desc = sheetContainer.getDescriptor(rel);
+                                //                                SampleSheet sampleSheet = idMap.get(desc.id);
+                                //
+                                //                                if (sampleSheet != null) {
+                                //                                    sampleSheet.setBinaryTable(runTable);
+                                //                                    logger.info("Loaded {}", file);
+                                //                                }
+                            }
+                        }
+                    }
+
+                    return FileVisitResult.CONTINUE;
                 }
-            }
-        }
+            });
 
-        return sample;
-    }
-
-    //---------------//
-    // loadWholeBase //
-    //---------------//
-    /**
-     * Build the complete map of all samples recorded so far, beginning
-     * by the builtin icon samples, then the recorded samples
-     * (sheets & samples).
-     *
-     * @return a collection of (known) samples names
-     */
-    private List<String> loadWholeBase (Monitor monitor)
-    {
-        return loadBase(
-                new Path[]{WellKnowns.SYMBOLS_FOLDER, sheetsFolder, samplesFolder},
-                monitor);
-    }
-
-    //--------------//
-    // recordSample //
-    //--------------//
-    /**
-     * Record a sample, using the precise shape into the given directory.
-     *
-     * @param sample the sample to record
-     * @param dir    the target directory
-     * @return 1 if OK, 0 otherwise
-     */
-    private int recordSample (Sample sample,
-                              Path dir)
-    {
-        OutputStream os = null;
-
-        try {
-            logger.debug("Storing {}", sample);
-
-            StringBuilder sb = new StringBuilder();
-            sb.append(sample.shape);
-            sb.append(".");
-            sb.append(String.format("%04d", sample.getId()));
-            sb.append(FILE_EXTENSION);
-
-            Path glyphPath = dir.resolve(sb.toString());
-
-            os = new FileOutputStream(glyphPath.toFile());
-            jaxbMarshal(sample, os);
-
-            return 1;
+            logger.debug("loadBinaries done");
         } catch (Throwable ex) {
-            logger.warn("Error storing " + sample, ex);
-        } finally {
-            try {
-                if (os != null) {
-                    os.close();
-                }
-            } catch (IOException ex) {
-                logger.warn(null, ex);
-            }
+            logger.warn("Error loading binaries from " + IMAGES_FILE + " " + ex, ex);
         }
-
-        return 0;
     }
 
-    //---------//
-    // shapeOf //
-    //---------//
+    //-------------//
+    // loadSamples //
+    //-------------//
     /**
-     * Infer the shape of a sample directly from its file name.
-     *
-     * @param path the file that describes the sample
-     * @return the shape of the known sample
+     * Unmarshal the repository concrete samples.
      */
-    private Shape shapeOf (Path path)
+    private void loadSamples (final Path root)
     {
         try {
-            // ex: ONE_32ND_REST.0105.xml (for real samples)
-            // ex: CODA.xml (for samples derived from icons)
-            String name = FileUtil.getNameSansExtension(path);
-            int dot = name.indexOf('.');
+            Files.walkFileTree(
+                    root,
+                    new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs)
+                        throws IOException
+                {
+                    final String fileName = file.getFileName().toString();
 
-            if (dot != -1) {
-                name = name.substring(0, dot);
-            }
+                    if (fileName.equals(SampleSheet.SAMPLES_FILE_NAME)) {
+                        final SampleSheet sampleSheet = SampleSheet.unmarshal(file);
+                        final String rel = root.relativize(file.getParent()).toString();
 
-            return Shape.valueOf(name);
-        } catch (Exception ex) {
-            // Not recognized
-            return null;
+                        final int id = Integer.decode(rel);
+                        final Descriptor desc = sheetContainer.getDescriptor(id);
+
+                        if (desc == null) {
+                            logger.warn(
+                                    "Samples entry {} not declared in {} is ignored.",
+                                    id,
+                                    SheetContainer.CONTAINER_ENTRY_NAME);
+                        } else {
+                            final boolean isSymbol = SampleSheet.isSymbols(id);
+                            idMap.put(id, sampleSheet);
+
+                            for (Sample sample : sampleSheet.getAllSamples()) {
+                                sample.setSymbol(isSymbol);
+                                sampleMap.put(sample, sampleSheet);
+                            }
+                        }
+                    }
+
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+
+            logger.debug("load done");
+        } catch (Throwable ex) {
+            logger.warn("Error loading " + SAMPLES_FILE + " " + ex, ex);
         }
     }
 
@@ -1069,120 +921,64 @@ public class SampleRepository
          */
         void setTotalGlyphs (int total);
     }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+    }
+
+    //------------------------//
+    // RepositoryExitListener //
+    //------------------------//
+    /**
+     * Listener called when application asks for exit and does exit.
+     */
+    private class RepositoryExitListener
+            implements Application.ExitListener
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public RepositoryExitListener ()
+        {
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public boolean canExit (EventObject eo)
+        {
+            // Check whether the repository has been saved (or user has declined)
+            if (isModified()) {
+                SingleFrameApplication appli = (SingleFrameApplication) Application.getInstance();
+                int answer = JOptionPane.showConfirmDialog(
+                        appli.getMainFrame(),
+                        "Save sample repository?");
+
+                if (answer == JOptionPane.YES_OPTION) {
+                    storeRepository();
+
+                    return true; // Here user has saved the repository
+                }
+
+                // True: user specifically chooses NOT to save the script
+                // False: user says Oops!, cancelling the current close request
+                return answer == JOptionPane.NO_OPTION;
+            }
+
+            return true;
+        }
+
+        @Override
+        public void willExit (EventObject eo)
+        {
+        }
+    }
 }
-//
-//    public static void main (final String[] args)
-//    {
-//        SampleRepository repo = SampleRepository.getInstance();
-//        repo.convertWholeBase();
-//    }
-//
-//    //------------------//
-//    // convertWholeBase //
-//    //------------------//
-//    private void convertWholeBase ()
-//    {
-//        try {
-//            JAXBContext context = JAXBContext.newInstance(GlyphValue.class);
-//            List<String> gNames = getWholeBase(null);
-//
-//            for (String gName : gNames) {
-//                if (isIcon(gName)) {
-//                    continue;
-//                }
-//
-//                Path path = WellKnowns.TRAIN_FOLDER.resolve(gName);
-//
-//                if (!Files.exists(path)) {
-//                    logger.warn("Unable to find file for sample {}", gName);
-//
-//                    continue;
-//                }
-//
-//                GlyphValue value = loadValue(context, gName, path);
-//                Sample sample = value.toSample();
-//                recordNewSample(sample, path.getParent());
-//            }
-//        } catch (JAXBException ex) {
-//            logger.warn("JAXB exception", ex);
-//        }
-//    }
-//
-//    //-----------//
-//    // loadValue //
-//    //-----------//
-//    private GlyphValue loadValue (JAXBContext context,
-//                                  String gName,
-//                                  Path path)
-//    {
-//        logger.debug("Loading value {}", path);
-//
-//        GlyphValue value = null;
-//        InputStream is = null;
-//
-//        try {
-//            is = new FileInputStream(path.toFile());
-//
-//            Unmarshaller um = context.createUnmarshaller();
-//
-//            return (GlyphValue) um.unmarshal(is);
-//        } catch (Exception ex) {
-//            logger.warn("Could not unmarshal file {}", path);
-//            ex.printStackTrace();
-//        } finally {
-//            if (is != null) {
-//                try {
-//                    is.close();
-//                } catch (Exception ignored) {
-//                }
-//            }
-//        }
-//
-//        return value;
-//    }
-//
-//    //-----------------//
-//    // recordNewSample //
-//    //-----------------//
-//    /**
-//     * Record a sample, using the precise shape into the given directory.
-//     *
-//     * @param sample the sample to record
-//     * @param dir    the target directory
-//     * @return 1 if OK, 0 otherwise
-//     */
-//    private int recordNewSample (Sample sample,
-//                                 Path dir)
-//    {
-//        OutputStream os = null;
-//
-//        try {
-//            logger.debug("Storing {}", sample);
-//
-//            StringBuilder sb = new StringBuilder();
-//            sb.append(sample.shape);
-//            sb.append(".");
-//            sb.append(String.format("%04d", sample.id));
-//            sb.append(FILE_EXTENSION);
-//            sb.append("-new");
-//
-//            Path glyphPath = dir.resolve(sb.toString());
-//
-//            os = new FileOutputStream(glyphPath.toFile());
-//            jaxbMarshal(sample, os);
-//
-//            return 1;
-//        } catch (Throwable ex) {
-//            logger.warn("Error storing " + sample, ex);
-//        } finally {
-//            try {
-//                if (os != null) {
-//                    os.close();
-//                }
-//            } catch (IOException ex) {
-//                logger.warn(null, ex);
-//            }
-//        }
-//
-//        return 0;
-//    }

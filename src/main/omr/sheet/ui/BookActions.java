@@ -14,8 +14,6 @@ package omr.sheet.ui;
 import omr.OMR;
 import omr.WellKnowns;
 
-import omr.classifier.SampleRepository;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -42,6 +40,7 @@ import omr.sheet.Staff;
 import omr.sheet.StaffManager;
 import omr.sheet.grid.StaffProjector;
 import omr.sheet.stem.StemScaler;
+
 import static omr.sheet.ui.StubDependent.BOOK_IDLE;
 import static omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static omr.sheet.ui.StubDependent.STUB_IDLE;
@@ -1910,10 +1909,11 @@ public class BookActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
-            SheetStub stub = StubsController.getCurrentStub();
-            SampleRepository.getInstance().recordSheetGlyphs(stub.getSheet(), false);
-
-            return null;
+            throw new RuntimeException("No longer implemented!");
+//            SheetStub stub = StubsController.getCurrentStub();
+//            SampleRepository.getInstance().recordSheetGlyphs(stub.getSheet(), false);
+//
+//            return null;
         }
     }
 

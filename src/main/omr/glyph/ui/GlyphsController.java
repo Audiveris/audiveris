@@ -14,7 +14,6 @@ package omr.glyph.ui;
 import omr.classifier.Evaluation;
 
 import omr.glyph.Glyph;
-import omr.glyph.GlyphIndex;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
 
@@ -24,6 +23,7 @@ import omr.script.DeleteTask;
 import omr.sheet.Sheet;
 
 import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.EntityService;
 import omr.ui.selection.SelectionHint;
 import omr.ui.selection.SelectionService;
 
@@ -37,8 +37,8 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Class {@code GlyphsController} is a common basis for glyph handling, used by any user
- * interface which needs to act on the actual glyph data.
+ * Class {@code GlyphsController} is a common basis for interactive glyph handling,
+ * used by any user interface which needs to act on the actual glyph data.
  * <p>
  * There are two main methods in this class ({@link #asyncAssignGlyphs} and
  * {@link #asyncDeassignGlyphs}). They share common characteristics:
@@ -47,10 +47,9 @@ import java.util.Set;
  * <li>Their action is recorded in the sheet script</li>
  * <li>They update the following steps, if any</li>
  * </ul>
- * <p>
- * Since the bus of user selections is used, the methods of this class are
- * meant to be used from within a user action, otherwise you must use a direct
- * access to similar synchronous actions in the underlying {@link GlyphsModel}.
+ * Since the bus of user selections is used, the methods of this class are meant to be used from
+ * within a user action, otherwise you must use a direct access to similar synchronous actions in
+ * the underlying {@link GlyphsModel}.
  *
  * @author Hervé Bitteur
  */
@@ -61,16 +60,15 @@ public class GlyphsController
     private static final Logger logger = LoggerFactory.getLogger(GlyphsController.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Related model */
+    /** Related model. */
     protected final GlyphsModel model;
 
-    /** Cached sheet */
+    /** Cached sheet, if any. */
     protected final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create an instance of GlyphsController, with its underlying
-     * GlyphsModel instance.
+     * Create an instance of GlyphsController, with its underlying GlyphsModel instance.
      *
      * @param model the related glyphs model
      */
@@ -143,39 +141,24 @@ public class GlyphsController
         return new DeleteTask(sheet, glyphs).launch(sheet);
     }
 
-    //--------------//
-    // getGlyphById //
-    //--------------//
+    //-----------------//
+    // getGlyphService //
+    //-----------------//
     /**
-     * Retrieve a glyph, knowing its id.
+     * Report the underlying glyph service.
      *
-     * @param id the glyph id
-     * @return the glyph found, or null if not
+     * @return the related glyph service
      */
-    public Glyph getGlyphById (int id)
+    public EntityService<? extends Glyph> getGlyphService ()
     {
-        return model.getGlyphById(id);
-    }
-
-    //----------//
-    // getIndex //
-    //----------//
-    /**
-     * Report the underlying glyph nest.
-     *
-     * @return the related glyph nest
-     */
-    public GlyphIndex getIndex ()
-    {
-        return model.getNest();
+        return model.getGlyphService();
     }
 
     //----------------//
     // getLatestShape //
     //----------------//
     /**
-     * Report the latest non null shape that was assigned, or null
-     * if none.
+     * Report the latest non-null shape that was assigned, or null if none.
      *
      * @return latest shape assigned, or null if none
      */
@@ -189,8 +172,7 @@ public class GlyphsController
     //--------------------//
     /**
      * Report the event service to use for LocationEvent.
-     * When no sheet is available, override this method to point to another
-     * service
+     * When no sheet is available, override this method to point to another service
      *
      * @return the event service to use for LocationEvent
      */
@@ -205,7 +187,7 @@ public class GlyphsController
     /**
      * Report the underlying model.
      *
-     * @return the underlying glpyhs model
+     * @return the underlying glyphs model
      */
     public GlyphsModel getModel ()
     {
@@ -229,8 +211,7 @@ public class GlyphsController
     // syncAssign //
     //------------//
     /**
-     * Process synchronously the assignment defined in the provided
-     * context.
+     * Process synchronously the assignment defined in the provided context.
      *
      * @param context the context of the assignment
      */
@@ -266,8 +247,7 @@ public class GlyphsController
     // syncDelete //
     //------------//
     /**
-     * Process synchronously the deletion defined in the provided
-     * context.
+     * Process synchronously the deletion defined in the provided context.
      *
      * @param context the context of the deletion
      */
@@ -286,8 +266,8 @@ public class GlyphsController
     protected void publish (Glyph glyph)
     {
         // Update immediately the glyph info as displayed
-        if (model.getSheet() != null) {
-            getIndex().getEntityService().publish(
+        if (model.getGlyphService() != null) {
+            model.getGlyphService().publish(
                     new EntityListEvent<Glyph>(
                             this,
                             SelectionHint.GLYPH_MODIFIED,

@@ -11,13 +11,6 @@
 // </editor-fold>
 package omr;
 
-import omr.classifier.Sample;
-import omr.classifier.SampleRepository;
-import omr.classifier.ShapeDescription;
-
-import omr.glyph.Shape;
-import omr.glyph.ShapeSet;
-
 import omr.image.TemplateFactory;
 
 import omr.sheet.Picture;
@@ -36,7 +29,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.file.Path;
-import java.util.List;
 
 /**
  * Convenient class meant to temporarily inject some debugging.
@@ -142,73 +134,74 @@ public class Debug
 
         logger.info("Done.");
     }
-
-    //------------------//
-    // saveTrainingData //
-    //------------------//
-    /**
-     * Generate a file (format arff) to be used by Weka machine learning software,
-     * with the training data.
-     *
-     * @param e unused
-     */
-    @Action
-    public void saveTrainingData (ActionEvent e)
-    {
-        Path path = WellKnowns.EVAL_FOLDER.resolve(
-                "samples-" + ShapeDescription.getName() + ".arff");
-        final PrintWriter out = getPrintWriter(path);
-
-        out.println("@relation " + "glyphs-" + ShapeDescription.getName());
-        out.println();
-
-        for (String label : ShapeDescription.getParameterLabels()) {
-            out.println("@attribute " + label + " real");
-        }
-
-        // Last attribute: shape
-        out.print("@attribute shape {");
-
-        for (Shape shape : ShapeSet.allPhysicalShapes) {
-            out.print(shape);
-
-            if (shape != Shape.LAST_PHYSICAL_SHAPE) {
-                out.print(", ");
-            }
-        }
-
-        out.println("}");
-
-        out.println();
-        out.println("@data");
-
-        SampleRepository repository = SampleRepository.getInstance();
-        List<String> gNames = repository.getWholeBase(null);
-        logger.info("Glyphs: {}", gNames.size());
-
-        for (String gName : gNames) {
-            Sample sample = repository.getSample(gName, null);
-
-            if (sample != null) {
-                double[] ins = ShapeDescription.features(sample, sample.getInterline());
-
-                for (double in : ins) {
-                    out.print((float) in);
-                    out.print(",");
-                }
-
-                out.println(sample.getShape().getPhysicalShape());
-            }
-        }
-
-        out.flush();
-        out.close();
-        logger.info("Classifier data saved in " + path.toAbsolutePath());
-    }
-
+//
+//    //------------------//
+//    // saveTrainingData //
+//    //------------------//
+//    /**
+//     * Generate a file (format arff) to be used by Weka machine learning software,
+//     * with the training data.
+//     *
+//     * @param e unused
+//     */
+//    @Action
+//    public void saveTrainingData (ActionEvent e)
+//    {
+//        Path path = WellKnowns.EVAL_FOLDER.resolve(
+//                "samples-" + ShapeDescription.getName() + ".arff");
+//        final PrintWriter out = getPrintWriter(path);
+//
+//        out.println("@relation " + "glyphs-" + ShapeDescription.getName());
+//        out.println();
+//
+//        for (String label : ShapeDescription.getParameterLabels()) {
+//            out.println("@attribute " + label + " real");
+//        }
+//
+//        // Last attribute: shape
+//        out.print("@attribute shape {");
+//
+//        for (Shape shape : ShapeSet.allPhysicalShapes) {
+//            out.print(shape);
+//
+//            if (shape != Shape.LAST_PHYSICAL_SHAPE) {
+//                out.print(", ");
+//            }
+//        }
+//
+//        out.println("}");
+//
+//        out.println();
+//        out.println("@data");
+//
+//        SampleRepository repository = SampleRepository.getInstance();
+//        List<String> gNames = repository.getWholeBase(null);
+//        logger.info("Glyphs: {}", gNames.size());
+//
+//        for (String gName : gNames) {
+//            Sample sample = repository.getSample(gName, null);
+//
+//            if (sample != null) {
+//                double[] ins = ShapeDescription.features(sample, sample.getInterline());
+//
+//                for (double in : ins) {
+//                    out.print((float) in);
+//                    out.print(",");
+//                }
+//
+//                out.println(sample.getShape().getPhysicalShape());
+//            }
+//        }
+//
+//        out.flush();
+//        out.close();
+//        logger.info("Classifier data saved in " + path.toAbsolutePath());
+//    }
+//
     //----------------//
     // getPrintWriter //
     //----------------//
+
     private static PrintWriter getPrintWriter (Path path)
     {
         try {

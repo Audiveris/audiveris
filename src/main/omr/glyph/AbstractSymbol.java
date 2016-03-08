@@ -135,7 +135,7 @@ public abstract class AbstractSymbol
     @Override
     public double getNormalizedWeight (int interline)
     {
-        return (double) getWeight() / interline * interline;
+        return (double) getWeight() / (interline * interline);
     }
 
     @Override

@@ -29,24 +29,25 @@ import java.util.Map;
 
 /**
  * Class {@code MusicFont} is meant to simplify the use of the underlying music font
- * when rendering picture or score views.
+ * when rendering score views.
  * <p>
  * The strategy is to use a properly scaled instance of this class to carry out the drawing of music
  * symbols with the correct size. The scaling should combine two factors:<ul>
  * <li>An interline value different from default {@link #DEFAULT_INTERLINE}</li>
- * <li>A zoom ratio different from 1</li></ul>
- * <p>
+ * <li>A zoom ratio different from 1</li>
+ * </ul>
  * To get a properly scaled instance, use the convenient method {@link #getFont(int)} which expects
  * a staff height expressed in a count of screen pixels (which thus combines the 2 factors listed
  * above).</p>
  * <p>
  * There are two well-known pre-scaled instances of this class:<ul>
  * <li>{@link #baseMusicFont} for standard symbols (scale = 1)</li>
- * <li>{@link #iconMusicFont} for icon symbols (scale = 1/2)</li></ul>
- * <p>
- * The underlying font is <b>MusicalSymbols</b> downloadable from
- * http://simplythebest.net/fonts/fonts/musical_symbols.html
- * </p>
+ * <li>{@link #iconMusicFont} for icon symbols (scale = 1/2)</li>
+ * </ul>
+ * The underlying font is <b>MusicalSymbols</b>.
+ *
+ * @see
+ * <a href="http://fonts.simplythebest.net/font/108/musical_symbols-font.font">http://fonts.simplythebest.net/font/108/musical_symbols-font.font</a>
  *
  * @author Hervé Bitteur
  */

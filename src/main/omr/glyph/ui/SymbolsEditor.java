@@ -12,6 +12,8 @@
 package omr.glyph.ui;
 
 import omr.classifier.Classifier;
+import omr.classifier.NeuralClassifier;
+import omr.classifier.WekaClassifier;
 
 import omr.constant.ConstantSet;
 
@@ -31,13 +33,6 @@ import omr.run.RunBoard;
 import omr.score.ui.EditorMenu;
 import omr.score.ui.PaintingParameters;
 
-import omr.ui.selection.EntityListEvent;
-import omr.ui.selection.EntityService;
-import omr.ui.selection.MouseMovement;
-
-import static omr.ui.selection.SelectionHint.*;
-
-import omr.ui.selection.UserEvent;
 import omr.sheet.Part;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
@@ -57,6 +52,11 @@ import omr.ui.BoardsPane;
 import omr.ui.Colors;
 import omr.ui.PixelCount;
 import omr.ui.ViewParameters;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.EntityService;
+import omr.ui.selection.MouseMovement;
+import static omr.ui.selection.SelectionHint.*;
+import omr.ui.selection.UserEvent;
 import omr.ui.util.UIUtil;
 import omr.ui.view.ScrollView;
 
@@ -69,10 +69,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
-
 import java.awt.Stroke;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -178,12 +176,14 @@ public class SymbolsEditor
         boards.add(new InterBoard(sheet));
         boards.add(new ShapeBoard(sheet, symbolsController, false));
 
-        ///HB focus,
-        boards.add(new EvaluationBoard(sheet, symbolsController, false));
+        boards.add(
+                new EvaluationBoard(sheet, NeuralClassifier.getInstance(), symbolsController, false));
+        boards.add(
+                new EvaluationBoard(sheet, WekaClassifier.getInstance(), symbolsController, false));
+
         BoardsPane boardsPane = new BoardsPane(boards);
 
-        GlyphIndex nest = symbolsController.getIndex();
-        view = new MyView(nest);
+        view = new MyView(sheet.getGlyphIndex());
         view.setLocationService(sheet.getLocationService());
 
         // Create a hosting pane for the view

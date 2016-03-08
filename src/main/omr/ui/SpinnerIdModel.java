@@ -89,12 +89,14 @@ public class SpinnerIdModel<E extends Entity>
 
         if (id == 0) {
             ok = true;
-        } else {
+        } else if (index != null) {
             E entity = index.getEntity(id);
 
             if (entity != null) {
                 ok = true;
             }
+        } else {
+            ok = true;
         }
 
         if (ok) {

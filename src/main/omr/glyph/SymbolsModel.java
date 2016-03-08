@@ -11,8 +11,9 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.classifier.GlyphClassifier;
 import omr.classifier.Classifier;
+import omr.classifier.GlyphClassifier;
+
 import omr.score.TimeRational;
 
 import omr.sheet.Sheet;
@@ -39,7 +40,6 @@ public class SymbolsModel
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsModel.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsModel object.
@@ -48,7 +48,7 @@ public class SymbolsModel
      */
     public SymbolsModel (Sheet sheet)
     {
-        super(sheet, sheet.getGlyphIndex(), Step.SYMBOLS);
+        super(sheet, sheet.getGlyphIndex().getEntityService(), Step.SYMBOLS);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -138,10 +138,10 @@ public class SymbolsModel
                                     TimeRational timeRational,
                                     double grade)
     {
-//        // Do the job
-//        for (Glyph glyph : glyphs) {
-//            glyph.setTimeRational(timeRational);
-//        }
+        //        // Do the job
+        //        for (Glyph glyph : glyphs) {
+        //            glyph.setTimeRational(timeRational);
+        //        }
     }
 
     //-------------//
@@ -198,29 +198,29 @@ public class SymbolsModel
     @Override
     public void deassignGlyph (Glyph glyph)
     {
-//        // Safer
-//        if (glyph.getShape() == null) {
-//            return;
-//        }
-//
-//        // Processing depends on shape at hand
-//        switch (glyph.getShape()) {
-//        case STEM:
-//            logger.debug("Deassigning a Stem as glyph {}", glyph.getId());
-//            cancelStems(Collections.singletonList(glyph));
-//
-//            break;
-//
-//        case NOISE:
-//            logger.info("Skipping Noise as glyph {}", glyph.getId());
-//
-//            break;
-//
-//        default:
-//            super.deassignGlyph(glyph);
-//
-//            break;
-//        }
+        //        // Safer
+        //        if (glyph.getShape() == null) {
+        //            return;
+        //        }
+        //
+        //        // Processing depends on shape at hand
+        //        switch (glyph.getShape()) {
+        //        case STEM:
+        //            logger.debug("Deassigning a Stem as glyph {}", glyph.getId());
+        //            cancelStems(Collections.singletonList(glyph));
+        //
+        //            break;
+        //
+        //        case NOISE:
+        //            logger.info("Skipping Noise as glyph {}", glyph.getId());
+        //
+        //            break;
+        //
+        //        default:
+        //            super.deassignGlyph(glyph);
+        //
+        //            break;
+        //        }
     }
 
     //---------------//
@@ -278,6 +278,7 @@ public class SymbolsModel
         // To prevent to assign a non-noise shape to a noise glyph
         /** Standard evaluator */
         final Classifier evaluator = GlyphClassifier.getInstance();
+
         if ((shape == Shape.NOISE) || evaluator.isBigEnough(glyph, interline)) {
             return super.assignGlyph(glyph, interline, shape, grade);
         }

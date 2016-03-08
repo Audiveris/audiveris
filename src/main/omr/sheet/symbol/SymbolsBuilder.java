@@ -177,8 +177,7 @@ public class SymbolsBuilder
                 system,
                 10, // Or any high number...
                 Grades.symbolMinGrade,
-                EnumSet.of(Classifier.Condition.CHECKED),
-                null);
+                EnumSet.of(Classifier.Condition.CHECKED));
 
         if (evals.length > 0) {
             // Create one interpretation for each acceptable evaluation

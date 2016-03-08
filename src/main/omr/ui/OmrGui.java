@@ -13,13 +13,14 @@ package omr.ui;
 
 import omr.ui.dnd.GhostGlassPane;
 
+import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 /**
- * Class {@code OmrGui} defines the minimum offered by an OMR Gui.
+ * Class {@code OmrGui} defines the minimum offered by an OMR GUI.
  * <ul>
  * <li>A SingleFrameApplication as defined by Swing Application Framework</li>
  * <li>Various forms of message display to the end user</li>
@@ -82,13 +83,6 @@ public abstract class OmrGui
     public abstract void displayWarning (String message);
 
     /**
-     * Report the single instance of this GUI SAF application.
-     *
-     * @return the SingleFrameApplication instance
-     */
-    public abstract SingleFrameApplication getApplication ();
-
-    /**
      * Report the concrete Swing frame.
      *
      * @return the OmrGui frame
@@ -132,4 +126,17 @@ public abstract class OmrGui
      * @param errorsPane the errors pane to be shown
      */
     public abstract void setErrorsPane (JComponent errorsPane);
+
+    //----------------//
+    // getApplication //
+    //----------------//
+    /**
+     * Report the single instance of this GUI SAF application.
+     *
+     * @return the SingleFrameApplication instance
+     */
+    public static SingleFrameApplication getApplication ()
+    {
+        return (SingleFrameApplication) Application.getInstance();
+    }
 }

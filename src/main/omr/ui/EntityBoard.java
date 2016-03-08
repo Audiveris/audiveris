@@ -11,15 +11,15 @@
 // </editor-fold>
 package omr.ui;
 
+import omr.ui.field.LCheckBox;
+import omr.ui.field.LLabel;
+import omr.ui.field.SpinnerUtil;
 import omr.ui.selection.EntityListEvent;
 import omr.ui.selection.EntityService;
 import omr.ui.selection.IdEvent;
 import omr.ui.selection.MouseMovement;
 import omr.ui.selection.SelectionHint;
 import omr.ui.selection.UserEvent;
-
-import omr.ui.field.LCheckBox;
-import omr.ui.field.SpinnerUtil;
 import omr.ui.util.Panel;
 
 import omr.util.Entity;
@@ -61,18 +61,32 @@ public class EntityBoard<E extends Entity>
     /** Events this board is interested in */
     protected static final Class<?>[] eventsRead = new Class<?>[]{EntityListEvent.class};
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /** To select precise ID option. */
+    public static enum IdOption
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        ID_NONE,
+        ID_LABEL,
+        ID_SPINNER;
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** Counter of entities selection. */
     protected JLabel count;
 
     /** Input / Output : VIP flag. */
-    protected final LCheckBox vip;
+    protected LCheckBox vip;
 
     /** Button for entity dump. */
-    protected final JButton dump;
+    protected JButton dump;
 
-    /** Input / Output : spinner of all ID's. */
+    /** Input / Output : spinner of all ID's. (exclusive of idLabel) */
     protected JSpinner idSpinner;
+
+    /** Output : ID value. (exclusive of idSpinner). */
+    protected LLabel idLabel;
 
     /** The JGoodies/Form layout to be used by all subclasses. */
     protected final FormLayout layout = getFormLayout();
@@ -85,55 +99,81 @@ public class EntityBoard<E extends Entity>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code EntityBoard} object.
+     * Creates a new {@code EntityBoard} object, with all entity fields by default.
      *
      * @param desc          board descriptor
      * @param entityService the underlying entity service
-     * @param expanded      true for expanded, false for collapsed
+     * @param selected      true for pre-selected, false for collapsed
      */
     public EntityBoard (Desc desc,
                         EntityService entityService,
-                        boolean expanded)
+                        boolean selected)
     {
-        super(desc, entityService, eventsRead, true, true, true, expanded);
+        this(desc, entityService, selected, true, true, true, IdOption.ID_SPINNER);
+    }
+
+    /**
+     * Creates a new {@code EntityBoard} object, with selected entity fields.
+     *
+     * @param desc          board descriptor
+     * @param entityService the underlying entity service
+     * @param selected      true for pre-selected, false for collapsed
+     * @param useCount      true for use of count
+     * @param useVip        true for use of VIP
+     * @param useDump       true for use of dump
+     * @param idOption      option for ID
+     */
+    public EntityBoard (Desc desc,
+                        EntityService entityService,
+                        boolean selected,
+                        boolean useCount,
+                        boolean useVip,
+                        boolean useDump,
+                        IdOption idOption)
+    {
+        super(desc, entityService, eventsRead, selected, useCount, useVip, useDump);
 
         // Count
-        count = getCountField();
-        count.setToolTipText("Count of selected entities");
+        if (useCount) {
+            count = getCountField();
+            count.setToolTipText("Count of selected entities");
+        }
 
         // VIP
-        vip = getVipBox();
-        vip.addActionListener(this);
-        vip.setEnabled(false);
+        if (useVip) {
+            vip = getVipBox();
+            vip.addActionListener(this);
+            vip.setEnabled(false);
+        }
 
         // Dump
-        dump = getDumpButton();
-        dump.setToolTipText("Dump this entity");
-        dump.setEnabled(false);
-        dump.addActionListener(this);
+        if (useDump) {
+            dump = getDumpButton();
+            dump.setToolTipText("Dump this entity");
+            dump.setEnabled(false);
+            dump.addActionListener(this);
+        }
 
-        //        dump.addActionListener(
-        //                new ActionListener()
-        //                {
-        //                    @Override
-        //                    public void actionPerformed (ActionEvent e)
-        //                    {
-        //                        // Retrieve current entity selection
-        //                        final E entity = ((EntityService<E>) getSelectionService()).getSelectedEntity();
-        //
-        //                        if (entity != null) {
-        //                            logger.info(entity.dumpOf());
-        //                        }
-        //                    }
-        //                });
-        // Model for idSpinner
-        idSpinner = makeIdSpinner(entityService.getIndex());
-        idSpinner.setName("idSpinner");
-        idSpinner.setToolTipText("Spinner for any entity id");
+        // Id
+        switch (idOption) {
+        case ID_LABEL:
+            idLabel = new LLabel("Id:", "Entity id");
+
+            break;
+
+        case ID_SPINNER:
+            idSpinner = makeIdSpinner(entityService.getIndex());
+            idSpinner.setName("idSpinner");
+            idSpinner.setToolTipText("Spinner for any entity id");
+
+            break;
+
+        default:
+        case ID_NONE:
+        }
 
         builder = new PanelBuilder(layout, getBody());
-        //        builder.setDefaultDialogBorder();
-        //
+
         defineLayout();
     }
 
@@ -149,9 +189,9 @@ public class EntityBoard<E extends Entity>
     @Override
     public void actionPerformed (ActionEvent e)
     {
-        if (vip.getField() == e.getSource()) {
+        if ((vip != null) && (vip.getField() == e.getSource())) {
             vipActionPerformed(e);
-        } else if (dump == e.getSource()) {
+        } else if ((dump != null) && (dump == e.getSource())) {
             dumpActionPerformed(e);
         }
     }
@@ -176,7 +216,7 @@ public class EntityBoard<E extends Entity>
             }
 
             if (event instanceof EntityListEvent) {
-                // Display inter parameters (while preventing circular updates)
+                // Display entity parameters (while preventing circular updates)
                 selfUpdating = true;
                 handleEvent((EntityListEvent<E>) event);
                 selfUpdating = false;
@@ -197,9 +237,7 @@ public class EntityBoard<E extends Entity>
     @Override
     public void stateChanged (ChangeEvent e)
     {
-        JSpinner spinner = (JSpinner) e.getSource();
-
-        if (spinner == idSpinner) {
+        if ((idSpinner != null) && (idSpinner == e.getSource())) {
             // Nota: this method is automatically called whenever the spinner
             // value is changed, including when an entity selection notification
             // is received leading to such selfUpdating. Hence the check.
@@ -210,10 +248,8 @@ public class EntityBoard<E extends Entity>
                                 this,
                                 SelectionHint.ENTITY_INIT,
                                 null,
-                                (Integer) spinner.getValue()));
+                                (Integer) idSpinner.getValue()));
             }
-        } else {
-            logger.error("No known spinner");
         }
     }
 
@@ -235,7 +271,7 @@ public class EntityBoard<E extends Entity>
     // getFormLayout //
     //---------------//
     /**
-     * Override-able method to provide layout.
+     * Overridable method to provide layout.
      *
      * @return the proper FormLayout
      */
@@ -292,8 +328,15 @@ public class EntityBoard<E extends Entity>
         // Layout
         int r = 1; // --------------------------------
 
-        builder.addLabel("Id", cst.xy(1, r));
-        builder.add(idSpinner, cst.xy(3, r));
+        if (idSpinner != null) {
+            builder.addLabel("Id", cst.xy(1, r));
+            builder.add(idSpinner, cst.xy(3, r));
+        }
+
+        if (idLabel != null) {
+            builder.add(idLabel.getLabel(), cst.xy(1, r));
+            builder.add(idLabel.getField(), cst.xy(3, r));
+        }
     }
 
     //-------------//
@@ -309,31 +352,53 @@ public class EntityBoard<E extends Entity>
         // Count
         final List<E> entities = listEvent.getData();
 
-        if ((entities != null) && !entities.isEmpty()) {
-            count.setText(Integer.toString(entities.size()));
-        } else {
-            count.setText("");
+        if (count != null) {
+            if ((entities != null) && !entities.isEmpty()) {
+                count.setText(Integer.toString(entities.size()));
+            } else {
+                count.setText("");
+            }
         }
 
         final E entity = listEvent.getEntity();
 
         if (entity != null) {
             // VIP
-            vip.getLabel().setEnabled(true);
-            vip.getField().setEnabled(!entity.isVip());
-            vip.getField().setSelected(entity.isVip());
+            if (vip != null) {
+                vip.getLabel().setEnabled(true);
+                vip.getField().setEnabled(!entity.isVip());
+                vip.getField().setSelected(entity.isVip());
+            }
+
             // Dump
-            dump.setEnabled(true);
+            if (dump != null) {
+                dump.setEnabled(true);
+            }
+
             // Id
-            idSpinner.setValue(entity.getId());
+            if (idSpinner != null) {
+                idSpinner.setValue(entity.getId());
+            } else if (idLabel != null) {
+                idLabel.setText(Integer.toString(entity.getId()));
+            }
         } else {
             // VIP
-            vip.setEnabled(false);
-            vip.getField().setSelected(false);
+            if (vip != null) {
+                vip.setEnabled(false);
+                vip.getField().setSelected(false);
+            }
+
             // Dump
-            dump.setEnabled(false);
+            if (dump != null) {
+                dump.setEnabled(false);
+            }
+
             // Id
-            idSpinner.setValue(0);
+            if (idSpinner != null) {
+                idSpinner.setValue(0);
+            } else if (idLabel != null) {
+                idLabel.setText("");
+            }
         }
     }
 

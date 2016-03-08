@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                    G l y p h T r a i n e r                                     //
+//                                         T r a i n e r                                          //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -13,10 +13,12 @@ package omr.classifier.ui;
 
 import omr.OMR;
 
+import omr.classifier.NeuralClassifier;
+import omr.classifier.WekaClassifier;
+
 import omr.constant.ConstantManager;
 
-import omr.classifier.NeuralClassifier;
-
+import omr.ui.OmrGui;
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
 
@@ -24,37 +26,39 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Locale;
 import java.util.Observable;
 
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code Trainer} handles a User Interface dedicated to the
  * training and testing of a glyph classifier.
- * This class can be launched as a stand-alone program.
- *
  * <p>
  * The frame is divided vertically in 4 parts:
  * <ol>
  * <li>The selection in repository of known glyphs ({@link SelectionPanel})
- * <li>The training of the neural network evaluator ({@link TrainingPanel})
- * <li>The validation of the neural network evaluator ({@link ValidationPanel})
- * <li>The training of the linear evaluator ({@link RegressionPanel})
+ * <li>The training of the neural network classifier ({@link TrainingPanel})
+ * <li>The validation of the neural network classifier ({@link ValidationPanel})
+ * <li>The training of the bayesian classifier ({@link BayesianPanel})
  * </ol>
+ * This class can be launched as a stand-alone program.
  *
  * @author Hervé Bitteur
  */
 public class Trainer
+        extends SingleFrameApplication
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -63,13 +67,13 @@ public class Trainer
     /** The single instance of this class */
     private static volatile Trainer INSTANCE;
 
-    /** To differentiate the exit action, according to the launch context */
+    /** Stand-alone run (vs part of Audiveris). */
     private static boolean standAlone = false;
 
     /** Standard width for fields/buttons in DLUs */
     private static final String standardWidth = "50dlu";
 
-    /** An adapter trigerred on window closing */
+    /** An adapter triggered on window closing */
     private static final WindowAdapter windowCloser = new WindowAdapter()
     {
         @Override
@@ -85,19 +89,22 @@ public class Trainer
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related frame */
-    private final JFrame frame;
+    private JFrame frame;
 
     /** Panel for selection in repository */
     private final SelectionPanel selectionPanel;
 
     /** Panel for Neural network training */
-    private final NetworkPanel networkPanel;
+    private final NeuralPanel networkPanel;
 
     /** Panel for Neural network validation */
     private final ValidationPanel validationPanel;
 
-    /** Panel for Regression training */
-    private final TrainingPanel regressionPanel;
+    /** Panel for Bayesian "training" */
+    private final TrainingPanel bayesianPanel;
+
+    /** Panel for Bayesian validation */
+    private final ValidationPanel bayesianValidationPanel;
 
     /** Current task */
     private final Task task = new Task();
@@ -109,54 +116,48 @@ public class Trainer
     /**
      * Create an instance of Glyph Trainer (there should be just one)
      */
-    private Trainer ()
+    public Trainer ()
     {
-        if (standAlone) {
-            // UI Look and Feel
-            UILookAndFeel.setUI(null);
-        }
-
-        frame = new JFrame();
-        frame.setName("trainerFrame");
-
-        // Listener on remaining error
-        ChangeListener errorListener = new ChangeListener()
-        {
-            @Override
-            public void stateChanged (ChangeEvent e)
-            {
-                frame.setTitle(String.format("%.5f - %s", networkPanel.getBestError(), frameTitle));
-            }
-        };
-
-        // Create the three companions
+        // Create the 5 companions
         selectionPanel = new SelectionPanel(task, standardWidth);
-        networkPanel = new NetworkPanel(task, standardWidth, errorListener, selectionPanel);
+        networkPanel = new NeuralPanel(task, standardWidth, selectionPanel);
         selectionPanel.setTrainingPanel(networkPanel);
         validationPanel = new ValidationPanel(
                 task,
                 standardWidth,
                 NeuralClassifier.getInstance(),
-                selectionPanel,
-                networkPanel);
-        regressionPanel = new RegressionPanel(task, standardWidth, selectionPanel);
-        frame.add(createGlobalPanel());
+                selectionPanel);
+        bayesianPanel = new BayesianPanel(task, standardWidth, selectionPanel);
+        bayesianValidationPanel = new ValidationPanel(
+                task,
+                standardWidth,
+                WekaClassifier.getInstance(),
+                selectionPanel);
 
         // Initial state
         task.setActivity(Task.Activity.INACTIVE);
 
         // Specific ending if stand alone
-        if (standAlone) {
-            frame.addWindowListener(windowCloser);
+        if (!standAlone) {
+            frame = defineLayout(new JFrame());
+        } else {
+            INSTANCE = this;
         }
-
-        // Resource injection
-        ResourceMap resource = OMR.gui.getApplication().getContext().getResourceMap(getClass());
-        resource.injectComponents(frame);
-        frameTitle = frame.getTitle();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    public static Trainer getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new Trainer();
+        }
+
+        return INSTANCE;
+    }
+
     //--------//
     // launch //
     //--------//
@@ -165,38 +166,131 @@ public class Trainer
      */
     public static void launch ()
     {
-        OMR.gui.getApplication().show(getInstance().frame);
+        if (standAlone) {
+        } else {
+            OMR.gui.getApplication().show(getInstance().frame);
+        }
     }
 
     //------//
     // main //
     //------//
     /**
-     * Just to allow stand-alone testing of this class
+     * Just to allow stand-alone running of this class
      *
      * @param args not used
      */
     public static void main (String... args)
     {
         standAlone = true;
-        getInstance();
+
+        // Set UI Look and Feel
+        UILookAndFeel.setUI(null);
+        Locale.setDefault(Locale.ENGLISH);
+
+        // Off we go...
+        Application.launch(Trainer.class, args);
     }
 
-    //-------------------//
-    // createGlobalPanel //
-    //-------------------//
-    private JPanel createGlobalPanel ()
+    //------------//
+    // initialize //
+    //------------//
+    @Override
+    protected void initialize (String[] args)
     {
+        logger.debug("Trainer. 1/initialize");
+    }
+
+    //-------//
+    // ready //
+    //-------//
+    @Override
+    protected void ready ()
+    {
+        logger.debug("Trainer. 3/ready");
+
+        frame.addWindowListener(windowCloser);
+
+        //
+        //        // Set application exit listener
+        //        addExitListener(new GuiExitListener());
+        //
+        //        // Weakly listen to OmrGui Actions parameters
+        //        PropertyChangeListener weak = new WeakPropertyChangeListener(this);
+        //        GuiActions.getInstance().addPropertyChangeListener(weak);
+        //
+        //        // Check MusicFont is loaded
+        //        MusicFont.checkMusicFont();
+        //
+        //        // Just in case we already have messages pending
+        //        notifyLog();
+        //
+        //        // Launch inputs, projects & scripts
+        //        for (Callable<Void> task : Main.getCli().getCliTasks()) {
+        //            OmrExecutors.getCachedLowExecutor().submit(task);
+        //        }
+    }
+
+    //---------//
+    // startup //
+    //---------//
+    @Override
+    protected void startup ()
+    {
+        logger.debug("Trainer. 2/startup");
+
+        frame = defineLayout(getMainFrame());
+
+        show(frame); // Here we go...
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define the layout of components within the provided frame.
+     *
+     * @param frame the bare frame
+     * @return the populated frame
+     *
+     */
+    private JFrame defineLayout (final JFrame frame)
+    {
+        frame.setName("TrainerFrame"); // For SAF life cycle
+
+        /*
+         * +=============================================================+
+         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+         * | . Selection . . . . . . . . . . . . . . . . . . . . . . . . |
+         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+         * |-------------------------------------------------------------|
+         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+         * | . Neural classifier . . . . . . . . . . . . . . . . . . . . |
+         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+         * | . . . . Training. . . . . . . . . . . . . . . . . . . . . . |
+         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+         * | . . . . Validation. . . . . . . . . . . . . . . . . . . . . |
+         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+         * |-------------------------------------------------------------|
+         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+         * | . Bayesian classifier . . . . . . . . . . . . . . . . . . . |
+         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+         * | . . . . Training. . . . . . . . . . . . . . . . . . . . . . |
+         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+         * | . . . . Validation. . . . . . . . . . . . . . . . . . . . . |
+         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+         * +=============================================================+
+         */
         final String panelInterline = Panel.getPanelInterline();
         FormLayout layout = new FormLayout(
                 "pref",
                 "pref," + panelInterline + "," + "pref," + panelInterline + "," + "pref,"
-                + panelInterline + "," + "pref");
+                + panelInterline + "," + "pref," + panelInterline + "," + "pref");
 
         CellConstraints cst = new CellConstraints();
         PanelBuilder builder = new PanelBuilder(layout, new Panel());
-        ///builder.setDefaultDialogBorder();
 
+        ///builder.setDefaultDialogBorder();
         int r = 1; // --------------------------------
         builder.add(selectionPanel.getComponent(), cst.xy(1, r));
 
@@ -207,21 +301,31 @@ public class Trainer
         builder.add(validationPanel.getComponent(), cst.xy(1, r));
 
         r += 2; // --------------------------------
-        builder.add(regressionPanel.getComponent(), cst.xy(1, r));
+        builder.add(bayesianPanel.getComponent(), cst.xy(1, r));
 
-        return builder.getPanel();
-    }
+        r += 2; // --------------------------------
+        builder.add(bayesianValidationPanel.getComponent(), cst.xy(1, r));
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    private static Trainer getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new Trainer();
-        }
+        frame.add(builder.getPanel());
 
-        return INSTANCE;
+        // Resource injection
+        ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
+        resource.injectComponents(frame);
+
+        // Listener on remaining error
+        frameTitle = frame.getTitle();
+        networkPanel.setErrorListener(
+                new ChangeListener()
+        {
+            @Override
+            public void stateChanged (ChangeEvent e)
+            {
+                frame.setTitle(
+                        String.format("%.5f - %s", networkPanel.getBestError(), frameTitle));
+            }
+        });
+
+        return frame;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

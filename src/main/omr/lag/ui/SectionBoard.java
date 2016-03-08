@@ -78,10 +78,10 @@ public class SectionBoard
      * Create a Section Board
      *
      * @param lag      the related lag
-     * @param expanded true for expanded, false for collapsed
+     * @param selected true for pre-selected, false for collapsed
      */
     public SectionBoard (Lag lag,
-                         boolean expanded)
+                         boolean selected)
     {
         super(
                 new Desc(
@@ -90,7 +90,7 @@ public class SectionBoard
                         Board.SECTION.position
                         + ((lag.getOrientation() == Orientation.VERTICAL) ? 100 : 0)),
                 lag.getEntityService(),
-                expanded);
+                selected);
 
         this.lag = lag;
 

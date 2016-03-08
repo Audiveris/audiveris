@@ -85,7 +85,7 @@ public class InterBoard
      */
     public InterBoard (Sheet sheet)
     {
-        super(Board.INTER, sheet.getInterIndex().getEntityService(), true); // initially expanded
+        super(Board.INTER, sheet.getInterIndex().getEntityService(), true);
         this.sheet = sheet;
 
         // Force a constant height for the shapeIcon field, despite variation in size of the icon
@@ -172,9 +172,9 @@ public class InterBoard
         final CellConstraints cst = new CellConstraints();
 
         // Layout
-        int r = 1; // --------------------------------
+        int r = 1; // -----------------------------
 
-        // Shape Icon (start, spans several rows) + layer + Deassign button
+        // Shape Icon (start, spans several rows) + grade + Deassign button
         builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
 
         builder.add(grade.getLabel(), cst.xy(5, r));

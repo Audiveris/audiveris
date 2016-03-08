@@ -107,7 +107,7 @@ public class EditorMenu
         addMenu(new MeasureMenu());
         addMenu(new SlotMenu());
         ///addMenu(new ChordMenu());
-        ///addMenu(symbolMenu);
+        addMenu(symbolMenu);
         addMenu(new StaffMenu());
         addMenu(new ExtractionMenu(sheet));
     }

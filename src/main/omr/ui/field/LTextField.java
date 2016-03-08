@@ -23,7 +23,7 @@ public class LTextField
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Defaut number of characters in the text field : {@value} */
+    /** Default number of characters in the text field : {@value} */
     private static final int FIELD_WIDTH = 6;
 
     //~ Constructors -------------------------------------------------------------------------------

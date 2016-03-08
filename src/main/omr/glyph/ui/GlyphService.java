@@ -40,7 +40,7 @@ public class GlyphService
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphService.class);
 
-    /** Events that can be published on a nest service. */
+    /** Events that can be published on a glyph service. */
     private static final Class<?>[] eventsAllowed = new Class<?>[]{
         IdEvent.class, EntityListEvent.class,
         GroupEvent.class

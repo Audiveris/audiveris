@@ -43,7 +43,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlType(name = "", propOrder = {
-    "xmlRefPoint", "stemNumber", "withLedger", "pitchPosition"}
+    "refPoint", "pitchPosition"}
 )
 @XmlRootElement(name = "symbol-desc")
 public class SymbolGlyphDescriptor

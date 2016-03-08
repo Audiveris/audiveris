@@ -267,7 +267,7 @@ public abstract class Symbols
         small(G_CLEF_SMALL, 38);
         ottava(true, G_CLEF_8VA, 38);
         ottava(false, G_CLEF_8VB, 38);
-        sym.put(HW_REST_set, new RestSymbol(HALF_REST, false, 238));
+        sym.put(HW_REST_set, new RestSymbol(HW_REST_set, false, 238));
         sym.put(HALF_REST, new RestSymbol(HALF_REST, false, 238));
         map(MORDENT_INVERTED, 77);
         flatKey(-1, KEY_FLAT_1);
@@ -326,6 +326,7 @@ public abstract class Symbols
         map(TIME_SEVEN, 55);
         map(TIME_SIX, 54);
         map(TIME_SIXTEEN, 49, 54);
+        numDen(TIME_THREE_EIGHT, 3, 8);
         numDen(TIME_SIX_EIGHT, 6, 8);
         map(TIME_THREE, 51);
         numDen(TIME_THREE_FOUR, 3, 4);

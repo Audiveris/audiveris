@@ -137,6 +137,7 @@ public enum Shape
     TIME_TWO_FOUR("Rational 2/4"),
     TIME_THREE_FOUR("Rational 3/4"),
     TIME_FIVE_FOUR("Rational 5/4"),
+    TIME_THREE_EIGHT("Rational 3/8"),
     TIME_SIX_EIGHT("Rational 6/8"),
     // Octave shifts
     OTTAVA_ALTA("8 va", new Color(0xcc66ff)),
@@ -271,14 +272,14 @@ public enum Shape
     //
     // Miscellaneous -----------------------------------------------------------
     //
-    TEXT("Sequence of letters & spaces", new Color(0x9999ff)),
-    CLUTTER("Pure clutter", new Color(0x999900)),
+    CLUTTER("Pure clutter", new Color(0x999900)), // Leave CLUTTER as the last physical shape
     //
     // =============================================================================================
     // This is the end of physical shapes.
     // Next shapes are logical shapes, that CANNOT be inferred only from their physical characteristics.
     // =============================================================================================
     //
+    TEXT("Sequence of letters & spaces", new Color(0x9999ff)),
     CHARACTER("Any letter"),
     //
     // Shapes from shape sets --------------------------------------------------

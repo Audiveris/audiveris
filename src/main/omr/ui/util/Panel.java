@@ -29,7 +29,6 @@ import javax.swing.JPanel;
 /**
  * Class {@code Panel} is a JPanel with specific features to define and position label
  * and text fields.
- *
  * <P>
  * <B>note</B> : To actually display the cell limits as a debugging aid to refine the panel layout,
  * you have to edit this class and make it extend FormDebugPanel, instead of JPanel. There is also a
@@ -291,8 +290,7 @@ public class Panel
     // getInsets //
     //-----------//
     /**
-     * By this way, Swing will paint the component with its specific
-     * inset values.
+     * By this way, Swing will paint the component with its specific inset values.
      *
      * @return the panel insets
      */
@@ -340,8 +338,8 @@ public class Panel
     // paintComponent //
     //----------------//
     /**
-     * This method is redefined to give a chance to draw the cell
-     * boundaries if so desired.
+     * This method is redefined to give a chance to draw the cell boundaries
+     * if so desired.
      *
      * @param g the graphic context
      */
@@ -383,7 +381,7 @@ public class Panel
 
         private final Constant.String fieldInterline = new Constant.String(
                 "1dlu",
-                "Vertical Gap between two lines");
+                "Vertical gap between two lines");
 
         private final Constant.String fieldInterval = new Constant.String(
                 "3dlu",
@@ -403,7 +401,7 @@ public class Panel
 
         private final Constant.String labelInterval = new Constant.String(
                 "1dlu",
-                "Gap between a field label and its field value");
+                "Horizontal gap between a field label and its field value");
 
         private final Constant.String labelWidth = new Constant.String(
                 "25dlu",
@@ -411,6 +409,6 @@ public class Panel
 
         private final Constant.String panelInterline = new Constant.String(
                 "6dlu",
-                "Vertical Gap between two panels");
+                "Vertical gap between two panels");
     }
 }

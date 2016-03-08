@@ -97,12 +97,12 @@ public class SymbolGlyphBoard
      * Create the symbol glyph board.
      *
      * @param glyphsController the companion which handles glyph (de)assignments
+     * @param selected         true to pre-select this board
      * @param useSpinners      true for use of spinners
-     * @param expanded         true to expand this board
      */
     public SymbolGlyphBoard (GlyphsController glyphsController,
-                             boolean useSpinners,
-                             boolean expanded)
+                             boolean selected,
+                             boolean useSpinners)
     {
         // For all glyphs
         super(glyphsController, useSpinners, true);
@@ -180,25 +180,25 @@ public class SymbolGlyphBoard
         // Glyph ---
 
         r += 2; // --------------------------------
-        // shape
+        // id + deassign
 
         r += 2; // --------------------------------
         // Glyph characteristics, first line
 
-        builder.add(width.getLabel(), cst.xy(5, r));
-        builder.add(width.getField(), cst.xy(7, r));
+        builder.add(pitchPosition.getLabel(), cst.xy(5, r));
+        builder.add(pitchPosition.getField(), cst.xy(7, r));
 
-        builder.add(pitchPosition.getLabel(), cst.xy(9, r));
-        builder.add(pitchPosition.getField(), cst.xy(11, r));
+        builder.add(width.getLabel(), cst.xy(9, r));
+        builder.add(width.getField(), cst.xy(11, r));
 
         r += 2; // --------------------------------
         // Glyph characteristics, second line
 
-        builder.add(height.getLabel(), cst.xy(5, r));
-        builder.add(height.getField(), cst.xy(7, r));
+        builder.add(weight.getLabel(), cst.xy(5, r));
+        builder.add(weight.getField(), cst.xy(7, r));
 
-        builder.add(weight.getLabel(), cst.xy(9, r));
-        builder.add(weight.getField(), cst.xy(11, r));
+        builder.add(height.getLabel(), cst.xy(9, r));
+        builder.add(height.getField(), cst.xy(11, r));
 
         //
         //        r += 2; // --------------------------------

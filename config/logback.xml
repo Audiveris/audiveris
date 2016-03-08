@@ -42,6 +42,8 @@
     </root>
     
     <!-- Define DEBUG loggers here below: -->
+<!--    <logger name="omr.glyph.dynamic.StickFactory" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.rhythm.Voices" level="DEBUG"/>-->
 <!--    <logger name="omr.action.ActionManager" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.rhythm.SlotsBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.rhythm.PageRhythm" level="DEBUG"/>-->
@@ -50,14 +52,14 @@
 <!--    <logger name="omr.sheet.ui.BookBrowser" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.grid.LineCluster" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.rhythm.TupletsBuilder" level="DEBUG"/>-->
+<!--    <logger name="omr.text.TextBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.text.tesseract.TesseractOrder" level="DEBUG"/>-->
 <!--    <logger name="omr.score.PartwiseBuilder" level="DEBUG"/>-->
-<!--    <logger name="omr.text.tesseract.TesseractOrder" level="DEBUG"/>-->
 <!--    <logger name="omr.image.ImageLoading" level="DEBUG"/>-->
 <!--    <logger name="omr.score.PartwiseBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.grid.LineFilamentAlignment" level="DEBUG"/>-->
 <!--    <logger name="omr.grid.StaffProjector" level="DEBUG"/>-->
-<!--    <logger name="omr.grid.BarsRetriever" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.grid.BarsRetriever" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.CktBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.header.ClefBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.KeyBuilder" level="DEBUG"/>-->
@@ -70,7 +72,7 @@
 <!--    <logger name="omr.sheet.BeamsBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.BlackNotesBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.HorizontalsBuilder" level="DEBUG"/>-->
-<!--    <logger name="omr.selection.SelectionService" level="DEBUG"/>-->
+<!--    <logger name="omr.ui.selection.SelectionService" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.picture.Ghostscript" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.ui.SheetAssembly" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.ui.SheetsController" level="DEBUG"/>-->

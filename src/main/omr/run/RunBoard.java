@@ -61,22 +61,22 @@ public class RunBoard
      * Create a Run Board on the RunTable of a provided ag
      *
      * @param lag      the lag that encapsulates the runs table
-     * @param expanded true for expanded, false for collapsed
+     * @param selected true for pre-selected, false for collapsed
      */
     public RunBoard (Lag lag,
-                     boolean expanded)
+                     boolean selected)
     {
-        this(lag.getRunTable(), expanded);
+        this(lag.getRunTable(), selected);
     }
 
     /**
      * Create a Run Board on the provided RunTable
      *
      * @param runTable the table of runs
-     * @param expanded true for expanded, false for collapsed
+     * @param selected true for pre-selected, false for collapsed
      */
     public RunBoard (RunTable runTable,
-                     boolean expanded)
+                     boolean selected)
     {
         super(
                 Board.RUN.name
@@ -84,10 +84,10 @@ public class RunBoard
                 Board.RUN.position + ((runTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
                 runTable.getRunService(),
                 eventClasses,
+                selected,
                 false,
                 false,
-                false,
-                expanded);
+                false);
         defineLayout();
     }
 

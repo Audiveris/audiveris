@@ -11,10 +11,11 @@
 // </editor-fold>
 package omr.math;
 
+import omr.classifier.AbstractClassifier.Monitor;
+import omr.classifier.Sample;
+
 import omr.util.BaseTestCase;
 import omr.util.Dumping;
-
-import static junit.framework.Assert.*;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -65,7 +66,7 @@ public class NeuralNetworkTest
             {1},
             {0}
         };
-        NeuralNetwork.Monitor monitor = new MyMonitor();
+        Monitor monitor = new MyMonitor();
 
         do {
             nn = createNetwork();
@@ -127,7 +128,7 @@ public class NeuralNetworkTest
             {1},
             {0}
         };
-        NeuralNetwork.Monitor monitor = new MyMonitor();
+        Monitor monitor = new MyMonitor();
 
         do {
             nn = createNetwork();
@@ -172,7 +173,7 @@ public class NeuralNetworkTest
             {1},
             {1}
         };
-        NeuralNetwork.Monitor monitor = new MyMonitor();
+        Monitor monitor = new MyMonitor();
 
         do {
             nn = createNetwork();
@@ -208,7 +209,7 @@ public class NeuralNetworkTest
             {1},
             {0}
         };
-        NeuralNetwork.Monitor monitor = new MyMonitor();
+        Monitor monitor = new MyMonitor();
 
         do {
             nn = createNetwork();
@@ -239,11 +240,13 @@ public class NeuralNetworkTest
         int epochs = 500000;
 
         String[] iLabels = new String[inputSize];
+
         for (int i = 0; i < inputSize; i++) {
             iLabels[i] = "in-" + i;
         }
 
         String[] oLabels = new String[outputSize];
+
         for (int i = 0; i < outputSize; i++) {
             oLabels[i] = "out-" + i;
         }
@@ -271,10 +274,11 @@ public class NeuralNetworkTest
     // MyMonitor //
     //-----------//
     private static class MyMonitor
-            implements NeuralNetwork.Monitor
+            implements Monitor
     {
         //~ Methods --------------------------------------------------------------------------------
 
+        @Override
         public void epochEnded (int epochIndex,
                                 double mse)
         {
@@ -288,7 +292,15 @@ public class NeuralNetworkTest
             }
         }
 
+        @Override
+        public void sampleProcessed (Sample sample)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
         public void trainingStarted (final int epochIndex,
+                                     final int epochMax,
                                      final double mse)
         {
             System.out.println("trainingStarted." + " epochIndex=" + epochIndex + " mse=" + mse);

@@ -29,7 +29,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class {@code RunTableView} displays a view on an underlying runs table.
+ * Class {@code RunTableView} displays a view on an run table.
  *
  * @author Hervé Bitteur
  */
@@ -41,7 +41,7 @@ public class RunTableView
     private static final Logger logger = LoggerFactory.getLogger(RunTableView.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The underlying table of runs */
+    /** The underlying table of runs. */
     private final RunTable table;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -121,7 +121,6 @@ public class RunTableView
         ///logger.info("RunTableView location: {}", locationEvent);
 
         // Lookup for Run pointed by this pixel location
-        // Search and forward run & section info
         Rectangle rect = locationEvent.getData();
 
         if (rect == null) {

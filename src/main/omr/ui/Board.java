@@ -11,10 +11,9 @@
 // </editor-fold>
 package omr.ui;
 
+import omr.ui.field.LCheckBox;
 import omr.ui.selection.SelectionService;
 import omr.ui.selection.UserEvent;
-
-import omr.ui.field.LCheckBox;
 import omr.ui.util.Panel;
 
 import omr.util.ClassUtil;
@@ -131,28 +130,28 @@ public abstract class Board
      * @param desc             the board descriptor
      * @param selectionService the related selection service for input & output
      * @param eventsRead       the collection of event classes to observe
-     * @param withCount        true for a count field
-     * @param withVip          true for a VIP label & field
-     * @param withDump         true for a dump button
-     * @param selected         true to make the board initially selected
+     * @param selected         true to pre-select the board
+     * @param useCount         true for a count field
+     * @param useVip           true for a VIP label & field
+     * @param useDump          true for a dump button
      */
     public Board (Desc desc,
                   SelectionService selectionService,
                   Class<?>[] eventsRead,
-                  boolean withCount,
-                  boolean withVip,
-                  boolean withDump,
-                  boolean selected)
+                  boolean selected,
+                  boolean useCount,
+                  boolean useVip,
+                  boolean useDump)
     {
         this(
                 desc.name,
                 desc.position,
                 selectionService,
                 eventsRead,
-                withCount,
-                withVip,
-                withDump,
-                selected);
+                selected,
+                useCount,
+                useVip,
+                useDump);
     }
 
     /**
@@ -162,19 +161,19 @@ public abstract class Board
      * @param position         the preferred position within BoardsPane display
      * @param selectionService the related selection service for input & output
      * @param eventsRead       the collection of event classes to observe
-     * @param withCount        true for a count field
-     * @param withVip          true for a VIP label & field
-     * @param withDump         true for a dump button
-     * @param selected         true to make the board selected
+     * @param selected         true to pre-select the board
+     * @param useCount         true for a count field
+     * @param useVip           true for a VIP label & field
+     * @param useDump          true for a dump button
      */
     public Board (String name,
                   int position,
                   SelectionService selectionService,
                   Class[] eventsRead,
-                  boolean withCount,
-                  boolean withVip,
-                  boolean withDump,
-                  boolean selected)
+                  boolean selected,
+                  boolean useCount,
+                  boolean useVip,
+                  boolean useDump)
     {
         this.name = name;
         this.position = position;
@@ -183,7 +182,7 @@ public abstract class Board
         this.selected = selected;
 
         // Layout header and body parts
-        header = new Header(name, withCount, withVip, withDump);
+        header = new Header(name, useCount, useVip, useDump);
         defineLayout();
     }
 
@@ -311,22 +310,22 @@ public abstract class Board
     /**
      * Select or not this board in its containing BoardsPane.
      *
-     * @param newBool true for selected, false for deselected
+     * @param selected true for selected, false for de-selected
      */
-    public void setSelected (boolean newBool)
+    public void setSelected (boolean selected)
     {
         // No modification?
-        if (selected == newBool) {
+        if (selected == this.selected) {
             return;
         }
 
-        if (newBool) {
+        if (selected) {
             connect();
         } else {
             disconnect();
         }
 
-        selected = newBool;
+        this.selected = selected;
 
         if (parent != null) {
             parent.update();

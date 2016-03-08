@@ -127,7 +127,8 @@ public class BasicGlyph
         this.left = left;
         this.top = top;
 
-        Objects.requireNonNull(runTable, "BasicGlyph created with null runTable");
+        ///Objects.requireNonNull(runTable, "BasicGlyph created with null runTable");
+        // NOTA: We must accept null RunTable for the Sample no-arg constructor
         this.runTable = runTable;
     }
 

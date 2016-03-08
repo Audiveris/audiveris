@@ -224,13 +224,13 @@ public class ShapeBoard
      *
      * @param sheet             the related sheet
      * @param symbolsController the UI controller for symbols
-     * @param expanded          true if initially expanded
+     * @param selected          true if initially selected
      */
     public ShapeBoard (Sheet sheet,
                        SymbolsController symbolsController,
-                       boolean expanded)
+                       boolean selected)
     {
-        super(Board.SHAPE, null, null, false, false, false, expanded);
+        super(Board.SHAPE, null, null, selected, false, false, false);
         this.symbolsController = symbolsController;
         this.sheet = sheet;
 

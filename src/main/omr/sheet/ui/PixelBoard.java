@@ -81,7 +81,7 @@ public class PixelBoard
      */
     public PixelBoard (Sheet sheet)
     {
-        super(Board.PIXEL, sheet.getLocationService(), eventsRead, false, false, false, true);
+        super(Board.PIXEL, sheet.getLocationService(), eventsRead, true, false, false, false);
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
@@ -130,34 +130,34 @@ public class PixelBoard
         FormLayout layout = Panel.makeFormLayout(2, 3);
 
         // Specify that columns 1, 5 & 9 as well as 3, 7 & 11 have equal widths
-        layout.setColumnGroups(
-                new int[][]{
-                    {1, 5, 9},
-                    {3, 7, 11}
-                });
-
+//        layout.setColumnGroups(
+//                new int[][]{
+//                    {1, 5, 9},
+//                    {3, 7, 11}
+//                });
         PanelBuilder builder = new PanelBuilder(layout, getBody());
 
         ///builder.setDefaultDialogBorder();
         CellConstraints cst = new CellConstraints();
 
         int r = 1; // --------------------------------
-        builder.add(x.getLabel(), cst.xy(1, r));
-        builder.add(x.getField(), cst.xy(3, r));
-        x.getField().setColumns(5);
 
-        builder.add(width.getLabel(), cst.xy(5, r));
-        builder.add(width.getField(), cst.xy(7, r));
+        builder.add(level.getLabel(), cst.xy(1, r));
+        builder.add(level.getField(), cst.xy(3, r));
 
-        builder.add(level.getLabel(), cst.xy(9, r));
-        builder.add(level.getField(), cst.xy(11, r));
+        builder.add(x.getLabel(), cst.xy(5, r));
+        builder.add(x.getField(), cst.xy(7, r));
+        ///x.getField().setColumns(5);
+
+        builder.add(width.getLabel(), cst.xy(9, r));
+        builder.add(width.getField(), cst.xy(11, r));
 
         r += 2; // --------------------------------
-        builder.add(y.getLabel(), cst.xy(1, r));
-        builder.add(y.getField(), cst.xy(3, r));
+        builder.add(y.getLabel(), cst.xy(5, r));
+        builder.add(y.getField(), cst.xy(7, r));
 
-        builder.add(height.getLabel(), cst.xy(5, r));
-        builder.add(height.getField(), cst.xy(7, r));
+        builder.add(height.getLabel(), cst.xy(9, r));
+        builder.add(height.getField(), cst.xy(11, r));
     }
 
     //-------------//

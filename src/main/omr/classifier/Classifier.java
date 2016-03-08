@@ -16,8 +16,6 @@ import omr.glyph.Shape;
 
 import omr.sheet.SystemInfo;
 
-import omr.util.Predicate;
-
 import java.util.EnumSet;
 
 /**
@@ -55,15 +53,30 @@ public interface Classifier
      * @param count      the desired maximum sequence length
      * @param minGrade   the minimum evaluation grade to be acceptable
      * @param conditions optional conditions, perhaps empty
-     * @param predicate  filter for acceptable shapes, perhaps null
      * @return the sequence of evaluations, perhaps empty but not null
      */
     Evaluation[] evaluate (Glyph glyph,
                            SystemInfo system,
                            int count,
                            double minGrade,
-                           EnumSet<Condition> conditions,
-                           Predicate<Shape> predicate);
+                           EnumSet<Condition> conditions);
+
+    /**
+     * Report the sorted sequence of best evaluation(s) found by the evaluator on the
+     * provided glyph, with no system but an interline value.
+     *
+     * @param glyph      the glyph to evaluate
+     * @param interline  scaling information
+     * @param count      the desired maximum sequence length
+     * @param minGrade   the minimum evaluation grade to be acceptable
+     * @param conditions optional conditions, perhaps empty
+     * @return the sequence of evaluations, perhaps empty but not null
+     */
+    Evaluation[] evaluate (Glyph glyph,
+                           int interline,
+                           int count,
+                           double minGrade,
+                           EnumSet<Condition> conditions);
 
     /**
      * Report the evaluation of a glyph regarding a specific shape.

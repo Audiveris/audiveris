@@ -53,6 +53,14 @@ class RegressionPanel
         defineSpecificLayout();
     }
 
+    @Override
+    public void trainingStarted (int epochIndex,
+                                 int epochMax,
+                                 double mse)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // defineSpecificLayout //

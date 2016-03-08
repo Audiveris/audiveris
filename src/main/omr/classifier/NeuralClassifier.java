@@ -105,7 +105,7 @@ public class NeuralClassifier
     @Override
     public final String getName ()
     {
-        return "Neural Network";
+        return "Neural";
     }
 
     //------//
@@ -497,8 +497,7 @@ public class NeuralClassifier
     //---------------//
     private NeuralNetwork createNetwork ()
     {
-        // Note : We allocate a hidden layer with as many cells as the output
-        // layer
+        // Note : We allocate a hidden layer with as many cells as the output layer
         NeuralNetwork nn = new NeuralNetwork(
                 ShapeDescription.length(),
                 shapeCount,
@@ -536,6 +535,9 @@ public class NeuralClassifier
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
     private static final class Constants
             extends ConstantSet
     {

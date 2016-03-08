@@ -12,12 +12,15 @@
 package omr.classifier;
 
 import omr.glyph.BasicGlyph;
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
 import omr.run.RunTable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Comparator;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -37,6 +40,17 @@ public class Sample
     private static final Logger logger = LoggerFactory.getLogger(
             Sample.class);
 
+    /** For comparing Sample instances by shape. */
+    public static final Comparator<Sample> byShape = new Comparator<Sample>()
+    {
+        @Override
+        public int compare (Sample s1,
+                            Sample s2)
+        {
+            return Integer.compare(s1.getShape().ordinal(), s2.getShape().ordinal());
+        }
+    };
+
     //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
@@ -48,7 +62,9 @@ public class Sample
 
     /** Scaling information. */
     @XmlAttribute(name = "interline")
-    protected int interline;
+    protected final int interline;
+
+    private boolean symbol;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -75,6 +91,20 @@ public class Sample
     }
 
     /**
+     * Creates a new {@code Sample} object from a glyph.
+     *
+     * @param glyph     the originating glyph
+     * @param interline sheet interline
+     * @param shape     assigned shape
+     */
+    public Sample (Glyph glyph,
+                   int interline,
+                   Shape shape)
+    {
+        this(glyph.getLeft(), glyph.getTop(), glyph.getRunTable(), interline, glyph.getId(), shape);
+    }
+
+    /**
      * No-arg constructor needed for JAXB unmarshalling.
      */
     public Sample ()
@@ -83,13 +113,52 @@ public class Sample
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    public int getInterline ()
+    {
+        return interline;
+    }
+
     public Shape getShape ()
     {
         return shape;
     }
 
-    public int getInterline ()
+    /**
+     * @return the symbol
+     */
+    public boolean isSymbol ()
     {
-        return interline;
+        return symbol;
+    }
+
+    /**
+     * @param symbol the symbol to set
+     */
+    public void setSymbol (boolean symbol)
+    {
+        this.symbol = symbol;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        if ((groups != null) && !groups.isEmpty()) {
+            sb.append(' ').append(groups);
+        }
+
+        if (getShape() != null) {
+            sb.append(" ").append(getShape());
+
+            if (getShape().getPhysicalShape() != getShape()) {
+                sb.append(" physical=").append(getShape().getPhysicalShape());
+            }
+        }
+
+        return sb.toString();
     }
 }

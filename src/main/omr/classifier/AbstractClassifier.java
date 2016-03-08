@@ -19,12 +19,9 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.glyph.ShapeChecker;
 
-import omr.math.NeuralNetwork;
-
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
-import omr.util.Predicate;
 import omr.util.UriUtil;
 
 import org.slf4j.Logger;
@@ -45,14 +42,13 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
 /**
  * Class {@code AbstractClassifier} is an abstract implementation for any managed
  * classifier.
  * <p>
- * <img src="doc-files/GlyphEvaluator.png" />
+ * <img src="doc-files/GlyphEvaluator.png">
  *
  * @author Hervé Bitteur
  */
@@ -101,6 +97,19 @@ public abstract class AbstractClassifier
      * Dump the internals of the engine. */
     public abstract void dump ();
 
+    //----------//
+    // evaluate //
+    //----------//
+    @Override
+    public Evaluation[] evaluate (Glyph glyph,
+                                  int interline,
+                                  int count,
+                                  double minGrade,
+                                  EnumSet<Condition> conditions)
+    {
+        return evaluate(glyph, null, count, minGrade, conditions, interline);
+    }
+
     //-------//
     // train //
     //-------//
@@ -123,49 +132,11 @@ public abstract class AbstractClassifier
                                   SystemInfo system,
                                   int count,
                                   double minGrade,
-                                  EnumSet<Classifier.Condition> conditions,
-                                  Predicate<Shape> predicate)
+                                  EnumSet<Classifier.Condition> conditions)
     {
-        List<Evaluation> bests = new ArrayList<Evaluation>();
-        int interline = system.getSheet().getInterline();
-        Evaluation[] evals = getSortedEvaluations(glyph, interline);
+        final int interline = system.getSheet().getInterline();
 
-        EvalsLoop:
-        for (Evaluation eval : evals) {
-            // Bounding test?
-            if ((bests.size() >= count) || (eval.grade < minGrade)) {
-                break;
-            }
-
-            // Predicate?
-            if ((predicate != null) && !predicate.check(eval.shape)) {
-                continue;
-            }
-
-            // Successful checks?
-            if (conditions.contains(Condition.CHECKED)) {
-                double[] ins = ShapeDescription.features(glyph, interline);
-                // This may change the eval shape in only one case:
-                // HW_REST_set may be changed for HALF_REST or WHOLE_REST based on pitch
-                glyphChecker.annotate(system, eval, glyph, ins);
-
-                if (eval.failure != null) {
-                    continue;
-                }
-            }
-
-            // Everything is OK, add the shape if not already in the list
-            // (this may happen when checks have modified the eval original shape)
-            for (Evaluation e : bests) {
-                if (e.shape == eval.shape) {
-                    continue EvalsLoop;
-                }
-            }
-
-            bests.add(eval);
-        }
-
-        return bests.toArray(new Evaluation[bests.size()]);
+        return evaluate(glyph, system, count, minGrade, conditions, interline);
     }
 
     //------------//
@@ -344,18 +315,17 @@ public abstract class AbstractClassifier
 
                 if (obj == null) {
                     logger.warn("Could not load {}", path);
-                } else {
-                    if (!isCompatible(obj)) {
-                        final String msg = "Obsolete user data for " + getName() + " in " + path
-                                           + ", trying default data";
-                        logger.warn(msg);
-                        JOptionPane.showMessageDialog(null, msg);
-                    } else {
-                        // Tell the user we are not using the default
-                        logger.debug("{} unmarshalled from {}", getName(), path);
+                } else if (!isCompatible(obj)) {
+                    final String msg = "Obsolete user data for " + getName() + " in " + path
+                                       + ", trying default data";
+                    logger.warn(msg);
 
-                        return obj;
-                    }
+                    ///JOptionPane.showMessageDialog(null, msg);
+                } else {
+                    // Tell the user we are not using the default
+                    logger.debug("{} unmarshalled from {}", getName(), path);
+
+                    return obj;
                 }
             }
         }
@@ -377,19 +347,63 @@ public abstract class AbstractClassifier
 
         if (obj == null) {
             logger.warn("Could not load {}", uri);
+        } else if (!isCompatible(obj)) {
+            final String msg = "Obsolete default data for " + getName() + " in " + uri
+                               + ", please retrain from scratch";
+            logger.warn(msg);
+            ///JOptionPane.showMessageDialog(null, msg);
+            obj = null;
         } else {
-            if (!isCompatible(obj)) {
-                final String msg = "Obsolete default data for " + getName() + " in " + uri
-                                   + ", please retrain from scratch";
-                logger.warn(msg);
-                /////TODO: JOptionPane.showMessageDialog(null, msg);
-                obj = null;
-            } else {
-                logger.debug("{} unmarshalled from {}", getName(), uri);
-            }
+            logger.debug("{} unmarshalled from {}", getName(), uri);
         }
 
         return obj;
+    }
+
+    //----------//
+    // evaluate //
+    //----------//
+    private Evaluation[] evaluate (Glyph glyph,
+                                   SystemInfo system,
+                                   int count,
+                                   double minGrade,
+                                   EnumSet<Classifier.Condition> conditions,
+                                   int interline)
+    {
+        List<Evaluation> bests = new ArrayList<Evaluation>();
+        Evaluation[] evals = getSortedEvaluations(glyph, interline);
+
+        EvalsLoop:
+        for (Evaluation eval : evals) {
+            // Bounding test?
+            if ((bests.size() >= count) || (eval.grade < minGrade)) {
+                break;
+            }
+
+            // Successful checks?
+            if (conditions.contains(Condition.CHECKED)) {
+                double[] ins = ShapeDescription.features(glyph, interline);
+                // This may change the eval shape in only one case:
+                // HW_REST_set may be changed for HALF_REST or WHOLE_REST based on pitch
+                glyphChecker.annotate(system, eval, glyph, ins);
+
+                if (eval.failure != null) {
+                    continue;
+                }
+            }
+
+            // Everything is OK, add the shape if not already in the list
+            // (this may happen when checks have modified the eval original shape)
+            for (Evaluation e : bests) {
+                if (e.shape == eval.shape) {
+                    continue EvalsLoop;
+                }
+            }
+
+            bests.add(eval);
+        }
+
+        return bests.toArray(new Evaluation[bests.size()]);
     }
 
     //-----------//
@@ -452,9 +466,17 @@ public abstract class AbstractClassifier
      * training of an classifier when processing a sample glyph.
      */
     public static interface Monitor
-            extends NeuralNetwork.Monitor
     {
         //~ Methods --------------------------------------------------------------------------------
+
+        /**
+         * Entry called at end of each epoch during the training phase.
+         *
+         * @param epochIndex the sequential index of completed epoch
+         * @param mse        the remaining mean square error
+         */
+        void epochEnded (int epochIndex,
+                         double mse);
 
         /**
          * Entry called when a sample is being processed.
@@ -462,6 +484,18 @@ public abstract class AbstractClassifier
          * @param sample the sample being processed
          */
         void sampleProcessed (Sample sample);
+
+        /**
+         * Entry called at the beginning of the training phase, to allow
+         * initial snap shots for example.
+         *
+         * @param epochIndex the sequential index (0)
+         * @param epochMax   expected maximum index
+         * @param mse        the starting mean square error
+         * */
+        void trainingStarted (final int epochIndex,
+                              final int epochMax,
+                              final double mse);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

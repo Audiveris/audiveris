@@ -37,12 +37,17 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -88,6 +93,8 @@ public class RunTable
 
     private static final Logger logger = LoggerFactory.getLogger(
             RunTable.class);
+
+    private static JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
@@ -149,80 +156,6 @@ public class RunTable
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----//
-    // get //
-    //-----//
-    /**
-     * {@inheritDoc}
-     * <p>
-     * <b>Beware</b>, this implementation is not efficient enough for bulk operations.
-     * For such needs, a much more efficient way is to first retrieve a full buffer, via {@link
-     * #getBuffer()} method, then use this temporary buffer as the {@link PixelSource} instead of
-     * this table.
-     *
-     * @param x absolute abscissa
-     * @param y absolute ordinate
-     * @return the pixel value (FOREGROUND or BACKGROUND)
-     */
-    @Override
-    public final int get (int x,
-                          int y)
-    {
-        Run run = getRunAt(x, y);
-
-        return (run != null) ? 0 : BACKGROUND;
-    }
-
-    //----------//
-    // getRunAt //
-    //----------//
-    /**
-     * Report the run found at given <b>relative</b> coordinates, if any.
-     *
-     * @param x abscissa, relative to runTable left
-     * @param y ordinate, relative to runTable top
-     * @return the run found, or null otherwise
-     */
-    public final Run getRunAt (int x,
-                               int y)
-    {
-        final int iSeq = (orientation == HORIZONTAL) ? y : x;
-
-        if ((iSeq < 0) || (iSeq >= sequences.length)) {
-            return null;
-        }
-
-        final int coord = (orientation == HORIZONTAL) ? x : y;
-
-        for (Itr it = new Itr(iSeq); it.hasNext();) {
-            Run run = it.next();
-
-            if (run.getStart() > coord) {
-                return null;
-            }
-
-            if (run.getStop() >= coord) {
-                return run;
-            }
-        }
-
-        return null;
-    }
-
-    //---------//
-    // getSize //
-    //---------//
-    /**
-     * Report the number of sequences of runs in the table.
-     * This is the width for a table of vertical runs and the height for a table of horizontal runs.
-     *
-     * @return the table size (in terms of sequences, including the null ones)
-     */
-    public final int getSize ()
-    {
-        return sequences.length;
-    }
-
     //--------//
     // addRun //
     //--------//
@@ -786,6 +719,30 @@ public class RunTable
         }
     }
 
+    //-----//
+    // get //
+    //-----//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <b>Beware</b>, this implementation is not efficient enough for bulk operations.
+     * For such needs, a much more efficient way is to first retrieve a full buffer, via {@link
+     * #getBuffer()} method, then use this temporary buffer as the {@link PixelSource} instead of
+     * this table.
+     *
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return the pixel value (FOREGROUND or BACKGROUND)
+     */
+    @Override
+    public final int get (int x,
+                          int y)
+    {
+        Run run = getRunAt(x, y);
+
+        return (run != null) ? 0 : BACKGROUND;
+    }
+
     //-----------//
     // getBuffer //
     //-----------//
@@ -880,6 +837,42 @@ public class RunTable
         return orientation;
     }
 
+    //----------//
+    // getRunAt //
+    //----------//
+    /**
+     * Report the run found at given <b>relative</b> coordinates, if any.
+     *
+     * @param x abscissa, relative to runTable left
+     * @param y ordinate, relative to runTable top
+     * @return the run found, or null otherwise
+     */
+    public final Run getRunAt (int x,
+                               int y)
+    {
+        final int iSeq = (orientation == HORIZONTAL) ? y : x;
+
+        if ((iSeq < 0) || (iSeq >= sequences.length)) {
+            return null;
+        }
+
+        final int coord = (orientation == HORIZONTAL) ? x : y;
+
+        for (Itr it = new Itr(iSeq); it.hasNext();) {
+            Run run = it.next();
+
+            if (run.getStart() > coord) {
+                return null;
+            }
+
+            if (run.getStop() >= coord) {
+                return run;
+            }
+        }
+
+        return null;
+    }
+
     //---------------//
     // getRunService //
     //---------------//
@@ -891,6 +884,20 @@ public class RunTable
     public RunService getRunService ()
     {
         return runService;
+    }
+
+    //---------//
+    // getSize //
+    //---------//
+    /**
+     * Report the number of sequences of runs in the table.
+     * This is the width for a table of vertical runs and the height for a table of horizontal runs.
+     *
+     * @return the table size (in terms of sequences, including the null ones)
+     */
+    public final int getSize ()
+    {
+        return sequences.length;
     }
 
     //------------------//
@@ -937,6 +944,33 @@ public class RunTable
         return weight;
     }
 
+    //-----------//
+    // unmarshal //
+    //-----------//
+    public static RunTable unmarshal (Path path)
+    {
+        logger.debug("RunTable unmarshalling {}", path);
+
+        try {
+            InputStream is = Files.newInputStream(path, StandardOpenOption.READ);
+
+            if (jaxbContext == null) {
+                jaxbContext = JAXBContext.newInstance(RunTable.class);
+            }
+
+            Unmarshaller um = jaxbContext.createUnmarshaller();
+            RunTable runTable = (RunTable) um.unmarshal(is);
+            is.close();
+            logger.debug("Unmarshalled {}", runTable);
+
+            return runTable;
+        } catch (Exception ex) {
+            logger.warn("RunTable. Error unmarshalling " + path + " " + ex, ex);
+
+            return null;
+        }
+    }
+
     //----------//
     // getWidth //
     //----------//
@@ -957,11 +991,34 @@ public class RunTable
     @Override
     public int hashCode ()
     {
-        int hash = 7;
-        hash = (71 * hash) + Objects.hashCode(this.orientation);
-        hash = (71 * hash) + this.width;
-        hash = (71 * hash) + this.height;
-        hash = (71 * hash) + Objects.hashCode(getWeight());
+        getWeight();
+
+        int hash = 3;
+        hash = (83 * hash) + Objects.hashCode(this.orientation);
+        hash = (83 * hash) + this.width;
+        hash = (83 * hash) + this.height;
+        hash = (83 * hash) + Objects.hashCode(this.weight);
+
+        return hash;
+    }
+
+    //--------------------//
+    // persistentHashCode //
+    //--------------------//
+    /**
+     * Provide a hash code value that PERSIST across application executions.
+     *
+     * @return the persistent hash code for this run table
+     */
+    public int persistentHashCode ()
+    {
+        getWeight();
+
+        int hash = 3;
+        hash = (83 * hash) + this.orientation.ordinal();
+        hash = (83 * hash) + this.width;
+        hash = (83 * hash) + this.height;
+        hash = (83 * hash) + this.weight;
 
         return hash;
     }
@@ -1464,35 +1521,6 @@ public class RunTable
         }
     }
 
-    //-------------//
-    // getSequence //
-    //-------------//
-    /**
-     * (package private) Report the sequence of runs at a given index
-     *
-     * @param index the desired index
-     * @return the MODIFIABLE sequence of runs
-     */
-    final RunSequence getSequence (int index)
-    {
-        return sequences[index];
-    }
-
-    //-------------//
-    // setSequence //
-    //-------------//
-    /**
-     * (package private) method meant to optimize the filling of a whole run sequence.
-     *
-     * @param index position in sequences list
-     * @param seq   the run sequence already populated
-     */
-    final void setSequence (int index,
-                            RunSequence seq)
-    {
-        sequences[index] = seq;
-    }
-
     //--------//
     // encode //
     //--------//
@@ -1541,6 +1569,35 @@ public class RunTable
         }
 
         return new RunSequence(rle);
+    }
+
+    //-------------//
+    // getSequence //
+    //-------------//
+    /**
+     * (package private) Report the sequence of runs at a given index
+     *
+     * @param index the desired index
+     * @return the MODIFIABLE sequence of runs
+     */
+    final RunSequence getSequence (int index)
+    {
+        return sequences[index];
+    }
+
+    //-------------//
+    // setSequence //
+    //-------------//
+    /**
+     * (package private) method meant to optimize the filling of a whole run sequence.
+     *
+     * @param index position in sequences list
+     * @param seq   the run sequence already populated
+     */
+    final void setSequence (int index,
+                            RunSequence seq)
+    {
+        sequences[index] = seq;
     }
 
     //--------------//

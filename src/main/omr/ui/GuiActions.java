@@ -373,7 +373,7 @@ public class GuiActions
     @Action
     public void verifyTrainingMaterial (ActionEvent e)
     {
-        SampleVerifier.getInstance().setVisible(true);
+        SampleVerifier.getInstance().setVisible();
     }
 
     //--------------//

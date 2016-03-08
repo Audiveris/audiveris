@@ -30,11 +30,11 @@ public class FilamentBoard
      * Creates a new {@code FilamentBoard} object.
      *
      * @param service  filament service
-     * @param expanded true for pre-selected
+     * @param selected true for pre-selected
      */
     public FilamentBoard (EntityService service,
-                          boolean expanded)
+                          boolean selected)
     {
-        super(Board.FILAMENT, service, expanded);
+        super(Board.FILAMENT, service, selected);
     }
 }

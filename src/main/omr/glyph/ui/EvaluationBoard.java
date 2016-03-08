@@ -13,7 +13,7 @@ package omr.glyph.ui;
 
 import omr.classifier.Classifier;
 import omr.classifier.Evaluation;
-import omr.classifier.GlyphClassifier;
+import omr.classifier.Sample;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -31,6 +31,7 @@ import omr.ui.selection.EntityListEvent;
 import omr.ui.selection.MouseMovement;
 import omr.ui.selection.SelectionHint;
 import omr.ui.selection.UserEvent;
+import omr.ui.util.FixedWidthIcon;
 import omr.ui.util.Panel;
 
 import omr.util.Navigable;
@@ -84,6 +85,9 @@ public class EvaluationBoard
     private static final Color EVAL_SOSO_COLOR = new Color(150, 150, 150);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /** Underlying glyph classifier. */
+    private final Classifier classifier;
+
     /** Related glyphs controller */
     private final GlyphsController glyphsController;
 
@@ -102,13 +106,15 @@ public class EvaluationBoard
      * Create a simplified passive evaluation board with one neural
      * network evaluator.
      *
-     * @param glyphModel the related glyph model
-     * @param expanded   true for pre-selection
+     * @param classifier      the classifier to use
+     * @param glyphController the related glyph controller
+     * @param selected        true for pre-selection
      */
-    public EvaluationBoard (GlyphsController glyphModel,
-                            boolean expanded)
+    public EvaluationBoard (Classifier classifier,
+                            GlyphsController glyphController,
+                            boolean selected)
     {
-        this(null, glyphModel, expanded);
+        this(null, classifier, glyphController, selected);
         useAnnotations = false;
     }
 
@@ -120,22 +126,25 @@ public class EvaluationBoard
      * force glyph shape.
      *
      * @param sheet           the related sheet, or null
+     * @param classifier      the classifier to use
      * @param glyphController the related glyph controller
-     * @param expanded        true for pre-selection
+     * @param selected        true for pre-selection
      */
     public EvaluationBoard (Sheet sheet,
+                            Classifier classifier,
                             GlyphsController glyphController,
-                            boolean expanded)
+                            boolean selected)
     {
         super(
-                Board.EVAL,
-                glyphController.getIndex().getEntityService(),
+                new Desc("Eval " + classifier.getName(), 700),
+                glyphController.getGlyphService(),
                 eventsRead,
+                selected,
                 false,
                 false,
-                false,
-                expanded);
+                false);
 
+        this.classifier = classifier;
         this.glyphsController = glyphController;
         this.sheet = sheet;
 
@@ -149,7 +158,7 @@ public class EvaluationBoard
     // evaluate //
     //----------//
     /**
-     * Evaluate the glyph at hand, and display the result in the evaluator dedicated area.
+     * Evaluate the glyph at hand, and display the result in evaluator dedicated area.
      *
      * @param glyph the glyph at hand
      */
@@ -158,22 +167,33 @@ public class EvaluationBoard
         if (glyph == null) {
             // Blank the output
             selector.setEvals(null, null);
-        } else if (getClassifier() != null) {
-            SystemManager systemManager = sheet.getSystemManager();
+        } else if (classifier != null) {
+            if (sheet != null) {
+                SystemManager systemManager = sheet.getSystemManager();
 
-            for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                    selector.setEvals(
+                            classifier.evaluate(
+                                    glyph,
+                                    system,
+                                    selector.evalCount(),
+                                    constants.minGrade.getValue(),
+                                    useAnnotations ? EnumSet.of(Classifier.Condition.CHECKED)
+                                            : Classifier.NO_CONDITIONS),
+                            glyph);
+
+                    return;
+                }
+            } else if (glyph instanceof Sample) {
                 selector.setEvals(
-                        getClassifier().evaluate(
+                        classifier.evaluate(
                                 glyph,
-                                system,
+                                ((Sample) glyph).getInterline(),
                                 selector.evalCount(),
                                 constants.minGrade.getValue(),
                                 useAnnotations ? EnumSet.of(Classifier.Condition.CHECKED)
-                                        : Classifier.NO_CONDITIONS,
-                                null),
+                                        : Classifier.NO_CONDITIONS),
                         glyph);
-
-                return;
             }
         }
     }
@@ -203,13 +223,10 @@ public class EvaluationBoard
             if (event instanceof EntityListEvent) {
                 EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
                 Glyph glyph = listEvent.getEntity();
-
-                if (glyph != null) {
-                    evaluate(glyph);
-                }
+                evaluate(glyph);
             }
         } catch (Exception ex) {
-            logger.warn(sheet.getLogPrefix() + getClass().getName() + " output error", ex);
+            logger.warn("EvaluationBoard error", ex);
         }
     }
 
@@ -229,12 +246,7 @@ public class EvaluationBoard
             layout.appendRow(FormSpecs.PREF_ROWSPEC);
         }
 
-        ///SystemUtils.IS_OS_WINDOWS
-        // Uncomment following line to have fixed sized rows, whether they are filled or not
-        ///layout.setRowGroups(new int[][]{{1, 3, 4, 5 }});
         PanelBuilder builder = new PanelBuilder(layout, getBody());
-
-        ///builder.setDefaultDialogBorder();
         CellConstraints cst = new CellConstraints();
 
         for (int i = 0; i < visibleButtons; i++) {
@@ -243,14 +255,6 @@ public class EvaluationBoard
             builder.add(evb.grade, cst.xy(5, r));
             builder.add((sheet != null) ? evb.button : evb.field, cst.xyw(7, r, 5));
         }
-    }
-
-    //---------------//
-    // getClassifier //
-    //---------------//
-    private Classifier getClassifier ()
-    {
-        return GlyphClassifier.getInstance();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -315,7 +319,7 @@ public class EvaluationBoard
         {
             // Assign current glyph with selected shape
             if (glyphsController != null) {
-                Glyph glyph = glyphsController.getIndex().getSelectedGlyph();
+                Glyph glyph = glyphsController.getGlyphService().getSelectedEntity();
 
                 if (glyph != null) {
                     String str = button.getText();
@@ -355,7 +359,7 @@ public class EvaluationBoard
 
                     button.setText(text);
                     button.setToolTipText(tip);
-                    button.setIcon(eval.shape.getDecoratedSymbol());
+                    button.setIcon(new FixedWidthIcon(eval.shape.getDecoratedSymbol()));
                 } else {
                     if (barred) {
                         field.setBackground(Colors.EVALUATION_BARRED);
@@ -365,7 +369,7 @@ public class EvaluationBoard
 
                     field.setText(text);
                     field.setToolTipText(tip);
-                    field.setIcon(eval.shape.getDecoratedSymbol());
+                    field.setIcon(new FixedWidthIcon(eval.shape.getDecoratedSymbol()));
                 }
 
                 comp.setVisible(true);

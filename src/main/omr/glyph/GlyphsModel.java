@@ -22,9 +22,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
+import omr.ui.selection.EntityService;
 
 /**
- * Class {@code GlyphsModel} is a common model for synchronous glyph and section handling.
+ * Class {@code GlyphsModel} is a common model for synchronous glyph handling.
  * <p>
  * Nota: User gesture should trigger actions in GlyphsController which will asynchronously delegate
  * to this model.
@@ -38,40 +40,34 @@ public class GlyphsModel
     private static final Logger logger = LoggerFactory.getLogger(GlyphsModel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Underlying glyph nest */
-    protected final GlyphIndex nest;
+    /** Underlying glyph service. */
+    protected final EntityService<? extends Glyph> glyphService;
 
-    /** Related Sheet */
+    /** Related Sheet, if any. */
     protected final Sheet sheet;
 
-    /** Related Step */
+    /** Related Step, if any. */
     protected final Step step;
 
-    /** Latest shape assigned if any */
+    /** Latest shape assigned, if any. */
     protected Shape latestShape;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create an instance of GlyphsModel, with its underlying glyph lag.
+     * Create an instance of GlyphsModel, with its underlying glyph glyphService.
      *
-     * @param sheet the related sheet (can be null)
-     * @param nest  the related nest (cannot be null)
-     * @param step  the step after which update should be perform (can be null)
+     * @param sheet        the related sheet (can be null)
+     * @param glyphService the related sheetService (cannot be null)
+     * @param step         the step after which update should be perform (can be null)
      */
     public GlyphsModel (Sheet sheet,
-                        GlyphIndex nest,
+                        EntityService<? extends Glyph> glyphService,
                         Step step)
     {
-        // Null sheet is allowed (for GlyphVerifier use)
-        this.sheet = sheet;
+        Objects.requireNonNull(glyphService, "Attempt to create a GlyphsModel with null service");
 
-        if (nest == null) {
-            throw new IllegalArgumentException(
-                    "Attempt to create a GlyphsModel with null underlying nest");
-        } else {
-            this.nest = nest;
-        }
-
+        this.sheet = sheet; // Null sheet is allowed (for SampleVerifier use)
+        this.glyphService = glyphService;
         this.step = step;
     }
 
@@ -94,19 +90,20 @@ public class GlyphsModel
                               double grade)
     {
         throw new RuntimeException("HB. Not implemented yet");
-//        if (compound) {
-//            // Build & insert one compound
-//            Glyph glyph = nest.buildGlyph(glyphs, true);
-//
-//            assignGlyph(glyph, shape, grade);
-//        } else {
-//            // Assign each glyph individually
-//            for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
-//                if (glyph.getShape() != Shape.NOISE) {
-//                    assignGlyph(glyph, shape, grade);
-//                }
-//            }
-//        }
+
+        //        if (compound) {
+        //            // Build & insert one compound
+        //            Glyph glyph = nest.buildGlyph(glyphs, true);
+        //
+        //            assignGlyph(glyph, shape, grade);
+        //        } else {
+        //            // Assign each glyph individually
+        //            for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
+        //                if (glyph.getShape() != Shape.NOISE) {
+        //                    assignGlyph(glyph, shape, grade);
+        //                }
+        //            }
+        //        }
     }
 
     //----------------//
@@ -134,18 +131,17 @@ public class GlyphsModel
         }
     }
 
-    //--------------//
-    // getGlyphById //
-    //--------------//
+    //-----------------//
+    // getGlyphService //
+    //-----------------//
     /**
-     * Retrieve a glyph, knowing its id.
+     * Report the underlying glyph glyphService.
      *
-     * @param id the glyph id
-     * @return the glyph found, or null if not
+     * @return the related glyph glyphService
      */
-    public Glyph getGlyphById (int id)
+    public EntityService<? extends Glyph> getGlyphService ()
     {
-        return nest.getEntity(id);
+        return glyphService;
     }
 
     //----------------//
@@ -160,19 +156,6 @@ public class GlyphsModel
     public Shape getLatestShape ()
     {
         return latestShape;
-    }
-
-    //---------//
-    // getGlyphIndex //
-    //---------//
-    /**
-     * Report the underlying glyph nest.
-     *
-     * @return the related glyph nest
-     */
-    public GlyphIndex getNest ()
-    {
-        return nest;
     }
 
     //----------------//
@@ -237,44 +220,45 @@ public class GlyphsModel
                                  double grade)
     {
         throw new RuntimeException("HB. Not implemented yet");
-//        if (glyph == null) {
-//            return null;
-//        }
-//
-//        if (shape != null) {
-//            List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(glyph);
-//
-//            //            if (system != null) {
-//            //                glyph = system.register(glyph); // System then nest
-//            //            } else {
-//            //                // Insert in nest directly, which assigns an id to the glyph
-//            glyph = nest.register(glyph);
-//
-//            //            }
-//            boolean isTransient = glyph.isTransient();
-//            logger.debug(
-//                    "Assign {}{} to {}",
-//                    isTransient ? "compound " : "",
-//                    glyph.idString(),
-//                    shape);
-//
-//            // Remember the latest shape assigned
-//            setLatestShape(shape);
-//        }
-//
-//        // Do the assignment of the shape to the glyph
-//        glyph.setShape(shape);
-//
-//        // Should we persist the assigned glyph?
-//        if ((shape != null)
-//            && (grade == Evaluation.MANUAL)
-//            && (OMR.gui != null)
-//            && ScoreActions.getInstance().isManualPersisted()) {
-//            // Record the glyph description to disk
-//            SampleRepository.getInstance().recordOneGlyph(glyph, sheet);
-//        }
-//
-//        return glyph;
+
+        //        if (glyph == null) {
+        //            return null;
+        //        }
+        //
+        //        if (shape != null) {
+        //            List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(glyph);
+        //
+        //            //            if (system != null) {
+        //            //                glyph = system.register(glyph); // System then nest
+        //            //            } else {
+        //            //                // Insert in nest directly, which assigns an id to the glyph
+        //            glyph = nest.register(glyph);
+        //
+        //            //            }
+        //            boolean isTransient = glyph.isTransient();
+        //            logger.debug(
+        //                    "Assign {}{} to {}",
+        //                    isTransient ? "compound " : "",
+        //                    glyph.idString(),
+        //                    shape);
+        //
+        //            // Remember the latest shape assigned
+        //            setLatestShape(shape);
+        //        }
+        //
+        //        // Do the assignment of the shape to the glyph
+        //        glyph.setShape(shape);
+        //
+        //        // Should we persist the assigned glyph?
+        //        if ((shape != null)
+        //            && (grade == Evaluation.MANUAL)
+        //            && (OMR.gui != null)
+        //            && ScoreActions.getInstance().isManualPersisted()) {
+        //            // Record the glyph description to disk
+        //            SampleRepository.getInstance().recordOneGlyph(glyph, sheet);
+        //        }
+        //
+        //        return glyph;
     }
 
     //---------------//
@@ -296,7 +280,7 @@ public class GlyphsModel
     //-------------//
     protected void deleteGlyph (Glyph glyph)
     {
-        logger.error("No yet implemented");
+        logger.error("HB. Not yet implemented");
 
         //        if (glyph == null) {
         //            return;

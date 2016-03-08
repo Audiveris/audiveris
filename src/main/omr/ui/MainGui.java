@@ -30,11 +30,9 @@ import omr.score.PartwiseBuilder;
 import omr.sheet.Book;
 import omr.sheet.SheetStub;
 import omr.sheet.ui.BookActions;
-import omr.sheet.ui.SheetResultPainter;
 import omr.sheet.ui.StubsController;
 
 import omr.step.ui.StepMenu;
-import omr.step.ui.StepMonitoring;
 
 import omr.ui.action.ActionManager;
 import omr.ui.action.Actions;
@@ -45,7 +43,6 @@ import omr.ui.symbol.MusicFont;
 import omr.ui.util.ModelessOptionPane;
 import omr.ui.util.Panel;
 import omr.ui.util.SeparableMenu;
-import omr.ui.util.UIUtil;
 
 import omr.util.OmrExecutors;
 import omr.util.WeakPropertyChangeListener;
@@ -54,7 +51,6 @@ import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
-import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +76,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
+import omr.sheet.ui.SheetResultPainter;
+import omr.step.ui.StepMonitoring;
+import omr.ui.util.UIUtil;
 
 /**
  * Class {@code MainGui} is the Java User Interface, the main class for displaying a
@@ -211,20 +210,6 @@ public class MainGui
                 message,
                 "Warning - " + appName,
                 JOptionPane.WARNING_MESSAGE);
-    }
-
-    //----------------//
-    // getApplication //
-    //----------------//
-    /**
-     * Report the single instance of this GUI SAF application.
-     *
-     * @return the SingleFrameApplication instance
-     */
-    @Override
-    public SingleFrameApplication getApplication ()
-    {
-        return (SingleFrameApplication) Application.getInstance();
     }
 
     //----------//
@@ -643,7 +628,6 @@ public class MainGui
         gauges.add(SheetResultPainter.getVoicePanel(), BorderLayout.WEST);
         gauges.add(StepMonitoring.createMonitor().getComponent(), BorderLayout.CENTER);
         gauges.add(new MemoryMeter().getComponent(), BorderLayout.EAST);
-
         // Outer bar = menu | gauges
         JMenuBar outerBar = new JMenuBar();
         outerBar.setLayout(new GridLayout(1, 0));

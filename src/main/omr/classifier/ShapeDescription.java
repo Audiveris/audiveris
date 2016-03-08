@@ -22,7 +22,7 @@ public abstract class ShapeDescription
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** This instance defines which descriptor is used by application. */
+    /** This instance defines which descriptor is used by OMR engine. */
     private static final Descriptor INSTANCE
             // = new ShapeDescriptorGeo() //
             // = new ShapeDescriptorART() //

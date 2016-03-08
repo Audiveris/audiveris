@@ -26,7 +26,7 @@ public abstract class Inters
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
-     * For comparing inter collections by decreasing mean grade.
+     * For comparing inter instances by decreasing mean grade.
      */
     public static final Comparator<Collection<Inter>> byReverseMeanGrade = new Comparator<Collection<Inter>>()
     {
@@ -39,7 +39,7 @@ public abstract class Inters
     };
 
     /**
-     * For comparing inter collections by decreasing mean contextual grade.
+     * For comparing inter instances by decreasing mean contextual grade.
      */
     public static final Comparator<Collection<Inter>> byReverseMeanContextualGrade = new Comparator<Collection<Inter>>()
     {

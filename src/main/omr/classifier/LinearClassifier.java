@@ -467,7 +467,7 @@ public class LinearClassifier
             } catch (Exception ex) {
                 logger.warn(
                         "Weird shape: " + sample.getShape() + " file="
-                        + SampleRepository.getInstance().getGlyphName(sample),
+                        + SampleRepository.getInstance().getSheetId(sample),
                         ex);
             }
         }

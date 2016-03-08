@@ -13,6 +13,7 @@ package omr.sheet.ui;
 
 import omr.glyph.GlyphIndex;
 import omr.glyph.GlyphsModel;
+import omr.glyph.ui.GlyphService;
 import omr.glyph.ui.GlyphsController;
 import omr.glyph.ui.NestView;
 import omr.glyph.ui.SymbolGlyphBoard;
@@ -59,7 +60,8 @@ public class LagController
                           Lag lag,
                           SheetTab tab)
     {
-        super(new GlyphsModel(sheet, sheet.getGlyphIndex(), null));
+        super(
+                new GlyphsModel(sheet, (GlyphService) sheet.getGlyphIndex().getEntityService(), null));
         this.lag = lag;
         this.tab = tab;
     }
@@ -86,7 +88,7 @@ public class LagController
     private void displayFrame ()
     {
         // Specific rubber display
-        view = new MyView(getIndex());
+        view = new MyView(sheet.getGlyphIndex());
 
         sheet.getAssembly().addViewTab(
                 tab,

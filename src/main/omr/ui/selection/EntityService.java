@@ -52,13 +52,30 @@ public class EntityService<E extends Entity>
     private static final Logger logger = LoggerFactory.getLogger(EntityService.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The underlying entity index. */
+    /** The underlying entity index, if any. */
     protected final EntityIndex<E> index;
 
     /** The related location service, if any. */
     protected final SelectionService locationService;
 
     //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code EntityService} object with no underlying index.
+     *
+     * @param name            service name
+     * @param locationService related location service, or null if none
+     * @param eventsAllowed   events allowed on the service
+     */
+    public EntityService (String name,
+                          SelectionService locationService,
+                          Class[] eventsAllowed)
+    {
+        super(name, eventsAllowed);
+
+        index = null;
+        this.locationService = locationService;
+    }
+
     /**
      * Creates a new {@code EntityService} object.
      *

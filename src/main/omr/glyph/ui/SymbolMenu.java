@@ -651,8 +651,7 @@ public class SymbolMenu
                             system,
                             1,
                             Grades.symbolMinGrade,
-                            EnumSet.of(ALLOWED, CHECKED),
-                            null);
+                            EnumSet.of(ALLOWED, CHECKED));
 
                     if (evals.length > 0) {
                         proposedGlyph = glyph;

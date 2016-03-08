@@ -24,9 +24,15 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.Collection;
 
 import javax.swing.JMenuItem;
+import omr.classifier.ui.SampleMenu;
+import omr.glyph.GlyphIndex;
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionHint;
 
 /**
  * Class {@code GlyphMenu} displays a collection of glyphs.
@@ -74,7 +80,8 @@ public class GlyphMenu
                 //
                 //                if (inters.isEmpty()) {
                 // Just a glyph item
-                JMenuItem item = new JMenuItem(new GlyphAction(glyph));
+                ///JMenuItem item = new JMenuItem(new GlyphAction(glyph));
+                JMenuItem item = new SampleMenu(glyph, sheet);
                 item.addMouseListener(glyphListener);
                 add(item);
 
@@ -109,9 +116,21 @@ public class GlyphMenu
         @Override
         public void mouseEntered (MouseEvent e)
         {
-            JMenuItem item = (JMenuItem) e.getSource();
-            GlyphAction action = (GlyphAction) item.getAction();
-            action.publish();
+            SampleMenu sampleMenu = (SampleMenu) e.getSource();
+            Glyph glyph = sampleMenu.getGlyph();
+            GlyphIndex glyphIndex = glyph.getIndex();
+
+            if (glyphIndex == null) {
+                logger.warn("No index for {}", glyph);
+            } else {
+                glyphIndex.getEntityService().publish(
+                        new EntityListEvent<Glyph>(
+                                this,
+                                SelectionHint.ENTITY_INIT,
+                                MouseMovement.PRESSING,
+                                Arrays.asList(glyph)));
+            }
+
         }
     }
 }
