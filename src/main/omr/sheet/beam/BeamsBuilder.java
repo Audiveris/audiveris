@@ -740,7 +740,7 @@ public class BeamsBuilder
         rawSystemBeams = sig.inters(AbstractBeamInter.class);
 
         // Extend each orphan beam as much as possible
-        for (Inter inter : rawSystemBeams) {
+        for (Inter inter : new ArrayList<Inter>(rawSystemBeams)) {
             if (inter.isDeleted()) {
                 continue;
             }

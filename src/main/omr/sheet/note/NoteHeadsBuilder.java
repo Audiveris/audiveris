@@ -56,6 +56,7 @@ import omr.sig.inter.SmallVoidHeadInter;
 import omr.sig.inter.SmallWholeInter;
 import omr.sig.inter.VoidHeadInter;
 import omr.sig.inter.WholeInter;
+import omr.sig.relation.BarConnectionRelation;
 
 import omr.util.Dumping;
 import static omr.util.HorizontalSide.*;
@@ -111,7 +112,7 @@ public class NoteHeadsBuilder
             NoteHeadsBuilder.class);
 
     /** Shapes of note head competitors. */
-    private static final Set<Shape> competingShapes = EnumSet.copyOf(
+    private static final Set<Shape> COMPETING_SHAPES = EnumSet.copyOf(
             Arrays.asList(
                     Shape.THICK_BARLINE,
                     Shape.THIN_BARLINE,
@@ -225,7 +226,7 @@ public class NoteHeadsBuilder
             final int interline = staff.getSpecificScale().getInterline();
             catalog = TemplateFactory.getInstance().getCatalog(interline);
 
-            List<Inter> ch = new ArrayList<Inter>(); // Heads created for this staff
+            List<Inter> ch = new ArrayList<Inter>(); // Created Heads for this staff
 
             // First, process all seed-based heads for the staff
             watch.start("Staff #" + staff.getId() + " seed");
@@ -548,7 +549,19 @@ public class NoteHeadsBuilder
             @Override
             public boolean check (Inter inter)
             {
-                return inter.isGood() && competingShapes.contains(inter.getShape());
+                if (!inter.isGood() || !COMPETING_SHAPES.contains(inter.getShape())) {
+                    return false;
+                }
+
+                if (inter.getShape() == Shape.THIN_BARLINE) {
+                    // We may have a stem mistaken for a thin barline
+                    // So, take this as true competitor only if connected with other staff barline
+                    if (!sig.hasRelation(inter, BarConnectionRelation.class)) {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         });
 
