@@ -19,6 +19,7 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 
+import omr.sheet.Book;
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
 
@@ -91,8 +92,9 @@ public class SampleMenu
     //-----------//
     private void addSample (Shape shape)
     {
-        Sample sample = new Sample(glyph, sheet.getInterline(), shape);
+        shape = Sample.getRecordableShape(shape);
 
+        Sample sample = new Sample(glyph, sheet.getInterline(), shape);
         logger.debug("addSample {}", sample);
 
         SampleRepository repository = SampleRepository.getInstance();
@@ -101,7 +103,13 @@ public class SampleMenu
             repository.loadRepository(false);
         }
 
-        String name = FileUtil.getNameSansExtension(sheet.getBook().getInputPath());
+        final Book book = sheet.getBook();
+        String name = FileUtil.getNameSansExtension(book.getInputPath());
+
+        if (book.isMultiSheet()) {
+            name = name + "#" + sheet.getNumber();
+        }
+
         SampleSheet sampleSheet = repository.findSheet(
                 name,
                 sheet.getPicture().getTable(Picture.TableKey.BINARY));

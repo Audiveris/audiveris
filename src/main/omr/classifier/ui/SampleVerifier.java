@@ -14,6 +14,7 @@ package omr.classifier.ui;
 import omr.classifier.NeuralClassifier;
 import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
+import omr.classifier.SampleRepository.AdditionEvent;
 import static omr.classifier.SampleRepository.STANDARD_INTERLINE;
 import omr.classifier.SheetContainer.Descriptor;
 import omr.classifier.WekaClassifier;
@@ -109,6 +110,7 @@ import javax.swing.event.ListSelectionListener;
  */
 public class SampleVerifier
         extends SingleFrameApplication
+        implements ChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -176,8 +178,14 @@ public class SampleVerifier
                 new EvaluationBoard(NeuralClassifier.getInstance(), controller, true),
                 new EvaluationBoard(WekaClassifier.getInstance(), controller, true));
 
+        // Stay informed of repository dynamic updates
+        repository.addListener(this);
+
         if (!standAlone) {
-            load();
+            if (!repository.isLoaded()) {
+                repository.loadRepository(true);
+            }
+
             frame = defineLayout(new JFrame());
         } else {
             INSTANCE = this;
@@ -213,7 +221,9 @@ public class SampleVerifier
     public static void main (String... args)
     {
         standAlone = true;
-        load();
+
+        // Load repository, with binaries
+        SampleRepository.getInstance().loadRepository(true);
 
         // Set UI Look and Feel
         UILookAndFeel.setUI(null);
@@ -238,6 +248,21 @@ public class SampleVerifier
         }
     }
 
+    //--------------//
+    // stateChanged //
+    //--------------//
+    @Override
+    public void stateChanged (ChangeEvent event)
+    {
+        // Called by repository
+        if (event instanceof AdditionEvent) {
+            AdditionEvent addition = (AdditionEvent) event;
+            verify(Arrays.asList(addition.sample));
+        } else {
+            sheetSelector.stateChanged(event);
+        }
+    }
+
     //--------//
     // verify //
     //--------//
@@ -254,27 +279,23 @@ public class SampleVerifier
         // Sort samples by shape
         Collections.sort(samples, Sample.byShape);
 
-        // Sheets
+        // Select proper Sheets
         Set<Descriptor> descSet = new HashSet<Descriptor>();
 
         for (Sample sample : samples) {
             descSet.add(repository.getSheetDescriptor(sample));
         }
 
-        List<Descriptor> descList = new ArrayList<Descriptor>(descSet);
-        ////Collections.sort(descList);
-        sheetSelector.populateWith(descList);
-        sheetSelector.selectAll();
+        sheetSelector.select(descSet);
 
-        // Shapes
+        // Select proper shapes
         EnumSet<Shape> shapeSet = EnumSet.noneOf(Shape.class);
 
         for (Sample sample : samples) {
             shapeSet.add(sample.getShape());
         }
 
-        shapeSelector.populateWith(shapeSet);
-        shapeSelector.selectAll();
+        shapeSelector.select(shapeSet);
 
         // Samples
         sampleListing.populateWith(samples);
@@ -326,6 +347,34 @@ public class SampleVerifier
         frame = defineLayout(getMainFrame());
 
         show(frame); // Here we go...
+    }
+
+    //-----------------//
+    // checkRepository //
+    //-----------------//
+    private void checkRepository ()
+    {
+        dupliChecked = true;
+
+        // Look for duplications
+        List<Sample> toPurge = repository.checkAllSamples();
+
+        if (!toPurge.isEmpty()) {
+            int answer = JOptionPane.showConfirmDialog(
+                    frame,
+                    "Purge repository of " + toPurge.size() + " duplications?",
+                    "Duplications found in sample repository",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+
+            if (answer == JOptionPane.YES_OPTION) {
+                for (Sample sample : toPurge) {
+                    repository.removeSample(sample);
+                }
+            } else if (answer != JOptionPane.NO_OPTION) {
+                dupliChecked = false; // The user made no decision yet
+            }
+        }
     }
 
     //--------------//
@@ -413,47 +462,12 @@ public class SampleVerifier
         resource.injectComponents(frame);
 
         // Wiring
-        sheetSelector.stateChanged(null);
         boardsPane.connect();
 
+        // Initialization
+        sheetSelector.stateChanged(null);
+
         return frame;
-    }
-
-    //------//
-    // load //
-    //------//
-    private static void load ()
-    {
-        // Load repository, with binaries
-        SampleRepository.getInstance().loadRepository(true);
-    }
-
-    //-----------------//
-    // checkRepository //
-    //-----------------//
-    private void checkRepository ()
-    {
-        dupliChecked = true;
-
-        // Look for duplications
-        List<Sample> toPurge = repository.checkAllSamples();
-
-        if (!toPurge.isEmpty()) {
-            int answer = JOptionPane.showConfirmDialog(
-                    frame,
-                    "Purge repository of " + toPurge.size() + " duplications?",
-                    "Duplications found in sample repository",
-                    JOptionPane.YES_NO_CANCEL_OPTION,
-                    JOptionPane.WARNING_MESSAGE);
-
-            if (answer == JOptionPane.YES_OPTION) {
-                for (Sample sample : toPurge) {
-                    repository.removeSample(sample);
-                }
-            } else if (answer != JOptionPane.NO_OPTION) {
-                dupliChecked = false; // The user made no decision yet
-            }
-        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -855,11 +869,9 @@ public class SampleVerifier
          *
          * @param title    label for this selector
          * @param listener potential (external) listener for changes, if any
-         * @param width    preferred width
          */
         public Selector (String title,
-                         ChangeListener listener,
-                         int width)
+                         ChangeListener listener)
         {
             super(title);
             this.title = title;
@@ -867,7 +879,7 @@ public class SampleVerifier
 
             setLayout(new BorderLayout());
             setMinimumSize(new Dimension(0, 200));
-            setPreferredSize(new Dimension(width, 200));
+            setPreferredSize(new Dimension(180, 200));
 
             // To be informed of mouse (de)selections (not programmatic)
             list.addListSelectionListener(
@@ -904,9 +916,7 @@ public class SampleVerifier
             });
 
             JPanel buttons = new JPanel(new GridLayout(1, 2));
-            //            Dimension dim = new Dimension(50, 20);
-            //            buttons.setPreferredSize(dim);
-            //            buttons.setMaximumSize(dim);
+
             buttons.add(selectAll);
             buttons.add(cancelAll);
 
@@ -928,6 +938,19 @@ public class SampleVerifier
             }
 
             update();
+        }
+
+        public void select (Collection<E> items)
+        {
+            list.clearSelection();
+
+            for (int i = 0, iBreak = model.size(); i < iBreak; i++) {
+                E item = model.get(i);
+
+                if (items.contains(item)) {
+                    list.addSelectionInterval(i, i);
+                }
+            }
         }
 
         public void selectAll ()
@@ -982,7 +1005,7 @@ public class SampleVerifier
                           List<Sample> samples,
                           ListSelectionListener selectionListener)
         {
-            super(shape.toString());
+            super(shape + " (" + samples.size() + ")");
             setLayout(new BorderLayout());
 
             list = new JList(samples.toArray(new Sample[samples.size()]));
@@ -1079,7 +1102,7 @@ public class SampleVerifier
 
         public ShapeSelector (ChangeListener listener)
         {
-            super("Shapes", listener, 180);
+            super("Shapes", listener);
             setMinimumSize(new Dimension(100, 0));
 
             list.setCellRenderer(new ShapeRenderer());
@@ -1113,7 +1136,7 @@ public class SampleVerifier
 
         public SheetSelector (ChangeListener listener)
         {
-            super("Sheets", listener, 180);
+            super("Sheets", listener);
         }
 
         //~ Methods --------------------------------------------------------------------------------

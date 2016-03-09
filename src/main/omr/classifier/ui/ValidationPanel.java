@@ -232,6 +232,9 @@ class ValidationPanel
         falsePositives.clear();
 
         int positives = 0;
+        if (!repository.isLoaded()) {
+            repository.loadRepository(false);
+        }
         final List<Sample> samples = repository.getAllSamples();
 
         progressBar.setValue(0);

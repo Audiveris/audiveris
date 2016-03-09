@@ -116,8 +116,7 @@ abstract class TrainingPanel
      * @param standardWidth  standard width for fields & buttons
      * @param engine         the underlying engine to train
      * @param selectionPanel user panel for samples selection
-     * @param totalRows      total number of display rows, interlines not
-     *                       counted
+     * @param totalRows      total number of display rows, interlines not counted
      */
     public TrainingPanel (Trainer.Task task,
                           String standardWidth,

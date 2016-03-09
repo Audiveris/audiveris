@@ -139,6 +139,33 @@ public class Sample
         this.symbol = symbol;
     }
 
+    //--------------------//
+    // getRecordableShape //
+    //--------------------//
+    /**
+     * Report the shape to record for the provided shape.
+     * <p>
+     * For example shapes WHOLE_REST and HALF_REST differ only by their pitch position, so they both
+     * end up to HW_REST_set physical shape.
+     *
+     * @param shape the provided shape
+     * @return the recordable shape to use, or null
+     */
+    public static Shape getRecordableShape (Shape shape)
+    {
+        if (shape == null) {
+            return null;
+        }
+
+        Shape physicalShape = shape.getPhysicalShape();
+
+        if (physicalShape.isTrainable() && (physicalShape != Shape.NOISE)) {
+            return physicalShape;
+        } else {
+            return null;
+        }
+    }
+
     //-----------//
     // internals //
     //-----------//

@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -57,6 +58,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import javax.swing.JOptionPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code SampleRepository} handles the store of {@link Sample} instances,
@@ -124,6 +127,9 @@ public class SampleRepository
     /** Is the repository already loaded?. */
     private volatile boolean loaded;
 
+    /** Listeners on repository modifications. */
+    private final Set<ChangeListener> listeners = new LinkedHashSet<ChangeListener>();
+
     //~ Constructors -------------------------------------------------------------------------------
     /** Private singleton constructor. */
     private SampleRepository ()
@@ -135,23 +141,12 @@ public class SampleRepository
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // addSample //
-    //-----------//
-    /**
-     * Add a new sample to the provided SampleSheet.
-     *
-     * @param sample the sample to add, non-null
-     * @param sheet  the containing sample sheet
-     * @see #removeSample(Sample)
-     */
-    public void addSample (Sample sample,
-                           SampleSheet sheet)
+    //-----------------//
+    // getExitListener //
+    //-----------------//
+    public final Application.ExitListener getExitListener ()
     {
-        Objects.requireNonNull(sheet, "Cannot add a sample to a null sheet");
-
-        sheet.privateAddSample(sample);
-        sampleMap.put(sample, sheet);
+        return new RepositoryExitListener();
     }
 
     //-------------//
@@ -171,12 +166,34 @@ public class SampleRepository
         return INSTANCE;
     }
 
-    //-----------------//
-    // getExitListener //
-    //-----------------//
-    public final Application.ExitListener getExitListener ()
+    //-------------//
+    // addListener //
+    //-------------//
+    public void addListener (ChangeListener listener)
     {
-        return new RepositoryExitListener();
+        Objects.requireNonNull(listener, "Cannot add a null listener");
+        listeners.add(listener);
+    }
+
+    //-----------//
+    // addSample //
+    //-----------//
+    /**
+     * Add a new sample to the provided SampleSheet.
+     *
+     * @param sample the sample to add, non-null
+     * @param sheet  the containing sample sheet
+     * @see #removeSample(Sample)
+     */
+    public void addSample (Sample sample,
+                           SampleSheet sheet)
+    {
+        Objects.requireNonNull(sheet, "Cannot add a sample to a null sheet");
+
+        sheet.privateAddSample(sample);
+        sampleMap.put(sample, sheet);
+
+        fireStateChanged(new AdditionEvent(sample));
     }
 
     //-----------------//
@@ -272,6 +289,22 @@ public class SampleRepository
         }
 
         return purged;
+    }
+
+    //--------------//
+    // checkForSave //
+    //--------------//
+    /**
+     * Check whether the repository has been modified and save it if so.
+     */
+    public void checkForSave ()
+    {
+        if (isLoaded() && isModified()) {
+            storeRepository();
+            logger.info("Sample repository saved.");
+        } else {
+            logger.info("No need to save sample repository");
+        }
     }
 
     //-----------//
@@ -604,6 +637,14 @@ public class SampleRepository
         }
     }
 
+    //----------------//
+    // removeListener //
+    //----------------//
+    public boolean removeListener (ChangeListener listener)
+    {
+        return listeners.remove(listener);
+    }
+
     //--------------//
     // removeSample //
     //--------------//
@@ -715,27 +756,13 @@ public class SampleRepository
         idMap.put(id, symbolSheet);
     }
 
-    //--------------------//
-    // getRecordableShape //
-    //--------------------//
-    /**
-     * Report the shape to record for the provided shape.
-     *
-     * @param sample the provided shape
-     * @return the recordable shape to use, or null
-     */
-    private Shape getRecordableShape (Shape shape)
+    //------------------//
+    // fireStateChanged //
+    //------------------//
+    private void fireStateChanged (ChangeEvent event)
     {
-        if (shape == null) {
-            return null;
-        }
-
-        Shape physicalShape = shape.getPhysicalShape();
-
-        if (physicalShape.isTrainable() && (physicalShape != Shape.NOISE)) {
-            return physicalShape;
-        } else {
-            return null;
+        for (ChangeListener listener : listeners) {
+            listener.stateChanged(event);
         }
     }
 
@@ -878,6 +905,48 @@ public class SampleRepository
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //---------------//
+    // AdditionEvent //
+    //---------------//
+    /**
+     * Event used to carry information about addition performed.
+     */
+    public class AdditionEvent
+            extends ChangeEvent
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        public final Sample sample; // The added sample
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public AdditionEvent (Sample sample)
+        {
+            super(SampleRepository.this);
+            this.sample = sample;
+        }
+    }
+
+    //--------------//
+    // RemovalEvent //
+    //--------------//
+    /**
+     * Event used to carry information about removal performed.
+     */
+    public class RemovalEvent
+            extends ChangeEvent
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        public final Sample sample; // The removed sample
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public RemovalEvent (Sample sample)
+        {
+            super(SampleRepository.this);
+            this.sample = sample;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//

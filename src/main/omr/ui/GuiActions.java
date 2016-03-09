@@ -63,6 +63,7 @@ import javax.swing.JTextField;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.JTextComponent;
+import omr.classifier.SampleRepository;
 
 /**
  * Class {@code GuiActions} gathers general actions triggered from the main GUI.
@@ -361,17 +362,31 @@ public class GuiActions
     {
     }
 
-    //------------------------//
-    // verifyTrainingMaterial //
-    //------------------------//
+    //-------------//
+    // saveSamples //
+    //-------------//
     /**
-     * Action that opens a windows dedicated to the management of collections
-     * of glyphs used as training material for the neural network
+     * Action that saves the sample repository
      *
      * @param e the event which triggered this action
      */
     @Action
-    public void verifyTrainingMaterial (ActionEvent e)
+    public void saveSamples (ActionEvent e)
+    {
+        SampleRepository.getInstance().checkForSave();
+    }
+
+    //---------------//
+    // verifySamples //
+    //---------------//
+    /**
+     * Action that opens a windows dedicated to the management of collections
+     * of samples used as training material for the neural network
+     *
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void verifySamples (ActionEvent e)
     {
         SampleVerifier.getInstance().setVisible();
     }

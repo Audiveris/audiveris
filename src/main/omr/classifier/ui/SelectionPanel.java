@@ -45,6 +45,8 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JProgressBar;
 import javax.swing.KeyStroke;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code SelectionPanel} handles a user panel to select samples from
@@ -54,7 +56,7 @@ import javax.swing.KeyStroke;
  * @author Hervé Bitteur
  */
 class SelectionPanel
-        implements SampleRepository.Monitor, Observer
+        implements SampleRepository.Monitor, Observer, ChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -99,7 +101,7 @@ class SelectionPanel
             "Max number of similar shapes");
 
     /** Displayed counter on existing samples. */
-    private final LLabel totalFiles = new LLabel("Total:", "Total number of samples");
+    private final LLabel totalSamples = new LLabel("Total:", "Total number of samples");
 
     /** Displayed counter on loaded samples. */
     private final LLabel nbLoadedSamples = new LLabel("Loaded:", "Number of samples loaded so far");
@@ -133,6 +135,8 @@ class SelectionPanel
         displayParams();
 
         defineLayout(standardWidth);
+
+        repository.addListener(this);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -151,7 +155,10 @@ class SelectionPanel
         progressBar.setValue(nbLoaded);
 
         if (whole) {
-            ///return repository.getWholeBase(this);
+            if (!repository.isLoaded()) {
+                repository.loadRepository(true);
+            }
+
             List<Sample> samples = repository.getAllSamples();
 
             if (samples.isEmpty()) {
@@ -210,8 +217,18 @@ class SelectionPanel
     @Override
     public void setTotalSamples (int total)
     {
-        totalFiles.setText(Integer.toString(total));
+        totalSamples.setText(Integer.toString(total));
         progressBar.setMaximum(total);
+    }
+
+    //--------------//
+    // stateChanged //
+    //--------------//
+    @Override
+    public void stateChanged (ChangeEvent e)
+    {
+        // Called from repository
+        setTotalSamples(repository.getAllSamples().size());
     }
 
     //--------//
@@ -347,8 +364,8 @@ class SelectionPanel
         builder.add(similar.getLabel(), cst.xy(9, r));
         builder.add(similar.getField(), cst.xy(11, r));
 
-        builder.add(totalFiles.getLabel(), cst.xy(13, r));
-        builder.add(totalFiles.getField(), cst.xy(15, r));
+        builder.add(totalSamples.getLabel(), cst.xy(13, r));
+        builder.add(totalSamples.getField(), cst.xy(15, r));
 
         r += 2; // ----------------------------
         builder.add(new JButton(selectAction), cst.xy(3, r));

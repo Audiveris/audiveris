@@ -70,7 +70,8 @@
 
     <action domain="TOOL" section="10" class="omr.sheet.ui.BookActions" method="togglePersist" item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="TOOL" section="10" class="omr.sheet.ui.BookActions" method="recordGlyphs" />
-    <action domain="TOOL" section="10" class="omr.ui.GuiActions"        method="verifyTrainingMaterial" />
+    <action domain="TOOL" section="10" class="omr.ui.GuiActions"        method="verifySamples" />
+    <action domain="TOOL" section="10" class="omr.ui.GuiActions"        method="saveSamples" />
     <action domain="TOOL" section="10" class="omr.ui.GuiActions"        method="launchTrainer" />
 <!--    <action domain="TOOL" section="20"  class="omr.ui.GuiActions" method="defineShapeColors" />-->
     <action domain="TOOL" section="40" class="omr.ui.GuiActions"        method="showMemory" />

@@ -243,6 +243,9 @@ public class EvaluationBoard
                 selector.buttons.size());
 
         for (int i = 0; i < visibleButtons; i++) {
+            if (i != 0) {
+                layout.appendRow(FormSpecs.LINE_GAP_ROWSPEC);
+            }
             layout.appendRow(FormSpecs.PREF_ROWSPEC);
         }
 
@@ -250,7 +253,7 @@ public class EvaluationBoard
         CellConstraints cst = new CellConstraints();
 
         for (int i = 0; i < visibleButtons; i++) {
-            int r = i + 1; // --------------------------------
+            int r = 2 * i + 1; // --------------------------------
             EvalButton evb = selector.buttons.get(i);
             builder.add(evb.grade, cst.xy(5, r));
             builder.add((sheet != null) ? evb.button : evb.field, cst.xyw(7, r, 5));

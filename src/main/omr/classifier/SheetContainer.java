@@ -115,6 +115,7 @@ public class SheetContainer
         }
 
         descriptors.add(desc);
+        setModified(true);
     }
 
     //------//
@@ -412,10 +413,10 @@ public class SheetContainer
         public String toString ()
         {
             if (names.isEmpty()) {
-                return Integer.toString(id);
+                return Integer.toString(id + '/');
             }
 
-            return id + ":" + names.get(0);
+            return id + "/" + names.get(0);
         }
     }
 }
