@@ -36,14 +36,16 @@ getDescriptors(hash)</panel_attributes>
       <x>216</x>
       <y>252</y>
       <w>72</w>
-      <h>81</h>
+      <h>90</h>
     </coordinates>
     <panel_attributes>*Descriptor*
 bg=#aaff66
 --
 id
-{names}
-hash</panel_attributes>
+hash
+name
+{aliases}
+</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -106,20 +108,21 @@ getImage()</panel_attributes>
       <x>567</x>
       <y>144</y>
       <w>72</w>
-      <h>63</h>
+      <h>72</h>
     </coordinates>
     <panel_attributes>*Sample*
 bg=#aaaaff
 --
 shape
-interline</panel_attributes>
+interline
+symbol?</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>567</x>
-      <y>36</y>
+      <y>27</y>
       <w>72</w>
       <h>90</h>
     </coordinates>
@@ -136,12 +139,12 @@ runtable</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>594</x>
-      <y>117</y>
+      <y>108</y>
       <w>27</w>
-      <h>45</h>
+      <h>54</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;30.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>

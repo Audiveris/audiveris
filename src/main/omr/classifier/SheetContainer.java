@@ -35,6 +35,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import static java.util.Collections.EMPTY_LIST;
+
 /**
  * Class {@code SheetContainer} contains descriptions of sample sheets, notably their
  * ID, their name(s) and the hash-code of their binary image if any.
@@ -76,33 +78,6 @@ public class SheetContainer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal the SheetContainer instance from disk.
-     *
-     * @param root root path of samples system
-     * @return the unmarshalled instance, null if exception
-     */
-    public static SheetContainer unmarshal (Path root)
-    {
-        try {
-            final Path path = root.resolve(CONTAINER_ENTRY_NAME);
-            logger.debug("SheetContainer unmarshalling {}", path);
-
-            JAXBContext jaxbContext = JAXBContext.newInstance(SheetContainer.class);
-            SheetContainer sheetContainer = (SheetContainer) Jaxb.unmarshal(path, jaxbContext);
-            logger.info("Unmarshalled {}", sheetContainer);
-
-            return sheetContainer;
-        } catch (Exception ex) {
-            logger.warn("Error unmarshalling SheetContainer " + ex, ex);
-
-            return null;
-        }
-    }
-
     //---------------//
     // addDescriptor //
     //---------------//
@@ -268,6 +243,33 @@ public class SheetContainer
         return sb.toString();
     }
 
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the SheetContainer instance from disk.
+     *
+     * @param root root path of samples system
+     * @return the unmarshalled instance, null if exception
+     */
+    public static SheetContainer unmarshal (Path root)
+    {
+        try {
+            final Path path = root.resolve(CONTAINER_ENTRY_NAME);
+            logger.debug("SheetContainer unmarshalling {}", path);
+
+            JAXBContext jaxbContext = JAXBContext.newInstance(SheetContainer.class);
+            SheetContainer sheetContainer = (SheetContainer) Jaxb.unmarshal(path, jaxbContext);
+            logger.info("Unmarshalled {}", sheetContainer);
+
+            return sheetContainer;
+        } catch (Exception ex) {
+            logger.warn("Error unmarshalling SheetContainer " + ex, ex);
+
+            return null;
+        }
+    }
+
     //----------------//
     // afterUnmarshal //
     //----------------//
@@ -366,17 +368,29 @@ public class SheetContainer
         @XmlAttribute(name = "hash")
         private Integer hash;
 
-        @XmlElement(name = "name")
-        private final ArrayList<String> names = new ArrayList<String>();
+        @XmlAttribute(name = "name")
+        private String name;
+
+        @XmlElement(name = "alias")
+        private final ArrayList<String> aliases = new ArrayList<String>();
 
         //~ Constructors ---------------------------------------------------------------------------
         public Descriptor (int id,
                            Integer hash,
-                           List<String> names)
+                           String name)
+        {
+            this(id, hash, name, EMPTY_LIST);
+        }
+
+        public Descriptor (int id,
+                           Integer hash,
+                           String name,
+                           List<String> aliases)
         {
             this.id = id;
             this.hash = hash;
-            this.names.addAll(names);
+            this.name = name;
+            this.aliases.addAll(aliases);
         }
 
         // For JAXB
@@ -385,10 +399,10 @@ public class SheetContainer
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        public void addName (String name)
+        public void addAlias (String alias)
         {
-            if (!isAlias(name)) {
-                names.add(name);
+            if (!isAlias(alias)) {
+                aliases.add(alias);
             }
         }
 
@@ -398,10 +412,14 @@ public class SheetContainer
             return Integer.compare(id, other.id);
         }
 
-        public boolean isAlias (String name)
+        public boolean isAlias (String str)
         {
-            for (String nm : names) {
-                if (nm.equalsIgnoreCase(name)) {
+            if (str.equalsIgnoreCase(name)) {
+                return true;
+            }
+
+            for (String nm : aliases) {
+                if (str.equalsIgnoreCase(nm)) {
                     return true;
                 }
             }
@@ -409,14 +427,15 @@ public class SheetContainer
             return false;
         }
 
+        public void setName (String name)
+        {
+            this.name = name;
+        }
+
         @Override
         public String toString ()
         {
-            if (names.isEmpty()) {
-                return Integer.toString(id + '/');
-            }
-
-            return id + "/" + names.get(0);
+            return id + "/" + ((name != null) ? name : "");
         }
     }
 }

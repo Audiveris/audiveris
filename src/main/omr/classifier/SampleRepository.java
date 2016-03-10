@@ -45,7 +45,6 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EventObject;
@@ -356,7 +355,7 @@ public class SampleRepository
                             if ((rt != null) && rt.equals(image)) {
                                 if (!desc.isAlias(name)) {
                                     logger.info("Identical image for {} and {}", name, desc);
-                                    desc.addName(name);
+                                    desc.addAlias(name);
                                 }
 
                                 sheet = idMap.get(desc.id);
@@ -375,7 +374,7 @@ public class SampleRepository
                 if (sheet == null) {
                     // Allocate a brand new descriptor
                     int id = sheetContainer.getNewId();
-                    Descriptor desc = new Descriptor(id, hash, Arrays.asList(name));
+                    Descriptor desc = new Descriptor(id, hash, name);
                     sheetContainer.addDescriptor(desc);
 
                     // Allocate a brand new sheet
@@ -394,7 +393,7 @@ public class SampleRepository
             } else {
                 // Allocate a brand new descriptor
                 int id = sheetContainer.getNewId();
-                desc = new Descriptor(id, null, Arrays.asList(name));
+                desc = new Descriptor(id, null, name);
                 sheetContainer.addDescriptor(desc);
 
                 // Allocate a brand new sheet
@@ -741,7 +740,7 @@ public class SampleRepository
         Descriptor desc = sheetContainer.getDescriptor(id);
 
         if (desc == null) {
-            desc = new Descriptor(id, null, Arrays.asList(SYMBOLS));
+            desc = new Descriptor(id, null, SYMBOLS);
             sheetContainer.addDescriptor(desc);
         }
 
