@@ -57,6 +57,7 @@ import omr.sig.inter.SmallWholeInter;
 import omr.sig.inter.VoidHeadInter;
 import omr.sig.inter.WholeInter;
 import omr.sig.relation.BarConnectionRelation;
+import omr.sig.relation.HeadStemRelation;
 
 import omr.util.Dumping;
 import static omr.util.HorizontalSide.*;
@@ -860,6 +861,10 @@ public class NoteHeadsBuilder
         private final Constant.Ratio gradeMargin = new Constant.Ratio(
                 0.1,
                 "Grade margin to boost seed-based competitors");
+
+        private final Constant.Ratio pitchMargin = new Constant.Ratio(
+                0.75,
+                "Vertical margin for intercepting stem seed around a target pitch");
     }
 
     //-----------//
@@ -1059,7 +1064,9 @@ public class NoteHeadsBuilder
 
         private final boolean useSeeds;
 
-        private final Area area;
+        private final Area competitorsArea;
+
+        private final Area seedsArea;
 
         private final List<Inter> competitors;
 
@@ -1099,17 +1106,29 @@ public class NoteHeadsBuilder
             final Staff staff = line.getStaff();
             ledgers = getLedgerAdapters(staff, pitch);
 
-            // Retrieve competitors for this horizontal slice
-            final double ratio = AbstractHeadInter.getShrinkVertRatio();
-            final double above = (scale.getInterline() * (dir - ratio)) / 2;
-            final double below = (scale.getInterline() * (dir + ratio)) / 2;
-            area = line.getArea(above, below);
-
-            if (constants.allowAttachments.isSet()) {
-                staff.addAttachment(line.getPrefix() + "#" + pitch, area);
+            {
+                // Horizontal slice to detect stem seeds
+                final double maxGap = scale.toPixelsDouble(HeadStemRelation.getYGapMaximum());
+                final double ratio = constants.pitchMargin.getValue();
+                final double above = ((scale.getInterline() * (dir - ratio)) / 2) - maxGap;
+                final double below = ((scale.getInterline() * (dir + ratio)) / 2) + maxGap;
+                seedsArea = line.getArea(above, below);
             }
 
-            competitors = getCompetitorsSlice(area);
+            {
+                // Horizontal slice to detect competitors
+                final double ratio = AbstractHeadInter.getShrinkVertRatio();
+                final double above = ((scale.getInterline() * (dir - ratio)) / 2);
+                final double below = ((scale.getInterline() * (dir + ratio)) / 2);
+                competitorsArea = line.getArea(above, below);
+            }
+
+            if (constants.allowAttachments.isSet()) {
+                staff.addAttachment(line.getPrefix() + "#s" + pitch, seedsArea);
+                staff.addAttachment(line.getPrefix() + "#c" + pitch, competitorsArea);
+            }
+
+            competitors = getCompetitorsSlice(competitorsArea);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -1195,7 +1214,7 @@ public class NoteHeadsBuilder
         private boolean[] getRelevantAbscissae (int scanLeft,
                                                 int scanRight)
         {
-            List<Glyph> spots = getGlyphsSlice(systemSpots, area);
+            List<Glyph> spots = getGlyphsSlice(systemSpots, competitorsArea);
             boolean[] relevants = new boolean[scanRight - scanLeft + 1];
             int maxNoteWidth = scale.getInterline(); // Rough value is sufficient
 
@@ -1359,7 +1378,7 @@ public class NoteHeadsBuilder
         private List<AbstractHeadInter> lookupSeeds ()
         {
             // Intersected seeds in the area
-            final List<Glyph> seeds = getGlyphsSlice(systemSeeds, area);
+            final List<Glyph> seeds = getGlyphsSlice(systemSeeds, seedsArea);
 
             // Use one anchor for each horizontal side of the stem seed
             final Anchor[] anchors = new Anchor[]{LEFT_STEM, RIGHT_STEM};

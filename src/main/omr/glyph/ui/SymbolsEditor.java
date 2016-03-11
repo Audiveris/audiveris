@@ -679,7 +679,7 @@ public class SymbolsEditor
         {
             if (pageMenu.updateMenu(new Rectangle(rect))) {
                 JPopupMenu popup = pageMenu.getPopup();
-                popup.show(this, getZoom().scaled(pt.x) + 20, getZoom().scaled(pt.y) + 30);
+                popup.show(this, getZoom().scaled(pt.x) + 50, getZoom().scaled(pt.y) + 50);
             }
         }
     }

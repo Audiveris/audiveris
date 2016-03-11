@@ -20,8 +20,6 @@ import omr.math.GeoOrder;
 
 import static omr.math.GeoOrder.*;
 
-import omr.run.Orientation;
-
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.header.StaffHeader;
@@ -30,7 +28,6 @@ import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.InterEnsemble;
 import omr.sig.inter.StemInter;
-import omr.sig.relation.AbstractStemConnection;
 import omr.sig.relation.BasicExclusion;
 import omr.sig.relation.Exclusion;
 import omr.sig.relation.Exclusion.Cause;
@@ -49,8 +46,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -603,37 +598,6 @@ public class SIGraph
         }
 
         return relations;
-    }
-
-    //-------------//
-    // getStemLine //
-    //-------------//
-    /**
-     * Compute the logical connection line of a provided stem, taking all its stem
-     * connections into account.
-     *
-     * @param stem the physical stem
-     * @return the connection range
-     */
-    public Line2D getStemLine (StemInter stem)
-    {
-        Point2D top = stem.getGlyph().getStartPoint(Orientation.VERTICAL);
-        Point2D bottom = stem.getGlyph().getStopPoint(Orientation.VERTICAL);
-
-        for (Relation rel : getRelations(stem, AbstractStemConnection.class)) {
-            AbstractStemConnection link = (AbstractStemConnection) rel;
-            Point2D cross = link.getExtensionPoint();
-
-            if (cross.getY() < top.getY()) {
-                top = cross;
-            }
-
-            if (cross.getY() > bottom.getY()) {
-                bottom = cross;
-            }
-        }
-
-        return new Line2D.Double(top, bottom);
     }
 
     //-------------//

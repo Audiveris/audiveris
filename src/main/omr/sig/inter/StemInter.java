@@ -14,9 +14,7 @@ package omr.sig.inter;
 import omr.glyph.BasicGlyph;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
-
 import static omr.run.Orientation.VERTICAL;
-
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -31,12 +29,10 @@ import omr.sig.relation.FlagStemRelation;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.StemPortion;
-
 import static omr.sig.relation.StemPortion.STEM_BOTTOM;
 import static omr.sig.relation.StemPortion.STEM_TOP;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
 
@@ -48,6 +44,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -61,8 +58,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class StemInter
         extends AbstractInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** Anchor vertical margin, relative to head height. */
+    private static final double ANCHOR_MARGIN_RATIO = 0.67;
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Top point. */
     @XmlElement
     private final Point2D top;
@@ -127,6 +128,63 @@ public class StemInter
         visitor.visit(this);
     }
 
+    //---------------------//
+    // computeAnchoredLine //
+    //---------------------//
+    /**
+     * Compute the line between extreme anchors, assuming that wrong-side ending heads
+     * have been disconnected.
+     *
+     * @return the anchor line
+     */
+    public Line2D computeAnchoredLine ()
+    {
+        final Set<Relation> links = sig.getRelations(this, HeadStemRelation.class);
+
+        if (!links.isEmpty()) {
+            int dir = computeDirection();
+
+            if (dir > 0) {
+                // Stem down, heads are at top of stem
+                double yAnchor = Double.MAX_VALUE;
+
+                for (Relation rel : links) {
+                    AbstractHeadInter head = (AbstractHeadInter) sig.getEdgeSource(rel);
+                    Rectangle headBox = head.bounds;
+                    double y = headBox.y - (ANCHOR_MARGIN_RATIO * headBox.height);
+
+                    if (y < yAnchor) {
+                        yAnchor = y;
+                    }
+                }
+
+                if (yAnchor > top.getY()) {
+                    return new Line2D.Double(new Point2D.Double(top.getX(), yAnchor), bottom);
+                }
+            } else if (dir < 0) {
+                // Stem up, heads are at bottom of stem
+                double yAnchor = Double.MIN_VALUE;
+
+                for (Relation rel : links) {
+                    AbstractHeadInter head = (AbstractHeadInter) sig.getEdgeSource(rel);
+                    Rectangle headBox = head.bounds;
+                    double y = headBox.y + ((1 - ANCHOR_MARGIN_RATIO) * headBox.height);
+
+                    if (y > yAnchor) {
+                        yAnchor = y;
+                    }
+                }
+
+                if (yAnchor < bottom.getY()) {
+                    return new Line2D.Double(top, new Point2D.Double(bottom.getX(), yAnchor));
+                }
+            }
+        }
+
+        // No change
+        return new Line2D.Double(top, bottom);
+    }
+
     //------------------//
     // computeDirection //
     //------------------//
@@ -142,7 +200,7 @@ public class StemInter
     public int computeDirection ()
     {
         Scale scale = sig.getSystem().getSheet().getScale();
-        final Line2D stemLine = sig.getStemLine(this);
+        final Line2D stemLine = computeExtendedLine();
         final List<Relation> links = new ArrayList<Relation>(
                 sig.getRelations(this, AbstractStemConnection.class));
         sig.sortBySource(links);
@@ -187,6 +245,35 @@ public class StemInter
         }
 
         return 0; // Cannot decide with current config!
+    }
+
+    //---------------------//
+    // computeExtendedLine //
+    //---------------------//
+    /**
+     * Compute the extended line, taking all stem connections into account.
+     *
+     * @return the connection range
+     */
+    public Line2D computeExtendedLine ()
+    {
+        Point2D extTop = new Point2D.Double(top.getX(), top.getY());
+        Point2D extBottom = new Point2D.Double(bottom.getX(), bottom.getY());
+
+        for (Relation rel : sig.getRelations(this, AbstractStemConnection.class)) {
+            AbstractStemConnection link = (AbstractStemConnection) rel;
+            Point2D ext = link.getExtensionPoint();
+
+            if (ext.getY() < extTop.getY()) {
+                extTop = ext;
+            }
+
+            if (ext.getY() > extBottom.getY()) {
+                extBottom = ext;
+            }
+        }
+
+        return new Line2D.Double(extTop, extBottom);
     }
 
     //-----------//

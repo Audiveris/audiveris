@@ -692,7 +692,7 @@ public abstract class AbstractInter
     @Override
     public boolean overlaps (Inter that)
     {
-        // Trivial case? TODO: use getBounds() rather than getCoreBounds()???????????????????????
+        // Trivial case?
         Rectangle2D thisBounds = this.getCoreBounds();
         Rectangle2D thatBounds = that.getCoreBounds();
 

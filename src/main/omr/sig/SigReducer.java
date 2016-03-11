@@ -177,18 +177,18 @@ public class SigReducer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // detectOverlaps //
-    //----------------//
-    /**
-     * Detect all cases where 2 Inters actually overlap and, if there is no support
-     * relation between them, insert a mutual exclusion.
-     * <p>
-     * This method is key!
-     *
-     * @param list1 the collection of inters to process from one system
-     * @param list2 the collection of inters to process from another system
-     */
+    //---------------------//
+    // detectCrossOverlaps //
+    //---------------------//
+    //    /**
+    //     * Detect all cases where 2 Inters actually overlap and, if there is no support
+    //     * relation between them, insert a mutual exclusion.
+    //     * <p>
+    //     * This method is key!
+    //     *
+    //     * @param list1 the collection of inters to process from one system
+    //     * @param list2 the collection of inters to process from another system
+    //     */
     public static void detectCrossOverlaps (List<Inter> list1,
                                             List<Inter> list2)
     {
@@ -243,101 +243,6 @@ public class SigReducer
         }
     }
 
-    //----------------//
-    // detectOverlaps //
-    //----------------//
-    /**
-     * Detect all cases where 2 Inters actually overlap and, if there is no support
-     * relation between them, insert a mutual exclusion.
-     * <p>
-     * This method is key!
-     *
-     * @param inters the collection of inters to process
-     */
-    public static void detectOverlaps (List<Inter> inters)
-    {
-        Collections.sort(inters, Inter.byAbscissa);
-
-        for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
-            Inter left = inters.get(i);
-
-            if (left.isDeleted()) {
-                continue;
-            }
-
-            final Rectangle leftBox = left.getBounds();
-            Set<Inter> mirrors = null;
-
-            final Inter leftMirror = left.getMirror();
-
-            if (leftMirror != null) {
-                mirrors = new HashSet<Inter>();
-                mirrors.add(leftMirror);
-
-                if (left.getEnsemble() != null) {
-                    AbstractChordInter leftChord = (AbstractChordInter) left.getEnsemble();
-                    Inter leftChordMirror = leftChord.getMirror();
-
-                    if (leftChordMirror != null) {
-                        mirrors.add(leftChordMirror);
-                        mirrors.addAll(((AbstractChordInter) leftChordMirror).getNotes());
-                    }
-                } else if (leftMirror instanceof AbstractChordInter) {
-                    mirrors.addAll(((AbstractChordInter) leftMirror).getNotes());
-                }
-            }
-
-            final double xMax = leftBox.getMaxX();
-
-            for (Inter right : inters.subList(i + 1, inters.size())) {
-                if (right.isDeleted()) {
-                    continue;
-                }
-
-                // Mirror entities do not exclude one another
-                if ((mirrors != null) && mirrors.contains(right)) {
-                    continue;
-                }
-
-                // Overlap is accepted in some cases
-                if (compatible(new Inter[]{left, right})) {
-                    continue;
-                }
-
-                Rectangle rightBox = right.getBounds();
-
-                if (leftBox.intersects(rightBox)) {
-                    // Have a more precise look
-                    if (left.isVip() && right.isVip()) {
-                        ////////logger.info("VIP check overlap {} vs {}", left, right);
-                    }
-
-                    if (left.overlaps(right) && right.overlaps(left)) {
-                        // Specific case: Word vs "string" Symbol
-                        if (left instanceof WordInter && right instanceof StringSymbolInter) {
-                            if (wordMatchesSymbol((WordInter) left, (StringSymbolInter) right)) {
-                                left.decrease(0.5);
-                            }
-                        } else if (left instanceof StringSymbolInter && right instanceof WordInter) {
-                            if (wordMatchesSymbol((WordInter) right, (StringSymbolInter) left)) {
-                                right.decrease(0.5);
-                            }
-                        }
-
-                        final SIGraph leftSig = left.getSig();
-
-                        // If there is no support between left & right, insert an exclusion
-                        if (leftSig.noSupport(left, right)) {
-                            leftSig.insertExclusion(left, right, Exclusion.Cause.OVERLAP);
-                        }
-                    }
-                } else if (rightBox.x > xMax) {
-                    break; // Since inters list is sorted by abscissa
-                }
-            }
-        }
-    }
-
     //-------------------//
     // reduceFoundations //
     //-------------------//
@@ -382,6 +287,69 @@ public class SigReducer
         systemPoorFrats.setSeeds(allRemoved);
     }
 
+    //------------//
+    // compatible //
+    //------------//
+    /**
+     * Check whether the two provided Inter instance can overlap.
+     *
+     * @param inters array of exactly 2 instances
+     * @return true if overlap is accepted, false otherwise
+     */
+    private static boolean compatible (Inter[] inters)
+    {
+        for (int i = 0; i <= 1; i++) {
+            Inter inter = inters[i];
+            Inter other = inters[1 - i];
+
+            if (inter instanceof AbstractBeamInter) {
+                if (other instanceof AbstractBeamInter) {
+                    return true;
+                }
+
+                if (beamCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            } else if (inter instanceof SlurInter) {
+                if (slurCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            } else if (inter instanceof StemInter) {
+                if (stemCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    //-------------------//
+    // wordMatchesSymbol //
+    //-------------------//
+    /**
+     * Check whether the word and the symbol might represent the same thing, after all.
+     *
+     * @param wordInter text word
+     * @param symbol    symbol
+     */
+    private static boolean wordMatchesSymbol (WordInter wordInter,
+                                              StringSymbolInter symbol)
+    {
+        logger.debug("Comparing {} and {}", wordInter, symbol);
+
+        final String symbolString = symbol.getSymbolString();
+
+        if (wordInter.getValue().equalsIgnoreCase(symbolString)) {
+            logger.debug("Math found");
+
+            //TODO: Perhaps more checks on word/sentence?
+            return true;
+        }
+
+        return false;
+    }
+
     //---------------//
     // analyzeChords //
     //---------------//
@@ -401,7 +369,7 @@ public class SigReducer
 
         for (Inter stem : stems) {
             if (stem.isVip()) {
-                logger.info("VIP analyzeChords with {}", stem);
+                //                logger.info("VIP analyzeChords with {}", stem);
             }
 
             // Consider only good stems
@@ -681,7 +649,7 @@ public class SigReducer
 
             if (!beamHasBothStems(beam)) {
                 if (beam.isVip() || logger.isDebugEnabled()) {
-                    logger.info("VIP Deleting beam lacking stem {}", beam);
+                    logger.info("VIP deleting beam lacking stem {}", beam);
                 }
 
                 beam.delete();
@@ -713,7 +681,7 @@ public class SigReducer
             // Check whether the double-alter is connected to a note head
             if (!sig.hasRelation(alter, AccidHeadRelation.class)) {
                 if (alter.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Deleting {} lacking note head", alter);
+                    logger.info("VIP deleting {} lacking note head", alter);
                 }
 
                 alter.delete();
@@ -740,7 +708,7 @@ public class SigReducer
     private int checkHeadSide (Inter head)
     {
         if (head.isVip()) {
-            logger.info("VIP checkHeadSide for {}", head);
+            //            logger.info("VIP checkHeadSide for {}", head);
         }
 
         int modifs = 0;
@@ -789,7 +757,7 @@ public class SigReducer
 
             // We have a bad head+stem couple, so let's remove the relationship
             if (head.isVip() || logger.isDebugEnabled()) {
-                logger.info("Wrong side for {} on {}", head, stem);
+                logger.info("VIP wrong side for {} on {}", head, stem);
             }
 
             sig.removeEdge(rel);
@@ -817,7 +785,7 @@ public class SigReducer
             // Check if the head has a stem relation
             if (!sig.hasRelation(head, HeadStemRelation.class)) {
                 if (head.isVip() || logger.isDebugEnabled()) {
-                    logger.info("No stem for {}", head);
+                    logger.info("VIP no stem for {}", head);
                 }
 
                 head.delete();
@@ -826,6 +794,7 @@ public class SigReducer
                 continue;
             }
 
+            // Check head location relative to stem
             modifs += checkHeadSide(head);
         }
 
@@ -849,7 +818,7 @@ public class SigReducer
             // Check if the hook has a stem relation
             if (!sig.hasRelation(inter, BeamStemRelation.class)) {
                 if (inter.isVip() || logger.isDebugEnabled()) {
-                    logger.info("No stem for {}", inter);
+                    logger.info("VIP no stem for {}", inter);
                 }
 
                 inter.delete();
@@ -895,7 +864,7 @@ public class SigReducer
 
                         if (!ledgerHasHeadOrLedger(staff, index, ledger, allHeads)) {
                             if (ledger.isVip() || logger.isDebugEnabled()) {
-                                logger.info("Deleting orphan ledger {}", ledger);
+                                logger.info("VIP deleting orphan ledger {}", ledger);
                             }
 
                             toDelete.add(ledger);
@@ -979,6 +948,31 @@ public class SigReducer
         return deleted;
     }
 
+    //----------------------//
+    // checkStemEndingHeads //
+    //----------------------//
+    /**
+     * Perform checks on correct side for ending heads of stems.
+     *
+     * @return the count of modifications done
+     */
+    private int checkStemEndingHeads ()
+    {
+        int modifs = 0;
+        final List<Inter> stems = sig.inters(Shape.STEM);
+
+        for (Inter inter : stems) {
+            final StemInter stem = (StemInter) inter;
+
+            // Cut links to ending heads on wrong stem side
+            if (pruneStemHeads(stem)) {
+                modifs++;
+            }
+        }
+
+        return modifs;
+    }
+
     //------------//
     // checkStems //
     //------------//
@@ -997,7 +991,7 @@ public class SigReducer
 
             if (!stemHasHeadAtEnd(stem)) {
                 if (stem.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Deleting stem lacking starting head {}", stem);
+                    logger.info("VIP deleting stem lacking starting head {}", stem);
                 }
 
                 stem.delete();
@@ -1033,7 +1027,7 @@ public class SigReducer
             // Check this number has a sibling number
             if (!sig.hasRelation(number, TimeTopBottomRelation.class)) {
                 if (number.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Deleting time number lacking sibling {}", number);
+                    logger.info("VIP deleting time number lacking sibling {}", number);
                 }
 
                 number.delete();
@@ -1096,7 +1090,7 @@ public class SigReducer
                         }
 
                         if (timeSig.isVip() || note.isVip() || logger.isDebugEnabled()) {
-                            logger.info("{} preceding {}", note, timeSig);
+                            logger.info("VIP {} preceding {}", note, timeSig);
                         }
 
                         sig.insertExclusion(note, timeSig, Exclusion.Cause.INCOMPATIBLE);
@@ -1106,41 +1100,95 @@ public class SigReducer
         }
     }
 
-    //------------//
-    // compatible //
-    //------------//
+    //----------------//
+    // detectOverlaps //
+    //----------------//
     /**
-     * Check whether the two provided Inter instance can overlap.
+     * Detect all cases where 2 Inters actually overlap and, if there is no support
+     * relation between them, insert a mutual exclusion.
+     * <p>
+     * This method is key!
      *
-     * @param inters array of exactly 2 instances
-     * @return true if overlap is accepted, false otherwise
+     * @param inters the collection of inters to process
      */
-    private static boolean compatible (Inter[] inters)
+    private void detectOverlaps (List<Inter> inters,
+                                 Adapter adapter)
     {
-        for (int i = 0; i <= 1; i++) {
-            Inter inter = inters[i];
-            Inter other = inters[1 - i];
+        Collections.sort(inters, Inter.byAbscissa);
 
-            if (inter instanceof AbstractBeamInter) {
-                if (other instanceof AbstractBeamInter) {
-                    return true;
+        for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
+            Inter left = inters.get(i);
+
+            if (left.isDeleted()) {
+                continue;
+            }
+
+            final Rectangle leftBox = left.getBounds();
+            Set<Inter> mirrors = null;
+
+            final Inter leftMirror = left.getMirror();
+
+            if (leftMirror != null) {
+                mirrors = new HashSet<Inter>();
+                mirrors.add(leftMirror);
+
+                if (left.getEnsemble() != null) {
+                    AbstractChordInter leftChord = (AbstractChordInter) left.getEnsemble();
+                    Inter leftChordMirror = leftChord.getMirror();
+
+                    if (leftChordMirror != null) {
+                        mirrors.add(leftChordMirror);
+                        mirrors.addAll(((AbstractChordInter) leftChordMirror).getNotes());
+                    }
+                } else if (leftMirror instanceof AbstractChordInter) {
+                    mirrors.addAll(((AbstractChordInter) leftMirror).getNotes());
+                }
+            }
+
+            final double xMax = leftBox.getMaxX();
+
+            for (Inter right : inters.subList(i + 1, inters.size())) {
+                if (right.isDeleted()) {
+                    continue;
                 }
 
-                if (beamCompShapes.contains(other.getShape())) {
-                    return true;
+                // Mirror entities do not exclude one another
+                if ((mirrors != null) && mirrors.contains(right)) {
+                    continue;
                 }
-            } else if (inter instanceof SlurInter) {
-                if (slurCompShapes.contains(other.getShape())) {
-                    return true;
+
+                // Overlap is accepted in some cases
+                if (compatible(new Inter[]{left, right})) {
+                    continue;
                 }
-            } else if (inter instanceof StemInter) {
-                if (stemCompShapes.contains(other.getShape())) {
-                    return true;
+
+                Rectangle rightBox = right.getBounds();
+
+                if (leftBox.intersects(rightBox)) {
+                    // Have a more precise look
+                    if (left.isVip() && right.isVip()) {
+                        ////////logger.info("VIP check overlap {} vs {}", left, right);
+                    }
+
+                    if (left.overlaps(right) && right.overlaps(left)) {
+                        // Specific case: Word vs "string" Symbol
+                        if (left instanceof WordInter && right instanceof StringSymbolInter) {
+                            if (wordMatchesSymbol((WordInter) left, (StringSymbolInter) right)) {
+                                left.decrease(0.5);
+                            }
+                        } else if (left instanceof StringSymbolInter && right instanceof WordInter) {
+                            if (wordMatchesSymbol((WordInter) right, (StringSymbolInter) left)) {
+                                right.decrease(0.5);
+                            }
+                        }
+
+                        adapter.exclude(left, right);
+                    }
+                } else if (rightBox.x > xMax) {
+                    break; // Since inters list is sorted by abscissa
                 }
             }
         }
-
-        return false;
     }
 
     //---------//
@@ -1214,6 +1262,57 @@ public class SigReducer
         return false;
     }
 
+    //----------------//
+    // pruneStemHeads //
+    //----------------//
+    /**
+     * Cut links between the provided stem and its ending head(s) on wrong side.
+     *
+     * @param stem the stem to process
+     * @return true if one or several heads were pruned from the stem
+     */
+    private boolean pruneStemHeads (StemInter stem)
+    {
+        if (stem.isVip()) {
+            //            logger.info("VIP pruneStemHeads for {}", stem);
+        }
+
+        final Set<Relation> links = sig.getRelations(stem, HeadStemRelation.class);
+
+        int modifs = 0;
+        boolean modified;
+        StemGeometryScan:
+        do {
+            modified = false;
+
+            final Line2D stemLine = stem.computeExtendedLine(); // Update geometry
+
+            for (Relation rel : links) {
+                // Retrieve the stem portion for this Head -> Stem link
+                AbstractHeadInter head = (AbstractHeadInter) sig.getEdgeSource(rel);
+                HeadStemRelation link = (HeadStemRelation) rel;
+                StemPortion portion = link.getStemPortion(head, stemLine, scale);
+                HorizontalSide headSide = link.getHeadSide();
+
+                if (((portion == STEM_BOTTOM) && (headSide != RIGHT))
+                    || ((portion == STEM_TOP) && (headSide != LEFT))) {
+                    sig.removeEdge(rel);
+                    links.remove(rel);
+                    modifs++;
+                    modified = true;
+
+                    if (stem.isVip() || head.isVip() || logger.isDebugEnabled()) {
+                        logger.info("VIP pruned {} from {}", head, stem);
+                    }
+
+                    continue StemGeometryScan;
+                }
+            }
+        } while (modified);
+
+        return modifs > 0;
+    }
+
     //--------//
     // reduce //
     //--------//
@@ -1229,7 +1328,7 @@ public class SigReducer
         logger.debug("S#{} reducing sig ...", system.getId());
 
         // General exclusions based on overlap
-        detectOverlaps(sig.inters(overlapPredicate));
+        detectOverlaps(sig.inters(overlapPredicate), adapter);
 
         // Inters that conflict with frozen inters must be deleted
         adapter.checkFrozens();
@@ -1317,10 +1416,10 @@ public class SigReducer
     private boolean stemHasHeadAtEnd (StemInter stem)
     {
         if (stem.isVip()) {
-            logger.info("VIP stemHasHeadAtEnd for {}", stem);
+            //            logger.info("VIP stemHasHeadAtEnd for {}", stem);
         }
 
-        final Line2D stemLine = sig.getStemLine(stem);
+        final Line2D stemLine = stem.computeExtendedLine();
 
         for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
             // Check stem portion
@@ -1348,7 +1447,7 @@ public class SigReducer
      */
     private boolean stemHasSingleHeadEnd (StemInter stem)
     {
-        final Line2D stemLine = sig.getStemLine(stem);
+        final Line2D stemLine = stem.computeExtendedLine();
         final int stemDir = stem.computeDirection();
 
         if (stemDir == 0) {
@@ -1366,7 +1465,10 @@ public class SigReducer
 
             if (portion == forbidden) {
                 if (stem.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Cutting relation between {} and {}", stem, sig.getEdgeSource(rel));
+                    logger.info(
+                            "VIP cutting relation between {} and {}",
+                            stem,
+                            sig.getEdgeSource(rel));
                 }
 
                 toRemove.add(rel);
@@ -1400,33 +1502,20 @@ public class SigReducer
         return Collections.EMPTY_SET;
     }
 
-    //-------------------//
-    // wordMatchesSymbol //
-    //-------------------//
-    /**
-     * Check whether the word and the symbol might represent the same thing, after all.
-     *
-     * @param wordInter text word
-     * @param symbol    symbol
-     */
-    private static boolean wordMatchesSymbol (WordInter wordInter,
-                                              StringSymbolInter symbol)
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
     {
-        logger.debug("Comparing {} and {}", wordInter, symbol);
+        //~ Instance fields ------------------------------------------------------------------------
 
-        final String symbolString = symbol.getSymbolString();
-
-        if (wordInter.getValue().equalsIgnoreCase(symbolString)) {
-            logger.debug("Math found");
-
-            //TODO: Perhaps more checks on word/sentence?
-            return true;
-        }
-
-        return false;
+        private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
+                3,
+                "Maximum width for slur around tuplet");
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
@@ -1454,6 +1543,17 @@ public class SigReducer
             return Collections.EMPTY_SET;
         }
 
+        public void exclude (Inter left,
+                             Inter right)
+        {
+            // If there is no support between left & right, insert an exclusion
+            final SIGraph leftSig = left.getSig();
+
+            if (leftSig.noSupport(left, right)) {
+                leftSig.insertExclusion(left, right, Exclusion.Cause.OVERLAP);
+            }
+        }
+
         public void prolog ()
         {
             // Void by default
@@ -1473,6 +1573,9 @@ public class SigReducer
         {
             int modifs = 0;
 
+            modifs += checkStemEndingHeads();
+            deleted.addAll(updateAndPurge());
+
             modifs += checkHeads();
             deleted.addAll(updateAndPurge());
 
@@ -1489,6 +1592,21 @@ public class SigReducer
             deleted.addAll(updateAndPurge());
 
             return modifs;
+        }
+
+        @Override
+        public void exclude (Inter left,
+                             Inter right)
+        {
+            // Special overlap case between a stem and a standard-size note head
+            if ((left instanceof StemInter && right instanceof AbstractHeadInter
+                 && !right.getShape().isSmall())
+                || (right instanceof StemInter && left instanceof AbstractHeadInter
+                    && !left.getShape().isSmall())) {
+                return;
+            }
+
+            super.exclude(left, right);
         }
 
         @Override
@@ -1571,18 +1689,5 @@ public class SigReducer
             selected = sig.inters(classes);
             systemPoorFrats.save(selected);
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
-                3,
-                "Maximum width for slur around tuplet");
     }
 }

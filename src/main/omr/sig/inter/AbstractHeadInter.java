@@ -72,8 +72,7 @@ public abstract class AbstractHeadInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractHeadInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractHeadInter.class);
 
     private static final Constants constants = new Constants();
 
@@ -305,17 +304,35 @@ public abstract class AbstractHeadInter
                           && (areaRatio > constants.maxOverlapAreaRatio.getValue());
 
             //logger.info("*** {}% {} {} vs {}", (int) Math.rint(frac * 100), res, this, that);
-            if (this.isVip() || that.isVip()) {
-                logger.info(
-                        "VIP {} vs {} dx:{} areaRatio:{} overlap:{}",
-                        this,
-                        that,
-                        common.width,
-                        areaRatio,
-                        res);
-            }
-
+            //            if (this.isVip() || that.isVip()) {
+            //                logger.info(
+            //                        "VIP {} vs {} dx:{} areaRatio:{} overlap:{}",
+            //                        this,
+            //                        that,
+            //                        common.width,
+            //                        areaRatio,
+            //                        res);
+            //            }
+            //
             return res;
+
+            //        } else if (that instanceof StemInter) {
+            //            // Head with respect to a stem
+            //            // First, standard check
+            //            if (!Glyphs.intersect(this.getGlyph(), that.getGlyph(), false)) {
+            //                return false;
+            //            }
+            //
+            //            // Second, limit stem vertical range to connection points of ending heads if any
+            //            // (Assuming wrong-side ending heads have been pruned beforehand)
+            //            StemInter stem = (StemInter) that;
+            //            Line2D line = stem.computeAnchoredLine();
+            //            int top = (int) Math.ceil(line.getY1());
+            //            int bottom = (int) Math.floor(line.getY2());
+            //            Rectangle box = stem.getBounds();
+            //            Rectangle anchorRect = new Rectangle(box.x, top, box.width, bottom - top + 1);
+            //
+            //            return this.getCoreBounds().intersects(anchorRect);
         }
 
         // Basic test
