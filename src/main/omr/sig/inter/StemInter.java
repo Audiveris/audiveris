@@ -374,15 +374,6 @@ public class StemInter
         return null;
     }
 
-    //--------//
-    // isGood //
-    //--------//
-    @Override
-    public boolean isGood ()
-    {
-        return getGrade() >= 0.45; // BINGO DIRTY HACK
-    }
-
     //-------------//
     // isGraceStem //
     //-------------//

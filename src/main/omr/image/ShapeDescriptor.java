@@ -493,7 +493,7 @@ public class ShapeDescriptor
     private Template createTemplate (Shape shape,
                                      int interline)
     {
-        //BINGO just for a try, since void head templates are generally too small
+        //TODO: just for a try, since void head templates are generally too small
         if (shape == Shape.NOTEHEAD_VOID) {
             interline++;
         }

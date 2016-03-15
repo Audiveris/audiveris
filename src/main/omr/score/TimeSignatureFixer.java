@@ -149,14 +149,14 @@ public class TimeSignatureFixer
         Collections.sort(
                 sigs,
                 new Comparator<TimeRational>()
-                {
-                    @Override
-                    public int compare (TimeRational t1,
-                                        TimeRational t2)
-                    {
-                        return Integer.compare(sigMap.get(t2), sigMap.get(t1));
-                    }
-                });
+        {
+            @Override
+            public int compare (TimeRational t1,
+                                TimeRational t2)
+            {
+                return Integer.compare(sigMap.get(t2), sigMap.get(t1));
+            }
+        });
         logger.debug(
                 "{}Best inferred time sigs in [M#{},M#{}]: {}",
                 startStack.getSystem().getPage().getSheet().getLogPrefix(),
@@ -166,7 +166,6 @@ public class TimeSignatureFixer
 
         if (!sigs.isEmpty()) {
             TimeRational bestRational = sigs.get(0);
-            // BINGO
             //            if (!OldTimeSignature.isAcceptable(bestRational)) {
             //                logger.debug("Time sig too uncommon: {}", bestRational);
             //

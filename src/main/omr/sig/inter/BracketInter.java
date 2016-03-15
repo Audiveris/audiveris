@@ -17,6 +17,7 @@ import omr.glyph.Shape;
 import omr.sig.GradeImpacts;
 
 import java.awt.geom.Line2D;
+import javax.xml.bind.annotation.XmlAttribute;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -43,6 +44,7 @@ public class BracketInter
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Bracket kind. */
+    @XmlAttribute(name = "kind")
     private final BracketKind kind;
 
     //~ Constructors -------------------------------------------------------------------------------

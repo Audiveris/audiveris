@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
+
 import static omr.glyph.ShapeSet.Alterations;
 import static omr.glyph.ShapeSet.CoreBarlines;
 import static omr.glyph.ShapeSet.Flags;
@@ -25,6 +26,7 @@ import omr.math.GeoUtil;
 import omr.sheet.Scale;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
+import omr.sheet.header.StaffHeader;
 import omr.sheet.rhythm.SystemBackup;
 
 import omr.sig.inter.AbstractBeamInter;
@@ -39,6 +41,7 @@ import omr.sig.inter.BeamHookInter;
 import omr.sig.inter.BeamInter;
 import omr.sig.inter.BlackHeadInter;
 import omr.sig.inter.Inter;
+import omr.sig.inter.InterEnsemble;
 import omr.sig.inter.LedgerInter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.SmallBeamInter;
@@ -61,11 +64,15 @@ import omr.sig.relation.Exclusion;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.StemPortion;
+
 import static omr.sig.relation.StemPortion.*;
+
 import omr.sig.relation.TimeTopBottomRelation;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 import omr.util.Predicate;
 
@@ -114,6 +121,8 @@ public class SigReducer
         @Override
         public boolean check (Inter inter)
         {
+            // Take all non-disabled shapes
+            // Excluding inters within headers
             return !disabledShapes.contains(inter.getShape());
         }
     };
@@ -285,69 +294,6 @@ public class SigReducer
         Set<Inter> allRemoved = reduce(adapter);
         allRemoved.retainAll(adapter.selected);
         systemPoorFrats.setSeeds(allRemoved);
-    }
-
-    //------------//
-    // compatible //
-    //------------//
-    /**
-     * Check whether the two provided Inter instance can overlap.
-     *
-     * @param inters array of exactly 2 instances
-     * @return true if overlap is accepted, false otherwise
-     */
-    private static boolean compatible (Inter[] inters)
-    {
-        for (int i = 0; i <= 1; i++) {
-            Inter inter = inters[i];
-            Inter other = inters[1 - i];
-
-            if (inter instanceof AbstractBeamInter) {
-                if (other instanceof AbstractBeamInter) {
-                    return true;
-                }
-
-                if (beamCompShapes.contains(other.getShape())) {
-                    return true;
-                }
-            } else if (inter instanceof SlurInter) {
-                if (slurCompShapes.contains(other.getShape())) {
-                    return true;
-                }
-            } else if (inter instanceof StemInter) {
-                if (stemCompShapes.contains(other.getShape())) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    //-------------------//
-    // wordMatchesSymbol //
-    //-------------------//
-    /**
-     * Check whether the word and the symbol might represent the same thing, after all.
-     *
-     * @param wordInter text word
-     * @param symbol    symbol
-     */
-    private static boolean wordMatchesSymbol (WordInter wordInter,
-                                              StringSymbolInter symbol)
-    {
-        logger.debug("Comparing {} and {}", wordInter, symbol);
-
-        final String symbolString = symbol.getSymbolString();
-
-        if (wordInter.getValue().equalsIgnoreCase(symbolString)) {
-            logger.debug("Math found");
-
-            //TODO: Perhaps more checks on word/sentence?
-            return true;
-        }
-
-        return false;
     }
 
     //---------------//
@@ -1100,6 +1046,43 @@ public class SigReducer
         }
     }
 
+    //------------//
+    // compatible //
+    //------------//
+    /**
+     * Check whether the two provided Inter instance can overlap.
+     *
+     * @param inters array of exactly 2 instances
+     * @return true if overlap is accepted, false otherwise
+     */
+    private static boolean compatible (Inter[] inters)
+    {
+        for (int i = 0; i <= 1; i++) {
+            Inter inter = inters[i];
+            Inter other = inters[1 - i];
+
+            if (inter instanceof AbstractBeamInter) {
+                if (other instanceof AbstractBeamInter) {
+                    return true;
+                }
+
+                if (beamCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            } else if (inter instanceof SlurInter) {
+                if (slurCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            } else if (inter instanceof StemInter) {
+                if (stemCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     //----------------//
     // detectOverlaps //
     //----------------//
@@ -1208,6 +1191,44 @@ public class SigReducer
                 sig.insertExclusion(i1, i2, Exclusion.Cause.INCOMPATIBLE);
             }
         }
+    }
+
+    //------------------//
+    // getHeadersInters //
+    //------------------//
+    /**
+     * Collect inters that belong to staff headers in this system.
+     *
+     * @return the headers inters
+     */
+    private List<Inter> getHeadersInters ()
+    {
+        List<Inter> inters = new ArrayList<Inter>();
+
+        for (Staff staff : system.getStaves()) {
+            StaffHeader header = staff.getHeader();
+
+            if (header.clef != null) {
+                inters.add(header.clef);
+            }
+
+            if (header.key != null) {
+                inters.add(header.key);
+                inters.addAll(header.key.getMembers());
+            }
+
+            if (header.time != null) {
+                inters.add(header.time);
+
+                if (header.time instanceof InterEnsemble) {
+                    inters.addAll(((InterEnsemble) header.time).getMembers());
+                }
+            }
+        }
+
+        logger.debug("S#{} headers inters: {}", system.getId(), inters);
+
+        return inters;
     }
 
     //-----------------------//
@@ -1328,7 +1349,9 @@ public class SigReducer
         logger.debug("S#{} reducing sig ...", system.getId());
 
         // General exclusions based on overlap
-        detectOverlaps(sig.inters(overlapPredicate), adapter);
+        List<Inter> inters = sig.inters(overlapPredicate);
+        inters.removeAll(getHeadersInters());
+        detectOverlaps(inters, adapter);
 
         // Inters that conflict with frozen inters must be deleted
         adapter.checkFrozens();
@@ -1502,20 +1525,33 @@ public class SigReducer
         return Collections.EMPTY_SET;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //-------------------//
+    // wordMatchesSymbol //
+    //-------------------//
+    /**
+     * Check whether the word and the symbol might represent the same thing, after all.
+     *
+     * @param wordInter text word
+     * @param symbol    symbol
+     */
+    private static boolean wordMatchesSymbol (WordInter wordInter,
+                                              StringSymbolInter symbol)
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        logger.debug("Comparing {} and {}", wordInter, symbol);
 
-        private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
-                3,
-                "Maximum width for slur around tuplet");
+        final String symbolString = symbol.getSymbolString();
+
+        if (wordInter.getValue().equalsIgnoreCase(symbolString)) {
+            logger.debug("Math found");
+
+            //TODO: Perhaps more checks on word/sentence?
+            return true;
+        }
+
+        return false;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
@@ -1689,5 +1725,18 @@ public class SigReducer
             selected = sig.inters(classes);
             systemPoorFrats.save(selected);
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
+                3,
+                "Maximum width for slur around tuplet");
     }
 }

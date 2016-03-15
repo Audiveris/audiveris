@@ -115,32 +115,8 @@ public class Grades
         assert partners != null : "Null sources array";
         assert ratios.length == partners.length : "Arrays of different lengths";
 
-        // Nb of supporting partners
-        final int n = partners.length;
-
-        //        final int combNb = (int) Math.pow(2, n); // Nb of combinations
-        //        final boolean[] trueFalse = new boolean[]{true, false};
-        //
-        //        final boolean[][] bools = new boolean[combNb][n];
-        //
-        //        int span = 1;
-        //
-        //        for (int i = 0; i < n; i++) {
-        //            int offset = 0;
-        //
-        //            while (offset < combNb) {
-        //                for (boolean b : trueFalse) {
-        //                    for (int j = 0; j < span; j++) {
-        //                        bools[j + offset][i] = b;
-        //                    }
-        //
-        //                    offset += span;
-        //                }
-        //            }
-        //
-        //            span *= 2;
-        //        }
         // Define all combinations
+        final int n = partners.length; // Nb of supporting partners
         final boolean[][] bools = Combinations.getVectors(n);
 
         // Sum over all combinations

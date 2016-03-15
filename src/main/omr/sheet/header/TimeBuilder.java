@@ -20,7 +20,6 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphCluster;
 import omr.glyph.GlyphFactory;
 import omr.glyph.GlyphIndex;
-import omr.glyph.GlyphLink;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
@@ -65,9 +64,6 @@ import ij.process.Blitter;
 import ij.process.ByteProcessor;
 
 import org.jfree.data.xy.XYSeries;
-
-import org.jgrapht.Graphs;
-import org.jgrapht.graph.SimpleGraph;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1261,7 +1257,7 @@ public abstract class TimeBuilder
 
                 for (Inter inter : vector) {
                     if (inter == null) {
-                        logger.info(
+                        logger.debug(
                                 "System#{} TimeValue {} not found in all staves",
                                 system.getId(),
                                 time);
@@ -1431,23 +1427,17 @@ public abstract class TimeBuilder
     // TimeAdapter //
     //-------------//
     private abstract class TimeAdapter
-            implements GlyphCluster.Adapter
+            extends GlyphCluster.AbstractAdapter
     {
         //~ Instance fields ------------------------------------------------------------------------
-
-        /** Graph of the connected glyphs, with their distance edges if any. */
-        protected final SimpleGraph<Glyph, GlyphLink> graph;
 
         /** Best inter per time shape. */
         public Map<Shape, Inter> bestMap = new EnumMap<Shape, Inter>(Shape.class);
 
-        // For debug only
-        public int trials = 0;
-
         //~ Constructors ---------------------------------------------------------------------------
         public TimeAdapter (List<Glyph> parts)
         {
-            graph = Glyphs.buildLinks(parts, params.maxPartGap);
+            super(parts, params.maxPartGap);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -1456,24 +1446,6 @@ public abstract class TimeBuilder
             for (Inter inter : bestMap.values()) {
                 inter.delete();
             }
-        }
-
-        @Override
-        public List<Glyph> getNeighbors (Glyph part)
-        {
-            return Graphs.neighborListOf(graph, part);
-        }
-
-        @Override
-        public GlyphIndex getNest ()
-        {
-            return system.getSheet().getGlyphIndex();
-        }
-
-        @Override
-        public List<Glyph> getParts ()
-        {
-            return new ArrayList<Glyph>(graph.vertexSet());
         }
 
         public Inter getSingleInter ()

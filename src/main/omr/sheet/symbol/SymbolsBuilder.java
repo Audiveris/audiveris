@@ -19,7 +19,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphCluster;
-import omr.glyph.GlyphIndex;
 import omr.glyph.GlyphLink;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
@@ -198,7 +197,7 @@ public class SymbolsBuilder
     }
 
     //-----------------//
-    // getClusterGraph //
+    // getSubGraph //
     //-----------------//
     private SimpleGraph<Glyph, GlyphLink> getClusterGraph (Set<Glyph> set,
                                                            SimpleGraph<Glyph, GlyphLink> systemGraph)
@@ -308,9 +307,8 @@ public class SymbolsBuilder
         for (Set<Glyph> set : sets) {
             if (set.size() > 1) {
                 // Use just the subgraph for this set
-                SimpleGraph<Glyph, GlyphLink> clusterGraph = getClusterGraph(set, systemGraph);
-
-                new GlyphCluster(new SymbolAdapter(clusterGraph), Group.SYMBOL).decompose();
+                SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(set, systemGraph);
+                new GlyphCluster(new SymbolAdapter(subGraph), Group.SYMBOL).decompose();
             } else {
                 // The set is just an isolated glyph, to be evaluated directly
                 Glyph glyph = set.iterator().next();
@@ -416,19 +414,16 @@ public class SymbolsBuilder
     // SymbolAdapter //
     //---------------//
     private class SymbolAdapter
-            implements GlyphCluster.Adapter
+            extends GlyphCluster.AbstractAdapter
     {
         //~ Instance fields ------------------------------------------------------------------------
-
-        /** Graph of the connected glyphs, with their distance edges if any. */
-        private final SimpleGraph<Glyph, GlyphLink> graph;
 
         private final Scale scale = sheet.getScale();
 
         //~ Constructors ---------------------------------------------------------------------------
         public SymbolAdapter (SimpleGraph<Glyph, GlyphLink> graph)
         {
-            this.graph = graph;
+            super(graph);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -436,24 +431,6 @@ public class SymbolsBuilder
         public void evaluateGlyph (Glyph glyph)
         {
             SymbolsBuilder.this.evaluateGlyph(glyph);
-        }
-
-        @Override
-        public List<Glyph> getNeighbors (Glyph part)
-        {
-            return Graphs.neighborListOf(graph, part);
-        }
-
-        @Override
-        public GlyphIndex getNest ()
-        {
-            return sheet.getGlyphIndex();
-        }
-
-        @Override
-        public List<Glyph> getParts ()
-        {
-            return new ArrayList<Glyph>(graph.vertexSet());
         }
 
         @Override

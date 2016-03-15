@@ -21,9 +21,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphCluster;
 import omr.glyph.GlyphFactory;
-import omr.glyph.GlyphLink;
-import omr.glyph.GlyphIndex;
-import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
 
@@ -63,7 +60,6 @@ import ij.process.ByteProcessor;
 import org.jfree.data.xy.XYSeries;
 
 import org.jgrapht.Graphs;
-import org.jgrapht.graph.SimpleGraph;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1031,13 +1027,17 @@ public class KeyBuilder
                 range.start = space.stop + 1;
             }
         } else // Make sure we have some item
-        if (peaks.isEmpty()) {
-            range.start = space.stop + 1;
-        } else // Second (wide) space stops it
-        if (space.getWidth() > params.maxInnerSpace) {
-            range.stop = space.start;
-            space.setWide();
-            keepOn = false;
+        {
+            if (peaks.isEmpty()) {
+                range.start = space.stop + 1;
+            } else // Second (wide) space stops it
+            {
+                if (space.getWidth() > params.maxInnerSpace) {
+                    range.stop = space.start;
+                    space.setWide();
+                    keepOn = false;
+                }
+            }
         }
 
         events.add(space);
@@ -2003,12 +2003,9 @@ public class KeyBuilder
      * Handles the integration between glyph clustering class and key-sig environment.
      */
     private class KeyAdapter
-            implements GlyphCluster.Adapter
+            extends GlyphCluster.AbstractAdapter
     {
         //~ Instance fields ------------------------------------------------------------------------
-
-        /** Graph of the connected glyphs, with their distance edges if any. */
-        private final SimpleGraph<Glyph, GlyphLink> graph;
 
         /** Relevant shapes. */
         private final EnumSet<Shape> targetShapes = EnumSet.noneOf(Shape.class);
@@ -2017,14 +2014,12 @@ public class KeyBuilder
 
         private Glyph bestGlyph = null;
 
-        private int trials = 0; // (debug)
-
         //~ Constructors ---------------------------------------------------------------------------
         public KeyAdapter (List<Glyph> glyphs,
                            Set<Shape> targetShapes)
         {
+            super(glyphs, params.maxGlyphGap);
             this.targetShapes.addAll(targetShapes);
-            graph = Glyphs.buildLinks(glyphs, params.maxGlyphGap);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -2047,24 +2042,6 @@ public class KeyBuilder
                     bestGlyph = glyph;
                 }
             }
-        }
-
-        @Override
-        public List<Glyph> getNeighbors (Glyph part)
-        {
-            return Graphs.neighborListOf(graph, part);
-        }
-
-        @Override
-        public GlyphIndex getNest ()
-        {
-            return sheet.getGlyphIndex();
-        }
-
-        @Override
-        public List<Glyph> getParts ()
-        {
-            return new ArrayList<Glyph>(graph.vertexSet());
         }
 
         @Override

@@ -20,7 +20,7 @@ public abstract class Combinations
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    public static final boolean[] trueFalse = new boolean[]{true, false};
+    public static final boolean[] TRUE_FALSE = new boolean[]{true, false};
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
@@ -92,7 +92,7 @@ public abstract class Combinations
             int offset = 0;
 
             while (offset < combNb) {
-                for (boolean b : trueFalse) {
+                for (boolean b : TRUE_FALSE) {
                     for (int j = 0; j < span; j++) {
                         bools[j + offset][i] = b;
                     }

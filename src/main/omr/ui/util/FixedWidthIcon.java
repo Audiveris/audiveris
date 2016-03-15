@@ -13,6 +13,7 @@ package omr.ui.util;
 
 import java.awt.Component;
 import java.awt.Graphics;
+import java.util.Objects;
 
 import javax.swing.Icon;
 
@@ -37,6 +38,7 @@ public class FixedWidthIcon
      */
     public FixedWidthIcon (Icon icon)
     {
+        Objects.requireNonNull(icon, "FixedWidthIcon needs a non-null icon");
         this.icon = icon;
     }
 

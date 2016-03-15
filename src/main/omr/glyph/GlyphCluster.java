@@ -11,15 +11,20 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.glyph.Symbol.Group;
+
+import org.jgrapht.Graphs;
+import org.jgrapht.graph.SimpleGraph;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import omr.glyph.Symbol.Group;
 
 /**
  * Class {@code GlyphCluster} handles a cluster of connected glyphs, to retrieve all
@@ -61,6 +66,26 @@ public class GlyphCluster
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // getSubGraph //
+    //-------------//
+    public static SimpleGraph<Glyph, GlyphLink> getSubGraph (Set<Glyph> set,
+                                                             SimpleGraph<Glyph, GlyphLink> graph)
+    {
+        // Make a copy of just the subgraph for this set
+        SimpleGraph<Glyph, GlyphLink> subGraph = new SimpleGraph<Glyph, GlyphLink>(GlyphLink.class);
+        Set<GlyphLink> edges = new HashSet<GlyphLink>();
+
+        for (Glyph glyph : set) {
+            edges.addAll(graph.edgesOf(glyph));
+        }
+
+        Graphs.addAllVertices(subGraph, set);
+        Graphs.addAllEdges(subGraph, graph, edges);
+
+        return subGraph;
+    }
+
     //-----------//
     // decompose //
     //-----------//
@@ -70,15 +95,14 @@ public class GlyphCluster
     public void decompose ()
     {
         final Set<Glyph> considered = new HashSet<Glyph>(); // Parts considered so far
+
+        //TODO: we could truncate this list by discarding the smallest items
+        // since a too large list would result in explosion of combinations
         final List<Glyph> seeds = adapter.getParts();
-        ///Collections.sort(seeds, Glyphs.byId); // It's easier to debug
-        logger.debug("Decomposing {}", Glyphs.ids("cluster", seeds));
+        Collections.sort(seeds, Glyphs.byReverseWeight);
 
+        ///logger.debug("Decomposing {}", Glyphs.ids("cluster", seeds));
         for (Glyph seed : seeds) {
-            if (seed.isVip()) {
-                logger.info("   Seed #{}", seed.getId());
-            }
-
             considered.add(seed);
             process(Collections.singleton(seed), considered);
         }
@@ -107,19 +131,20 @@ public class GlyphCluster
     /**
      * Process the provided set of parts.
      *
-     * @param set        the current parts
-     * @param considered all parts considered so far (current parts plus discarded ones)
+     * @param set  the current parts
+     * @param seen all parts considered so far (current parts plus discarded ones)
      */
     private void process (Set<Glyph> set,
-                          Set<Glyph> considered)
+                          Set<Glyph> seen)
     {
+        ///logger.debug(" {} {} {}", set.size(), Glyphs.ids("set", set), Glyphs.ids("seen", seen));
+
         // Check what we have got
         int weight = Glyphs.weightOf(set);
 
         if (adapter.isWeightAcceptable(weight)) {
             // Build compound and get acceptable evaluations for the compound
-            Glyph oneGlyph = set.iterator().next();
-            Glyph compound = (set.size() == 1) ? oneGlyph : GlyphFactory.buildGlyph(set);
+            Glyph compound = (set.size() > 1) ? GlyphFactory.buildGlyph(set) : set.iterator().next();
             compound.addGroup(group);
 
             // Create all acceptable inters, if any, for the compound
@@ -130,14 +155,15 @@ public class GlyphCluster
 
         // Then, identify all outliers immediately reachable from the compound
         Set<Glyph> outliers = getOutliers(set);
-        outliers.removeAll(considered);
+        outliers.removeAll(seen);
 
         if (outliers.isEmpty()) {
             return; // No further growth is possible
         }
 
+        ///logger.debug("      {}", Glyphs.ids("outliers", outliers));
         Rectangle setBox = Glyphs.getBounds(set);
-        Set<Glyph> newConsidered = new HashSet<Glyph>(considered);
+        Set<Glyph> newConsidered = new HashSet<Glyph>(seen);
 
         for (Glyph outlier : outliers) {
             newConsidered.add(outlier);
@@ -177,13 +203,6 @@ public class GlyphCluster
         List<Glyph> getNeighbors (Glyph part);
 
         /**
-         * Report the glyph nest to populate.
-         *
-         * @return the hosting glyph nest
-         */
-        GlyphIndex getNest ();
-
-        /**
          * Report the parts to play with.
          *
          * @return the parts to assemble
@@ -205,5 +224,46 @@ public class GlyphCluster
          * @return true if OK
          */
         boolean isWeightAcceptable (int weight);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------------//
+    // AbstractAdapter //
+    //-----------------//
+    public abstract static class AbstractAdapter
+            implements Adapter
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Graph of the connected glyphs, with their distance edges if any. */
+        protected final SimpleGraph<Glyph, GlyphLink> graph;
+
+        // For debug only
+        public int trials = 0;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public AbstractAdapter (List<Glyph> parts,
+                                double maxPartGap)
+        {
+            this(Glyphs.buildLinks(parts, maxPartGap));
+        }
+
+        public AbstractAdapter (SimpleGraph<Glyph, GlyphLink> graph)
+        {
+            this.graph = graph;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public List<Glyph> getNeighbors (Glyph part)
+        {
+            return Graphs.neighborListOf(graph, part);
+        }
+
+        @Override
+        public List<Glyph> getParts ()
+        {
+            return new ArrayList<Glyph>(graph.vertexSet());
+        }
     }
 }
