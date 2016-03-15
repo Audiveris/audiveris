@@ -486,7 +486,7 @@ public abstract class AbstractHeadInter
                 "Maximum acceptable abscissa overlap ratio between notes");
 
         private final Constant.Ratio maxOverlapAreaRatio = new Constant.Ratio(
-                0.2,
+                0.25,
                 "Maximum acceptable box area overlap ratio between notes");
     }
 }
