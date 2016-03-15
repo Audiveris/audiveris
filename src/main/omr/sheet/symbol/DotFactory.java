@@ -34,21 +34,21 @@ import omr.sig.SIGraph;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.BarlineInter;
+import omr.sig.inter.DeletedInterException;
 import omr.sig.inter.FermataDotInter;
 import omr.sig.inter.FermataInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.RepeatDotInter;
 import omr.sig.inter.StaccatoInter;
 import omr.sig.relation.AugmentationRelation;
+import omr.sig.relation.ChordStaccatoRelation;
 import omr.sig.relation.DotFermataRelation;
 import omr.sig.relation.DoubleDotRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.RepeatDotBarRelation;
 import omr.sig.relation.RepeatDotPairRelation;
-import omr.sig.relation.ChordStaccatoRelation;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
@@ -228,8 +228,11 @@ public class DotFactory
                                 continue;
                             }
 
-                            if (dotBox.intersects(inter.getBounds()) && dot.overlaps(inter)) {
-                                toDelete.add(inter);
+                            try {
+                                if (dotBox.intersects(inter.getBounds()) && dot.overlaps(inter)) {
+                                    toDelete.add(inter);
+                                }
+                            } catch (DeletedInterException ignored) {
                             }
                         }
                     }
