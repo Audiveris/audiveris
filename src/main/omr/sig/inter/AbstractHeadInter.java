@@ -25,9 +25,7 @@ import omr.image.TemplateFactory;
 import omr.image.TemplateFactory.Catalog;
 
 import omr.math.PointUtil;
-
 import static omr.run.Orientation.VERTICAL;
-
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -39,6 +37,7 @@ import omr.sheet.rhythm.Slot;
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;
 import omr.sig.relation.AccidHeadRelation;
+import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
 
 import omr.util.ByteUtil;
@@ -266,29 +265,42 @@ public abstract class AbstractHeadInter
     // overlaps //
     //----------//
     /**
-     * Specific overlap implementation between notes, based on their pitch value.
+     * Precise overlap implementation between notes, based on their pitch value.
      * <p>
      * TODO: A clean overlap check might use true distance tables around each of the heads.
      * For the time being, we simply play with the width and area of intersection rectangle.
      *
      * @param that another inter (perhaps a note)
      * @return true if overlap is detected
+     * @throws omr.sig.inter.DeletedInterException
      */
     @Override
     public boolean overlaps (Inter that)
+            throws DeletedInterException
     {
         // Specific between notes
         if (that instanceof AbstractHeadInter) {
-            AbstractHeadInter thatNote = (AbstractHeadInter) that;
+            if (this.isVip() && ((AbstractHeadInter) that).isVip()) {
+                logger.info("AbstractHeadInter checking overlaps between {} and {}", this, that);
+            }
+
+            AbstractHeadInter thatHead = (AbstractHeadInter) that;
 
             // Check vertical distance
-            if (Math.abs(thatNote.getIntegerPitch() - getIntegerPitch()) > 1) {
-                return false;
+            if (this.getStaff() == that.getStaff()) {
+                if (Math.abs(thatHead.getIntegerPitch() - getIntegerPitch()) > 1) {
+                    return false;
+                }
+            } else {
+                // We have two note heads from different staves and with overlapping bounds!
+                fixDuplicateWith(thatHead); // Throws DeletedInterException when fixed
+
+                return true;
             }
 
             // Check horizontal distance
             Rectangle thisBounds = this.getBounds();
-            Rectangle thatBounds = thatNote.getBounds();
+            Rectangle thatBounds = thatHead.getBounds();
             Rectangle common = thisBounds.intersection(thatBounds);
 
             if (common.width <= 0) {
@@ -303,17 +315,6 @@ public abstract class AbstractHeadInter
             boolean res = (common.width > (constants.maxOverlapDxRatio.getValue() * thisBounds.width))
                           && (areaRatio > constants.maxOverlapAreaRatio.getValue());
 
-            //logger.info("*** {}% {} {} vs {}", (int) Math.rint(frac * 100), res, this, that);
-            //            if (this.isVip() || that.isVip()) {
-            //                logger.info(
-            //                        "VIP {} vs {} dx:{} areaRatio:{} overlap:{}",
-            //                        this,
-            //                        that,
-            //                        common.width,
-            //                        areaRatio,
-            //                        res);
-            //            }
-            //
             return res;
 
             //        } else if (that instanceof StemInter) {
@@ -434,17 +435,40 @@ public abstract class AbstractHeadInter
         }
     }
 
+    //------------------//
+    // fixDuplicateWith //
+    //------------------//
+    /**
+     * Fix head duplication on two staves.
+     * <p>
+     * We have two note heads from different staves and with overlapping bound.
+     * Vertical gap between the staves must be small and crowded, leading to head being "duplicated"
+     * in both staves.
+     * <p>
+     * Assuming there is a linked stem, we could use sibling stem/head in a beam group if any.
+     * Or we can simply use stem direction, assumed to point to the "true" containing staff.
+     *
+     * @param that the other inter
+     */
+    private void fixDuplicateWith (AbstractHeadInter that)
+            throws DeletedInterException
+    {
+        for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
+            StemInter thisStem = (StemInter) sig.getOppositeInter(this, rel);
+            int thisDir = thisStem.computeDirection();
+            Inter dupli = ((thisDir * (that.getStaff().getId() - this.getStaff().getId())) > 0)
+                    ? this : that;
+
+            logger.debug("Deleting duplicated {}", dupli);
+            dupli.delete();
+            throw new DeletedInterException(dupli);
+        }
+
+        //TODO: What if we have no stem? It's a WHOLE_NOTE or SMALL_WHOLE_NOTE
+        // Perhaps check for a weak ledger, tangent to the note towards staff
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
-    //
-    //    //-----------//
-    //    // internals //
-    //    //-----------//
-    //    @Override
-    //    protected String internals ()
-    //    {
-    //        return super.internals() + " " + anchor + "@[" + pivot.x + "," + pivot.y + "]";
-    //    }
-    //
     //---------//
     // Impacts //
     //---------//

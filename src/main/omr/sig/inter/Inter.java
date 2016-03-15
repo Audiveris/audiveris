@@ -463,8 +463,9 @@ public interface Inter
      *
      * @param that the other instance
      * @return true if (incompatible) overlap is detected
+     * @throws omr.sig.inter.DeletedInterException
      */
-    boolean overlaps (Inter that);
+    boolean overlaps (Inter that) throws DeletedInterException;
 
     /**
      * Assign the bounding box for this interpretation.

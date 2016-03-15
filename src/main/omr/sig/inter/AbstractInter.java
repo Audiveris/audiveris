@@ -691,6 +691,7 @@ public abstract class AbstractInter
     //----------//
     @Override
     public boolean overlaps (Inter that)
+            throws DeletedInterException
     {
         // Trivial case?
         Rectangle2D thisBounds = this.getCoreBounds();
@@ -928,6 +929,10 @@ public abstract class AbstractInter
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());
+
+        if (isDeleted()) {
+            sb.append(" DELETED");
+        }
 
         sb.append(String.format("(%.3f", grade));
 

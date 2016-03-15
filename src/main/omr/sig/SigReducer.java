@@ -15,7 +15,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
-
 import static omr.glyph.ShapeSet.Alterations;
 import static omr.glyph.ShapeSet.CoreBarlines;
 import static omr.glyph.ShapeSet.Flags;
@@ -40,6 +39,7 @@ import omr.sig.inter.BarlineInter;
 import omr.sig.inter.BeamHookInter;
 import omr.sig.inter.BeamInter;
 import omr.sig.inter.BlackHeadInter;
+import omr.sig.inter.DeletedInterException;
 import omr.sig.inter.Inter;
 import omr.sig.inter.InterEnsemble;
 import omr.sig.inter.LedgerInter;
@@ -64,15 +64,11 @@ import omr.sig.relation.Exclusion;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
 import omr.sig.relation.StemPortion;
-
 import static omr.sig.relation.StemPortion.*;
-
 import omr.sig.relation.TimeTopBottomRelation;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.Predicate;
 
@@ -203,6 +199,7 @@ public class SigReducer
     {
         Collections.sort(list2, Inter.byAbscissa);
 
+        NextLeft:
         for (Inter left : list1) {
             if (left.isDeleted()) {
                 continue;
@@ -230,20 +227,27 @@ public class SigReducer
                         ////////logger.info("VIP check overlap {} vs {}", left, right);
                     }
 
-                    if (left.overlaps(right) && right.overlaps(left)) {
-                        // Specific case: Word vs "string" Symbol
-                        if (left instanceof WordInter && right instanceof StringSymbolInter) {
-                            if (wordMatchesSymbol((WordInter) left, (StringSymbolInter) right)) {
-                                left.decrease(0.5);
+                    try {
+                        if (left.overlaps(right) && right.overlaps(left)) {
+                            // Specific case: Word vs "string" Symbol
+                            if (left instanceof WordInter && right instanceof StringSymbolInter) {
+                                if (wordMatchesSymbol((WordInter) left, (StringSymbolInter) right)) {
+                                    left.decrease(0.5);
+                                }
+                            } else if (left instanceof StringSymbolInter
+                                       && right instanceof WordInter) {
+                                if (wordMatchesSymbol((WordInter) right, (StringSymbolInter) left)) {
+                                    right.decrease(0.5);
+                                }
                             }
-                        } else if (left instanceof StringSymbolInter && right instanceof WordInter) {
-                            if (wordMatchesSymbol((WordInter) right, (StringSymbolInter) left)) {
-                                right.decrease(0.5);
-                            }
-                        }
 
-                        logger.info("crossExclusion {} & {}", left, right);
-                        CrossExclusion.insert(left, right); // Cross-system
+                            logger.info("crossExclusion {} & {}", left, right);
+                            CrossExclusion.insert(left, right); // Cross-system
+                        }
+                    } catch (DeletedInterException diex) {
+                        if (diex.inter == left) {
+                            continue NextLeft;
+                        }
                     }
                 } else if (rightBox.x > xMax) {
                     break; // Since right list is sorted by abscissa
@@ -1099,6 +1103,7 @@ public class SigReducer
     {
         Collections.sort(inters, Inter.byAbscissa);
 
+        NextLeft:
         for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
             Inter left = inters.get(i);
 
@@ -1153,19 +1158,26 @@ public class SigReducer
                         ////////logger.info("VIP check overlap {} vs {}", left, right);
                     }
 
-                    if (left.overlaps(right) && right.overlaps(left)) {
-                        // Specific case: Word vs "string" Symbol
-                        if (left instanceof WordInter && right instanceof StringSymbolInter) {
-                            if (wordMatchesSymbol((WordInter) left, (StringSymbolInter) right)) {
-                                left.decrease(0.5);
+                    try {
+                        if (left.overlaps(right) && right.overlaps(left)) {
+                            // Specific case: Word vs "string" Symbol
+                            if (left instanceof WordInter && right instanceof StringSymbolInter) {
+                                if (wordMatchesSymbol((WordInter) left, (StringSymbolInter) right)) {
+                                    left.decrease(0.5);
+                                }
+                            } else if (left instanceof StringSymbolInter
+                                       && right instanceof WordInter) {
+                                if (wordMatchesSymbol((WordInter) right, (StringSymbolInter) left)) {
+                                    right.decrease(0.5);
+                                }
                             }
-                        } else if (left instanceof StringSymbolInter && right instanceof WordInter) {
-                            if (wordMatchesSymbol((WordInter) right, (StringSymbolInter) left)) {
-                                right.decrease(0.5);
-                            }
-                        }
 
-                        adapter.exclude(left, right);
+                            adapter.exclude(left, right);
+                        }
+                    } catch (DeletedInterException diex) {
+                        if (diex.inter == left) {
+                            continue NextLeft;
+                        }
                     }
                 } else if (rightBox.x > xMax) {
                     break; // Since inters list is sorted by abscissa
