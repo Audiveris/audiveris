@@ -1155,7 +1155,7 @@ public class SigReducer
                 if (leftBox.intersects(rightBox)) {
                     // Have a more precise look
                     if (left.isVip() && right.isVip()) {
-                        ////////logger.info("VIP check overlap {} vs {}", left, right);
+                        ///logger.info("VIP check overlap {} vs {}", left, right);
                     }
 
                     try {
@@ -1172,7 +1172,7 @@ public class SigReducer
                                 }
                             }
 
-                            adapter.exclude(left, right);
+                            exclude(left, right);
                         }
                     } catch (DeletedInterException diex) {
                         if (diex.inter == left) {
@@ -1202,6 +1202,28 @@ public class SigReducer
             for (Inter i2 : set2) {
                 sig.insertExclusion(i1, i2, Exclusion.Cause.INCOMPATIBLE);
             }
+        }
+    }
+
+    //---------//
+    // exclude //
+    //---------//
+    private void exclude (Inter left,
+                          Inter right)
+    {
+        // Special overlap case between a stem and a standard-size note head
+        if ((left instanceof StemInter && right instanceof AbstractHeadInter
+             && !right.getShape().isSmall())
+            || (right instanceof StemInter && left instanceof AbstractHeadInter
+                && !left.getShape().isSmall())) {
+            return;
+        }
+
+        // If there is no support between left & right, insert an exclusion
+        final SIGraph leftSig = left.getSig();
+
+        if (leftSig.noSupport(left, right)) {
+            leftSig.insertExclusion(left, right, Exclusion.Cause.OVERLAP);
         }
     }
 
@@ -1591,17 +1613,6 @@ public class SigReducer
             return Collections.EMPTY_SET;
         }
 
-        public void exclude (Inter left,
-                             Inter right)
-        {
-            // If there is no support between left & right, insert an exclusion
-            final SIGraph leftSig = left.getSig();
-
-            if (leftSig.noSupport(left, right)) {
-                leftSig.insertExclusion(left, right, Exclusion.Cause.OVERLAP);
-            }
-        }
-
         public void prolog ()
         {
             // Void by default
@@ -1640,21 +1651,6 @@ public class SigReducer
             deleted.addAll(updateAndPurge());
 
             return modifs;
-        }
-
-        @Override
-        public void exclude (Inter left,
-                             Inter right)
-        {
-            // Special overlap case between a stem and a standard-size note head
-            if ((left instanceof StemInter && right instanceof AbstractHeadInter
-                 && !right.getShape().isSmall())
-                || (right instanceof StemInter && left instanceof AbstractHeadInter
-                    && !left.getShape().isSmall())) {
-                return;
-            }
-
-            super.exclude(left, right);
         }
 
         @Override

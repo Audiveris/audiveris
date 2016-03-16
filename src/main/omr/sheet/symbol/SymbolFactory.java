@@ -397,7 +397,7 @@ public class SymbolFactory
 
                         try {
                             if (neighbor.overlaps(time)) {
-                                logger.info("Deleting time overlapping {}", neighbor);
+                                logger.debug("Deleting time overlapping {}", neighbor);
                                 neighbor.delete();
                                 it.remove();
                             }

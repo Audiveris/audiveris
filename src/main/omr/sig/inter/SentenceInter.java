@@ -307,11 +307,11 @@ public class SentenceInter
     {
         if (member instanceof WordInter) {
             WordInter word = (WordInter) member;
-            logger.info("{} about to remove {}", this, word);
+            logger.debug("{} about to remove {}", this, word);
             words.remove(word);
 
             if (words.isEmpty()) {
-                logger.info("Deleting empty {}", this);
+                logger.debug("Deleting empty {}", this);
                 delete();
             }
         } else {
