@@ -93,18 +93,6 @@ public class ShapeChecker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    public static ShapeChecker getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new ShapeChecker();
-        }
-
-        return INSTANCE;
-    }
-
     //----------//
     // annotate //
     //----------//
@@ -150,6 +138,18 @@ public class ShapeChecker
                 return;
             }
         }
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    public static ShapeChecker getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new ShapeChecker();
+        }
+
+        return INSTANCE;
     }
 
     //------------//
@@ -291,21 +291,31 @@ public class ShapeChecker
                  * These half / whole rest signs are generally on standard pitch values:
                  * Standard pitch for whole: -1.5
                  * Standard pitch for half: -0.5
-                 * This is what is used here.
                  *
-                 * TODO: But because of other notes in the same staff-measure, they may appear
+                 * But because of other notes in the same staff-measure, they may appear
                  * on different pitch values, as they see fit. See Telemann example.
                  * Whole is always stuck to an upper line, half is always stuck to a lower line.
+                 * This can be translated as 2*p = 4*k+1 for wholes and 4*k-1 for halves
                  */
                 int p2 = (int) Math.rint(2 * glyph.getPitchPosition()); // Pitch * 2
 
                 switch (p2) {
+                case -9:
+                case -5:
                 case -1:
+                case 3:
+                case 7:
+                case 11:
                     eval.shape = Shape.HALF_REST; // Standard pitch: -0.5
 
                     return true;
 
+                case -11:
+                case -7:
                 case -3:
+                case 1:
+                case 5:
+                case 9:
                     eval.shape = Shape.WHOLE_REST; // Standard pitch: -1.5
 
                     return true;
@@ -701,63 +711,6 @@ public class ShapeChecker
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean applySpecificCheck = new Constant.Boolean(
-                true,
-                "Should we apply specific checks on shape candidates?");
-
-        private final Scale.Fraction maxTitleHeight = new Scale.Fraction(
-                4.0,
-                "Maximum normalized height for a title text");
-
-        private final Scale.Fraction maxLyricsHeight = new Scale.Fraction(
-                2.5,
-                "Maximum normalized height for a lyrics text");
-
-        private final Constant.Double minDirectionPitchPosition = new Constant.Double(
-                "PitchPosition",
-                -13.0,
-                "Minimum pitch value for a  segno / coda direction");
-
-        private final Constant.Double minTitlePitchPosition = new Constant.Double(
-                "PitchPosition",
-                15.0,
-                "Minimum absolute pitch position for a title");
-
-        private final Constant.Double maxTupletPitchPosition = new Constant.Double(
-                "PitchPosition",
-                15.0,
-                "Maximum absolute pitch position for a tuplet");
-
-        private final Constant.Double maxTimePitchPositionMargin = new Constant.Double(
-                "PitchPosition",
-                1.0,
-                "Maximum absolute pitch position margin for a time signature");
-
-        private final Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(
-                1.5,
-                "Maximum height for small dynamics (no p, no f)");
-
-        private final Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(
-                2.0,
-                "Maximum height for small dynamics (with p, no f)");
-
-        private final Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(
-                2.5,
-                "Maximum height for tall dynamics (with f)");
-
-        private final Scale.Fraction maxGapToStaff = new Scale.Fraction(
-                8.0,
-                "Maximum vertical gap between a note-like glyph and closest staff");
-    }
-
     //---------//
     // Checker //
     //---------//
@@ -854,5 +807,62 @@ public class ShapeChecker
         {
             return name;
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean applySpecificCheck = new Constant.Boolean(
+                true,
+                "Should we apply specific checks on shape candidates?");
+
+        private final Scale.Fraction maxTitleHeight = new Scale.Fraction(
+                4.0,
+                "Maximum normalized height for a title text");
+
+        private final Scale.Fraction maxLyricsHeight = new Scale.Fraction(
+                2.5,
+                "Maximum normalized height for a lyrics text");
+
+        private final Constant.Double minDirectionPitchPosition = new Constant.Double(
+                "PitchPosition",
+                -13.0,
+                "Minimum pitch value for a  segno / coda direction");
+
+        private final Constant.Double minTitlePitchPosition = new Constant.Double(
+                "PitchPosition",
+                15.0,
+                "Minimum absolute pitch position for a title");
+
+        private final Constant.Double maxTupletPitchPosition = new Constant.Double(
+                "PitchPosition",
+                15.0,
+                "Maximum absolute pitch position for a tuplet");
+
+        private final Constant.Double maxTimePitchPositionMargin = new Constant.Double(
+                "PitchPosition",
+                1.0,
+                "Maximum absolute pitch position margin for a time signature");
+
+        private final Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(
+                1.5,
+                "Maximum height for small dynamics (no p, no f)");
+
+        private final Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(
+                2.0,
+                "Maximum height for small dynamics (with p, no f)");
+
+        private final Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(
+                2.5,
+                "Maximum height for tall dynamics (with f)");
+
+        private final Scale.Fraction maxGapToStaff = new Scale.Fraction(
+                8.0,
+                "Maximum vertical gap between a note-like glyph and closest staff");
     }
 }

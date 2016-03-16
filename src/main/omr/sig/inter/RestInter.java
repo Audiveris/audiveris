@@ -82,6 +82,15 @@ public class RestInter
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //--------//
     // create //
     //--------//
     /**
@@ -90,6 +99,7 @@ public class RestInter
      * Most rests, whatever their shape, lie very close to staff middle line.
      * Rests can lie far from staff middle line only when they are horizontally inserted between
      * head-chords that also lie outside of staff height.
+     * The exception is the whole rest for which there should be no neighbors.
      * <p>
      * Also, a rest cannot be too close abscissa-wise to a head-chord.
      *
@@ -149,7 +159,6 @@ public class RestInter
 
             // Good rest, close to staff middle?
             if (Math.abs(measuredPitch) <= constants.suspiciousPitchPosition.getValue()) {
-                //return new RestInter(glyph, shape, grade, staff, measuredPitch);
                 restStaff = staff;
                 restPitch = measuredPitch;
 
@@ -157,12 +166,34 @@ public class RestInter
             }
 
             // Not so good rest, look for head chords nearby (in the same staff measure)
-            for (Inter inter : measureChords) {
-                if (GeoUtil.yOverlap(inter.getBounds(), glyphBox) > 0) {
-                    restStaff = staff;
-                    restPitch = measuredPitch;
+            if (shape != Shape.WHOLE_REST) {
+                for (Inter inter : measureChords) {
+                    if (GeoUtil.yOverlap(inter.getBounds(), glyphBox) > 0) {
+                        restStaff = staff;
+                        restPitch = measuredPitch;
 
-                    break StaffLoop;
+                        break StaffLoop;
+                    }
+                }
+            } else {
+                // Special case for WHOLE_REST
+                Staff closestStaff = system.getClosestStaff(centroid);
+
+                if (staff == closestStaff) {
+                    boolean overlap = false;
+
+                    for (Inter inter : measureChords) {
+                        if (GeoUtil.yOverlap(inter.getBounds(), glyphBox) > 0) {
+                            overlap = true;
+                        }
+                    }
+
+                    if (!overlap) {
+                        restStaff = staff;
+                        restPitch = measuredPitch;
+
+                        break;
+                    }
                 }
             }
         }
@@ -201,15 +232,6 @@ public class RestInter
         restStaff.addNote(restInter);
 
         return restInter;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
     }
 
     //----------//
