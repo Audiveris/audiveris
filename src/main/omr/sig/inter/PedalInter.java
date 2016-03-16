@@ -48,4 +48,14 @@ public class PedalInter
     {
         super(null, null, null, 0);
     }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
+    }
 }

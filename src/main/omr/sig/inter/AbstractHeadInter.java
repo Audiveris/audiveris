@@ -346,13 +346,13 @@ public abstract class AbstractHeadInter
     /**
      * Use descriptor to build an underlying glyph.
      *
-     * @param image     the image to read pixels from
-     * @param interline scaling info
-     * @param nest      the nest to hold the created glyph
+     * @param image      the image to read pixels from
+     * @param interline  scaling info
+     * @param glyphIndex the index to hold the created glyph
      */
     public void retrieveGlyph (ByteProcessor image,
                                int interline,
-                               GlyphIndex nest)
+                               GlyphIndex glyphIndex)
     {
         final Template tpl = getDescriptor(interline).getTemplate();
         final Rectangle interBox = getBounds();
@@ -374,7 +374,10 @@ public abstract class AbstractHeadInter
 
         // Glyph
         glyph = new BasicGlyph(descBox.x + foreBox.x, descBox.y + foreBox.y, runTable);
-        nest.register(glyph);
+        glyphIndex.register(glyph);
+
+        // Use glyph bounds as inter bounds
+        bounds = glyph.getBounds();
     }
 
     //--------//

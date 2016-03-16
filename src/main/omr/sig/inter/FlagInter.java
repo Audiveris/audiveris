@@ -77,4 +77,13 @@ public class FlagInter
 
         return part;
     }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
+    }
 }

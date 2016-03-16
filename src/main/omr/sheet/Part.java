@@ -197,12 +197,6 @@ public class Part
     public void afterReload ()
     {
         try {
-            // Process staves upfront, so that their notes have their staff assigned.
-            // Doing so, measure chords can determine which staves they belong to.
-            for (Staff staff : staves) {
-                staff.afterReload();
-            }
-
             for (Measure measure : measures) {
                 measure.afterReload();
             }

@@ -337,6 +337,15 @@ public class ClefInter
         return new ClefInter(null, shape, 0, targetStaff, pitch, kind);
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
+    }
+
     //-------------//
     // getFlatsMap //
     //-------------//

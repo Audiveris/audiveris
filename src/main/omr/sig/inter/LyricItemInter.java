@@ -298,11 +298,6 @@ public class LyricItemInter
             sb.append(" ").append(getSyllabicType());
         }
 
-        //
-        //        if (mappedChord != null) {
-        //            sb.append(" mappedTo:Ch#").append(mappedChord.getId());
-        //        }
-        //
         return sb.toString();
     }
 

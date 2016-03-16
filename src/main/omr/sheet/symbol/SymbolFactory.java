@@ -18,7 +18,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
-
 import static omr.glyph.ShapeSet.*;
 
 import omr.sheet.Scale;
@@ -32,15 +31,19 @@ import omr.sig.SIGraph;
 import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractFlagInter;
 import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.AlterInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.CodaInter;
+import omr.sig.inter.DeletedInterException;
 import omr.sig.inter.DynamicsInter;
 import omr.sig.inter.FermataInter;
 import omr.sig.inter.FingeringInter;
 import omr.sig.inter.FretInter;
 import omr.sig.inter.Inter;
+import omr.sig.inter.InterMutableEnsemble;
+import omr.sig.inter.Inters;
 import omr.sig.inter.PedalInter;
 import omr.sig.inter.PluckingInter;
 import omr.sig.inter.RestInter;
@@ -50,14 +53,18 @@ import omr.sig.inter.TimeWholeInter;
 import omr.sig.inter.TupletInter;
 
 import omr.util.Navigable;
+import omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -316,17 +323,17 @@ public class SymbolFactory
         List<Inter> systemTimes = sig.inters(
                 new Class[]{TimeWholeInter.class, // Whole symbol like C or 6/8
                             TimeNumberInter.class}); // Partial symbol like 6 or 8
-        List<Inter> toDelete = new ArrayList<Inter>();
+        List<Inter> headerTimes = new ArrayList<Inter>();
 
         for (Inter inter : systemTimes) {
             Staff staff = inter.getStaff();
 
             if (inter.getCenter().x < staff.getHeaderStop()) {
-                toDelete.add(inter);
+                headerTimes.add(inter);
             }
         }
 
-        systemTimes.removeAll(toDelete);
+        systemTimes.removeAll(headerTimes);
 
         if (systemTimes.isEmpty()) {
             return;
@@ -355,9 +362,50 @@ public class SymbolFactory
             stackSet.add(inter);
         }
 
-        // Finally, scan each relevant stack
+        // Finally, scan each stack populated with some time sig(s)
         for (Entry<MeasureStack, Set<Inter>> entry : timeMap.entrySet()) {
-            new TimeBuilder.BasicColumn(entry.getKey(), entry.getValue()).retrieveTime();
+            MeasureStack stack = entry.getKey();
+            TimeBuilder.BasicColumn column = new TimeBuilder.BasicColumn(stack, entry.getValue());
+            int res = column.retrieveTime();
+
+            // If the stack does have a validated time sig, discard overlapping stuff right now!
+            if (res != -1) {
+                final Collection<AbstractTimeInter> times = column.getTimeInters().values();
+
+                // Record each time inter into its containing staff
+                for (AbstractTimeInter time : times) {
+                    time.getStaff().addOtherInter(time);
+                }
+
+                final Rectangle columnBox = Inters.getBounds(times);
+                List<Inter> neighbors = sig.inters(
+                        new Predicate<Inter>()
+                {
+                    @Override
+                    public boolean check (Inter inter)
+                    {
+                        return inter.getBounds().intersects(columnBox)
+                               && !(inter instanceof InterMutableEnsemble);
+                    }
+                });
+
+                neighbors.removeAll(times);
+
+                for (AbstractTimeInter time : times) {
+                    for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
+                        Inter neighbor = it.next();
+
+                        try {
+                            if (neighbor.overlaps(time)) {
+                                logger.info("Deleting time overlapping {}", neighbor);
+                                neighbor.delete();
+                                it.remove();
+                            }
+                        } catch (DeletedInterException ignored) {
+                        }
+                    }
+                }
+            }
         }
     }
 

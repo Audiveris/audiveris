@@ -141,9 +141,6 @@ public abstract class AbstractNumberInter
     @Override
     protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(' ').append(value);
-
-        return sb.toString();
+        return super.internals() + " " + value;
     }
 }

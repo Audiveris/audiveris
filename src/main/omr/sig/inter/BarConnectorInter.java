@@ -67,4 +67,13 @@ public class BarConnectorInter
     {
         visitor.visit(this);
     }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
+    }
 }

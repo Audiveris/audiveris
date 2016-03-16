@@ -73,7 +73,8 @@ public abstract class AbstractTimeInter
     private static final List<TimeRational> optionalTimes = TimeRational.parseValues(
             constants.optionalTimes.getValue());
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractTimeInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            AbstractTimeInter.class);
 
     /** Rational value of each (full) time sig shape. */
     private static final Map<Shape, TimeRational> rationals = new EnumMap<Shape, TimeRational>(
@@ -299,10 +300,7 @@ public abstract class AbstractTimeInter
     @Override
     protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(' ').append(getValue());
-
-        return sb.toString();
+        return super.internals() + " " + getValue();
     }
 
     //-----------------//

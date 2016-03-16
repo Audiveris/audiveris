@@ -26,9 +26,7 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 
 import omr.math.Projection;
-
 import static omr.run.Orientation.VERTICAL;
-
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -41,15 +39,13 @@ import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.header.HeaderBuilder.Plotter;
-
 import static omr.sheet.header.TimeBuilder.TimeKind.*;
-
 import omr.sheet.rhythm.MeasureStack;
 
 import omr.sig.SIGraph;
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.Inter;
-import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.TimeNumberInter;
 import omr.sig.inter.TimePairInter;
 import omr.sig.inter.TimeWholeInter;
@@ -153,6 +149,9 @@ public abstract class TimeBuilder
     /** Bottom half candidates. */
     protected final List<Inter> dens = new ArrayList<Inter>();
 
+    /** The time inter instance chosen for the staff. */
+    private AbstractTimeInter timeInter;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TimeBuilder} object.
@@ -173,6 +172,19 @@ public abstract class TimeBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------//
+    // getTimeInter //
+    //--------------//
+    /**
+     * Report the time sig instance, if any, for the staff.
+     *
+     * @return the timeInter or null
+     */
+    public AbstractTimeInter getTimeInter ()
+    {
+        return timeInter;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -182,13 +194,47 @@ public abstract class TimeBuilder
         return getClass().getSimpleName() + "#" + staff.getId();
     }
 
+    //-----------//
+    // createSig //
+    //-----------//
+    /**
+     * Actually assign the time signature to the staff.
+     *
+     * @param bestTimeInter the time inter instance for this staff
+     */
+    protected void createSig (AbstractTimeInter bestTimeInter)
+    {
+        timeInter = bestTimeInter;
+
+        // Store time ending abscissa for this staff
+        if (bestTimeInter != null) {
+            bestTimeInter.setStaff(staff);
+
+            final GlyphIndex index = system.getSheet().getGlyphIndex();
+
+            // If best time is a whole signature (common/cut) it is already in SIG.
+            // If it is a pair, only the halves (num & den) are already in SIG, so save the pair.
+            if (bestTimeInter instanceof TimePairInter) {
+                sig.addVertex(bestTimeInter);
+
+                TimePairInter pair = (TimePairInter) bestTimeInter;
+
+                for (Inter inter : pair.getMembers()) {
+                    inter.setGlyph(index.registerOriginal(inter.getGlyph()));
+                }
+            } else {
+                bestTimeInter.setGlyph(index.registerOriginal(bestTimeInter.getGlyph()));
+            }
+        }
+    }
+
     /**
      * Discard all inters that do not pertain to chosen time signature.
      * <p>
      * This accounts for other WholeTimeInter instances and to all TimeNumberInter instances
      * that do not correspond to chosen num/den.
      *
-     * @param chosenTime the time inter chosen for this staff
+     * @param chosenTime the time value chosen for this staff (TODO: useless?)
      */
     protected abstract void discardOtherMaterial (TimeValue chosenTime);
 
@@ -252,38 +298,6 @@ public abstract class TimeBuilder
      * (wholes, nums or dens).
      */
     protected abstract void findCandidates ();
-
-    //-----------//
-    // createSig //
-    //-----------//
-    /**
-     * Actually assign the time signature to the staff.
-     *
-     * @param bestTimeInter the time inter instance for this staff
-     */
-    protected void createSig (AbstractTimeInter bestTimeInter)
-    {
-        // Store time ending abscissa for this staff
-        if (bestTimeInter != null) {
-            bestTimeInter.setStaff(staff);
-
-            final GlyphIndex nest = system.getSheet().getGlyphIndex();
-
-            // If best time is a whole signature (common/cut) it is already in SIG.
-            // If it is a pair, only the halves (num & den) are already in SIG, so save the pair.
-            if (bestTimeInter instanceof TimePairInter) {
-                sig.addVertex(bestTimeInter);
-
-                TimePairInter pair = (TimePairInter) bestTimeInter;
-
-                for (Inter inter : pair.getMembers()) {
-                    inter.setGlyph(nest.registerOriginal(inter.getGlyph()));
-                }
-            } else {
-                bestTimeInter.setGlyph(nest.registerOriginal(bestTimeInter.getGlyph()));
-            }
-        }
-    }
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
@@ -462,9 +476,8 @@ public abstract class TimeBuilder
      * A subclass of TimeBuilder specifically meant for extraction outside system header,
      * further down in the system measures.
      * <p>
-     * There is no extraction per se, but time-signature shaped symbols are checked for
-     * consistency
-     * across all staves of the containing system.
+     * Symbol extraction has already been performed, so time-signature shaped symbols are now
+     * checked for consistency across all staves of the containing system.
      */
     public static class BasicTimeBuilder
             extends TimeBuilder
@@ -483,22 +496,32 @@ public abstract class TimeBuilder
         {
             // Wholes
             for (Inter inter : wholes) {
-                if (!((TimeWholeInter) inter).getValue().equals(bestTime)) {
+                if (inter != getTimeInter()) {
                     inter.delete();
                 }
             }
 
-            // Discard num's different from chosen num
-            for (Inter inter : nums) {
-                if (((TimeNumberInter) inter).getValue() != bestTime.timeRational.num) {
-                    inter.delete();
-                }
-            }
+            if (getTimeInter() instanceof TimeWholeInter) {
+                // Time whole
+                sig.deleteInters(nums);
+                sig.deleteInters(dens);
+            } else {
+                // Time pair
+                TimePairInter pair = (TimePairInter) getTimeInter();
+                Inter num = pair.getNum();
 
-            // Discard den's different from chosen den
-            for (Inter inter : dens) {
-                if (((TimeNumberInter) inter).getValue() != bestTime.timeRational.den) {
-                    inter.delete();
+                for (Inter inter : nums) {
+                    if (inter != num) {
+                        inter.delete();
+                    }
+                }
+
+                Inter den = pair.getDen();
+
+                for (Inter inter : dens) {
+                    if (inter != den) {
+                        inter.delete();
+                    }
                 }
             }
         }
@@ -581,24 +604,29 @@ public abstract class TimeBuilder
             }
         }
 
+        /**
+         * @return the ending abscissa offset of time-sig column WRT measure start, or -1 if invalid
+         */
         @Override
         public int retrieveTime ()
         {
-            super.retrieveTime();
+            if (-1 != super.retrieveTime()) {
+                // Push abscissa end for each StaffHeader
+                int maxTimeOffset = 0;
 
-            // Push abscissa end for each StaffHeader
-            int maxTimeOffset = 0;
+                for (Staff staff : system.getStaves()) {
+                    int measureStart = staff.getHeaderStart();
+                    Integer timeStop = staff.getTimeStop();
 
-            for (Staff staff : system.getStaves()) {
-                int measureStart = staff.getHeaderStart();
-                Integer timeStop = staff.getTimeStop();
-
-                if (timeStop != null) {
-                    maxTimeOffset = Math.max(maxTimeOffset, timeStop - measureStart);
+                    if (timeStop != null) {
+                        maxTimeOffset = Math.max(maxTimeOffset, timeStop - measureStart);
+                    }
                 }
-            }
 
-            return maxTimeOffset;
+                return maxTimeOffset;
+            } else {
+                return -1;
+            }
         }
 
         @Override
@@ -975,13 +1003,10 @@ public abstract class TimeBuilder
                     }
 
                     spaceStop = x;
-                } else // We are NOT in a space
-                {
-                    if (spaceStart != -1) {
-                        // End of space
-                        spaces.add(new Space(spaceStart, spaceStop));
-                        spaceStart = -1;
-                    }
+                } else if (spaceStart != -1) {
+                    // End of space
+                    spaces.add(new Space(spaceStart, spaceStop));
+                    spaceStart = -1;
                 }
             }
 
@@ -1163,6 +1188,25 @@ public abstract class TimeBuilder
         }
 
         //~ Methods --------------------------------------------------------------------------------
+        //---------------//
+        // getTimeInters //
+        //---------------//
+        /**
+         * Report the time inter instance for each staff in the column.
+         *
+         * @return the map: staff -> time inter
+         */
+        public Map<Staff, AbstractTimeInter> getTimeInters ()
+        {
+            Map<Staff, AbstractTimeInter> times = new TreeMap<Staff, AbstractTimeInter>(Staff.byId);
+
+            for (Entry<Staff, TimeBuilder> entry : builders.entrySet()) {
+                times.put(entry.getKey(), entry.getValue().getTimeInter());
+            }
+
+            return times;
+        }
+
         //--------------//
         // retrieveTime //
         //--------------//
@@ -1170,8 +1214,7 @@ public abstract class TimeBuilder
          * This is the main entry point for time signature, it retrieves the column of
          * staves candidates time signatures, and selects the best one at system level.
          *
-         * @return the ending abscissa offset of time-sig column WRT measure start when
-         *         processing header, 0 outside header
+         * @return 0 if valid, -1 if invalid
          */
         public int retrieveTime ()
         {
@@ -1189,7 +1232,7 @@ public abstract class TimeBuilder
                 if (!builder.filterCandidates()) {
                     cleanup(); // Clean up what has been constructed
 
-                    return 0; // We failed to find a time sig in system header
+                    return -1; // We failed to find a time sig in stack
                 }
             }
 
@@ -1197,9 +1240,7 @@ public abstract class TimeBuilder
             purgeUnaligned();
 
             // Check time sig consistency at system level
-            checkConsistency();
-
-            return 0;
+            return checkConsistency() ? 0 : (-1);
         }
 
         /**
@@ -1209,12 +1250,6 @@ public abstract class TimeBuilder
          * @return the created TimeBuilder instance
          */
         protected abstract TimeBuilder allocateBuilder (Staff staff);
-
-        /**
-         * This is called when we discover that a column of candidate(s) is wrong,
-         * so that all related data inserted in sig is removed.
-         */
-        protected abstract void cleanup ();
 
         //------------------//
         // checkConsistency //
@@ -1226,31 +1261,30 @@ public abstract class TimeBuilder
          * The selection is driven from the whole system column point of view, as follows:
          * <ol>
          * <li>For each staff, identify all the possible & supported AbstractTimeInter instances,
-         * each
-         * with its own grade.</li>
+         * each with its own grade.</li>
          * <li>Then for each possible AbstractTimeInter value (called TimeValue), make sure it
-         * appears
-         * in each staff as a AbstractTimeInter instance and assign a global grade (as average of
-         * staff-based AbstractTimeInter instances for the same TimeValue).</li>
+         * appears in each staff as a AbstractTimeInter instance and assign a global grade (as
+         * average of staff-based AbstractTimeInter instances for the same TimeValue).</li>
          * <li>The best system-based TimeValue is then chosen as THE time signature for this
          * system column. </li>
          * <li>All staff non compatible AbstractTimeInter instances are destroyed and the member
-         * numbers
-         * that don't belong to the chosen AbstractTimeInter are destroyed.
+         * numbers that don't belong to the chosen AbstractTimeInter are destroyed.
          * (TODO: perhaps removed from SIG but saved apart and restored if ever a new TimeValue
          * is chosen based on measure intrinsic rhythm data?)</li>
          * </ol>
+         *
+         * @return true if OK, false otherwise
          */
-        protected void checkConsistency ()
+        protected boolean checkConsistency ()
         {
             // Retrieve all time values found, organized by value and staff
-            Map<TimeValue, Inter[]> vectors = getValueVectors();
+            Map<TimeValue, AbstractTimeInter[]> vectors = getValueVectors();
             Map<TimeValue, Double> grades = new HashMap<TimeValue, Double>();
 
             TimeLoop:
-            for (Entry<TimeValue, Inter[]> entry : vectors.entrySet()) {
+            for (Entry<TimeValue, AbstractTimeInter[]> entry : vectors.entrySet()) {
                 TimeValue time = entry.getKey();
-                Inter[] vector = entry.getValue();
+                AbstractTimeInter[] vector = entry.getValue();
 
                 // Check that this time is present in all staves and compute the time mean grade
                 double mean = 0;
@@ -1272,7 +1306,7 @@ public abstract class TimeBuilder
                 grades.put(time, mean);
             }
 
-            logger.debug("System#{} Header time sig grades {}", system.getId(), grades);
+            logger.debug("System#{} time sig grades {}", system.getId(), grades);
 
             // Select the best time value at system level
             double bestGrade = 0;
@@ -1286,19 +1320,31 @@ public abstract class TimeBuilder
                 }
             }
 
+            if (bestTime == null) {
+                return false; // Invalid column
+            }
+
             // Forward the chosen time to each staff
-            Inter[] bestVector = vectors.get(bestTime);
+            AbstractTimeInter[] bestVector = vectors.get(bestTime);
             List<Staff> staves = system.getStaves();
 
             for (int is = 0; is < staves.size(); is++) {
                 Staff staff = staves.get(is);
                 TimeBuilder builder = builders.get(staff);
-                builder.createSig((AbstractTimeInter) bestVector[is]);
+                builder.createSig(bestVector[is]);
                 builder.discardOtherMaterial(bestTime);
             }
 
             logger.debug("System#{} TimeSignature: {}", system.getId(), bestTime);
+
+            return true;
         }
+
+        /**
+         * This is called when we discover that a column of candidate(s) is wrong,
+         * so that all related data inserted in sig is removed.
+         */
+        protected abstract void cleanup ();
 
         /**
          * Report the system vector of values for each time value found.
@@ -1308,10 +1354,10 @@ public abstract class TimeBuilder
          *
          * @return the system vectors of candidates found, organized per TimeValue
          */
-        protected Map<TimeValue, Inter[]> getValueVectors ()
+        protected Map<TimeValue, AbstractTimeInter[]> getValueVectors ()
         {
             // Retrieve all occurrences of time values across staves.
-            final Map<TimeValue, Inter[]> values = new HashMap<TimeValue, Inter[]>();
+            final Map<TimeValue, AbstractTimeInter[]> values = new HashMap<TimeValue, AbstractTimeInter[]>();
 
             // Loop on system staves
             final List<Staff> staves = system.getStaves();
@@ -1325,13 +1371,15 @@ public abstract class TimeBuilder
                 for (Inter inter : builder.wholes) {
                     AbstractTimeInter whole = (AbstractTimeInter) inter;
                     TimeValue time = whole.getValue();
-                    Inter[] vector = values.get(time);
+                    AbstractTimeInter[] vector = values.get(time);
 
                     if (vector == null) {
-                        values.put(time, vector = new Inter[staves.size()]);
+                        values.put(time, vector = new AbstractTimeInter[staves.size()]);
                     }
 
-                    vector[index] = inter;
+                    if ((vector[index] == null) || (inter.getGrade() > vector[index].getGrade())) {
+                        vector[index] = whole;
+                    }
                 }
 
                 // Num/Den pair candidate signatures, if any
@@ -1339,13 +1387,15 @@ public abstract class TimeBuilder
                     TimeNumberInter num = (TimeNumberInter) nInter;
 
                     for (Relation rel : sig.getRelations(num, TimeTopBottomRelation.class)) {
-                        TimeNumberInter den = (TimeNumberInter) sig.getOppositeInter(nInter, rel);
+                        TimeNumberInter den = (TimeNumberInter) sig.getOppositeInter(
+                                nInter,
+                                rel);
                         TimePairInter pair = TimePairInter.create(num, den);
                         TimeValue time = pair.getValue();
-                        Inter[] vector = values.get(time);
+                        AbstractTimeInter[] vector = values.get(time);
 
                         if (vector == null) {
-                            values.put(time, vector = new Inter[staves.size()]);
+                            values.put(time, vector = new AbstractTimeInter[staves.size()]);
                         }
 
                         if ((vector[index] == null)
@@ -1423,49 +1473,6 @@ public abstract class TimeBuilder
         }
     }
 
-    //-------------//
-    // TimeAdapter //
-    //-------------//
-    private abstract class TimeAdapter
-            extends GlyphCluster.AbstractAdapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Best inter per time shape. */
-        public Map<Shape, Inter> bestMap = new EnumMap<Shape, Inter>(Shape.class);
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public TimeAdapter (List<Glyph> parts)
-        {
-            super(parts, params.maxPartGap);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public void cleanup ()
-        {
-            for (Inter inter : bestMap.values()) {
-                inter.delete();
-            }
-        }
-
-        public Inter getSingleInter ()
-        {
-            for (Inter inter : bestMap.values()) {
-                if (!inter.isDeleted()) {
-                    return inter;
-                }
-            }
-
-            return null;
-        }
-
-        @Override
-        public boolean isSizeAcceptable (Rectangle box)
-        {
-            return box.width <= params.maxTimeWidth;
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -1529,6 +1536,39 @@ public abstract class TimeBuilder
                 "Maximum inner space within time signature");
     }
 
+    //-------//
+    // Space //
+    //-------//
+    private static class Space
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Left abscissa. */
+        protected final int start;
+
+        /** Right abscissa. */
+        protected final int stop;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Space (int start,
+                      int stop)
+        {
+            this.start = start;
+            this.stop = stop;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("Space(").append(start).append("-").append(stop).append(")");
+
+            return sb.toString();
+        }
+    }
+
     //-------------//
     // HalfAdapter //
     //-------------//
@@ -1590,36 +1630,46 @@ public abstract class TimeBuilder
         }
     }
 
-    //-------//
-    // Space //
-    //-------//
-    private static class Space
+    //-------------//
+    // TimeAdapter //
+    //-------------//
+    private abstract class TimeAdapter
+            extends GlyphCluster.AbstractAdapter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Left abscissa. */
-        protected final int start;
-
-        /** Right abscissa. */
-        protected final int stop;
+        /** Best inter per time shape. */
+        public Map<Shape, Inter> bestMap = new EnumMap<Shape, Inter>(Shape.class);
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Space (int start,
-                      int stop)
+        public TimeAdapter (List<Glyph> parts)
         {
-            this.start = start;
-            this.stop = stop;
+            super(parts, params.maxPartGap);
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
+        public void cleanup ()
         {
-            StringBuilder sb = new StringBuilder();
+            for (Inter inter : bestMap.values()) {
+                inter.delete();
+            }
+        }
 
-            sb.append("Space(").append(start).append("-").append(stop).append(")");
+        public Inter getSingleInter ()
+        {
+            for (Inter inter : bestMap.values()) {
+                if (!inter.isDeleted()) {
+                    return inter;
+                }
+            }
 
-            return sb.toString();
+            return null;
+        }
+
+        @Override
+        public boolean isSizeAcceptable (Rectangle box)
+        {
+            return box.width <= params.maxTimeWidth;
         }
     }
 

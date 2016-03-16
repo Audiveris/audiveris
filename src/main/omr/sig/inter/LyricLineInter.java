@@ -171,7 +171,7 @@ public class LyricLineInter
     {
         StringBuilder sb = new StringBuilder(super.internals());
 
-        sb.append(" number:").append(number); ///.append(" items:").append(getMembers()).append("}");
+        sb.append(" number:").append(number);
 
         return sb.toString();
     }

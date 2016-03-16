@@ -58,6 +58,9 @@ public class FretInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // create //
+    //--------//
     public static FretInter create (Glyph glyph,
                                     Shape shape,
                                     double grade)
@@ -110,6 +113,15 @@ public class FretInter
         }
 
         throw new IllegalArgumentException("Invalid roman value " + value);
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
     }
 
     //---------//

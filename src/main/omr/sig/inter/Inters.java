@@ -12,6 +12,7 @@
 package omr.sig.inter;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.Comparator;
@@ -52,6 +53,30 @@ public abstract class Inters
     };
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------//
+    // getBounds //
+    //-----------//
+    /**
+     * Return the bounding box of a collection of Inter instances.
+     *
+     * @param inters the provided collection of inter instances
+     * @return the bounding contour
+     */
+    public static Rectangle getBounds (Collection<? extends Inter> inters)
+    {
+        Rectangle box = null;
+
+        for (Inter inter : inters) {
+            if (box == null) {
+                box = new Rectangle(inter.getBounds());
+            } else {
+                box.add(inter.getBounds());
+            }
+        }
+
+        return box;
+    }
+
     //-----------------//
     // getClosestChord //
     //-----------------//

@@ -211,6 +211,33 @@ public class SystemInfo
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the IDs of the system collection.
+     *
+     * @param systems the collection of systems
+     * @return the string built
+     */
+    public static String toString (Collection<SystemInfo> systems)
+    {
+        if (systems == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(" systems[");
+
+        for (SystemInfo system : systems) {
+            sb.append("#").append(system.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
     //---------//
     // addPart //
     //---------//
@@ -232,6 +259,12 @@ public class SystemInfo
         try {
             // Populate system sig
             sig.afterReload(this);
+
+            // Process staves upfront, so that their notes have their staff assigned.
+            // Doing so, measure chords can determine which staves they belong to.
+            for (Staff staff : staves) {
+                staff.afterReload();
+            }
 
             for (Part part : parts) {
                 part.afterReload();
@@ -470,33 +503,6 @@ public class SystemInfo
     public List<Section> getHorizontalSections ()
     {
         return Collections.unmodifiableList(hSections);
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Convenient method, to build a string with just the IDs of the system collection.
-     *
-     * @param systems the collection of systems
-     * @return the string built
-     */
-    public static String toString (Collection<SystemInfo> systems)
-    {
-        if (systems == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(" systems[");
-
-        for (SystemInfo system : systems) {
-            sb.append("#").append(system.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
     }
 
     //-------//
@@ -1147,52 +1153,6 @@ public class SystemInfo
         }
     }
 
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * @param staves the range of staves
-     */
-    public final void setStaves (List<Staff> staves)
-    {
-        this.staves = staves;
-
-        for (Staff staff : staves) {
-            staff.setSystem(this);
-        }
-
-        updateCoordinates();
-    }
-
-    //-------------------//
-    // updateCoordinates //
-    //-------------------//
-    public final void updateCoordinates ()
-    {
-        Staff firstStaff = getFirstStaff();
-        LineInfo firstLine = firstStaff.getFirstLine();
-        Point2D topLeft = firstLine.getEndPoint(LEFT);
-
-        Staff lastStaff = getLastStaff();
-        LineInfo lastLine = lastStaff.getLastLine();
-        Point2D botLeft = lastLine.getEndPoint(LEFT);
-
-        left = Integer.MAX_VALUE;
-
-        int right = 0;
-
-        for (Staff staff : staves) {
-            left = Math.min(left, staff.getAbscissa(LEFT));
-            right = Math.max(right, staff.getAbscissa(RIGHT));
-        }
-
-        top = (int) Math.rint(topLeft.getY());
-        width = right - left + 1;
-        deltaY = (int) Math.rint(
-                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
-        bottom = (int) Math.rint(botLeft.getY());
-    }
-
     //---------//
     // setArea //
     //---------//
@@ -1244,6 +1204,23 @@ public class SystemInfo
         this.page = page;
     }
 
+    //-----------//
+    // setStaves //
+    //-----------//
+    /**
+     * @param staves the range of staves
+     */
+    public final void setStaves (List<Staff> staves)
+    {
+        this.staves = staves;
+
+        for (Staff staff : staves) {
+            staff.setSystem(this);
+        }
+
+        updateCoordinates();
+    }
+
     //
     //    //-------------//
     //    // swapVoiceId //
@@ -1285,6 +1262,35 @@ public class SystemInfo
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-------------------//
+    // updateCoordinates //
+    //-------------------//
+    public final void updateCoordinates ()
+    {
+        Staff firstStaff = getFirstStaff();
+        LineInfo firstLine = firstStaff.getFirstLine();
+        Point2D topLeft = firstLine.getEndPoint(LEFT);
+
+        Staff lastStaff = getLastStaff();
+        LineInfo lastLine = lastStaff.getLastLine();
+        Point2D botLeft = lastLine.getEndPoint(LEFT);
+
+        left = Integer.MAX_VALUE;
+
+        int right = 0;
+
+        for (Staff staff : staves) {
+            left = Math.min(left, staff.getAbscissa(LEFT));
+            right = Math.max(right, staff.getAbscissa(RIGHT));
+        }
+
+        top = (int) Math.rint(topLeft.getY());
+        width = right - left + 1;
+        deltaY = (int) Math.rint(
+                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+        bottom = (int) Math.rint(botLeft.getY());
     }
 
     //-----------//

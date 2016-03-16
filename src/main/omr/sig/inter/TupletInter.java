@@ -25,8 +25,8 @@ import omr.sheet.SystemInfo;
 import omr.sheet.rhythm.Voice;
 
 import omr.sig.SIGraph;
-import omr.sig.relation.Relation;
 import omr.sig.relation.ChordTupletRelation;
+import omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,6 +196,15 @@ public class TupletInter
         }
 
         return null;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
     }
 
     //-----------//

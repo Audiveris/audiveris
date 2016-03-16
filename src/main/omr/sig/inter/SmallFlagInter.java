@@ -47,4 +47,14 @@ public class SmallFlagInter
     private SmallFlagInter ()
     {
     }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
+    }
 }

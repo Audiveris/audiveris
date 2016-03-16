@@ -116,7 +116,6 @@ public class TimeValue
     public int hashCode ()
     {
         int hash = 7;
-        hash = (83 * hash) + Objects.hashCode(this.shape);
         hash = (83 * hash) + Objects.hashCode(this.timeRational);
 
         return hash;

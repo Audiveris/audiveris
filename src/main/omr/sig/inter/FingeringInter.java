@@ -143,4 +143,13 @@ public class FingeringInter
 
         return -1;
     }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
+    }
 }

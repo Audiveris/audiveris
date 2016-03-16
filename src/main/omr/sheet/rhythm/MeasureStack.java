@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet.rhythm;
 
+import omr.math.GeoUtil;
 import omr.math.Rational;
 
 import omr.score.Page;
@@ -23,16 +24,14 @@ import omr.sheet.SystemInfo;
 import omr.sheet.grid.LineInfo;
 
 import omr.sig.inter.AbstractChordInter;
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.HeadChordInter;
 import omr.sig.inter.Inter;
-import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.TupletInter;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
-
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -56,7 +55,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import omr.math.GeoUtil;
 
 /**
  * Class {@code MeasureStack} represents a vertical stack of {@link Measure} instances,
@@ -234,8 +232,13 @@ public class MeasureStack
     public void addTimeSignature (AbstractTimeInter ts)
     {
         // Populate (part) measure with provided time signature
-        Staff staff = ts.getStaff();
         Point center = ts.getCenter();
+        Staff staff = ts.getStaff();
+
+        if (staff == null) {
+            ts.setStaff(staff = system.getStaffAtOrAbove(center));
+        }
+
         Measure measure = staff.getPart().getMeasureAt(center);
         measure.addInter(ts);
     }
@@ -423,108 +426,6 @@ public class MeasureStack
         }
 
         return allChords;
-    }
-
-    //-----------------------//
-    // getStandardChordAbove //
-    //-----------------------//
-    /**
-     * Retrieve the closest chord (head or rest) within staff above.
-     *
-     * @param point the system-based location
-     * @return the most suitable chord, or null
-     */
-    public AbstractChordInter getStandardChordAbove (Point2D point)
-    {
-        Collection<AbstractChordInter> aboves = getStandardChordsAbove(point);
-
-        if (!aboves.isEmpty()) {
-            return getClosestChord(aboves, point);
-        }
-
-        return null;
-    }
-
-    //-----------------------//
-    // getStandardChordBelow //
-    //-----------------------//
-    /**
-     * Retrieve the closest chord (head or rest) within staff below.
-     *
-     * @param point the system-based location
-     * @return the most suitable chord, or null
-     */
-    public AbstractChordInter getStandardChordBelow (Point2D point)
-    {
-        Collection<AbstractChordInter> belows = getStandardChordsBelow(point);
-
-        if (!belows.isEmpty()) {
-            return getClosestChord(belows, point);
-        }
-
-        return null;
-    }
-
-    //------------------------//
-    // getStandardChordsAbove //
-    //------------------------//
-    /**
-     * Report the set of standard chords whose 'head' is located in the staff above the
-     * provided point.
-     *
-     * @param point the provided point
-     * @return the (perhaps empty) set of chords
-     */
-    public Set<AbstractChordInter> getStandardChordsAbove (Point2D point)
-    {
-        Staff desiredStaff = getSystem().getStaffAtOrAbove(point);
-        Set<AbstractChordInter> found = new LinkedHashSet<AbstractChordInter>();
-        Measure measure = getMeasureAt(desiredStaff);
-
-        if (measure != null) {
-            for (AbstractChordInter chord : measure.getStandardChords()) {
-                if (chord.getBottomStaff() == desiredStaff) {
-                    Point head = chord.getHeadLocation();
-
-                    if ((head != null) && (head.y < point.getY())) {
-                        found.add(chord);
-                    }
-                }
-            }
-        }
-
-        return found;
-    }
-
-    //------------------------//
-    // getStandardChordsBelow //
-    //------------------------//
-    /**
-     * Report the set of standard chords whose 'head' is located in the staff below the
-     * provided point.
-     *
-     * @param point the provided point
-     * @return the (perhaps empty) collection of chords
-     */
-    public Set<AbstractChordInter> getStandardChordsBelow (Point2D point)
-    {
-        Staff desiredStaff = getSystem().getStaffAtOrBelow(point);
-        Set<AbstractChordInter> found = new LinkedHashSet<AbstractChordInter>();
-        Measure measure = getMeasureAt(desiredStaff);
-
-        if (measure != null) {
-            for (AbstractChordInter chord : measure.getStandardChords()) {
-                if (chord.getTopStaff() == desiredStaff) {
-                    Point head = chord.getHeadLocation();
-
-                    if ((head != null) && (head.y > point.getY())) {
-                        found.add(chord);
-                    }
-                }
-            }
-        }
-
-        return found;
     }
 
     //-----------------//
@@ -1009,6 +910,46 @@ public class MeasureStack
         return slots;
     }
 
+    //-----------------------//
+    // getStandardChordAbove //
+    //-----------------------//
+    /**
+     * Retrieve the closest chord (head or rest) within staff above.
+     *
+     * @param point the system-based location
+     * @return the most suitable chord, or null
+     */
+    public AbstractChordInter getStandardChordAbove (Point2D point)
+    {
+        Collection<AbstractChordInter> aboves = getStandardChordsAbove(point);
+
+        if (!aboves.isEmpty()) {
+            return getClosestChord(aboves, point);
+        }
+
+        return null;
+    }
+
+    //-----------------------//
+    // getStandardChordBelow //
+    //-----------------------//
+    /**
+     * Retrieve the closest chord (head or rest) within staff below.
+     *
+     * @param point the system-based location
+     * @return the most suitable chord, or null
+     */
+    public AbstractChordInter getStandardChordBelow (Point2D point)
+    {
+        Collection<AbstractChordInter> belows = getStandardChordsBelow(point);
+
+        if (!belows.isEmpty()) {
+            return getClosestChord(belows, point);
+        }
+
+        return null;
+    }
+
     //-------------------//
     // getStandardChords //
     //-------------------//
@@ -1021,6 +962,68 @@ public class MeasureStack
         }
 
         return stdChords;
+    }
+
+    //------------------------//
+    // getStandardChordsAbove //
+    //------------------------//
+    /**
+     * Report the set of standard chords whose 'head' is located in the staff above the
+     * provided point.
+     *
+     * @param point the provided point
+     * @return the (perhaps empty) set of chords
+     */
+    public Set<AbstractChordInter> getStandardChordsAbove (Point2D point)
+    {
+        Staff desiredStaff = getSystem().getStaffAtOrAbove(point);
+        Set<AbstractChordInter> found = new LinkedHashSet<AbstractChordInter>();
+        Measure measure = getMeasureAt(desiredStaff);
+
+        if (measure != null) {
+            for (AbstractChordInter chord : measure.getStandardChords()) {
+                if (chord.getBottomStaff() == desiredStaff) {
+                    Point head = chord.getHeadLocation();
+
+                    if ((head != null) && (head.y < point.getY())) {
+                        found.add(chord);
+                    }
+                }
+            }
+        }
+
+        return found;
+    }
+
+    //------------------------//
+    // getStandardChordsBelow //
+    //------------------------//
+    /**
+     * Report the set of standard chords whose 'head' is located in the staff below the
+     * provided point.
+     *
+     * @param point the provided point
+     * @return the (perhaps empty) collection of chords
+     */
+    public Set<AbstractChordInter> getStandardChordsBelow (Point2D point)
+    {
+        Staff desiredStaff = getSystem().getStaffAtOrBelow(point);
+        Set<AbstractChordInter> found = new LinkedHashSet<AbstractChordInter>();
+        Measure measure = getMeasureAt(desiredStaff);
+
+        if (measure != null) {
+            for (AbstractChordInter chord : measure.getStandardChords()) {
+                if (chord.getTopStaff() == desiredStaff) {
+                    Point head = chord.getHeadLocation();
+
+                    if ((head != null) && (head.y > point.getY())) {
+                        found.add(chord);
+                    }
+                }
+            }
+        }
+
+        return found;
     }
 
     //-----------//

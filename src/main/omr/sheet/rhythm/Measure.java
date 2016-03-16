@@ -331,10 +331,10 @@ public class Measure
                     continue;
                 }
             } else {
-                logger.warn("Inter with no staff {}", inter);
-
                 List<Staff> stavesAround = part.getSystem().getStavesAround(center); // 1 or 2 staves
                 staff = stavesAround.get(0);
+                logger.warn("Inter with no staff {}, assigned to staff#{}", inter, staff.getId());
+                inter.setStaff(staff);
 
                 if (!part.getStaves().contains(staff)) {
                     continue;

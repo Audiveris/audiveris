@@ -292,10 +292,7 @@ public class AlterInter
     @Override
     protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(' ').append(shape);
-
-        return sb.toString();
+        return super.internals() + " " + shape;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

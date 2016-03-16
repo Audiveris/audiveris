@@ -156,6 +156,6 @@ public abstract class AbstractPitchedInter
     @Override
     protected String internals ()
     {
-        return super.internals() + " p:" + pitch;
+        return super.internals() + String.format(" p:%.2f", pitch);
     }
 }

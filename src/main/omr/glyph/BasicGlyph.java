@@ -581,21 +581,6 @@ public class BasicGlyph
             sb.append(' ').append(groups);
         }
 
-        //
-        //        if (getShape() != null) {
-        //            sb.append(" ").append(getShape());
-        //
-        //            if (getShape().getPhysicalShape() != getShape()) {
-        //                sb.append(" physical=").append(getShape().getPhysicalShape());
-        //            }
-        //        }
-        //
-        //        if (getPartOf() != null) {
-        //            sb.append(" partOf#").append(getPartOf().getId());
-        //        }
-        //
-        //        sb.append(" bounds=[").append(left).append(',').append(top).append(',')
-        //                .append(runTable.getWidth()).append(',').append(runTable.getHeight()).append(']');
         return sb.toString();
     }
 

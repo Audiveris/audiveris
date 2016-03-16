@@ -324,6 +324,10 @@ public class Staff
             for (AbstractNoteInter note : notes) {
                 note.setStaff(this);
             }
+
+            for (AbstractInter other : others) {
+                other.setStaff(this);
+            }
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }

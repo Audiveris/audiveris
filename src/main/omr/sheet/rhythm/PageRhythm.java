@@ -15,15 +15,14 @@ import omr.math.Histogram;
 import omr.math.Rational;
 
 import omr.score.Page;
-
 import omr.sheet.SystemInfo;
 
 import omr.sig.SigReducer;
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.FlagInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.RestChordInter;
-import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.TupletInter;
 
 import org.slf4j.Logger;
@@ -104,6 +103,9 @@ public class PageRhythm
     //---------//
     public void process ()
     {
+        // Populate all stacks in page with potential time signatures, and derive ranges.
+        populateTimeSignatures();
+
         // Reduce symbols while saving poor FRAT data for each system
         // 'poorsMap' is the collection of poor FRAT data discarded via SIG reduction.
         // It is put aside to be used later as modification options...
@@ -114,9 +116,6 @@ public class PageRhythm
             new SigReducer(system, true).reduceRhythms(systemPoorFrats, FRAT_CLASSES);
             poorsMap.put(system, systemPoorFrats);
         }
-
-        // Populate all stacks in page with potential time signatures, and derive ranges.
-        populateTimeSignatures();
 
         // Check typical duration for each range (w/o any poor FRAT)
         retrieveDurations();
@@ -177,6 +176,7 @@ public class PageRhythm
     //------------------------//
     /**
      * Populate page stacks with the time signatures found and define ranges.
+     * This is performed before symbol reduction.
      */
     private void populateTimeSignatures ()
     {
@@ -188,8 +188,9 @@ public class PageRhythm
 
                 for (MeasureStack stack : system.getMeasureStacks()) {
                     boolean found = false;
+                    List<Inter> stackTimes = stack.filter(systemTimes);
 
-                    for (Inter inter : stack.filter(systemTimes)) {
+                    for (Inter inter : stackTimes) {
                         AbstractTimeInter ts = (AbstractTimeInter) inter;
                         stack.addTimeSignature(ts);
                         systemTimes.remove(ts);
