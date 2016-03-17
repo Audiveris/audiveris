@@ -178,7 +178,7 @@ public class KeyBuilder
     private final boolean inHeader;
 
     /** Shape classifier to use. */
-    private final Classifier evaluator = GlyphClassifier.getInstance();
+    private final Classifier classifier = GlyphClassifier.getInstance();
 
     /** Staff-free pixel source. */
     private final ByteProcessor staffFreeSource;
@@ -1027,18 +1027,14 @@ public class KeyBuilder
                 range.start = space.stop + 1;
             }
         } else // Make sure we have some item
-        {
-            if (peaks.isEmpty()) {
+         if (peaks.isEmpty()) {
                 range.start = space.stop + 1;
             } else // Second (wide) space stops it
-            {
-                if (space.getWidth() > params.maxInnerSpace) {
+             if (space.getWidth() > params.maxInnerSpace) {
                     range.stop = space.start;
                     space.setWide();
                     keepOn = false;
                 }
-            }
-        }
 
         events.add(space);
 
@@ -2032,7 +2028,7 @@ public class KeyBuilder
                 glyph = sheet.getGlyphIndex().registerOriginal(glyph);
             }
 
-            Evaluation[] evals = evaluator.getNaturalEvaluations(glyph, sheet.getInterline());
+            Evaluation[] evals = classifier.getNaturalEvaluations(glyph, sheet.getInterline());
 
             for (Shape shape : targetShapes) {
                 Evaluation eval = evals[shape.ordinal()];

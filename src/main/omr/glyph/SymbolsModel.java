@@ -276,10 +276,10 @@ public class SymbolsModel
 
         // Test on glyph weight (noise-like)
         // To prevent to assign a non-noise shape to a noise glyph
-        /** Standard evaluator */
-        final Classifier evaluator = GlyphClassifier.getInstance();
+        /** Standard classifier */
+        final Classifier classifier = GlyphClassifier.getInstance();
 
-        if ((shape == Shape.NOISE) || evaluator.isBigEnough(glyph, interline)) {
+        if ((shape == Shape.NOISE) || classifier.isBigEnough(glyph, interline)) {
             return super.assignGlyph(glyph, interline, shape, grade);
         }
 

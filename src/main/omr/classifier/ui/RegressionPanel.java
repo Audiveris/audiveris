@@ -71,10 +71,10 @@ class RegressionPanel
 
         // Training entities
         JButton dumpButton = new JButton(new DumpAction());
-        dumpButton.setToolTipText("Dump the evaluator internals");
+        dumpButton.setToolTipText("Dump the classifier internals");
 
         JButton trainButton = new JButton(trainAction);
-        trainButton.setToolTipText("Train the evaluator from scratch");
+        trainButton.setToolTipText("Train the classifier from scratch");
 
         builder.add(dumpButton, cst.xy(3, r));
         builder.add(trainButton, cst.xy(5, r));

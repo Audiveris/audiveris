@@ -43,7 +43,7 @@ import javax.swing.JProgressBar;
 import omr.ui.field.LLabel;
 
 /**
- * Class {@code ValidationPanel} handles the validation of an evaluator against the
+ * Class {@code ValidationPanel} handles the validation of an classifier against the
  * selected population of samples (either the whole base or the core base).
  * <p>
  * It is a dedicated companion of class {@link Trainer}.
@@ -189,7 +189,7 @@ class ValidationPanel
         r += 2; // ----------------------------
 
         JButton validateButton = new JButton(validateAction);
-        validateButton.setToolTipText("Validate the evaluator on current base of samples");
+        validateButton.setToolTipText("Validate the classifier on current base of samples");
         builder.add(validateButton, cst.xy(3, r));
 
         builder.add(positiveValue.getLabel(), cst.xy(5, r));
@@ -218,7 +218,7 @@ class ValidationPanel
     //---------------//
     private void runValidation ()
     {
-        logger.info("Validating {} evaluator ...", classifier.getName());
+        logger.info("Validating {} classifier ...", classifier.getName());
 
         // Empty the display
         positiveValue.setText("");

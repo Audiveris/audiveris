@@ -308,15 +308,15 @@ public class StaffFilament
     /**
      * Build a simple StaffLine instance from this detailed StaffFilament instance.
      *
-     * @param nest if not null, register the original glyph in nest
+     * @param glyphIndex if not null, register the original glyph in glyph index
      * @return the equivalent StaffLine instance
      */
-    public StaffLine toStaffLine (GlyphIndex nest)
+    public StaffLine toStaffLine (GlyphIndex glyphIndex)
     {
         Glyph glyph = toGlyph(Group.STAFF_LINE); // Assigning STAFF_LINE is useless in fact
 
-        if (nest != null) {
-            glyph = nest.registerOriginal(glyph);
+        if (glyphIndex != null) {
+            glyph = glyphIndex.registerOriginal(glyph);
         }
 
         final StaffLine staffLine = new StaffLine(points, getThickness());

@@ -355,7 +355,7 @@ public class Trainer
              * glyph to build a population for training */
             SELECTING,
             /** Using the
-             * population to train the evaluator */
+             * population to train the classifier */
             TRAINING;
         }
 

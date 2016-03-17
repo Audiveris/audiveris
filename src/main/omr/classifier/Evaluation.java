@@ -37,7 +37,7 @@ public class Evaluation
 
     /**
      * The evaluation grade (larger is better), generally provided by
-     * the neural network evaluator in the range 0 - 1.
+     * the neural network classifier in the range 0 - 1.
      */
     public double grade;
 

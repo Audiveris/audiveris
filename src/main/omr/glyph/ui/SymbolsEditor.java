@@ -102,7 +102,7 @@ public class SymbolsEditor
     private final Sheet sheet;
 
     /** Evaluator to check for NOISE glyphs. */
-    private final Classifier evaluator = null; ///HB GlyphClassifier.getInstance();
+    private final Classifier classifier = null;
 
     /** Related nest view. */
     private final MyView view;
@@ -141,7 +141,7 @@ public class SymbolsEditor
         //                },
         //                false);
         //
-        pageMenu = new EditorMenu(sheet, new SymbolMenu(symbolsController, evaluator, focus));
+        pageMenu = new EditorMenu(sheet, new SymbolMenu(symbolsController, classifier, focus));
 
         List<Board> boards = new ArrayList<Board>();
         boards.add(new PixelBoard(sheet));

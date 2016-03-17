@@ -45,7 +45,7 @@ public interface Classifier
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Report the sorted sequence of best evaluation(s) found by the evaluator on the
+     * Report the sorted sequence of best evaluation(s) found by the classifier on the
      * provided glyph.
      *
      * @param glyph      the glyph to evaluate
@@ -62,7 +62,7 @@ public interface Classifier
                            EnumSet<Condition> conditions);
 
     /**
-     * Report the sorted sequence of best evaluation(s) found by the evaluator on the
+     * Report the sorted sequence of best evaluation(s) found by the classifier on the
      * provided glyph, with no system but an interline value.
      *
      * @param glyph      the glyph to evaluate
@@ -91,14 +91,14 @@ public interface Classifier
                            Shape shape);
 
     /**
-     * Report the name of this evaluator.
+     * Report the name of this classifier.
      *
-     * @return the evaluator declared name
+     * @return the classifier declared name
      */
     String getName ();
 
     /**
-     * Run the evaluator with the specified glyph, and return the natural sequence of
+     * Run the classifier with the specified glyph, and return the natural sequence of
      * all interpretations (ordered by Shape ordinal) with no additional check.
      *
      * @param glyph     the glyph to be examined

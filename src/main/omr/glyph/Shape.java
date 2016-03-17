@@ -590,7 +590,7 @@ public enum Shape
     // isTrainable //
     //-------------//
     /**
-     * Report whether this shape can be used to train an evaluator.
+     * Report whether this shape can be used to train an classifier.
      *
      * @return true if trainable, false otherwise
      */

@@ -282,13 +282,13 @@ public class SystemInfo
         }
     }
 
-    //-----------------------//
-    // clearStandaloneGlyphs //
-    //-----------------------//
+    //-----------------//
+    // clearFreeGlyphs //
+    //-----------------//
     /**
-     * Clear the collection of standalone glyphs, when they are no longer useful.
+     * Clear the collection of free glyphs, when they are no longer useful.
      */
-    public void clearStandaloneGlyphs ()
+    public void clearFreeGlyphs ()
     {
         freeGlyphs.clear();
     }

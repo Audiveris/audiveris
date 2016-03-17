@@ -29,7 +29,7 @@ import javax.swing.Icon;
  * <li>It can be used as an <b>image</b> for precise drawing on score views, whatever the desired
  * scale and display ratio. See {@link #buildImage} and {@link #paintSymbol} methods.</li>
  *
- * <li>It may also be used to <b>train</b> the glyph evaluator when we don't have enough "real"
+ * <li>It may also be used to <b>train</b> the glyph classifier when we don't have enough "real"
  * glyphs available.</li>
  *
  * <li>It may also be used to convey the <b>reference point</b> of that shape.

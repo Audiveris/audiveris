@@ -62,7 +62,7 @@ public class SymbolMenu
     // Links to partnering entities
     private final ShapeFocusBoard shapeFocus;
 
-    private final Classifier evaluator;
+    private final Classifier classifier;
 
     // To handle proposed compound shape
     private Glyph proposedGlyph;
@@ -86,17 +86,17 @@ public class SymbolMenu
      * Create the Symbol menu.
      *
      * @param symbolsController the top companion
-     * @param evaluator         the glyph evaluator
+     * @param classifier        the glyph classifier
      * @param shapeFocus        the current shape focus
      */
     public SymbolMenu (final SymbolsController symbolsController,
-                       Classifier evaluator,
+                       Classifier classifier,
                        ShapeFocusBoard shapeFocus)
     {
         super(symbolsController.getModel().getSheet(), "Glyphs ...");
 
         this.controller = symbolsController;
-        this.evaluator = evaluator;
+        this.classifier = classifier;
         this.shapeFocus = shapeFocus;
     }
 
@@ -645,8 +645,7 @@ public class SymbolMenu
                 SystemManager systemManager = sheet.getSystemManager();
 
                 for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
-                    ///Evaluation vote = evaluator.vote(glyph, system, Grades.symbolMinGrade);
-                    Evaluation[] evals = evaluator.evaluate(
+                    Evaluation[] evals = classifier.evaluate(
                             glyph,
                             system,
                             1,

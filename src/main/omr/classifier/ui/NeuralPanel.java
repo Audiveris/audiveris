@@ -357,10 +357,10 @@ class NeuralPanel
         r += 2; // ----------------------------
 
         JButton dumpButton = new JButton(new DumpAction());
-        dumpButton.setToolTipText("Dump the evaluator internals");
+        dumpButton.setToolTipText("Dump the classifier internals");
 
         JButton trainButton = new JButton(trainAction);
-        trainButton.setToolTipText("Re-Train the evaluator from scratch");
+        trainButton.setToolTipText("Re-Train the classifier from scratch");
 
         JButton bestButton = new JButton(bestAction);
         bestButton.setToolTipText("Use the weights of best snap");
@@ -378,10 +378,10 @@ class NeuralPanel
         r += 2; // ----------------------------
 
         JButton stopButton = new JButton(stopAction);
-        stopButton.setToolTipText("Stop the training of the evaluator");
+        stopButton.setToolTipText("Stop the training of the classifier");
 
         JButton incTrainButton = new JButton(incrementalTrainAction);
-        incTrainButton.setToolTipText("Incrementally train the evaluator");
+        incTrainButton.setToolTipText("Incrementally train the classifier");
 
         JButton lastButton = new JButton(lastAction);
         lastButton.setToolTipText("Use the last weights");

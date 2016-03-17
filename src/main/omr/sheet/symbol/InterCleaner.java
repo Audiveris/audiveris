@@ -50,6 +50,6 @@ class InterCleaner
         }
 
         // Standalone glyphs
-        system.clearStandaloneGlyphs();
+        system.clearFreeGlyphs();
     }
 }

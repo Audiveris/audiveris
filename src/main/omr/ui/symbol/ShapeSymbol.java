@@ -28,7 +28,7 @@ import java.io.IOException;
  * <li>It can be used for Drag & Drop operations, since it implements the {@link Transferable}
  * interface.</li>
  *
- * <li>It can be used to <b>train</b> the glyph evaluator when we don't have enough "real" glyphs
+ * <li>It can be used to <b>train</b> the glyph classifier when we don't have enough "real" glyphs
  * available.</li>
  * </ul>
  *

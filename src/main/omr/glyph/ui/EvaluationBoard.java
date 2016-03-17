@@ -60,7 +60,7 @@ import javax.swing.SwingConstants;
 
 /**
  * Class {@code EvaluationBoard} is a board dedicated to the display of evaluation
- * results performed by an evaluator.
+ * results performed by an classifier.
  * It also provides through buttons the ability to manually assign a shape to the glyph at hand.
  *
  * @author Hervé Bitteur
@@ -104,7 +104,7 @@ public class EvaluationBoard
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a simplified passive evaluation board with one neural
-     * network evaluator.
+     * network classifier.
      *
      * @param classifier      the classifier to use
      * @param glyphController the related glyph controller
@@ -122,7 +122,7 @@ public class EvaluationBoard
     // EvaluationBoard //
     //-----------------//
     /**
-     * Create an evaluation board with one neural network evaluator and the ability to
+     * Create an evaluation board with one neural network classifier and the ability to
      * force glyph shape.
      *
      * @param sheet           the related sheet, or null
@@ -158,7 +158,7 @@ public class EvaluationBoard
     // evaluate //
     //----------//
     /**
-     * Evaluate the glyph at hand, and display the result in evaluator dedicated area.
+     * Evaluate the glyph at hand, and display the result in classifier dedicated area.
      *
      * @param glyph the glyph at hand
      */

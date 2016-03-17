@@ -34,7 +34,7 @@ import java.util.List;
 
 /**
  * Class {@code ShapeChecker} gathers additional specific shape checks, meant to
- * complement the work done by a shape evaluator.
+ * complement the work done by a shape classifier.
  * <p>
  * Typically, physical shapes (the *_set shape names) must be mapped to the right logical shapes
  * using proper additional tests.

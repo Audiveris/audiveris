@@ -78,7 +78,7 @@ public class SymbolsBuilder
     private final Sheet sheet;
 
     /** Shape classifier to use. */
-    private final Classifier evaluator = GlyphClassifier.getInstance();
+    private final Classifier classifier = GlyphClassifier.getInstance();
 
     /** Companion factory for symbols inters. */
     private final SymbolFactory factory;
@@ -177,7 +177,7 @@ public class SymbolsBuilder
 
         glyph.setPitchPosition(closestStaff.pitchPositionOf(center));
 
-        Evaluation[] evals = evaluator.evaluate(
+        Evaluation[] evals = classifier.evaluate(
                 glyph,
                 system,
                 10, // Or any high number...
@@ -313,7 +313,7 @@ public class SymbolsBuilder
                 // The set is just an isolated glyph, to be evaluated directly
                 Glyph glyph = set.iterator().next();
 
-                if (evaluator.isBigEnough(glyph, interline)) {
+                if (classifier.isBigEnough(glyph, interline)) {
                     evaluateGlyph(glyph);
                 }
             }
@@ -454,7 +454,7 @@ public class SymbolsBuilder
         {
             double normed = scale.pixelsToAreaFrac(weight);
 
-            return evaluator.isBigEnough(normed);
+            return classifier.isBigEnough(normed);
         }
     }
 }

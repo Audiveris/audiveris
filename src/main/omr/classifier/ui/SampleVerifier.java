@@ -269,7 +269,7 @@ public class SampleVerifier
     /**
      * Focus the verifier on a provided collection of samples.
      * <p>
-     * (Typically these are the samples that are not correctly recognized by the evaluator during
+     * (Typically these are the samples that are not correctly recognized by the classifier during
      * its training)
      *
      * @param samples the collection of samples to inspect
