@@ -12,11 +12,10 @@
 package omr.glyph.ui;
 
 import omr.classifier.Classifier;
-
 import static omr.classifier.Classifier.Condition.ALLOWED;
 import static omr.classifier.Classifier.Condition.CHECKED;
-
 import omr.classifier.Evaluation;
+import omr.classifier.GlyphClassifier;
 
 import omr.glyph.Glyph;
 import omr.glyph.Grades;
@@ -35,10 +34,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-
 import static javax.swing.Action.NAME;
 import static javax.swing.Action.SHORT_DESCRIPTION;
-
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
@@ -62,7 +59,7 @@ public class SymbolMenu
     // Links to partnering entities
     private final ShapeFocusBoard shapeFocus;
 
-    private final Classifier classifier;
+    private Classifier classifier;
 
     // To handle proposed compound shape
     private Glyph proposedGlyph;
@@ -86,17 +83,14 @@ public class SymbolMenu
      * Create the Symbol menu.
      *
      * @param symbolsController the top companion
-     * @param classifier        the glyph classifier
      * @param shapeFocus        the current shape focus
      */
     public SymbolMenu (final SymbolsController symbolsController,
-                       Classifier classifier,
                        ShapeFocusBoard shapeFocus)
     {
         super(symbolsController.getModel().getSheet(), "Glyphs ...");
 
         this.controller = symbolsController;
-        this.classifier = classifier;
         this.shapeFocus = shapeFocus;
     }
 
@@ -645,6 +639,10 @@ public class SymbolMenu
                 SystemManager systemManager = sheet.getSystemManager();
 
                 for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                    if (classifier == null) {
+                        classifier = GlyphClassifier.getInstance();
+                    }
+
                     Evaluation[] evals = classifier.evaluate(
                             glyph,
                             system,

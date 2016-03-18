@@ -11,10 +11,15 @@
 // </editor-fold>
 package omr.sig.ui;
 
+import omr.classifier.ui.SampleMenu;
+
 import omr.glyph.Glyph;
 
 import omr.sheet.Sheet;
 
+import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.SelectionHint;
 import omr.ui.util.AbstractMouseListener;
 import omr.ui.util.UIUtil;
 import omr.ui.view.LocationDependentMenu;
@@ -28,11 +33,6 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import javax.swing.JMenuItem;
-import omr.classifier.ui.SampleMenu;
-import omr.glyph.GlyphIndex;
-import omr.ui.selection.EntityListEvent;
-import omr.ui.selection.MouseMovement;
-import omr.ui.selection.SelectionHint;
 
 /**
  * Class {@code GlyphMenu} displays a collection of glyphs.
@@ -76,21 +76,9 @@ public class GlyphMenu
             UIUtil.insertTitle(this, "Glyphs:");
 
             for (Glyph glyph : glyphs) {
-                //                final Collection<Inter> inters = glyph.getInterpretations();
-                //
-                //                if (inters.isEmpty()) {
-                // Just a glyph item
-                ///JMenuItem item = new JMenuItem(new GlyphAction(glyph));
                 JMenuItem item = new SampleMenu(glyph, sheet);
                 item.addMouseListener(glyphListener);
                 add(item);
-
-                //                } else {
-                //                    // A whole menu of inters for this glyph
-                //                    JMenu interMenu = new InterMenu(sheet, glyph, inters);
-                //                    interMenu.addMouseListener(glyphListener);
-                //                    add(interMenu);
-                //                }
             }
 
             setVisible(true);
@@ -108,7 +96,7 @@ public class GlyphMenu
     /**
      * Publish related glyph when entered by mouse.
      */
-    private static class GlyphListener
+    private class GlyphListener
             extends AbstractMouseListener
     {
         //~ Methods --------------------------------------------------------------------------------
@@ -118,19 +106,13 @@ public class GlyphMenu
         {
             SampleMenu sampleMenu = (SampleMenu) e.getSource();
             Glyph glyph = sampleMenu.getGlyph();
-            GlyphIndex glyphIndex = glyph.getIndex();
 
-            if (glyphIndex == null) {
-                logger.warn("No index for {}", glyph);
-            } else {
-                glyphIndex.getEntityService().publish(
-                        new EntityListEvent<Glyph>(
-                                this,
-                                SelectionHint.ENTITY_INIT,
-                                MouseMovement.PRESSING,
-                                Arrays.asList(glyph)));
-            }
-
+            sheet.getGlyphIndex().getEntityService().publish(
+                    new EntityListEvent<Glyph>(
+                            this,
+                            SelectionHint.ENTITY_INIT,
+                            MouseMovement.PRESSING,
+                            Arrays.asList(glyph)));
         }
     }
 }

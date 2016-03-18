@@ -362,8 +362,8 @@ public class SampleVerifier
         if (!toPurge.isEmpty()) {
             int answer = JOptionPane.showConfirmDialog(
                     frame,
-                    "Purge repository of " + toPurge.size() + " duplications?",
-                    "Duplications found in sample repository",
+                    "Purge repository of " + toPurge.size() + " duplication(s)?",
+                    "Duplication(s) found in sample repository",
                     JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.WARNING_MESSAGE);
 

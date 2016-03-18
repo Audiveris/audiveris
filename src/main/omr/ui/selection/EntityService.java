@@ -233,7 +233,7 @@ public class EntityService<E extends Entity>
         final Set<E> found;
 
         if ((rect.width > 0) && (rect.height > 0)) {
-            // Non-degenerated rectangle: look for enclosed entities
+            // Non-degenerated rectangle: look for contained entities
             found = Entities.containedEntities(index.iterator(), rect);
         } else {
             // Just a point: look for containing entities

@@ -135,9 +135,6 @@ public class NestView
                 for (Glyph glyph : selectedGlyphs) {
                     // Draw selected glyph in specific color
                     glyph.getRunTable().render(g, glyph.getTopLeft());
-                    //                    for (Section section : glyph.getMembers()) {
-                    //                        section.render(g, drawBorders, Colors.GLYPH_CURRENT);
-                    //                    }
 
                     //
                     //                    // Draw character boxes for textual glyphs?
@@ -163,7 +160,7 @@ public class NestView
                     }
                 }
 
-                // Glyph areas second, using XOR mode for the area
+                // Glyph areas second
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setColor(Color.gray);
                 UIUtil.setAbsoluteStroke(g2, 1f);

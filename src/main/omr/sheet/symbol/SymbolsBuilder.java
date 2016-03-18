@@ -37,7 +37,6 @@ import omr.sig.inter.SmallChordInter;
 import omr.util.Dumping;
 import omr.util.Navigable;
 
-import org.jgrapht.Graphs;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.SimpleGraph;
 
@@ -48,7 +47,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -175,7 +173,9 @@ public class SymbolsBuilder
             return;
         }
 
-        glyph.setPitchPosition(closestStaff.pitchPositionOf(center));
+        if (glyph.getPitchPosition() == null) {
+            glyph.setPitchPosition(closestStaff.pitchPositionOf(center));
+        }
 
         Evaluation[] evals = classifier.evaluate(
                 glyph,
@@ -194,26 +194,6 @@ public class SymbolsBuilder
                 }
             }
         }
-    }
-
-    //-----------------//
-    // getSubGraph //
-    //-----------------//
-    private SimpleGraph<Glyph, GlyphLink> getClusterGraph (Set<Glyph> set,
-                                                           SimpleGraph<Glyph, GlyphLink> systemGraph)
-    {
-        // Make a copy of just the subgraph for this set
-        SimpleGraph<Glyph, GlyphLink> clusterGraph = new SimpleGraph<Glyph, GlyphLink>(
-                GlyphLink.class);
-        Set<GlyphLink> edges = new HashSet<GlyphLink>();
-
-        for (Glyph glyph : set) {
-            edges.addAll(systemGraph.edgesOf(glyph));
-        }
-
-        Graphs.addAllEdges(clusterGraph, systemGraph, edges);
-
-        return clusterGraph;
     }
 
     //------------------//

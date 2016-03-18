@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.classifier.Classifier;
 import omr.classifier.NeuralClassifier;
 import omr.classifier.WekaClassifier;
 
@@ -55,7 +54,9 @@ import omr.ui.ViewParameters;
 import omr.ui.selection.EntityListEvent;
 import omr.ui.selection.EntityService;
 import omr.ui.selection.MouseMovement;
+
 import static omr.ui.selection.SelectionHint.*;
+
 import omr.ui.selection.UserEvent;
 import omr.ui.util.UIUtil;
 import omr.ui.view.ScrollView;
@@ -69,8 +70,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
+
 import java.awt.Stroke;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -100,9 +103,6 @@ public class SymbolsEditor
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
-
-    /** Evaluator to check for NOISE glyphs. */
-    private final Classifier classifier = null;
 
     /** Related nest view. */
     private final MyView view;
@@ -141,7 +141,7 @@ public class SymbolsEditor
         //                },
         //                false);
         //
-        pageMenu = new EditorMenu(sheet, new SymbolMenu(symbolsController, classifier, focus));
+        pageMenu = new EditorMenu(sheet, new SymbolMenu(symbolsController, focus));
 
         List<Board> boards = new ArrayList<Board>();
         boards.add(new PixelBoard(sheet));
@@ -350,7 +350,7 @@ public class SymbolsEditor
 
             if (movement == MouseMovement.RELEASING) {
                 if ((glyphs != null) && !glyphs.isEmpty()) {
-                    showPagePopup(pt, null);
+                    showPagePopup(pt, getRubberRectangle());
                 }
             }
         }

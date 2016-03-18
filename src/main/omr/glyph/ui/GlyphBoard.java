@@ -160,12 +160,6 @@ public class GlyphBoard
                 // Display additional entity parameters
                 handleEvent((EntityListEvent<Glyph>) event);
             }
-
-            //
-            //            if (event instanceof GroupEvent) {
-            //                // Change group
-            //                handleEvent((GroupEvent) event);
-            //            }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }

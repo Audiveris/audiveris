@@ -127,6 +127,15 @@ public class ShapeChecker
             return;
         }
 
+        if (glyph.getPitchPosition() == null) {
+            final Point center = glyph.getCenter();
+            final Staff closestStaff = system.getClosestStaff(center); // Just an indication!
+
+            if (closestStaff != null) {
+                glyph.setPitchPosition(closestStaff.pitchPositionOf(center));
+            }
+        }
+
         for (Checker checker : checks) {
             if (!(checker.check(system, eval, glyph, features))) {
                 if (eval.failure != null) {
