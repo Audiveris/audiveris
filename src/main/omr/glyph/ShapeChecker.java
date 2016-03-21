@@ -19,8 +19,14 @@ import static omr.glyph.Shape.*;
 import static omr.glyph.ShapeSet.*;
 
 import omr.sheet.Scale;
+import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
+
+import omr.text.TextBuilder;
+import omr.text.TextLine;
+
+import omr.util.LiveParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,15 +131,6 @@ public class ShapeChecker
 
         if (checks == null) {
             return;
-        }
-
-        if (glyph.getPitchPosition() == null) {
-            final Point center = glyph.getCenter();
-            final Staff closestStaff = system.getClosestStaff(center); // Just an indication!
-
-            if (closestStaff != null) {
-                glyph.setPitchPosition(closestStaff.pitchPositionOf(center));
-            }
         }
 
         for (Checker checker : checks) {
@@ -306,7 +303,8 @@ public class ShapeChecker
                  * Whole is always stuck to an upper line, half is always stuck to a lower line.
                  * This can be translated as 2*p = 4*k+1 for wholes and 4*k-1 for halves
                  */
-                int p2 = (int) Math.rint(2 * glyph.getPitchPosition()); // Pitch * 2
+                final double pp = system.estimatedPitch(glyph.getCenter());
+                final int p2 = (int) Math.rint(2 * pp); // Pitch * 2
 
                 switch (p2) {
                 case -9:
@@ -345,7 +343,8 @@ public class ShapeChecker
                                   Glyph glyph,
                                   double[] features)
             {
-                final double pitchAbs = Math.abs(glyph.getPitchPosition());
+                final double pp = system.estimatedPitch(glyph.getCenter());
+                final double pitchAbs = Math.abs(pp);
 
                 // Very strict for percussion
                 if (eval.shape == Shape.PERCUSSION_CLEF) {
@@ -366,7 +365,9 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Must be outside staff height
-                return Math.abs(glyph.getPitchPosition()) > 4;
+                final double pp = system.estimatedPitch(glyph.getCenter());
+
+                return Math.abs(pp) > 4;
             }
         };
 
@@ -426,7 +427,8 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Check reasonable height (Cannot be too tall when close to staff)
-                double maxHeight = (Math.abs(glyph.getPitchPosition()) >= constants.minTitlePitchPosition.getValue())
+                final double pp = system.estimatedPitch(glyph.getCenter());
+                double maxHeight = (Math.abs(pp) >= constants.minTitlePitchPosition.getValue())
                         ? constants.maxTitleHeight.getValue()
                         : constants.maxLyricsHeight.getValue();
 
@@ -451,7 +453,8 @@ public class ShapeChecker
                                   Glyph glyph,
                                   double[] features)
             {
-                double absPos = Math.abs(glyph.getPitchPosition());
+                final double pp = system.estimatedPitch(glyph.getCenter());
+                double absPos = Math.abs(pp);
                 double maxDy = constants.maxTimePitchPositionMargin.getValue();
 
                 // A whole time shape must be on 0 position
@@ -483,7 +486,8 @@ public class ShapeChecker
                                   Glyph glyph,
                                   double[] features)
             {
-                double absPos = Math.abs(glyph.getPitchPosition());
+                final double pp = system.estimatedPitch(glyph.getCenter());
+                double absPos = Math.abs(pp);
                 double maxDy = constants.maxTimePitchPositionMargin.getValue();
 
                 // A partial time shape must be on -2 or +2 positions
@@ -573,7 +577,9 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Pedal marks must be below the staff
-                if (glyph.getPitchPosition() <= 4) {
+                final double pp = system.estimatedPitch(glyph.getCenter());
+
+                if (pp <= 4) {
                     return false;
                 }
 
@@ -593,63 +599,54 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Tuplets cannot be too far from a staff
-                if (Math.abs(glyph.getPitchPosition()) > constants.maxTupletPitchPosition.getValue()) {
+                final double pp = system.estimatedPitch(glyph.getCenter());
+
+                if (Math.abs(pp) > constants.maxTupletPitchPosition.getValue()) {
                     eval.failure = new Evaluation.Failure("pitch");
 
                     return false;
                 }
 
-                //                    // Simply check the tuplet character via OCR, if available
-                //                    // Nota: We must avoid multiple OCR calls on the same glyph
-                //                    if (Language.getOcr()
-                //                                .isAvailable()) {
-                //                        if (glyph.isTransient()) {
-                //                            glyph = system.registerFreeGlyph(glyph);
-                //                        }
-                //
-                //                        BasicContent textInfo = glyph.getTextInfo();
-                //                        OcrLine  line;
-                //
-                //                        if (textInfo.getOcrContent() == null) {
-                //                            String        language = system.getScoreSystem()
-                //                                                           .getScore()
-                //                                                           .getLanguage();
-                //                            List<OcrLine> lines = textInfo.recognizeGlyph(
-                //                                language);
-                //
-                //                            if ((lines != null) && !lines.isEmpty()) {
-                //                                line = lines.get(0);
-                //                                textInfo.setOcrInfo(language, line);
-                //                            }
-                //                        }
-                //
-                //                        line = textInfo.getOcrLine();
-                //
-                //                        if (line != null) {
-                //                            String str = line.value;
-                //                            Shape  shape = eval.shape;
-                //
-                //                            if (shape == TUPLET_THREE) {
-                //                                if (str.equals("3")) {
-                //                                    return true;
-                //                                }
-                //
-                //                                //eval.shape = CHARACTER;
-                //                            }
-                //
-                //                            if (shape == TUPLET_SIX) {
-                //                                if (str.equals("6")) {
-                //                                    return true;
-                //                                }
-                //
-                //                                //eval.shape = CHARACTER;
-                //                            }
-                //
-                //                            eval.failure = new Evaluation.Failure("ocr");
-                //
-                //                            return false;
-                //                        }
-                //                    }
+                // Simply check the tuplet character via OCR, if available
+                // Nota: We should avoid multiple OCR calls on the same glyph
+                if (TextBuilder.getOcr().isAvailable()) {
+                    final Sheet sheet = system.getSheet();
+
+                    if (glyph.isTransient()) {
+                        glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+                        system.registerFreeGlyph(glyph);
+                    }
+
+                    final LiveParam<String> textParam = sheet.getStub().getLanguageParam();
+                    final String language = textParam.getTarget();
+                    final List<TextLine> lines = TextBuilder.scanGlyph(
+                            glyph,
+                            language,
+                            sheet);
+
+                    if ((lines != null) && !lines.isEmpty()) {
+                        TextLine line = lines.get(0);
+                        String str = line.getValue();
+                        Shape shape = eval.shape;
+
+                        if (shape == TUPLET_THREE) {
+                            if (str.equals("3")) {
+                                return true;
+                            }
+                        }
+
+                        if (shape == TUPLET_SIX) {
+                            if (str.equals("6")) {
+                                return true;
+                            }
+                        }
+
+                        eval.failure = new Evaluation.Failure("ocr");
+                    }
+
+                    return false;
+                }
+
                 return true;
             }
         };
@@ -663,7 +660,9 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Must be centered on pitch position 0
-                if (Math.abs(glyph.getPitchPosition()) > 0.5) {
+                final double pp = system.estimatedPitch(glyph.getCenter());
+
+                if (Math.abs(pp) > 0.5) {
                     eval.failure = new Evaluation.Failure("pitch");
 
                     return false;
@@ -682,7 +681,9 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Must be centered on pitch position -1
-                if (Math.abs(glyph.getPitchPosition() + 1) > 0.5) {
+                final double pp = system.estimatedPitch(glyph.getCenter());
+
+                if (Math.abs(pp + 1) > 0.5) {
                     eval.failure = new Evaluation.Failure("pitch");
 
                     return false;

@@ -88,9 +88,6 @@ public class BasicGlyph
     @Navigable(false)
     protected GlyphIndex index;
 
-    /** Position with respect to nearest staff. */
-    protected Double pitchPosition;
-
     /** Computed ART Moments. */
     protected ARTMoments artMoments;
 
@@ -182,11 +179,6 @@ public class BasicGlyph
         // Display
         if (attachments != null) {
             sb.append(String.format("   attachments=%s%n", attachments));
-        }
-
-        // Environment
-        if (pitchPosition != null) {
-            sb.append(String.format("   pitchPosition=%s%n", pitchPosition));
         }
 
         return sb.toString();
@@ -334,12 +326,6 @@ public class BasicGlyph
         checkLine();
 
         return basicLine.getMeanDistance();
-    }
-
-    @Override
-    public Double getPitchPosition ()
-    {
-        return pitchPosition;
     }
 
     @Override
@@ -542,12 +528,6 @@ public class BasicGlyph
     public void setIndex (GlyphIndex index)
     {
         this.index = index;
-    }
-
-    @Override
-    public void setPitchPosition (double pitchPosition)
-    {
-        this.pitchPosition = pitchPosition;
     }
 
     @Override

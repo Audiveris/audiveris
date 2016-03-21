@@ -308,6 +308,25 @@ public class SystemInfo
         return Integer.compare(id, that.id);
     }
 
+    //----------------//
+    // estimatedPitch //
+    //----------------//
+    /**
+     * Make an estimate of pitch position for the provided point.
+     * <p>
+     * NOTA: this is really error-prone, since a pitch position is relevant only with respect to a
+     * staff, and here we simply pick the "closest" staff which may not be the related staff.
+     *
+     * @param point the location to process
+     * @return an estimate of point pitch position (WRT closest staff)
+     */
+    public double estimatedPitch (Point2D point)
+    {
+        final Staff closestStaff = getClosestStaff(point); // This is just an indication!
+
+        return closestStaff.pitchPositionOf(point);
+    }
+
     //---------//
     // getArea //
     //---------//

@@ -378,7 +378,9 @@ public class DotFactory
     private void instantCheckRepeat (Dot dot)
     {
         // Check vertical pitch position within the staff: close to +1 or -1
-        double pitchDif = Math.abs(Math.abs(dot.glyph.getPitchPosition()) - 1);
+        final Point center = dot.glyph.getCenter();
+        final double pp = system.estimatedPitch(center);
+        double pitchDif = Math.abs(Math.abs(pp) - 1);
         double maxDif = RepeatDotBarRelation.getYGapMaximum().getValue();
 
         // Rough sanity check
@@ -408,13 +410,13 @@ public class DotFactory
         for (Inter barInter : bars) {
             BarlineInter bar = (BarlineInter) barInter;
             Rectangle box = bar.getBounds();
-            Point center = bar.getCenter();
+            Point barCenter = bar.getCenter();
 
             // Select proper bar reference point (left or right side and proper vertical side)
-            double barY = center.y
-                          + ((box.height / 8d) * Integer.signum(dotPt.y - center.y));
+            double barY = barCenter.y
+                          + ((box.height / 8d) * Integer.signum(dotPt.y - barCenter.y));
             double barX = LineUtil.xAtY(bar.getMedian(), barY)
-                          + ((bar.getWidth() / 2) * Integer.signum(dotPt.x - center.x));
+                          + ((bar.getWidth() / 2) * Integer.signum(dotPt.x - barCenter.x));
 
             double xGap = Math.abs(barX - dotPt.x);
             double yGap = Math.abs(barY - dotPt.y);
@@ -431,10 +433,9 @@ public class DotFactory
         }
 
         if (bestRel != null) {
-            final Point center = dot.glyph.getCenter();
             final Staff staff = system.getClosestStaff(center); // Staff is OK
             double grade = Inter.intrinsicRatio * dot.eval.grade;
-            int pitch = (dot.glyph.getPitchPosition() > 0) ? 1 : (-1);
+            int pitch = (pp > 0) ? 1 : (-1);
             RepeatDotInter repeat = new RepeatDotInter(dot.glyph, grade, staff, pitch);
             sig.addVertex(repeat);
             sig.addEdge(repeat, bestBar, bestRel);

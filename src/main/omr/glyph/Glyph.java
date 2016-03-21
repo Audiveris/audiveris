@@ -94,14 +94,6 @@ public interface Glyph
     GlyphIndex getIndex ();
 
     /**
-     * Report the pitch position, with respect to related or closest staff.
-     * Examples: -4 for top line (F), 0 for middle line (B), +4 for bottom line (E)
-     *
-     * @return the pitch position value WRT the related or closest staff
-     */
-    Double getPitchPosition ();
-
-    /**
      * Report the underlying table of runs
      *
      * @return the glyph runTable
@@ -142,7 +134,7 @@ public interface Glyph
     boolean isIdentical (Glyph that);
 
     /**
-     * Test whether the glyph is transient (not yet inserted into the nest)
+     * Test whether the glyph is transient (not yet inserted into the index)
      *
      * @return true if transient
      */
@@ -161,11 +153,4 @@ public interface Glyph
      * @param index the containing glyph index
      */
     void setIndex (GlyphIndex index);
-
-    /**
-     * Set the pitch position, with respect to related or closest staff.
-     *
-     * @param pitchPosition the pitch position WRT the related or closest staff
-     */
-    void setPitchPosition (double pitchPosition);
 }

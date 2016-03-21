@@ -173,10 +173,6 @@ public class SymbolsBuilder
             return;
         }
 
-        if (glyph.getPitchPosition() == null) {
-            glyph.setPitchPosition(closestStaff.pitchPositionOf(center));
-        }
-
         Evaluation[] evals = classifier.evaluate(
                 glyph,
                 system,

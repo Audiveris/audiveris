@@ -62,13 +62,6 @@ public class SymbolGlyphBoard
     //    /** Input/Output : textual content */
     //    protected LTextField textField;
     //
-    /** Glyph characteristics : position wrt staff. */
-    private final LDoubleField pitchPosition = new LDoubleField(
-            false,
-            "Pitch",
-            "Logical pitch position",
-            "%.3f");
-
     /** Glyph characteristics : normalized weight. */
     private final LDoubleField weight = new LDoubleField(
             false,
@@ -110,7 +103,6 @@ public class SymbolGlyphBoard
         // Initial status
         width.setEnabled(false);
         height.setEnabled(false);
-        pitchPosition.setEnabled(false);
         weight.setEnabled(false);
         //
         //        // Additional combo for text role
@@ -184,9 +176,6 @@ public class SymbolGlyphBoard
 
         r += 2; // --------------------------------
         // Glyph characteristics, first line
-
-        builder.add(pitchPosition.getLabel(), cst.xy(5, r));
-        builder.add(pitchPosition.getField(), cst.xy(7, r));
 
         builder.add(width.getLabel(), cst.xy(9, r));
         builder.add(width.getField(), cst.xy(11, r));
@@ -304,24 +293,11 @@ public class SymbolGlyphBoard
 
         // Fill symbol characteristics
         if (glyph != null) {
-            Double pitch = glyph.getPitchPosition();
-
-            if (pitch != null) {
-                pitchPosition.setValue(pitch);
-            } else {
-                pitchPosition.setText("");
-            }
-
             int interline = controller.getModel().getSheet().getScale().getInterline();
             weight.setValue(glyph.getNormalizedWeight(interline));
             width.setValue((double) glyph.getWidth() / interline);
             height.setValue((double) glyph.getHeight() / interline);
-
-//            if (glyph.getGroup() != null) {
-//                groupSpinner.setValue(glyph.getGroup()); //TODO: judicious???
-//            }
         } else {
-            pitchPosition.setText("");
             weight.setText("");
             width.setText("");
             height.setText("");
@@ -329,7 +305,6 @@ public class SymbolGlyphBoard
 
         width.setEnabled(glyph != null);
         height.setEnabled(glyph != null);
-        pitchPosition.setEnabled(glyph != null);
         weight.setEnabled(glyph != null);
 
         //                // Text info
