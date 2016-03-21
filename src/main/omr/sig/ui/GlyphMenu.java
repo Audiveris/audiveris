@@ -77,6 +77,7 @@ public class GlyphMenu
 
             for (Glyph glyph : glyphs) {
                 JMenuItem item = new SampleMenu(glyph, sheet);
+                item.setToolTipText(glyph.getGroups().toString());
                 item.addMouseListener(glyphListener);
                 add(item);
             }

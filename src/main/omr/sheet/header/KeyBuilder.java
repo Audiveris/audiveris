@@ -72,9 +72,12 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import omr.glyph.GlyphIndex;
+import omr.glyph.Symbol.Group;
 
 /**
  * Class {@code KeyBuilder} retrieves a staff key signature through the projection
@@ -1066,6 +1069,15 @@ public class KeyBuilder
 
         purgeGlyphs(glyphs, rect);
 
+        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+        for (ListIterator<Glyph> li = glyphs.listIterator(); li.hasNext();) {
+            Glyph glyph = li.next();
+            glyph = glyphIndex.registerOriginal(glyph);
+            glyph.addGroup(Group.ALTER_PART);
+            system.registerFreeGlyph(glyph);
+            li.set(glyph);
+        }
+
         KeyAdapter adapter = new KeyAdapter(glyphs, targetShapes);
         new GlyphCluster(adapter, null).decompose();
 
@@ -1073,7 +1085,6 @@ public class KeyBuilder
             double grade = Inter.intrinsicRatio * adapter.bestEval.grade;
 
             if (grade >= minGrade) {
-                ///sheet.getGlyphIndex().registerFreeGlyph(adapter.bestGlyph);
                 logger.debug("Glyph#{} {}", adapter.bestGlyph.getId(), adapter.bestEval);
 
                 KeyAlterInter alterInter = KeyAlterInter.create(
@@ -2024,16 +2035,16 @@ public class KeyBuilder
         {
             trials++;
 
-            if (glyph.getId() == 0) {
-                glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-            }
-
             Evaluation[] evals = classifier.getNaturalEvaluations(glyph, sheet.getInterline());
 
             for (Shape shape : targetShapes) {
                 Evaluation eval = evals[shape.ordinal()];
 
                 if ((bestEval == null) || (bestEval.grade < eval.grade)) {
+                    if (glyph.getId() == 0) {
+                        glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+                    }
+
                     bestEval = eval;
                     bestGlyph = glyph;
                 }

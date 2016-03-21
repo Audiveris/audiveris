@@ -165,7 +165,7 @@ public abstract class Grades
                 "Minimum grade for a text symbol");
 
         private final Evaluation.Grade keyAlterMinGrade = new Evaluation.Grade(
-                0.0001,
+                0.001,
                 "Minimum grade for a key signature item symbol");
 
         private final Evaluation.Grade keyAlterMinGrade2 = new Evaluation.Grade(

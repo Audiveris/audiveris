@@ -53,6 +53,7 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import omr.glyph.GlyphIndex;
 
 /**
  * Class {@code SpotsBuilder} performs morphology analysis to retrieve the major spots
@@ -234,8 +235,9 @@ public class SpotsBuilder
     {
         int count = 0;
 
-        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
-        SystemManager systemManager = sheet.getSystemManager();
+        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+        final List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        final SystemManager systemManager = sheet.getSystemManager();
 
         for (Glyph glyph : spots) {
             Point center = glyph.getCentroid();
@@ -246,6 +248,7 @@ public class SpotsBuilder
             for (SystemInfo system : relevants) {
                 // Check glyph is within system abscissa boundaries
                 if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
+                    glyph = glyphIndex.registerOriginal(glyph);
                     glyph.addGroup(Group.BEAM_SPOT);
                     system.registerFreeGlyph(glyph);
                     created = true;

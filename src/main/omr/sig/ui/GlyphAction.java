@@ -103,12 +103,6 @@ public class GlyphAction
     {
         String tip = "groups: " + glyph.getGroups();
 
-        //        Shape shape = glyph.getShape();
-        //
-        //        if (shape != null) {
-        //            tip += (", shape: " + shape);
-        //        }
-        //
         return tip;
     }
 }

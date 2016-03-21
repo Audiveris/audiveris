@@ -69,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import omr.glyph.GlyphIndex;
 
 /**
  * Class {@code SymbolsFilter} prepares an image with staff lines sections removed and
@@ -199,14 +200,17 @@ public class SymbolsFilter
      */
     private void dispatchPageSymbols (List<Glyph> glyphs)
     {
-        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
-        SystemManager systemManager = sheet.getSystemManager();
+        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+        final List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        final SystemManager systemManager = sheet.getSystemManager();
 
         for (Glyph glyph : glyphs) {
             Point center = glyph.getCentroid();
             systemManager.getSystemsOf(center, relevants);
 
             for (SystemInfo system : relevants) {
+                glyph = glyphIndex.registerOriginal(glyph);
+                glyph.addGroup(Group.SYMBOL);
                 system.registerFreeGlyph(glyph);
             }
         }

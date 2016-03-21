@@ -24,6 +24,7 @@ import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
+import omr.glyph.Symbol.Group;
 
 import omr.math.Projection;
 import static omr.run.Orientation.VERTICAL;
@@ -76,6 +77,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -882,26 +884,21 @@ public abstract class TimeBuilder
             buf.copyBits(source, -rect.x, -rect.y, Blitter.COPY);
 
             // Extract parts
-            //        SectionFactory sectionFactory = new SectionFactory(VERTICAL, new JunctionRatioPolicy());
-            //        List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
-            // Needs a lag
-            //            final String name = "LagForTime";
-            //            Lag lag = sheet.getLagManager().getLag(name);
-            //
-            //            if (lag == null) {
-            //                lag = new BasicLag(name, SYMBOL_ORIENTATION);
-            //                sheet.getLagManager().setLag(name, lag);
-            //            }
-            //
-            //            SectionFactory sectionFactory = new SectionFactory(lag, new JunctionRatioPolicy());
-            //            List<Section> sections = sectionFactory.createSections(buf, rect.getLocation());
-            //            List<Glyph> parts = sheet.getGlyphIndex()
-            //                    .retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
             RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
             List<Glyph> parts = GlyphFactory.buildGlyphs(runTable, rect.getLocation());
 
             // Keep only interesting parts
             purgeParts(parts, rect);
+
+            final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+
+            for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
+                final Glyph part = li.next();
+                Glyph glyph = glyphIndex.registerOriginal(part);
+                glyph.addGroup(Group.TIME_PART); // For debug?
+                system.registerFreeGlyph(glyph);
+                li.set(glyph);
+            }
 
             return parts;
         }
@@ -1599,19 +1596,19 @@ public abstract class TimeBuilder
         {
             trials++;
 
-            if (glyph.getId() == 0) {
-                glyph = system.getSheet().getGlyphIndex().registerOriginal(glyph);
-            }
-
-            Evaluation[] evals = GlyphClassifier.getInstance().getNaturalEvaluations(
-                    glyph,
-                    system.getSheet().getInterline());
+            final Sheet sheet = system.getSheet();
+            Evaluation[] evals = GlyphClassifier.getInstance()
+                    .getNaturalEvaluations(glyph, sheet.getInterline());
 
             for (Shape shape : halfShapes) {
                 Evaluation eval = evals[shape.ordinal()];
                 double grade = Inter.intrinsicRatio * eval.grade;
 
                 if (grade >= Grades.timeMinGrade) {
+                    if (glyph.getId() == 0) {
+                        glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+                    }
+
                     logger.debug("   {} eval {} for glyph#{}", half, eval, glyph.getId());
 
                     Inter bestInter = bestMap.get(shape);
@@ -1698,19 +1695,19 @@ public abstract class TimeBuilder
             //TODO: check glyph centroid for a whole symbol is not too far from staff middle line
             trials++;
 
-            if (glyph.getId() == 0) {
-                glyph = system.getSheet().getGlyphIndex().registerOriginal(glyph);
-            }
-
-            Evaluation[] evals = GlyphClassifier.getInstance().getNaturalEvaluations(
-                    glyph,
-                    system.getSheet().getInterline());
+            final Sheet sheet = system.getSheet();
+            Evaluation[] evals = GlyphClassifier.getInstance()
+                    .getNaturalEvaluations(glyph, sheet.getInterline());
 
             for (Shape shape : wholeShapes) {
                 Evaluation eval = evals[shape.ordinal()];
                 double grade = Inter.intrinsicRatio * eval.grade;
 
                 if (grade >= Grades.timeMinGrade) {
+                    if (glyph.getId() == 0) {
+                        glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+                    }
+
                     logger.debug("   WHOLE eval {} for glyph#{}", eval, glyph.getId());
 
                     Inter bestInter = bestMap.get(shape);

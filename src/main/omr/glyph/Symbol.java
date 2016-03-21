@@ -48,6 +48,8 @@ public interface Symbol
         LEDGER_CANDIDATE("Ledger candidate", new Color(0xaaffaa)),
         WEAK_PART("Optional part", new Color(0xffaaaa)),
         SYMBOL("Fixed symbol", new Color(0xaaaaff)),
+        TIME_PART("Part of time sig", new Color(0xffaaff)),
+        ALTER_PART("Part of alterationg", new Color(0xffaacc)),
         DROP("DnD glyph", new Color(0xffbbbb));
         //~ Instance fields ------------------------------------------------------------------------
 

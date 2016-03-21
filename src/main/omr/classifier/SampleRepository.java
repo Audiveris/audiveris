@@ -799,7 +799,7 @@ public class SampleRepository
 
                             if (sampleSheet != null) {
                                 sampleSheet.setImage(runTable);
-                                logger.info("Loaded {}", file);
+                                logger.debug("Loaded {}", file);
                             } else {
                                 logger.warn("No SampleSheet found for image {}", file);
                             }
