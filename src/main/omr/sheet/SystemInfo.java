@@ -211,6 +211,19 @@ public class SystemInfo
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------//
+    // addFreeGlyph //
+    //--------------//
+    /**
+     * Add the provided glyph as a free glyph in this system.
+     *
+     * @param glyph the glyph to include
+     */
+    public void addFreeGlyph (Glyph glyph)
+    {
+        freeGlyphs.add((BasicGlyph) glyph);
+    }
+
     //----------//
     // toString //
     //----------//
@@ -1126,20 +1139,6 @@ public class SystemInfo
     public boolean isIndented ()
     {
         return indented != null;
-    }
-
-    //-------------------//
-    // registerFreeGlyph //
-    //-------------------//
-    /**
-     * Register a brand new free glyph in proper system (and sheet index).
-     *
-     * @param glyph the brand new free glyph
-     */
-    public void registerFreeGlyph (Glyph glyph)
-    {
-        sheet.getGlyphIndex().register(glyph);
-        freeGlyphs.add((BasicGlyph) glyph);
     }
 
     //-----------------//

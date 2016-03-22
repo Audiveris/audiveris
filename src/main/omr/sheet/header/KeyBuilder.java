@@ -1074,7 +1074,7 @@ public class KeyBuilder
             Glyph glyph = li.next();
             glyph = glyphIndex.registerOriginal(glyph);
             glyph.addGroup(Group.ALTER_PART);
-            system.registerFreeGlyph(glyph);
+            system.addFreeGlyph(glyph);
             li.set(glyph);
         }
 

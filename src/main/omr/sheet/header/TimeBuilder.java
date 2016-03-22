@@ -896,7 +896,7 @@ public abstract class TimeBuilder
                 final Glyph part = li.next();
                 Glyph glyph = glyphIndex.registerOriginal(part);
                 glyph.addGroup(Group.TIME_PART); // For debug?
-                system.registerFreeGlyph(glyph);
+                system.addFreeGlyph(glyph);
                 li.set(glyph);
             }
 
@@ -1051,7 +1051,7 @@ public abstract class TimeBuilder
 
             if (!adapter.bestMap.isEmpty()) {
                 for (Entry<Shape, Inter> entry : adapter.bestMap.entrySet()) {
-                    ///sheet.getGlyphIndex().registerFreeGlyph(adapter.bestGlyph);
+                    ///sheet.getGlyphIndex().addFreeGlyph(adapter.bestGlyph);
                     Inter inter = entry.getValue();
 
                     Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
@@ -1102,7 +1102,7 @@ public abstract class TimeBuilder
 
             if (!wholeAdapter.bestMap.isEmpty()) {
                 for (Entry<Shape, Inter> entry : wholeAdapter.bestMap.entrySet()) {
-                    ///sheet.getGlyphIndex().registerFreeGlyph(adapter.bestGlyph);
+                    ///sheet.getGlyphIndex().addFreeGlyph(adapter.bestGlyph);
                     Inter inter = entry.getValue();
                     Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
                     inter.setBounds(timeBox);

@@ -48,8 +48,5 @@ class InterCleaner
         for (Part part : system.getParts()) {
             part.purgeContainers();
         }
-
-        // Standalone glyphs
-        system.clearFreeGlyphs();
     }
 }

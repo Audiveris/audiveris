@@ -373,8 +373,8 @@ public abstract class AbstractHeadInter
         RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
 
         // Glyph
-        glyph = new BasicGlyph(descBox.x + foreBox.x, descBox.y + foreBox.y, runTable);
-        glyphIndex.register(glyph);
+        glyph = glyphIndex.registerOriginal(
+                new BasicGlyph(descBox.x + foreBox.x, descBox.y + foreBox.y, runTable));
 
         // Use glyph bounds as inter bounds
         bounds = glyph.getBounds();

@@ -53,9 +53,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 import static java.lang.Math.PI;
-import static java.lang.Math.abs;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 import static java.lang.Math.toRadians;
 
 import java.util.ArrayList;
@@ -68,6 +65,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -547,7 +547,6 @@ public class SlursBuilder
             slur.retrieveGlyph(sheet, params.maxRunDistance);
 
             if (slur.getGlyph() != null) {
-                sheet.getGlyphIndex().register(slur.getGlyph());
                 inters.add(new SlurInter(slur, impacts));
             }
         }

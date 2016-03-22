@@ -190,7 +190,6 @@ public abstract class AbstractFlagInter
                 if (flag == null) {
                     flag = isSmall ? new SmallFlagInter(glyph, shape, grade)
                             : new FlagInter(glyph, shape, grade);
-                    system.getSheet().getGlyphIndex().register(glyph);
                     sig.addVertex(flag);
                 }
 

@@ -392,21 +392,16 @@ public class GlyphIndex
     //----------//
     // register //
     //----------//
+    /**
+     * This public method <b>must not be called</b> on GlyphIndex.
+     * Use {@link #registerOriginal(omr.glyph.Glyph)} instead.
+     *
+     * @param glyph
+     */
     @Override
     public int register (Glyph glyph)
     {
-        int id = glyph.getId();
-
-        if (id == 0) {
-            WeakGlyph weak = new WeakGlyph(glyph);
-
-            // Register in index
-            id = weakIndex.register(weak);
-
-            glyph.setIndex(this);
-        }
-
-        return id;
+        throw new RuntimeException("register() must not be called on GlyphIndex");
     }
 
     //------------------//
@@ -426,7 +421,7 @@ public class GlyphIndex
         Glyph orgGlyph = (orgWeak != null) ? orgWeak.get() : null;
 
         if (orgGlyph == null) {
-            register(glyph);
+            privateRegister(glyph);
 
             return glyph;
         } else {
@@ -488,6 +483,32 @@ public class GlyphIndex
             weakIndex.insert(weak);
             originals.putIfAbsent(weak, weak);
         }
+    }
+
+    //-----------------//
+    // privateRegister //
+    //-----------------//
+    /**
+     * NOTA: This method is meant to be called <b>ONLY</b> from
+     * {@link #registerOriginal(omr.glyph.Glyph)} in this class.
+     *
+     * @param glyph the glyph to register in glyphIndex
+     * @return the glyph ID
+     */
+    private int privateRegister (Glyph glyph)
+    {
+        int id = glyph.getId();
+
+        if (id == 0) {
+            WeakGlyph weak = new WeakGlyph(glyph);
+
+            // Register in index
+            id = weakIndex.register(weak);
+
+            glyph.setIndex(this);
+        }
+
+        return id;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

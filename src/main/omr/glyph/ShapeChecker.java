@@ -614,7 +614,7 @@ public class ShapeChecker
 
                     if (glyph.isTransient()) {
                         glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-                        system.registerFreeGlyph(glyph);
+                        system.addFreeGlyph(glyph);
                     }
 
                     final LiveParam<String> textParam = sheet.getStub().getLanguageParam();

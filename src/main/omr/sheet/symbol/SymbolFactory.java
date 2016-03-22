@@ -166,8 +166,6 @@ public class SymbolFactory
     {
         final Shape shape = eval.shape;
         final double grade = Inter.intrinsicRatio * eval.grade;
-        sheet.getGlyphIndex().register(glyph); // TODO: perhaps an overkill...
-
         if (glyph.isVip()) {
             logger.info("VIP glyph#{} symbol created as {}", glyph.getId(), eval.shape);
         }
@@ -299,13 +297,13 @@ public class SymbolFactory
         if (inter == null) {
             return;
         }
-
-        Glyph glyph = inter.getGlyph();
-
-        if ((glyph != null) && (glyph.getId() == 0)) {
-            sheet.getGlyphIndex().register(glyph);
-        }
-
+//
+//        Glyph glyph = inter.getGlyph();
+//
+//        if ((glyph != null) && (glyph.getId() == 0)) {
+//            sheet.getGlyphIndex().register(glyph);
+//        }
+//
         sig.addVertex(inter);
     }
 

@@ -62,6 +62,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -275,12 +276,12 @@ public class ClefBuilder
 
         // Keep only interesting parts
         purgeParts(parts, rect);
-        logger.debug("Clef parts: {}", parts.size());
 
-        // debug: register parts glyphs
-        for (Glyph glyph : parts) {
-            sheet.getGlyphIndex().register(glyph);
+        for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
+            li.set(sheet.getGlyphIndex().registerOriginal(li.next()));
         }
+
+        logger.debug("Clef parts: {}", parts.size());
 
         return parts;
     }

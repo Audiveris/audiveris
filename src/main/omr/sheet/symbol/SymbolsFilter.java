@@ -175,13 +175,6 @@ public class SymbolsFilter
         RunTableFactory runFactory = new RunTableFactory(SYMBOL_ORIENTATION);
         RunTable runTable = runFactory.createTable(buffer);
 
-        //
-        //        // Sections
-        //        SectionFactory sectionsBuilder = new SectionFactory(symLag, new JunctionRatioPolicy());
-        //        List<Section> sections = sectionsBuilder.createSections(runTable);
-        //
-        //        GlyphIndex nest = sheet.getGlyphIndex();
-        //        ///List<Glyph> glyphs = nest.retrieveGlyphs(sections, GlyphLayer.SYMBOL, true);
         // Glyphs
         List<Glyph> glyphs = GlyphFactory.buildGlyphs(runTable, new Point(0, 0), Group.SYMBOL);
         logger.debug("Symbol glyphs: {}", glyphs.size());
@@ -205,13 +198,13 @@ public class SymbolsFilter
         final SystemManager systemManager = sheet.getSystemManager();
 
         for (Glyph glyph : glyphs) {
+            glyph = glyphIndex.registerOriginal(glyph);
+            glyph.addGroup(Group.SYMBOL);
             Point center = glyph.getCentroid();
             systemManager.getSystemsOf(center, relevants);
 
             for (SystemInfo system : relevants) {
-                glyph = glyphIndex.registerOriginal(glyph);
-                glyph.addGroup(Group.SYMBOL);
-                system.registerFreeGlyph(glyph);
+                system.addFreeGlyph(glyph);
             }
         }
     }

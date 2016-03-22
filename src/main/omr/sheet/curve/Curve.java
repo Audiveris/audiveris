@@ -209,28 +209,6 @@ public abstract class Curve
         return pts;
     }
 
-    //-----------//
-    // getPartAt //
-    //-----------//
-    /**
-     * Report the part that contains the provided point.
-     *
-     * @param point the provided point
-     * @return the part arc that contains the point, or null
-     */
-    public Arc getPartAt (Point point)
-    {
-        for (Arc arc : parts) {
-            for (Point p : arc.getPoints()) {
-                if (p.equals(point)) {
-                    return arc;
-                }
-            }
-        }
-
-        return null;
-    }
-
     //------------//
     // getArcView //
     //------------//
@@ -367,6 +345,28 @@ public abstract class Curve
         return id;
     }
 
+    //-----------//
+    // getPartAt //
+    //-----------//
+    /**
+     * Report the part that contains the provided point.
+     *
+     * @param point the provided point
+     * @return the part arc that contains the point, or null
+     */
+    public Arc getPartAt (Point point)
+    {
+        for (Arc arc : parts) {
+            for (Point p : arc.getPoints()) {
+                if (p.equals(point)) {
+                    return arc;
+                }
+            }
+        }
+
+        return null;
+    }
+
     /**
      * @return the parts
      */
@@ -447,7 +447,8 @@ public abstract class Curve
 
         // Build glyph (TODO: table a bit too high, should be trimmed?)
         if (curveTable.getSize() > 0) {
-            Glyph curveGlyph = new BasicGlyph(fatBox.x, fatBox.y, curveTable);
+            Glyph curveGlyph = sheet.getGlyphIndex().registerOriginal(
+                    new BasicGlyph(fatBox.x, fatBox.y, curveTable));
             setGlyph(curveGlyph);
             logger.debug("{} -> {}", this, curveGlyph);
 

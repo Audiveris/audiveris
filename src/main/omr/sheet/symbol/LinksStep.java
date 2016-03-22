@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sheet.symbol;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.sheet.Part;
 import omr.sheet.SystemInfo;
 
@@ -40,6 +43,8 @@ public class LinksStep
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(LinksStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -64,6 +69,11 @@ public class LinksStep
 
         dispatchSlursToParts(system);
         new InterCleaner(system).purgeContainers();
+
+        // Remove all free glyphs?
+        if (constants.removeFreeGlyphs.isSet()) {
+            system.clearFreeGlyphs();
+        }
     }
 
     //----------------------//
@@ -97,5 +107,19 @@ public class LinksStep
                 }
             }
         }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean removeFreeGlyphs = new Constant.Boolean(
+                true,
+                "Should we remove all free glyphs?");
     }
 }

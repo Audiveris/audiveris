@@ -781,7 +781,7 @@ public class TextBuilder
         //            // Launch OCR on the whole line image
         //            List<Glyph> glyphs = oldLine.getWordGlyphs();
         //            Glyph compound = (glyphs.size() == 1) ? glyphs.get(0)
-        //                    : system.registerFreeGlyph(nest.buildGlyph(glyphs, false));
+        //                    : system.addFreeGlyph(nest.buildGlyph(glyphs, false));
         //
         //            List<TextLine> lines = scanGlyph(compound, language);
         //
@@ -1179,8 +1179,7 @@ public class TextBuilder
                     SectionCompound compound = CompoundFactory.buildCompound(
                             wordSections,
                             constructor);
-                    Glyph wordGlyph = compound.toGlyph(null);
-                    glyphIndex.register(wordGlyph);
+                    Glyph wordGlyph = glyphIndex.registerOriginal(compound.toGlyph(null));
 
                     // Link TextWord -> Glyph
                     word.setGlyph(wordGlyph);

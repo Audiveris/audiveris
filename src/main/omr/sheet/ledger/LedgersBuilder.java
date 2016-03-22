@@ -20,6 +20,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
+import omr.glyph.GlyphIndex;
 import omr.glyph.Symbol.Group;
 import omr.glyph.dynamic.Filament;
 import omr.glyph.dynamic.StickFactory;
@@ -526,6 +527,7 @@ public class LedgersBuilder
     {
         logger.debug("Checking staff: {} line: {}", staff.getId(), index);
 
+        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
         final int yMargin = scale.toPixels(constants.ledgerMarginY);
         final LineInfo staffLine = (index < 0) ? staff.getFirstLine() : staff.getLastLine();
 
@@ -577,9 +579,7 @@ public class LedgersBuilder
                 }
 
                 if (grade >= suite.getMinThreshold()) {
-                    Glyph glyph = stick.toGlyph(Group.LEDGER);
-                    sheet.getGlyphIndex().register(glyph);
-
+                    Glyph glyph = glyphIndex.registerOriginal(stick.toGlyph(Group.LEDGER));
                     LedgerInter ledger = new LedgerInter(glyph, impacts);
                     ledger.setIndex(index);
                     sig.addVertex(ledger);
