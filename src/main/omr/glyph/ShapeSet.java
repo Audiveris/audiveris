@@ -82,9 +82,7 @@ public class ShapeSet
             TIME_SIXTEEN);
 
     /** Single-symbols for whole time signature */
-    public static final EnumSet<Shape> SingleWholeTimes = EnumSet.of(
-            COMMON_TIME,
-            CUT_TIME);
+    public static final EnumSet<Shape> SingleWholeTimes = EnumSet.of(COMMON_TIME, CUT_TIME);
 
     /** Single-symbols and predefined combos for whole time signature */
     public static final EnumSet<Shape> WholeTimes = EnumSet.of(
@@ -217,10 +215,11 @@ public class ShapeSet
 
     /** Core shapes for barlines. */
     public static final EnumSet<Shape> CoreBarlines = EnumSet.copyOf(
-            Arrays.asList(Shape.THICK_BARLINE,
-                          Shape.THICK_CONNECTOR,
-                          Shape.THIN_BARLINE,
-                          Shape.THIN_CONNECTOR));
+            Arrays.asList(
+                    Shape.THICK_BARLINE,
+                    Shape.THICK_CONNECTOR,
+                    Shape.THIN_BARLINE,
+                    Shape.THIN_CONNECTOR));
 
     /**
      * Predefined instances of ShapeSet.
@@ -248,15 +247,16 @@ public class ShapeSet
             new Color(0x0000ff),
             shapesOf(
                     CoreBarlines,
-                    shapesOf(DOUBLE_BARLINE,
-                             FINAL_BARLINE,
-                             REVERSE_FINAL_BARLINE,
-                             LEFT_REPEAT_SIGN,
-                             RIGHT_REPEAT_SIGN,
-                             BACK_TO_BACK_REPEAT_SIGN,
-                             BRACE,
-                             BRACKET,
-                             BRACKET_CONNECTOR)));
+                    shapesOf(
+                            DOUBLE_BARLINE,
+                            FINAL_BARLINE,
+                            REVERSE_FINAL_BARLINE,
+                            LEFT_REPEAT_SIGN,
+                            RIGHT_REPEAT_SIGN,
+                            BACK_TO_BACK_REPEAT_SIGN,
+                            BRACE,
+                            BRACKET,
+                            BRACKET_CONNECTOR)));
 
     public static final ShapeSet Beams = new ShapeSet(
             BEAM,
@@ -308,7 +308,7 @@ public class ShapeSet
     public static final ShapeSet Markers = new ShapeSet(
             CODA,
             new Color(0x888888),
-            shapesOf(DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK, CAESURA));
+            shapesOf(DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK, CAESURA, FERMATA, FERMATA_BELOW));
 
     public static final ShapeSet Notes = new ShapeSet(
             BREVE,
@@ -347,7 +347,7 @@ public class ShapeSet
     public static final ShapeSet Times = new ShapeSet(
             TIME_FOUR_FOUR,
             new Color(0xcc3300),
-            shapesOf(PartialTimes, WholeTimes, shapesOf(CUSTOM_TIME)));
+            shapesOf(PartialTimes, WholeTimes, shapesOf(TIME_ZERO, TIME_ONE, CUSTOM_TIME)));
 
     public static final ShapeSet Digits = new ShapeSet(
             DIGIT_1,

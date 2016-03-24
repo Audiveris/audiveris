@@ -205,15 +205,15 @@ public class NoteHeadsBuilder
 
     //~ Methods ------------------------------------------------------------------------------------
     //------------//
-    // buildNotes //
+    // buildHeads //
     //------------//
     /**
      * Retrieve all void heads, black heads and whole notes in the system
      * both for standard and small (cue/grace) sizes.
      */
-    public void buildNotes ()
+    public void buildHeads ()
     {
-        StopWatch watch = new StopWatch("buildNotes S#" + system.getId());
+        StopWatch watch = new StopWatch("buildHeads S#" + system.getId());
         systemCompetitors = getSystemCompetitors(); // Competitors
         systemSeeds = system.getGroupedGlyphs(Symbol.Group.VERTICAL_SEED); // Vertical seeds
         Collections.sort(systemSeeds, Glyphs.byOrdinate);
@@ -251,8 +251,13 @@ public class NoteHeadsBuilder
                 logger.debug("Staff#{} {} duplicates", staff.getId(), duplicates);
             }
 
-            // Keep created heads in staff
             for (Inter inter : ch) {
+                // Boost head shapes that don't expect stem
+                if (ShapeSet.Notes.contains(inter.getShape())) {
+                    inter.increase(constants.wholeBoost.getValue());
+                }
+
+                // Keep created heads in staff
                 staff.addNote((AbstractHeadInter) inter);
             }
         }
@@ -865,6 +870,10 @@ public class NoteHeadsBuilder
         private final Constant.Ratio pitchMargin = new Constant.Ratio(
                 0.75,
                 "Vertical margin for intercepting stem seed around a target pitch");
+
+        private final Constant.Ratio wholeBoost = new Constant.Ratio(
+                0.5,
+                "How much do we boost whole notes (always isolated)");
     }
 
     //-----------//

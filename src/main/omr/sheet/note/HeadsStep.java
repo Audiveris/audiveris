@@ -60,7 +60,7 @@ public class HeadsStep
             throws StepException
     {
         final List<Glyph> spots = context.sheetSpots.get(system);
-        new NoteHeadsBuilder(system, context.distanceTable, spots).buildNotes();
+        new NoteHeadsBuilder(system, context.distanceTable, spots).buildHeads();
     }
 
     //----------//
