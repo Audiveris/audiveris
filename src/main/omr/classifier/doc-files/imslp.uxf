@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="13.3">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>160</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>*Score*
+--
+score_id : integer
+edition_id : integer
+work_id : integer
+--
+edition_index : smallint
+name : text
+file_size : text
+file_format : text
+n_page : smallint
+n_download : integer
+page_info : text</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>240</x>
+      <y>20</y>
+      <w>130</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>*Edition*
+--
+edition_id : integer
+work_id : integer
+--
+toc_path : text
+publisher : text
+copyright : text
+misc_notes : text
+infos : text</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>420</x>
+      <y>20</y>
+      <w>200</w>
+      <h>280</h>
+    </coordinates>
+    <panel_attributes>*Work*
+--
+work_id : integer
+--
+composer : text
+name : text
+opus_catalogue_number : text
+movements_sections : text
+date_of_composition : text
+first_performance : text
+first_publication : text
+librettist : text
+language : text
+style_category : text
+instrumentation : text
+genre_categories : text
+other_categories : text
+infos : text</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>230</x>
+      <y>210</y>
+      <w>150</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>*CategTree*
+--
+categtree_id : integer
+--
+parent : text
+child : text</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

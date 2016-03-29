@@ -28,9 +28,7 @@ import omr.sig.inter.BarlineInter;
 import omr.sig.inter.Inter;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 
 import ij.process.ByteProcessor;
@@ -184,22 +182,28 @@ public class StaffProjector
         int braceStop = -1;
         int braceStart = -1;
         int bestValue = 0;
+        boolean valleyHit = false;
 
         // Browse from right to left
+        // First finding valley left of bar, then brace peak if any
         for (int x = maxRight; x >= xMin; x--) {
             int value = projection.getValue(x);
 
             if (value >= minValue) {
+                if (!valleyHit) {
+                    continue;
+                }
+
                 if (braceStop == -1) {
                     braceStop = x;
                 }
 
                 braceStart = x;
                 bestValue = Math.max(bestValue, value);
-            } else {
-                if (braceStop != -1) {
-                    return createBracePeak(braceStart, braceStop, maxRight);
-                }
+            } else if (!valleyHit) {
+                valleyHit = true;
+            } else if (braceStop != -1) {
+                return createBracePeak(braceStart, braceStop, maxRight);
             }
         }
 
@@ -541,13 +545,11 @@ public class StaffProjector
                 }
 
                 stop = x;
-            } else {
-                // Lines detected
-                if (start != -1) {
+            } else // Lines detected
+             if (start != -1) {
                     allBlanks.add(new Blank(start, stop));
                     start = -1;
                 }
-            }
         }
 
         // Finish ongoing region if any
@@ -594,17 +596,15 @@ public class StaffProjector
 
                 stop = x;
                 bestValue = Math.max(bestValue, value);
-            } else {
-                if (start != -1) {
-                    StaffPeak peak = createPeak(start, stop, bestValue);
+            } else if (start != -1) {
+                StaffPeak peak = createPeak(start, stop, bestValue);
 
-                    if (peak != null) {
-                        peaks.add(peak);
-                    }
-
-                    start = -1;
-                    bestValue = 0;
+                if (peak != null) {
+                    peaks.add(peak);
                 }
+
+                start = -1;
+                bestValue = 0;
             }
         }
 
