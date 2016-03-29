@@ -1002,27 +1002,6 @@ public class RunTable
         return hash;
     }
 
-    //--------------------//
-    // persistentHashCode //
-    //--------------------//
-    /**
-     * Provide a hash code value that PERSIST across application executions.
-     *
-     * @return the persistent hash code for this run table
-     */
-    public int persistentHashCode ()
-    {
-        getWeight();
-
-        int hash = 3;
-        hash = (83 * hash) + this.orientation.ordinal();
-        hash = (83 * hash) + this.width;
-        hash = (83 * hash) + this.height;
-        hash = (83 * hash) + this.weight;
-
-        return hash;
-    }
-
     //---------//
     // include //
     //---------//
@@ -1162,6 +1141,27 @@ public class RunTable
     public Iterator<Run> iterator (int index)
     {
         return new Itr(index);
+    }
+
+    //--------------------//
+    // persistentHashCode //
+    //--------------------//
+    /**
+     * Provide a hash code value that PERSIST across application executions.
+     *
+     * @return the persistent hash code for this run table
+     */
+    public int persistentHashCode ()
+    {
+        getWeight();
+
+        int hash = 3;
+        hash = (83 * hash) + this.orientation.ordinal();
+        hash = (83 * hash) + this.width;
+        hash = (83 * hash) + this.height;
+        hash = (83 * hash) + this.weight;
+
+        return hash;
     }
 
     //-------//

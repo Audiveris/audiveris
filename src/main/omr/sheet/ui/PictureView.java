@@ -16,12 +16,11 @@ import omr.run.RunTable;
 import omr.score.ui.PageMenu;
 import omr.score.ui.PaintingParameters;
 
-import omr.ui.selection.MouseMovement;
-
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
 
 import omr.ui.Colors;
+import omr.ui.selection.MouseMovement;
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 
@@ -34,7 +33,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_OFF;
@@ -151,14 +149,6 @@ public class PictureView
                     if (table != null) {
                         table.render(g, new Point(0, 0));
                     }
-                }
-            } else {
-                // Use a white background
-                Rectangle rect = g.getClipBounds();
-
-                if (rect != null) {
-                    g.setColor(Color.WHITE);
-                    g.fill(rect);
                 }
             }
 

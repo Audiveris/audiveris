@@ -11,13 +11,16 @@
 // </editor-fold>
 package omr.ui.view;
 
+import java.awt.Color;
 import omr.constant.ConstantSet;
 
 import omr.ui.PixelCount;
 import omr.ui.selection.LocationEvent;
 import omr.ui.selection.MouseMovement;
 import omr.ui.selection.SelectionHint;
+
 import static omr.ui.selection.SelectionHint.*;
+
 import omr.ui.selection.SelectionService;
 import omr.ui.selection.UserEvent;
 
@@ -89,7 +92,7 @@ public class RubberPanel
      */
     public RubberPanel ()
     {
-        logger.debug("new RubberPanel");
+        setBackground(Color.white);
     }
 
     /**
@@ -102,6 +105,7 @@ public class RubberPanel
     public RubberPanel (Zoom zoom,
                         Rubber rubber)
     {
+        this();
         setZoom(zoom);
         setRubber(rubber);
 
