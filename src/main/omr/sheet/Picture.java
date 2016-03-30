@@ -60,13 +60,13 @@ import java.lang.ref.WeakReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.EnumMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.media.jai.JAI;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -157,7 +157,8 @@ public class Picture
 
     /** Map of all handled run tables. */
     @XmlElement(name = "tables")
-    private final ConcurrentSkipListMap<TableKey, RunTableHolder> tables = new ConcurrentSkipListMap<TableKey, RunTableHolder>();
+    private final EnumMap<TableKey, RunTableHolder> tables = new EnumMap<TableKey, RunTableHolder>(
+            TableKey.class);
 
     // Transient data
     //---------------
@@ -525,7 +526,7 @@ public class Picture
             return null;
         }
 
-        final RunTable table = tableHolder.getData();
+        final RunTable table = tableHolder.getData(sheet);
 
         return table;
     }
@@ -684,7 +685,7 @@ public class Picture
     public void setTable (TableKey key,
                           RunTable table)
     {
-        RunTableHolder tableHolder = new RunTableHolder(sheet, RunTable.class, key + ".xml");
+        RunTableHolder tableHolder = new RunTableHolder(key + ".xml");
         tableHolder.setData(table);
         tables.put(key, tableHolder);
 
@@ -726,7 +727,7 @@ public class Picture
                     Marshaller m = JAXBContext.newInstance(RunTable.class).createMarshaller();
                     m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-                    RunTable table = holder.getData();
+                    RunTable table = holder.getData(sheet);
                     m.marshal(table, os);
                     os.close();
                     logger.info("Stored {}", tablepath);
@@ -758,10 +759,6 @@ public class Picture
     final void initTransients (Sheet sheet)
     {
         this.sheet = sheet;
-
-        for (RunTableHolder holder : tables.values()) {
-            holder.setSheet(sheet);
-        }
     }
 
     //-------------------//
@@ -925,45 +922,5 @@ public class Picture
         private final Constant.String defaultExtractionDirectory = new Constant.String(
                 WellKnowns.DEFAULT_SCRIPTS_FOLDER.toString(),
                 "Default directory for image extractions");
-    }
-
-    //----------------//
-    // RunTableHolder //
-    //----------------//
-    private static class RunTableHolder
-            extends DataHolder<RunTable>
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public RunTableHolder (Sheet sheet,
-                               Class classe,
-                               String pathString)
-        {
-            super(sheet, classe, pathString);
-        }
-
-        private RunTableHolder ()
-        {
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        //----------------//
-        // afterUnmarshal //
-        //----------------//
-        /**
-         * Called after all the properties (except IDREF) are unmarshalled for this
-         * object, but before this object is set to the parent object.
-         */
-        @SuppressWarnings("unused")
-        private void afterUnmarshal (Unmarshaller um,
-                                     Object parent)
-        {
-            classe = RunTable.class;
-        }
-
-        private void setSheet (Sheet sheet)
-        {
-            this.sheet = sheet;
-        }
     }
 }

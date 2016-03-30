@@ -493,6 +493,50 @@ public class StubsController
         }
     }
 
+    //-----------------//
+    // selectOtherBook //
+    //-----------------//
+    /**
+     * Select suitable stub of another book than the provided one (which is about to be
+     * closed). This is meant to avoid the automatic selection of a not-yet loaded sheet.
+     *
+     * @param currentBook the book about to close
+     */
+    public void selectOtherBook (Book currentBook)
+    {
+        SheetStub currentStub = getCurrentStub();
+
+        if (currentStub == null) {
+            return;
+        }
+
+        int currentIndex = stubsPane.getSelectedIndex();
+
+        // Look for a suitable stub on right
+        for (int index = currentIndex + 1; index < stubsPane.getTabCount(); index++) {
+            JComponent component = (JComponent) stubsPane.getComponentAt(index);
+            SheetStub stub = stubsMap.get(component);
+
+            if ((stub.getBook() != currentBook) && stub.hasSheet()) {
+                stubsPane.setSelectedIndex(index);
+
+                return;
+            }
+        }
+
+        // Not found on right, so look for a suitable stub on left
+        for (int index = currentIndex - 1; index >= 0; index--) {
+            JComponent component = (JComponent) stubsPane.getComponentAt(index);
+            SheetStub stub = stubsMap.get(component);
+
+            if ((stub.getBook() != currentBook) && stub.hasSheet()) {
+                stubsPane.setSelectedIndex(index);
+
+                return;
+            }
+        }
+    }
+
     //--------------//
     // stateChanged //
     //--------------//

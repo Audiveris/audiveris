@@ -17,6 +17,7 @@ audiveris.bat
 installer/build/*
 config/run.properties
 data/benches
+data/campaign
 data/print/*
 data/projects/*
 data/scores/*

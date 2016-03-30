@@ -330,7 +330,7 @@ public class BasicStub
                             // Complete sheet reload
                             watch.start("afterReload");
                             sheet.afterReload(this);
-                            logger.info("Loaded {}", sheetFile);
+                            logger.info("Loaded {} {}", sheetFile, sheet.getId());
                         } catch (Exception ex) {
                             logger.warn("Error in loading sheet structure " + ex, ex);
                         } finally {

@@ -407,6 +407,10 @@ public class BookActions
 
         if (book != null) {
             if (checkStored(book)) {
+                // Pre-select the suitable "next" book tab
+                StubsController.getInstance().selectOtherBook(book);
+
+                // Now close the book (+ related tab)
                 book.close();
             }
         }

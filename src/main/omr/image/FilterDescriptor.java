@@ -136,7 +136,7 @@ public abstract class FilterDescriptor
 
         private final FilterKind.Constant defaultKind = new FilterKind.Constant(
                 FilterKind.ADAPTIVE,
-                "Default kind of PixelFilter");
+                "Default kind of PixelFilter (GLOBAL or ADAPTIVE)");
     }
 
     //---------//
