@@ -1126,7 +1126,7 @@ public class BasicSheet
             return true;
         }
 
-        stub.setModified(true);
+        stub.setModified(true); // At beginning of processing
 
         SortedSet<Step> mySteps = new TreeSet();
 
@@ -1165,6 +1165,7 @@ public class BasicSheet
         } finally {
             // Make sure we reset the sheet "current" step, always.
             setCurrentStep(null);
+            stub.setModified(true); // At end of processing
 
             StepMonitoring.notifyStop();
 

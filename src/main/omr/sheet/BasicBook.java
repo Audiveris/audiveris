@@ -1,8 +1,8 @@
-//--------------------------------------------------------------------------------------------------------------------//
-//                                                                                                                    //
-//                                                  B a s i c B o o k                                                 //
-//                                                                                                                    //
-//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        B a s i c B o o k                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
@@ -32,9 +32,7 @@ import omr.script.BookStepTask;
 import omr.script.ExportTask;
 import omr.script.PrintTask;
 import omr.script.Script;
-
 import static omr.sheet.Sheet.INTERNALS_RADIX;
-
 import omr.sheet.rhythm.Voices;
 import omr.sheet.ui.BookBrowser;
 import omr.sheet.ui.StubsController;
@@ -42,7 +40,6 @@ import omr.sheet.ui.StubsController;
 import omr.step.ProcessingCancellationException;
 import omr.step.Step;
 import omr.step.StepException;
-
 import static omr.step.ui.StepMonitoring.notifyStart;
 import static omr.step.ui.StepMonitoring.notifyStop;
 
@@ -53,6 +50,7 @@ import omr.util.Memory;
 import omr.util.OmrExecutors;
 import omr.util.Param;
 import omr.util.StopWatch;
+import omr.util.Zip;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +88,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import omr.util.Zip;
 
 /**
  * Class {@code BasicBook} is a basic implementation of Book interface.
@@ -371,8 +368,7 @@ public class BasicBook
     @Override
     public void createStubsTabs ()
     {
-        SwingUtilities.invokeLater(
-                new Runnable()
+        Runnable doRun = new Runnable()
         {
             @Override
             public void run ()
@@ -395,7 +391,20 @@ public class BasicBook
                     logger.info("No valid sheet in {}", this);
                 }
             }
-        });
+        };
+
+        if (false) {
+            SwingUtilities.invokeLater(doRun);
+        } else {
+            try {
+                ///logger.info("Start createStubsTabs");
+                SwingUtilities.invokeAndWait(doRun);
+
+                ///logger.info("Stop  createStubsTabs");
+            } catch (Exception ex) {
+                logger.warn("Error in createStubsTabs", ex);
+            }
+        }
     }
 
     //--------------//
@@ -1071,7 +1080,12 @@ public class BasicBook
                 @Override
                 public void run ()
                 {
-                    StubsController.getInstance().refresh();
+                    final StubsController controller = StubsController.getInstance();
+                    final SheetStub stub = controller.getSelectedStub();
+
+                    if ((stub != null) && (stub.getBook() == BasicBook.this)) {
+                        controller.refresh();
+                    }
                 }
             });
         }

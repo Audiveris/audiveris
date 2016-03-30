@@ -11,11 +11,13 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.ui.selection.MouseMovement;
-import omr.ui.selection.StubEvent;
-
 import omr.sheet.Book;
 import omr.sheet.SheetStub;
+
+import omr.step.Step;
+
+import omr.ui.selection.MouseMovement;
+import omr.ui.selection.StubEvent;
 
 import org.bushe.swing.event.EventSubscriber;
 
@@ -119,19 +121,6 @@ public abstract class StubDependent
         return stubAvailable;
     }
 
-    //-------------//
-    // isStubValid //
-    //-------------//
-    /**
-     * Getter for stubValid property
-     *
-     * @return the current property value
-     */
-    public boolean isStubValid ()
-    {
-        return stubValid;
-    }
-
     //------------//
     // isStubIdle //
     //------------//
@@ -143,6 +132,19 @@ public abstract class StubDependent
     public boolean isStubIdle ()
     {
         return stubIdle;
+    }
+
+    //-------------//
+    // isStubValid //
+    //-------------//
+    /**
+     * Getter for stubValid property
+     *
+     * @return the current property value
+     */
+    public boolean isStubValid ()
+    {
+        return stubValid;
     }
 
     //---------//
@@ -164,15 +166,22 @@ public abstract class StubDependent
 
             SheetStub stub = stubEvent.getData();
 
+            //            logger.info(
+            //                    "event: {} {}",
+            //                    stubEvent,
+            //                    (stub != null) ? stub.getSheet().getId() : "no stub");
+            //
             // Update stubAvailable
             setStubAvailable(stub != null);
 
             // Update stubValid
-            setStubValid(stub != null && stub.isValid());
+            setStubValid((stub != null) && stub.isValid());
 
             // Update stubIdle
             if (stub != null) {
-                setStubIdle(stub.getCurrentStep() == null);
+                Step currentStep = stub.getCurrentStep();
+                ///logger.info("currentStep: {}", currentStep);
+                setStubIdle(currentStep == null);
             } else {
                 setStubIdle(false);
             }
@@ -249,24 +258,6 @@ public abstract class StubDependent
         }
     }
 
-    //--------------//
-    // setStubValid //
-    //--------------//
-    /**
-     * Setter for stubValid property.
-     *
-     * @param stubValid the new property value
-     */
-    public void setStubValid (boolean stubValid)
-    {
-        boolean oldValue = this.stubValid;
-        this.stubValid = stubValid;
-
-        if (stubValid != oldValue) {
-            firePropertyChange(STUB_VALID, oldValue, this.stubValid);
-        }
-    }
-
     //-------------//
     // setStubIdle //
     //-------------//
@@ -285,17 +276,39 @@ public abstract class StubDependent
         }
     }
 
+    //--------------//
+    // setStubValid //
+    //--------------//
+    /**
+     * Setter for stubValid property.
+     *
+     * @param stubValid the new property value
+     */
+    public void setStubValid (boolean stubValid)
+    {
+        boolean oldValue = this.stubValid;
+        this.stubValid = stubValid;
+
+        if (stubValid != oldValue) {
+            firePropertyChange(STUB_VALID, oldValue, this.stubValid);
+        }
+    }
+
     //------------//
     // isBookIdle //
     //------------//
     private boolean isBookIdle (Book book)
     {
         for (SheetStub stub : book.getStubs()) {
-            if (stub.getCurrentStep() != null) {
+            final Step currentStep = stub.getCurrentStep();
+
+            if (currentStep != null) {
+                ///logger.info("isBookIdle stub currentStep: {}", currentStep);
                 return false;
             }
         }
 
+        ///logger.info("isBookIdle: true");
         return true;
     }
 }
