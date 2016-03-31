@@ -424,12 +424,14 @@ public class BarsRetriever
         logger.debug("sections:{}", allSections.size());
 
         BarFilamentFactory factory = new BarFilamentFactory(sheet.getScale());
+        final FilamentIndex filamentIndex = sheet.getFilamentIndex();
 
         for (Staff staff : staffManager.getStaves()) {
             for (StaffPeak peak : staff.getPeaks()) {
                 // Take proper slice of sections for this peak
                 List<Section> sections = getPeakSections(peak, allSections);
                 Filament filament = factory.buildBarFilament(sections, peak.getBounds());
+                filamentIndex.register(filament);
                 peak.setFilament(filament);
                 logger.debug("Staff#{} {}", staff.getId(), peak);
             }
@@ -575,6 +577,13 @@ public class BarsRetriever
         List<SectionCompound> compounds = CompoundFactory.buildCompounds(
                 sections,
                 serifConstructor);
+
+        final FilamentIndex filamentIndex = sheet.getFilamentIndex();
+
+        for (SectionCompound compound : compounds) {
+            filamentIndex.register((Filament) compound);
+        }
+
         logger.debug("Staff#{} serif {}", staff.getId(), Entities.ids(compounds));
 
         if (compounds.size() > 1) {
@@ -1701,6 +1710,7 @@ public class BarsRetriever
 
         // Retrieve serif glyph from sections
         Filament serif = buildSerifFilament(staff, sections, side, roi);
+        sheet.getFilamentIndex().register(serif);
         serif.computeLine();
 
         double slope = serif.getSlope();
@@ -2524,7 +2534,7 @@ public class BarsRetriever
                 "Typical thickness of bracket serif");
 
         private final Scale.AreaFraction serifMinWeight = new Scale.AreaFraction(
-                0.15,
+                0.2,
                 "Minimum weight for bracket serif");
 
         private final Constant.Double serifMinSlope = new Constant.Double(

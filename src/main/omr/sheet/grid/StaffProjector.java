@@ -331,7 +331,7 @@ public class StaffProjector
         params.blankThreshold = (int) Math.rint(
                 constants.blankThreshold.getValue() * lineThickness);
         params.chunkThreshold = Math.max(
-                4 * scale.getMaxFore(),
+                4 * (scale.getMaxFore() + 1), // +1 as safety margin
                 params.linesThreshold + scale.toPixels(constants.chunkThreshold));
     }
 
@@ -495,8 +495,13 @@ public class StaffProjector
         final int yTop = staff.getFirstLine().yAt(xMid);
         final int yBottom = staff.getLastLine().yAt(xMid);
 
-        final GeoPath leftLine = new GeoPath(new Line2D.Double(start, yTop, start, yBottom));
-        final GeoPath rightLine = new GeoPath(new Line2D.Double(stop, yTop, stop, yBottom));
+        // If peak is very thin, thicken the lookup area
+        final int width = stop - start + 1;
+        final int dx = (width <= 2) ? 1 : 0;
+        GeoPath leftLine = new GeoPath(
+                new Line2D.Double(start - dx, yTop, start - dx, yBottom));
+        GeoPath rightLine = new GeoPath(
+                new Line2D.Double(stop + dx, yTop, stop + dx, yBottom));
         final CoreData data = AreaUtil.verticalCore(pixelFilter, leftLine, rightLine);
 
         if (data.gap > params.gapThreshold) {
@@ -545,11 +550,10 @@ public class StaffProjector
                 }
 
                 stop = x;
-            } else // Lines detected
-             if (start != -1) {
-                    allBlanks.add(new Blank(start, stop));
-                    start = -1;
-                }
+            } else if (start != -1) {
+                allBlanks.add(new Blank(start, stop));
+                start = -1;
+            }
         }
 
         // Finish ongoing region if any
@@ -969,7 +973,7 @@ public class StaffProjector
                 "Minimum absolute derivative for peak side");
 
         private final Scale.Fraction barThreshold = new Scale.Fraction(
-                3.5,
+                3.0,
                 "Minimum cumul value to detect bar peak");
 
         private final Scale.Fraction braceThreshold = new Scale.Fraction(

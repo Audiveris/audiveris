@@ -14,7 +14,6 @@ package omr.sheet.grid;
 import omr.glyph.dynamic.Filament;
 
 import omr.sheet.Staff;
-
 import static omr.sheet.grid.StaffPeak.Attribute.*;
 
 import omr.sig.GradeImpacts;
@@ -23,13 +22,11 @@ import omr.sig.inter.BraceInter;
 import omr.sig.inter.Inter;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.LEFT;
-
 import omr.util.VerticalSide;
-
 import static omr.util.VerticalSide.TOP;
 
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.EnumSet;
 
@@ -328,6 +325,14 @@ public abstract class StaffPeak
     public boolean isStaffEnd (HorizontalSide side)
     {
         return isSet((side == LEFT) ? STAFF_LEFT_END : STAFF_RIGHT_END);
+    }
+
+    //--------//
+    // render //
+    //--------//
+    public void render (Graphics2D g)
+    {
+        g.fillRect(start, top, stop - start + 1, bottom - top + 1);
     }
 
     //-----//

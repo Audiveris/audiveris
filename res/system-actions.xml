@@ -59,6 +59,7 @@
     <action domain="VIEW" section="20" class="omr.score.ui.PaintingParameters" method="toggleMarks"         item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="25" class="omr.ui.ViewParameters"           method="toggleInvalidSheets" item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30" class="omr.ui.ViewParameters"           method="toggleStaffLines"    item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="30" class="omr.ui.ViewParameters"           method="toggleStaffPeaks"    item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30" class="omr.ui.ViewParameters"           method="toggleLines"         item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30" class="omr.ui.ViewParameters"           method="toggleLetters"       item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30" class="omr.ui.ViewParameters"           method="toggleAttachments"   item="javax.swing.JCheckBoxMenuItem"/>

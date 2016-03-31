@@ -110,6 +110,9 @@ public class Colors
     /** Current time slot */
     public static final Color SLOT_CURRENT = new Color(255, 0, 255, alpha);
 
+    /** Staff peak */
+    public static final Color STAFF_PEAK = new Color(255, 200, 0, 100);
+
     /** Tangents */
     public static final Color TANGENT = new Color(0, 0, 0, 100);
 

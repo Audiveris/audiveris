@@ -989,7 +989,11 @@ public class Staff
      */
     public List<StaffPeak> getPeaks ()
     {
-        return Collections.unmodifiableList(peaks);
+        if (peaks != null) {
+            return Collections.unmodifiableList(peaks);
+        }
+
+        return Collections.EMPTY_LIST;
     }
 
     //------------//

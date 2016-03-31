@@ -46,6 +46,9 @@ public class ViewParameters
     /** Should the staff lines be painted */
     public static final String STAFF_LINE_PAINTING = "staffLinePainting";
 
+    /** Should the staff peaks be painted */
+    public static final String STAFF_PEAK_PAINTING = "staffPeakPainting";
+
     /** Should the stick lines be painted */
     public static final String LINE_PAINTING = "linePainting";
 
@@ -67,6 +70,9 @@ public class ViewParameters
 
     /** Staff line painting is chosen to be not persistent. */
     private boolean staffLinePainting = true;
+
+    /** Staff peak painting is chosen to be not persistent. */
+    private boolean staffPeakPainting = false;
 
     //~ Methods ------------------------------------------------------------------------------------
     //-------------//
@@ -107,6 +113,14 @@ public class ViewParameters
     public boolean isStaffLinePainting ()
     {
         return staffLinePainting;
+    }
+
+    //---------------------//
+    // isStaffPeakPainting //
+    //---------------------//
+    public boolean isStaffPeakPainting ()
+    {
+        return staffPeakPainting;
     }
 
     //-----------------------//
@@ -179,6 +193,16 @@ public class ViewParameters
         boolean oldValue = staffLinePainting;
         staffLinePainting = value;
         firePropertyChange(STAFF_LINE_PAINTING, oldValue, value);
+    }
+
+    //----------------------//
+    // setStaffPeakPainting //
+    //----------------------//
+    public void setStaffPeakPainting (boolean value)
+    {
+        boolean oldValue = staffPeakPainting;
+        staffPeakPainting = value;
+        firePropertyChange(STAFF_PEAK_PAINTING, oldValue, value);
     }
 
     //------------------------//
@@ -270,6 +294,19 @@ public class ViewParameters
      */
     @Action(selectedProperty = STAFF_LINE_PAINTING)
     public void toggleStaffLines (ActionEvent e)
+    {
+    }
+
+    //------------------//
+    // toggleStaffPeaks //
+    //------------------//
+    /**
+     * Action that toggles the display of staff peaks
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = STAFF_PEAK_PAINTING)
+    public void toggleStaffPeaks (ActionEvent e)
     {
     }
 
