@@ -31,9 +31,7 @@ import omr.math.NaturalSpline;
 import omr.math.Population;
 
 import omr.run.Orientation;
-
 import static omr.run.Orientation.*;
-
 import omr.run.Run;
 import omr.run.RunTable;
 
@@ -53,9 +51,7 @@ import omr.ui.util.UIUtil;
 import omr.util.Dumping;
 import omr.util.Entities;
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.StopWatch;
@@ -421,6 +417,9 @@ public class LinesRetriever
             globalSlope = retrieveGlobalSlope();
             sheet.setSkew(new Skew(globalSlope, sheet));
             logger.info("{}Sheet slope: {}", sheet.getLogPrefix(), (float) globalSlope);
+
+            // Purge sloped filaments
+            purgeSlopedFilaments();
 
             // Retrieve regular patterns of filaments and pack them into clusters
             clustersRetriever = new ClustersRetriever(
@@ -969,6 +968,39 @@ public class LinesRetriever
         }
     }
 
+    //----------------------//
+    // purgeSlopedFilaments //
+    //----------------------//
+    /**
+     * Now that we know the global sheet slope, discard the filaments whose slope is too
+     * far from sheet slope.
+     */
+    private void purgeSlopedFilaments ()
+    {
+        final double sheetSlope = sheet.getSkew().getSlope();
+        final List<Filament> toRemove = new ArrayList<Filament>();
+
+        for (StaffFilament fil : filaments) {
+            Point2D start = fil.getStartPoint();
+            Point2D stop = fil.getStopPoint();
+
+            double filSlope = LineUtil.getSlope(start, stop);
+            final double slopeDiff = Math.abs(sheetSlope - filSlope);
+
+            if (slopeDiff > params.maxSlopeDiff) {
+                ///if (fil.isVip()) {
+                logger.info("VIP {} delta slope {}", fil, String.format("%.3f", slopeDiff));
+                ///}
+                toRemove.add(fil);
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            logger.info("{}Discarded sloped filaments: {}", sheet.getLogPrefix(), toRemove.size());
+            filaments.removeAll(toRemove);
+        }
+    }
+
     //-------------------//
     // retrieveEndPoints //
     //-------------------//
@@ -1121,6 +1153,11 @@ public class LinesRetriever
                 0.1,
                 "Maximum central rotation for filaments");
 
+        private final Constant.Double maxSlopeDiff = new Constant.Double(
+                "radians",
+                0.05,
+                "Maximum delta slope between filament and sheet");
+
         private final Constant.Double minSlope = new Constant.Double(
                 "tangent",
                 0.0002,
@@ -1216,6 +1253,9 @@ public class LinesRetriever
         /** Maximum rotation angle for filaments used to retrieve global slope */
         final double maxFilamentRotation;
 
+        /** Maximum delta slope between filament and sheet */
+        final double maxSlopeDiff;
+
         /** Maximum sticker thickness */
         final int maxStickerThickness;
 
@@ -1259,6 +1299,7 @@ public class LinesRetriever
             minRunLength = scale.toPixels(constants.minRunLength);
             topRatioForSlope = constants.topRatioForSlope.getValue();
             maxFilamentRotation = constants.maxFilamentRotation.getValue();
+            maxSlopeDiff = constants.maxSlopeDiff.getValue();
             maxStickerGap = scale.toPixelsDouble(constants.maxStickerGap);
             maxThinStickerWeight = scale.toPixels(constants.maxThinStickerWeight);
             maxEndingDx = scale.toPixels(constants.maxEndingDx);

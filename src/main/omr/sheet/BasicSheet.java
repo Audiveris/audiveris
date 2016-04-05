@@ -269,7 +269,7 @@ public class BasicSheet
     @Override
     public boolean addItemRenderer (ItemRenderer renderer)
     {
-        if (OMR.gui != null) {
+        if (renderer != null && OMR.gui != null) {
             return itemRenderers.add(new WeakItemRenderer(renderer));
 
             ///return itemRenderers.add(renderer);
