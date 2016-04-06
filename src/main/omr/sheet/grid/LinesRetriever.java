@@ -334,7 +334,7 @@ public class LinesRetriever
         }
 
         // Filament lines?
-        if (constants.showHorizontalLines.isSet()) {
+        if (constants.showHorizontalLines.isSet() && (filaments != null)) {
             List<StaffFilament> allFils = new ArrayList<StaffFilament>(filaments);
 
             if (secondFilaments != null) {
@@ -457,9 +457,6 @@ public class LinesRetriever
             // Convert clusters into staves
             watch.start("BuildStaves");
             buildStaves();
-
-            //        } catch (Throwable ex) {
-            //            logger.warn("Exception in retrieveLines " + ex, ex);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -585,7 +582,8 @@ public class LinesRetriever
         }
 
         // Check max extension from theoretical line
-        double extension = Math.max(Math.abs(yFil - box.y), Math.abs((box.y + height) - yFil));
+        int extension = (int) Math.rint(
+                Math.max(Math.abs(yFil - box.y), Math.abs((box.y + height) - yFil)));
 
         if (extension > params.maxStickerExtension) {
             if (logger.isDebugEnabled() || isVip) {
@@ -782,14 +780,17 @@ public class LinesRetriever
 
             for (Staff staff : system.getStaves()) {
                 for (LineInfo line : staff.getLines()) {
-                    StaffFilament filament = (StaffFilament) line;
-                    Rectangle lineBox = filament.getBounds();
+                    final StaffFilament filament = (StaffFilament) line;
+                    final Point2D startPt = filament.getStartPoint();
+                    final Point2D stopPt = filament.getStopPoint();
+                    final double minX = startPt.getX();
+                    final double maxX = stopPt.getX();
+                    final Rectangle lineBox = filament.getBounds();
                     lineBox.grow(0, scale.getMainFore());
 
-                    double minX = filament.getStartPoint().getX();
-                    double maxX = filament.getStopPoint().getX();
-                    int minY = lineBox.y;
-                    int maxY = lineBox.y + lineBox.height;
+                    final int minY = lineBox.y;
+                    final int maxY = lineBox.y + lineBox.height;
+                    boolean filamentModified = false;
 
                     // Browse discarded filaments
                     for (int i = iMin; i <= iMax; i++) {
@@ -816,11 +817,14 @@ public class LinesRetriever
                         if ((center.x >= minX) && (center.x <= maxX)) {
                             if (canIncludeFilament(filament, fil)) {
                                 filament.stealSections(fil);
+                                filamentModified = true;
                             }
                         }
                     }
 
-                    filament.getSpline(); // Recompute spline if needed
+                    if (filamentModified) {
+                        filament.setEndingPoints(startPt, stopPt); // Recompute line
+                    }
                 }
             }
         }

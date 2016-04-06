@@ -38,10 +38,13 @@ import omr.ui.util.AttachmentHolder;
 import omr.ui.util.BasicAttachmentHolder;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Jaxb;
 import omr.util.Navigable;
 import omr.util.VerticalSide;
+
 import static omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
@@ -55,7 +58,6 @@ import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -981,21 +983,6 @@ public class Staff
         return system.getPartOf(this);
     }
 
-    //----------//
-    // getPeaks //
-    //----------//
-    /**
-     * @return the peaks
-     */
-    public List<StaffPeak> getPeaks ()
-    {
-        if (peaks != null) {
-            return Collections.unmodifiableList(peaks);
-        }
-
-        return Collections.EMPTY_LIST;
-    }
-
     //------------//
     // getSideBar //
     //------------//
@@ -1046,14 +1033,6 @@ public class Staff
         }
 
         return null;
-    }
-
-    //-----------------//
-    // insertBracePeak //
-    //-----------------//
-    public void insertBracePeak (StaffPeak.Brace bracePeak)
-    {
-        peaks.add(0, bracePeak);
     }
 
     //---------//
@@ -1198,14 +1177,6 @@ public class Staff
         others.remove(inter);
     }
 
-    //-------------//
-    // removePeaks //
-    //-------------//
-    public void removePeaks (Collection<? extends StaffPeak> toRemove)
-    {
-        peaks.removeAll(toRemove);
-    }
-
     //--------//
     // render //
     //--------//
@@ -1286,17 +1257,6 @@ public class Staff
     public void setArea (Area area)
     {
         this.area = area;
-    }
-
-    //-------------//
-    // setBarPeaks //
-    //-------------//
-    /**
-     * @param peaks the peaks to set
-     */
-    public void setBarPeaks (List<StaffPeak> peaks)
-    {
-        this.peaks = peaks;
     }
 
     //---------//

@@ -49,6 +49,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -211,6 +212,17 @@ public class StaffProjector
     }
 
     //----------//
+    // getPeaks //
+    //----------//
+    /**
+     * @return the peaks
+     */
+    public List<StaffPeak> getPeaks ()
+    {
+        return peaks;
+    }
+
+    //----------//
     // getStaff //
     //----------//
     /**
@@ -219,6 +231,14 @@ public class StaffProjector
     public Staff getStaff ()
     {
         return staff;
+    }
+
+    //-----------------//
+    // insertBracePeak //
+    //-----------------//
+    public void insertBracePeak (StaffPeak.Brace bracePeak)
+    {
+        peaks.add(0, bracePeak);
     }
 
     //------//
@@ -242,6 +262,7 @@ public class StaffProjector
     //---------//
     /**
      * Process the staff projection on x-axis to retrieve peaks that may represent bars.
+     * Peaks found are stored in staff.
      *
      * @return the sequence of peaks found
      */
@@ -263,7 +284,6 @@ public class StaffProjector
 
         // Retrieve peaks as barline raw candidates
         findPeaks();
-        staff.setBarPeaks(peaks);
 
         return peaks;
     }
@@ -279,6 +299,14 @@ public class StaffProjector
         for (HorizontalSide side : HorizontalSide.values()) {
             refineStaffSide(side);
         }
+    }
+
+    //-------------//
+    // removePeaks //
+    //-------------//
+    public void removePeaks (Collection<? extends StaffPeak> toRemove)
+    {
+        peaks.removeAll(toRemove);
     }
 
     //----------//
@@ -751,7 +779,7 @@ public class StaffProjector
         Integer peakEnd = null;
 
         // Look for a suitable peak
-        StaffPeak bracket = null; // Last bracket encountered on left side if any
+        StaffPeak bracket = null; // Last bracket encountered (on left side) if any
 
         if (!peaks.isEmpty()) {
             StaffPeak peak = null;

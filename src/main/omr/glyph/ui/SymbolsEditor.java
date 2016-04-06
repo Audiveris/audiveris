@@ -36,7 +36,6 @@ import omr.sheet.Part;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
-import omr.sheet.grid.StaffPeak;
 import omr.sheet.rhythm.Measure;
 import omr.sheet.rhythm.Slot;
 import omr.sheet.ui.PixelBoard;
@@ -55,7 +54,9 @@ import omr.ui.ViewParameters;
 import omr.ui.selection.EntityListEvent;
 import omr.ui.selection.EntityService;
 import omr.ui.selection.MouseMovement;
+
 import static omr.ui.selection.SelectionHint.*;
+
 import omr.ui.selection.UserEvent;
 import omr.ui.util.UIUtil;
 import omr.ui.view.ScrollView;
@@ -69,8 +70,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
+
 import java.awt.Stroke;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -521,17 +524,6 @@ public class SymbolsEditor
                     for (SystemInfo system : sheet.getSystems()) {
                         for (Staff staff : system.getStaves()) {
                             staff.render(g);
-                        }
-                    }
-                }
-
-                // Display staff peaks?
-                if (ViewParameters.getInstance().isStaffPeakPainting()) {
-                    g.setColor(Colors.STAFF_PEAK);
-
-                    for (Staff staff : sheet.getStaffManager().getStaves()) {
-                        for (StaffPeak peak : staff.getPeaks()) {
-                            peak.render(g);
                         }
                     }
                 }
