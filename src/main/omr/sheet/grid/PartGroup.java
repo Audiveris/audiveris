@@ -11,13 +11,17 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.sheet.Staff;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 
 /**
  * Class {@code PartGroup} describes a group of parts.
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class PartGroup
 {
     //~ Enumerations -------------------------------------------------------------------------------
@@ -31,47 +35,69 @@ public class PartGroup
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /** Group level. */
+    @XmlAttribute
     private final int number;
 
     /** Symbol used. */
+    @XmlAttribute
     private final Symbol symbol;
 
     /** Use bar line connections?. */
+    @XmlAttribute
     private final boolean barline;
 
-    /** First staff in group. */
-    private final Staff firstStaff;
+    /** ID of first staff in group. */
+    @XmlAttribute(name = "first-staff")
+    private final int firstStaffId;
 
-    /** Last staff in group. */
-    private Staff lastStaff;
+    /** ID of last staff in group. */
+    @XmlAttribute(name = "last-staff")
+    private int lastStaffId;
 
     /** Name. */
+    @XmlElement
     private String name;
 
     /** Abbreviation. */
+    @XmlElement
     private String abbreviation;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Build a {@code PartGroup} object.
      *
-     * @param number     group level
-     * @param symbol     symbol used
-     * @param barline    use bar line connections?
-     * @param firstStaff first staff in group
+     * @param number       group level
+     * @param symbol       symbol used
+     * @param barline      use bar line connections?
+     * @param firstStaffId ID of first staff in group
      */
     public PartGroup (int number,
                       Symbol symbol,
                       boolean barline,
-                      Staff firstStaff)
+                      int firstStaffId)
     {
         this.number = number;
         this.symbol = symbol;
         this.barline = barline;
-        this.firstStaff = firstStaff;
+        this.firstStaffId = firstStaffId;
 
-        lastStaff = firstStaff; // Initially
+        lastStaffId = firstStaffId; // Initially
+    }
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private PartGroup ()
+    {
+        this.number = 0;
+        this.symbol = null;
+        this.barline = false;
+        this.firstStaffId = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -84,19 +110,19 @@ public class PartGroup
     }
 
     /**
-     * @return the firstStaff
+     * @return the firstStaffId
      */
-    public Staff getFirstStaff ()
+    public int getFirstStaffId ()
     {
-        return firstStaff;
+        return firstStaffId;
     }
 
     /**
-     * @return the lastStaff
+     * @return the lastStaffId
      */
-    public Staff getLastStaff ()
+    public int getLastStaffId ()
     {
-        return lastStaff;
+        return lastStaffId;
     }
 
     /**
@@ -140,11 +166,11 @@ public class PartGroup
     }
 
     /**
-     * @param lastStaff the lastStaff to set
+     * @param lastStaffId ID of the lastStaff
      */
-    public void setLastStaff (Staff lastStaff)
+    public void setLastStaffId (int lastStaffId)
     {
-        this.lastStaff = lastStaff;
+        this.lastStaffId = lastStaffId;
     }
 
     /**
@@ -177,10 +203,10 @@ public class PartGroup
 
         sb.append(" barline:").append(barline);
 
-        sb.append(" staves:").append(firstStaff.getId());
+        sb.append(" staves:").append(firstStaffId);
 
-        if (lastStaff != firstStaff) {
-            sb.append("-").append(lastStaff.getId());
+        if (lastStaffId != firstStaffId) {
+            sb.append("-").append(lastStaffId);
         }
 
         sb.append("}");

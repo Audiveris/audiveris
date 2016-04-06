@@ -971,7 +971,7 @@ public class BarsRetriever
 
                         if (peak.isBracketEnd(TOP)) {
                             // Start bracket group
-                            pg = new PartGroup(level, Symbol.bracket, bottomConn, staff);
+                            pg = new PartGroup(level, Symbol.bracket, bottomConn, staff.getId());
                             allGroups.add(pg);
                             activeGroups.put(level, pg);
                             logger.debug("Staff#{} start bracket {}", staff.getId(), pg);
@@ -980,7 +980,7 @@ public class BarsRetriever
                             pg = activeGroups.get(level);
 
                             if (pg != null) {
-                                pg.setLastStaff(staff);
+                                pg.setLastStaffId(staff.getId());
 
                                 // Stop bracket group?
                                 if (peak.isBracketEnd(BOTTOM)) {
@@ -1001,7 +1001,11 @@ public class BarsRetriever
                     } else if (peak instanceof StaffPeak.Brace) {
                         if (peak.isBraceEnd(TOP)) {
                             // Start brace group
-                            PartGroup pg = new PartGroup(level, Symbol.brace, bottomConn, staff);
+                            PartGroup pg = new PartGroup(
+                                    level,
+                                    Symbol.brace,
+                                    bottomConn,
+                                    staff.getId());
                             allGroups.add(pg);
                             activeGroups.put(level, pg);
                             logger.debug("Staff#{} start brace {}", staff.getId(), pg);
@@ -1010,24 +1014,29 @@ public class BarsRetriever
                             PartGroup pg = activeGroups.get(level);
 
                             if (pg != null) {
-                                pg.setLastStaff(staff);
+                                pg.setLastStaffId(staff.getId());
 
                                 // Stop brace group?
                                 if (peak.isBraceEnd(BOTTOM)) {
                                     activeGroups.put(level, null);
 
+                                    final int firstId = pg.getFirstStaffId();
+                                    final int lastId = pg.getLastStaffId();
+                                    final Staff firstStaff = staffManager.getStaff(firstId - 1);
+                                    final Staff lastStaff = staffManager.getStaff(lastId - 1);
+
                                     // Was this brace a real group?
-                                    if (!bottomConn && !isPartConnected(pg.getFirstStaff(), TOP)) {
+                                    if (!bottomConn && !isPartConnected(firstStaff, TOP)) {
                                         // No, just a multi-staff instrument
                                         logger.debug(
                                                 "Staff#{} end multi-staff instrument {}",
                                                 staff.getId(),
                                                 pg);
                                         allGroups.remove(pg);
-                                        createPart(system, pg.getFirstStaff(), pg.getLastStaff());
+                                        createPart(system, firstStaff, lastStaff);
                                     } else {
-                                        int i1 = staves.indexOf(pg.getFirstStaff());
-                                        int i2 = staves.indexOf(pg.getLastStaff());
+                                        int i1 = staves.indexOf(firstStaff);
+                                        int i2 = staves.indexOf(lastStaff);
                                         logger.debug("Staff#{} stop brace {}", staff.getId(), pg);
 
                                         for (Staff s : staves.subList(i1, i2 + 1)) {

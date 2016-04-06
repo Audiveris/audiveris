@@ -75,7 +75,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlType(propOrder = {
     /** NOTA: Sig must be marshalled last. */
-    "id", "indented", "stacks", "parts", "freeGlyphs", "sig"}
+    "id", "indented", "stacks", "parts", "partGroups", "freeGlyphs", "sig"}
 )
 public class SystemInfo
         implements Comparable<SystemInfo>
@@ -118,6 +118,10 @@ public class SystemInfo
     @XmlElement(name = "part")
     private final List<Part> parts = new ArrayList<Part>();
 
+    /** PartGroups in this system. */
+    @XmlElement(name = "part-group")
+    private final List<PartGroup> partGroups = new ArrayList<PartGroup>();
+
     /** Collection of stand-alone glyphs in this system.
      * This should be limited to glyphs not referenced elsewhere, to avoid garbage collection.
      */
@@ -145,9 +149,6 @@ public class SystemInfo
 
     /** Assigned page, if any. */
     private Page page;
-
-    /** PartGroups in this system. */
-    private final List<PartGroup> partGroups = new ArrayList<PartGroup>();
 
     /** Horizontal sections. */
     private final List<Section> hSections = new ArrayList<Section>();
