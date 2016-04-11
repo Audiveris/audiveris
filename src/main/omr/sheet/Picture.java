@@ -219,6 +219,42 @@ public class Picture
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------------//
+    // buildNoStaffTable //
+    //-------------------//
+    public RunTable buildNoStaffTable ()
+    {
+        return new RunTableFactory(VERTICAL).createTable(getSource(SourceKey.NO_STAFF));
+    }
+
+    //---------------------------//
+    // buildStaffLineGlyphsImage //
+    //---------------------------//
+    public BufferedImage buildStaffLineGlyphsImage ()
+    {
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        Graphics2D g = img.createGraphics();
+
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, width, height);
+
+        g.setColor(Color.BLACK);
+
+        for (SystemInfo system : sheet.getSystems()) {
+            for (Staff staff : system.getStaves()) {
+                for (LineInfo li : staff.getLines()) {
+                    StaffLine line = (StaffLine) li;
+                    Glyph glyph = line.getGlyph();
+                    glyph.getRunTable().render(g, glyph.getTopLeft());
+                }
+            }
+        }
+
+        g.dispose();
+
+        return img;
+    }
+
     // For debug only
     public void checkSources ()
     {
@@ -441,6 +477,19 @@ public class Picture
         }
     }
 
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name for this Observer.
+     *
+     * @return Observer name
+     */
+    public String getName ()
+    {
+        return "Picture";
+    }
+
     //-----------//
     // getSource //
     //-----------//
@@ -544,6 +593,20 @@ public class Picture
         return width;
     }
 
+    //----------//
+    // hasTable //
+    //----------//
+    /**
+     * Report whether the desired table is known
+     *
+     * @param key key of desired table
+     * @return true if we have a tableHolder, false otherwise
+     */
+    public boolean hasTable (TableKey key)
+    {
+        return tables.get(key) != null;
+    }
+
     //----------------//
     // medianFiltered //
     //----------------//
@@ -636,41 +699,6 @@ public class Picture
     public static void setDefaultExtractionDirectory (String dir)
     {
         constants.defaultExtractionDirectory.setValue(dir);
-    }
-
-    //-------------------//
-    // buildNoStaffTable //
-    //-------------------//
-    public RunTable buildNoStaffTable ()
-    {
-        return new RunTableFactory(VERTICAL).createTable(getSource(SourceKey.NO_STAFF));
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name for this Observer.
-     *
-     * @return Observer name
-     */
-    public String getName ()
-    {
-        return "Picture";
-    }
-
-    //----------//
-    // hasTable //
-    //----------//
-    /**
-     * Report whether the desired table is known
-     *
-     * @param key key of desired table
-     * @return true if we have a tableHolder, false otherwise
-     */
-    public boolean hasTable (TableKey key)
-    {
-        return tables.get(key) != null;
     }
 
     //----------//
@@ -842,6 +870,8 @@ public class Picture
                 }
             }
         }
+
+        g.dispose();
 
         return new ByteProcessor(img);
     }

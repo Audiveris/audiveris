@@ -964,7 +964,7 @@ public class LinesRetriever
         }
 
         if (!toRemove.isEmpty()) {
-            logger.info(
+            logger.debug(
                     "{}Discarded curved line filaments: {}",
                     sheet.getLogPrefix(),
                     toRemove.size());
@@ -992,15 +992,15 @@ public class LinesRetriever
             final double slopeDiff = Math.abs(sheetSlope - filSlope);
 
             if (slopeDiff > params.maxSlopeDiff) {
-                ///if (fil.isVip()) {
-                logger.info("VIP {} delta slope {}", fil, String.format("%.3f", slopeDiff));
-                ///}
+                if (fil.isVip()) {
+                    logger.info("VIP {} delta slope {}", fil, String.format("%.3f", slopeDiff));
+                }
                 toRemove.add(fil);
             }
         }
 
         if (!toRemove.isEmpty()) {
-            logger.info("{}Discarded sloped filaments: {}", sheet.getLogPrefix(), toRemove.size());
+            logger.debug("{}Discarded sloped filaments: {}", sheet.getLogPrefix(), toRemove.size());
             filaments.removeAll(toRemove);
         }
     }

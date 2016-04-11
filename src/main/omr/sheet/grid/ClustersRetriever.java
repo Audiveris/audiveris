@@ -14,13 +14,13 @@ package omr.sheet.grid;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Symbol.Group;
 import omr.glyph.dynamic.Compounds;
 
 import omr.math.GeoUtil;
 import omr.math.Histogram;
 
 import omr.run.Orientation;
-
 import static omr.run.Orientation.*;
 
 import omr.sheet.Scale;
@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import omr.glyph.Symbol.Group;
 
 /**
  * Class {@code ClustersRetriever} performs vertical samplings of the horizontal
@@ -166,7 +165,7 @@ public class ClustersRetriever
     private final Skew skew;
 
     /** A map (colIndex -> vertical list of samples), sorted on colIndex */
-    private Map<Integer, List<FilamentComb>> colCombs;
+    private final Map<Integer, List<FilamentComb>> colCombs;
 
     /** Color used for comb display */
     private final Color combColor;
@@ -399,19 +398,10 @@ public class ClustersRetriever
             logger.debug("Gap too wide between {} & {}", one, two);
 
             return false;
-        } else // True gap: use proper edges
-        {
-            if (oneLeft < twoLeft) { // Case one --- two
-                dist = bestMatch(
-                        ordinatesOf(one.getStops()),
-                        ordinatesOf(two.getStarts()),
-                        deltaPos);
-            } else { // Case two --- one
-                dist = bestMatch(
-                        ordinatesOf(one.getStarts()),
-                        ordinatesOf(two.getStops()),
-                        deltaPos);
-            }
+        } else if (oneLeft < twoLeft) { // Case one --- two
+            dist = bestMatch(ordinatesOf(one.getStops()), ordinatesOf(two.getStarts()), deltaPos);
+        } else { // Case two --- one
+            dist = bestMatch(ordinatesOf(one.getStarts()), ordinatesOf(two.getStops()), deltaPos);
         }
 
         // Check best distance
@@ -919,6 +909,12 @@ public class ClustersRetriever
 
         /** Maximum acceptable delta y */
         int dMax = scale.getMaxInterline();
+
+        // For better efficiency: in doubt, avoid inserting a comb
+        if ((dMax - dMin) > 3) {
+            dMin++;
+            dMax--;
+        }
 
         /** Number of vertical samples to collect */
         int sampleCount = -1 + (int) Math.rint((double) pictureWidth / params.samplingDx);

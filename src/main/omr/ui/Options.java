@@ -46,6 +46,8 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * Class {@code Options} defines the user interface to edit application constants.
@@ -79,6 +81,28 @@ public class Options
 
     /** Current user position in the relevant rows. */
     private Integer rowIndex;
+
+    /** Listener on searchField modif. */
+    private DocumentListener docListener = new DocumentListener()
+    {
+        @Override
+        public void changedUpdate (DocumentEvent e)
+        {
+            rowIndex = null;
+        }
+
+        @Override
+        public void insertUpdate (DocumentEvent e)
+        {
+            rowIndex = null;
+        }
+
+        @Override
+        public void removeUpdate (DocumentEvent e)
+        {
+            rowIndex = null;
+        }
+    };
 
     /** Dump */
     private final AbstractAction dumping = new AbstractAction()
@@ -232,6 +256,7 @@ public class Options
         toolBar.add(searchField);
         inputMap.put(KeyStroke.getKeyStroke("ctrl F"), "find");
         actionMap.put("find", find);
+        searchField.getDocument().addDocumentListener(docListener);
 
         // Forward button
         JButton forwardButton = new JButton(forwardSearch);

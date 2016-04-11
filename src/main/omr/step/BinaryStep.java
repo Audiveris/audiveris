@@ -86,6 +86,11 @@ public class BinaryStep
 
         Picture picture = sheet.getPicture();
         ByteProcessor initial = picture.getSource(SourceKey.INITIAL);
+
+        //
+        //        boolean hasGray = hasGray(initial);
+        //        logger.info("hasGray: {}", hasGray);
+        //
         FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
         logger.debug("{}{}", sheet.getLogPrefix(), "Binarization");
         sheet.getStub().getFilterParam().setActual(desc);
@@ -116,6 +121,28 @@ public class BinaryStep
     public SheetTab getSheetTab ()
     {
         return SheetTab.BINARY_TAB;
+    }
+
+    //---------//
+    // hasGray //
+    //---------//
+    /**
+     * Check whether the provided source has at least a gray pixel.
+     *
+     * @param source the source to inspect
+     * @return true if at least one pixel is neither black nor white
+     */
+    private boolean hasGray (ByteProcessor source)
+    {
+        for (int i = source.getPixelCount() - 1; i >= 0; i--) {
+            int val = source.get(i);
+
+            if ((val != 0) && (val != 255)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

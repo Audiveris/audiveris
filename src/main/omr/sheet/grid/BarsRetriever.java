@@ -2325,7 +2325,7 @@ public class BarsRetriever
             }
 
             if (!toRemove.isEmpty()) {
-                logger.info("Staff#{} removing curved {}", projector.getStaff().getId(), toRemove);
+                logger.debug("Staff#{} removing curved {}", projector.getStaff().getId(), toRemove);
                 projector.removePeaks(toRemove);
             }
         }

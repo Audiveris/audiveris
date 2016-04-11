@@ -108,15 +108,6 @@ public class ScaleBuilder
     /** Absolute population percentage for validating an extremum. */
     private final double quorumRatio = constants.quorumRatio.getValue();
 
-    /** Relative population percentage for reading foreground spread. */
-    private final double foreSpreadRatio = constants.foreSpreadRatio.getValue();
-
-    /** Relative population percentage for reading background spread. */
-    private final double backSpreadRatio = constants.backSpreadRatio.getValue();
-
-    /** Relative population percentage for reading pair spread. */
-    private final double bothSpreadRatio = constants.bothSpreadRatio.getValue();
-
     /** Most frequent length of vertical foreground runs found. */
     private PeakEntry<Double> forePeak;
 
@@ -306,10 +297,10 @@ public class ScaleBuilder
     //------------------//
     private Scale.Range computeInterline ()
     {
-        if ((forePeak != null) && (backPeak != null)) {
-            int min = (int) Math.rint(forePeak.getKey().first + backPeak.getKey().first);
-            int best = (int) Math.rint(forePeak.getKey().best + backPeak.getKey().best);
-            int max = (int) Math.rint(forePeak.getKey().second + backPeak.getKey().second);
+        if (bothPeak != null) {
+            int min = (int) Math.rint(bothPeak.getKey().first);
+            int best = (int) Math.rint(bothPeak.getKey().best);
+            int max = (int) Math.rint(bothPeak.getKey().second);
 
             return new Scale.Range(min, best, max);
         } else {
@@ -405,7 +396,7 @@ public class ScaleBuilder
     {
         StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
         // Foreground peak
-        forePeak = foreHisto.getPeak(quorumRatio, foreSpreadRatio, 0);
+        forePeak = foreHisto.getPeak(quorumRatio, constants.foreSpreadRatio.getValue(), 0);
         sb.append("fore:").append(forePeak);
 
         if (forePeak.getValue() == 1d) {
@@ -415,19 +406,19 @@ public class ScaleBuilder
         }
 
         // Pair peak
-        bothPeak = bothHisto.getPeak(quorumRatio, bothSpreadRatio, 0);
+        bothPeak = bothHisto.getPeak(quorumRatio, constants.bothSpreadRatio.getValue(), 0);
 
         // Background peak
-        backPeak = backHisto.getPeak(quorumRatio, backSpreadRatio, 0);
+        backPeak = backHisto.getPeak(quorumRatio, constants.backSpreadRatio.getValue(), 0);
 
         if (backPeak.getValue() == 1d) {
-            String msg = "All image pixels are background." + " Check binarization parameters";
+            String msg = "All image pixels are background. Check binarization parameters";
             logger.warn(msg);
             throw new StepException(msg);
         }
 
         // Second background peak?
-        secondBackPeak = backHisto.getPeak(quorumRatio, backSpreadRatio, 1);
+        secondBackPeak = backHisto.getPeak(quorumRatio, constants.backSpreadRatio.getValue(), 1);
 
         if (secondBackPeak != null) {
             // Check whether we should merge with first foreground peak
@@ -510,12 +501,8 @@ public class ScaleBuilder
                 "Relative ratio of best count for background spread reading");
 
         private final Constant.Ratio bothSpreadRatio = new Constant.Ratio(
-                0.15,
+                0.2,
                 "Relative ratio of best count for both spread reading");
-
-        private final Constant.Ratio spreadFactor = new Constant.Ratio(
-                1.0,
-                "Factor applied on line thickness spread");
 
         private final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
                 2.5,
@@ -524,10 +511,6 @@ public class ScaleBuilder
         private final Constant.Ratio maxSecondRatio = new Constant.Ratio(
                 2.0,
                 "Maximum ratio between second and first background peak");
-
-        private final Constant.Boolean disposeImage = new Constant.Boolean(
-                true,
-                "Should we dispose of original image once binarized?");
 
         private final Constant.Ratio beamAsBackRatio = new Constant.Ratio(
                 0.75,
@@ -587,12 +570,12 @@ public class ScaleBuilder
             new HistogramPlotter(sheet, "vertical both", both, bothHisto, bothPeak, null, upper).plot(
                     new Point(0, 0),
                     xLabel,
-                    bothSpreadRatio,
+                    constants.bothSpreadRatio.getValue(),
                     quorumRatio);
             new HistogramPlotter(sheet, "vertical black", fore, foreHisto, forePeak, null, upper).plot(
                     new Point(20, 20),
                     xLabel,
-                    foreSpreadRatio,
+                    constants.foreSpreadRatio.getValue(),
                     quorumRatio);
             new HistogramPlotter(
                     sheet,
@@ -601,7 +584,11 @@ public class ScaleBuilder
                     backHisto,
                     backPeak,
                     secondBackPeak,
-                    upper).plot(new Point(40, 40), xLabel, backSpreadRatio, quorumRatio);
+                    upper).plot(
+                    new Point(40, 40),
+                    xLabel,
+                    constants.backSpreadRatio.getValue(),
+                    quorumRatio);
         }
 
         //-----------------//

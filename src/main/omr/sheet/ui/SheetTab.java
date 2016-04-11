@@ -30,7 +30,8 @@ public enum SheetTab
     LEDGER_TAB("Ledgers"),
     SKELETON_TAB("Skeleton"),
     TEMPLATE_TAB("Templates"),
-    NO_STAFF_TAB("NoStaff");
+    NO_STAFF_TAB("NoStaff"),
+    STAFF_LINE_TAB("StaffLineGlyphs");
 
     public final String label;
 

@@ -30,7 +30,7 @@ public class FilamentComb
     /** Series of filaments involved. */
     private final List<StaffFilament> filaments;
 
-    /** Ordinate value for each filament. */
+    /** Ordinate value for each filament. (kept parallel to filaments list) */
     private final List<Double> ys;
 
     /** To save processing. */

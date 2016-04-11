@@ -40,7 +40,6 @@ import omr.sheet.Staff;
 import omr.sheet.StaffManager;
 import omr.sheet.grid.StaffProjector;
 import omr.sheet.stem.StemScaler;
-
 import static omr.sheet.ui.StubDependent.BOOK_IDLE;
 import static omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static omr.sheet.ui.StubDependent.STUB_IDLE;
@@ -491,6 +490,34 @@ public class BookActions
     {
         SheetStub stub = StubsController.getCurrentStub();
         ((BasicSheet) stub.getSheet()).createPictureView();
+    }
+
+    //------------------------//
+    // displayStaffLineGlyphs //
+    //------------------------//
+    /**
+     * Action that allows to display the view on staff underlying glyphs.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public void displayStaffLineGlyphs (ActionEvent e)
+    {
+        SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub != null) {
+            SheetAssembly assembly = stub.getAssembly();
+
+            if (assembly.getPane(SheetTab.STAFF_LINE_TAB.label) == null) {
+                Sheet sheet = stub.getSheet(); // This may load the sheet...
+                assembly.addViewTab(
+                        SheetTab.STAFF_LINE_TAB,
+                        new ScrollImageView(
+                                sheet,
+                                new ImageView(sheet.getPicture().buildStaffLineGlyphsImage())),
+                        new BoardsPane(new PixelBoard(sheet)));
+            }
+        }
     }
 
     //----------//
@@ -1383,8 +1410,7 @@ public class BookActions
      */
     private static boolean confirmed (Path target)
     {
-        return (!Files.exists(target))
-               || OMR.gui.displayConfirmation("Overwrite " + target + "?");
+        return (!Files.exists(target)) || OMR.gui.displayConfirmation("Overwrite " + target + "?");
     }
 
     //--------//
@@ -1914,10 +1940,11 @@ public class BookActions
                 throws InterruptedException
         {
             throw new RuntimeException("No longer implemented!");
-//            SheetStub stub = StubsController.getCurrentStub();
-//            SampleRepository.getInstance().recordSheetGlyphs(stub.getSheet(), false);
-//
-//            return null;
+
+            //            SheetStub stub = StubsController.getCurrentStub();
+            //            SampleRepository.getInstance().recordSheetGlyphs(stub.getSheet(), false);
+            //
+            //            return null;
         }
     }
 

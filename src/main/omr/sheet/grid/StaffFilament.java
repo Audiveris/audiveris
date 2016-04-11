@@ -61,10 +61,7 @@ public class StaffFilament
     /** The line cluster this filament is part of, if any. */
     private LineCluster cluster;
 
-    /**
-     * Relative position in cluster.
-     * (relevant only if cluster is not null)
-     */
+    /** Relative position in cluster. (relevant only if cluster is not null) */
     private int clusterPos;
 
     //~ Constructors -------------------------------------------------------------------------------

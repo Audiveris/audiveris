@@ -128,7 +128,7 @@ public abstract class StepMonitoring
                         stub.getAssembly().selectViewTab(step.getSheetTab());
                     }
 
-                            // Call attention to this sheet (only if displayed),
+                    // Call attention to this sheet (only if displayed),
                     // so that score-dependent actions can get enabled.
                     StubsController ctrl = StubsController.getInstance();
                     SheetStub currentStub = ctrl.getSelectedStub();

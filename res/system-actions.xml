@@ -45,6 +45,7 @@
     <action domain="SHEET" section="25" class="omr.sheet.ui.BookActions" method="displayPicture"/>
     <action domain="SHEET" section="25" class="omr.sheet.ui.BookActions" method="displayData"/>
     <action domain="SHEET" section="25" class="omr.sheet.ui.BookActions" method="displayNoStaff"/>
+    <action domain="SHEET" section="25" class="omr.sheet.ui.BookActions" method="displayStaffLineGlyphs"/>
     <action domain="SHEET" section="30" class="omr.sheet.ui.BookActions" method="printSheetAs"/>
     <action domain="SHEET" section="40" class="omr.sheet.ui.BookActions" method="exportSheetAs"/>
 

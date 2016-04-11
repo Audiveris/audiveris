@@ -75,23 +75,28 @@ public class RunTableHolder
     public RunTable getData (Sheet sheet)
     {
         if (data == null) {
-            try {
-                JAXBContext jaxbContext = JAXBContext.newInstance(RunTable.class);
-                Unmarshaller um = jaxbContext.createUnmarshaller();
+            synchronized (this) {
+                // Double-check is needed!
+                if (data == null) {
+                    try {
+                        JAXBContext jaxbContext = JAXBContext.newInstance(RunTable.class);
+                        Unmarshaller um = jaxbContext.createUnmarshaller();
 
-                // Open project file system
-                Path dataFile = sheet.getBook().openSheetFolder(sheet.getNumber())
-                        .resolve(pathString);
-                logger.debug("path: {}", dataFile);
+                        // Open project file system
+                        Path dataFile = sheet.getBook().openSheetFolder(sheet.getNumber())
+                                .resolve(pathString);
+                        logger.debug("path: {}", dataFile);
 
-                InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
-                data = (RunTable) um.unmarshal(is);
-                is.close();
-                // Close project file system
-                dataFile.getFileSystem().close();
-                logger.info("Loaded {}", dataFile);
-            } catch (Exception ex) {
-                logger.warn("Error unmarshalling from " + pathString, ex);
+                        InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
+                        data = (RunTable) um.unmarshal(is);
+                        is.close();
+                        // Close project file system
+                        dataFile.getFileSystem().close();
+                        logger.info("Loaded {}", dataFile);
+                    } catch (Exception ex) {
+                        logger.warn("Error unmarshalling from " + pathString, ex);
+                    }
+                }
             }
         }
 

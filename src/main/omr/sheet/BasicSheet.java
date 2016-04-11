@@ -269,7 +269,7 @@ public class BasicSheet
     @Override
     public boolean addItemRenderer (ItemRenderer renderer)
     {
-        if (renderer != null && OMR.gui != null) {
+        if ((renderer != null) && (OMR.gui != null)) {
             return itemRenderers.add(new WeakItemRenderer(renderer));
 
             ///return itemRenderers.add(renderer);
@@ -1163,10 +1163,7 @@ public class BasicSheet
         } catch (Exception ex) {
             logger.warn(getLogPrefix() + "Error in performing " + mySteps + " " + ex, ex);
         } finally {
-            // Make sure we reset the sheet "current" step, always.
-            setCurrentStep(null);
             stub.setModified(true); // At end of processing
-
             StepMonitoring.notifyStop();
 
             if (constants.printWatch.isSet()) {
@@ -1218,15 +1215,16 @@ public class BasicSheet
             // Standard processing on an existing sheet
             step.doit(systems, this);
 
-            done(step); // Full completion
-
             final long stopTime = System.currentTimeMillis();
             final long duration = stopTime - startTime;
             logger.debug("{}{} completed in {} ms", getLogPrefix(), step, duration);
+
+            done(step); // Full completion
         } catch (Throwable ex) {
             logger.warn("doOneStep error in " + step + " " + ex, ex);
             throw ex;
         } finally {
+            setCurrentStep(null);
             StepMonitoring.notifyStep(this, step); // Stop
         }
     }

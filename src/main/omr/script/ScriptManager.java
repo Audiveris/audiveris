@@ -132,7 +132,6 @@ public class ScriptManager
                     book.close();
                 }
             }
-
         }
 
         if (script == null) {
