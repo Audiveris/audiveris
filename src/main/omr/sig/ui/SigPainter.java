@@ -23,13 +23,14 @@ import omr.sheet.SystemInfo;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractBeamInter;
+import omr.sig.inter.AbstractChordInter;
+import omr.sig.inter.AbstractFlagInter;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.BarConnectorInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.BraceInter;
 import omr.sig.inter.BracketConnectorInter;
 import omr.sig.inter.BracketInter;
-import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.EndingInter;
 import omr.sig.inter.Inter;
@@ -50,19 +51,15 @@ import omr.sig.relation.Relation;
 import omr.text.FontInfo;
 
 import omr.ui.symbol.Alignment;
-
 import static omr.ui.symbol.Alignment.*;
-
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.OmrFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
-
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 import static omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
-
 import omr.ui.symbol.TextFont;
 
 import org.slf4j.Logger;
@@ -81,7 +78,6 @@ import java.awt.font.TextLayout;
 import java.awt.geom.CubicCurve2D;
 import java.util.HashSet;
 import java.util.Set;
-import omr.sig.inter.AbstractFlagInter;
 
 /**
  * Class {@code SigPainter} paints all the {@link Inter} instances of a SIG.
@@ -150,6 +146,8 @@ public class SigPainter
     //---------//
     public void process (SIGraph sig)
     {
+        final int bracketGrowth = 2 * sig.getSystem().getSheet().getInterline();
+
         // Use a COPY of vertices, to reduce risks of concurrent modifications (but not all...)
         Set<Inter> copy = new HashSet<Inter>(sig.vertexSet());
 
@@ -157,8 +155,16 @@ public class SigPainter
             if (!inter.isDeleted()) {
                 Rectangle bounds = inter.getBounds();
 
-                if ((bounds != null) && ((clip == null) || clip.intersects(bounds))) {
-                    inter.accept(this);
+                if (bounds != null) {
+                    // Dirty hack to make sure bracket serifs are fully painted
+                    // (despite the fact that bracket serif is not included in their bounds)
+                    if (inter.getShape() == Shape.BRACKET) {
+                        bounds.grow(bracketGrowth, bracketGrowth);
+                    }
+
+                    if ((clip == null) || clip.intersects(bounds)) {
+                        inter.accept(this);
+                    }
                 }
             }
         }

@@ -482,7 +482,6 @@ public class SymbolsEditor
             final PaintingParameters painting = PaintingParameters.getInstance();
 
             if (painting.isInputPainting()) {
-                //                if (sheet.isDone(Step.GRID)) {
                 // Sections
                 final boolean drawBorders = ViewParameters.getInstance().isSectionMode();
                 final Stroke oldStroke = (drawBorders) ? UIUtil.setAbsoluteStroke(g, 1f) : null;

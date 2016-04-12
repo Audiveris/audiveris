@@ -106,6 +106,12 @@ public abstract class StaffPeak
     /** Underlying filament. */
     protected Filament filament;
 
+    /** Top serif filament, if any. */
+    private Filament topSerif;
+
+    /** Bottom serif filament, if any. */
+    private Filament bottomSerif;
+
     /** Corresponding inter, if any. */
     protected Inter inter;
 
@@ -136,6 +142,33 @@ public abstract class StaffPeak
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // isSet //
+    //-------//
+    /**
+     * Check whether the provided attribute is set to this instance.
+     *
+     * @param attr provided attribute
+     * @return true if set
+     */
+    public final boolean isSet (Attribute attr)
+    {
+        return attrs.contains(attr);
+    }
+
+    //-----//
+    // set //
+    //-----//
+    /**
+     * Set the provided attribute to this instance.
+     *
+     * @param attr provided attribute
+     */
+    public final void set (Attribute attr)
+    {
+        attrs.add(attr);
+    }
+
     //-----------//
     // compareTo //
     //-----------//
@@ -155,6 +188,17 @@ public abstract class StaffPeak
     public int getBottom ()
     {
         return bottom;
+    }
+
+    //----------------//
+    // getBottomSerif //
+    //----------------//
+    /**
+     * @return the bottomSerif
+     */
+    public Filament getBottomSerif ()
+    {
+        return bottomSerif;
     }
 
     //-----------//
@@ -240,6 +284,17 @@ public abstract class StaffPeak
         return top;
     }
 
+    //-------------//
+    // getTopSerif //
+    //-------------//
+    /**
+     * @return the topSerif
+     */
+    public Filament getTopSerif ()
+    {
+        return topSerif;
+    }
+
     //----------//
     // getWidth //
     //----------//
@@ -251,17 +306,17 @@ public abstract class StaffPeak
     //----------//
     // isBeyond //
     //----------//
-    public boolean isBeyond (VerticalSide side)
+    public boolean isBeyond ()
     {
-        return isSet((side == TOP) ? BEYOND_TOP : BEYOND_BOTTOM);
+        return isSet(BEYOND_TOP) || isSet(BEYOND_BOTTOM);
     }
 
     //----------//
     // isBeyond //
     //----------//
-    public boolean isBeyond ()
+    public boolean isBeyond (VerticalSide side)
     {
-        return isSet(BEYOND_TOP) || isSet(BEYOND_BOTTOM);
+        return isSet((side == TOP) ? BEYOND_TOP : BEYOND_BOTTOM);
     }
 
     //------------//
@@ -305,20 +360,6 @@ public abstract class StaffPeak
         return isSet((side == TOP) ? BRACKET_TOP : BRACKET_BOTTOM);
     }
 
-    //-------//
-    // isSet //
-    //-------//
-    /**
-     * Check whether the provided attribute is set to this instance.
-     *
-     * @param attr provided attribute
-     * @return true if set
-     */
-    public final boolean isSet (Attribute attr)
-    {
-        return attrs.contains(attr);
-    }
-
     //------------//
     // isStaffEnd //
     //------------//
@@ -333,19 +374,6 @@ public abstract class StaffPeak
     public void render (Graphics2D g)
     {
         g.fillRect(start, top, stop - start + 1, bottom - top + 1);
-    }
-
-    //-----//
-    // set //
-    //-----//
-    /**
-     * Set the provided attribute to this instance.
-     *
-     * @param attr provided attribute
-     */
-    public final void set (Attribute attr)
-    {
-        attrs.add(attr);
     }
 
     //-----------//
@@ -367,11 +395,19 @@ public abstract class StaffPeak
     /**
      * Set peak as bracket end on provided side.
      *
-     * @param side provided end side
+     * @param side  provided end side
+     * @param serif the serif filament
      */
-    public void setBracketEnd (VerticalSide side)
+    public void setBracketEnd (VerticalSide side,
+                               Filament serif)
     {
-        set((side == TOP) ? BRACKET_TOP : BRACKET_BOTTOM);
+        if (side == TOP) {
+            set(BRACKET_TOP);
+            topSerif = serif;
+        } else {
+            set(BRACKET_BOTTOM);
+            bottomSerif = serif;
+        }
     }
 
     //-------------//
@@ -411,7 +447,7 @@ public abstract class StaffPeak
         sb.append(")");
 
         if (filament != null) {
-            sb.append(" glyph#").append(filament.getId());
+            sb.append(" fil#").append(filament.getId());
         }
 
         sb.append(internals());

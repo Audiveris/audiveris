@@ -233,7 +233,7 @@ public class BarsRetriever
         // Build core glyph for each peak
         buildBarSticks();
 
-        // Remove every peak that looks like a curved entity (such as brace portion)
+        // Remove any peak that looks like a curved entity (brace portion). TODO: Not reliable!!!
         purgeCurvedPeaks();
 
         // Find all bar (or bracket) alignments across staves
@@ -248,6 +248,17 @@ public class BarsRetriever
         // Purge alignments incompatible with connections
         purgeAlignments();
 
+        // Create systems from bar connections
+        SystemManager mgr = sheet.getSystemManager();
+        mgr.setSystems(createSystems(getSystemTops()));
+        logger.info("{}Systems: {}", sheet.getLogPrefix(), mgr.getSystemsString());
+
+        // Purge alignments across systems, they are not relevant
+        purgeCrossAlignments();
+
+        // Check initial peaks (to remove brace portions)
+        checkInitialPeaks();
+
         // Detect top and bottom portions of brackets
         detectBracketEnds();
 
@@ -259,17 +270,6 @@ public class BarsRetriever
 
         // Purge long peaks (and delete their alignments/connections)
         purgeLongPeaks();
-
-        // Create systems from bar connections
-        SystemManager mgr = sheet.getSystemManager();
-        mgr.setSystems(createSystems(getSystemTops()));
-        logger.info("{}Systems: {}", sheet.getLogPrefix(), mgr.getSystemsString());
-
-        // Purge alignments across systems, they are not relevant
-        purgeCrossAlignments();
-
-        // Check initial peaks (which could be brace portions)
-        checkInitialPeaks();
 
         // Define precisely all staff side abscissae
         refineSides();
@@ -1142,11 +1142,13 @@ public class BarsRetriever
                 double ext = extensionOf(peak, side);
 
                 // Check for serif shape
-                //TODO: perhaps record serif glyph in peak (so that it can be easily erased)?
-                if ((ext <= params.maxBracketExtension) && hasSerif(staff, peak, nextPeak, side)) {
+                Filament serif;
+
+                if ((ext <= params.maxBracketExtension)
+                    && (null != (serif = getSerif(staff, peak, nextPeak, side)))) {
                     logger.debug("Staff#{} {} bracket end", staff.getId(), side);
 
-                    peak.setBracketEnd(side);
+                    peak.setBracketEnd(side, serif);
                 }
             }
         }
@@ -1467,6 +1469,95 @@ public class BarsRetriever
         return sections;
     }
 
+    //----------//
+    // getSerif //
+    //----------//
+    /**
+     * Check whether the provided peak glyph exhibits a serif on desired side.
+     * Define a region of interest just beyond glyph end and look for sections contained in roi.
+     * Build a glyph from connected sections and check its shape.
+     *
+     * @param peak     provided peak
+     * @param nextPeak following peak, if any
+     * @param side     TOP or BOTTOM
+     * @return serif filament if serif was detected
+     */
+    private Filament getSerif (Staff staff,
+                               StaffPeak.Bar peak,
+                               StaffPeak.Bar nextPeak,
+                               VerticalSide side)
+    {
+        // Constants
+        final int halfLine = (int) Math.ceil(scale.getMaxFore() / 2.0);
+
+        // Define lookup region for serif
+        final Filament barFilament = peak.getFilament();
+        final Rectangle glyphBox = barFilament.getBounds();
+        final int yBox = (side == TOP)
+                ? (Math.min(
+                        glyphBox.y + params.serifThickness,
+                        peak.getTop() - halfLine) - params.serifRoiHeight)
+                : Math.max(
+                        (glyphBox.y + glyphBox.height) - params.serifThickness,
+                        peak.getBottom() + halfLine);
+        final Rectangle roi = new Rectangle(
+                peak.getStop() + 1,
+                yBox,
+                params.serifRoiWidth,
+                params.serifRoiHeight);
+        barFilament.addAttachment(((side == TOP) ? "t" : "b") + "Serif", roi);
+
+        // Look for intersected sections
+        // Remove sections from bar peak (and from next peak if any)
+        Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
+        Set<Section> sections = hLag.intersectedSections(roi);
+        sections.addAll(vLag.intersectedSections(roi));
+        sections.removeAll(barFilament.getMembers());
+
+        if (nextPeak != null) {
+            sections.removeAll(nextPeak.getFilament().getMembers());
+        }
+
+        if (sections.isEmpty()) {
+            return null;
+        }
+
+        // Retrieve serif glyph from sections
+        Filament serif = buildSerifFilament(staff, sections, side, roi);
+        sheet.getFilamentIndex().register(serif);
+        serif.computeLine();
+
+        double slope = serif.getSlope();
+        logger.debug(
+                "Staff#{} {} {} serif#{} weight:{} slope:{}",
+                staff.getId(),
+                peak,
+                side,
+                serif.getId(),
+                serif.getWeight(),
+                slope);
+
+        if (serif.getWeight() < params.serifMinWeight) {
+            logger.info(
+                    "Staff#{} serif normalized weight too small {} vs {}",
+                    staff.getId(),
+                    serif.getNormalizedWeight(scale.getInterline()),
+                    constants.serifMinWeight.getValue());
+
+            return null;
+        }
+
+        int dir = (side == TOP) ? (-1) : 1;
+
+        if ((slope * dir) < params.serifMinSlope) {
+            logger.info("Staff#{} serif slope too small {}", staff.getId(), slope * dir);
+
+            return null;
+        }
+
+        return serif;
+    }
+
     //---------------//
     // getSystemTops //
     //---------------//
@@ -1628,95 +1719,6 @@ public class BarsRetriever
                 }
             }
         }
-    }
-
-    //----------//
-    // hasSerif //
-    //----------//
-    /**
-     * Check whether the provided peak glyph exhibits a serif on desired side.
-     * Define a region of interest just beyond glyph end and look for sections contained in roi.
-     * Build a glyph from connected sections and check its shape.
-     *
-     * @param peak     provided peak
-     * @param nextPeak following peak, if any
-     * @param side     TOP or BOTTOM
-     * @return true if serif is detected
-     */
-    private boolean hasSerif (Staff staff,
-                              StaffPeak.Bar peak,
-                              StaffPeak.Bar nextPeak,
-                              VerticalSide side)
-    {
-        // Constants
-        final int halfLine = (int) Math.ceil(scale.getMaxFore() / 2.0);
-
-        // Define lookup region for serif
-        final Filament barFilament = peak.getFilament();
-        final Rectangle glyphBox = barFilament.getBounds();
-        final int yBox = (side == TOP)
-                ? (Math.min(
-                        glyphBox.y + params.serifThickness,
-                        peak.getTop() - halfLine) - params.serifRoiHeight)
-                : Math.max(
-                        (glyphBox.y + glyphBox.height) - params.serifThickness,
-                        peak.getBottom() + halfLine);
-        final Rectangle roi = new Rectangle(
-                peak.getStop() + 1,
-                yBox,
-                params.serifRoiWidth,
-                params.serifRoiHeight);
-        barFilament.addAttachment(((side == TOP) ? "t" : "b") + "Serif", roi);
-
-        // Look for intersected sections
-        // Remove sections from bar peak (and from next peak if any)
-        Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
-        Set<Section> sections = hLag.intersectedSections(roi);
-        sections.addAll(vLag.intersectedSections(roi));
-        sections.removeAll(barFilament.getMembers());
-
-        if (nextPeak != null) {
-            sections.removeAll(nextPeak.getFilament().getMembers());
-        }
-
-        if (sections.isEmpty()) {
-            return false;
-        }
-
-        // Retrieve serif glyph from sections
-        Filament serif = buildSerifFilament(staff, sections, side, roi);
-        sheet.getFilamentIndex().register(serif);
-        serif.computeLine();
-
-        double slope = serif.getSlope();
-        logger.debug(
-                "Staff#{} {} {} serif#{} weight:{} slope:{}",
-                staff.getId(),
-                peak,
-                side,
-                serif.getId(),
-                serif.getWeight(),
-                slope);
-
-        if (serif.getWeight() < params.serifMinWeight) {
-            logger.info(
-                    "Staff#{} serif normalized weight too small {} vs {}",
-                    staff.getId(),
-                    serif.getNormalizedWeight(scale.getInterline()),
-                    constants.serifMinWeight.getValue());
-
-            return false;
-        }
-
-        int dir = (side == TOP) ? (-1) : 1;
-
-        if ((slope * dir) < params.serifMinSlope) {
-            logger.info("Staff#{} serif slope too small {}", staff.getId(), slope * dir);
-
-            return false;
-        }
-
-        return true;
     }
 
     //-----------//
@@ -2311,12 +2313,12 @@ public class BarsRetriever
             List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
 
             for (StaffPeak peak : projector.getPeaks()) {
-                Filament glyph = (Filament) peak.getFilament();
-                double curvature = glyph.getMeanCurvature();
+                Filament fil = (Filament) peak.getFilament();
+                double curvature = fil.getMeanCurvature();
 
                 if (curvature < params.minBarCurvature) {
-                    if (glyph.isVip()) {
-                        logger.info("VIP removing curved {} glyph#{}", peak, glyph.getId());
+                    if (fil.isVip()) {
+                        logger.info("VIP removing curved {} glyph#{}", peak, fil.getId());
                     }
 
                     peak.set(BRACE);

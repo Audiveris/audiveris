@@ -306,7 +306,13 @@ public class StaffProjector
     //-------------//
     public void removePeaks (Collection<? extends StaffPeak> toRemove)
     {
-        peaks.removeAll(toRemove);
+        for (StaffPeak peak : toRemove) {
+            if ((peak.getFilament() != null) && peak.getFilament().isVip()) {
+                logger.info("VIP on staff#{} removing {}", staff.getId(), peak);
+            }
+
+            peaks.remove(peak);
+        }
     }
 
     //----------//
@@ -727,18 +733,25 @@ public class StaffProjector
         for (int x = x1; (dir * (x2 - x)) >= 0; x += dir) {
             int der = projection.getDerivative(x);
 
-            if ((dir * (bestDer - der)) > 0) {
-                bestDer = der;
-                bestX = x;
-            }
-
             // Check we are still higher than chunk level
             int val = projection.getValue(x);
 
             if (val < params.chunkThreshold) {
+                if ((dir * (bestDer - der)) > 0) {
+                    bestDer = der;
+                    bestX = x;
+                }
+
                 break;
             } else if ((val >= params.barThreshold) && (x != x1)) {
                 closePeakFound = true;
+
+                break;
+            }
+
+            if ((dir * (bestDer - der)) > 0) {
+                bestDer = der;
+                bestX = x;
             }
         }
 
