@@ -74,7 +74,7 @@ public class FilamentIndex
         List<Integer> vipIds = IntUtil.parseInts(constants.vipFilaments.getValue());
 
         if (!vipIds.isEmpty()) {
-            logger.info("VIP filaments: {}", vipIds);
+            logger.info("VIP filaments:{} in {}", vipIds, sheet);
             setVipIds(vipIds);
         }
 

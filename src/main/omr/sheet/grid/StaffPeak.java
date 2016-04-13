@@ -368,6 +368,14 @@ public abstract class StaffPeak
         return isSet((side == LEFT) ? STAFF_LEFT_END : STAFF_RIGHT_END);
     }
 
+    //-------//
+    // isVip //
+    //-------//
+    public boolean isVip ()
+    {
+        return (filament != null) && filament.isVip();
+    }
+
     //--------//
     // render //
     //--------//
@@ -449,6 +457,8 @@ public abstract class StaffPeak
         if (filament != null) {
             sb.append(" fil#").append(filament.getId());
         }
+
+        sb.append(" staff#").append(staff.getId());
 
         sb.append(internals());
         sb.append("}");

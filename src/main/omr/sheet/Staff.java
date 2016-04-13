@@ -23,7 +23,6 @@ import omr.run.Orientation;
 
 import omr.sheet.grid.LineInfo;
 import omr.sheet.grid.StaffFilament;
-import omr.sheet.grid.StaffPeak;
 import omr.sheet.header.StaffHeader;
 import omr.sheet.note.NotePosition;
 
@@ -199,9 +198,6 @@ public class Staff
      * (since different staves in a page may exhibit different scales)
      */
     private final Scale specificScale;
-
-    /** Sequence of brace / bracket / bar lines peaks kept. */
-    private List<StaffPeak> peaks;
 
     /** Containing system. */
     @Navigable(false)

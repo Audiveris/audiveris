@@ -50,6 +50,7 @@ import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -139,6 +140,9 @@ public class StaffProjector
     /** Sequence of peaks found. */
     private final List<StaffPeak> peaks = new ArrayList<StaffPeak>();
 
+    /** (Unmodifiable) view on peaks. */
+    private final List<StaffPeak> peaksView = Collections.unmodifiableList(peaks);
+
     /** Count of cumulated foreground pixels, indexed by abscissa. */
     private Projection projection;
 
@@ -167,7 +171,7 @@ public class StaffProjector
     // findBracePeak //
     //---------------//
     /**
-     * Try to find a brace-compatible on left side of provided abscissa.
+     * Try to find a brace-compatible peak on left side of provided abscissa.
      *
      * @param minLeft  provided minimum abscissa on left
      * @param maxRight provided maximum abscissa on right
@@ -215,17 +219,21 @@ public class StaffProjector
     // getPeaks //
     //----------//
     /**
-     * @return the peaks
+     * Get a view on projector peaks.
+     *
+     * @return the (unmodifiable) list of peaks
      */
     public List<StaffPeak> getPeaks ()
     {
-        return peaks;
+        return peaksView;
     }
 
     //----------//
     // getStaff //
     //----------//
     /**
+     * Report the underlying staff for this projector.
+     *
      * @return the staff
      */
     public Staff getStaff ()
@@ -236,6 +244,11 @@ public class StaffProjector
     //-----------------//
     // insertBracePeak //
     //-----------------//
+    /**
+     * (Re-) insert a brace peak at beginning of the peaks sequence.
+     *
+     * @param bracePeak the detected brace peak
+     */
     public void insertBracePeak (StaffPeak.Brace bracePeak)
     {
         peaks.add(0, bracePeak);
@@ -262,11 +275,8 @@ public class StaffProjector
     //---------//
     /**
      * Process the staff projection on x-axis to retrieve peaks that may represent bars.
-     * Peaks found are stored in staff.
-     *
-     * @return the sequence of peaks found
      */
-    public List<StaffPeak> process ()
+    public void process ()
     {
         logger.debug("StaffProjector analyzing staff#{}", staff.getId());
 
@@ -284,15 +294,13 @@ public class StaffProjector
 
         // Retrieve peaks as barline raw candidates
         findPeaks();
-
-        return peaks;
     }
 
     //------------------//
     // refineStaffSides //
     //------------------//
     /**
-     * Use remaining peaks to refine staff sides accordingly.
+     * Use peaks left over to refine abscissae of staff sides accordingly.
      */
     public void refineStaffSides ()
     {
@@ -304,11 +312,16 @@ public class StaffProjector
     //-------------//
     // removePeaks //
     //-------------//
+    /**
+     * Remove some peaks from the sequence of peaks.
+     *
+     * @param toRemove the peaks to remove
+     */
     public void removePeaks (Collection<? extends StaffPeak> toRemove)
     {
         for (StaffPeak peak : toRemove) {
-            if ((peak.getFilament() != null) && peak.getFilament().isVip()) {
-                logger.info("VIP on staff#{} removing {}", staff.getId(), peak);
+            if (peak.isVip()) {
+                logger.info("VIP {} removing {}", this, peak);
             }
 
             peaks.remove(peak);
@@ -330,8 +343,9 @@ public class StaffProjector
     /**
      * Using the current definition on staff lines (made of only long filaments sofar)
      * estimate the cumulated staff line thicknesses for the staff.
-     * Since we may have holes in lines, and short sections have been left apart, the measurement
-     * is under-estimated.
+     * <p>
+     * NOTA: Since we may have holes in lines, and short sections have been left apart, the
+     * measurement is under-estimated.
      *
      * @return the estimate of cumulated lines heights
      */
@@ -702,7 +716,8 @@ public class StaffProjector
      * Use extrema of first derivative to refine peak side abscissa.
      * Maximum for left side, minimum for right side.
      * Absolute derivative value indicates if the peak side is really steep: this should exclude
-     * most of: braces, arpeggiates, stems with heads on left or right side.
+     * most of: braces, arpeggiato, stems with heads on left or right side.
+     * <p>
      * Update: the test on derivative absolute value is not sufficient to discard braces.
      *
      * @param xStart raw abscissa that starts peak
@@ -1010,11 +1025,11 @@ public class StaffProjector
                 "Abscissa margin for refining peak sides");
 
         private final Scale.Fraction minDerivative = new Scale.Fraction(
-                0.75,
+                0.625, ///0.75,
                 "Minimum absolute derivative for peak side");
 
         private final Scale.Fraction barThreshold = new Scale.Fraction(
-                3.0,
+                2.5, ///3.0,
                 "Minimum cumul value to detect bar peak");
 
         private final Scale.Fraction braceThreshold = new Scale.Fraction(
@@ -1052,7 +1067,7 @@ public class StaffProjector
     // Blank //
     //-------//
     /**
-     * A abscissa region where no staff lines are detected and thus indicates possible
+     * An abscissa region where no staff lines are detected and thus indicates possible
      * end of staff.
      */
     private static class Blank

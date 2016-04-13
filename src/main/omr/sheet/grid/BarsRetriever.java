@@ -95,6 +95,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -227,16 +228,16 @@ public class BarsRetriever
     public void process ()
             throws StepException
     {
-        // Individual staff analysis to find bar peaks on x-axis projection
+        // Individual staff analysis to find raw bar peaks on x-axis projection
         findBarPeaks();
 
-        // Build core glyph for each peak
+        // Build core filament for each peak
         buildBarSticks();
 
-        // Remove any peak that looks like a curved entity (brace portion). TODO: Not reliable!!!
+        // Purge any peak that looks like a curved entity (TODO: many false negatives)
         purgeCurvedPeaks();
 
-        // Find all bar (or bracket) alignments across staves
+        // Find all barline (or bracket) alignments across staves
         findAlignments();
 
         // Find all concrete connections across staves
@@ -256,7 +257,7 @@ public class BarsRetriever
         // Purge alignments across systems, they are not relevant
         purgeCrossAlignments();
 
-        // Check initial peaks (to remove brace portions)
+        // Check initial peaks (to remove false barlines that are brace portions on left side)
         checkInitialPeaks();
 
         // Detect top and bottom portions of brackets
@@ -277,6 +278,9 @@ public class BarsRetriever
         // Purge C-clef-based false barlines
         purgeCClefs();
 
+        // Check connections between staves
+        checkNeededConnections();
+
         // In multi-staff systems, delete the isolated peaks
         checkUnalignedPeaks();
 
@@ -286,13 +290,13 @@ public class BarsRetriever
         // Create barline and bracket interpretations within each system
         createInters();
 
-        // Create bar and bracket connection across staves
+        // Create barline and bracket connection across staves
         createConnectionInters();
 
-        // Detect grouped bar lines
+        // Detect grouped barlines
         groupBarlines();
 
-        // Record bars in staff
+        // Record barlines in staff
         recordBars();
 
         // Look for brace portion just before staff left side
@@ -424,7 +428,7 @@ public class BarsRetriever
     /**
      * Build the underlying stick of every peak.
      * <p>
-     * These glyphs are needed to detect those peaks which go past staff height above,
+     * These sticks are needed to detect those peaks which go past staff height above,
      * below, or both, and may rather be stems.
      * They are used also to detect curly peaks that are due to brace portions.
      * <p>
@@ -442,13 +446,24 @@ public class BarsRetriever
         final FilamentIndex filamentIndex = sheet.getFilamentIndex();
 
         for (StaffProjector projector : projectors) {
+            List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
             for (StaffPeak peak : projector.getPeaks()) {
                 // Take proper slice of sections for this peak
                 List<Section> sections = getPeakSections(peak, allSections);
                 Filament filament = factory.buildBarFilament(sections, peak.getBounds());
-                filamentIndex.register(filament);
-                peak.setFilament(filament);
-                logger.debug("Staff#{} {}", projector.getStaff().getId(), peak);
+
+                if (filament != null) {
+                    filamentIndex.register(filament);
+                    peak.setFilament(filament);
+                    logger.debug("Staff#{} {}", projector.getStaff().getId(), peak);
+                } else {
+                    toRemove.add(peak);
+                }
+            }
+
+            if (!toRemove.isEmpty()) {
+                logger.debug("Staff#{} no filament {}", projector.getStaff().getId(), toRemove);
+                projector.removePeaks(toRemove);
             }
         }
     }
@@ -659,6 +674,7 @@ public class BarsRetriever
         ByteProcessor pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
         StaffPeak.Bar p1 = alignment.topPeak;
         StaffPeak.Bar p2 = alignment.bottomPeak;
+        final boolean vip = p1.isVip() || p2.isVip();
 
         // Theoretical lines on left and right sides
         final GeoPath leftLine = new GeoPath(
@@ -672,14 +688,8 @@ public class BarsRetriever
 
         final CoreData data = AreaUtil.verticalCore(pixelFilter, leftLine, rightLine);
 
-        if (p1.getFilament().isVip() || p2.getFilament().isVip()) {
-            logger.info(
-                    "VIP checkConnection S#{} {} and S#{} {} {}",
-                    p1.getStaff().getId(),
-                    p1,
-                    p2.getStaff().getId(),
-                    p2,
-                    data);
+        if (vip) {
+            logger.info("VIP checkConnection {} and {} {}", p1, p2, data);
         }
 
         if ((data.gap <= params.maxConnectionGap)
@@ -693,8 +703,18 @@ public class BarsRetriever
             logger.debug("{} grade:{} impacts:{}", alignment, grade, impacts);
 
             if (grade >= params.minConnectionGrade) {
-                return new BarConnection(alignment, impacts);
+                BarConnection connection = new BarConnection(alignment, impacts);
+
+                if (vip) {
+                    logger.info("VIP {}", connection);
+                }
+
+                return connection;
             }
+        }
+
+        if (vip) {
+            logger.info("VIP no connection between {} and {}", p1, p2);
         }
 
         return null;
@@ -706,7 +726,6 @@ public class BarsRetriever
     /**
      * Only for multi-staff system, check the initial peaks on left side.
      * A brace portion may have been mistaken for a bar.
-     *
      */
     private void checkInitialPeaks ()
     {
@@ -723,14 +742,83 @@ public class BarsRetriever
                             break;
                         }
 
-                        // Here we have a (bar?) peak with no connection at all
-                        logger.debug("Staff#{} removing initial {}", staff.getId(), peak);
+                        // Here we have a (false barline?) peak with no connection at all
+                        if (peak.isVip()) {
+                            logger.info("VIP removing initial {}", peak);
+                        }
+
                         toRemove.add(peak);
                     }
 
                     if (!toRemove.isEmpty()) {
+                        logger.debug("Staff#{} removing initials {}", staff.getId(), toRemove);
                         projector.removePeaks(toRemove);
                     }
+                }
+            }
+        }
+    }
+
+    //------------------------//
+    // checkNeededConnections //
+    //------------------------//
+    /**
+     * If two following staves have some (barline) connections, then all barlines
+     * candidates in these two staves must be connected.
+     * <p>
+     * Otherwise, the candidates are not true barlines (but perhaps stems) and must be discarded.
+     * <p>
+     * TODO: what if a connection is interrupted by some symbol? (direction text for example).
+     * In that case we should check that we have portions of connection (above & below).
+     */
+    private void checkNeededConnections ()
+    {
+        for (Staff staff : staffManager.getStaves()) {
+            final StaffProjector projector = projectorOf(staff);
+            final StaffPeak.Bar leftBar = getPeakEnd(LEFT, projector.getPeaks());
+
+            if (leftBar == null) {
+                continue;
+            }
+
+            for (VerticalSide side : VerticalSide.values()) {
+                List<BarConnection> staffConnections = getConnections(staff, side);
+
+                if (staffConnections.isEmpty()) {
+                    continue;
+                }
+
+                // Build set of connected peaks for this staff on proper side
+                VerticalSide opposite = side.opposite();
+                List<StaffPeak.Bar> connectedPeaks = new ArrayList<StaffPeak.Bar>();
+
+                for (BarConnection connection : staffConnections) {
+                    connectedPeaks.add(connection.getPeak(opposite));
+                }
+
+                // Check that all barlines are connected
+                List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
+
+                for (StaffPeak peak : projector.getPeaks()) {
+                    // Check they are on right side of left bar
+                    if (peak instanceof StaffPeak.Bar && (peak.getStart() > leftBar.getStop())) {
+                        if (!connectedPeaks.contains(peak)) {
+                            if (peak.isVip()) {
+                                logger.info("VIP removing non-connected {}", peak);
+                            }
+
+                            toRemove.add(peak);
+                        }
+                    }
+                }
+
+                if (!toRemove.isEmpty()) {
+                    logger.debug("Staff#{} removing non-connected {}", staff.getId(), toRemove);
+                    projector.removePeaks(toRemove);
+
+                    // Delete the alignments or connections that involved those peaks
+                    purgeRelations(toRemove, alignments);
+                    purgeRelations(toRemove, connections);
                 }
             }
         }
@@ -765,6 +853,10 @@ public class BarsRetriever
                                 peak.set(UNALIGNED);
 
                                 if (deletion) {
+                                    if (peak.isVip()) {
+                                        logger.info("VIP unaligned {}", peak);
+                                    }
+
                                     toRemove.add(peak);
                                 }
                             }
@@ -772,7 +864,7 @@ public class BarsRetriever
                     }
 
                     if (!toRemove.isEmpty()) {
-                        logger.debug("Staff#{} removing isolated {}", staff.getId(), toRemove);
+                        logger.debug("Staff#{} removing unaligneds {}", staff.getId(), toRemove);
                         projector.removePeaks(toRemove);
                     }
                 }
@@ -784,7 +876,7 @@ public class BarsRetriever
     // createConnectionInters //
     //------------------------//
     /**
-     * Populate all systems sigs with connection inters for bar line and brackets.
+     * Populate all systems sigs with connection inters for barline and brackets.
      */
     private void createConnectionInters ()
     {
@@ -1360,6 +1452,39 @@ public class BarsRetriever
         }
     }
 
+    //----------------//
+    // getConnections //
+    //----------------//
+    private List<BarConnection> getConnections (Staff staff,
+                                                VerticalSide side)
+    {
+        final List<BarConnection> list = new ArrayList<BarConnection>();
+        final VerticalSide opposite = side.opposite();
+        final List<StaffPeak> peaks = projectorOf(staff).getPeaks();
+        final StaffPeak.Bar leftBar = getPeakEnd(LEFT, peaks);
+
+        if (leftBar == null) {
+            return list;
+        }
+
+        for (BarConnection connection : connections) {
+            StaffPeak peak = connection.getPeak(opposite);
+
+            if (peak.getStaff() == staff) {
+                // Is this a part-connection, rather than a system-connection?
+                int gap = peak.getStart() - leftBar.getStop() - 1;
+
+                if (gap > params.maxDoubleBarGap) {
+                    list.add(connection);
+                }
+            } else if (peak.getStaff().getId() > staff.getId()) {
+                break; // Since connections are ordered by staff, then abscissa
+            }
+        }
+
+        return list;
+    }
+
     //------------------//
     // getMaxPeaksWidth //
     //------------------//
@@ -1809,7 +1934,7 @@ public class BarsRetriever
     // isPartConnected //
     //-----------------//
     /**
-     * Check whether the provided staff has part-connection on the provided vertical side.
+     * Check whether the provided staff has part-connection on provided vertical side.
      * <p>
      * A part-connection is a connection between two staves, not counting the system-connection on
      * the left side of the staves.
@@ -1821,30 +1946,7 @@ public class BarsRetriever
     private boolean isPartConnected (Staff staff,
                                      VerticalSide side)
     {
-        final VerticalSide opposite = side.opposite();
-        final List<StaffPeak> peaks = projectorOf(staff).getPeaks();
-        final StaffPeak.Bar leftBar = getPeakEnd(LEFT, peaks);
-
-        if (leftBar == null) {
-            return false;
-        }
-
-        for (BarConnection connection : connections) {
-            StaffPeak peak = connection.getPeak(opposite);
-
-            if (peak.getStaff() == staff) {
-                // Is this a part-connection, rather than a system-connection?
-                int gap = peak.getStart() - leftBar.getStop() - 1;
-
-                if (gap > params.maxDoubleBarGap) {
-                    return true;
-                }
-            } else if (peak.getStaff().getId() > staff.getId()) {
-                break; // Since connections are sorted per staff, then abscissa
-            }
-        }
-
-        return false;
+        return !getConnections(staff, side).isEmpty();
     }
 
     //-------------//
@@ -2108,7 +2210,7 @@ public class BarsRetriever
             }
 
             if (!toRemove.isEmpty()) {
-                logger.debug("Purging {}", toRemove);
+                logger.debug("Purging alignments {}", toRemove);
                 alignments.removeAll(toRemove);
             }
         }
@@ -2163,7 +2265,7 @@ public class BarsRetriever
                         && (gap < params.minMeasureWidth)
                         && !isConnected(peak, TOP)
                         && !isConnected(peak, BOTTOM)) {
-                        if (logger.isDebugEnabled() || peak.getFilament().isVip()) {
+                        if (logger.isDebugEnabled() || peak.isVip()) {
                             logger.info("Got a C-Clef peak1 at {}", peak);
                         }
 
@@ -2180,9 +2282,7 @@ public class BarsRetriever
                                 && (gap2 <= params.maxDoubleBarGap)
                                 && !isConnected(peak2, TOP)
                                 && !isConnected(peak2, BOTTOM)) {
-                                if (logger.isDebugEnabled()
-                                    || peak.getFilament().isVip()
-                                    || peak2.getFilament().isVip()) {
+                                if (logger.isDebugEnabled() || peak.isVip() || peak2.isVip()) {
                                     logger.info("Got a C-Clef peak2 at {}", peak2);
                                 }
 
@@ -2215,7 +2315,10 @@ public class BarsRetriever
                             }
                         }
 
-                        projector.removePeaks(toRemove);
+                        if (!toRemove.isEmpty()) {
+                            logger.debug("Staff#{} C-Clef peaks {}", staff.getId(), toRemove);
+                            projector.removePeaks(toRemove);
+                        }
                     } else {
                         measureStart = peak.getStop() + 1;
                     }
@@ -2262,7 +2365,7 @@ public class BarsRetriever
             }
 
             if (!toRemove.isEmpty()) {
-                logger.debug("Purging {}", toRemove);
+                logger.debug("Purging connections {}", toRemove);
                 connections.removeAll(toRemove);
             }
         }
@@ -2318,7 +2421,7 @@ public class BarsRetriever
 
                 if (curvature < params.minBarCurvature) {
                     if (fil.isVip()) {
-                        logger.info("VIP removing curved {} glyph#{}", peak, fil.getId());
+                        logger.info("VIP removing curved {}", peak);
                     }
 
                     peak.set(BRACE);
@@ -2356,10 +2459,6 @@ public class BarsRetriever
             for (StaffPeak p : projector.getPeaks()) {
                 StaffPeak.Bar peak = (StaffPeak.Bar) p;
 
-                if (peak.getFilament().isVip()) {
-                    logger.info("VIP purgeLongPeaks on staff#{} {}", staff.getId(), peak);
-                }
-
                 // Check whether peak goes beyond staff
                 for (VerticalSide side : VerticalSide.values()) {
                     if (peak.isBeyond(side) && !isConnected(peak, side)) {
@@ -2375,11 +2474,8 @@ public class BarsRetriever
                             }
                         }
 
-                        if (peak.getFilament().isVip()) {
-                            logger.info(
-                                    "VIP removed long peak on staff#{} {}",
-                                    staff.getId(),
-                                    peak);
+                        if (peak.isVip()) {
+                            logger.info("VIP removed {} long {}", side, peak);
                         }
 
                         toRemove.add(peak);
@@ -2408,14 +2504,14 @@ public class BarsRetriever
      * @param removedPeaks the peaks removed
      * @param rels         the collection to purge
      */
-    private void purgeRelations (Set<StaffPeak.Bar> removedPeaks,
+    private void purgeRelations (Collection<? extends StaffPeak> removedPeaks,
                                  Set<? extends BarAlignment> rels)
     {
         for (Iterator<? extends BarAlignment> it = rels.iterator(); it.hasNext();) {
             BarAlignment alignment = it.next();
 
             for (VerticalSide side : VerticalSide.values()) {
-                StaffPeak.Bar peak = alignment.getPeak(side);
+                StaffPeak peak = alignment.getPeak(side);
 
                 if (removedPeaks.contains(peak)) {
                     it.remove();

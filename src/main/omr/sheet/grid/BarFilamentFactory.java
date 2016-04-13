@@ -110,7 +110,7 @@ public class BarFilamentFactory
 
             return fil;
         } catch (Exception ex) {
-            logger.warn("FilamentsFactory cannot retrieveLineFilament", ex);
+            logger.warn("BarFilamentFactory cannot buildBarFilament", ex);
 
             return null;
         } finally {

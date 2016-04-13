@@ -668,7 +668,7 @@ public class SystemManager
 
             int partNb = 0;
 
-            for (SystemInfo system : systems) {
+            for (SystemInfo system : page.getSystems()) {
                 partNb = Math.max(partNb, system.getParts().size());
             }
 

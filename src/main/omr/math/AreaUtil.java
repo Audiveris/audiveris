@@ -103,8 +103,8 @@ public abstract class AreaUtil
         final int yMax = (int) Math.floor(leftLimit.getLastPoint().getY());
 
         for (int y = yMin; y <= yMax; y++) {
-            final int xMin = (int) Math.rint(leftLimit.xAtY(y));
-            final int xMax = (int) Math.rint(rightLimit.xAtY(y));
+            final int xMin = (int) Math.floor(leftLimit.xAtY(y));
+            final int xMax = (int) Math.ceil(rightLimit.xAtY(y));
 
             // Make sure the row is not empty
             boolean empty = true;
