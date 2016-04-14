@@ -17,9 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -60,6 +62,46 @@ public class Sections
                 return Integer.signum(s2.getLength(orientation) - s1.getLength(orientation));
             }
         };
+    }
+
+    //-----------------//
+    // indexByPosition //
+    //-----------------//
+    /**
+     * Build an index of provided sections on their starting position.
+     * index[pos] contains the index in list of first section starting at this pos value.
+     *
+     * @param posCount number of position values (typically max pos +1)
+     * @param list     the list of sections to index, assumed to be ordered by full position
+     * @return the index array
+     */
+    public static int[] indexByPosition (int posCount,
+                                         List<? extends Section> list)
+    {
+        ///watch.start("populate starts");
+        // Register sections by their starting pos
+        // 'starts' is a vector parallel to sheet positions (+1 additional cell)
+        // Vector at index p gives the index in 'list' of the first section starting at 'p' (or -1).
+        // And similarly at index 'p+1', either -1 (for no section) or index for row 'p+1'.
+        // Hence, all sections starting  at 'p' are in [starts[p]..starts[p+1][ sublist
+        final int[] starts = new int[posCount + 1];
+        Arrays.fill(starts, 0, starts.length, -1);
+
+        int currentPos = -1;
+
+        for (int i = 0, iBreak = list.size(); i < iBreak; i++) {
+            final Section section = list.get(i);
+            final int pos = section.getFirstPos();
+
+            if (pos > currentPos) {
+                starts[pos] = i;
+                currentPos = pos;
+            }
+        }
+
+        starts[starts.length - 1] = list.size(); // End mark
+
+        return starts;
     }
 
     //---------------------//

@@ -562,7 +562,7 @@ public class SymbolsEditor
 
                 if (filament != null) {
                     for (Section section : filament.getMembers()) {
-                        section.render(g, false, Color.BLUE);
+                        section.render(g, false, Color.BLACK);
                     }
                 }
 

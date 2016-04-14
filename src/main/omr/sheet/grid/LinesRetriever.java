@@ -25,13 +25,17 @@ import omr.lag.JunctionRatioPolicy;
 import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionFactory;
+import omr.lag.Sections;
+import omr.lag.SectionTally;
 
 import omr.math.LineUtil;
 import omr.math.NaturalSpline;
 import omr.math.Population;
 
 import omr.run.Orientation;
+
 import static omr.run.Orientation.*;
+
 import omr.run.Run;
 import omr.run.RunTable;
 
@@ -51,10 +55,15 @@ import omr.ui.util.UIUtil;
 import omr.util.Dumping;
 import omr.util.Entities;
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.StopWatch;
+import omr.util.VerticalSide;
+
+import static omr.util.VerticalSide.TOP;
 
 import ij.process.ByteProcessor;
 
@@ -72,8 +81,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Class {@code LinesRetriever} retrieves the staff lines of a sheet.
@@ -212,7 +223,7 @@ public class LinesRetriever
      * sections left over.
      * <p>
      * When this method is called, the precise staff abscissa endings are known (thanks to staff
-     * projection and bar line handling).
+     * projection and barline handling).
      * Lines must be completed accordingly.
      * Ending points are determined by searching the best vertical fit for a staff pattern of 5 line
      * segments.
@@ -236,6 +247,7 @@ public class LinesRetriever
      *          + fil.addSection(sct)
      *      + polishCurvature()
      *      + fillHoles()
+     *      + includeStickers()
      * </pre>
      */
     public void completeLines ()
@@ -277,6 +289,10 @@ public class LinesRetriever
             // Add intermediate points where needed
             watch.start("fillHoles");
             fillHoles();
+
+            // Include isolated horizontal sticker sections
+            watch.start("includeStickers");
+            includeStickers();
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -761,6 +777,67 @@ public class LinesRetriever
         }
     }
 
+    //----------------//
+    // getAllStickers //
+    //----------------//
+    private List<Section> getAllStickers ()
+    {
+        ///watch.start("index");
+        List<Section> list = new ArrayList<Section>(hLag.getEntities());
+
+        // Remove any (hori) section that is already part of a staff line
+        for (Staff staff : staffManager.getStaves()) {
+            for (LineInfo l : staff.getLines()) {
+                StaffFilament line = (StaffFilament) l;
+                list.removeAll(line.getMembers());
+            }
+        }
+
+        Collections.sort(list, Section.byFullPosition);
+
+        // Build pos-based index
+        final SectionTally<Section> tally = new SectionTally<Section>(sheet.getHeight(), list);
+
+        // Detect sections with connections
+        Set<Section> connected = new HashSet<Section>();
+
+        ///watch.start("connections");
+        for (int i = 0, iBreak = list.size(); i < iBreak; i++) {
+            final Section source = list.get(i);
+            final Run predRun = source.getLastRun();
+            final int predStart = predRun.getStart();
+            final int predStop = predRun.getStop();
+            final int nextPos = source.getFirstPos() + source.getRunCount();
+
+            for (Section target : tally.getSubList(nextPos)) {
+                final Run succRun = target.getFirstRun();
+
+                if (succRun.getStart() > predStop) {
+                    break; // Since sublist is sorted on coord
+                }
+
+                if (succRun.getStop() >= predStart) {
+                    connected.add(source);
+                    connected.add(target);
+                }
+            }
+        }
+
+        // Keep only sections that are 1-pixel high and do not touch any other hori section
+        /// watch.start("purge");
+        list.removeAll(connected);
+
+        List<Section> stickers = new ArrayList<Section>();
+
+        for (Section section : list) {
+            if (section.getRunCount() == 1) {
+                stickers.add(section);
+            }
+        }
+
+        return stickers;
+    }
+
     //---------------------------//
     // includeDiscardedFilaments //
     //---------------------------//
@@ -917,6 +994,74 @@ public class LinesRetriever
         }
     }
 
+    //-----------------//
+    // includeStickers //
+    //-----------------//
+    /**
+     * Horizontal sections of just 1-pixel height, stuck to a staff-line, and not stuck
+     * to any other (horizontal) section are considered as part of the staff-line.
+     * Otherwise these useless tiny sections would impede later symbol recognition.
+     */
+    private void includeStickers ()
+    {
+        final List<Section> stickers = getAllStickers();
+        final SectionTally<Section> tally = new SectionTally<Section>(sheet.getHeight(), stickers);
+
+        for (Staff staff : staffManager.getStaves()) {
+            int lineId = 0;
+
+            for (LineInfo l : staff.getLines()) {
+                lineId++;
+
+                StaffFilament fil = (StaffFilament) l;
+                Set<Section> toAdd = new HashSet<Section>();
+
+                for (Section source : fil.getMembers()) {
+                    for (VerticalSide side : VerticalSide.values()) {
+                        final Run predRun = (side == TOP) ? source.getFirstRun() : source.getLastRun();
+                        final int predStart = predRun.getStart();
+                        final int predStop = predRun.getStop();
+
+                        final int nextPos = (side == TOP) ? (source.getFirstPos() - 1)
+                                : (source.getLastPos() + 1);
+
+                        for (Section target : tally.getSubList(nextPos)) {
+                            final Run succRun = target.getFirstRun();
+
+                            if (succRun.getStart() > predStop) {
+                                break; // Since sublist is sorted on coord
+                            }
+
+                            if (succRun.getStop() >= predStart) {
+                                toAdd.add(target);
+                            }
+                        }
+                    }
+                }
+
+                if (!toAdd.isEmpty()) {
+                    if (logger.isDebugEnabled()) {
+                        logger.info(
+                                "Staff#{} line#{} {}",
+                                staff.getId(),
+                                lineId,
+                                Sections.toString(toAdd));
+                    }
+
+                    // Include sticker sections, while perserving line ending points
+                    final Point2D startPoint = fil.getEndPoint(LEFT);
+                    final Point2D stopPoint = fil.getEndPoint(RIGHT);
+
+                    for (Section sticker : toAdd) {
+                        fil.addSection(sticker);
+                    }
+
+                    fil.setEndingPoints(startPoint, stopPoint);
+                }
+            }
+        }
+    }
+
     //------------------//
     // polishCurvatures //
     //------------------//
@@ -995,6 +1140,7 @@ public class LinesRetriever
                 if (fil.isVip()) {
                     logger.info("VIP {} delta slope {}", fil, String.format("%.3f", slopeDiff));
                 }
+
                 toRemove.add(fil);
             }
         }

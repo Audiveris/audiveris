@@ -130,7 +130,7 @@ public class NestView
 
             if (selectedGlyphs != null) {
                 // Decorations first
-                g.setColor(Color.blue);
+                g.setColor(Color.RED);
 
                 for (Glyph glyph : selectedGlyphs) {
                     // Draw selected glyph in specific color

@@ -15,6 +15,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.lag.Section;
+import omr.lag.SectionTally;
 
 import omr.run.Orientation;
 import omr.run.Run;
@@ -30,9 +31,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+
 import static java.lang.Boolean.TRUE;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -273,56 +275,21 @@ public class StickFactory
 
         watch.start("populate starts");
 
-        // Register sections by their starting pos
-        // 'starts' is a vector parallel to sheet positions (+1 additional cell)
-        // Vector at index p gives the index in 'list' of the first section starting at 'p' (or -1).
-        // And similarly at index 'p+1', either -1 (for no section) or index for column 'p+1'.
-        // Hence, all sections starting  at 'p' are in [starts[p]..starts[p+1][ sublist
-        final int posCount = orientation.isVertical() ? sheet.getWidth() : sheet.getHeight();
-        final int[] starts = new int[posCount + 1];
-        Arrays.fill(starts, 0, starts.length, -1);
-
-        int currentPos = -1;
-
-        for (int i = 0, iBreak = list.size(); i < iBreak; i++) {
-            final Section section = list.get(i);
-            final int pos = section.getFirstPos();
-
-            if (pos > currentPos) {
-                starts[pos] = i;
-                currentPos = pos;
-            }
-        }
-
-        starts[starts.length - 1] = list.size(); // End mark
+        final int posCount = orientation.isVertical() ? sheet.getWidth()
+                : sheet.getHeight();
+        final SectionTally<LinkedSection> tally = new SectionTally<LinkedSection>(posCount, list);
 
         // Detect and record connections
         watch.start("connections");
 
         for (int i = 0, iBreak = list.size(); i < iBreak; i++) {
             final LinkedSection source = list.get(i);
-            final int nextPos = source.getFirstPos() + source.getRunCount();
-            final int iStart = starts[nextPos];
-
-            if (iStart == -1) {
-                continue; // No section at all starting at this pos value
-            }
-
-            int iNextStart = iBreak;
-
-            for (int j = nextPos + 1; j < starts.length; j++) {
-                iNextStart = starts[j];
-
-                if (iNextStart != -1) {
-                    break;
-                }
-            }
-
             final Run predRun = source.getLastRun();
             final int predStart = predRun.getStart();
             final int predStop = predRun.getStop();
+            final int nextPos = source.getFirstPos() + source.getRunCount();
 
-            for (LinkedSection target : list.subList(iStart, iNextStart)) {
+            for (LinkedSection target : tally.getSubList(nextPos)) {
                 final Run succRun = target.getFirstRun();
 
                 if (succRun.getStart() > predStop) {
