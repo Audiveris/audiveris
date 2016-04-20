@@ -307,8 +307,6 @@ public class BarsRetriever
 
         purgeCClefs(); // Purge C-clef-based false barlines
 
-        checkNeededConnections(); // Check connections between staves
-
         checkUnalignedPeaks(); // In multi-staff systems, delete the unaligned peaks
 
         detectBracePortions(); // Detect brace portions at start of staff
@@ -824,67 +822,6 @@ public class BarsRetriever
                         logger.debug("Staff#{} removing initials {}", staff.getId(), toRemove);
                         projector.removePeaks(toRemove);
                     }
-                }
-            }
-        }
-    }
-
-    //------------------------//
-    // checkNeededConnections //
-    //------------------------//
-    /**
-     * If two following staves have some (barline) connections, then all barlines
-     * candidates in these two staves must be connected.
-     * <p>
-     * Otherwise, the candidates are not true barlines (but perhaps stems) and must be discarded.
-     * <p>
-     * TODO: what if a connection is interrupted by some symbol? (direction text for example).
-     * In that case we should check that we have portions of connection (above & below).
-     */
-    private void checkNeededConnections ()
-    {
-        for (Staff staff : staffManager.getStaves()) {
-            final StaffProjector projector = projectorOf(staff);
-            final StaffPeak.Bar leftBar = getPeakEnd(LEFT, projector.getPeaks());
-
-            if (leftBar == null) {
-                continue;
-            }
-
-            for (VerticalSide side : VerticalSide.values()) {
-                List<BarConnection> staffConnections = getConnections(staff, side);
-
-                if (staffConnections.isEmpty()) {
-                    continue;
-                }
-
-                // Build set of connected peaks for this staff on proper side
-                VerticalSide opposite = side.opposite();
-                List<StaffPeak.Bar> connectedPeaks = new ArrayList<StaffPeak.Bar>();
-
-                for (BarConnection connection : staffConnections) {
-                    connectedPeaks.add(connection.getPeak(opposite));
-                }
-
-                // Check that all barlines are connected
-                List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
-
-                for (StaffPeak peak : projector.getPeaks()) {
-                    // Check they are on right side of left bar
-                    if (peak instanceof StaffPeak.Bar && (peak.getStart() > leftBar.getStop())) {
-                        if (!connectedPeaks.contains(peak)) {
-                            if (peak.isVip()) {
-                                logger.info("VIP removing non-connected {}", peak);
-                            }
-
-                            toRemove.add(peak);
-                        }
-                    }
-                }
-
-                if (!toRemove.isEmpty()) {
-                    logger.debug("Staff#{} removing non-connected {}", staff.getId(), toRemove);
-                    projector.removePeaks(toRemove);
                 }
             }
         }
