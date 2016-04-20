@@ -1410,7 +1410,8 @@ public class BarsRetriever
     //--------------------//
     /**
      * For each system, detect the first group of full columns, and use the right-most
-     * one as actual "start column" with defines the precise left limit of staff lines.
+     * (fully connected) one as actual "start column" with defines the precise left
+     * limit of staff lines.
      * <p>
      * When there is no first bar group, or when this group is located within staff width, use only
      * the staff lines horizontal limits as the staff limit.
@@ -1439,7 +1440,9 @@ public class BarsRetriever
                         }
                     }
 
-                    startColumn = column;
+                    if (column.isFullyConnected(peakGraph)) {
+                        startColumn = column;
+                    }
                 }
             }
 
@@ -1455,7 +1458,7 @@ public class BarsRetriever
             if ((firstFull == null)
                 || ((firstFull.getXDsk() - minDsk) > params.maxBarToLinesLeftEnd)) {
                 // Use staff lines as limit (already done)
-            } else {
+            } else if (startColumn != null) {
                 // Use last full column as limit
                 for (StaffPeak peak : startColumn.getPeaks()) {
                     Staff staff = peak.getStaff();

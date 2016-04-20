@@ -20,6 +20,7 @@ import org.jgrapht.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.TreeSet;
 
@@ -121,7 +122,7 @@ public class BarColumn
     //------------//
     // dumpString //
     //-----------//
-    public String dumpString (Graph peakGraph)
+    public String dumpString (Graph<StaffPeak, BarAlignment> peakGraph)
     {
         StringBuilder sb = new StringBuilder("Column ");
 
@@ -235,6 +236,44 @@ public class BarColumn
     public boolean isFull ()
     {
         return getStatus() == Status.FULL;
+    }
+
+    //------------------//
+    // isFullyConnected //
+    //------------------//
+    /**
+     * Report whether this column is full and all its peaks are connected.
+     *
+     * @param peakGraph the graph of all peaks connections
+     * @return true if full and connected
+     */
+    public boolean isFullyConnected (Graph<StaffPeak, BarAlignment> peakGraph)
+    {
+        if (!isFull()) {
+            return false;
+        }
+
+        boolean[] connected = new boolean[peaks.length - 1];
+        Arrays.fill(connected, false);
+
+        for (int i = 0; i < (peaks.length - 1); i++) {
+            StaffPeak top = peaks[i];
+            StaffPeak bottom = peaks[i + 1];
+
+            for (BarAlignment align : peakGraph.getAllEdges(top, bottom)) {
+                if (align instanceof BarConnection) {
+                    connected[i] = true;
+                }
+            }
+        }
+
+        for (boolean bool : connected) {
+            if (!bool) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     //---------//
