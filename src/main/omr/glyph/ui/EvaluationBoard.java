@@ -31,6 +31,7 @@ import omr.ui.selection.EntityListEvent;
 import omr.ui.selection.MouseMovement;
 import omr.ui.selection.SelectionHint;
 import omr.ui.selection.UserEvent;
+import omr.ui.symbol.ShapeSymbol;
 import omr.ui.util.FixedWidthIcon;
 import omr.ui.util.Panel;
 
@@ -246,6 +247,7 @@ public class EvaluationBoard
             if (i != 0) {
                 layout.appendRow(FormSpecs.LINE_GAP_ROWSPEC);
             }
+
             layout.appendRow(FormSpecs.PREF_ROWSPEC);
         }
 
@@ -253,7 +255,7 @@ public class EvaluationBoard
         CellConstraints cst = new CellConstraints();
 
         for (int i = 0; i < visibleButtons; i++) {
-            int r = 2 * i + 1; // --------------------------------
+            int r = (2 * i) + 1; // --------------------------------
             EvalButton evb = selector.buttons.get(i);
             builder.add(evb.grade, cst.xy(5, r));
             builder.add((sheet != null) ? evb.button : evb.field, cst.xyw(7, r, 5));
@@ -362,7 +364,9 @@ public class EvaluationBoard
 
                     button.setText(text);
                     button.setToolTipText(tip);
-                    button.setIcon(new FixedWidthIcon(eval.shape.getDecoratedSymbol()));
+
+                    ShapeSymbol symbol = eval.shape.getDecoratedSymbol();
+                    button.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);
                 } else {
                     if (barred) {
                         field.setBackground(Colors.EVALUATION_BARRED);
@@ -372,7 +376,9 @@ public class EvaluationBoard
 
                     field.setText(text);
                     field.setToolTipText(tip);
-                    field.setIcon(new FixedWidthIcon(eval.shape.getDecoratedSymbol()));
+
+                    ShapeSymbol symbol = eval.shape.getDecoratedSymbol();
+                    field.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);
                 }
 
                 comp.setVisible(true);

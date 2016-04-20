@@ -42,6 +42,8 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+import org.jgrapht.Graph;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +113,8 @@ public class StaffProjector
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(StaffProjector.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            StaffProjector.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
@@ -143,21 +146,30 @@ public class StaffProjector
     /** (Unmodifiable) view on peaks. */
     private final List<StaffPeak> peaksView = Collections.unmodifiableList(peaks);
 
+    /** Graph of all peaks, linked by alignment/connection. */
+    private final Graph<StaffPeak, BarAlignment> peakGraph;
+
     /** Count of cumulated foreground pixels, indexed by abscissa. */
     private Projection projection;
+
+    /** Initial brace peak, if any. */
+    private StaffPeak.Brace bracePeak;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffProjector} object.
      *
-     * @param sheet containing sheet
-     * @param staff staff to analyze
+     * @param sheet     containing sheet
+     * @param staff     staff to analyze
+     * @param peakGraph sheet graph of peaks
      */
     public StaffProjector (Sheet sheet,
-                           Staff staff)
+                           Staff staff,
+                           Graph peakGraph)
     {
         this.sheet = sheet;
         this.staff = staff;
+        this.peakGraph = peakGraph;
 
         Picture picture = sheet.getPicture();
         pixelFilter = picture.getSource(Picture.SourceKey.BINARY);
@@ -215,6 +227,17 @@ public class StaffProjector
         return null;
     }
 
+    //--------------//
+    // getBracePeak //
+    //--------------//
+    /**
+     * @return the bracePeak
+     */
+    public StaffPeak.Brace getBracePeak ()
+    {
+        return bracePeak;
+    }
+
     //----------//
     // getPeaks //
     //----------//
@@ -241,17 +264,23 @@ public class StaffProjector
         return staff;
     }
 
-    //-----------------//
-    // insertBracePeak //
-    //-----------------//
+    //-------------------//
+    // getStartPeakIndex //
+    //-------------------//
     /**
-     * (Re-) insert a brace peak at beginning of the peaks sequence.
+     * Report the index of the start peak, if any
      *
-     * @param bracePeak the detected brace peak
+     * @return start peak index, or -1 if none
      */
-    public void insertBracePeak (StaffPeak.Brace bracePeak)
+    public int getStartPeakIndex ()
     {
-        peaks.add(0, bracePeak);
+        for (int i = 0; i < peaks.size(); i++) {
+            if (peaks.get(i).isStaffEnd(LEFT)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     //------//
@@ -296,17 +325,22 @@ public class StaffProjector
         findPeaks();
     }
 
-    //------------------//
-    // refineStaffSides //
-    //------------------//
+    //------------//
+    // removePeak //
+    //------------//
     /**
-     * Use peaks left over to refine abscissae of staff sides accordingly.
+     * Remove a peak from the sequence of peaks.
+     *
+     * @param peak the peak to remove
      */
-    public void refineStaffSides ()
+    public void removePeak (StaffPeak peak)
     {
-        for (HorizontalSide side : HorizontalSide.values()) {
-            refineStaffSide(side);
+        if (peak.isVip()) {
+            logger.info("VIP {} removing {}", this, peak);
         }
+
+        peaks.remove(peak);
+        peakGraph.removeVertex(peak);
     }
 
     //-------------//
@@ -320,12 +354,19 @@ public class StaffProjector
     public void removePeaks (Collection<? extends StaffPeak> toRemove)
     {
         for (StaffPeak peak : toRemove) {
-            if (peak.isVip()) {
-                logger.info("VIP {} removing {}", this, peak);
-            }
-
-            peaks.remove(peak);
+            removePeak(peak);
         }
+    }
+
+    //--------------//
+    // setBracePeak //
+    //--------------//
+    /**
+     * @param bracePeak the bracePeak to set
+     */
+    public void setBracePeak (StaffPeak.Brace bracePeak)
+    {
+        this.bracePeak = bracePeak;
     }
 
     //----------//
@@ -373,14 +414,16 @@ public class StaffProjector
         final double linesCumul = computeCoreLinesThickness();
         final double lineThickness = linesCumul / staff.getLines().size();
 
-        // For chunk threshold the strategy is to use the largest value
-        // among (4 times max fore) and (linesCumul + fraction)
-        params.linesThreshold = (int) Math.rint(linesCumul); ///4 * scale.getMainFore();
+        params.linesThreshold = (int) Math.rint(linesCumul);
         params.blankThreshold = (int) Math.rint(
                 constants.blankThreshold.getValue() * lineThickness);
-        params.chunkThreshold = Math.max(
-                4 * (scale.getMaxFore() + 1), // +1 as safety margin
-                params.linesThreshold + scale.toPixels(constants.chunkThreshold));
+        params.chunkThreshold = (4 * scale.getMaxFore())
+                                + scale.toPixels(constants.chunkThreshold);
+        logger.debug(
+                "Staff#{} linesThreshold:{} chunkThreshold:{}",
+                staff.getId(),
+                params.linesThreshold,
+                params.chunkThreshold);
     }
 
     //-------------------//
@@ -476,7 +519,10 @@ public class StaffProjector
         final int yTop = staff.getFirstLine().yAt(xMid);
         final int yBottom = staff.getLastLine().yAt(xMid);
 
-        return new StaffPeak.Brace(staff, yTop, yBottom, start, stop);
+        StaffPeak.Brace brace = new StaffPeak.Brace(staff, yTop, yBottom, start, stop);
+        brace.computeDeskewedCenter(sheet.getSkew());
+
+        return brace;
     }
 
     //------------//
@@ -570,7 +616,10 @@ public class StaffProjector
         double grade = impacts.getGrade();
 
         if (grade >= Inter.minGrade) {
-            return new StaffPeak.Bar(staff, yTop, yBottom, start, stop, impacts);
+            StaffPeak.Bar bar = new StaffPeak.Bar(staff, yTop, yBottom, start, stop, impacts);
+            bar.computeDeskewedCenter(sheet.getSkew());
+
+            return bar;
         }
 
         return null;
@@ -653,6 +702,7 @@ public class StaffProjector
 
                 if (peak != null) {
                     peaks.add(peak);
+                    peakGraph.addVertex(peak);
                 }
 
                 start = -1;
@@ -666,6 +716,7 @@ public class StaffProjector
 
             if (peak != null) {
                 peaks.add(peak);
+                peakGraph.addVertex(peak);
             }
         }
 
@@ -733,24 +784,21 @@ public class StaffProjector
         final int dx = params.barRefineDx;
 
         // Beginning and ending x values
-        final int x1 = (dir > 0) ? xStop : xStart;
+        final double mid = (xStop + xStart) / 2.0;
+        final int x1 = (dir > 0) ? (int) Math.ceil(mid) : (int) Math.floor(mid);
         final int x2 = (dir > 0) ? xClamp(xStop + dx) : xClamp(xStart - dx);
 
-        // X at best derivative
-        int bestX = -1;
-
-        // Best derivative so far
-        int bestDer = 0;
+        int bestDer = 0; // Best derivative so far
+        int bestX = -1; // Abscissa at best derivative
 
         // True if other peak found close to this one
         boolean closePeakFound = false;
 
         for (int x = x1; (dir * (x2 - x)) >= 0; x += dir) {
-            int der = projection.getDerivative(x);
+            final int val = projection.getValue(x);
+            final int der = projection.getDerivative(x);
 
             // Check we are still higher than chunk level
-            int val = projection.getValue(x);
-
             if (val < params.chunkThreshold) {
                 if ((dir * (bestDer - der)) > 0) {
                     bestDer = der;
@@ -758,7 +806,7 @@ public class StaffProjector
                 }
 
                 break;
-            } else if ((val >= params.barThreshold) && (x != x1)) {
+            } else if ((val >= params.barThreshold) && ((dir > 0) ? (x > xStop) : (x < xStart))) {
                 closePeakFound = true;
 
                 break;
@@ -782,26 +830,23 @@ public class StaffProjector
         }
     }
 
-    //-----------------//
-    // refineStaffSide //
-    //-----------------//
+    //----------------//
+    // refineRightEnd //
+    //----------------//
     /**
-     * Try to use the extreme peak on a given staff side, to refine the precise abscissa
+     * Try to use the extreme peak on staff right side, to refine the precise abscissa
      * where the staff ends.
      * <p>
      * When this method is called, the staff sides are defined only by the ends of the lines built
      * with long sections.
-     * An extreme peak (first or last peak according to side) can be used as abscissa reference
-     * only if it is either beyond current staff end or sufficiently close to the end.
+     * An extreme peak can be used as abscissa reference only if it is either beyond current staff
+     * end or sufficiently close to the end.
      * If no such peak is found, we stop right before the blank region assuming that this is a
      * measure with no outside bar.
-     *
-     * @param side which horizontal side to refine
      */
-    private void refineStaffSide (HorizontalSide side)
+    public void refineRightEnd ()
     {
-        final int dir = (side == LEFT) ? (-1) : 1;
-        final int linesEnd = staff.getAbscissa(side); // As defined by end of long staff lines
+        final int linesEnd = staff.getAbscissa(RIGHT); // As defined by end of long staff lines
         int staffEnd = linesEnd;
         StaffPeak endPeak = null;
         Integer peakEnd = null;
@@ -811,26 +856,11 @@ public class StaffProjector
 
         if (!peaks.isEmpty()) {
             StaffPeak peak = null;
+            peak = peaks.get(peaks.size() - 1);
 
-            if (side == LEFT) {
-                for (StaffPeak p : peaks) {
-                    if (p.isBracket()) {
-                        bracket = p;
-
-                        continue;
-                    }
-
-                    peak = p;
-
-                    break;
-                }
-            } else {
-                peak = peaks.get(peaks.size() - 1);
-
-                // Just in case
-                if (peak.isBracket()) {
-                    peak = null;
-                }
+            // Just in case
+            if (peak.isBracket()) {
+                peak = null;
             }
 
             if (peak != null) {
@@ -838,9 +868,9 @@ public class StaffProjector
                 final int peakMid = (peak.getStart() + peak.getStop()) / 2;
                 final int toPeak = peakMid - linesEnd;
 
-                if ((dir * toPeak) >= 0) {
+                if (toPeak >= 0) {
                     endPeak = peak;
-                    peakEnd = (side == LEFT) ? endPeak.getStart() : endPeak.getStop();
+                    peakEnd = endPeak.getStop();
                     staffEnd = peakEnd;
                 }
             }
@@ -849,44 +879,37 @@ public class StaffProjector
         // Continue and stop at first small blank region (or bracket) encountered if any.
         // Then keep the additional line chunk if long enough.
         // If not, use peak mid as staff end.
-        Blank blank = selectBlank(side, staffEnd, params.minSmallBlankWidth);
+        Blank blank = selectBlank(RIGHT, staffEnd, params.minSmallBlankWidth);
 
         if (blank != null) {
-            int x = (side == LEFT) ? (blank.stop + 1) : (blank.start - 1);
+            int x = blank.start - 1;
 
             if (endPeak != null) {
-                if ((bracket == null) && ((dir * (x - peakEnd)) > params.maxBarToEnd)) {
+                if ((bracket == null) && ((x - peakEnd) > params.maxBarToLinesRightEnd)) {
                     // We have significant line chunks beyond bar, hence peak is not the limit
                     logger.debug(
-                            "Staff#{} {} set at blank {} (vs {})",
+                            "Staff#{} RIGHT set at blank {} (vs {})",
                             staff.getId(),
-                            side,
                             x,
                             linesEnd);
-                    staff.setAbscissa(side, x);
+                    staff.setAbscissa(RIGHT, x);
                 } else {
                     // No significant line chunks, ignore them and stay with peak as the limit
                     final int peakMid = (endPeak.getStart() + endPeak.getStop()) / 2;
                     logger.debug(
-                            "Staff#{} {} set at peak {} (vs {})",
+                            "Staff#{} RIGHT set at peak {} (vs {})",
                             staff.getId(),
-                            side,
                             peakMid,
                             linesEnd);
-                    staff.setAbscissa(side, peakMid);
-                    endPeak.setStaffEnd(side);
+                    staff.setAbscissa(RIGHT, peakMid);
+                    endPeak.setStaffEnd(RIGHT);
                 }
             } else {
-                logger.debug(
-                        "Staff#{} {} set at blank {} (vs {})",
-                        staff.getId(),
-                        side,
-                        x,
-                        linesEnd);
-                staff.setAbscissa(side, x);
+                logger.debug("Staff#{} RIGHT set at blank {} (vs {})", staff.getId(), x, linesEnd);
+                staff.setAbscissa(RIGHT, x);
             }
         } else {
-            logger.warn("Staff#{} no clear end on {}", staff.getId(), side);
+            logger.warn("Staff#{} no clear end on RIGHT", staff.getId());
         }
     }
 
@@ -1004,65 +1027,6 @@ public class StaffProjector
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Scale.Fraction staffAbscissaMargin = new Scale.Fraction(
-                10,
-                "Abscissa margin for checks around staff");
-
-        private final Scale.Fraction barChunkDx = new Scale.Fraction(
-                0.4,
-                "Abscissa margin for chunks check around bar");
-
-        private final Scale.Fraction barRefineDx = new Scale.Fraction(
-                0.25,
-                "Abscissa margin for refining peak sides");
-
-        private final Scale.Fraction minDerivative = new Scale.Fraction(
-                0.625, ///0.75,
-                "Minimum absolute derivative for peak side");
-
-        private final Scale.Fraction barThreshold = new Scale.Fraction(
-                2.5, ///3.0,
-                "Minimum cumul value to detect bar peak");
-
-        private final Scale.Fraction braceThreshold = new Scale.Fraction(
-                2,
-                "Minimum cumul value to detect brace peak");
-
-        private final Scale.Fraction gapThreshold = new Scale.Fraction(
-                0.5,
-                "Maximum vertical gap length in a bar");
-
-        private final Scale.Fraction chunkThreshold = new Scale.Fraction(
-                0.4,
-                "Maximum cumul value to detect chunk (on top of lines)");
-
-        private final Scale.LineFraction blankThreshold = new Scale.LineFraction(
-                2.5,
-                "Maximum cumul value (in LineFraction) to detect no-line regions");
-
-        private final Scale.Fraction minWideBlankWidth = new Scale.Fraction(
-                1.0,
-                "Minimum width for a wide blank region (to limit peaks search)");
-
-        private final Scale.Fraction minSmallBlankWidth = new Scale.Fraction(
-                0.1,
-                "Minimum width for a small blank region (to end a staff side)");
-
-        private final Scale.Fraction maxBarWidth = new Scale.Fraction(1.0, "Maximum bar width");
-
-        private final Scale.Fraction maxBarToEnd = new Scale.Fraction(
-                0.15,
-                "Maximum dx between bar and end of staff");
-    }
-
     //-------//
     // Blank //
     //-------//
@@ -1111,6 +1075,65 @@ public class StaffProjector
         }
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Scale.Fraction staffAbscissaMargin = new Scale.Fraction(
+                10,
+                "Abscissa margin for checks around staff");
+
+        private final Scale.Fraction barChunkDx = new Scale.Fraction(
+                0.4,
+                "Abscissa margin for chunks check around bar");
+
+        private final Scale.Fraction barRefineDx = new Scale.Fraction(
+                0.25,
+                "Abscissa margin for refining peak sides");
+
+        private final Scale.Fraction minDerivative = new Scale.Fraction(
+                0.625, ///0.75,
+                "Minimum absolute derivative for peak side");
+
+        private final Scale.Fraction barThreshold = new Scale.Fraction(
+                2.5, ///3.0,
+                "Minimum cumul value to detect bar peak");
+
+        private final Scale.Fraction braceThreshold = new Scale.Fraction(
+                2,
+                "Minimum cumul value to detect brace peak");
+
+        private final Scale.Fraction gapThreshold = new Scale.Fraction(
+                0.5,
+                "Maximum vertical gap length in a bar");
+
+        private final Scale.Fraction chunkThreshold = new Scale.Fraction(
+                0.8, ///0.4,
+                "Maximum cumul value to detect chunk (on top of lines)");
+
+        private final Scale.LineFraction blankThreshold = new Scale.LineFraction(
+                2.5,
+                "Maximum cumul value (in LineFraction) to detect no-line regions");
+
+        private final Scale.Fraction minWideBlankWidth = new Scale.Fraction(
+                1.0,
+                "Minimum width for a wide blank region (to limit peaks search)");
+
+        private final Scale.Fraction minSmallBlankWidth = new Scale.Fraction(
+                0.1,
+                "Minimum width for a small blank region (to end a staff side)");
+
+        private final Scale.Fraction maxBarWidth = new Scale.Fraction(1.0, "Maximum bar width");
+
+        private final Scale.Fraction maxBarToLinesRightEnd = new Scale.Fraction(
+                0.15,
+                "Maximum dx between bar and right end of staff lines");
+    }
+
     //------------//
     // Parameters //
     //------------//
@@ -1138,7 +1161,7 @@ public class StaffProjector
 
         final int maxBarWidth;
 
-        final int maxBarToEnd;
+        final int maxBarToLinesRightEnd;
 
         // Following threshold values depend on actual line height within this staff
         int linesThreshold;
@@ -1160,7 +1183,7 @@ public class StaffProjector
             minWideBlankWidth = scale.toPixels(constants.minWideBlankWidth);
             minSmallBlankWidth = scale.toPixels(constants.minSmallBlankWidth);
             maxBarWidth = scale.toPixels(constants.maxBarWidth);
-            maxBarToEnd = scale.toPixels(constants.maxBarToEnd);
+            maxBarToLinesRightEnd = scale.toPixels(constants.maxBarToLinesRightEnd);
         }
     }
 

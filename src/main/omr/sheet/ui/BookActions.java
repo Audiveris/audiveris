@@ -925,7 +925,7 @@ public class BookActions
                 {
                     int index = Integer.decode(e.getActionCommand()) - 1;
                     Staff staff = staffManager.getStaff(index);
-                    new StaffProjector(sheet, staff).plot();
+                    new StaffProjector(sheet, staff, null).plot();
                 }
             };
 

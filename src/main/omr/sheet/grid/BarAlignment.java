@@ -16,6 +16,7 @@ import omr.sig.GradeImpacts;
 
 import omr.util.VerticalSide;
 
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -25,6 +26,7 @@ import java.util.Objects;
  * @author Hervé Bitteur
  */
 public class BarAlignment
+        implements Comparable<BarAlignment>
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -35,11 +37,12 @@ public class BarAlignment
     protected final StaffPeak.Bar bottomPeak;
 
     /**
-     * Abscissa shift in pixels between de-skewed bottom peak and de-skewed top peak.
+     * Abscissa shift between de-skewed bottom peak and de-skewed top peak.
+     * (Normalized in interline fraction)
      */
     protected final double dx;
 
-    /** Connection quality. */
+    /** Alignment quality. */
     private final GradeImpacts impacts;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -48,7 +51,7 @@ public class BarAlignment
      *
      * @param topPeak    peak in the upper staff
      * @param bottomPeak peak in the lower staff
-     * @param dx         bottomPeak.x - topPeak.x (de-skewed abscissae)
+     * @param dx         bottomPeak.x - topPeak.x (de-skewed & normalized)
      * @param impacts    the alignment quality
      */
     public BarAlignment (StaffPeak.Bar topPeak,
@@ -63,6 +66,63 @@ public class BarAlignment
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // bestOf //
+    //--------//
+    /**
+     * Report the best (connection or alignment) among the provided collection.
+     *
+     * @param alignments the collection to filter
+     * @return the best one, or null if collection is empty
+     */
+    public static BarAlignment bestOf (Collection<? extends BarAlignment> alignments)
+    {
+        BarAlignment best = null;
+
+        for (final BarAlignment align : alignments) {
+            if (best == null) {
+                best = align;
+            } else if (best instanceof BarConnection) {
+                if (align instanceof BarConnection
+                    && (align.getImpacts().getGrade() > best.getImpacts().getGrade())) {
+                    best = align;
+                }
+            } else if (align instanceof BarConnection) {
+                best = align;
+            } else if (Math.abs(align.dx) <= Math.abs(best.dx)) {
+                best = align;
+            }
+        }
+
+        return best;
+    }
+
+    //-----------//
+    // compareTo //
+    //-----------//
+    /**
+     * Allows to sort first vertically by staff, then horizontally by abscissa.
+     *
+     * @param that the other alignment to compare with.
+     * @return comparison result
+     */
+    @Override
+    public int compareTo (BarAlignment that)
+    {
+        if (this == that) {
+            return 0;
+        }
+
+        final StaffPeak p1 = this.topPeak;
+        final StaffPeak p2 = that.topPeak;
+
+        if (p1.getStaff() != p2.getStaff()) {
+            return Integer.compare(p1.getStaff().getId(), p2.getStaff().getId());
+        }
+
+        return Integer.compare(p1.getStart(), p2.getStart());
+    }
+
     //--------//
     // equals //
     //--------//

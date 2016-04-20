@@ -435,7 +435,7 @@ public class SectionCompound
     /**
      * Build a (fixed) glyph, based on current content of this section compound.
      *
-     * @param group targeted group
+     * @param group targeted group, perhaps null
      * @return a glyph made of compound pixels
      */
     public Glyph toGlyph (Group group)

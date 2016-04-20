@@ -31,7 +31,8 @@ public class PartGroup
         //~ Enumeration constant initializers ------------------------------------------------------
 
         bracket,
-        brace;
+        brace,
+        square;
     }
 
     //~ Instance fields ----------------------------------------------------------------------------

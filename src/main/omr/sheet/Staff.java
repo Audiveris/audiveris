@@ -867,36 +867,6 @@ public class Staff
         return lines;
     }
 
-    //-------------//
-    // getLinesEnd //
-    //-------------//
-    /**
-     * Report the ending abscissa of the staff lines.
-     *
-     * @param side desired horizontal side
-     * @return the abscissa corresponding to lines extrema
-     */
-    public double getLinesEnd (HorizontalSide side)
-    {
-        if (side == HorizontalSide.LEFT) {
-            double linesLeft = Integer.MAX_VALUE;
-
-            for (LineInfo line : lines) {
-                linesLeft = Math.min(linesLeft, line.getEndPoint(LEFT).getX());
-            }
-
-            return linesLeft;
-        } else {
-            double linesRight = Integer.MIN_VALUE;
-
-            for (LineInfo line : lines) {
-                linesRight = Math.max(linesRight, line.getEndPoint(RIGHT).getX());
-            }
-
-            return linesRight;
-        }
-    }
-
     //------------------//
     // getMeanInterline //
     //------------------//

@@ -13,6 +13,7 @@ package omr.sheet.grid;
 
 import omr.glyph.dynamic.Filament;
 
+import omr.sheet.Skew;
 import omr.sheet.Staff;
 import static omr.sheet.grid.StaffPeak.Attribute.*;
 
@@ -28,6 +29,7 @@ import static omr.util.VerticalSide.TOP;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.EnumSet;
 
 /**
@@ -103,6 +105,9 @@ public abstract class StaffPeak
     /** Precise right abscissa. */
     protected final int stop;
 
+    /** De-skewed center. */
+    protected Point2D dsk;
+
     /** Underlying filament. */
     protected Filament filament;
 
@@ -175,8 +180,21 @@ public abstract class StaffPeak
     @Override
     public int compareTo (StaffPeak that)
     {
-        // Peaks are implicitly sorted by abscissa
-        return Integer.compare(start, that.start);
+        if (this.getStaff() != that.getStaff()) {
+            return Staff.byId.compare(this.getStaff(), that.getStaff());
+        }
+
+        return Integer.compare(this.start, that.start);
+    }
+
+    //-----------------------//
+    // computeDeskewedCenter //
+    //-----------------------//
+    public void computeDeskewedCenter (Skew skew)
+    {
+        Point2D mid = new Point2D.Double((start + stop) / 2.0, (top + bottom) / 2.0);
+
+        dsk = skew.deskewed(mid);
     }
 
     //-----------//
@@ -207,6 +225,22 @@ public abstract class StaffPeak
     public Rectangle getBounds ()
     {
         return new Rectangle(start, top, getWidth(), bottom - top + 1);
+    }
+
+    //---------------------//
+    // getDeskewedAbscissa //
+    //---------------------//
+    public double getDeskewedAbscissa ()
+    {
+        return dsk.getX();
+    }
+
+    //-------------------//
+    // getDeskewedCenter //
+    //-------------------//
+    public Point2D getDeskewedCenter ()
+    {
+        return dsk;
     }
 
     //-------------//
@@ -455,10 +489,10 @@ public abstract class StaffPeak
         sb.append(")");
 
         if (filament != null) {
-            sb.append(" fil#").append(filament.getId());
+            sb.append(" F#").append(filament.getId());
         }
 
-        sb.append(" staff#").append(staff.getId());
+        sb.append(" T#").append(staff.getId());
 
         sb.append(internals());
         sb.append("}");

@@ -1271,14 +1271,14 @@ public class SystemInfo
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{System#").append(id);
+        sb.append("System#").append(id);
         //        sb.append(" T").append(getFirstStaff().getId());
         //
         //        if (staves.size() > 1) {
         //            sb.append("..T").append(getLastStaff().getId());
         //        }
         //
-        sb.append("}");
+        //sb.append("}");
 
         return sb.toString();
     }

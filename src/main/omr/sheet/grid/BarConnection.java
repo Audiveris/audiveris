@@ -20,8 +20,8 @@ import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 
 /**
- * Class {@code BarConnection} represents a physical connection across staves between
- * two bar lines.
+ * Class {@code BarConnection} represents a concrete connection across staves between
+ * two barlines.
  * <p>
  * It indicates that the two linked staves belong to the same system and/or part.
  *
@@ -35,12 +35,10 @@ public class BarConnection
     /** Connection quality. */
     private final GradeImpacts impacts;
 
-    /**
-     * The physical portion of the connection line, excluding the portion within staves.
-     */
+    /** Physical portion of the connection line, excluding portions within staves. */
     private Area area;
 
-    /** Median line. */
+    /** Rather vertical median line. */
     private Line2D median;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -70,14 +68,6 @@ public class BarConnection
         return area;
     }
 
-    //----------//
-    // getWidth //
-    //----------//
-    public double getWidth ()
-    {
-        return (topPeak.getWidth() + bottomPeak.getWidth()) / 2d;
-    }
-
     //------------//
     // getImpacts //
     //------------//
@@ -99,6 +89,14 @@ public class BarConnection
         }
 
         return median;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    public double getWidth ()
+    {
+        return (topPeak.getWidth() + bottomPeak.getWidth()) / 2d;
     }
 
     //-----------//

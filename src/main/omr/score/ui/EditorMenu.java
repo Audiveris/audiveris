@@ -436,7 +436,7 @@ public class EditorMenu
             public void actionPerformed (ActionEvent e)
             {
                 try {
-                    new StaffProjector(sheet, staff).plot();
+                    new StaffProjector(sheet, staff, null).plot();
                 } catch (Throwable ex) {
                     logger.warn("StaffProjector error " + ex, ex);
                 }
