@@ -122,7 +122,7 @@ public class BarConnection
 
         private static final String[] NAMES = new String[]{"align", "white", "gap"};
 
-        private static final double[] WEIGHTS = new double[]{1, 1, 1};
+        private static final double[] WEIGHTS = new double[]{2, 1, 1};
 
         //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double align,

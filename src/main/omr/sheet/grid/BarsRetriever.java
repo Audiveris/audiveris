@@ -33,9 +33,10 @@ import omr.math.AreaUtil;
 import omr.math.AreaUtil.CoreData;
 import omr.math.GeoPath;
 import omr.math.GeoUtil;
-import omr.math.Histogram;
 import omr.math.PointUtil;
+
 import static omr.run.Orientation.*;
+
 import omr.run.RunTable;
 
 import omr.sheet.Part;
@@ -49,6 +50,7 @@ import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 import omr.sheet.grid.BarColumn.Chain;
 import omr.sheet.grid.PartGroup.Symbol;
+
 import static omr.sheet.grid.StaffPeak.Attribute.*;
 
 import omr.sig.GradeImpacts;
@@ -75,9 +77,12 @@ import omr.ui.util.UIUtil;
 import omr.util.Dumping;
 import omr.util.Entities;
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 import omr.util.VerticalSide;
+
 import static omr.util.VerticalSide.*;
 
 import ij.process.ByteProcessor;
@@ -762,8 +767,9 @@ public class BarsRetriever
             GradeImpacts impacts = new BarConnection.Impacts(alignImpact, whiteImpact, gapImpact);
             double grade = impacts.getGrade();
             logger.debug("{} grade:{} impacts:{}", alignment, grade, impacts);
+            final double minGrade = params.minConnectionGrade * impacts.getIntrinsicRatio();
 
-            if (grade >= params.minConnectionGrade) {
+            if (grade >= minGrade) {
                 BarConnection connection = new BarConnection(alignment, impacts);
 
                 if (vip) {
@@ -1869,14 +1875,6 @@ public class BarsRetriever
             return null;
         }
 
-        int dir = (side == TOP) ? (-1) : 1;
-
-        if ((slope * dir) < params.serifMinSlope) {
-            logger.info("Staff#{} serif slope too small {}", staff.getId(), slope * dir);
-
-            return null;
-        }
-
         return serif;
     }
 
@@ -1923,32 +1921,6 @@ public class BarsRetriever
         logger.debug("Systems: {}", (Object) systemTops);
 
         return systemTops;
-    }
-
-    //-------------------//
-    // getWidthHistogram //
-    //-------------------//
-    /**
-     * Build an histogram on widths of bars.
-     *
-     * @return the width histogram
-     */
-    private Histogram<Integer> getWidthHistogram ()
-    {
-        final Histogram<Integer> histo = new Histogram<Integer>();
-
-        for (StaffProjector projector : projectors) {
-            for (StaffPeak peak : projector.getPeaks()) {
-                if (!(peak instanceof StaffPeak.Brace) && !peak.isBracket()) {
-                    int width = peak.getWidth();
-                    histo.increaseCount(width, 1);
-                }
-            }
-        }
-
-        logger.debug("Bars width histogram {}", histo.dataString());
-
-        return histo;
     }
 
     //---------------//
@@ -2707,7 +2679,7 @@ public class BarsRetriever
                 "Maximum dx between bar and left end of staff lines");
 
         private final Scale.Fraction minBarCurvature = new Scale.Fraction(
-                20,
+                18,
                 "Minimum mean curvature for a bar line (rather than a brace)");
 
         private final Scale.Fraction maxBraceCurvature = new Scale.Fraction(
@@ -2791,11 +2763,6 @@ public class BarsRetriever
         private final Scale.AreaFraction serifMinWeight = new Scale.AreaFraction(
                 0.2,
                 "Minimum weight for bracket serif");
-
-        private final Constant.Double serifMinSlope = new Constant.Double(
-                "tangent",
-                0.25,
-                "Minimum absolute slope for bracket serif");
     }
 
     //------------//
@@ -2859,8 +2826,6 @@ public class BarsRetriever
 
         final int serifMinWeight;
 
-        final double serifMinSlope;
-
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -2898,7 +2863,6 @@ public class BarsRetriever
             serifRoiHeight = scale.toPixels(constants.serifRoiHeight);
             serifThickness = scale.toPixels(constants.serifThickness);
             serifMinWeight = scale.toPixels(constants.serifMinWeight);
-            serifMinSlope = constants.serifMinSlope.getValue();
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);
