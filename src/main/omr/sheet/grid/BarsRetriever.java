@@ -34,9 +34,7 @@ import omr.math.AreaUtil.CoreData;
 import omr.math.GeoPath;
 import omr.math.GeoUtil;
 import omr.math.PointUtil;
-
 import static omr.run.Orientation.*;
-
 import omr.run.RunTable;
 
 import omr.sheet.Part;
@@ -50,7 +48,6 @@ import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 import omr.sheet.grid.BarColumn.Chain;
 import omr.sheet.grid.PartGroup.Symbol;
-
 import static omr.sheet.grid.StaffPeak.Attribute.*;
 
 import omr.sig.GradeImpacts;
@@ -77,12 +74,9 @@ import omr.ui.util.UIUtil;
 import omr.util.Dumping;
 import omr.util.Entities;
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.VerticalSide;
-
 import static omr.util.VerticalSide.*;
 
 import ij.process.ByteProcessor;
@@ -767,6 +761,7 @@ public class BarsRetriever
             GradeImpacts impacts = new BarConnection.Impacts(alignImpact, whiteImpact, gapImpact);
             double grade = impacts.getGrade();
             logger.debug("{} grade:{} impacts:{}", alignment, grade, impacts);
+
             final double minGrade = params.minConnectionGrade * impacts.getIntrinsicRatio();
 
             if (grade >= minGrade) {
@@ -1393,18 +1388,6 @@ public class BarsRetriever
         }
     }
 
-    //-----------------//
-    // detectLongPeaks //
-    //-----------------//
-    /**
-     * Detect long bars (those getting above or below the related staff).
-     * <p>
-     * Just after a bracket end, the glyph of following bar line may go slightly beyond staff.
-     */
-    private void detectLongPeaks ()
-    {
-    }
-
     //--------------------//
     // detectStartColumns //
     //--------------------//
@@ -1485,7 +1468,7 @@ public class BarsRetriever
                 }
             }
 
-            if (startColumn != null && logger.isDebugEnabled()) {
+            if ((startColumn != null) && logger.isDebugEnabled()) {
                 logger.debug("{} startColumn: {}", system, startColumn.dumpString(peakGraph));
             }
         }
@@ -2536,8 +2519,12 @@ public class BarsRetriever
     {
         for (StaffProjector projector : projectors) {
             final List<StaffPeak> peaks = projector.getPeaks();
+            final Staff staff = projector.getStaff();
+            final Set<StaffPeak.Bar> toRemove = new LinkedHashSet<StaffPeak.Bar>();
 
-            for (StaffPeak peak : peaks) {
+            for (StaffPeak p : peaks) {
+                StaffPeak.Bar peak = (StaffPeak.Bar) p;
+
                 // Check whether the glyph gets above and/or below the staff
                 if (!peak.isBracket()) {
                     for (VerticalSide side : VerticalSide.values()) {
@@ -2545,29 +2532,15 @@ public class BarsRetriever
 
                         if (ext > params.maxBarExtension) {
                             if (!isJustAfterBracket(peaks, (StaffPeak.Bar) peak, side)) {
-                                peak.setBeyond(side);
+                                if (!isConnected(peak, side)) {
+                                    if (peak.isVip()) {
+                                        logger.info("VIP removed {} long {}", side, peak);
+                                    }
+
+                                    toRemove.add(peak);
+                                }
                             }
                         }
-                    }
-                }
-            }
-        }
-
-        for (StaffProjector projector : projectors) {
-            final Staff staff = projector.getStaff();
-            final Set<StaffPeak.Bar> toRemove = new LinkedHashSet<StaffPeak.Bar>();
-
-            for (StaffPeak p : projector.getPeaks()) {
-                StaffPeak.Bar peak = (StaffPeak.Bar) p;
-
-                // Check whether peak goes beyond staff
-                for (VerticalSide side : VerticalSide.values()) {
-                    if (peak.isBeyond(side) && !isConnected(peak, side)) {
-                        if (peak.isVip()) {
-                            logger.info("VIP removed {} long {}", side, peak);
-                        }
-
-                        toRemove.add(peak);
                     }
                 }
             }
@@ -2674,7 +2647,7 @@ public class BarsRetriever
                 "Minimum grade for a true connection");
 
         private final Scale.Fraction maxBarExtension = new Scale.Fraction(
-                0.3,
+                0.4,
                 "Maximum extension for a bar line above or below staff line");
 
         private final Scale.Fraction maxBarToLinesLeftEnd = new Scale.Fraction(

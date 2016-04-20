@@ -65,10 +65,6 @@ public abstract class StaffPeak
         BRACKET_MIDDLE,
         /** This peak is a bottom portion of a bracket */
         BRACKET_BOTTOM,
-        /** This peak goes beyond staff top line */
-        BEYOND_TOP,
-        /** This peak goes beyond staff bottom line */
-        BEYOND_BOTTOM,
         /** This peak is the thick one of a C-Clef */
         CCLEF_ONE,
         /** This peak is the thin one of a C-Clef */
@@ -337,22 +333,6 @@ public abstract class StaffPeak
         return stop - start + 1;
     }
 
-    //----------//
-    // isBeyond //
-    //----------//
-    public boolean isBeyond ()
-    {
-        return isSet(BEYOND_TOP) || isSet(BEYOND_BOTTOM);
-    }
-
-    //----------//
-    // isBeyond //
-    //----------//
-    public boolean isBeyond (VerticalSide side)
-    {
-        return isSet((side == TOP) ? BEYOND_TOP : BEYOND_BOTTOM);
-    }
-
     //------------//
     // isBraceEnd //
     //------------//
@@ -416,19 +396,6 @@ public abstract class StaffPeak
     public void render (Graphics2D g)
     {
         g.fillRect(start, top, stop - start + 1, bottom - top + 1);
-    }
-
-    //-----------//
-    // setBeyond //
-    //-----------//
-    /**
-     * Set peak as beyond staff height on provided side.
-     *
-     * @param side provided vertical side
-     */
-    public void setBeyond (VerticalSide side)
-    {
-        set((side == TOP) ? BEYOND_TOP : BEYOND_BOTTOM);
     }
 
     //---------------//
