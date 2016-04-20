@@ -50,6 +50,7 @@ import omr.ui.BoardsPane;
 import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtil;
 import omr.ui.view.HistoryMenu;
+import omr.ui.view.ScrollView;
 
 import omr.util.BasicTask;
 import omr.util.FileUtil;
@@ -1301,7 +1302,13 @@ public class BookActions
             return;
         }
 
-        assembly.getSelectedView().fitHeight();
+        ScrollView scrollView = assembly.getSelectedView();
+
+        if (scrollView == null) {
+            return;
+        }
+
+        scrollView.fitHeight();
     }
 
     //-----------//
@@ -1327,7 +1334,13 @@ public class BookActions
             return;
         }
 
-        assembly.getSelectedView().fitWidth();
+        ScrollView scrollView = assembly.getSelectedView();
+
+        if (scrollView == null) {
+            return;
+        }
+
+        scrollView.fitWidth();
     }
 
     //-------------------//

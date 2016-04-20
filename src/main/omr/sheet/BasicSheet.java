@@ -1220,6 +1220,8 @@ public class BasicSheet
             logger.debug("{}{} completed in {} ms", getLogPrefix(), step, duration);
 
             done(step); // Full completion
+        } catch (StepException ex) {
+            throw ex;
         } catch (Throwable ex) {
             logger.warn("doOneStep error in " + step + " " + ex, ex);
             throw ex;

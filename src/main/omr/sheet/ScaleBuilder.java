@@ -229,10 +229,14 @@ public class ScaleBuilder
 
         int interline = (int) (forePeak.getKey().best + backPeak.getKey().best);
 
-        if (interline < constants.minResolution.getValue()) {
+        if (interline == 0) {
+            makeDecision(
+                    sheet.getId() + LINE_SEPARATOR + "Interline value is zero." + LINE_SEPARATOR
+                    + "This sheet does not seem to contain staff lines.");
+        } else if (interline < constants.minResolution.getValue()) {
             makeDecision(
                     sheet.getId() + LINE_SEPARATOR + "With an interline value of " + interline
-                    + " pixels," + LINE_SEPARATOR + "either this page contains no staves,"
+                    + " pixels," + LINE_SEPARATOR + "either this sheet contains no staves,"
                     + LINE_SEPARATOR + "or the picture resolution is too low (try 300 DPI).");
         }
     }
@@ -380,6 +384,7 @@ public class ScaleBuilder
         if ((OMR.gui == null)
             || (OMR.gui.displayModelessConfirm(msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
             if (book.isMultiSheet()) {
+                sheet.invalidate();
                 sheet.close();
                 throw new StepException("Sheet removed");
             } else {
@@ -399,23 +404,11 @@ public class ScaleBuilder
         forePeak = foreHisto.getPeak(quorumRatio, constants.foreSpreadRatio.getValue(), 0);
         sb.append("fore:").append(forePeak);
 
-        if (forePeak.getValue() == 1d) {
-            String msg = "All image pixels are foreground." + " Check binarization parameters";
-            logger.warn(msg);
-            throw new StepException(msg);
-        }
-
         // Pair peak
         bothPeak = bothHisto.getPeak(quorumRatio, constants.bothSpreadRatio.getValue(), 0);
 
         // Background peak
         backPeak = backHisto.getPeak(quorumRatio, constants.backSpreadRatio.getValue(), 0);
-
-        if (backPeak.getValue() == 1d) {
-            String msg = "All image pixels are background. Check binarization parameters";
-            logger.warn(msg);
-            throw new StepException(msg);
-        }
 
         // Second background peak?
         secondBackPeak = backHisto.getPeak(quorumRatio, constants.backSpreadRatio.getValue(), 1);

@@ -17,9 +17,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.run.Orientation;
-
 import static omr.run.Orientation.*;
-
 import omr.run.Run;
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
@@ -95,6 +93,10 @@ public class LagManager
     public Lag buildHorizontalLag (RunTable horiTable,
                                    Lag hLag)
     {
+        if (horiTable == null) {
+            return null;
+        }
+
         Lag lag = (hLag != null) ? hLag : new BasicLag(Lags.HLAG, HORIZONTAL);
         SectionFactory sectionsFactory = new SectionFactory(lag, JunctionRatioPolicy.DEFAULT);
         sectionsFactory.createSections(horiTable, null, true);
@@ -116,8 +118,13 @@ public class LagManager
      */
     public Lag buildVerticalLag (RunTable vertTable)
     {
-        final Lag vLag = new BasicLag(Lags.VLAG, VERTICAL);
         final Scale scale = sheet.getScale();
+
+        if (scale == null) {
+            return null;
+        }
+
+        final Lag vLag = new BasicLag(Lags.VLAG, VERTICAL);
         final int maxVerticalRunShift = scale.toPixels(constants.maxVerticalRunShift);
         SectionFactory factory = new SectionFactory(
                 vLag,
@@ -142,6 +149,10 @@ public class LagManager
     public RunTable filterRuns (RunTable sourceTable,
                                 RunTable vertTable)
     {
+        if (sheet.getScale() == null) {
+            return null;
+        }
+
         final int minVerticalRunLength = 1
                                          + (int) Math.rint(
                         sheet.getScale().getMaxFore() * constants.ledgerThickness.getValue());
