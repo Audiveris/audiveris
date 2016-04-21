@@ -1396,6 +1396,17 @@ public class BarsRetriever
      * (fully connected) one as actual "start column" with defines the precise left
      * limit of staff lines.
      * <p>
+     * A brace cannot be used as a start column.
+     * Unfortunately, we have yet no efficient way to recognize a given peak as a brace peak.
+     * Methods detectBracePortions() and buildBraces() provide a limited recognition capability.
+     * The risk is high on 2-staff systems, as a brace can be perceived as a fully-connected column.
+     * <p>
+     * Strategy is as follows: browse the fully-connected columns from left to right within maxGap
+     * abscissa from previous column. The last column should be the right one.
+     * We use a wider gap (brace-bar) for the very first couple of columns.
+     * (This should be double-checked with gap being free of staff lines, but at this point staff
+     * lines are not yet fully defined, and projection may be biased by brace touching next bar).
+     * <p>
      * When there is no first bar group, or when this group is located within staff width, use only
      * the staff lines horizontal limits as the staff limit.
      */
@@ -1408,7 +1419,9 @@ public class BarsRetriever
             BarColumn firstFull = null; // First full column encountered
             BarColumn startColumn = null; // Last full column (within same group as first column)
 
-            for (BarColumn column : columns) {
+            for (int i = 0; i < columns.size(); i++) {
+                final BarColumn column = columns.get(i);
+
                 if (column.isFull()) {
                     if (firstFull == null) {
                         firstFull = column;
@@ -1417,9 +1430,10 @@ public class BarsRetriever
                     if (startColumn != null) {
                         double gap = (column.getXDsk() - (column.getWidth() / 2))
                                      - (startColumn.getXDsk() + (startColumn.getWidth() / 2));
+                        int maxGap = (i == 1) ? params.maxBraceBarGap : params.maxDoubleBarGap;
 
-                        if (gap > params.maxDoubleBarGap) {
-                            break;
+                        if (gap > maxGap) {
+                            break; // We are now too far on right
                         }
                     }
 
@@ -2666,6 +2680,10 @@ public class BarsRetriever
                 0.75,
                 "Max horizontal gap between two members of a double bar");
 
+        private final Scale.Fraction maxBraceBarGap = new Scale.Fraction(
+                1.0,
+                "Max horizontal gap between a brace peak and next bar");
+
         private final Scale.Fraction minMeasureWidth = new Scale.Fraction(
                 2.0,
                 "Minimum width for a measure");
@@ -2774,6 +2792,8 @@ public class BarsRetriever
 
         final int maxDoubleBarGap;
 
+        final int maxBraceBarGap;
+
         final int minMeasureWidth;
 
         final int minPeak1WidthForCClef;
@@ -2823,6 +2843,7 @@ public class BarsRetriever
             maxConnectionWhiteRatio = constants.maxConnectionWhiteRatio.getValue();
             minConnectionGrade = constants.minConnectionGrade.getValue();
             maxDoubleBarGap = scale.toPixels(constants.maxDoubleBarGap);
+            maxBraceBarGap = scale.toPixels(constants.maxBraceBarGap);
             minMeasureWidth = scale.toPixels(constants.minMeasureWidth);
 
             cClefTail = scale.toPixels(constants.cClefTail);

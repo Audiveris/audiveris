@@ -913,7 +913,6 @@ public class ClustersRetriever
         // For better efficiency: in doubt, avoid inserting a comb
         if ((dMax - dMin) > 3) {
             dMin++;
-            dMax--;
         }
 
         /** Number of vertical samples to collect */
