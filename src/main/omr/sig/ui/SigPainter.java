@@ -246,7 +246,7 @@ public class SigPainter
     {
         setColor(brace);
 
-        final Rectangle box = brace.getBounds(); ///braceBox(part);
+        final Rectangle box = brace.getBounds();
         final Point center = GeoUtil.centerOf(box);
         final Dimension halfDim = new Dimension(box.width, box.height / 2);
         OmrFont.paint(g, musicFont.layout(SYMBOL_BRACE_UPPER_HALF, halfDim), center, BOTTOM_CENTER);

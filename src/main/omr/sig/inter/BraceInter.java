@@ -14,6 +14,12 @@ package omr.sig.inter;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
+import omr.sheet.Staff;
+import omr.sheet.SystemInfo;
+
+import java.awt.Point;
+import java.awt.Rectangle;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -55,5 +61,33 @@ public class BraceInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        if (bounds == null) {
+            if (glyph != null) {
+                // Extend brace glyph box to related part
+                final SystemInfo system = sig.getSystem();
+                final Rectangle box = glyph.getBounds();
+                final int xRight = box.x + box.width;
+                final Staff staff1 = system.getClosestStaff(new Point(xRight, box.y));
+                final Staff staff2 = system.getClosestStaff(
+                        new Point(xRight, box.y + box.height));
+                final int y1 = staff1.getFirstLine().yAt(xRight);
+                final int y2 = staff2.getLastLine().yAt(xRight);
+                bounds = new Rectangle(box.x, y1, box.width, y2 - y1 + 1);
+            }
+        }
+
+        if (bounds != null) {
+            return new Rectangle(bounds);
+        }
+
+        return null;
     }
 }
